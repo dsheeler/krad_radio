@@ -54,7 +54,11 @@ Tag.prototype.show = function() {
 				$('#ktags_' + this.tag_item).append("<div id='ktag_" + this.tag_num + "' class='tag playtime'><span class='tag_value'>" + this.tag_value + "</span></div>");
 				return;
 			}
-	
+			if (this.tag_name == "playback_status") {
+				$('#ktags_' + this.tag_item).append("<div id='ktag_" + this.tag_num + "' class='tag playback_status'><span class='tag_value'>" + this.tag_value + "</span></div>");
+				return;
+			}
+
 			$('#ktags_' + this.tag_item).append("<div id='ktag_" + this.tag_num + "' class='tag'>" + this.tag_item + ": " + this.tag_name + " - <span class='tag_value'>" + this.tag_value + "</span></div>");					
 		}
 	}

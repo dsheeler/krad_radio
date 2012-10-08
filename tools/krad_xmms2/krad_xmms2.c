@@ -164,9 +164,25 @@ int krad_xmms_playback_status_callback (xmmsv_t *value, void *userdata) {
 		failfast ("Value didn't contain the expected type!");
 	}
 
-	krad_xmms->playback_status = status;
+	switch (status) {
+	case 0:
+		krad_xmms->playback_status = krad_xmms_STOPPED;
+		strcpy(krad_xmms->playback_status_string, "(Stopped)");
+		break;
+	case 2:
+		krad_xmms->playback_status = krad_xmms_PAUSED;
+		strcpy(krad_xmms->playback_status_string, "(Paused)");
+		break;
+	case 1:
+		krad_xmms->playback_status = krad_xmms_PLAYING;
+		strcpy(krad_xmms->playback_status_string, "(Playing)");
+		break;
+	}
 
-	printk ("Got Playback Status: %d", krad_xmms->playback_status);
+	if (krad_xmms->krad_tags != NULL) {
+		krad_tags_set_tag_internal (krad_xmms->krad_tags, "playback_status", krad_xmms->playback_status_string);
+	}
+	printk ("Got Playback Status: %d, %s", status, krad_xmms->playback_status_string);
 
 	return 1;
 
@@ -212,14 +228,18 @@ void krad_xmms_register_for_broadcasts (krad_xmms_t *krad_xmms) {
 	
 	result = NULL;
 
-	result = xmmsc_playback_status (krad_xmms->connection);
-	xmmsc_result_notifier_set (result, krad_xmms_playback_status_callback, krad_xmms);
-	xmmsc_result_unref (result);
-
 	result = xmmsc_playback_current_id (krad_xmms->connection);
 	xmmsc_result_notifier_set (result, krad_xmms_playing_id_callback, krad_xmms);
 	xmmsc_result_unref (result);
-
+	
+	result = xmmsc_broadcast_playback_current_id (krad_xmms->connection);
+	xmmsc_result_notifier_set (result, krad_xmms_playing_id_callback, krad_xmms);
+	xmmsc_result_unref (result);	
+	
+	result = xmmsc_playback_status (krad_xmms->connection);
+	xmmsc_result_notifier_set (result, krad_xmms_playback_status_callback, krad_xmms);
+	xmmsc_result_unref (result);
+	
 	result = xmmsc_broadcast_playback_status (krad_xmms->connection);
 	xmmsc_result_notifier_set (result, krad_xmms_playback_status_callback, krad_xmms);
 	xmmsc_result_unref (result);
@@ -228,9 +248,7 @@ void krad_xmms_register_for_broadcasts (krad_xmms_t *krad_xmms) {
 	xmmsc_result_notifier_set (result, krad_xmms_playtime_callback, krad_xmms);
 	xmmsc_result_unref (result);
 	
-	result = xmmsc_broadcast_playback_current_id (krad_xmms->connection);
-	xmmsc_result_notifier_set (result, krad_xmms_playing_id_callback, krad_xmms);
-	xmmsc_result_unref (result);	
+	
 
 	krad_xmms_handle (krad_xmms);
 

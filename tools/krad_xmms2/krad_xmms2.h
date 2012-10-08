@@ -10,10 +10,10 @@
 #include <signal.h>
 #include <poll.h>
 
-#include <xmmsclient/xmmsclient.h>
+#include <xmms2/xmmsclient/xmmsclient.h>
 
 #include "krad_system.h"
-#include "krad_tags.h"
+#include "../krad_tags/krad_tags.h"
 
 typedef enum {
 	PREV,
@@ -23,6 +23,11 @@ typedef enum {
 	NEXT
 } krad_xmms_playback_cmd_t;
 
+typedef enum {
+	krad_xmms_STOPPED,
+	krad_xmms_PAUSED,
+	krad_xmms_PLAYING
+} krad_xmms_playback_state_t;
 
 typedef struct krad_xmms_St krad_xmms_t;
 
@@ -40,6 +45,7 @@ struct krad_xmms_St {
 	int playback_status;
 	int playtime;
 	int playing_id;
+	char playback_status_string[128];
 	char playtime_string[128];
 	char now_playing[1024];
 	char title[512];
