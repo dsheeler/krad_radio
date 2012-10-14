@@ -15,6 +15,8 @@
 #include "krad_system.h"
 #include "../krad_tags/krad_tags.h"
 
+#define KRAD_XMMS_RECONNECT_SLEEP_INTERVAL 5
+
 typedef enum {
 	PREV,
 	PLAY,

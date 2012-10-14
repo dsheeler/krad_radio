@@ -196,7 +196,23 @@ void krad_xmms_disconnect (krad_xmms_t *krad_xmms) {
 		krad_xmms->connected = 0;
 		krad_xmms->fd = 0;
 		krad_xmms->connection = NULL;
+		krad_xmms->playing_id = 0;
+
+		strcpy(krad_xmms->artist, "");
+		strcpy(krad_xmms->title, "");
+		strcpy(krad_xmms->now_playing, "");
+		strcpy(krad_xmms->playback_status_string, "");
+		sprintf (krad_xmms->playtime_string, "%d:%02d", 0, 0);
+
+		if (krad_xmms->krad_tags != NULL) {
+			krad_tags_set_tag_internal (krad_xmms->krad_tags, "artist", krad_xmms->artist);
+			krad_tags_set_tag_internal (krad_xmms->krad_tags, "title", krad_xmms->title);
+			krad_tags_set_tag_internal (krad_xmms->krad_tags, "now_playing", krad_xmms->now_playing);
+			krad_tags_set_tag_internal (krad_xmms->krad_tags, "playback_status", krad_xmms->playback_status_string);
+			krad_tags_set_tag_internal (krad_xmms->krad_tags, "playtime", krad_xmms->playtime_string);
+		}
 	}
+	printk ("Krad xmms Disconnected %s from %s", krad_xmms->sysname, krad_xmms->ipc_path);
 }
 
 void krad_xmms_unregister_for_broadcasts (krad_xmms_t *krad_xmms) {
@@ -247,8 +263,6 @@ void krad_xmms_register_for_broadcasts (krad_xmms_t *krad_xmms) {
 	result = xmmsc_signal_playback_playtime (krad_xmms->connection);
 	xmmsc_result_notifier_set (result, krad_xmms_playtime_callback, krad_xmms);
 	xmmsc_result_unref (result);
-	
-	
 
 	krad_xmms_handle (krad_xmms);
 
@@ -282,9 +296,6 @@ void krad_xmms_connect (krad_xmms_t *krad_xmms) {
 	xmmsc_disconnect_callback_set (krad_xmms->connection, krad_xmms_disconnect_callback, krad_xmms);
 	
 	krad_xmms_register_for_broadcasts (krad_xmms);
-	
-	krad_xmms_start_handler (krad_xmms);
-	
 }
 
 
@@ -295,7 +306,7 @@ void krad_xmms_handle (krad_xmms_t *krad_xmms) {
 	
 	n = 0;	
 	pollfds[0].fd = krad_xmms->fd;
-	
+		
 	if (xmmsc_io_want_out (krad_xmms->connection)) {
 		pollfds[0].events = POLLIN | POLLOUT;
 	} else {
@@ -344,8 +355,12 @@ void *krad_xmms_handler_thread (void *arg) {
 
 	while (krad_xmms->handler_running == 1) {
 	
-		krad_xmms_handle (krad_xmms);
-
+		if (krad_xmms->connected == 0) {
+			sleep(KRAD_XMMS_RECONNECT_SLEEP_INTERVAL);
+			krad_xmms_connect(krad_xmms);
+		} else if (krad_xmms->connected == 1) {
+			krad_xmms_handle (krad_xmms);
+		}
 	}
 
 	return NULL;
@@ -396,6 +411,8 @@ krad_xmms_t *krad_xmms_create (char *sysname, char *ipc_path, krad_tags_t *krad_
 	strcpy (krad_xmms->ipc_path, ipc_path);
 
 	krad_xmms_connect (krad_xmms);
+	
+	krad_xmms_start_handler (krad_xmms);
 	
 	krad_xmms->last_nextprev_cmd_time = time(NULL);
 	
