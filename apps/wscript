@@ -4,6 +4,7 @@ import os
 
 programs = """
 krad_radio_daemon.c
+krad_radio_alsa_snd_seq.c
 """.split()
 
 programs2 = """

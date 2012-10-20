@@ -26,20 +26,23 @@
 #include "krad_system.h"
 
 #define KLUDGE 1
+#define MAX_CALLBACKS 128
 
 #ifdef KLUDGE
 #include "krad_ipc_client.h"
 #endif
 
 typedef struct krad_alsa_seq_St krad_alsa_seq_t;
+typedef int (t_alsa_seq_event_callback)(krad_alsa_seq_t *krad_alsa_seq, snd_seq_event_t *ev);
 
 struct krad_alsa_seq_St {
 
 	#ifdef KLUDGE
 	krad_ipc_client_t *krad_ipc_client;
+	
 	#endif
 	
-
+	
 	unsigned char *buffer;
 	char name[128];
 	int running;
@@ -48,6 +51,9 @@ struct krad_alsa_seq_St {
 
 	int port_id;
 	snd_seq_t *seq_handle;
+	
+	int num_callbacks;
+	t_alsa_seq_event_callback *callbacks[MAX_CALLBACKS];
 	
 };
 
@@ -64,4 +70,7 @@ int krad_alsa_seq_run (krad_alsa_seq_t *krad_alsa_seq, char *name);
 
 void krad_alsa_seq_destroy (krad_alsa_seq_t *krad_alsa_seq);
 krad_alsa_seq_t *krad_alsa_seq_create ();
+
+
+void krad_alsa_seq_register_event_callback (krad_alsa_seq_t *krad_alsa_seq, t_alsa_seq_event_callback *event_callback);
 

@@ -16,18 +16,18 @@ void *krad_alsa_seq_running_thread (void *arg) {
 	struct pollfd sockets[16];
 	snd_seq_event_t *ev;
 	unsigned int c;
-	float value;
+	int i;
 	
 	usleep (100000);
 	
-	printk ("Krad alsa_seq running thread starting\n");
+	printf ("Krad alsa_seq running thread starting\n");
 
 	ret = 0;
 
 	sock_count = snd_seq_poll_descriptors_count (krad_alsa_seq->seq_handle, POLLIN);
 	snd_seq_poll_descriptors (krad_alsa_seq->seq_handle, sockets, sock_count, POLLIN);
 
-	//printk ("sock_count %d\n", sock_count);
+	printf ("sock_count %d\n", sock_count);
 	
 	while (krad_alsa_seq->stop == 0) {
 
@@ -47,69 +47,60 @@ void *krad_alsa_seq_running_thread (void *arg) {
 			while ((snd_seq_event_input (krad_alsa_seq->seq_handle, &ev)) && (krad_alsa_seq->stop == 0)) {
 
 				if (ev != NULL) {
-
+					
 					switch (ev->type) {
-
-						case SND_SEQ_EVENT_CONTROLLER:
+					
+					case SND_SEQ_EVENT_CONTROLLER:
 						
-							c = ev->data.control.channel;
-							printk ("Krad ALSA Seq Control event Channel %2d: %2d %5d\n",
-									c, ev->data.control.param, ev->data.control.value);
-
-								#ifdef KLUDGE
-									// 10 cross, 13, 14
-									if ((ev->data.control.param == 10) || (ev->data.control.param == 17)) {
-										value = ((ev->data.control.value / 127.0) * 200.0) - 100.0;
-										krad_ipc_set_control (krad_alsa_seq->krad_ipc_client, "Music1", 
-															  "crossfade", value);
-									}
-									if ((ev->data.control.param == 12) || (ev->data.control.param == 13)) {
-										value = (ev->data.control.value / 127.0) * 100.0;
-										krad_ipc_set_control (krad_alsa_seq->krad_ipc_client, "Music1", 
-															  "volume", value);
-									}
-									if (ev->data.control.param == 14) {
-										value = (ev->data.control.value / 127.0) * 100.0;
-										krad_ipc_set_control (krad_alsa_seq->krad_ipc_client, "Music2", 
-															  "volume", value);
-									}
-								#endif
-
-							break;
+						c = ev->data.control.channel;
+						printf ("Krad ALSA Seq Control event Channel %2d: %2d %5d\n",
+						        c, ev->data.control.param, ev->data.control.value);
 						
-                        case SND_SEQ_EVENT_PITCHBEND:
-
-							c = ev->data.control.channel;
-
-							printk ("Pitchbender event on Channel %2d: %5d   \n",
-									c, ev->data.control.value);
-
-                        	break;
-
-                        case SND_SEQ_EVENT_CHANPRESS:
-
-							c = ev->data.control.channel;
-
-							printk ("touch event on Channel %2d: %5d   \n",
-									c, ev->data.control.value);
-
-							break;
-
-						case SND_SEQ_EVENT_NOTEON:
+#ifdef KLUDGE
 						
-							c = ev->data.note.channel;
-
-                            printk ("Note On event on Channel %2d: %5d %5d      \n",
-                            		c, ev->data.note.note,ev->data.note.velocity);
-							break;
 						
-                        case SND_SEQ_EVENT_NOTEOFF:
-							c = ev->data.note.channel;
-							printk ("Note Off event on Channel %2d: %5d      \n",
-									c, ev->data.note.note);
-							break;
-                	}
-            	}
+						for (i = 0; i < krad_alsa_seq->num_callbacks; i++) {
+							krad_alsa_seq->callbacks[i](krad_alsa_seq, ev);
+						}
+						
+
+#endif
+						
+						break;
+						
+					case SND_SEQ_EVENT_PITCHBEND:
+
+						c = ev->data.control.channel;
+						
+						printk ("Pitchbender event on Channel %2d: %5d   \n",
+						        c, ev->data.control.value);
+
+						break;
+
+					case SND_SEQ_EVENT_CHANPRESS:
+
+						c = ev->data.control.channel;
+						
+						printk ("touch event on Channel %2d: %5d   \n",
+						        c, ev->data.control.value);
+						
+						break;
+						
+					case SND_SEQ_EVENT_NOTEON:
+						
+						c = ev->data.note.channel;
+						
+						printk ("Note On event on Channel %2d: %5d %5d      \n",
+						        c, ev->data.note.note,ev->data.note.velocity);
+						break;
+						
+					case SND_SEQ_EVENT_NOTEOFF:
+						c = ev->data.note.channel;
+						printk ("Note Off event on Channel %2d: %5d      \n",
+						        c, ev->data.note.note);
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -189,11 +180,21 @@ void krad_alsa_seq_destroy (krad_alsa_seq_t *krad_alsa_seq) {
 
 krad_alsa_seq_t *krad_alsa_seq_create () {
 
+	int i;
 	krad_alsa_seq_t *krad_alsa_seq = calloc (1, sizeof(krad_alsa_seq_t));
 
 	krad_alsa_seq->buffer = calloc (1, 4000);
 
+	for (i = 0; i < MAX_CALLBACKS; i++) {
+		krad_alsa_seq->callbacks[i] = NULL;
+	}
+	krad_alsa_seq->num_callbacks = 0;
 	
 	return krad_alsa_seq;
 
+}
+
+
+void krad_alsa_seq_register_event_callback (krad_alsa_seq_t *krad_alsa_seq, t_alsa_seq_event_callback *event_callback) {	
+	krad_alsa_seq->callbacks[krad_alsa_seq->num_callbacks++] = event_callback;
 }
