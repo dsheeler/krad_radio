@@ -188,56 +188,6 @@ int krad_xmms_playback_status_callback (xmmsv_t *value, void *userdata) {
 
 }
 
-void krad_xmms_disconnect (krad_xmms_t *krad_xmms) {
-
-	if (krad_xmms->connected == 1) {
-		krad_xmms_unregister_for_broadcasts (krad_xmms);
-		xmmsc_unref (krad_xmms->connection);
-		krad_xmms->connected = 0;
-		krad_xmms->fd = 0;
-		krad_xmms->connection = NULL;
-		krad_xmms->playing_id = 0;
-
-		strcpy(krad_xmms->artist, "");
-		strcpy(krad_xmms->title, "");
-		strcpy(krad_xmms->now_playing, "");
-		strcpy(krad_xmms->playback_status_string, "");
-		sprintf (krad_xmms->playtime_string, "%d:%02d", 0, 0);
-
-		if (krad_xmms->krad_tags != NULL) {
-			krad_tags_set_tag_internal (krad_xmms->krad_tags, "artist", krad_xmms->artist);
-			krad_tags_set_tag_internal (krad_xmms->krad_tags, "title", krad_xmms->title);
-			krad_tags_set_tag_internal (krad_xmms->krad_tags, "now_playing", krad_xmms->now_playing);
-			krad_tags_set_tag_internal (krad_xmms->krad_tags, "playback_status", krad_xmms->playback_status_string);
-			krad_tags_set_tag_internal (krad_xmms->krad_tags, "playtime", krad_xmms->playtime_string);
-		}
-	}
-	printk ("Krad xmms Disconnected %s from %s", krad_xmms->sysname, krad_xmms->ipc_path);
-}
-
-void krad_xmms_unregister_for_broadcasts (krad_xmms_t *krad_xmms) {
-
-	xmmsc_result_t *result;
-	
-	result = NULL;
-	
-	result = xmmsc_broadcast_playback_status (krad_xmms->connection);
-	xmmsc_result_disconnect (result);
-	xmmsc_result_unref (result);
-	xmmsc_unref (krad_xmms->connection);
-	
-	result = xmmsc_broadcast_playback_current_id (krad_xmms->connection);
-	xmmsc_result_disconnect (result);
-	xmmsc_result_unref (result);
-	xmmsc_unref (krad_xmms->connection);
-	
-	result = xmmsc_signal_playback_playtime (krad_xmms->connection);
-	xmmsc_result_disconnect (result);
-	xmmsc_result_unref (result);
-	xmmsc_unref (krad_xmms->connection);	
-
-}
-
 void krad_xmms_register_for_broadcasts (krad_xmms_t *krad_xmms) {
 
 	xmmsc_result_t *result;
@@ -264,7 +214,30 @@ void krad_xmms_register_for_broadcasts (krad_xmms_t *krad_xmms) {
 	xmmsc_result_notifier_set (result, krad_xmms_playtime_callback, krad_xmms);
 	xmmsc_result_unref (result);
 
-	krad_xmms_handle (krad_xmms);
+//	krad_xmms_handle (krad_xmms);
+
+}
+
+void krad_xmms_unregister_for_broadcasts (krad_xmms_t *krad_xmms) {
+
+	xmmsc_result_t *result;
+	
+	result = NULL;
+	
+	result = xmmsc_broadcast_playback_status (krad_xmms->connection);
+	xmmsc_result_disconnect (result);
+	xmmsc_result_unref (result);
+	xmmsc_unref (krad_xmms->connection);
+	printk("after playback_status unregisterered");
+	result = xmmsc_broadcast_playback_current_id (krad_xmms->connection);
+	xmmsc_result_disconnect (result);
+	xmmsc_result_unref (result);
+	xmmsc_unref (krad_xmms->connection);
+	
+	result = xmmsc_signal_playback_playtime (krad_xmms->connection);
+	xmmsc_result_disconnect (result);
+	xmmsc_result_unref (result);
+	xmmsc_unref (krad_xmms->connection);	
 
 }
 
@@ -278,7 +251,7 @@ void krad_xmms_connect (krad_xmms_t *krad_xmms) {
 	krad_xmms->connection = xmmsc_init (connection_name);
 
 	if (!krad_xmms->connection) {
-		failfast ("Out of memory for new xmms connection");
+		failfast ("krad_xmms: Out of memory for new xmms connection");
 	}
 
 	if (!xmmsc_connect (krad_xmms->connection, krad_xmms->ipc_path)) {
@@ -287,7 +260,7 @@ void krad_xmms_connect (krad_xmms_t *krad_xmms) {
 		return;
 	}
 
-	printk ("Krad xmms Connected %s to %s", krad_xmms->sysname, krad_xmms->ipc_path);
+	printk ("krad_xmms: Establised connection named %s for station %s to %s", connection_name, krad_xmms->sysname, krad_xmms->ipc_path);
 
 	krad_xmms->fd = xmmsc_io_fd_get (krad_xmms->connection);
 
@@ -298,118 +271,151 @@ void krad_xmms_connect (krad_xmms_t *krad_xmms) {
 	krad_xmms_register_for_broadcasts (krad_xmms);
 }
 
+void krad_xmms_disconnect (krad_xmms_t *krad_xmms) {
+	printk ("Krad xmms: Start krad_xmms_disconnect %s from %s", krad_xmms->sysname, krad_xmms->ipc_path);
+	if (krad_xmms->connected == 1) {
+		krad_xmms_unregister_for_broadcasts (krad_xmms);
+		printk("krad_xmms: after unregistering broadcasts");
+	
+		krad_xmms->playing_id = 0;
+
+		strcpy(krad_xmms->artist, "");
+		strcpy(krad_xmms->title, "");
+		strcpy(krad_xmms->now_playing, "");
+		strcpy(krad_xmms->playback_status_string, "");
+		sprintf (krad_xmms->playtime_string, "%d:%02d", 0, 0);
+		printk("krad_xmms: before tags");
+//		if (krad_xmms->krad_tags != NULL) {
+//			krad_tags_set_tag_internal (krad_xmms->krad_tags, "artist", krad_xmms->artist);
+//			krad_tags_set_tag_internal (krad_xmms->krad_tags, "title", krad_xmms->title);
+//			krad_tags_set_tag_internal (krad_xmms->krad_tags, "now_playing", krad_xmms->now_playing);
+//			krad_tags_set_tag_internal (krad_xmms->krad_tags, "playback_status", krad_xmms->playback_status_string);
+//			krad_tags_set_tag_internal (krad_xmms->krad_tags, "playtime", krad_xmms->playtime_string);
+//		}	
+		
+		krad_xmms->connected = 0;
+		krad_xmms->fd = -1;
+		krad_xmms->connection = NULL;
+		xmmsc_unref (krad_xmms->connection);
+	}
+	printk ("Krad xmms Disconnected %s from %s", krad_xmms->sysname, krad_xmms->ipc_path);
+
+}
+
+void *krad_xmms_handler_thread (void *arg) {
+	krad_xmms_t *krad_xmms = (krad_xmms_t *)arg;
+	while (krad_xmms->handler_running == 1) {
+		if (krad_xmms->connected == 0) {
+			krad_xmms_connect(krad_xmms);
+		}
+		krad_xmms_handle (krad_xmms);	
+	}
+	return NULL;
+}
 
 void krad_xmms_handle (krad_xmms_t *krad_xmms) {
 
 	int n;
-	struct pollfd pollfds[1];
-	
+	struct pollfd pollfds[2];
+	int xmms_fd_idx, keepalive_fd_idx;
 	n = 0;	
-	pollfds[0].fd = krad_xmms->fd;
+	
+	if (krad_xmms->fd > 0) {
+		pollfds[0].fd = krad_xmms->fd;
+		if (xmmsc_io_want_out (krad_xmms->connection)) {
+			pollfds[0].events = POLLIN | POLLOUT;
+		} else {
+			pollfds[0].events = POLLIN;
+		}
 		
-	if (xmmsc_io_want_out (krad_xmms->connection)) {
-		pollfds[0].events = POLLIN | POLLOUT;
+		pollfds[1].fd = krad_xmms->handler_thread_socketpair[1];
+		pollfds[1].events = 0;
+		xmms_fd_idx = 0;
+		keepalive_fd_idx = 1;
+		n = 2;
 	} else {
-		pollfds[0].events = POLLIN;
+		pollfds[0].fd = krad_xmms->handler_thread_socketpair[1];
+		pollfds[0].events = 0;
+		xmms_fd_idx = -1;
+		keepalive_fd_idx = 0;
+		n = 1;
 	}
 	
-	n = poll (pollfds, 1, 500);
+	//printk ("about to poll %d filedescriptors: %d, %d", n, pollfds[0].fd, pollfds[1].fd);
+	n = poll (pollfds, n, 500);
 
-	if (n < 0) {
+	//printk("after the poll on these file desc: %d, %d, n: %d", pollfds[0].fd, pollfds[1].fd, n);
+	
+	if (n <= 0) {
 		return;
-	}
-
-	if (n > 0) {
-
-		for (n = 0; n < 1; n++) {
-
-			if (pollfds[n].revents) {
-
-				if ((pollfds[n].revents & POLLERR) || (pollfds[n].revents & POLLHUP)) {
+	} else {
+		if (pollfds[keepalive_fd_idx].revents & POLLHUP) {
+			printk("krad_xmms: handler_thread has received an event on its keepalive socket: %d", 
+			       pollfds[keepalive_fd_idx].revents);
+			printk("krad_xmms: handler_thread will exit");
+			pthread_exit(NULL);
+		}
+		
+		if ((xmms_fd_idx == 0) && pollfds[0].revents) {
+			
+			if ((pollfds[0].revents & POLLERR) || (pollfds[0].revents & POLLHUP)) {
+				xmmsc_io_in_handle (krad_xmms->connection);
+			} else {
+				
+				if (pollfds[0].revents & POLLIN) {
 					xmmsc_io_in_handle (krad_xmms->connection);
-					n++;
-				} else {
-
-					if (pollfds[n].revents & POLLIN) {
-						xmmsc_io_in_handle (krad_xmms->connection);
-						if (xmmsc_io_want_out (krad_xmms->connection)) {
-							pollfds[n].events = POLLIN | POLLOUT;
-						}
+					if (xmmsc_io_want_out (krad_xmms->connection)) {
+						pollfds[0].events = POLLIN | POLLOUT;
 					}
-
-					if (pollfds[n].revents & POLLOUT) {
-						if (xmmsc_io_want_out (krad_xmms->connection)) {
-							xmmsc_io_out_handle (krad_xmms->connection);
-						}
-						pollfds[n].events = POLLIN;
+				}
+				
+				if (pollfds[0].revents & POLLOUT) {
+					if (xmmsc_io_want_out (krad_xmms->connection)) {
+						xmmsc_io_out_handle (krad_xmms->connection);
 					}
+					pollfds[0].events = POLLIN;
 				}
 			}
 		}
 	}
 }
 
-void *krad_xmms_handler_thread (void *arg) {
-
-	krad_xmms_t *krad_xmms = (krad_xmms_t *)arg;
-
-	while (krad_xmms->handler_running == 1) {
-	
-		if (krad_xmms->connected == 0) {
-			sleep(KRAD_XMMS_RECONNECT_SLEEP_INTERVAL);
-			krad_xmms_connect(krad_xmms);
-		} else if (krad_xmms->connected == 1) {
-			krad_xmms_handle (krad_xmms);
-		}
-	}
-
-	return NULL;
-
-}
-
-
 void krad_xmms_start_handler (krad_xmms_t *krad_xmms) {
-
+	char error_string[256];
+	
 	if (krad_xmms->handler_running == 1) {
 		krad_xmms_stop_handler (krad_xmms);
 	}
-
+	
+	if (socketpair(AF_UNIX, SOCK_STREAM, 0, krad_xmms->handler_thread_socketpair)) {
+		strerror_r(errno, error_string, (size_t) 256);
+		printk("krad_xmms: could not create socketpair: %s",
+		       error_string);
+		return;
+	}
+	
 	krad_xmms->handler_running = 1;
 	pthread_create (&krad_xmms->handler_thread, NULL, krad_xmms_handler_thread, (void *)krad_xmms);
-
 }
-
 
 void krad_xmms_stop_handler (krad_xmms_t *krad_xmms) {
-
 	if (krad_xmms->handler_running == 1) {
 		krad_xmms->handler_running = 2;
+		printk("krad_xmms: going to shutdown the handler thread");
+		close(krad_xmms->handler_thread_socketpair[0]);
 		pthread_join (krad_xmms->handler_thread, NULL);
+		printk("krad_xmms: handler thread is joined");
 		krad_xmms->handler_running = 0;
 	}
-
-}
-
-
-void krad_xmms_destroy (krad_xmms_t *krad_xmms) {
-
-	krad_xmms_stop_handler (krad_xmms);
-
-	if (krad_xmms->connected == 1) {
-		krad_xmms_disconnect (krad_xmms);
-	}
-
-	free (krad_xmms);
-
 }
 
 krad_xmms_t *krad_xmms_create (char *sysname, char *ipc_path, krad_tags_t *krad_tags) {
 
 	krad_xmms_t *krad_xmms = calloc (1, sizeof(krad_xmms_t));
-
+	
 	strcpy (krad_xmms->sysname, sysname);
 	strcpy (krad_xmms->ipc_path, ipc_path);
-
+	
 	krad_xmms_connect (krad_xmms);
 	
 	krad_xmms_start_handler (krad_xmms);
@@ -426,3 +432,16 @@ krad_xmms_t *krad_xmms_create (char *sysname, char *ipc_path, krad_tags_t *krad_
 	return krad_xmms;
 
 }
+
+void krad_xmms_destroy (krad_xmms_t *krad_xmms) {
+
+	krad_xmms_stop_handler (krad_xmms);
+
+	if (krad_xmms->connected == 1) {
+		krad_xmms_disconnect (krad_xmms);
+	}
+
+	free (krad_xmms);
+
+}
+

@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <signal.h>
 #include <poll.h>
+#include <errno.h>
 
 #include <xmms2/xmmsclient/xmmsclient.h>
 
@@ -43,7 +44,8 @@ struct krad_xmms_St {
 
 	pthread_t handler_thread;
 	int handler_running;
-
+	int handler_thread_socketpair[2];
+	
 	int playback_status;
 	int playtime;
 	int playing_id;

@@ -562,7 +562,7 @@ void krad_mixer_portgroup_destroy (krad_mixer_t *krad_mixer, krad_mixer_portgrou
 	portgroup->active = 2;
 
 	while (portgroup->active != 0) {
-		if (krad_mixer->pusher == 0) {
+		if (1 || (krad_mixer->pusher == 0)) {
 			portgroup->active = 0;
 			break;
 		}
