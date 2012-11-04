@@ -109,9 +109,20 @@ int krad_jack_process (jack_nframes_t nframes, void *arg) {
 }
 
 void krad_jack_shutdown (void *arg) {
-
-	//jack_t *jack = (jack_t *)arg;
-
+	int p;
+	krad_jack_t *krad_jack = (krad_jack_t *) arg;
+	krad_jack->jack_shutdown_occurred = 1;
+	krad_jack->active = 0;
+	//jack_deactivate(krad_jack->client);
+	//krad_mixer_unset_pusher(krad_jack->krad_audio->krad_mixer);
+	//jack_client_close(krad_jack->client);
+	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+		if ((krad_jack->krad_audio->portgroup[p]->active != 0) && (krad_jack->krad_audio->portgroup[p]->audio_api == JACK)) {
+			krad_jack->krad_audio->portgroup[p]->active = 0;
+		}
+	}	
+	
+	
 }
 
 void krad_jack_destroy (krad_jack_t *krad_jack) {
@@ -167,7 +178,7 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
 	if ((krad_jack = calloc (1, sizeof (krad_jack_t))) == NULL) {
 		failfast ("Krad Jack memory alloc failure\n");
 	}
-
+	
 	krad_jack->krad_audio = krad_audio;
 
 	if (krad_mixer_has_pusher(krad_jack->krad_audio->krad_mixer)) {

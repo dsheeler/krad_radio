@@ -26,7 +26,7 @@ struct krad_jack_St {
 	krad_audio_t *krad_audio;
 
 	int active;
-
+	int jack_shutdown_occurred;
 	int xruns;
 	char server_name[256];
 	const char *name;
