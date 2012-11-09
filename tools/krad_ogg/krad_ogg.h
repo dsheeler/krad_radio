@@ -7,9 +7,10 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+#ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
+#endif
 #include <inttypes.h>
-#include <malloc.h>
 #include <math.h>
 #include <signal.h>
 #include <time.h>
@@ -34,6 +35,7 @@
 
 #include "krad_io.h"
 #include "krad_system.h"
+#include "krad_codec_header.h"
 #include "krad_transmitter.h"
 
 typedef struct krad_ogg_St krad_ogg_t;
@@ -44,24 +46,6 @@ typedef struct krad_ogg_track_St krad_ogg_track_t;
 #define KRAD_OGG_MAX_TRACKS 10
 
 #define KRAD_OGG_NO_SERIAL -420
-
-#ifndef KRAD_CODEC_T
-typedef enum {
-	VORBIS = 6666,
-	OPUS,
-	FLAC,
-	VP8,
-	THEORA,
-	MJPEG,
-	PNG,
-	CODEC2,
-	SKELETON,
-	HEXON,
-	DAALA,
-	NOCODEC,
-} krad_codec_t;
-#define KRAD_CODEC_T 1
-#endif
 
 struct krad_ogg_track_St {
 

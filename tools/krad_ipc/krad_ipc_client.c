@@ -1,6 +1,6 @@
 #include "krad_ipc_client.h"
 
-krad_ipc_client_t *krad_ipc_connect (char *sysname) {
+kr_client_t *kr_connect (char *sysname) {
 	
 	krad_ipc_client_t *client = calloc (1, sizeof (krad_ipc_client_t));
 	
@@ -35,7 +35,7 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname) {
 	
 		if (!client->on_linux) {
 			if(stat(client->ipc_path, &client->info) != 0) {
-				krad_ipc_disconnect(client);
+				kr_disconnect(client);
 				failfast ("Krad IPC Client: IPC PATH Failure\n");
 				return NULL;
 			}
@@ -45,7 +45,7 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname) {
 	
 	if (krad_ipc_client_init (client) == 0) {
 		printke ("Krad IPC Client: Failed to init!");
-		krad_ipc_disconnect (client);
+		kr_disconnect (client);
 		return NULL;
 	}
 
@@ -469,10 +469,10 @@ void krad_radio_watchdog_check_daemon (char *sysname, char *launch_script) {
 	if (fork() == 0) {
 		if (fork() == 0) {
 			client = NULL;
-			client = krad_ipc_connect (sysname);
+			client = kr_connect (sysname);
 	
 			if (client != NULL) {
-				krad_ipc_disconnect (client);
+				kr_disconnect (client);
 				client = NULL;
 			} else {
 				krad_radio_destroy_daemon (sysname);
@@ -968,6 +968,46 @@ void krad_ipc_disable_osc (krad_ipc_client_t *client) {
 
 }
 
+void kr_mixer_plug_portgroup (krad_ipc_client_t *client, char *name, char *remote_name) {
+
+	//uint64_t ipc_command;
+	uint64_t command;
+	uint64_t plug;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_PLUG_PORTGROUP, &plug);
+
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
+	krad_ebml_finish_element (client->krad_ebml, plug);
+	krad_ebml_finish_element (client->krad_ebml, command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+void kr_mixer_unplug_portgroup (krad_ipc_client_t *client, char *name, char *remote_name) {
+
+	//uint64_t ipc_command;
+	uint64_t command;
+	uint64_t unplug;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_UNPLUG_PORTGROUP, &unplug);
+
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
+	krad_ebml_finish_element (client->krad_ebml, unplug);
+	krad_ebml_finish_element (client->krad_ebml, command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
 void krad_ipc_mixer_create_portgroup (krad_ipc_client_t *client, char *name, char *direction, int channels) {
 
 	//uint64_t ipc_command;
@@ -1141,6 +1181,81 @@ void krad_ipc_set_handler_callback (krad_ipc_client_t *client, int handler (krad
 
 }
 
+void kr_mixer_add_effect (krad_ipc_client_t *client, char *portgroup_name, char *effect_name) {
+
+	//uint64_t ipc_command;
+	uint64_t mixer_command;
+	uint64_t add_effect;
+	
+	mixer_command = 0;
+	add_effect = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_ADD_EFFECT, &add_effect);
+
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_EFFECT_NAME, effect_name);
+
+	krad_ebml_finish_element (client->krad_ebml, add_effect);
+	krad_ebml_finish_element (client->krad_ebml, mixer_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+void kr_mixer_remove_effect (krad_ipc_client_t *client, char *portgroup_name, int effect_num) {
+
+	//uint64_t ipc_command;
+	uint64_t mixer_command;
+	uint64_t remove_effect;
+	
+	mixer_command = 0;
+	remove_effect = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_REMOVE_EFFECT, &remove_effect);
+
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
+	krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_EFFECT_NUM, effect_num);
+
+	krad_ebml_finish_element (client->krad_ebml, remove_effect);
+	krad_ebml_finish_element (client->krad_ebml, mixer_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+void krad_ipc_set_effect_control (krad_ipc_client_t *client, char *portgroup_name, int effect_num, 
+                                  char *control_name, int subunit, float control_value) {
+
+	//uint64_t ipc_command;
+	uint64_t mixer_command;
+	uint64_t set_control;
+	
+	mixer_command = 0;
+	set_control = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL, &set_control);
+
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
+	krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_EFFECT_NUM, effect_num);
+	krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_CONTROL_NAME, control_name);
+	krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT, subunit);
+	krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_MIXER_CONTROL_VALUE, control_value);
+
+	krad_ebml_finish_element (client->krad_ebml, set_control);
+	krad_ebml_finish_element (client->krad_ebml, mixer_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
 
 void krad_ipc_set_control (krad_ipc_client_t *client, char *portgroup_name, char *control_name, float control_value) {
 
@@ -1752,7 +1867,7 @@ void krad_ipc_compositor_get_frame_size (krad_ipc_client_t *client) {
 
 void krad_ipc_create_capture_link (krad_ipc_client_t *client, krad_link_video_source_t video_source, char *device,
 								   int width, int height, int fps_numerator, int fps_denominator,
-								   krad_link_av_mode_t av_mode, char *audio_input) {
+								   krad_link_av_mode_t av_mode, char *audio_input, char *passthru_codec) {
 
 	//uint64_t ipc_command;
 	uint64_t linker_command;
@@ -1775,6 +1890,10 @@ void krad_ipc_create_capture_link (krad_ipc_client_t *client, krad_link_video_so
 	if (video_source == DECKLINK) {
 		krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_CAPTURE_DECKLINK_AUDIO_INPUT, audio_input);
 	}
+	
+	if (video_source == V4L2) {
+		krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_CAPTURE_PASSTHRU_CODEC, passthru_codec);
+	}	
 	
 	krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_WIDTH, width);
 	krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_HEIGHT, height);
@@ -1891,6 +2010,7 @@ void krad_ipc_create_transmit_link (krad_ipc_client_t *client, krad_link_av_mode
 	uint64_t linker_command;
 	uint64_t create_link;
 	uint64_t link;
+	int passthru;	
 	
 	krad_codec_t audio_codec;
 	krad_codec_t video_codec;
@@ -1900,29 +2020,15 @@ void krad_ipc_create_transmit_link (krad_ipc_client_t *client, krad_link_av_mode
 	
 	audio_codec = VORBIS;
 	video_codec = VP8;
-	
+	passthru = 0;
+
 	if (codecs != NULL) {
-	
-		if (strstr(codecs, "flac") != NULL) {
-			audio_codec = FLAC;
+		audio_codec = krad_string_to_audio_codec (codecs);
+		video_codec = krad_string_to_video_codec (codecs);
+		if (strstr(codecs, "pass") != NULL) {
+			passthru = 1;
 		}
-		if (strstr(codecs, "vorbis") != NULL) {
-			audio_codec = VORBIS;
-		}
-		if (strstr(codecs, "opus") != NULL) {
-			audio_codec = OPUS;
-		}			
-		if (strstr(codecs, "vp8") != NULL) {
-			video_codec = VP8;
-		}
-		if (strstr(codecs, "theora") != NULL) {
-			video_codec = THEORA;
-		}
-		if (strstr(codecs, "mjpeg") != NULL) {
-			video_codec = MJPEG;
-		}		
 	}
-	
 	
 	linker_command = 0;
 	//set_control = 0;
@@ -1939,25 +2045,24 @@ void krad_ipc_create_transmit_link (krad_ipc_client_t *client, krad_link_av_mode
 		krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_CODEC, krad_codec_to_string (video_codec));
 		
 		if (video_codec == VP8) {
-			if ((video_width == 0) || (video_height == 0)) {
-				video_width = 960;
-				video_height = 540;
-			}
-		
 			if (video_bitrate == 0) {
 				video_bitrate = 92 * 8;
 			}
 		}
 		
 		if (video_codec == THEORA) {
-			if ((video_width == 0) || (video_height == 0)) {
-				video_width = 1280;
-				video_height = 720;
+			if ((video_width % 16) || (video_height % 16)) {
+				video_width = 0;
+				video_height = 0;
 			}
 			if (video_bitrate == 0) {
 				video_bitrate = 31;
 			}
-		}		
+		}
+		
+		if ((video_codec == MJPEG) || (video_codec == H264)) {
+			krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_USE_PASSTHRU_CODEC, passthru);
+		}
 		
 		krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_WIDTH, video_width);
 		krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_HEIGHT, video_height);
@@ -2055,6 +2160,7 @@ void krad_ipc_create_record_link (krad_ipc_client_t *client, krad_link_av_mode_t
 	uint64_t linker_command;
 	uint64_t create_link;
 	uint64_t link;
+	int passthru;
 	
 	krad_codec_t audio_codec;
 	krad_codec_t video_codec;
@@ -2064,29 +2170,15 @@ void krad_ipc_create_record_link (krad_ipc_client_t *client, krad_link_av_mode_t
 	
 	audio_codec = VORBIS;
 	video_codec = VP8;
-	
+	passthru = 0;
+		
 	if (codecs != NULL) {
-	
-		if (strstr(codecs, "flac") != NULL) {
-			audio_codec = FLAC;
+		audio_codec = krad_string_to_audio_codec (codecs);
+		video_codec = krad_string_to_video_codec (codecs);
+		if (strstr(codecs, "pass") != NULL) {
+			passthru = 1;
 		}
-		if (strstr(codecs, "vorbis") != NULL) {
-			audio_codec = VORBIS;
-		}
-		if (strstr(codecs, "opus") != NULL) {
-			audio_codec = OPUS;
-		}			
-		if (strstr(codecs, "vp8") != NULL) {
-			video_codec = VP8;
-		}
-		if (strstr(codecs, "theora") != NULL) {
-			video_codec = THEORA;
-		}
-		if (strstr(codecs, "mjpeg") != NULL) {
-			video_codec = MJPEG;
-		}		
 	}
-	
 	
 	linker_command = 0;
 	//set_control = 0;
@@ -2103,30 +2195,29 @@ void krad_ipc_create_record_link (krad_ipc_client_t *client, krad_link_av_mode_t
 		krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_CODEC, krad_codec_to_string (video_codec));
 		
 		if (video_codec == VP8) {
-			if ((video_width == 0) || (video_height == 0)) {
-				video_width = 960;
-				video_height = 540;
-			}
-		
 			if (video_bitrate == 0) {
-				video_bitrate = 92 * 8;
+				video_bitrate = 140 * 8;
 			}
 		}
 		
 		if (video_codec == THEORA) {
-			if ((video_width == 0) || (video_height == 0)) {
-				video_width = 1280;
-				video_height = 720;
+			if ((video_width % 16) || (video_height % 16)) {
+				video_width = 0;
+				video_height = 0;
 			}
 			if (video_bitrate == 0) {
-				video_bitrate = 31;
+				video_bitrate = 41;
 			}
+		}
+		
+		if ((video_codec == MJPEG) || (video_codec == H264)) {
+			krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_USE_PASSTHRU_CODEC, passthru);
 		}
 
 		krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_WIDTH, video_width);
 		krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_VIDEO_HEIGHT, video_height);
 		
-		if (video_codec == VP8) {
+		if ((video_codec == VP8) || (video_codec == H264)) {
 			if (video_bitrate < 100) {
 				video_bitrate = 100;
 			}
@@ -3209,101 +3300,101 @@ int krad_ipc_client_read_portgroup ( krad_ipc_client_t *client, char *portname, 
 	bytes_read += ebml_data_size + 9;
 	
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP) {
-		//printf("hrm wtf\n");
+		//printk ("hrm wtf");
 	} else {
-		//printf("tag size %zu\n", ebml_data_size);
+		//printk ("tag size %"PRIu64"", ebml_data_size);
 	}
 	
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_NAME) {
-		//printf("hrm wtf2\n");
+		//printk ("hrm wtf2");
 	} else {
-		//printf("tag name size %zu\n", ebml_data_size);
+		//printk ("tag name size %"PRIu64"", ebml_data_size);
 	}
 
 	krad_ebml_read_string (client->krad_ebml, portname, ebml_data_size);
 	
-	//printf("\nInput name: %s\n", portname);
+	//printk ("Input name: %s", portname);
 	
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS) {
-		//printf("hrm wtf3\n");
+		//printk ("hrm wtf3");
 	} else {
-		//printf("tag value size %zu\n", ebml_data_size);
+		//printk ("tag value size %"PRIu64"", ebml_data_size);
 	}
 
 	channels = krad_ebml_read_number (client->krad_ebml, ebml_data_size);
 	
-	printkd ("Channels: %d", channels);
+	printk  ("Channels: %d", channels);
 
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_TYPE) {
-		//printf("hrm wtf2\n");
+		//printk ("hrm wtf2");
 	} else {
-		//printf("tag name size %zu\n", ebml_data_size);
+		//printk ("tag name size %"PRIu64"", ebml_data_size);
 	}
 
 	krad_ebml_read_string (client->krad_ebml, string, ebml_data_size);
 	
-	//printf("Type: %s\n", string);	
+	//printk ("Type: %s", string);	
 	
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME) {
-		//printf("hrm wtf3\n");
+		//printk ("hrm wtf3");
 	} else {
-		//printf("VOLUME value size %zu\n", ebml_data_size);
+		//printk ("VOLUME value size %"PRIu64"", ebml_data_size);
 	}
 
 	floaty = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
 	
 	*volume = floaty;
 	
-	//printf("Volume: %f\n", floaty);
+	//printk ("Volume: %f", floaty);
 	
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_MIXBUS) {
-		//printf("hrm wtf2\n");
+		//printk ("hrm wtf2");
 	} else {
-		//printf("tag name size %zu\n", ebml_data_size);
+		//printk ("tag name size %"PRIu64"", ebml_data_size);
 	}
 
 	krad_ebml_read_string (client->krad_ebml, string, ebml_data_size);	
 	
-	//printf("Bus: %s\n", string);
+	//printk ("Bus: %s", string);
 
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME) {
-		//printf("hrm wtf2\n");
+		//printk ("hrm wtf2");
 	} else {
-		//printf("tag name size %zu\n", ebml_data_size);
+		//printk ("tag name size %"PRIu64"", ebml_data_size);
 	}
 
 	krad_ebml_read_string (client->krad_ebml, crossfade_name, ebml_data_size);	
 	
 	
 	if (strlen(crossfade_name)) {
-		//printf("Crossfade With: %s\n", crossfade_name);	
+		//printk ("Crossfade With: %s", crossfade_name);	
 	}
 
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE) {
-		//printf("hrm wtf3\n");
+		//printk ("hrm wtf3");
 	} else {
-		//printf("VOLUME value size %zu\n", ebml_data_size);
+		//printk ("VOLUME value size %"PRIu64"", ebml_data_size);
 	}
 
 	floaty = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
 	
 	if (strlen(crossfade_name)) {
 		*crossfade = floaty;
-		//printf("Crossfade: %f\n", floaty);
+		//printk ("Crossfade: %f", floaty);
 	} else {
 		*crossfade = 0.0f;
 	}
@@ -3311,9 +3402,9 @@ int krad_ipc_client_read_portgroup ( krad_ipc_client_t *client, char *portname, 
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
 
 	if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2) {
-		//printf("hrm wtf3\n");
+		//printk ("hrm wtf3");
 	} else {
-		//printf("VOLUME value size %zu\n", ebml_data_size);
+		//printk ("VOLUME value size %"PRIu64"", ebml_data_size);
 	}
 	
 	*has_xmms2 = krad_ebml_read_number (client->krad_ebml, ebml_data_size);
@@ -3321,11 +3412,6 @@ int krad_ipc_client_read_portgroup ( krad_ipc_client_t *client, char *portname, 
 	return bytes_read;
 	
 }
-
-#define EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS 0xE3
-#define EBML_ID_KRAD_MIXER_PORTGROUP_TYPE 0xE4
-#define EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME 0xE5
-#define EBML_ID_KRAD_MIXER_PORTGROUP_MIXBUS 0xE6
 
 void krad_ipc_client_read_tag_inner ( krad_ipc_client_t *client, char **tag_item, char **tag_name, char **tag_value ) {
 
@@ -3530,7 +3616,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 					case EBML_ID_KRAD_MIXER_SAMPLE_RATE:
 						//krad_ipc_client_read_portgroup_inner ( client, &tag_name, &tag_value );
 						number = krad_ebml_read_number (client->krad_ebml, ebml_data_size);
-						printf ("Krad Mixer Sample Rate: %"PRIu64"", number );
+						printf ("Krad Mixer Sample Rate: %"PRIu64"\n", number );
 						break;
 						
 					case EBML_ID_KRAD_MIXER_JACK_RUNNING:
@@ -3643,6 +3729,371 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 	}
 }
 
+void kr_audioport_destroy_cmd (kr_client_t *client) {
+
+	//uint64_t ipc_command;
+	uint64_t compositor_command;
+	uint64_t destroy_audioport;
+	
+	compositor_command = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &compositor_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_DESTROY, &destroy_audioport);
+
+	//krad_ebml_write_int8 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_NUMBER, number);
+
+	krad_ebml_finish_element (client->krad_ebml, destroy_audioport);
+	krad_ebml_finish_element (client->krad_ebml, compositor_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+void kr_audioport_create_cmd (kr_client_t *client, krad_mixer_portgroup_direction_t direction) {
+
+	//uint64_t ipc_command;
+	uint64_t compositor_command;
+	uint64_t create_audioport;
+	
+	compositor_command = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &compositor_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_CREATE, &create_audioport);
+
+	if (direction == OUTPUT) {
+		krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, "output");
+	} else {
+		krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, "input");
+	}
+	
+	krad_ebml_finish_element (client->krad_ebml, create_audioport);
+	krad_ebml_finish_element (client->krad_ebml, compositor_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+void kr_videoport_destroy_cmd (kr_client_t *client) {
+
+	//uint64_t ipc_command;
+	uint64_t compositor_command;
+	uint64_t destroy_videoport;
+	
+	compositor_command = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY, &destroy_videoport);
+
+	//krad_ebml_write_int8 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_NUMBER, number);
+
+	krad_ebml_finish_element (client->krad_ebml, destroy_videoport);
+	krad_ebml_finish_element (client->krad_ebml, compositor_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+void kr_videoport_create_cmd (kr_client_t *client) {
+
+	//uint64_t ipc_command;
+	uint64_t compositor_command;
+	uint64_t create_videoport;
+	
+	compositor_command = 0;
+
+	//krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_IPC_CMD, &ipc_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE, &create_videoport);
+
+	//krad_ebml_write_int8 (client->krad_ebml, EBML_ID_KRAD_LINK_LINK_NUMBER, number);
+
+	krad_ebml_finish_element (client->krad_ebml, create_videoport);
+	krad_ebml_finish_element (client->krad_ebml, compositor_command);
+	//krad_ebml_finish_element (client->krad_ebml, ipc_command);
+		
+	krad_ebml_write_sync (client->krad_ebml);
+
+}
+
+int krad_ipc_client_sendfd (kr_client_t *client, int fd) {
+	char buf[1];
+	struct iovec iov;
+	struct msghdr msg;
+	struct cmsghdr *cmsg;
+	int n;
+	char cms[CMSG_SPACE(sizeof(int))];
+
+	buf[0] = 0;
+	iov.iov_base = buf;
+	iov.iov_len = 1;
+
+	memset(&msg, 0, sizeof msg);
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+	msg.msg_control = (caddr_t)cms;
+	msg.msg_controllen = CMSG_LEN(sizeof(int));
+
+	cmsg = CMSG_FIRSTHDR(&msg);
+	cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+	cmsg->cmsg_level = SOL_SOCKET;
+	cmsg->cmsg_type = SCM_RIGHTS;
+	memmove(CMSG_DATA(cmsg), &fd, sizeof(int));
+
+	if((n=sendmsg(client->sd, &msg, 0)) != iov.iov_len)
+		    return 0;
+	return 1;
+}
+
+float *kr_audioport_get_buffer (kr_audioport_t *kr_audioport, int channel) {
+	return (float *)kr_audioport->kr_shm->buffer + (channel * 1600);
+}
+
+
+void kr_audioport_set_callback (kr_audioport_t *kr_audioport, int callback (uint32_t, void *), void *pointer) {
+
+	kr_audioport->callback = callback;
+	kr_audioport->pointer = pointer;
+
+}
+
+void *kr_audioport_process_thread (void *arg) {
+
+	kr_audioport_t *kr_audioport = (kr_audioport_t *)arg;
+
+	krad_system_set_thread_name ("krc_audioport");
+
+	char buf[1];
+
+	while (kr_audioport->active == 1) {
+	
+		// wait for socket to have a byte
+		read (kr_audioport->sd, buf, 1);
+	
+		//kr_audioport->callback (kr_audioport->kr_shm->buffer, kr_audioport->pointer);
+		kr_audioport->callback (1600, kr_audioport->pointer);
+
+		// write a byte to socket
+		write (kr_audioport->sd, buf, 1);
+
+
+	}
+
+
+	return NULL;
+
+}
+
+void kr_audioport_activate (kr_audioport_t *kr_audioport) {
+	if ((kr_audioport->active == 0) && (kr_audioport->callback != NULL)) {
+		pthread_create (&kr_audioport->process_thread, NULL, kr_audioport_process_thread, (void *)kr_audioport);
+		kr_audioport->active = 1;
+	}
+}
+
+void kr_audioport_deactivate (kr_audioport_t *kr_audioport) {
+
+	if (kr_audioport->active == 1) {
+		kr_audioport->active = 2;
+		pthread_join (kr_audioport->process_thread, NULL);
+		kr_audioport->active = 0;
+	}
+}
+
+kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_direction_t direction) {
+
+	kr_audioport_t *kr_audioport;
+	int sockets[2];
+
+	if (client->tcp_port != 0) {
+		// Local clients only
+		return NULL;
+	}
+
+	kr_audioport = calloc (1, sizeof(kr_audioport_t));
+
+	if (kr_audioport == NULL) {
+		return NULL;
+	}
+
+	kr_audioport->client = client;
+	kr_audioport->direction = direction;
+
+	kr_audioport->kr_shm = kr_shm_create (kr_audioport->client);
+
+	//sprintf (kr_audioport->kr_shm->buffer, "waa hoo its yaytime");
+
+	if (kr_audioport->kr_shm == NULL) {
+		free (kr_audioport);
+		return NULL;
+	}
+
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
+		kr_shm_destroy (kr_audioport->kr_shm);
+		free (kr_audioport);
+		return NULL;
+    }
+
+	kr_audioport->sd = sockets[0];
+	
+	printf ("sockets %d and %d\n", sockets[0], sockets[1]);
+	
+	kr_audioport_create_cmd (kr_audioport->client, kr_audioport->direction);
+	//FIXME use a return message from daemon to indicate ready to receive fds
+	usleep (33000);
+	krad_ipc_client_sendfd (kr_audioport->client, kr_audioport->kr_shm->fd);
+	usleep (33000);
+	krad_ipc_client_sendfd (kr_audioport->client, sockets[1]);
+	usleep (33000);
+	return kr_audioport;
+
+}
+
+void kr_audioport_destroy (kr_audioport_t *kr_audioport) {
+
+	if (kr_audioport->active == 1) {
+		kr_audioport_deactivate (kr_audioport);
+	}
+
+	kr_audioport_destroy_cmd (kr_audioport->client);
+
+	if (kr_audioport != NULL) {
+		if (kr_audioport->sd != 0) {
+			close (kr_audioport->sd);
+			kr_audioport->sd = 0;
+		}
+		if (kr_audioport->kr_shm != NULL) {
+			kr_shm_destroy (kr_audioport->kr_shm);
+			kr_audioport->kr_shm = NULL;
+		}
+		free(kr_audioport);
+	}
+}
+
+void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void *, void *), void *pointer) {
+
+	kr_videoport->callback = callback;
+	kr_videoport->pointer = pointer;
+
+}
+
+void *kr_videoport_process_thread (void *arg) {
+
+	kr_videoport_t *kr_videoport = (kr_videoport_t *)arg;
+
+	krad_system_set_thread_name ("krc_videoport");
+
+	char buf[1];
+
+	while (kr_videoport->active == 1) {
+	
+		// wait for socket to have a byte
+		read (kr_videoport->sd, buf, 1);
+	
+		kr_videoport->callback (kr_videoport->kr_shm->buffer, kr_videoport->pointer);
+
+
+		// write a byte to socket
+		write (kr_videoport->sd, buf, 1);
+
+
+	}
+
+
+	return NULL;
+
+}
+
+void kr_videoport_activate (kr_videoport_t *kr_videoport) {
+	if ((kr_videoport->active == 0) && (kr_videoport->callback != NULL)) {
+		pthread_create (&kr_videoport->process_thread, NULL, kr_videoport_process_thread, (void *)kr_videoport);
+		kr_videoport->active = 1;
+	}
+}
+
+void kr_videoport_deactivate (kr_videoport_t *kr_videoport) {
+
+	if (kr_videoport->active == 1) {
+		kr_videoport->active = 2;
+		pthread_join (kr_videoport->process_thread, NULL);
+		kr_videoport->active = 0;
+	}
+}
+
+kr_videoport_t *kr_videoport_create (kr_client_t *client) {
+
+	kr_videoport_t *kr_videoport;
+	int sockets[2];
+
+	if (client->tcp_port != 0) {
+		// Local clients only
+		return NULL;
+	}
+
+	kr_videoport = calloc (1, sizeof(kr_videoport_t));
+
+	if (kr_videoport == NULL) {
+		return NULL;
+	}
+
+	kr_videoport->client = client;
+
+	kr_videoport->kr_shm = kr_shm_create (kr_videoport->client);
+
+	sprintf (kr_videoport->kr_shm->buffer, "waa hoo its yaytime");
+
+	if (kr_videoport->kr_shm == NULL) {
+		free (kr_videoport);
+		return NULL;
+	}
+
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
+		kr_shm_destroy (kr_videoport->kr_shm);
+		free (kr_videoport);
+		return NULL;
+    }
+
+	kr_videoport->sd = sockets[0];
+	
+	printf ("sockets %d and %d\n", sockets[0], sockets[1]);
+	
+	kr_videoport_create_cmd (kr_videoport->client);
+	//FIXME use a return message from daemon to indicate ready to receive fds
+	usleep (33000);
+	krad_ipc_client_sendfd (kr_videoport->client, kr_videoport->kr_shm->fd);
+	usleep (33000);
+	krad_ipc_client_sendfd (kr_videoport->client, sockets[1]);
+	usleep (33000);
+	return kr_videoport;
+
+}
+
+void kr_videoport_destroy (kr_videoport_t *kr_videoport) {
+
+	if (kr_videoport->active == 1) {
+		kr_videoport_deactivate (kr_videoport);
+	}
+
+	kr_videoport_destroy_cmd (kr_videoport->client);
+
+	if (kr_videoport != NULL) {
+		if (kr_videoport->sd != 0) {
+			close (kr_videoport->sd);
+			kr_videoport->sd = 0;
+		}
+		if (kr_videoport->kr_shm != NULL) {
+			kr_shm_destroy (kr_videoport->kr_shm);
+			kr_videoport->kr_shm = NULL;
+		}
+		free(kr_videoport);
+	}
+}
+
 void kr_shm_destroy (kr_shm_t *kr_shm) {
 
 	if (kr_shm != NULL) {
@@ -3668,7 +4119,7 @@ kr_shm_t *kr_shm_create (krad_ipc_client_t *client) {
 		return NULL;
 	}
 
-	kr_shm->size = 1000000;
+	kr_shm->size = 960 * 540 * 4 * 2;
 
 	kr_shm->fd = mkstemp (filename);
 	if (kr_shm->fd < 0) {
@@ -3748,7 +4199,7 @@ int krad_ipc_recv (krad_ipc_client_t *client, char *buffer, int size) {
 	return bytes;
 }
 
-void krad_ipc_disconnect(krad_ipc_client_t *client) {
+void kr_disconnect(krad_ipc_client_t *client) {
 
 	if (client != NULL) {
 		if (client->buffer != NULL) {

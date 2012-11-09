@@ -1,30 +1,25 @@
+#ifndef KRAD_MIXER_H
+#define KRAD_MIXER_H
+#include "krad_mixer_common.h"
+#include "krad_sfx.h"
+
 typedef struct krad_mixer_St krad_mixer_t;
 typedef struct krad_mixer_portgroup_St krad_mixer_portgroup_t;
+typedef struct krad_mixer_local_portgroup_St krad_mixer_local_portgroup_t;
 typedef struct krad_mixer_portgroup_St krad_mixer_mixbus_t;
 typedef struct krad_mixer_crossfade_group_St krad_mixer_crossfade_group_t;
 
 #define KRAD_MIXER_MAX_PORTGROUPS 20
 #define KRAD_MIXER_MAX_CHANNELS 8
 #define KRAD_MIXER_DEFAULT_SAMPLE_RATE 48000
-#define KRAD_MIXER_DEFAULT_TICKER_PERIOD 512
+#define KRAD_MIXER_DEFAULT_TICKER_PERIOD 1600
+#define KRAD_MIXER_RMS_WINDOW_SIZE_MS 125
 
 #include "krad_radio.h"
 
-#ifndef KRAD_MIXER_H
-#define KRAD_MIXER_H
-
-#include "hardlimiter.h"
-
-#include "krad_mixer_common.h"
-
-typedef enum {
-	OUTPUT,
-	INPUT,
-	MIX,
-} krad_mixer_portgroup_direction_t;
-
 typedef enum {
 	KRAD_TONE,
+	KLOCALSHM,
 	KRAD_AUDIO, /* i.e local audio i/o */
 	KRAD_LINK, /* i.e. remote audio i/o */
 	MIXBUS,	/* i.e. mixer internal i/o */
@@ -49,6 +44,17 @@ struct krad_mixer_crossfade_group_St {
 
 };
 
+
+struct krad_mixer_local_portgroup_St {
+	int local;
+	int shm_sd;
+	int msg_sd;
+	char *local_buffer;
+	int local_buffer_size;
+	krad_mixer_portgroup_direction_t direction;	
+};
+
+
 struct krad_mixer_portgroup_St {
 	
 	char sysname[256];
@@ -67,10 +73,14 @@ struct krad_mixer_portgroup_St {
 	float new_volume_actual[KRAD_MIXER_MAX_CHANNELS];
 	int last_sign[KRAD_MIXER_MAX_CHANNELS];
 
+	float rms[KRAD_MIXER_MAX_CHANNELS];
 	float peak[KRAD_MIXER_MAX_CHANNELS];
 	float *samples[KRAD_MIXER_MAX_CHANNELS];
 
 	float **mapped_samples[KRAD_MIXER_MAX_CHANNELS];
+
+  int delay;
+  int delay_actual;
 
 	int active;
 	
@@ -79,6 +89,8 @@ struct krad_mixer_portgroup_St {
 
 	krad_xmms_t *krad_xmms;
 
+  kr_effects_t *effects;
+  kr_rushlimiter_t *kr_rushlimiter[KRAD_MIXER_MAX_CHANNELS];
 };
 
 
@@ -95,6 +107,8 @@ struct krad_mixer_St {
 	char *name;
 	int sample_rate;
     
+  int rms_window_size;
+
 	krad_mixer_mixbus_t *master_mix;
 
 	krad_mixer_portgroup_t *tone_port;
@@ -107,6 +121,11 @@ struct krad_mixer_St {
 	krad_ipc_server_t *krad_ipc;
 
 };
+
+
+void krad_mixer_local_audio_samples_callback (int nframes, krad_mixer_local_portgroup_t *krad_mixer_local_portgroup,
+											  float **samples);
+
 
 void krad_mixer_portgroup_xmms2_cmd (krad_mixer_t *krad_mixer, char *portgroupname, char *xmms2_cmd);
 void krad_mixer_bind_portgroup_xmms2 (krad_mixer_t *krad_mixer, char *portgroupname, char *ipc_path);

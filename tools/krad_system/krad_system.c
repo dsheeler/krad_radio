@@ -62,6 +62,7 @@ void krad_system_log_off () {
 
 	pthread_mutex_lock (&krad_system.log_lock);
 	if (krad_system.log_fd > 0) {
+		fsync (krad_system.log_fd);
 		close (krad_system.log_fd);
 		krad_system.log_fd = 0;
 	}
@@ -72,6 +73,8 @@ void krad_system_log_off () {
 void *krad_system_monitor_cpu_thread (void *arg) {
 
 	krad_system_cpu_monitor_t *kcm;
+	
+	krad_system_set_thread_name ("kr_cpu_mon");	
 	
 	printk ("Krad System CPU Monitor On");
 
@@ -304,6 +307,50 @@ void krad_system_daemonize () {
 		exit(EXIT_FAILURE);
 	}
         
+}
+
+void krad_system_set_thread_name (char *name) {
+	if ((name == NULL || strlen (name) >= 15) ||
+	    (prctl (PR_SET_NAME, (unsigned long) name, 0, 0, 0) != 0)) {
+		printke ("Could not set thread name: %s", name);
+	}
+}
+
+uint64_t ktime() {
+
+	uint64_t seconds;
+	struct timespec ts;
+
+	clock_gettime (CLOCK_REALTIME, &ts);
+	seconds = ts.tv_sec;
+	
+	return seconds;
+
+}
+
+int krad_system_set_socket_nonblocking (int sd) {
+
+	int ret;
+	int flags;
+	
+	flags = 0;
+	ret = 0;
+
+	flags = fcntl (sd, F_GETFL, 0);
+	if (flags == -1) {
+		failfast ("Krad System: error on syscall fcntl F_GETFL");
+		return -1;		
+	}
+
+	flags |= O_NONBLOCK;
+	
+	ret = fcntl (sd, F_SETFL, flags);
+	if (ret == -1) {
+		failfast ("Krad System: error on syscall fcntl F_SETFL");
+		return -1;
+	}
+	
+	return sd;
 }
 
 int krad_valid_sysname (char *sysname) {

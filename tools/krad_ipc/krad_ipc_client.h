@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <math.h>
 #include <signal.h>
 #include <inttypes.h>
@@ -23,11 +22,12 @@
 #include <pthread.h>
 #include <sys/mman.h>
 
+#include "krad_mixer_common.h"
 #include "krad_radio_ipc.h"
 #include "krad_system.h"
 #include "krad_ebml.h"
 #include "krad_link_common.h"
-#include "krad_mixer_common.h"
+
 
 #define KRAD_IPC_BUFFER_SIZE 16384
 #ifndef KRAD_IPC_CLIENT
@@ -35,8 +35,8 @@
 
 #define KRAD_IPC_CLIENT_DOCTYPE "krad_ipc_client"
 #define KRAD_IPC_SERVER_DOCTYPE "krad_ipc_server"
-#define KRAD_IPC_DOCTYPE_VERSION 6
-#define KRAD_IPC_DOCTYPE_READ_VERSION 6
+#define KRAD_IPC_DOCTYPE_VERSION 10
+#define KRAD_IPC_DOCTYPE_READ_VERSION 10
 #define EBML_ID_KRAD_IPC_CMD 0x4444
 
 typedef struct krad_radio_watchdog_St krad_radio_watchdog_t;
@@ -49,19 +49,55 @@ struct krad_radio_watchdog_St {
 
 
 typedef struct kr_shm_St kr_shm_t;
+typedef struct kr_videoport_St kr_videoport_t;
+typedef struct kr_audioport_St kr_audioport_t;
+typedef struct kr_client_St kr_client_t;
+typedef struct kr_client_St krad_ipc_client_t;
 
 struct kr_shm_St {
 
 	int fd;
-	void *buffer;
+	char *buffer;
 	uint64_t size;
 
 };
 
+struct kr_videoport_St {
 
-typedef struct krad_ipc_client_St krad_ipc_client_t;
+	int width;
+	int height;
+	kr_shm_t *kr_shm;
+	kr_client_t *client;
+	int sd;
+	
+	int (*callback)(void *, void *);
+	void *pointer;
+	
+	int active;
+	
+	pthread_t process_thread;	
+	
+};
 
-struct krad_ipc_client_St {
+struct kr_audioport_St {
+
+	int samplerate;
+	kr_shm_t *kr_shm;
+	kr_client_t *client;
+	int sd;
+	
+	krad_mixer_portgroup_direction_t direction;
+	
+	int (*callback)(uint32_t, void *);
+	void *pointer;
+	
+	int active;
+	
+	pthread_t process_thread;	
+	
+};
+
+struct kr_client_St {
 	char sysname[64];
 	int flags;
 	struct sockaddr_un saddr;
@@ -83,6 +119,21 @@ struct krad_ipc_client_St {
 
 };
 
+float *kr_audioport_get_buffer (kr_audioport_t *kr_audioport, int channel);
+
+void kr_audioport_set_callback (kr_audioport_t *kr_audioport, int callback (uint32_t, void *), void *pointer);
+void kr_audioport_activate (kr_audioport_t *kr_audioport);
+void kr_audioport_deactivate (kr_audioport_t *kr_audioport);
+
+kr_audioport_t *kr_audioport_create (krad_ipc_client_t *client, krad_mixer_portgroup_direction_t direction);
+void kr_audioport_destroy (kr_audioport_t *kr_audioport);
+
+void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void *, void *), void *pointer);
+void kr_videoport_activate (kr_videoport_t *kr_videoport);
+void kr_videoport_deactivate (kr_videoport_t *kr_videoport);
+
+kr_videoport_t *kr_videoport_create (krad_ipc_client_t *client);
+void kr_videoport_destroy (kr_videoport_t *kr_videoport);
 
 kr_shm_t *kr_shm_create (krad_ipc_client_t *client);
 void kr_shm_destroy (kr_shm_t *kr_shm);
@@ -141,6 +192,9 @@ void krad_ipc_create_playback_link (krad_ipc_client_t *client, char *path);
 void krad_ipc_create_remote_playback_link (krad_ipc_client_t *client, char *host, int port, char *mount);
 int krad_link_rep_to_string (krad_link_rep_t *krad_link, char *text);
 
+void kr_mixer_plug_portgroup (krad_ipc_client_t *client, char *name, char *remote_name);
+void kr_mixer_unplug_portgroup (krad_ipc_client_t *client, char *name, char *remote_name);
+
 void krad_ipc_mixer_update_portgroup (krad_ipc_client_t *client, char *portgroupname, uint64_t update_command, char *string);
 void krad_ipc_mixer_update_portgroup_map_channel (krad_ipc_client_t *client, char *portgroupname, int in_channel, int out_channel);
 void krad_ipc_mixer_update_portgroup_mixmap_channel (krad_ipc_client_t *client, char *portgroupname, int in_channel, int out_channel);
@@ -174,7 +228,7 @@ void krad_ipc_create_record_link (krad_ipc_client_t *client, krad_link_av_mode_t
 
 void krad_ipc_create_capture_link (krad_ipc_client_t *client, krad_link_video_source_t video_source, char *device,
 								   int width, int height, int fps_numerator, int fps_denominator,
-								   krad_link_av_mode_t av_mode, char *audio_input);
+								   krad_link_av_mode_t av_mode, char *audio_input, char *passthru_codec);
 
 void krad_ipc_create_transmit_link (krad_ipc_client_t *client, krad_link_av_mode_t av_mode, char *host, int port,
 									char *mount, char *password, char *codecs,
@@ -228,11 +282,19 @@ int krad_ipc_cmd2 (krad_ipc_client_t *client, int value);
 
 char *krad_radio_get_running_daemons_list ();
 
-krad_ipc_client_t *krad_ipc_connect ();
+kr_client_t *kr_connect ();
 int krad_ipc_client_init (krad_ipc_client_t *client);
-void krad_ipc_disconnect (krad_ipc_client_t *client);
+void kr_disconnect (kr_client_t *client);
 int krad_ipc_cmd (krad_ipc_client_t *client, char *cmd);
 void krad_ipc_send (krad_ipc_client_t *client, char *cmd);
 int krad_ipc_wait (krad_ipc_client_t *client, char *buffer, int size);
 int krad_ipc_recv (krad_ipc_client_t *client, char *buffer, int size);
+
+
+
+void kr_mixer_add_effect (krad_ipc_client_t *client, char *portgroup_name, char *effect_name);
+void kr_mixer_remove_effect (krad_ipc_client_t *client, char *portgroup_name, int effect_num);
+void krad_ipc_set_effect_control (krad_ipc_client_t *client, char *portgroup_name, int effect_num, 
+                                  char *control_name, int subunit, float control_value);
+
 #endif

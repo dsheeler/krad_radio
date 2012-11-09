@@ -135,6 +135,51 @@ int krad_ipc_server_tcp_socket_create (int port) {
 	return sfd;
 }
 
+int krad_ipc_server_recvfd (krad_ipc_server_client_t *client) {
+
+	int n;
+	int fd;
+	int ret;
+	struct pollfd sockets[1];
+	char buf[1];
+	struct iovec iov;
+	struct msghdr msg;
+	struct cmsghdr *cmsg;
+	char cms[CMSG_SPACE(sizeof(int))];
+
+	sockets[0].fd = client->sd;
+	sockets[0].events = POLLIN;
+
+	ret = poll (sockets, 1, KRAD_IPC_SERVER_TIMEOUT_MS);
+
+	if (ret > 0) {
+
+		iov.iov_base = buf;
+		iov.iov_len = 1;
+
+		memset(&msg, 0, sizeof msg);
+		msg.msg_name = 0;
+		msg.msg_namelen = 0;
+		msg.msg_iov = &iov;
+		msg.msg_iovlen = 1;
+
+		msg.msg_control = (caddr_t)cms;
+		msg.msg_controllen = sizeof cms;
+
+		if((n=recvmsg(client->sd, &msg, 0)) < 0)
+				return -1;
+		if(n == 0){
+				printke("krad_ipc_server_recvfd: unexpected EOF");
+				return 0;
+		}
+		cmsg = CMSG_FIRSTHDR(&msg);
+		memmove(&fd, CMSG_DATA(cmsg), sizeof(int));
+		return fd;
+	} else {
+		return 0;
+	}
+}
+
 void krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server) {
 
 	//FIXME needs to loop thru clients and disconnect remote ones
@@ -462,9 +507,9 @@ void krad_ipc_server_response_list_finish ( krad_ipc_server_t *krad_ipc_server, 
 
 }
 
-void krad_ipc_server_respond_number ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint64_t number) {
+void krad_ipc_server_respond_number ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, int32_t number) {
 
-	krad_ebml_write_int64 (krad_ipc_server->current_client->krad_ebml2, ebml_id, number);
+	krad_ebml_write_int32 (krad_ipc_server->current_client->krad_ebml2, ebml_id, number);
 
 }
 
@@ -703,6 +748,8 @@ void *krad_ipc_server_run_thread (void *arg) {
 	krad_ipc_server_t *krad_ipc_server = (krad_ipc_server_t *)arg;
 	krad_ipc_server_client_t *client;
 	int ret, s;
+	
+	krad_system_set_thread_name ("kr_ipc_server");
 	
 	krad_ipc_server->shutdown = KRAD_IPC_RUNNING;
 	

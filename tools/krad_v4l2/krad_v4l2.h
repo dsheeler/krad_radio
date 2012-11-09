@@ -18,9 +18,10 @@
 #include <asm/types.h>
 #include <dirent.h>
 #include <linux/videodev2.h>
-
+#include <linux/uvcvideo.h>
 #include <turbojpeg.h>
 
+#include "uvch264.h"
 #include "krad_system.h"
 
 #define DEFAULT_V4L2_DEVICE "/dev/video0"
@@ -40,13 +41,9 @@ typedef enum {
 struct krad_v4l2_buffer_St {
 	void *start;
 	size_t length;
+	size_t offset;
 };
 
-struct krad_v4l2_ret_buffer_St {
-	void *data;
-	size_t length;
-	struct timeval timestamp;
-};
 
 struct krad_v4l2_St {
 
@@ -54,14 +51,14 @@ struct krad_v4l2_St {
 	int height;
 	int fps;
 
-	int mjpeg_mode;
+	int mode;
 
 	int frames;
 	
 	int fd;
 	
 	struct timeval timestamp;
-	krad_v4l2_ret_buffer_t ret_buffer;
+
 	
 	krad_v4l2_buffer_t *buffers;
 	unsigned int n_buffers;
@@ -73,16 +70,21 @@ struct krad_v4l2_St {
 
 	tjhandle jpeg_dec;
 
-	unsigned int jpeg_size;
-
-
-	unsigned char *jpeg_buffer;
+	unsigned int encoded_size;
+	unsigned char *codec_buffer;
 
 };
 
 
 
 /* public */
+
+void krad_v4l2_yuv_mode (krad_v4l2_t *kradv4l2);
+void krad_v4l2_mjpeg_mode (krad_v4l2_t *kradv4l2);
+void krad_v4l2_h264_mode (krad_v4l2_t *kradv4l2);
+
+void kradv4l2_free_codec_buffer (krad_v4l2_t *kradv4l2);
+void krad_v4l2_alloc_codec_buffer (krad_v4l2_t *kradv4l2);
 
 int kradv4l2_mjpeg_to_jpeg (krad_v4l2_t *kradv4l2, unsigned char *jpeg_buffer, unsigned char *mjpeg_buffer, unsigned int mjpeg_size);
 

@@ -23,11 +23,19 @@
 #include <errno.h>
 #include <pthread.h>
 
-typedef struct krad_system_St krad_system_t;
-typedef struct krad_system_cpu_monitor_St krad_system_cpu_monitor_t;
+#ifndef __MACH__
+#include <sys/prctl.h>
+#include <malloc.h>
+#else
+#include "krad_mach.h"
+#endif
 
 #ifndef KRAD_SYSTEM_H
 #define KRAD_SYSTEM_H
+
+
+typedef struct krad_system_St krad_system_t;
+typedef struct krad_system_cpu_monitor_St krad_system_cpu_monitor_t;
 
 #define KRAD_SYSNAME_MIN 4
 #define KRAD_SYSNAME_MAX 32
@@ -102,6 +110,7 @@ char *krad_system_info();
 uint64_t krad_system_daemon_uptime ();
 void krad_system_info_collect ();
 
+uint64_t ktime();
 void failfast (char* format, ...);
 void printke (char* format, ...);
 void printkd (char* format, ...);
@@ -109,6 +118,8 @@ void printk (char* format, ...);
 void krad_system_daemonize ();
 void krad_system_init ();
 
+void krad_system_set_thread_name (char *name);
+int krad_system_set_socket_nonblocking (int sd);
 int krad_valid_sysname (char *sysname);
 int krad_valid_host_and_port (char *string);
 void krad_get_host_and_port (char *string, char *host, int *port);

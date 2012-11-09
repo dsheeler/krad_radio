@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <math.h>
 #include <signal.h>
 #include <time.h>
@@ -38,8 +37,8 @@
 
 #define KRAD_IPC_CLIENT_DOCTYPE "krad_ipc_client"
 #define KRAD_IPC_SERVER_DOCTYPE "krad_ipc_server"
-#define KRAD_IPC_DOCTYPE_VERSION 6
-#define KRAD_IPC_DOCTYPE_READ_VERSION 6
+#define KRAD_IPC_DOCTYPE_VERSION 10
+#define KRAD_IPC_DOCTYPE_READ_VERSION 10
 
 #define EBML_ID_KRAD_IPC_CMD 0x4444
 
@@ -117,6 +116,8 @@ struct krad_ipc_server_client_St {
 
 };
 
+int krad_ipc_server_recvfd (krad_ipc_server_client_t *client);
+
 void krad_ipc_release_client (krad_ipc_server_client_t *client);
 int krad_ipc_aquire_client (krad_ipc_server_client_t *client);
 
@@ -161,7 +162,7 @@ void krad_ipc_server_mixer_broadcast2 ( krad_ipc_server_t *krad_ipc_server, uint
 void krad_ipc_server_simple_broadcast ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint32_t ebml_subid, uint32_t ebml_subid2, char *string);
 void krad_ipc_server_simple_number_broadcast ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint32_t ebml_subid, uint32_t ebml_subid2, int num);
 void krad_ipc_server_mixer_broadcast ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint32_t ebml_subid, char *portname, char *controlname, float floatval);
-void krad_ipc_server_respond_number ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint64_t number);
+void krad_ipc_server_respond_number ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, int32_t number);
 int krad_ipc_server_read_command (krad_ipc_server_t *krad_ipc_server, uint32_t *ebml_id_ptr, uint64_t *ebml_data_size_ptr);
 uint64_t krad_ipc_server_read_number (krad_ipc_server_t *krad_ipc_server, uint64_t data_size);
 //void krad_ipc_server_client_send (void *client, char *data);

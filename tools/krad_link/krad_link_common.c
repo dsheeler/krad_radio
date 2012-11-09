@@ -94,48 +94,73 @@ char *krad_codec_to_string (krad_codec_t codec) {
 		case HEXON:
 			return "Hexon";
 		case DAALA:
-			return "Daala";			
+			return "Daala";
+		case H264:
+			return "H264";						
 		default:
 			return "No Codec";
 	}
 }
 
 krad_codec_t krad_string_to_codec (char *string) {
+	return krad_string_to_codec_full (string, AUDIO_AND_VIDEO);
+}
 
-	if ((strcmp(string, "Vorbis") == 0) || (strcmp(string, "vorbis") == 0)) {
-		return VORBIS;
-	}
+krad_codec_t krad_string_to_audio_codec (char *string) {
+	return  krad_string_to_codec_full (string, AUDIO_ONLY);
+}
 
-	if ((strcmp(string, "FLAC") == 0) || (strcmp(string, "flac") == 0)) {
-		return FLAC;
-	}
+krad_codec_t krad_string_to_video_codec (char *string) {
+	return krad_string_to_codec_full (string, VIDEO_ONLY);
+}
 
-	if ((strcmp(string, "Opus") == 0) || (strcmp(string, "opus") == 0)) {
-		return OPUS;
-	}
+krad_codec_t krad_string_to_codec_full (char *string, krad_link_av_mode_t av_mode) {
 
-	if ((strcmp(string, "VP8") == 0) || (strcmp(string, "vp8") == 0)) {
-		return VP8;
+	if ((av_mode == AUDIO_ONLY) || (av_mode == AUDIO_AND_VIDEO)) {
+
+		if ((strstr(string, "Vorbis") != NULL) || (strstr(string, "vorbis") != NULL)) {
+			return VORBIS;
+		}
+
+		if ((strstr(string, "FLAC") != NULL) || (strstr(string, "flac") != NULL)) {
+			return FLAC;
+		}
+
+		if ((strstr(string, "Opus") != NULL) || (strstr(string, "opus") != NULL)) {
+			return OPUS;
+		}
+		
 	}
 	
-	if ((strcmp(string, "Theora") == 0) || (strcmp(string, "theora") == 0)) {
-		return THEORA;
-	}
+	if ((av_mode == VIDEO_ONLY) || (av_mode == AUDIO_AND_VIDEO)) {	
+
+		if ((strstr(string, "VP8") != NULL) || (strstr(string, "vp8") != NULL)) {
+			return VP8;
+		}
 	
-	if (strcmp(string, "Mjpeg") == 0) {
-		return MJPEG;
-	}
+		if ((strstr(string, "Theora") != NULL) || (strstr(string, "theora") != NULL)) {
+			return THEORA;
+		}
 	
-	if (strcmp(string, "PNG") == 0) {
-		return PNG;
-	}
+		if ((strstr(string, "MJPEG") != NULL) || (strstr(string, "Mjpeg") != NULL) || (strstr(string, "mjpeg") != NULL)) {
+			return MJPEG;
+		}
 	
-	if (strcmp(string, "Hexon") == 0) {
-		return HEXON;
-	}
+		if (strstr(string, "PNG") != NULL) {
+			return PNG;
+		}
 	
-	if (strcmp(string, "Daala") == 0) {
-		return DAALA;
+		if (strstr(string, "Hexon") != NULL) {
+			return HEXON;
+		}
+	
+		if (strstr(string, "Daala") != NULL) {
+			return DAALA;
+		}
+	
+		if ((strstr(string, "H264") != NULL) || (strstr(string, "h264") != NULL) || (strstr(string, "x264") != NULL)) {
+			return H264;
+		}	
 	}
 
 	return NOCODEC;

@@ -7,7 +7,8 @@
 #include <inttypes.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <sys/prctl.h>
+
+#include "krad_system.h"
 
 #ifndef KRAD_TIMER_H
 #define KRAD_TIMER_H

@@ -7,30 +7,144 @@ krad_v4l2_t *kradv4l2_create() {
 
 	kradv4l2 = calloc(1, sizeof(krad_v4l2_t));
 
-	kradv4l2->jpeg_dec = tjInitDecompress();
-
-	kradv4l2->jpeg_buffer = calloc(1, 4200000);
+	kradv4l2->mode = V4L2_PIX_FMT_YUYV;
 
 	return kradv4l2;
 
 }
 
 void kradv4l2_destroy(krad_v4l2_t *kradv4l2) {
-
-	tjDestroy ( kradv4l2->jpeg_dec );
-	free ( kradv4l2->jpeg_buffer );
+	kradv4l2_free_codec_buffer (kradv4l2);
 	free ( kradv4l2 );
+}
 
+static void kradv4l2_uvc_h264_set_bitrate (krad_v4l2_t *kradv4l2, int bmin) {
+
+  int bmax = bmin;
+  int res;
+  struct uvc_xu_control_query ctrl;
+  uvcx_bitrate_layers_t  conf;
+  ctrl.unit = 12;
+  ctrl.size = 10;
+  ctrl.selector = UVCX_BITRATE_LAYERS;
+  ctrl.data = (unsigned char*)&conf;
+  ctrl.query = UVC_GET_CUR;
+  conf.wLayerID = 0;
+  conf.dwPeakBitrate = conf.dwAverageBitrate = 0;
+  res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+  if (res)
+    {
+      printke("ctrl_query");
+      return;
+    }
+  printk("get before br %d %d", conf.dwPeakBitrate, conf.dwAverageBitrate);
+  conf.dwPeakBitrate = bmax;
+  conf.dwAverageBitrate = bmin;
+  ctrl.query = UVC_SET_CUR;
+  res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+  if (res)
+    {
+      printke("ctrl_query");
+      return;
+    }
+  printk("set br %d %d", conf.dwPeakBitrate, conf.dwAverageBitrate);
+  ctrl.query = UVC_GET_CUR;
+  res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+  if (res)
+    {
+      printke("ctrl_query");
+      return;
+    }
+  printk("get after br %d %d", conf.dwPeakBitrate, conf.dwAverageBitrate);
+}
+
+/*
+static void kradv4l2_uvc_h264_reset (krad_v4l2_t *kradv4l2) {
+
+	int res;
+	struct uvc_xu_control_query ctrl;
+	uvcx_encoder_reset conf;
+	ctrl.selector = UVCX_ENCODER_RESET;
+	ctrl.size = 2;
+	ctrl.unit = 12;
+	ctrl.data = (unsigned char*)&conf;
+	ctrl.query = UVC_SET_CUR;
+	conf.wLayerID = 0;
+	res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+	if (res) { printke("uvc_h264_reset"); return;}
+
+}
+*/
+
+static void kradv4l2_uvc_h264_set_rc_mode (krad_v4l2_t *kradv4l2, int mode) {
+
+	int res;
+	struct uvc_xu_control_query ctrl;
+	uvcx_rate_control_mode_t conf;
+	ctrl.selector = UVCX_RATE_CONTROL_MODE;
+	ctrl.size = 3;
+	ctrl.unit = 12;
+	ctrl.data = (unsigned char*)&conf;
+	ctrl.query = UVC_GET_CUR;
+	conf.wLayerID = 0;
+	res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+	if (res) { printke("query"); return;}
+	printk("mode %d\n", (int)conf.bRateControlMode);
+	conf.bRateControlMode = mode;
+	ctrl.query = UVC_SET_CUR;
+	res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+	if (res) { printke("query"); return;}
+	printk("mode %d\n", (int)conf.bRateControlMode);
+	ctrl.query = UVC_GET_CUR;
+	res = xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
+	if (res) { printke("query"); return;}
+	printk("mode %d\n", (int)conf.bRateControlMode);
+}
+
+
+void kradv4l2_uvc_h264_keyframe_req (krad_v4l2_t *kradv4l2) {
+
+	//int res;
+	struct uvc_xu_control_query ctrl;
+	uvcx_picture_type_control_t conf;
+	ctrl.selector = UVCX_PICTURE_TYPE_CONTROL;
+	ctrl.size = 4;
+	ctrl.unit = 12;
+	ctrl.data = (unsigned char*)&conf;
+	conf.wLayerID = 0;
+	conf.wPicType = 0x01;
+	ctrl.query = UVC_SET_CUR;
+	xioctl(kradv4l2->fd, UVCIOC_CTRL_QUERY, &ctrl);
 }
 
 void kradv4l2_frame_done (krad_v4l2_t *kradv4l2) {
+
+	//munmap (kradv4l2->buffers[kradv4l2->buf.index].start, kradv4l2->buffers[kradv4l2->buf.index].length);
+
 	if (-1 == xioctl (kradv4l2->fd, VIDIOC_QBUF, &kradv4l2->buf)) {
 		errno_exit ("VIDIOC_QBUF");
 	}
 }
-			
+
+static struct timeval timeval_diff(struct timeval start, struct timeval end) {
+
+	struct timeval temp;
+	if ((end.tv_usec-start.tv_usec)<0) {
+		temp.tv_sec = end.tv_sec-start.tv_sec-1;
+		temp.tv_usec = 1000000+end.tv_usec-start.tv_usec;
+	} else {
+		temp.tv_sec = end.tv_sec-start.tv_sec;
+		temp.tv_usec = end.tv_usec-start.tv_usec;
+	}
+	return temp;
+}
+
 char *kradv4l2_read_frame_adv (krad_v4l2_t *kradv4l2) {
 		
+			uint64_t elapsed_ms;
+			struct timeval elapsed;
+
+
 
 			kradv4l2->buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 			kradv4l2->buf.memory = V4L2_MEMORY_MMAP;
@@ -47,13 +161,42 @@ char *kradv4l2_read_frame_adv (krad_v4l2_t *kradv4l2) {
 				}
 			}
 
+
+		//kradv4l2->buffers[kradv4l2->buf.index].start = mmap (NULL, kradv4l2->buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, kradv4l2->fd, kradv4l2->buf.m.offset);
+
+
+			elapsed = timeval_diff (kradv4l2->timestamp, kradv4l2->buf.timestamp);
+
 			kradv4l2->timestamp = kradv4l2->buf.timestamp;
 			
-		//	printf("\n\ntimestamp %zu %zu \n\n", kradv4l2->timestamp.tv_sec, kradv4l2->timestamp.tv_usec);
+			//printk("timestamp %zu %zu", kradv4l2->timestamp.tv_sec, kradv4l2->timestamp.tv_usec);
 
+
+			elapsed_ms = ((elapsed.tv_sec * 1000) + (elapsed.tv_usec / 1000));
 			
-			kradv4l2->jpeg_size = kradv4l2->buf.bytesused;
-			//kradv4l2->jpeg_size = kradv4l2->buffers[kradv4l2->buf.index].length;
+			if (elapsed_ms > 37) {
+			
+				//printk ("asking for keyframe...");
+				//kradv4l2_uvc_h264_keyframe_req (kradv4l2);
+			}
+			
+			/*
+			if (kradv4l2->buf.flags & V4L2_BUF_FLAG_TIMECODE) {
+				printk ("V4L2_BUF_FLAG_TIMECODE");
+			}
+			if (kradv4l2->buf.flags & V4L2_BUF_FLAG_DONE) {
+				printk ("V4L2_BUF_FLAG_DONE");
+			}						
+			if (kradv4l2->buf.flags & V4L2_BUF_FLAG_ERROR) {
+				printk ("V4L2_BUF_FLAG_ERROR");
+			}
+			if (kradv4l2->buf.flags & V4L2_BUF_FLAG_KEYFRAME) {
+				printk ("V4L2_BUF_FLAG_KEYFRAME");
+			}
+			*/			
+			
+			kradv4l2->encoded_size = kradv4l2->buf.bytesused;
+			//kradv4l2->encoded_size = kradv4l2->buffers[kradv4l2->buf.index].length;
 			
 			//printf("jpeg size %zu or %u \n", kradv4l2->buffers[kradv4l2->buf.index].length, kradv4l2->buf.bytesused);
 
@@ -294,6 +437,19 @@ void kradv4l2_start_capturing (krad_v4l2_t *kradv4l2) {
 			errno_exit ("VIDIOC_STREAMON");
 		}
 		
+
+	if (kradv4l2->mode == V4L2_PIX_FMT_H264) {
+		//kradv4l2_uvc_h264_reset (kradv4l2);
+		kradv4l2_uvc_h264_set_rc_mode (kradv4l2, RATECONTROL_VBR);
+		kradv4l2_uvc_h264_set_bitrate (kradv4l2, 300);
+		printk ("krad v4l2 set h264 mode to vbr");
+	}
+	
+
+
+
+
+
 		break;
 
 	case IO_METHOD_USERPTR:
@@ -395,7 +551,7 @@ void kradv4l2_init_mmap (krad_v4l2_t *kradv4l2) {
 
     CLEAR (req);
 
-    req.count = 16;
+    req.count = 24;
     req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     req.memory = V4L2_MEMORY_MMAP;
 
@@ -411,7 +567,7 @@ void kradv4l2_init_mmap (krad_v4l2_t *kradv4l2) {
 		failfast ("Insufficient buffer memory on %s\n", kradv4l2->device);
 	}
 
-	printke ("v4l2 says %d buffers", req.count);
+	printk ("v4l2 says %d buffers", req.count);
 
 	kradv4l2->buffers = calloc (req.count, sizeof (*kradv4l2->buffers));
 
@@ -434,12 +590,18 @@ void kradv4l2_init_mmap (krad_v4l2_t *kradv4l2) {
 		}
 		
 		kradv4l2->buffers[kradv4l2->n_buffers].length = buf.length;
+		kradv4l2->buffers[kradv4l2->n_buffers].offset = buf.m.offset;
+		
 		kradv4l2->buffers[kradv4l2->n_buffers].start = mmap (NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, kradv4l2->fd, buf.m.offset);
 
 		if (MAP_FAILED == kradv4l2->buffers[kradv4l2->n_buffers].start) {
 			errno_exit ("mmap");
 		}
 	}
+	
+	
+	kradv4l2->n_buffers = req.count;
+	
 }
 
 void kradv4l2_init_userp (krad_v4l2_t *kradv4l2, unsigned int buffer_size) {
@@ -553,14 +715,14 @@ void kradv4l2_init_device (krad_v4l2_t *kradv4l2) {
 	fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	fmt.fmt.pix.width       = kradv4l2->width; 
 	fmt.fmt.pix.height      = kradv4l2->height;
+
+	fmt.fmt.pix.bytesperline = kradv4l2->width;
+	fmt.fmt.pix.sizeimage = 96000;
+
 	
-	if (kradv4l2->mjpeg_mode) {
-		fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
-	} else {
-		fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-	}
+	fmt.fmt.pix.pixelformat = kradv4l2->mode;
 		
-	//	fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
+	fmt.fmt.pix.field       = V4L2_FIELD_ANY;
 
 	if (-1 == xioctl (kradv4l2->fd, VIDIOC_S_FMT, &fmt)) {
 		errno_exit ("VIDIOC_S_FMT");
@@ -604,9 +766,6 @@ void kradv4l2_init_device (krad_v4l2_t *kradv4l2) {
 		printkd ("failed to get proper capture fps!");
 	}					
 	
-	
-
-					  
 
 	/* Note VIDIOC_S_FMT may change width and height. */
 
@@ -615,13 +774,6 @@ void kradv4l2_init_device (krad_v4l2_t *kradv4l2) {
 	min = fmt.fmt.pix.width * 2;
 
 	if (fmt.fmt.pix.bytesperline < min) {
-		fmt.fmt.pix.bytesperline = min;
-	}
-
-	min = fmt.fmt.pix.bytesperline * fmt.fmt.pix.height;
-
-	if (fmt.fmt.pix.sizeimage < min) {
-		fmt.fmt.pix.sizeimage = min;
 	}
 	*/
 	switch (kradv4l2->io) {
@@ -699,6 +851,46 @@ void kradv4l2_open (krad_v4l2_t *kradv4l2, char *device, int width, int height, 
 	
 }
 
+void krad_v4l2_alloc_codec_buffer (krad_v4l2_t *kradv4l2) {
+	if (kradv4l2->codec_buffer == NULL) {
+		kradv4l2->codec_buffer = calloc(1, 4200000);
+	}
+}
+
+void kradv4l2_free_codec_buffer (krad_v4l2_t *kradv4l2) {
+	if (kradv4l2->jpeg_dec != NULL) {
+		tjDestroy ( kradv4l2->jpeg_dec );
+		kradv4l2->jpeg_dec = NULL;
+	}
+	if (kradv4l2->codec_buffer != NULL) {
+		free ( kradv4l2->codec_buffer );
+		kradv4l2->codec_buffer = NULL;
+	}
+}
+
+void krad_v4l2_yuv_mode (krad_v4l2_t *kradv4l2) {
+	kradv4l2->mode = V4L2_PIX_FMT_YUYV;
+	kradv4l2_free_codec_buffer (kradv4l2);	
+}
+
+void krad_v4l2_mjpeg_mode (krad_v4l2_t *kradv4l2) {
+	if (kradv4l2->jpeg_dec == NULL) {
+		kradv4l2->jpeg_dec = tjInitDecompress();
+	}
+	krad_v4l2_alloc_codec_buffer (kradv4l2);
+	kradv4l2->mode = V4L2_PIX_FMT_MJPEG;
+}
+
+void krad_v4l2_h264_mode (krad_v4l2_t *kradv4l2) {
+	if (kradv4l2->jpeg_dec != NULL) {
+		tjDestroy ( kradv4l2->jpeg_dec );
+		kradv4l2->jpeg_dec = NULL;
+	}
+	krad_v4l2_alloc_codec_buffer (kradv4l2);
+	kradv4l2->mode = V4L2_PIX_FMT_H264;
+}
+
+
 static char jpeg_header[] =
 {
 0xff, 0xd8,                  // SOI
@@ -762,7 +954,7 @@ void kradv4l2_mjpeg_to_rgb (krad_v4l2_t *kradv4l2, unsigned char *argb_buffer, u
  	//printf("sizeof jpeghed %d \n", jpg_hedsize);
  	//printf("sizeof huf %d \n", hufsize);
  
-	memcpy (kradv4l2->jpeg_buffer, jpeg_header, jpg_hedsize);
+	memcpy (kradv4l2->codec_buffer, jpeg_header, jpg_hedsize);
 
 
  	jpeg_size_long += jpg_hedsize;
@@ -788,16 +980,16 @@ void kradv4l2_mjpeg_to_rgb (krad_v4l2_t *kradv4l2, unsigned char *argb_buffer, u
  	
  	//printf("got %d for X!\n", x);
 
-	memcpy (kradv4l2->jpeg_buffer + jpg_hedsize, mjpeg_buffer + tmp, x);
+	memcpy (kradv4l2->codec_buffer + jpg_hedsize, mjpeg_buffer + tmp, x);
 
 
  	
-	memcpy (kradv4l2->jpeg_buffer + jpg_hedsize + x, mjpg_dht, hufsize);
-	memcpy (kradv4l2->jpeg_buffer + jpg_hedsize + x + hufsize, mjpeg_buffer + tmp + x, mjpeg_size - tmp - x);
+	memcpy (kradv4l2->codec_buffer + jpg_hedsize + x, mjpg_dht, hufsize);
+	memcpy (kradv4l2->codec_buffer + jpg_hedsize + x + hufsize, mjpeg_buffer + tmp + x, mjpeg_size - tmp - x);
  	
  	jpeg_size_long = jpg_hedsize + x + hufsize + (mjpeg_size - tmp - x);
  	
-	ret = tjDecompress2 ( kradv4l2->jpeg_dec, kradv4l2->jpeg_buffer, jpeg_size_long, argb_buffer, kradv4l2->width, 
+	ret = tjDecompress2 ( kradv4l2->jpeg_dec, kradv4l2->codec_buffer, jpeg_size_long, argb_buffer, kradv4l2->width, 
 						  stride, kradv4l2->height, TJPF_BGRA, 0 );
 
 	if (ret != 0) {
@@ -809,7 +1001,7 @@ void kradv4l2_mjpeg_to_rgb (krad_v4l2_t *kradv4l2, unsigned char *argb_buffer, u
 	sprintf(filename, "/home/oneman/kode/testfilex_%d.jpg", count++);
 
 	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	write(fd, kradv4l2->jpeg_buffer, jpeg_size_long);
+	write(fd, kradv4l2->codec_buffer, jpeg_size_long);
 	close(fd);
 	
 	if (count > 30) {

@@ -2,20 +2,6 @@
 
 void krad_xmms_playback_cmd (krad_xmms_t *krad_xmms, krad_xmms_playback_cmd_t cmd) {
 
-	if ((cmd == PREV) || (cmd == NEXT)) {
-		// TEMP next/prev glitch workaround
-		
-		uint64_t now;
-		
-		now = time(NULL);
-		
-		if ((now - krad_xmms->last_nextprev_cmd_time) < 5) {
-			return;
-		}
-		
-		krad_xmms->last_nextprev_cmd_time = time(NULL);
-	}
-
 	switch (cmd) {
 		case PREV:
 			xmmsc_result_unref ( xmmsc_playlist_set_next_rel (krad_xmms->connection, -1) );
@@ -304,6 +290,9 @@ void krad_xmms_disconnect (krad_xmms_t *krad_xmms) {
 
 void *krad_xmms_handler_thread (void *arg) {
 	krad_xmms_t *krad_xmms = (krad_xmms_t *)arg;
+
+	krad_system_set_thread_name ("kr_xmms2");
+
 	while (krad_xmms->handler_running == 1) {
 		if (krad_xmms->connected == 0) {
 			krad_xmms_connect(krad_xmms);

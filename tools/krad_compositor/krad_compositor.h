@@ -6,13 +6,23 @@
 #include <math.h>
 #include <inttypes.h>
 
+#ifndef KRAD_COMPOSITOR_H
+#define KRAD_COMPOSITOR_H
+
+
 #include <libswscale/swscale.h>
 
 #include "pixman.h"
-#include "krad_radio.h"
 
-#ifndef KRAD_COMPOSITOR_H
-#define KRAD_COMPOSITOR_H
+
+
+
+typedef struct krad_compositor_St krad_compositor_t;
+typedef struct krad_compositor_port_St krad_compositor_port_t;
+typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
+
+
+#include "krad_radio.h"
 
 #define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
 #define KRAD_COMPOSITOR_MAX_PORTS 32
@@ -20,8 +30,7 @@
 #define KRAD_COMPOSITOR_MAX_TEXTS 64
 
 typedef enum {
-	SYNTHETIC = 13999,	
-	X11GLX,
+	SYNTHETIC = 13999,
 	WAYLAND,
 } krad_display_api_t;
 
@@ -29,10 +38,6 @@ typedef enum {
 	SNAPJPEG = 20000,	
 	SNAPPNG,
 } krad_snapshot_fmt_t;
-
-typedef struct krad_compositor_St krad_compositor_t;
-typedef struct krad_compositor_port_St krad_compositor_port_t;
-typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 
 typedef struct krad_point_St krad_point_t;
 
@@ -62,13 +67,10 @@ struct krad_compositor_port_St {
 	int direction;
 	int active;
 	
-	krad_frame_t *krad_frame;	
-	
-	krad_frame_t *last_frame;		
-	
+	krad_frame_t *last_frame;
 	krad_ringbuffer_t *frame_ring;
 	
-	int mjpeg;
+	int passthru;
 
 	int source_width;
 	int source_height;
@@ -97,6 +99,15 @@ struct krad_compositor_port_St {
 	int comp_params_updated;
 	
 	uint64_t start_timecode;
+	
+	
+	int local;
+	int shm_sd;
+	int msg_sd;
+	char *local_buffer;
+	int local_buffer_size;
+	krad_frame_t *local_frame;	
+	
 	
 };
 
@@ -144,6 +155,10 @@ struct krad_compositor_St {
 	int display_height;
 	int display_open;
 	pthread_t display_thread;
+
+	int active_passthru_ports;
+
+	int skipped_processes;
 
 	int active_ports;
 	int active_output_ports;
@@ -211,7 +226,6 @@ void krad_compositor_aspect_scale (int width, int height,
 								   int avail_width, int avail_height,
 								   int *new_width, int *new_heigth);
 
-void krad_compositor_relloc_resources (krad_compositor_t *krad_compositor);
 void krad_compositor_free_resources (krad_compositor_t *krad_compositor);
 void krad_compositor_alloc_resources (krad_compositor_t *krad_compositor);
 
@@ -250,18 +264,20 @@ krad_frame_t *krad_compositor_port_pull_yuv_frame (krad_compositor_port_t *krad_
 
 int krad_compositor_port_frames_avail (krad_compositor_port_t *krad_compositor_port);
 
-krad_compositor_port_t *krad_compositor_mjpeg_port_create (krad_compositor_t *krad_compositor, char *sysname, int direction);
+krad_compositor_port_t *krad_compositor_passthru_port_create (krad_compositor_t *krad_compositor, char *sysname, int direction);
 krad_compositor_port_t *krad_compositor_port_create (krad_compositor_t *krad_compositor, char *sysname, int direction,
 													 int width, int height);
+krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *krad_compositor, char *sysname, int direction,
+													 int width, int height, int holdlock, int local);													 
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port);
-
+void krad_compositor_port_destroy_unlocked (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port);
 int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_server_t *krad_ipc );
 
 void krad_compositor_get_frame_rate (krad_compositor_t *krad_compositor,
 									 int *frame_rate_numerator, int *frame_rate_denominator);
 
 void krad_compositor_get_resolution (krad_compositor_t *compositor, int *width, int *height);
-void krad_compositor_mjpeg_process (krad_compositor_t *krad_compositor);
+void krad_compositor_passthru_process (krad_compositor_t *krad_compositor);
 void krad_compositor_process (krad_compositor_t *compositor);
 void krad_compositor_destroy (krad_compositor_t *compositor);
 krad_compositor_t *krad_compositor_create (int width, int height,

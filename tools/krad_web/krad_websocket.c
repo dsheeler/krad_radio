@@ -316,7 +316,7 @@ void krad_ipc_from_json (krad_ipc_session_data_t *pss, char *value, int len) {
 															  krad_link.video_source, krad_link.video_device,
 															  krad_link.width, krad_link.height,
 															  krad_link.fps_numerator, krad_link.fps_denominator,
-															  krad_link.av_mode, "");
+															  krad_link.av_mode, "", "");
 							}
 						}
 					}
@@ -543,7 +543,7 @@ void krad_websocket_add_portgroup ( krad_ipc_session_data_t *krad_ipc_session_da
 	//printkd ("add a portgroup called %s withe a volume of %f", portname, floatval);
 
 	cJSON *msg;
-	
+
 	cJSON_AddItemToArray(krad_ipc_session_data->msgs, msg = cJSON_CreateObject());
 	
 	cJSON_AddStringToObject (msg, "com", "kradmixer");
@@ -874,11 +874,12 @@ int krad_websocket_ipc_handler ( krad_ipc_client_t *krad_ipc, void *ptr ) {
 					}	
 					break;
 				case EBML_ID_KRAD_MIXER_PORTGROUP_CREATED:
-					//printkd ("PORTGROUP_CREATED msg %zu bytes  \n", ebml_data_size );
+					//printk ("PORTGROUP_CREATED msg %"PRIu64" bytes", ebml_data_size );
 					
 					krad_ipc_client_read_portgroup ( krad_ipc, portname, &floatval, crossfadename, &crossfade, &has_xmms2 );
+
 					krad_websocket_add_portgroup (krad_ipc_session_data, portname, floatval, crossfadename, crossfade, has_xmms2);
-					
+
 					break;
 				
 				case EBML_ID_KRAD_MIXER_PORTGROUP_DESTROYED:
@@ -1114,7 +1115,7 @@ int callback_krad_ipc (struct libwebsocket_context *this, struct libwebsocket *w
 			pss->wsi = wsi;
 			pss->krad_websocket = krad_websocket_glob;
 
-			pss->krad_ipc_client = krad_ipc_connect (pss->krad_websocket->sysname);
+			pss->krad_ipc_client = kr_connect (pss->krad_websocket->sysname);
 			if (pss->krad_ipc_client != NULL) {
 				pss->krad_ipc_info = 0;
 				pss->hello_sent = 0;			
@@ -1133,7 +1134,7 @@ int callback_krad_ipc (struct libwebsocket_context *this, struct libwebsocket *w
 
 		case LWS_CALLBACK_CLOSED:
 
-			krad_ipc_disconnect (pss->krad_ipc_client);
+			kr_disconnect (pss->krad_ipc_client);
 			del_poll_fd(pss->krad_ipc_client->sd);
 			pss->hello_sent = 0;
 			pss->context = NULL;
@@ -1200,7 +1201,7 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
 
 	krad_websocket->context = libwebsocket_create_context (krad_websocket->port, NULL, protocols,
 										   				   libwebsocket_internal_extensions, 
-										   				   NULL, NULL, -1, -1, 0);
+										   				   NULL, NULL, -1, -1, 0, NULL);
 	if (krad_websocket->context == NULL) {
 		printke ("libwebsocket init failed");
 		krad_websocket_server_destroy (krad_websocket);
@@ -1220,6 +1221,8 @@ void *krad_websocket_server_run (void *arg) {
 
 	int n = 0;
 	char info[256] = "";
+
+	krad_system_set_thread_name ("kr_websocket");
 
 	krad_websocket->shutdown = KRAD_WEBSOCKET_RUNNING;
 
@@ -1262,7 +1265,7 @@ void *krad_websocket_server_run (void *arg) {
 						
 							case KRAD_IPC:
 								//sprintf(info + strlen(info), " it was Krad Mixer", n);
-								//krad_ipc_disconnect(sessions[n]->krad_ipc);
+								//kr_disconnect(sessions[n]->krad_ipc);
 								//del_poll_fd(n);
 								//n++;
 								break;

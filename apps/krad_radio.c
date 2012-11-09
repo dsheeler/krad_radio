@@ -8,17 +8,19 @@ void krad_radio_command_help () {
 	
 	printf ("launch ls destroy uptime info tag tags stag remoteon remoteoff webon weboff oscon oscoff setrate rate fps mix");
 	printf ("\n");
-	printf ("setdir lm ll lc tone input output unplug map mixmap xmms2 noxmms2 listen_on listen_off link");
+	printf ("setdir lm ll lc tone input output rmport plug unplug map mixmap xmms2 noxmms2 listen_on listen_off link");
 	printf ("\n");
 	printf ("transmitter_on transmitter_off closedisplay display lstext rmtext addtest lssprites addsprite rmsprite");
 	printf ("\n");
 	printf ("setsprite comp res snap jsnap setport update play receive record capture");
 	printf ("\n");
+	printf ("addfx rmfx setfx");
+	printf ("\n");
 }
 
 int main (int argc, char *argv[]) {
 
-	krad_ipc_client_t *client;
+	kr_client_t *client;
 	int ret;
 	int val;
 	
@@ -65,7 +67,7 @@ int main (int argc, char *argv[]) {
 			return 0;
 		}		
 
-		client = krad_ipc_connect (argv[1]);
+		client = kr_connect (argv[1]);
 	
 		if (client != NULL) {
 	
@@ -257,7 +259,7 @@ int main (int argc, char *argv[]) {
 				}
 				if (argc == 5) {
 					krad_ipc_mixer_create_portgroup (client, argv[3], "input", atoi (argv[4]));
-				}				
+				}
 			}			
 
 			if (strncmp(argv[2], "output", 6) == 0) {
@@ -266,14 +268,29 @@ int main (int argc, char *argv[]) {
 				}
 				if (argc == 5) {
 					krad_ipc_mixer_create_portgroup (client, argv[3], "output", atoi (argv[4]));
-				}				
+				}
 			}
 
-			if (strncmp(argv[2], "unplug", 6) == 0) {
+			if (strncmp(argv[2], "rmport", 6) == 0) {
 				if (argc == 4) {
 					krad_ipc_mixer_remove_portgroup (client, argv[3]);
 				}
 			}
+			
+			if (strncmp(argv[2], "plug", 4) == 0) {
+				if (argc == 5) {
+					kr_mixer_plug_portgroup (client, argv[3], argv[4]);
+				}
+			}
+			
+			if (strncmp(argv[2], "unplug", 6) == 0) {
+				if (argc == 4) {
+					kr_mixer_unplug_portgroup (client, argv[3], "");
+				}
+				if (argc == 5) {
+					kr_mixer_unplug_portgroup (client, argv[3], argv[4]);
+				}				
+			}						
 
 			if (strncmp(argv[2], "map", 3) == 0) {
 				if (argc == 6) {
@@ -287,7 +304,7 @@ int main (int argc, char *argv[]) {
 				}
 			}			
 			
-			if (strncmp(argv[2], "xfade", 5) == 0) {
+			if (strncmp(argv[2], "crossfade", 9) == 0) {
 				if (argc == 4) {
 					krad_ipc_mixer_update_portgroup (client, argv[3], EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, "");
 				}
@@ -297,15 +314,15 @@ int main (int argc, char *argv[]) {
 			}			
 		
 			if (strncmp(argv[2], "xmms2", 5) == 0) {
-				if ((strncmp(argv[4], "play", 4) == 0) || (strncmp(argv[4], "pause", 5) == 0) ||
-					(strncmp(argv[4], "stop", 4) == 0) || (strncmp(argv[4], "next", 4) == 0) ||
-					(strncmp(argv[4], "prev", 4) == 0)) {
-					krad_ipc_mixer_portgroup_xmms2_cmd (client, argv[3], argv[4]);
-					return 0;
-				}
-
 				if (argc == 5) {
-					krad_ipc_mixer_bind_portgroup_xmms2 (client, argv[3], argv[4]);
+					if ((strncmp(argv[4], "play", 4) == 0) || (strncmp(argv[4], "pause", 5) == 0) ||
+						(strncmp(argv[4], "stop", 4) == 0) || (strncmp(argv[4], "next", 4) == 0) ||
+						(strncmp(argv[4], "prev", 4) == 0)) {
+						krad_ipc_mixer_portgroup_xmms2_cmd (client, argv[3], argv[4]);
+						return 0;
+					} else {
+						krad_ipc_mixer_bind_portgroup_xmms2 (client, argv[3], argv[4]);
+					}
 				}
 			}	
 		
@@ -318,6 +335,24 @@ int main (int argc, char *argv[]) {
 			if (strncmp(argv[2], "set", 3) == 0) {
 				if (argc == 6) {
 					krad_ipc_set_control (client, argv[3], argv[4], atof(argv[5]));
+				}
+			}
+
+			if (strncmp(argv[2], "addfx", 5) == 0) {
+				if (argc == 5) {
+					kr_mixer_add_effect (client, argv[3], argv[4]);
+				}
+			}
+
+			if (strncmp(argv[2], "rmfx", 4) == 0) {
+				if (argc == 5) {
+					kr_mixer_remove_effect (client, argv[3], atoi(argv[4]));
+				}
+			}
+
+			if (strncmp(argv[2], "setfx", 5) == 0) {
+				if (argc == 8) {
+					krad_ipc_set_effect_control (client, argv[3], atoi(argv[4]), argv[5], atoi(argv[6]), atof(argv[7]));
 				}
 			}
 			
@@ -404,30 +439,36 @@ int main (int argc, char *argv[]) {
 
 				if (argc == 4) {
 					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), "",
-												  0, 0, 0, 0, val, "");
+												  0, 0, 0, 0, val, "", "");
 				}
 				if (argc == 5) {
 					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), argv[4],
-												  0, 0, 0, 0, val, "");
+												  0, 0, 0, 0, val, "", "");
 				}
 				if (argc == 7) {
 					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), argv[4],
-												  atoi(argv[5]), atoi(argv[6]), 0, 0, val, "");
+												  atoi(argv[5]), atoi(argv[6]), 0, 0, val, "", "");
 				}
 				if (argc == 9) {
 					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), argv[4],
-												  atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), val, "");
+												  atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), val, "", "");
 				}
 				if (argc == 10) {
 					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), argv[4],
 												  atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
-												  krad_link_string_to_av_mode (argv[9]), "");
+												  krad_link_string_to_av_mode (argv[9]), "", "");
 				}
 				if (argc == 11) {
 					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), argv[4],
 												  atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
-												  krad_link_string_to_av_mode (argv[9]), argv[10]);
+												  krad_link_string_to_av_mode (argv[9]), argv[10], "");
 				}
+				if (argc == 12) {
+					krad_ipc_create_capture_link (client, krad_link_string_to_video_source (argv[3]), argv[4],
+												  atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
+												  krad_link_string_to_av_mode (argv[9]), argv[10], argv[11]);
+				}
+				
 			}
 			
 			if (strncmp(argv[2], "record", 6) == 0) {
@@ -795,7 +836,7 @@ int main (int argc, char *argv[]) {
 			}			
 
 			
-			krad_ipc_disconnect (client);
+			kr_disconnect (client);
 		} else {
 			fprintf (stderr, "Could not connect to %s krad radio daemon\n", argv[1]);
 			return 1;

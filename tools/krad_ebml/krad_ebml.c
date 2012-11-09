@@ -1,9 +1,10 @@
 #include "krad_ebml.h"
 
+int krad_ebml_streamio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
+int krad_ebml_transmissionio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
+
 char *krad_ebml_version() {
-
 	return KRADEBML_VERSION;
-
 }
 
 char *krad_ebml_codec_to_ebml_codec_id (krad_codec_t codec) {
@@ -21,6 +22,8 @@ char *krad_ebml_codec_to_ebml_codec_id (krad_codec_t codec) {
 			return "V_THEORA";
 		case MJPEG:
 			return "V_MJPEG";
+		case H264:
+			return "V_MPEG4/ISO/AVC";			
 		default:
 			return "No Codec";
 	}
@@ -421,7 +424,6 @@ void krad_ebml_start_file_segment (krad_ebml_t *krad_ebml) {
 
 void krad_ebml_start_segment(krad_ebml_t *krad_ebml, char *appversion) {
 
-	char *voiddata;
 	uint64_t segment_info;
 	char version_string[32];
 
@@ -435,10 +437,6 @@ void krad_ebml_start_segment(krad_ebml_t *krad_ebml, char *appversion) {
 		krad_ebml->segment_info_position = krad_ebml_fileio_tell (&krad_ebml->io_adapter);	
 	} else {
 		krad_ebml_start_element (krad_ebml, EBML_ID_SEGMENT, &krad_ebml->segment);
-		voiddata = calloc (1, VOID_START_SIZE);
-		krad_ebml->void_space = krad_ebml_fileio_tell (&krad_ebml->io_adapter);	
-		krad_ebml_write_data (krad_ebml, EBML_ID_VOID, voiddata, VOID_START_SIZE);
-		free (voiddata);		
 	}
 	krad_ebml_start_element (krad_ebml, EBML_ID_SEGMENT_INFO, &segment_info);
 	if ((krad_ebml->io_adapter.mode == KRAD_EBML_IO_WRITEONLY) &&
@@ -575,8 +573,10 @@ int krad_ebml_add_audio_track(krad_ebml_t *krad_ebml, krad_codec_t codec, int sa
 
 	krad_ebml_start_element (krad_ebml, EBML_ID_AUDIOSETTINGS, &audio_info);
 	krad_ebml_write_int8 (krad_ebml, EBML_ID_AUDIOCHANNELS, channels);
+	
 	krad_ebml_write_float (krad_ebml, EBML_ID_AUDIOSAMPLERATE, sample_rate);
 	krad_ebml_write_int8 (krad_ebml, EBML_ID_AUDIOBITDEPTH, 16);
+
 	krad_ebml_finish_element (krad_ebml, audio_info);
 	
 	if (private_data_size > 0) {
@@ -635,7 +635,11 @@ void krad_ebml_add_video(krad_ebml_t *krad_ebml, int track_num, unsigned char *b
 	krad_ebml_write (krad_ebml, &flags, 1);
 	krad_ebml_write (krad_ebml, buffer, buffer_len);
 	
-	//krad_ebml_write_sync (krad_ebml);	
+	if ((krad_ebml->io_adapter.mode == KRAD_EBML_IO_WRITEONLY) &&
+		((krad_ebml->io_adapter.write == krad_ebml_streamio_write) ||
+		(krad_ebml->io_adapter.write == krad_ebml_transmissionio_write))) {		
+		krad_ebml_write_sync (krad_ebml);
+	}
 	
 }
 
@@ -687,6 +691,13 @@ void krad_ebml_add_audio(krad_ebml_t *krad_ebml, int track_num, unsigned char *b
 	
 	krad_ebml_write(krad_ebml, &flags, 1);
 	krad_ebml_write(krad_ebml, buffer, buffer_len);
+	
+	if ((krad_ebml->io_adapter.mode == KRAD_EBML_IO_WRITEONLY) &&
+		((krad_ebml->io_adapter.write == krad_ebml_streamio_write) ||
+		(krad_ebml->io_adapter.write == krad_ebml_transmissionio_write))) {		
+		krad_ebml_write_sync (krad_ebml);
+	}
+	
 }
 
 void krad_ebml_cluster(krad_ebml_t *krad_ebml, int64_t timecode) {
@@ -707,6 +718,9 @@ void krad_ebml_cluster(krad_ebml_t *krad_ebml, int64_t timecode) {
 	if (krad_ebml->cluster != 0) {
 		krad_ebml_finish_element (krad_ebml, krad_ebml->cluster);
 		krad_ebml_write_sync (krad_ebml);
+		if (krad_ebml->io_adapter.write == krad_ebml_transmissionio_write) {
+			krad_transmitter_transmission_add_data_sync (krad_ebml->krad_transmission, (unsigned char *)"", 0);
+		}
 	}
 
 	krad_ebml->cluster_timecode = timecode;
@@ -2117,6 +2131,15 @@ int krad_ebml_io_buffer_push(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t 
 
 }
 
+int krad_ebml_transmissionio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length) {
+	if (krad_ebml_io->firstwritedone == 1) {
+		return krad_transmitter_transmission_add_data (krad_ebml_io->krad_transmission, (unsigned char *)buffer, length);
+	} else {
+		krad_ebml_io->firstwritedone = 1;
+		return krad_transmitter_transmission_set_header (krad_ebml_io->krad_transmission, (unsigned char *)buffer, length);
+	}
+}
+
 int krad_ebml_fileio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length) {
 	return write(krad_ebml_io->ptr, buffer, length);
 }
@@ -2402,6 +2425,25 @@ krad_ebml_t *krad_ebml_open_stream(char *host, int port, char *mount, char *pass
 	return krad_ebml;
 
 }
+
+
+krad_ebml_t *krad_ebml_open_transmission (krad_transmission_t *krad_transmission) {
+
+	krad_ebml_t *krad_ebml;
+	
+	krad_ebml = krad_ebml_create();
+	
+	krad_ebml->krad_transmission = krad_transmission;
+	
+	krad_ebml->record_cluster_info = 0;
+	krad_ebml->io_adapter.mode = KRAD_EBML_IO_WRITEONLY;
+	krad_ebml->io_adapter.write_buffer = malloc(KRADEBML_WRITE_BUFFER_SIZE);
+	krad_ebml->io_adapter.krad_transmission = krad_ebml->krad_transmission;
+	krad_ebml->io_adapter.write = krad_ebml_transmissionio_write;
+	
+	return krad_ebml;
+}
+
 
 krad_ebml_t *krad_ebml_open_file(char *filename, krad_ebml_io_mode_t mode) {
 
