@@ -118,13 +118,30 @@ static int krad_xmms_playback_status_callback (xmmsv_t *value, void *userdata) {
 		failfast ("Value didn't contain the expected type!");
 	}
 
-	krad_xmms->playback_status = status;
+	switch (status) {
+	case 0:
+		krad_xmms->playback_status = krad_xmms_STOPPED;
+		strcpy(krad_xmms->playback_status_string, "(Stopped)");
+		break;
+	case 2:
+		krad_xmms->playback_status = krad_xmms_PAUSED;
+		strcpy(krad_xmms->playback_status_string, "(Paused)");
+		break;
+	case 1:
+		krad_xmms->playback_status = krad_xmms_PLAYING;
+		strcpy(krad_xmms->playback_status_string, "(Playing)");
+		break;
+	}
+	
+	if (krad_xmms->krad_tags != NULL) {
+		krad_tags_set_tag_internal (krad_xmms->krad_tags, "playback_status", 
+		                            krad_xmms->playback_status_string);
+	}
+	printk ("Got Playback Status: %d, %s", status, krad_xmms->playback_status_string);
 
-	printk ("Got Playback Status: %d", krad_xmms->playback_status);
-
-  if ((krad_xmms->krad_tags != NULL) && (krad_xmms->playback_status == 0)) {
+	if ((krad_xmms->krad_tags != NULL) && (krad_xmms->playback_status == krad_xmms_STOPPED)) {
 		krad_tags_set_tag_internal (krad_xmms->krad_tags, "playtime", "0:00");
-  }
+	}
 
 	return 1;
 
