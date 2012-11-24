@@ -40,6 +40,8 @@ tools/krad_decklink/krad_decklink_capture.a
 krad_ebml_header_test
 tools/krad_web/res/krad_radio.html.h
 tools/krad_web/res/krad_radio.js.h
+lib/krad_web/res/krad_radio.html.h
+lib/krad_web/res/krad_radio.js.h
 krad_apps/krad_radio
 krad_apps/krad_radio_cmd
 krad_apps/krad_radio_gtk
@@ -58,3 +60,5 @@ tools/krad_rc/krad_rc_sdl_joy_control
 tools/krad_rc/krad_rc_test
 tests/krad_dockpanel_test_wayland
 tests/krad_easing_test
+tests/krad_webm_dash_vod_test
+tests/krad_webm_extract
