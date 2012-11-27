@@ -34,7 +34,7 @@ station.cmd("fps 30")
 
 #station.record("#{File.expand_path('~')}/PublicHtml/krad_title_sequence.webm", {"codec" => "vp8vorbis"})#, 'width' => "#{width}", 'height' => "#{height}", 'bitrate' => "#{bitrate}", 'audiobitrate' => "48000"})
 
-station.cmd("record av \"#{File.expand_path('~')}/PublicHtml/krad_title_sequence.webm\" \"vp8 vorbis\" #{width} #{height} #{bitrate} 48000")
+station.cmd("record av \"#{File.expand_path('~')}/PublicHtml/krad_title_sequence.mkv\" \"vp8 flac\" #{width} #{height} #{bitrate} 48000")
 
 station.cmd("xmms2 XMMS2 play")
 
@@ -47,12 +47,12 @@ sleep 0.25
 
 #set_text(num=0, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0)
 station.set_text(0, 25, 355, 150, 174, 1, 0, 255, 11, 2)
-sleep 2.5
+sleep 5.0
 station.set_text(0, 25, 355, 5, 174, 0, 0, 255, 11, 2)
 sleep 2.5
 station.rm_text(0)
 
-station.text("Written, Directed, Produced by, and Starring...", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+station.text("Say hello to KRAD RADIOs ninja creator", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
@@ -72,7 +72,7 @@ sleep 2.5
 
 station.rm_sprite(0)
 
-station.text("Executive Producer and Co-Starring", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+station.text("And say hello to KRAD RADIOs grasshopper", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 
 sleep 1.0
 
@@ -98,17 +98,17 @@ station.rm_sprite(0)
 
 station.play("#{File.expand_path('~')}/Videos/holy_crap.ogv")
 
-sleep 4.0
+sleep 2.0
 
 station.text("Zooming in with audacity and friends", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
-sleep 10.0
+sleep 5.0
 station.rm_text(0)
 
 
 sleep 5.0
-station.text("How about we tune in something else?", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+station.text("How about we tune in something else too", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 5.0
@@ -135,8 +135,57 @@ station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 2.0
 station.cmd("hex 640 340 300")
 station.rm_text(0)
+sleep 2.0
 
+station.text("Kradradio loves open source software", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+sleep 1.0
+station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+sleep 3.0
+
+
+station.text("like jack", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
+sleep 0.5
+station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+
+station.sprite("#{File.expand_path('~')}/Pictures/logos/jack.png", 400, 350, 10, 1, 1.0, 0)
 sleep 4.0
+station.set_sprite(0, 100, 550, 50, 0.5, 1.0, 0.0)
+sleep 4.0
+station.rm_text(1)
+
+
+station.text("and projects from xiph", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
+sleep 0.5
+station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+
+station.sprite("#{File.expand_path('~')}/Pictures/logos/fish_xiph_org.png", 400, 300, 10, 1, 1.0, 0)
+sleep 4.0
+station.set_sprite(1, 450, 555, 10, 1, 1.0, 0.0)
+sleep 4.0
+station.rm_text(1)
+
+station.text("and mozilla", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
+sleep 0.5
+station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+
+station.sprite("#{File.expand_path('~')}/Pictures/logos/mozilla_wordmark.png", 200, 250, 10, 0.15, 1.0, 0)
+sleep 4.0
+station.set_sprite(2, 800, 505, 10, 0.065, 1.0, 0.0)
+sleep 4.0
+station.rm_text(1)
+
+
+station.throw_sprite(2)
+station.throw_sprite(1)
+station.throw_sprite(0)
+
+station.rm_text(0)
+sleep 1.0
+station.rm_sprite(2)
+station.rm_sprite(1)
+station.rm_sprite(0)
+
+sleep 3.0
 station.text("Thanks for watching", 135, 655, 5, 100, 1, 0, 255, 11, 2, "DroidSans")
 sleep 1
 station.set_text(0, 1535, -155, 15, 4, 0, -50)
@@ -156,8 +205,8 @@ sleep 1
 station.rm_text(1)
 
 sleep 0.25
-station.cmd("rm 0")
 station.cmd("xmms2 XMMS2 stop")
+station.cmd("rm 0")
 station.cmd("hex 0 0 0")
 sleep 1.0
 
