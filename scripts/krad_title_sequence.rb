@@ -34,7 +34,7 @@ station.cmd("fps 30")
 
 #station.record("#{File.expand_path('~')}/PublicHtml/krad_title_sequence.webm", {"codec" => "vp8vorbis"})#, 'width' => "#{width}", 'height' => "#{height}", 'bitrate' => "#{bitrate}", 'audiobitrate' => "48000"})
 
-station.cmd("record av \"#{File.expand_path('~')}/PublicHtml/krad_title_sequence.mkv\" \"vp8 flac\" #{width} #{height} #{bitrate} 48000")
+station.cmd("record av \"#{File.expand_path('~')}/PublicHtml/krad_title_sequence.webm\" \"vp8 vorbis\" #{width} #{height} #{bitrate} 48000")
 
 station.cmd("xmms2 XMMS2 play")
 
@@ -53,7 +53,7 @@ station.set_text(0, 25, 355, 5, 174, 0, 0, 255, 11, 2)
 sleep 2.5
 station.rm_text(0)
 
-station.text("Say hello to KRAD RADIOs ninja creator", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+station.text("Say hello to KRAD RADIOs creator", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
@@ -74,7 +74,7 @@ sleep 2.5
 station.rm_sprite(0)
 sleep 0.25
 
-station.text("And here is a fanboi developer of KR", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+station.text("And meet a KRAD RADIO developer", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 
 sleep 1.0
 
@@ -82,8 +82,9 @@ station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 2.0
 
 station.text("six600110", 55, 455, 5, 80, 1, 0, 250, 250, 250)
+
+
 sleep 0.5
-system("krad_radio djsh lstext")
 
 station.sprite("#{File.expand_path('~')}/Pictures/six600110.png", 600, 215, 10, 1, 1.0, -3600.0)
 
@@ -91,16 +92,22 @@ sleep 2.0
 station.set_sprite(0, 600, 215, 50, 1, 1.0, 0.0)
 sleep 4.0
 station.throw_sprite(0)
-
+system("krad_radio djsh lstext")
 station.rm_text(1)
 station.rm_text(0)
 sleep 2.5
 station.rm_sprite(0)
-
-
-station.play("#{File.expand_path('~')}/Videos/holy_crap.ogv")
+sleep 1.0
+station.text("Lets whatch a movie", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+sleep 1.0
+station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 
 sleep 2.0
+station.play("#{File.expand_path('~')}/Videos/holy_crap.ogv")
+sleep 1.0
+station.rm_text(0)
+
+sleep 3.0
 
 station.text("Zooming in with audacity and friends", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
@@ -116,15 +123,29 @@ station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 5.0
 station.rm_text(0)
 sleep 2.0
-
-station.cmd("setport 1 0 80 560 420 0 0 560 420 1 0")
-sleep 4.0
+station.cmd("setport 1 0 0 560 420 0 0 560 420 1 0")
+sleep 1.0
 station.cmd("xmms2 XMMS2 pause")
 station.play("#{File.expand_path('~')}/Development/krad_radio_oneman/epII-veritas-proof.ogv")
-sleep 0.25
-station.cmd("setport 2 640 80 560 420 0 0 560 420 1 0")
+sleep 0.01
+station.cmd("setport 2 640 300 560 420 0 0 560 420 1 0")
 
-sleep 10.0
+for i in 0..75
+  sleep 0.001
+  y1 = (4*i)		
+  y2 = 300 - (4*i)	
+  station.cmd("setport 1 0 #{y1} 560 420 0 0 560 420 1 0")
+  station.cmd("setport 2 640 #{y2} 560 420 0 0 560 420 1 0")
+end
+for i in 0..75
+  sleep 0.001
+  y1 = 300 - (4*i)
+  y2 = 4*i		
+  station.cmd("setport 1 0 #{y1} 560 420 0 0 560 420 1 0")	
+  station.cmd("setport 2 640 #{y2} 560 420 0 0 560 420 1 0")
+end
+
+
 
 station.cmd("rm 1")
 station.cmd("rm 2")
@@ -150,9 +171,9 @@ sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
 
 station.sprite("#{File.expand_path('~')}/Pictures/logos/jack.png", 400, 350, 10, 1, 1.0, 0)
-sleep 4.0
-station.set_sprite(0, 100, 550, 50, 0.5, 1.0, 0.0)
-sleep 4.0
+sleep 2.0
+station.set_sprite(0, 100, 550, 50, 0.5, 1.0, -720)
+sleep 2.0
 station.rm_text(1)
 
 
@@ -161,28 +182,40 @@ sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
 
 station.sprite("#{File.expand_path('~')}/Pictures/logos/fish_xiph_org.png", 400, 300, 10, 1, 1.0, 0)
-sleep 4.0
-station.set_sprite(1, 450, 555, 10, 1, 1.0, 0.0)
-sleep 4.0
+sleep 2.0
+station.set_sprite(1, 450, 475, 10, 1, 1.0, 720)
+sleep 2.0
+station.rm_text(1)
+
+station.text("xmms2", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
+sleep 0.5
+station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+station.sprite("#{File.expand_path('~')}/Pictures/logos/xmms2-128.png", 200, 250, 10, 1, 1.0, 0)
+sleep 2.0
+station.set_sprite(2, 775, 505, 10, 1, 1.0, -720)
+sleep 2.0
 station.rm_text(1)
 
 station.text("and mozilla", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
-
 station.sprite("#{File.expand_path('~')}/Pictures/logos/mozilla_wordmark.png", 200, 250, 10, 0.15, 1.0, 0)
-sleep 4.0
-station.set_sprite(2, 800, 505, 10, 0.065, 1.0, 0.0)
-sleep 4.0
+sleep 2.0
+station.set_sprite(3, 900, 505, 10, 0.065, 1.0, 720)
+sleep 2.0
 station.rm_text(1)
 
+system("krad_radio djsh lssprite")
 
+station.throw_sprite(3)
 station.throw_sprite(2)
 station.throw_sprite(1)
 station.throw_sprite(0)
 
 station.rm_text(0)
-sleep 1.0
+sleep 0.1
+station.rm_sprite(3)
+sleep 0.1
 station.rm_sprite(2)
 sleep 0.1
 station.rm_sprite(1)
