@@ -3043,6 +3043,59 @@ int krad_ipc_client_read_text ( krad_ipc_client_t *client, char *text, krad_text
 		
 	return bytes_read;
 }
+int krad_ipc_client_read_frame_size ( krad_ipc_client_t *client, char *text, krad_text_rep_t **krad_text_rep) {
+
+	uint32_t ebml_id;
+	uint64_t ebml_data_size;
+	int bytes_read;
+	
+	int width, height;
+	
+	char string[1024];
+	memset (string, '\0', 1024);
+	
+	bytes_read = 6;
+
+	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
+	width = krad_ebml_read_number( client->krad_ebml, ebml_data_size);
+	bytes_read += ebml_data_size;
+	
+	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
+	height = krad_ebml_read_number( client->krad_ebml, ebml_data_size);
+	bytes_read += ebml_data_size;
+
+	sprintf (text, "Width: %d  Height: %d", 
+	         width, height);
+		
+	return bytes_read;
+}
+
+int krad_ipc_client_read_frame_rate ( krad_ipc_client_t *client, char *text, krad_text_rep_t **krad_text_rep) {
+
+	uint32_t ebml_id;
+	uint64_t ebml_data_size;
+	int bytes_read;
+	
+	int numerator, denominator;
+	
+	char string[1024];
+	memset (string, '\0', 1024);
+	
+	bytes_read = 6;
+
+	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
+	numerator = krad_ebml_read_number( client->krad_ebml, ebml_data_size);
+	bytes_read += ebml_data_size;
+	
+	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
+	denominator = krad_ebml_read_number( client->krad_ebml, ebml_data_size);
+	bytes_read += ebml_data_size;
+
+	sprintf (text, "Numerator: %d  Denominator: %d - %f", 
+	         numerator, denominator, (float) numerator / (float) denominator );
+		
+	return bytes_read;
+}
 
 int krad_ipc_client_read_link ( krad_ipc_client_t *client, char *text, krad_link_rep_t **krad_link_rep) {
 
@@ -3803,7 +3856,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				break;
 			}
 			break;
-				
+			
 		case EBML_ID_KRAD_COMPOSITOR_MSG:
 			
 			krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
@@ -3815,7 +3868,34 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 					printf ("%s\n", string);
 				}
 				break;
+			case EBML_ID_KRAD_COMPOSITOR_FRAME_SIZE:
+				list_size = ebml_data_size;
 				
+				i = 0;
+				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_size ( client, tag_value, &krad_text)) <= list_size)) {
+					printf ("..%d: %s\n", i, tag_value);
+					i++;
+					if (bytes_read == list_size) {
+						break;
+					} else {
+						printf ("%d: %d\n", list_size, bytes_read);
+					}
+				}	
+				break;
+			case EBML_ID_KRAD_COMPOSITOR_FRAME_RATE:
+				list_size = ebml_data_size;
+				
+				i = 0;
+				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_rate ( client, tag_value, &krad_text)) <= list_size)) {
+					printf ("..%d: %s\n", i, tag_value);
+					i++;
+					if (bytes_read == list_size) {
+						break;
+					} else {
+						printf ("%d: %d\n", list_size, bytes_read);
+					}
+				}	
+				break;
 			case EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME:
 				krad_ebml_read_string (client->krad_ebml, string, ebml_data_size);
 				if (string[0] != '\0') {

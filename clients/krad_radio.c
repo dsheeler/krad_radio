@@ -12,7 +12,7 @@ void krad_radio_command_help () {
 	printf ("\n");
 	printf ("transmitter_on transmitter_off closedisplay display lstext rmtext addtest lssprites addsprite rmsprite");
 	printf ("\n");
-	printf ("setsprite comp setres setfps snap jsnap setport update play receive record capture");
+	printf ("setsprite comp setres getres setfps getfps snap jsnap setport update play receive record capture");
 	printf ("\n");
 	printf ("addfx rmfx setfx");
 	printf ("\n");
@@ -250,7 +250,7 @@ int main (int argc, char *argv[]) {
 				}
 			}
 			
-			if (strncmp(argv[2], "getrate", 4) == 0) {
+			if (strncmp(argv[2], "getrate", 7) == 0) {
 				if (argc == 3) {
 					krad_ipc_get_mixer_sample_rate (client);
 					krad_ipc_print_response (client);
@@ -636,7 +636,18 @@ int main (int argc, char *argv[]) {
 					krad_ipc_compositor_set_resolution (client, atoi(argv[3]), atoi(argv[4]));
 				}
 			}
-			
+			if (strncmp(argv[2], "getres", 6) == 0) {
+				if (argc == 3) {
+					krad_ipc_compositor_get_frame_size (client);
+					krad_ipc_print_response (client);
+				}
+			}
+			if (strncmp(argv[2], "getfps", 6) == 0) {
+				if (argc == 3) {
+					krad_ipc_compositor_get_frame_rate (client);
+					krad_ipc_print_response (client);
+				}
+			}		
 			if (strncmp(argv[2], "setfps", 6) == 0) {
 				if (argc == 4) {
 					krad_ipc_compositor_set_frame_rate (client, atoi(argv[3]) * 1000, 1000);
