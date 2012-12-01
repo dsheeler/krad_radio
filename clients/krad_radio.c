@@ -721,6 +721,7 @@ int main (int argc, char *argv[]) {
 			if (strncmp(argv[2], "lssprite", 8) == 0) {
 				if (argc == 3) {
 					krad_ipc_compositor_list_sprites (client);
+					krad_ipc_print_response (client);	
 				}
 			}
 			
@@ -816,6 +817,7 @@ int main (int argc, char *argv[]) {
 			if (strncmp(argv[2], "lstext", 6) == 0) {
 				if (argc == 3) {
 					krad_ipc_compositor_list_texts (client);
+					krad_ipc_print_response (client);					
 				}
 			}													
 			

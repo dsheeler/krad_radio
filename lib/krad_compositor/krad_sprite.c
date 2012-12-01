@@ -122,7 +122,7 @@ void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 		printk ("Loaded Sprite: %s Sheet Width: %d Frames: %d Width: %d Height: %d",
 				filename, krad_sprite->sheet_width, krad_sprite->frames,
 				krad_sprite->width, krad_sprite->height);
-		
+		strcpy(krad_sprite->filename, filename);
 		krad_sprite->opacity = 0.0f;
 		krad_sprite_set_new_opacity (krad_sprite, 1.0f);
 

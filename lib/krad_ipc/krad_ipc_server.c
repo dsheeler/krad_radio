@@ -842,9 +842,10 @@ void *krad_ipc_server_run_thread (void *arg) {
 							while (krad_ebml_io_buffer_read_space (&client->krad_ebml->io_adapter)) {
 								client->krad_ipc_server->current_client = client; /* single thread has a few perks */
 								if (krad_ipc_aquire_client (client)) {
-									//resp = client->krad_ipc_server->handler (client->output_buffer, &client->command_response_len, client->krad_ipc_server->pointer);
-									client->krad_ipc_server->handler (client->output_buffer, &client->command_response_len, client->krad_ipc_server->pointer);
-									//printk ("Krad IPC Server: CMD Response %d %d bytes\n", resp, client->command_response_len);
+									int resp;
+									resp = client->krad_ipc_server->handler (client->output_buffer, &client->command_response_len, client->krad_ipc_server->pointer);
+									//client->krad_ipc_server->handler (client->output_buffer, &client->command_response_len, client->krad_ipc_server->pointer);
+									printk ("Krad IPC Server: CMD Response %d %d bytes\n", resp, client->command_response_len);
 									krad_ebml_write_sync (krad_ipc_server->current_client->krad_ebml2);
 									krad_ipc_release_client (client);
 								}

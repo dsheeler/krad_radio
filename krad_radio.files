@@ -263,3 +263,4 @@ tests/temp.wscript
 README
 waf
 wscript
+lib/krad_compositor/krad_compositor_common.h

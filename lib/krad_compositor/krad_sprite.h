@@ -12,6 +12,8 @@ typedef struct krad_sprite_St krad_sprite_t;
 
 struct krad_sprite_St {
 
+	char filename[256];
+	
 	int active;
 
 	int x;

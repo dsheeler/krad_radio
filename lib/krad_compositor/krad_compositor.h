@@ -9,13 +9,9 @@
 #ifndef KRAD_COMPOSITOR_H
 #define KRAD_COMPOSITOR_H
 
-
 #include <libswscale/swscale.h>
 
 #include "pixman.h"
-
-
-
 
 typedef struct krad_compositor_St krad_compositor_t;
 typedef struct krad_compositor_port_St krad_compositor_port_t;
