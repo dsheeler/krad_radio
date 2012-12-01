@@ -3873,12 +3873,12 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				
 				i = 0;
 				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_size ( client, tag_value, &krad_text)) <= list_size)) {
-					printf ("..%d: %s\n", i, tag_value);
+					printf ("  %s\n", tag_value);
 					i++;
 					if (bytes_read == list_size) {
 						break;
 					} else {
-						printf ("%d: %d\n", list_size, bytes_read);
+						//printf ("%d: %d\n", list_size, bytes_read);
 					}
 				}	
 				break;
@@ -3887,12 +3887,12 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				
 				i = 0;
 				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_rate ( client, tag_value, &krad_text)) <= list_size)) {
-					printf ("..%d: %s\n", i, tag_value);
+					printf ("  %s\n", tag_value);
 					i++;
 					if (bytes_read == list_size) {
 						break;
 					} else {
-						printf ("%d: %d\n", list_size, bytes_read);
+						//printf ("%d: %d\n", list_size, bytes_read);
 					}
 				}	
 				break;
@@ -3929,7 +3929,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				}
 				i = 0;
 				while ((list_size) && ((bytes_read += krad_ipc_client_read_text ( client, tag_value, &krad_text)) <= list_size)) {
-					printf ("..%d: %s\n", i, tag_value);
+					printf ("  %s\n", tag_value);
 					i++;
 					if (bytes_read == list_size) {
 						break;
@@ -3949,7 +3949,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				}
 				i = 0;
 				while ((list_size) && ((bytes_read += krad_ipc_client_read_sprite ( client, tag_value, &krad_sprite)) <= list_size)) {
-					printf ("..%d: %s\n", i, tag_value);
+					printf ("  %s\n", tag_value);
 					i++;
 					if (bytes_read == list_size) {
 						break;
@@ -3998,7 +3998,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				}
 				i = 0;
 				while ((list_size) && ((bytes_read += krad_ipc_client_read_link ( client, tag_value, &krad_link)) <= list_size)) {
-					printf ("  %d: %s\n", krad_link->link_num, tag_value);
+					printf ("  Id: %d  %s\n", krad_link->link_num, tag_value);
 					free (krad_link);
 					i++;
 					if (bytes_read == list_size) {
