@@ -1876,10 +1876,10 @@ void krad_compositor_text_subunit_controls_to_ebml( krad_ipc_server_t *krad_ipc,
 	                       krad_text->yscale);							 
 	
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2, 
-	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
+	                       EBML_ID_KRAD_COMPOSITOR_TEXT_ROTATION, 
 	                       krad_text->rotation);
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2, 
-	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
+	                       EBML_ID_KRAD_COMPOSITOR_TEXT_OPACITY, 
 	                       krad_text->opacity);
 }
 
@@ -1910,10 +1910,10 @@ void krad_compositor_sprite_subunit_controls_to_ebml( krad_ipc_server_t *krad_ip
 	                       krad_sprite->yscale);							 
 	
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2, 
-	                       EBML_ID_KRAD_COMPOSITOR_SPRITE_NUMBER, 
+	                       EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, 
 	                       krad_sprite->rotation);
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2, 
-	                       EBML_ID_KRAD_COMPOSITOR_SPRITE_NUMBER, 
+	                       EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, 
 	                       krad_sprite->opacity);
 }
 void krad_compositor_sprite_to_ebml ( krad_ipc_server_t *krad_ipc, krad_sprite_t *krad_compositor_sprite, int number) {
