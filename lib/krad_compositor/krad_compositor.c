@@ -211,7 +211,7 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filen
 	
 	krad_sprite = NULL;
 
-	if ((filename == NULL ) || (strlen(filename) == 0)) {
+	if ((filename == NULL) || (strlen(filename) == 0)) {
 	  return;
 	}
 
@@ -229,16 +229,20 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filen
 	  }
 	}
 	
-	krad_sprite_open_file (krad_sprite, filename);
+	if (krad_sprite_open_file (krad_sprite, filename)) {
 	
-	krad_sprite_set_xy (krad_sprite, x, y);
-	krad_sprite_set_scale (krad_sprite, scale);
-	krad_sprite_set_new_opacity (krad_sprite, opacity);
-	krad_sprite_set_rotation (krad_sprite, rotation);
-	krad_sprite_set_tickrate (krad_sprite, tickrate);
+	  krad_sprite_set_xy (krad_sprite, x, y);
+	  krad_sprite_set_scale (krad_sprite, scale);
+	  krad_sprite_set_new_opacity (krad_sprite, opacity);
+	  krad_sprite_set_rotation (krad_sprite, rotation);
+	  krad_sprite_set_tickrate (krad_sprite, tickrate);
 
-	krad_sprite->active = 1;
-	krad_compositor->active_sprites++;
+	  krad_sprite->active = 1;
+	  krad_compositor->active_sprites++;
+
+	} else {
+    krad_sprite->active = 0;	  
+	}
 
 }
 

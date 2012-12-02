@@ -89,7 +89,7 @@ krad_sprite_t *krad_sprite_create ();
 void krad_sprite_destroy (krad_sprite_t *krad_sprite);
 krad_sprite_t *krad_sprite_create_from_file (char *filename);
 void krad_sprite_reset (krad_sprite_t *krad_sprite);
-void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename);
+int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename);
 void krad_sprite_set_xy (krad_sprite_t *krad_sprite, int x, int y);
 void krad_sprite_set_new_xy (krad_sprite_t *krad_sprite, int x, int y);
 

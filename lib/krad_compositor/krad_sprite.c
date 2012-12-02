@@ -29,7 +29,7 @@ krad_sprite_t *krad_sprite_create_from_file (char *filename) {
 
 }
 
-void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
+int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 
 	if (krad_sprite->sprite != NULL) {
 		krad_sprite_reset (krad_sprite);
@@ -57,14 +57,14 @@ void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 				
 				jpeg_buffer = malloc (10000000);
 				if (jpeg_buffer == NULL) {
-					return;
+					return 0;
 				}
 				
 				jpeg_fd = open (filename, O_RDONLY);
 				
 				if (jpeg_fd < 1) {
 					free (jpeg_buffer);
-					return;
+					return 0;
 				}
 				
 				jpeg_size = read (jpeg_fd, jpeg_buffer, 10000000);				
@@ -72,7 +72,7 @@ void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 				if (jpeg_size == 10000000) {
 					free (jpeg_buffer);
 					close (jpeg_fd);
-					return;
+					return 0;
 				}
 				
 				jpeg_dec = tjInitDecompress ();
@@ -99,12 +99,12 @@ void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 				close (jpeg_fd);
 			} else {
 				krad_sprite->sprite = NULL;
-				return;
+				return 0;
 			}
 		}
 		if (cairo_surface_status (krad_sprite->sprite) != CAIRO_STATUS_SUCCESS) {
 			krad_sprite->sprite = NULL;
-			return;
+			return 0;
 		}
 		
 		krad_sprite->sheet_width = cairo_image_surface_get_width ( krad_sprite->sprite );
@@ -132,6 +132,9 @@ void krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 		krad_sprite_set_new_opacity (krad_sprite, 1.0f);
 
 	}
+	
+	return 1;
+	
 }
 
 void krad_sprite_reset (krad_sprite_t *krad_sprite) {
