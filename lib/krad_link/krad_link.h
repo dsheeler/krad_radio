@@ -7,17 +7,17 @@ typedef struct krad_linker_listen_client_St krad_linker_listen_client_t;
 
 #include "krad_radio.h"
 
-#define DEFAULT_VPX_BITRATE 92 * 8
+#define DEFAULT_VPX_BITRATE 1200
 #define DEFAULT_THEORA_QUALITY 31
 #define DEFAULT_CAPTURE_BUFFER_FRAMES 50
 #define DEFAULT_DECODING_BUFFER_FRAMES 50
-#define DEFAULT_VORBIS_QUALITY 0.4
+#define DEFAULT_VORBIS_QUALITY 0.5
 #define KRAD_DEFAULT_FLAC_BIT_DEPTH 16
-#define DEFAULT_COMPOSITOR_WIDTH 1920
-#define DEFAULT_COMPOSITOR_HEIGHT 1080
+#define DEFAULT_COMPOSITOR_WIDTH 1280
+#define DEFAULT_COMPOSITOR_HEIGHT 720
 #define DEFAULT_COMPOSITOR_FPS 30
 #define DEFAULT_COMPOSITOR_FPS_NUMERATOR DEFAULT_COMPOSITOR_FPS * 1000
-#define DEFAULT_COMPOSITOR_FPS_DENOMINATOR 1 * 1001
+#define DEFAULT_COMPOSITOR_FPS_DENOMINATOR 1 * 1000
 #define DEFAULT_FPS 30
 #define DEFAULT_FPS_NUMERATOR DEFAULT_FPS * 1000
 #define DEFAULT_FPS_DENOMINATOR 1 * 1000
@@ -95,6 +95,10 @@ struct krad_link_St {
 	krad_theora_encoder_t *krad_theora_encoder;
 	krad_theora_decoder_t *krad_theora_decoder;
 	krad_x264_encoder_t *krad_x264_encoder;
+	
+	krad_vhs_t *krad_vhs;
+	krad_y4m_t *krad_y4m;	
+	
 //	krad_codec2_t *krad_codec2_decoder;
 //	krad_codec2_t *krad_codec2_encoder;
 	krad_vorbis_t *krad_vorbis;

@@ -4,7 +4,7 @@ static void krad_compositor_update_peaks (krad_compositor_t *krad_compositor);
 static void krad_compositor_close_display (krad_compositor_t *krad_compositor);
 static void krad_compositor_open_display (krad_compositor_t *krad_compositor);
 
-#ifdef WAYRAD
+#ifdef KRAD_USE_WAYLAND
 
 static void *krad_compositor_display_thread (void *arg);
 
@@ -103,7 +103,7 @@ static void *krad_compositor_display_thread (void *arg) {
 
 static void krad_compositor_open_display (krad_compositor_t *krad_compositor) {
 
-#ifdef WAYRAD
+#ifdef KRAD_USE_WAYLAND
 	if (krad_compositor->display_open == 1) {
 		krad_compositor_close_display (krad_compositor);
 	}
@@ -119,7 +119,7 @@ static void krad_compositor_open_display (krad_compositor_t *krad_compositor) {
 
 static void krad_compositor_close_display (krad_compositor_t *krad_compositor) {
 
-#ifdef WAYRAD
+#ifdef KRAD_USE_WAYLAND
 	if (krad_compositor->display_open == 1) {
     printk("Wayland display closing");	
 		krad_compositor->display_open = 2;
@@ -883,6 +883,12 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *krad_composit
 								 
 
 		}
+		
+
+    while (krad_ringbuffer_read_space (krad_compositor_port->frame_ring) >= (sizeof(krad_frame_t *) * 30)) {
+      usleep (18000);
+      //kludge to not buffer more than 1 handfull? of frames ahead for fast sources
+    }
 		
 		scaled_frame = krad_framepool_getframe (krad_compositor_port->krad_compositor->krad_framepool);					 
 

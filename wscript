@@ -26,15 +26,23 @@ def options(opt):
 	opt.add_option('--optimize', action='store_true', default=False,
 		help='Compile with -O3 rather than -g')	
 
+	opt.add_option('--x11', action='store_true', default=False,
+		help='Compile with support for X11 capture')
+		
+	opt.add_option('--wayland', action='store_true', default=False,
+		help='Compile with support for Wayland output')		
+
 def check_way(way):
-	try:  
-	   os.environ["WAYRAD"]
-	except KeyError: 
-		return
-	if os.environ['WAYRAD']:
-		print("WAYRAD DETECTED!")
-		way.env['WAYRAD'] = "yes"
-		way.env.append_unique('CFLAGS', ['-DWAYRAD'])
+	if way.options.wayland != False:
+		print("Enabling Wayland!")
+		way.env['KRAD_USE_WAYLAND'] = "yes"
+		way.env.append_unique('CFLAGS', ['-DKRAD_USE_WAYLAND'])
+
+def check_x11(x11):
+	if x11.options.x11 != False:
+		print("Enabling X11..")
+		x11.env['KRAD_USE_X11'] = "yes"
+		x11.env.append_unique('CFLAGS', ['-DKRAD_USE_X11'])
 
 def configure(conf):
 
@@ -52,6 +60,7 @@ def configure(conf):
 		conf.env.append_unique('CFLAGS', ['-DIS_MACOSX'])
 		conf.env.append_unique('CXXFLAGS', ['-DIS_MACOSX'])
 
+	check_x11(conf)
 	check_way(conf)
 
 	conf.load('compiler_c')	
@@ -71,6 +80,7 @@ def configure(conf):
 	conf.recurse(subdirs, mandatory = False)
 	
 def build(bld):
+	check_x11(bld)
 	check_way(bld)
 	bld.recurse(subdirs, mandatory = False)
 	bld.add_post_fun(post)
@@ -78,4 +88,3 @@ def build(bld):
 def post(pst):
 	if pst.cmd == 'install' and pst.env['IS_LINUX'] == True: 
 		pst.exec_command('/sbin/ldconfig')
-		print "Ran ldconfig"
