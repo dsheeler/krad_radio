@@ -215,9 +215,10 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filen
 	  return;
 	}
 
-  if (strcmp(filename, "background") == 0) {
+  // silly
+  if (x == -666) {
     krad_sprite = &krad_compositor->krad_sprite[0];
-    krad_sprite->active = 2;  
+    krad_sprite->active = 2;
   } else {
 	  for (s = 1; s < KRAD_COMPOSITOR_MAX_SPRITES; s++) {
 		  if (krad_compositor->krad_sprite[s].active == 0) {
@@ -286,7 +287,7 @@ void krad_compositor_unset_background (krad_compositor_t *krad_compositor) {
 
 void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *filename) {
 	krad_compositor_unset_background (krad_compositor);
-  krad_compositor_add_sprite (krad_compositor, "background", 0, 0, 1, 1.0, 1.0, 0.0);
+  krad_compositor_add_sprite (krad_compositor, filename, -666, 0, 1, 1.0, 1.0, 0.0);
 }
 
 void krad_compositor_render_background (krad_compositor_t *krad_compositor) {
@@ -298,15 +299,14 @@ void krad_compositor_render_background (krad_compositor_t *krad_compositor) {
 	if (background->active != 1) {
 		return;
 	}
-
+  cairo_save (krad_compositor->krad_gui->cr);
   if ((background->width != krad_compositor->width) || (background->height != krad_compositor->height)) {
 		cairo_set_source (krad_compositor->krad_gui->cr, background->sprite_pattern);
   } else {
 		cairo_set_source_surface ( krad_compositor->krad_gui->cr, background->sprite, 0, 0 );
   }
-
 	cairo_paint ( krad_compositor->krad_gui->cr );
-
+  cairo_restore (krad_compositor->krad_gui->cr);
 }
 
 int krad_compositor_has_background (krad_compositor_t *krad_compositor) {
@@ -391,10 +391,10 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
         krad_compositor_render_no_input_text (krad_compositor);
 	    }
 	    return;
-    } else {
-	    krad_compositor->no_input = 0;
     }
   }
+  
+  krad_compositor->no_input = 0;
 	
 	/* Composite Input Ports */
 
@@ -450,7 +450,7 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 	}
 	
 
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_SPRITES; p++) {
+	for (p = 1; p < KRAD_COMPOSITOR_MAX_SPRITES; p++) {
 		if (krad_compositor->krad_sprite[p].active == 1) {
 			krad_sprite_render (&krad_compositor->krad_sprite[p], krad_compositor->krad_gui->cr);
 		}
