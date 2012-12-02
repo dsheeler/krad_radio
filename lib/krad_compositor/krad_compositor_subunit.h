@@ -3,6 +3,10 @@
 
 typedef struct krad_compositor_subunit_St krad_compositor_subunit_t;
 
+#include "krad_radio.h"
+
+#define KRAD_COMPOSITOR_SUBUNIT_DEFAULT_TICKRATE 4
+
 struct krad_compositor_subunit_St {
 	int active;
 
@@ -67,5 +71,6 @@ struct krad_compositor_subunit_St {
 
 krad_compositor_subunit_t *krad_compositor_subunit_create ();
 void krad_compositor_subunit_destroy (krad_compositor_subunit_t *krad_compositor_subunit);
+void krad_compositor_subunit_reset (krad_compositor_subunit_t *krad_compositor_subunit);
 
 #endif // KRAD_COMPOSITOR_SUBUNIT_H
