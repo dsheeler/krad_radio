@@ -376,15 +376,14 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
   /* Render background if exists */
 	
 	if (krad_compositor_has_background (krad_compositor)) {
+    krad_compositor->no_input = 0;	
     krad_compositor_render_background (krad_compositor);
   } else {
 
     /* No background, so clear frame */
-
   	krad_gui_clear (krad_compositor->krad_gui);
 
     /* Handle situation of maybe having absolutly no input */  
-
 	  if ((krad_compositor->active_input_ports == 0) &&
 	      (krad_compositor->active_sprites == 0) &&
 	      (krad_compositor->active_texts == 0)) {
@@ -394,12 +393,11 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 	    if ((krad_compositor->no_input > 140) && ((krad_compositor->frame_num % 30) > 15)) {
         krad_compositor_render_no_input_text (krad_compositor);
 	    }
-	    return;
+    } else {
+      krad_compositor->no_input = 0;
     }
   }
   
-  krad_compositor->no_input = 0;
-	
 	/* Composite Input Ports */
 
 	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
