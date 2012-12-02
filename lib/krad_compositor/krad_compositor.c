@@ -1350,8 +1350,6 @@ void krad_compositor_destroy (krad_compositor_t *krad_compositor) {
   krad_sprite_destroy_arr (krad_compositor->krad_sprite, KRAD_COMPOSITOR_MAX_SPRITES);
   krad_text_destroy_arr (krad_compositor->krad_text, KRAD_COMPOSITOR_MAX_TEXTS);
 
-	free (krad_compositor->krad_sprite);
-	free (krad_compositor->krad_text);	
 	free (krad_compositor);
 	
   printk ("Krad compositor destroy complete");
