@@ -6,6 +6,7 @@
 typedef struct krad_text_rep_St krad_text_rep_t;
 typedef struct krad_sprite_rep_St krad_sprite_rep_t;
 typedef struct kr_compositor_subunit_controls_St kr_compositor_subunit_controls_t;
+typedef struct krad_compositor_rep_St krad_compositor_rep_t;
 
 struct kr_compositor_subunit_controls_St {
 
@@ -39,6 +40,16 @@ struct krad_text_rep_St {
 	float blue;
 	
 	kr_compositor_subunit_controls_t *controls;
+};
+
+struct krad_compositor_rep_St {
+	
+	uint32_t width;
+	uint32_t height;
+	uint32_t fps_numerator;
+	uint32_t fps_denominator;
+	uint64_t current_frame_number;
+	
 };
 
 #endif // KRAD_COMPOSITOR_COMMON_H

@@ -6,7 +6,7 @@ krad_text_t *krad_text_create () {
 	krad_text_t *krad_text;
 
 	if ((krad_text = calloc (1, sizeof (krad_text_t))) == NULL) {
-		failfast ("Krad Sprite mem alloc fail");
+		failfast ("Krad Text mem alloc fail");
 	}
 	
 	krad_text_reset (krad_text);

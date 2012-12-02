@@ -13,12 +13,13 @@
 
 #include "pixman.h"
 
-typedef struct krad_compositor_St krad_compositor_t;
+
 typedef struct krad_compositor_port_St krad_compositor_port_t;
+typedef struct krad_compositor_St krad_compositor_t;
 typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 
-
 #include "krad_radio.h"
+#include "krad_compositor_port.h"
 
 #define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
 #define KRAD_COMPOSITOR_MAX_PORTS 32
@@ -55,59 +56,6 @@ struct krad_compositor_snapshot_St {
 
 };
 
-struct krad_compositor_port_St {
-
-	krad_compositor_t *krad_compositor;
-
-	char sysname[256];
-	int direction;
-	int active;
-	
-	krad_frame_t *last_frame;
-	krad_ringbuffer_t *frame_ring;
-	
-	int passthru;
-
-	int source_width;
-	int source_height;
-	
-	int width;
-	int height;
-	
-	int crop_x;
-	int crop_y;
-	
-	int crop_width;
-	int crop_height;
-	
-	int crop_start_pixel[4];
-		
-	int x;
-	int y;
-	int z;	
-	
-	float rotation;
-	float opacity;	
-	
-	struct SwsContext *sws_converter;	
-	int yuv_color_depth;
-	
-	int io_params_updated;
-	int comp_params_updated;
-	
-	uint64_t start_timecode;
-	
-	
-	int local;
-	int shm_sd;
-	int msg_sd;
-	char *local_buffer;
-	int local_buffer_size;
-	krad_frame_t *local_frame;	
-	
-	
-};
-
 struct krad_compositor_St {
 
 	cairo_surface_t *mask_cst;
@@ -131,15 +79,6 @@ struct krad_compositor_St {
 	char last_snapshot_name[1024];
 	pthread_mutex_t last_snapshot_name_lock;
 
-	int hex_x;
-	int hex_y;
-	int hex_size;
-
-	int bug_x;
-	int bug_y;
-	char *bug_filename;
-	
-	int render_vu_meters;
 	krad_mixer_t *krad_mixer;
 
 	krad_framepool_t *krad_framepool;
@@ -182,11 +121,6 @@ struct krad_compositor_St {
 
 	krad_text_t *krad_text;
 	int active_texts;
-
-	int enable_keystone;
-	krad_point_t quad[4];
-	pixman_transform_t keystone;
-	
 	
 	struct timespec start_time;
 

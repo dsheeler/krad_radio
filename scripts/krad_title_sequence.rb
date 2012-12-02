@@ -64,7 +64,7 @@ sleep 0.5
 	
 station.sprite("#{File.expand_path('~')}/Pictures/oneman.png", 600, 255, 10, 1, 1.0, 3600.0)
 sleep 2.0
-station.set_sprite(0, 600, 255, 50, 1, 1.0, 0.0)
+station.set_sprite(0, 600, 255, 80, 1, 1.0, 0.0)
 sleep 4.0
 station.throw_sprite(0)
 station.rm_text(1)
@@ -82,33 +82,32 @@ station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 2.0
 
 station.text("six600110", 55, 455, 5, 80, 1, 0, 250, 250, 250)
-
-
 sleep 0.5
 
 station.sprite("#{File.expand_path('~')}/Pictures/six600110.png", 600, 215, 10, 1, 1.0, -3600.0)
-
 sleep 2.0
-station.set_sprite(0, 600, 215, 50, 1, 1.0, 0.0)
+station.set_sprite(0, 600, 215, 80, 1, 1.0, 0.0)
 sleep 4.0
 station.throw_sprite(0)
 system("krad_radio djsh lstext")
 station.rm_text(1)
 station.rm_text(0)
-sleep 2.5
-station.rm_sprite(0)
 sleep 1.0
-station.text("Lets whatch a movie", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+station.rm_sprite(0)
+sleep 0.1
+station.text("Lets watch a movie", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 
 sleep 2.0
+station.rm_text(0)
 station.play("#{File.expand_path('~')}/Videos/holy_crap.ogv")
 sleep 1.0
-station.rm_text(0)
-
+station.text("A screen capture", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+sleep 1.0
+station.set_text(0, 125, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 3.0
-
+station.rm_text(0)
 station.text("Zooming in with audacity and friends", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)

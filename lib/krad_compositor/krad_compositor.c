@@ -224,8 +224,6 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filen
 			break;
 		}
 	}
-
-	//krad_sprite = krad_sprite_create_from_file (filename);
 	
 	krad_sprite_open_file (krad_sprite, filename);
 	
@@ -336,70 +334,6 @@ void krad_compositor_render_background (krad_compositor_t *krad_compositor, krad
 
 }
 
-void krad_compositor_create_keystone_matrix (krad_point_t q[4], double w, double h, pixman_transform_t *transform) {
-/*
-    double q0x = q[0].x, q0y = q[0].y;
-    double q1x = q[1].x, q1y = q[1].y;
-    double q2x = q[2].x, q2y = q[2].y;
-    double q3x = q[3].x, q3y = q[3].y;
-    double m00, m01, m02;
-    double m10, m11, m12;
-    double m20, m21, m22;
-
-	pixman_transform_t temp_transform;
-
-    m02 = q0x;
-    m12 = q0y;
-    m22 = 1;
-
-    double a = ((q2x - q3x)*(q1y - q2y) - (q2y - q3y)*(q1x - q2x)) * h;
-    double b = (q2x - q1x - q3x + q0x) * (q1y - q2y) - (q2y - q1y - q3y + q0y) * (q1x - q2x);
-    m21 = - b / a;
-
-    if (q1x != q2x) {
-		m20 = (m21 * (q2x - q3x) * h + q2x - q1x - q3x + q0x) / ((q1x - q2x) * w);
-    } else {
-		m20 = (m21 * (q2y - q3y) * h + q2y - q1y - q3y + q0y) / ((q1y - q2y) * w);
-	}
-
-    m00 = m20 * q1x + (q1x - q0x) / w;
-    m10 = m20 * q1y + (q1y - q0y) / w;
-
-    m01 = m21 * q3x + (q3x - q0x) / h;
-    m11 = m21 * q3y + (q3y - q0y) / h;
-
-	printk ("%f %f %f\n", m00, m01, m02);
-	printk ("%f %f %f\n", m10, m11, m12);
-	printk ("%f %f %f\n", m20, m21, m22);
-
-	temp_transform.matrix[0][0] = pixman_double_to_fixed(m00);
-	temp_transform.matrix[0][1] = pixman_double_to_fixed(m01);
-	temp_transform.matrix[0][2] = pixman_double_to_fixed(m02);
-	temp_transform.matrix[1][0] = pixman_double_to_fixed(m10);
-	temp_transform.matrix[1][1] = pixman_double_to_fixed(m11);
-	temp_transform.matrix[1][2] = pixman_double_to_fixed(m12);
-	temp_transform.matrix[2][0] = pixman_double_to_fixed(m20);
-	temp_transform.matrix[2][1] = pixman_double_to_fixed(m21);
-	temp_transform.matrix[2][2] = pixman_double_to_fixed(m22);
-
-//	pixman_transform_invert (transform, &temp_transform);
-
-	transform->matrix[0][0] = pixman_int_to_fixed(1);
-	transform->matrix[0][1] = pixman_int_to_fixed(0);
-	transform->matrix[0][2] = pixman_int_to_fixed(0);
-	transform->matrix[1][0] = pixman_int_to_fixed(0);
-	transform->matrix[1][1] = pixman_int_to_fixed(1);
-	transform->matrix[1][2] = pixman_int_to_fixed(0);
-	transform->matrix[2][0] = pixman_int_to_fixed(0);
-	transform->matrix[2][1] = pixman_int_to_fixed(0);
-	transform->matrix[2][2] = pixman_int_to_fixed(1);
-
-
-	pixman_transform_init_translate (transform, pixman_int_to_fixed(200), pixman_int_to_fixed(200));
-*/
-}
-
-
 void krad_compositor_process (krad_compositor_t *krad_compositor) {
 
 	int p;
@@ -427,20 +361,6 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 
 	//printk ("timecode is %llu", krad_compositor->timecode);
 	
-	if (krad_compositor->bug_filename != NULL) {
-		if (strlen(krad_compositor->bug_filename)) {
-			printk ("setting bug to %s %d %d", krad_compositor->bug_filename, 
-			        krad_compositor->bug_x, krad_compositor->bug_y);
-			krad_gui_set_bug (krad_compositor->krad_gui, krad_compositor->bug_filename, 
-							 krad_compositor->bug_x, krad_compositor->bug_y);
-		} else {
-			printk ("removing bug");
-			krad_gui_remove_bug (krad_compositor->krad_gui);
-		}
-		free (krad_compositor->bug_filename);
-		krad_compositor->bug_filename = NULL;
-	}
-	
 	/* Get a frame */
 	
 	do {
@@ -463,8 +383,6 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 			cairo_restore (krad_compositor->krad_gui->cr);
 		} else {
 
-			//krad_gui_clear (krad_compositor->krad_gui);	
-		
 			if ((krad_compositor->active_sprites == 0) && (krad_compositor->active_texts == 0)) {
 			
 				krad_compositor->no_input++;
@@ -488,32 +406,13 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 	} else {
 	
 		krad_compositor->no_input = 0;
-		/*
-		need_clear_or_background = 1;
-
-		for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
-			if ((krad_compositor->port[p].active == 1) && (krad_compositor->port[p].direction == INPUT)) {
-				if ((krad_compositor->port[p].x == 0) && (krad_compositor->port[p].y == 0) &&
-					(krad_compositor->port[p].crop_width == krad_compositor->width) &&
-					(krad_compositor->port[p].crop_height == krad_compositor->height)) {
-					
-					need_clear_or_background = 0;
-					break;
-				}
-			}
-		}
-
-		if (need_clear_or_background == 1) {
-		*/
-			if (krad_compositor->background != NULL) {
-				cairo_save (krad_compositor->krad_gui->cr);
-				krad_compositor_render_background (krad_compositor, composite_frame);
-				cairo_restore (krad_compositor->krad_gui->cr);
-			} else {		
-				//krad_gui_clear (krad_compositor->krad_gui);
-			}
-		//}
-
+		
+		if (krad_compositor->background != NULL) {
+			cairo_save (krad_compositor->krad_gui->cr);
+			krad_compositor_render_background (krad_compositor, composite_frame);
+			cairo_restore (krad_compositor->krad_gui->cr);
+		} else {		
+	
 		/* Composite Input Ports */
 
 		for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
@@ -542,149 +441,72 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 										 krad_compositor->port[p].crop_height / -2);
 					}
 	
-					if (krad_compositor->enable_keystone) {
-/*
-						pixman_image_t *src_img;
-						pixman_image_t *dest_img;
 
-						src_img = pixman_image_create_bits (PIXMAN_a8r8g8b8,
-										 krad_compositor->port[p].crop_width, krad_compositor->port[p].crop_height, 
-										 (uint32_t *)frame->pixels,
-										 krad_compositor->port[p].crop_width * 4);
+						
+					cairo_set_source_surface (krad_compositor->krad_gui->cr,
+					                          frame->cst,
+					                          krad_compositor->port[p].x - krad_compositor->port[p].crop_x,
+					                          krad_compositor->port[p].y - krad_compositor->port[p].crop_y);
 
+					cairo_rectangle (krad_compositor->krad_gui->cr,
+					                 krad_compositor->port[p].x,
+					                 krad_compositor->port[p].y,
+					                 krad_compositor->port[p].crop_width,
+					                 krad_compositor->port[p].crop_height);
 
-						dest_img = pixman_image_create_bits (PIXMAN_a8r8g8b8,
-										 krad_compositor->width, krad_compositor->height, 
-										 (uint32_t *)composite_frame->pixels,
-										 krad_compositor->width * 4);
+					cairo_clip (krad_compositor->krad_gui->cr);
 
-
-						pixman_image_set_transform (src_img, &krad_compositor->keystone);
-
-						pixman_image_composite (PIXMAN_OP_OVER, src_img, NULL, dest_img,
-									0, 0, 0, 0, 0, 0, krad_compositor->width, krad_compositor->height);						
-
-
-						pixman_image_unref (src_img);
-						pixman_image_unref (dest_img);
-*/
+					if (krad_compositor->port[p].opacity == 1.0f) {
+						cairo_paint (krad_compositor->krad_gui->cr);
 					} else {
-						
-						cairo_set_source_surface (krad_compositor->krad_gui->cr,
-												  frame->cst,
-												  krad_compositor->port[p].x - krad_compositor->port[p].crop_x,
-												  krad_compositor->port[p].y - krad_compositor->port[p].crop_y);
-
-						cairo_rectangle (krad_compositor->krad_gui->cr,
-										 krad_compositor->port[p].x,
-										 krad_compositor->port[p].y,
-										 krad_compositor->port[p].crop_width,
-										 krad_compositor->port[p].crop_height);
-						
-						/*
-						cairo_set_source_surface (krad_compositor->krad_gui->cr,
-												  frame->cst,
-												  0,
-												  0);
-
-						cairo_rectangle (krad_compositor->krad_gui->cr,
-										 0,
-										 0,
-										 krad_compositor->port[p].width,
-										 krad_compositor->port[p].height);						
-            */
-
-						cairo_clip (krad_compositor->krad_gui->cr);
-
-						//if (krad_compositor->krad_text[1].active == 1) {
-						//
-						//	cairo_mask_surface (krad_compositor->krad_gui->cr, krad_compositor->mask_cst, 0, 0);
-						//
-						//} else {		 
-							if (krad_compositor->port[p].opacity == 1.0f) {
-								cairo_paint (krad_compositor->krad_gui->cr);
-							} else {
-								cairo_paint_with_alpha (krad_compositor->krad_gui->cr, krad_compositor->port[p].opacity);
-							}
-						//}
+						cairo_paint_with_alpha (krad_compositor->krad_gui->cr, krad_compositor->port[p].opacity);
 					}
+					
 					cairo_restore (krad_compositor->krad_gui->cr);
 					krad_framepool_unref_frame (frame);
 				}
 			}
 		}
-	}
+		
 
-	/* Render Overlayed Items */
-	
-	if (krad_compositor->hex_size > 0) {
-		krad_gui_render_hex (krad_compositor->krad_gui, krad_compositor->hex_x, krad_compositor->hex_y, 
-		                    krad_compositor->hex_size);	
-	} else {
-	//	krad_gui_render_selector (krad_compositor->krad_gui, krad_compositor->hex_x, krad_compositor->hex_y, 
-	//	                    64);
-	
-	//	krad_gui_render_meter (krad_compositor->krad_gui, krad_compositor->krad_gui->width / 2,
-	//	                      krad_compositor->krad_gui->height/3, 264, krad_system_get_cpu_usage ());
-	//
-	}
-	
-	if (krad_compositor->render_vu_meters > 0) {
-	
-		krad_compositor_update_peaks (krad_compositor);
-	
-		krad_gui_render_meter (krad_compositor->krad_gui, 110, krad_compositor->krad_gui->height - 30, 64,
-		                      krad_compositor->krad_gui->output_current[0]);
-		krad_gui_render_meter (krad_compositor->krad_gui, krad_compositor->krad_gui->width - 110,
-		                      krad_compositor->krad_gui->height - 30, 64, krad_compositor->krad_gui->output_current[1]);
-	}
-	
-
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_SPRITES; p++) {
-		if (krad_compositor->krad_sprite[p].active == 1) {
-			krad_sprite_render (&krad_compositor->krad_sprite[p], krad_compositor->krad_gui->cr);
+		for (p = 0; p < KRAD_COMPOSITOR_MAX_SPRITES; p++) {
+			if (krad_compositor->krad_sprite[p].active == 1) {
+				krad_sprite_render (&krad_compositor->krad_sprite[p], krad_compositor->krad_gui->cr);
+			}
 		}
-	}
-	
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_TEXTS; p++) {
-		if (krad_compositor->krad_text[p].active == 1) {
-			//if (p == 1) {
-			//	cairo_save (krad_compositor->mask_cr);
-			//	cairo_set_operator (krad_compositor->mask_cr, CAIRO_OPERATOR_CLEAR);	
-			//	cairo_paint (krad_compositor->mask_cr);
-			//	cairo_restore (krad_compositor->mask_cr);
-			//	krad_text_expand (&krad_compositor->krad_text[p], krad_compositor->krad_gui->cr, krad_compositor->width);
-			//	krad_text_render (&krad_compositor->krad_text[p], krad_compositor->mask_cr);
-			//} else {
+		
+		for (p = 0; p < KRAD_COMPOSITOR_MAX_TEXTS; p++) {
+			if (krad_compositor->krad_text[p].active == 1) {
 				krad_text_render (&krad_compositor->krad_text[p], krad_compositor->krad_gui->cr);
-			//}
+			}
+		}	
+		
+		krad_gui_render (krad_compositor->krad_gui);
+		
+		/* Push out the composited frame */
+		
+		for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+			if ((krad_compositor->port[p].active == 1) && (krad_compositor->port[p].direction == OUTPUT)) {
+				krad_compositor_port_push_frame (&krad_compositor->port[p], composite_frame);
+			}
 		}
-	}	
-
-	krad_gui_render (krad_compositor->krad_gui);
-
-	/* Push out the composited frame */
-	
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
-		if ((krad_compositor->port[p].active == 1) && (krad_compositor->port[p].direction == OUTPUT)) {
-			krad_compositor_port_push_frame (&krad_compositor->port[p], composite_frame);
+		
+		if (krad_compositor->snapshot > 0) {
+			krad_compositor_take_snapshot (krad_compositor, composite_frame, SNAPPNG);
+		}
+		
+		if (krad_compositor->snapshot_jpeg > 0) {
+			krad_compositor_take_snapshot (krad_compositor, composite_frame, SNAPJPEG);
+		}	
+		
+		krad_framepool_unref_frame (composite_frame);
+		
 		}
 	}
-	
-	if (krad_compositor->snapshot > 0) {
-		krad_compositor_take_snapshot (krad_compositor, composite_frame, SNAPPNG);
-	}
-	
-	if (krad_compositor->snapshot_jpeg > 0) {
-		krad_compositor_take_snapshot (krad_compositor, composite_frame, SNAPJPEG);
-	}	
-	
-	krad_framepool_unref_frame (composite_frame);
-	
 }
 
 void krad_compositor_get_last_snapshot_name (krad_compositor_t *krad_compositor, char *filename) {
-
+	
 	if (filename == NULL) {
 		return;
 	}
@@ -1596,24 +1418,6 @@ void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int wid
 
 }
 
-void krad_compositor_keystone_test (krad_compositor_t *krad_compositor) {
-
-	krad_compositor->quad[0].x = 250;
-	krad_compositor->quad[0].y = 50;
-	krad_compositor->quad[1].x = krad_compositor->width;
-	krad_compositor->quad[1].y = 200;
-	krad_compositor->quad[2].x = krad_compositor->width;
-	krad_compositor->quad[2].y = krad_compositor->height - 100;
-	krad_compositor->quad[3].x = 120;
-	krad_compositor->quad[3].y = krad_compositor->height - 90;
-
-	krad_compositor_create_keystone_matrix (krad_compositor->quad,
-											krad_compositor->width,
-											krad_compositor->height,
-											&krad_compositor->keystone);
-
-}
-
 
 krad_compositor_t *krad_compositor_create (int width, int height,
 										   int frame_rate_numerator, int frame_rate_denominator) {
@@ -1643,20 +1447,6 @@ krad_compositor_t *krad_compositor_create (int width, int height,
 	pthread_mutex_init (&krad_compositor->last_snapshot_name_lock, NULL);
 	
 	krad_compositor_set_frame_rate (krad_compositor, frame_rate_numerator, frame_rate_denominator);
-	
-	krad_compositor->hex_x = 150;
-	krad_compositor->hex_y = 100;
-	krad_compositor->hex_size = 0;
-
-	krad_compositor->bug_filename = NULL;	
-	
-	krad_compositor->render_vu_meters = 0;
-	
-	krad_compositor->enable_keystone = 0;
-
-	if (krad_compositor->enable_keystone) {
-		krad_compositor_keystone_test (krad_compositor);
-	}
 
 	return krad_compositor;
 
@@ -1792,11 +1582,6 @@ static void krad_compositor_update_peaks (krad_compositor_t *krad_compositor) {
 	float peakval[2];
 	
 	if ((krad_compositor->krad_mixer != NULL) && (krad_compositor->krad_mixer->master_mix != NULL)) {
-		
-		//peakval[0] = krad_mixer_portgroup_read_channel_peak (krad_compositor->krad_mixer->master_mix, 0);
-		//peakval[1] = krad_mixer_portgroup_read_channel_peak (krad_compositor->krad_mixer->master_mix, 1);
-		//peakval[1] = krad_mixer_portgroup_read_channel_peak (krad_mixer_get_portgroup_from_sysname (
-		//													   krad_compositor->krad_mixer, "music"), 1);
 		peakval[0] = krad_mixer_portgroup_read_channel_peak (krad_compositor->krad_mixer->master_mix, 0);
 		peakval[1] = krad_mixer_portgroup_read_channel_peak (krad_compositor->krad_mixer->master_mix, 1);
 
@@ -2166,73 +1951,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 			krad_ipc_server_response_finish ( krad_ipc, response );	
 				
 			break;	
-
-		case  EBML_ID_KRAD_COMPOSITOR_CMD_VU_MODE:
-
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_VU_ON) {
-				//printf("hrm wtf3vu\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-			krad_compositor->render_vu_meters = krad_ebml_read_number (krad_ipc->current_client->krad_ebml,
-																	   ebml_data_size);
-
-			break;
-
-	
-		case EBML_ID_KRAD_COMPOSITOR_CMD_SET_BUG:
-
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_X) {
-				//printf("hrm wtf3\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-			krad_compositor->bug_x = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_Y) {
-				//printf("hrm wtf3\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-			krad_compositor->bug_y = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-			
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_FILENAME) {
-				//printf("hrm wtf3\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-
-			krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-
-			krad_compositor->bug_filename = strdup (string);
-
-			/*
-			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_LINK_MSG, &response);
-			krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_LINK_LINK_LIST, &element);	
-			
-			for (k = 0; k < KRAD_LINKER_MAX_LINKS; k++) {
-				if (krad_linker->krad_link[k] != NULL) {
-					//printf("Link %d Active: %s\n", k, krad_linker->krad_link[k]->mount);
-					krad_linker_link_to_ebml ( krad_ipc, krad_linker->krad_link[k]);
-				}
-			}
-			
-			krad_ipc_server_response_list_finish ( krad_ipc, element );
-			krad_ipc_server_response_finish ( krad_ipc, response );	
-			*/		
-			break;
 			
 		case EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND:
 			
@@ -2551,55 +2269,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 			krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, string);
 			krad_ipc_server_response_finish ( krad_ipc, response);
 		
-			break;
-			
-
-		case EBML_ID_KRAD_COMPOSITOR_CMD_HEX_DEMO:
-
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_X) {
-				//printf("hrm wtf3\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-			krad_compositor->hex_x = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_Y) {
-				//printf("hrm wtf3\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-			krad_compositor->hex_y = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-			
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_COMPOSITOR_SIZE) {
-				//printf("hrm wtf3\n");
-			} else {
-				//printf("tag value size %zu\n", ebml_data_size);
-			}
-
-			krad_compositor->hex_size = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);			
-
-			/*
-			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_LINK_MSG, &response);
-			krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_LINK_LINK_LIST, &element);	
-			
-			for (k = 0; k < KRAD_LINKER_MAX_LINKS; k++) {
-				if (krad_linker->krad_link[k] != NULL) {
-					//printf("Link %d Active: %s\n", k, krad_linker->krad_link[k]->mount);
-					krad_linker_link_to_ebml ( krad_ipc, krad_linker->krad_link[k]);
-				}
-			}
-			
-			krad_ipc_server_response_list_finish ( krad_ipc, element );
-			krad_ipc_server_response_finish ( krad_ipc, response );	
-			*/		
 			break;
 			
 		case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:

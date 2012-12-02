@@ -3043,7 +3043,7 @@ int krad_ipc_client_read_text ( krad_ipc_client_t *client, char *text, krad_text
 		
 	return bytes_read;
 }
-int krad_ipc_client_read_frame_size ( krad_ipc_client_t *client, char *text, krad_text_rep_t **krad_text_rep) {
+int krad_ipc_client_read_frame_size ( krad_ipc_client_t *client, char *text, krad_compositor_rep_t **krad_compositor_rep) {
 
 	uint32_t ebml_id;
 	uint64_t ebml_data_size;
@@ -3070,7 +3070,7 @@ int krad_ipc_client_read_frame_size ( krad_ipc_client_t *client, char *text, kra
 	return bytes_read;
 }
 
-int krad_ipc_client_read_frame_rate ( krad_ipc_client_t *client, char *text, krad_text_rep_t **krad_text_rep) {
+int krad_ipc_client_read_frame_rate ( krad_ipc_client_t *client, char *text, krad_compositor_rep_t **krad_compositor_rep) {
 
 	uint32_t ebml_id;
 	uint64_t ebml_data_size;
@@ -3684,6 +3684,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 	krad_link_rep_t *krad_link;
 	krad_text_rep_t *krad_text;
 	krad_sprite_rep_t *krad_sprite;
+	krad_compositor_rep_t *krad_compositor;
 	
 	tag_item_actual[0] = '\0';	
 	tag_name_actual[0] = '\0';
@@ -3872,7 +3873,8 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				list_size = ebml_data_size;
 				
 				i = 0;
-				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_size ( client, tag_value, &krad_text)) <= list_size)) {
+				while ((list_size) && ((bytes_read +=  krad_ipc_client_read_frame_size ( 
+				                            client, tag_value, &krad_compositor)) <= list_size)) {
 					printf ("  %s\n", tag_value);
 					i++;
 					if (bytes_read == list_size) {
@@ -3886,7 +3888,7 @@ void krad_ipc_print_response (krad_ipc_client_t *client) {
 				list_size = ebml_data_size;
 				
 				i = 0;
-				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_rate ( client, tag_value, &krad_text)) <= list_size)) {
+				while ((list_size) && ((bytes_read += krad_ipc_client_read_frame_rate ( client, tag_value, &krad_compositor)) <= list_size)) {
 					printf ("  %s\n", tag_value);
 					i++;
 					if (bytes_read == list_size) {
