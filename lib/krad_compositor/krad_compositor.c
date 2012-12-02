@@ -337,6 +337,36 @@ void krad_compositor_render_no_input_text (krad_compositor_t *krad_compositor) {
   cairo_restore (krad_compositor->krad_gui->cr);
 }
 
+void krad_compositor_videoport_render_frame (krad_compositor_t *krad_compositor, krad_compositor_port_t *port, krad_frame_t *frame) {
+
+  if (port->opacity == 0.0f) {
+	  return;
+  }
+  cairo_save (krad_compositor->krad_gui->cr);
+
+  if (port->rotation != 0.0f) {
+	  cairo_translate (krad_compositor->krad_gui->cr, port->crop_width / 2, port->crop_height / 2);
+	  cairo_rotate (krad_compositor->krad_gui->cr, port->rotation * (M_PI/180.0));
+	  cairo_translate (krad_compositor->krad_gui->cr, port->crop_width / -2, port->crop_height / -2);
+  }
+
+  cairo_set_source_surface (krad_compositor->krad_gui->cr, frame->cst,
+                            port->x - port->crop_x, port->y - port->crop_y);
+
+  cairo_rectangle (krad_compositor->krad_gui->cr,
+                   port->x, port->y,
+                   port->crop_width, port->crop_height);
+
+  cairo_clip (krad_compositor->krad_gui->cr);
+
+  if (port->opacity == 1.0f) {
+	  cairo_paint (krad_compositor->krad_gui->cr);
+  } else {
+	  cairo_paint_with_alpha (krad_compositor->krad_gui->cr, port->opacity);
+  }
+  cairo_restore (krad_compositor->krad_gui->cr);
+}
+
 void krad_compositor_process (krad_compositor_t *krad_compositor) {
 
 	int p;
@@ -398,59 +428,17 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
     }
   }
   
-	/* Composite Input Ports */
+	/* Composite Input Ports / Sprites / Texts */
 
 	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
 		if ((krad_compositor->port[p].active == 1) && (krad_compositor->port[p].direction == INPUT)) {
-
 			frame = krad_compositor_port_pull_frame (&krad_compositor->port[p]);		
-
 			if (frame != NULL) {
-			
-				if (krad_compositor->port[p].opacity == 0.0f) {
-					krad_framepool_unref_frame (frame);
-					continue;
-				}
-		
-				cairo_save (krad_compositor->krad_gui->cr);
-				if (krad_compositor->port[p].rotation != 0.0f) {
-					cairo_translate (krad_compositor->krad_gui->cr,
-									 krad_compositor->port[p].crop_width / 2,
-									 krad_compositor->port[p].crop_height / 2);
-									 
-					cairo_rotate (krad_compositor->krad_gui->cr,
-								  krad_compositor->port[p].rotation * (M_PI/180.0));
-
-					cairo_translate (krad_compositor->krad_gui->cr,
-									 krad_compositor->port[p].crop_width / -2,
-									 krad_compositor->port[p].crop_height / -2);
-				}
-
-				cairo_set_source_surface (krad_compositor->krad_gui->cr,
-				                          frame->cst,
-				                          krad_compositor->port[p].x - krad_compositor->port[p].crop_x,
-				                          krad_compositor->port[p].y - krad_compositor->port[p].crop_y);
-
-				cairo_rectangle (krad_compositor->krad_gui->cr,
-				                 krad_compositor->port[p].x,
-				                 krad_compositor->port[p].y,
-				                 krad_compositor->port[p].crop_width,
-				                 krad_compositor->port[p].crop_height);
-
-				cairo_clip (krad_compositor->krad_gui->cr);
-
-				if (krad_compositor->port[p].opacity == 1.0f) {
-					cairo_paint (krad_compositor->krad_gui->cr);
-				} else {
-					cairo_paint_with_alpha (krad_compositor->krad_gui->cr, krad_compositor->port[p].opacity);
-				}
-				
-				cairo_restore (krad_compositor->krad_gui->cr);
+        krad_compositor_videoport_render_frame (krad_compositor, &krad_compositor->port[p], frame);
 				krad_framepool_unref_frame (frame);
 			}
 		}
 	}
-	
 
 	for (p = 0; p < KRAD_COMPOSITOR_MAX_SPRITES; p++) {
 		if (krad_compositor->krad_sprite[p].active == 1) {
