@@ -77,16 +77,16 @@ void *krad_alsa_seq_running_thread (void *arg) {
 
 							break;
 
-                        case SND_SEQ_EVENT_PITCHBEND:
+            case SND_SEQ_EVENT_PITCHBEND:
 
 							c = ev->data.control.channel;
 
 							printk ("Pitchbender event on Channel %2d: %5d   \n",
 									c, ev->data.control.value);
 
-                        	break;
+              break;
 
-                        case SND_SEQ_EVENT_CHANPRESS:
+            case SND_SEQ_EVENT_CHANPRESS:
 
 							c = ev->data.control.channel;
 
@@ -95,21 +95,21 @@ void *krad_alsa_seq_running_thread (void *arg) {
 
 							break;
 
-						case SND_SEQ_EVENT_NOTEON:
+            case SND_SEQ_EVENT_NOTEON:
 
 							c = ev->data.note.channel;
 
-                            printk ("Note On event on Channel %2d: %5d %5d      \n",
-                            		c, ev->data.note.note,ev->data.note.velocity);
+                printk ("Note On event on Channel %2d: %5d %5d      \n",
+                        c, ev->data.note.note,ev->data.note.velocity);
 							break;
 
-                        case SND_SEQ_EVENT_NOTEOFF:
+            case SND_SEQ_EVENT_NOTEOFF:
 							c = ev->data.note.channel;
 							printk ("Note Off event on Channel %2d: %5d      \n",
 									c, ev->data.note.note);
 							break;
-                	}
-            	}
+            }
+          }
 			}
 		}
 	}

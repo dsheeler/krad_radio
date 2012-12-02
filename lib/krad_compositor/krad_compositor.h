@@ -110,12 +110,6 @@ struct krad_compositor_St {
 	uint64_t frame_num;
 	uint64_t timecode;
 
-
-	cairo_surface_t *background;
-	cairo_pattern_t *background_pattern;
-	int background_width;
-	int background_height;
-
 	krad_sprite_t *krad_sprite;
 	int active_sprites;
 
@@ -139,7 +133,6 @@ void krad_compositor_set_text (krad_compositor_t *krad_compositor, int num, int 
 								 float scale, float opacity, float rotation, int red, int green, int blue);
 
 void krad_compositor_remove_text (krad_compositor_t *krad_compositor, int num);
-void krad_compositor_list_texts (krad_compositor_t *krad_compositor);
 
 void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filename, int x, int y, int tickrate, 
 								 float scale, float opacity, float rotation);
@@ -148,13 +141,10 @@ void krad_compositor_set_sprite (krad_compositor_t *krad_compositor, int num, in
 								 float scale, float opacity, float rotation);
 
 void krad_compositor_remove_sprite (krad_compositor_t *krad_compositor, int num);
-void krad_compositor_list_sprites (krad_compositor_t *krad_compositor);
 
-void krad_compositor_render_background (krad_compositor_t *krad_compositor, krad_frame_t *frame);
 void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *filename);
 void krad_compositor_unset_background (krad_compositor_t *krad_compositor);
-
-void krad_compositor_render_background (krad_compositor_t *krad_compositor, krad_frame_t *frame);
+void krad_compositor_render_background (krad_compositor_t *krad_compositor);
 
 void krad_compositor_aspect_scale (int width, int height,
 								   int avail_width, int avail_height,

@@ -22,13 +22,11 @@ int main (int argc, char *argv[]) {
 
 	kr_client_t *client;
 	char *sysname;
-	char *string;
 	int ret;
 	int val;
 
 	sysname = NULL;
   client = NULL;
-  string = NULL;
   ret = 0;
   val = 0;
 
