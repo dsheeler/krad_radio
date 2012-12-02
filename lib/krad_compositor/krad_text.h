@@ -58,8 +58,11 @@ struct krad_text_St {
 };
 
 
+
 krad_text_t *krad_text_create ();
+krad_text_t *krad_text_create_arr (int count);
 void krad_text_destroy (krad_text_t *krad_text);
+void krad_text_destroy_arr (krad_text_t *krad_text, int count);
 void krad_text_reset (krad_text_t *krad_text);
 void krad_text_set_xy (krad_text_t *krad_text, int x, int y);
 void krad_text_set_new_xy (krad_text_t *krad_text, int x, int y);

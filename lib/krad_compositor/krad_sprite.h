@@ -84,9 +84,10 @@ struct krad_sprite_St {
 	
 };
 
-
 krad_sprite_t *krad_sprite_create ();
+krad_sprite_t *krad_sprite_create_arr (int count);
 void krad_sprite_destroy (krad_sprite_t *krad_sprite);
+void krad_sprite_destroy_arr (krad_sprite_t *krad_sprite, int count);
 krad_sprite_t *krad_sprite_create_from_file (char *filename);
 void krad_sprite_reset (krad_sprite_t *krad_sprite);
 int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename);

@@ -110,6 +110,8 @@ struct krad_compositor_St {
 	uint64_t frame_num;
 	uint64_t timecode;
 
+	krad_sprite_t *background;
+
 	krad_sprite_t *krad_sprite;
 	int active_sprites;
 

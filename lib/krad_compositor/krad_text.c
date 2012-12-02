@@ -1,23 +1,49 @@
 #include "krad_text.h"
 
 
-krad_text_t *krad_text_create () {
-
-	krad_text_t *krad_text;
-
-	if ((krad_text = calloc (1, sizeof (krad_text_t))) == NULL) {
-		failfast ("Krad Text mem alloc fail");
-	}
+void krad_text_destroy (krad_text_t *krad_text) {
 	
 	krad_text_reset (krad_text);
+	free (krad_text);
+
+}
+
+void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
 	
-	return krad_text;
+	int s;
+	
+  s = 0;
+	
+	for (s = 0; s < count; s++) {
+	  krad_text_reset (&krad_text[s]);
+	}
+
+	free (krad_text);
+
 }
 
 
-void krad_text_destroy (krad_text_t *krad_text) {
-	krad_text_reset (krad_text);
-	free (krad_text);
+krad_text_t *krad_text_create_arr (int count) {
+
+  int s;
+	krad_text_t *krad_text;
+
+  s = 0;
+
+	if ((krad_text = calloc (count, sizeof (krad_text_t))) == NULL) {
+		failfast ("Krad Sprite mem alloc fail");
+	}
+	
+	for (s = 0; s < count; s++) {
+	  krad_text_reset (&krad_text[s]);
+	}
+	
+	return krad_text;
+
+}
+
+krad_text_t *krad_text_create () {
+	return krad_text_create_arr (1);
 }
 
 void krad_text_reset (krad_text_t *krad_text) {

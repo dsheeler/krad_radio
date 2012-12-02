@@ -1,21 +1,49 @@
 #include "krad_sprite.h"
 
+void krad_sprite_destroy (krad_sprite_t *krad_sprite) {
+	
+	krad_sprite_reset (krad_sprite);
+	free (krad_sprite);
 
+}
 
+void krad_sprite_destroy_arr (krad_sprite_t *krad_sprite, int count) {
+	
+	int s;
+	
+  s = 0;
+	
+	for (s = 0; s < count; s++) {
+	  krad_sprite_reset (&krad_sprite[s]);
+	}
 
-krad_sprite_t *krad_sprite_create () {
+	free (krad_sprite);
 
+}
+
+krad_sprite_t *krad_sprite_create_arr (int count) {
+
+  int s;
 	krad_sprite_t *krad_sprite;
 
-	if ((krad_sprite = calloc (1, sizeof (krad_sprite_t))) == NULL) {
+  s = 0;
+
+	if ((krad_sprite = calloc (count, sizeof (krad_sprite_t))) == NULL) {
 		failfast ("Krad Sprite mem alloc fail");
 	}
 	
-	krad_sprite_reset (krad_sprite);
+	for (s = 0; s < count; s++) {
+	  krad_sprite_reset (&krad_sprite[s]);
+	}
 	
 	return krad_sprite;
 
 }
+
+krad_sprite_t *krad_sprite_create () {
+	return krad_sprite_create_arr (1);
+}
+
 
 krad_sprite_t *krad_sprite_create_from_file (char *filename) {
 
@@ -206,13 +234,6 @@ void krad_sprite_reset (krad_sprite_t *krad_sprite) {
 	krad_sprite->krad_ease_rotation = krad_ease_random();
 	krad_sprite->krad_ease_opacity = krad_ease_random();
 	
-}
-
-void krad_sprite_destroy (krad_sprite_t *krad_sprite) {
-	
-	krad_sprite_reset (krad_sprite);
-	free (krad_sprite);
-
 }
 
 void krad_sprite_set_xy (krad_sprite_t *krad_sprite, int x, int y) {
