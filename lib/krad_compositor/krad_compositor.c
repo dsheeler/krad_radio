@@ -2074,8 +2074,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 		krad_ipc_server_response_finish ( krad_ipc, response );	
 					
 		break;
-		
-			break;						
 
 	case EBML_ID_KRAD_COMPOSITOR_CMD_ADD_TEXT:
 		
@@ -2219,21 +2217,21 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 			
 		case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_TEXTS:
 		
-		printk ("krad compositor handler: LIST_TEXTS");
+		  printk ("krad compositor handler: LIST_TEXTS");
 		
-		krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_MSG, &response);
-		//krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT, "this is a test name");
-		krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT_LIST, &element);	
+		  krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_MSG, &response);
+		  //krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT, "this is a test name");
+		  krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT_LIST, &element);	
 		
-		for (s = 0; s < KRAD_COMPOSITOR_MAX_TEXTS; s++) {
-			if (krad_compositor->krad_text[s].active) {
-				printk ("Text %d Active: %d", s, krad_compositor->krad_text[s].active);
-				krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->krad_text[s], s);
-			}
-		}
+		  for (s = 0; s < KRAD_COMPOSITOR_MAX_TEXTS; s++) {
+			  if (krad_compositor->krad_text[s].active) {
+				  printk ("Text %d Active: %d", s, krad_compositor->krad_text[s].active);
+				  krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->krad_text[s], s);
+			  }
+		  }
 		
-		krad_ipc_server_response_list_finish ( krad_ipc, element );
-		krad_ipc_server_response_finish ( krad_ipc, response );	
+		  krad_ipc_server_response_list_finish ( krad_ipc, element );
+		  krad_ipc_server_response_finish ( krad_ipc, response );	
 			break;
 			
 		case EBML_ID_KRAD_COMPOSITOR_CMD_GET_LAST_SNAPSHOT_NAME:
