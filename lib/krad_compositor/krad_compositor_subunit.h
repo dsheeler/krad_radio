@@ -65,4 +65,7 @@ struct krad_compositor_subunit_St {
 	
 };
 
+krad_compositor_subunit_t *krad_compositor_subunit_create ();
+void krad_compositor_subunit_destroy (krad_compositor_subunit_t *krad_compositor_subunit);
+
 #endif // KRAD_COMPOSITOR_SUBUNIT_H
