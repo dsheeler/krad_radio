@@ -12,7 +12,7 @@ void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
 	
 	int s;
 	
-  s = 0;
+	s = 0;
 	
 	for (s = 0; s < count; s++) {
 	  krad_text_reset (&krad_text[s]);
@@ -34,8 +34,9 @@ krad_text_t *krad_text_create_arr (int count) {
 		failfast ("Krad Sprite mem alloc fail");
 	}
 	
-	for (s = 0; s < count; s++) {
-	  krad_text_reset (&krad_text[s]);
+  for (s = 0; s < count; s++) {
+    krad_compositor_subunit_create();
+    krad_text_reset (&krad_text[s]);
 	}
 	
 	return krad_text;

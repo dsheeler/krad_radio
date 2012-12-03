@@ -41,13 +41,13 @@ station.cmd("xmms2 XMMS2 play")
 #text(thetext, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0, font="sans")
 station.text("KRAD RADIO", 2000, 355, 5, 174, 1, 0, 255, 11, 2)
 
-station.cmd("vuon")
+#station.cmd("vuon")
 
 sleep 0.25
 
 #set_text(num=0, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0)
 station.set_text(0, 25, 355, 150, 174, 1, 0, 255, 11, 2)
-system('krad_radio djsh lstext')
+#system('krad_radio djsh lstext')
 sleep 5.0
 station.set_text(0, 25, 355, 5, 174, 0, 0, 255, 11, 2)
 sleep 2.5
@@ -89,7 +89,7 @@ sleep 2.0
 station.set_sprite(0, 600, 215, 80, 1, 1.0, 0.0)
 sleep 4.0
 station.throw_sprite(0)
-system("krad_radio djsh lstext")
+#system("krad_radio djsh lstext")
 station.rm_text(1)
 station.rm_text(0)
 sleep 1.0
@@ -155,7 +155,7 @@ station.text("And now a giant glowing spinning hexagon", 2000, 155, 5, 50, 1, 0,
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
 sleep 2.0
-station.cmd("hex 640 340 300")
+#station.cmd("hex 640 340 300")
 station.rm_text(0)
 sleep 2.0
 
@@ -204,7 +204,7 @@ station.set_sprite(3, 900, 505, 10, 0.065, 1.0, 720)
 sleep 2.0
 station.rm_text(1)
 
-system("krad_radio djsh lssprite")
+#system("krad_radio djsh lssprite")
 
 station.throw_sprite(3)
 station.throw_sprite(2)
@@ -243,7 +243,7 @@ station.rm_text(1)
 sleep 0.25
 station.cmd("xmms2 XMMS2 stop")
 station.cmd("rm 0")
-station.cmd("hex 0 0 0")
+#station.cmd("hex 0 0 0")
 sleep 1.0
 
 #station.cmd("destroy")

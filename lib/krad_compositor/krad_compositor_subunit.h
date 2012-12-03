@@ -73,4 +73,19 @@ krad_compositor_subunit_t *krad_compositor_subunit_create ();
 void krad_compositor_subunit_destroy (krad_compositor_subunit_t *krad_compositor_subunit);
 void krad_compositor_subunit_reset (krad_compositor_subunit_t *krad_compositor_subunit);
 
+void krad_compositor_subunit_set_xy (krad_compositor_subunit_t *krad_compositor_subunit, int x, int y);
+void krad_compositor_subunit_set_new_xy (krad_compositor_subunit_t *krad_compositor_subunit, int x, int y);
+
+void krad_compositor_subunit_set_scale (krad_compositor_subunit_t *krad_compositor_subunit, float scale);
+void krad_compositor_subunit_set_xscale (krad_compositor_subunit_t *krad_compositor_subunit, float scale);
+void krad_compositor_subunit_set_yscale (krad_compositor_subunit_t *krad_compositor_subunit, float scale);
+void krad_compositor_subunit_set_opacity (krad_compositor_subunit_t *krad_compositor_subunit, float opacity);
+void krad_compositor_subunit_set_rotation (krad_compositor_subunit_t *krad_compositor_subunit, float rotation);
+
+void krad_compositor_subunit_set_tickrate (krad_compositor_subunit_t *krad_compositor_subunit, int tickrate); 
+void krad_compositor_subunit_set_new_scale (krad_compositor_subunit_t *krad_compositor_subunit, float scale);
+void krad_compositor_subunit_set_new_opacity (krad_compositor_subunit_t *krad_compositor_subunit, float opacity);
+void krad_compositor_subunit_set_new_rotation (krad_compositor_subunit_t *krad_compositor_subunit, float rotation);
+
+void krad_compositor_subunit_update (krad_compositor_subunit_t *krad_compositor_subunit);
 #endif // KRAD_COMPOSITOR_SUBUNIT_H
