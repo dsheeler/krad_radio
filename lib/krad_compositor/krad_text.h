@@ -12,40 +12,11 @@ typedef struct krad_text_St krad_text_t;
 
 struct krad_text_St {
 
-	int active;
-
-	int x;
-	int y;
-	int z;
-	
-	int new_x;
-	int new_y;
-	int last_x;
-	int last_y;
-	
-	//float alpha;
-	
-	int tickrate;
-	int tick;
-
 	char font[128];
 	char text_actual[1024];
 
 	cairo_surface_t *text;
 	cairo_pattern_t *text_pattern;
-
-	int width;
-	int height;
-
-	float rotation;
-	float opacity;
-	float xscale;
-	float yscale;
-	
-	float new_rotation;
-	float new_opacity;
-	float new_xscale;
-	float new_yscale;
 		
 	float red;
 	float blue;
@@ -54,6 +25,8 @@ struct krad_text_St {
 	float new_red;
 	float new_blue;
 	float new_green;	
+  
+  krad_compositor_subunit_t *krad_compositor_subunit;
 		
 };
 
