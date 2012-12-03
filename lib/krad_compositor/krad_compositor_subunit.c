@@ -95,16 +95,16 @@ void krad_compositor_subunit_set_xy (krad_compositor_subunit_t *krad_compositor_
 }
 
 void krad_compositor_subunit_set_new_xy (krad_compositor_subunit_t *krad_compositor_subunit, int x, int y) {
-	krad_compositor_subunit->x_duration = rand() % 100 + 10;
+	krad_compositor_subunit->x_duration = 60;
 	krad_compositor_subunit->x_time = 0;
-	krad_compositor_subunit->y_duration = rand() % 100 + 10;
+	krad_compositor_subunit->y_duration = 60;
 	krad_compositor_subunit->y_time = 0;
 	krad_compositor_subunit->start_x = krad_compositor_subunit->x;
 	krad_compositor_subunit->start_y = krad_compositor_subunit->y;
 	krad_compositor_subunit->change_x_amount = x - krad_compositor_subunit->start_x;
 	krad_compositor_subunit->change_y_amount = y - krad_compositor_subunit->start_y;
-	krad_compositor_subunit->krad_ease_x = krad_ease_random();
-	krad_compositor_subunit->krad_ease_y = krad_ease_random();		
+	krad_compositor_subunit->krad_ease_x = EASEINOUTSINE;
+	krad_compositor_subunit->krad_ease_y = EASEINOUTSINE;		
 	krad_compositor_subunit->new_x = x;
 	krad_compositor_subunit->new_y = y;
 }
@@ -174,20 +174,20 @@ void krad_compositor_subunit_set_new_yscale (krad_compositor_subunit_t *krad_com
 }
 
 void krad_compositor_subunit_set_new_opacity (krad_compositor_subunit_t *krad_compositor_subunit, float opacity) {
-	krad_compositor_subunit->opacity_duration = rand() % 100 + 10;
+	krad_compositor_subunit->opacity_duration = 60;
 	krad_compositor_subunit->opacity_time = 0;
 	krad_compositor_subunit->start_opacity = krad_compositor_subunit->opacity;
 	krad_compositor_subunit->opacity_change_amount = opacity - krad_compositor_subunit->start_opacity;
-	krad_compositor_subunit->krad_ease_opacity = krad_ease_random();	
+	krad_compositor_subunit->krad_ease_opacity = EASEINOUTSINE;	
 	krad_compositor_subunit->new_opacity = opacity;
 }
 
 void krad_compositor_subunit_set_new_rotation (krad_compositor_subunit_t *krad_compositor_subunit, float rotation) {
-	krad_compositor_subunit->rotation_duration = rand() % 100 + 10;
+	krad_compositor_subunit->rotation_duration = 60;
 	krad_compositor_subunit->rotation_time = 0;
 	krad_compositor_subunit->start_rotation = krad_compositor_subunit->rotation;
 	krad_compositor_subunit->rotation_change_amount = rotation - krad_compositor_subunit->start_rotation;
-	krad_compositor_subunit->krad_ease_rotation = krad_ease_random();
+	krad_compositor_subunit->krad_ease_rotation = EASEINOUTSINE;
 	krad_compositor_subunit->new_rotation = rotation;
 }
 

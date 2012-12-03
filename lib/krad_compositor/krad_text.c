@@ -33,9 +33,9 @@ krad_text_t *krad_text_create_arr (int count) {
 	if ((krad_text = calloc (count, sizeof (krad_text_t))) == NULL) {
 		failfast ("Krad Sprite mem alloc fail");
 	}
-	
+
   for (s = 0; s < count; s++) {
-    krad_compositor_subunit_create();
+    krad_text[s].krad_compositor_subunit = krad_compositor_subunit_create();
     krad_text_reset (&krad_text[s]);
 	}
 	
@@ -151,7 +151,7 @@ void krad_text_expand (krad_text_t *krad_text, cairo_t *cr, int width) {
 
 void krad_text_render_xy (krad_text_t *krad_text, cairo_t *cr, int x, int y) {
 
-	krad_text_set_xy (krad_text, x, y);
+	krad_compositor_subunit_set_xy (krad_text->krad_compositor_subunit, x, y);
 	krad_text_render (krad_text, cr);
 }
 
@@ -160,10 +160,8 @@ void krad_text_tick (krad_text_t *krad_text) {
 
 	krad_text->krad_compositor_subunit->tick++;
 
-	krad_text_move (krad_text, krad_text->tickrate);
-
-	if (krad_text->tick >= krad_text->tickrate) {
-		krad_text->tick = 0;
+	if (krad_text->krad_compositor_subunit->tick >= krad_text->krad_compositor_subunit->tickrate) {
+		krad_text->krad_compositor_subunit->tick = 0;
 	}
 	
 	if (krad_text->new_red != krad_text->red) {
@@ -214,92 +212,29 @@ void krad_text_tick (krad_text_t *krad_text) {
 		}
 	}
 
-	
-	if (krad_text->new_rotation != krad_text->rotation) {
-		if (krad_text->new_rotation > krad_text->rotation) {
-			if (krad_text->rotation + 1.8f >= krad_text->new_rotation) {
-				krad_text->rotation = krad_text->new_rotation;
-			} else {
-				krad_text->rotation = krad_text->rotation + 1.8f;
-			}
-		} else {
-			if (krad_text->rotation - 1.8f <= krad_text->new_rotation) {
-				krad_text->rotation = krad_text->new_rotation;
-			} else {
-				krad_text->rotation = krad_text->rotation - 1.8f;
-			}
-		}
-	}
-	
-	if (krad_text->new_opacity != krad_text->opacity) {
-		if (krad_text->new_opacity > krad_text->opacity) {
-			if (krad_text->opacity + 0.02f >= krad_text->new_opacity) {
-				krad_text->opacity = krad_text->new_opacity;
-			} else {
-				krad_text->opacity = krad_text->opacity + 0.02f;
-			}
-		} else {
-			if (krad_text->opacity - 0.02f <= krad_text->new_opacity) {
-				krad_text->opacity = krad_text->new_opacity;
-			} else {
-				krad_text->opacity = krad_text->opacity - 0.02f;
-			}
-		}
-	}
-	
-	if (krad_text->new_xscale != krad_text->xscale) {
-		if (krad_text->new_xscale > krad_text->xscale) {
-			if (krad_text->xscale + 2.0f >= krad_text->new_xscale) {
-				krad_text->xscale = krad_text->new_xscale;
-			} else {
-				krad_text->xscale = krad_text->xscale + 2.0f;
-			}
-		} else {
-			if (krad_text->xscale - 2.0f <= krad_text->new_xscale) {
-				krad_text->xscale = krad_text->new_xscale;
-			} else {
-				krad_text->xscale = krad_text->xscale - 2.0f;
-			}
-		}
-	}
-	
-	if (krad_text->new_yscale != krad_text->yscale) {
-		if (krad_text->new_yscale > krad_text->yscale) {
-			if (krad_text->yscale + 2.0f >= krad_text->new_yscale) {
-				krad_text->yscale = krad_text->new_yscale;
-			} else {
-				krad_text->yscale = krad_text->yscale + 2.0f;
-			}
-		} else {
-			if (krad_text->yscale - 2.0f <= krad_text->new_yscale) {
-				krad_text->yscale = krad_text->new_yscale;
-			} else {
-				krad_text->yscale = krad_text->yscale - 2.0f;
-			}
-		}
-	}	
+  krad_compositor_subunit_update (krad_text->krad_compositor_subunit);
 	
 }
 
 void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
 
-	if (krad_text->rotation != 0.0f) {
-		cairo_translate (cr, krad_text->x, krad_text->y);	
-		cairo_translate (cr, krad_text->width / 2, krad_text->height / 2);
-		cairo_rotate (cr, krad_text->rotation * (M_PI/180.0));
-		cairo_translate (cr, krad_text->width / -2, krad_text->height / -2);		
-		cairo_translate (cr, krad_text->x * -1, krad_text->y * -1);
+	if (krad_text->krad_compositor_subunit->rotation != 0.0f) {
+		cairo_translate (cr, krad_text->krad_compositor_subunit->x, krad_text->krad_compositor_subunit->y);	
+		cairo_translate (cr, krad_text->krad_compositor_subunit->width / 2, krad_text->krad_compositor_subunit->height / 2);
+		cairo_rotate (cr, krad_text->krad_compositor_subunit->rotation * (M_PI/180.0));
+		cairo_translate (cr, krad_text->krad_compositor_subunit->width / -2, krad_text->krad_compositor_subunit->height / -2);		
+		cairo_translate (cr, krad_text->krad_compositor_subunit->x * -1, krad_text->krad_compositor_subunit->y * -1);
 	}	
 	
 	cairo_select_font_face (cr, krad_text->font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	cairo_set_font_size (cr, krad_text->xscale);
+	cairo_set_font_size (cr, krad_text->krad_compositor_subunit->xscale);
 	cairo_set_source_rgba (cr,
 						   krad_text->red / 0.255 * 1.0,
 						   krad_text->green / 0.255 * 1.0,
 						   krad_text->blue / 0.255 * 1.0,
-						   krad_text->opacity);
+						   krad_text->krad_compositor_subunit->opacity);
 	
-	cairo_move_to (cr, krad_text->x, krad_text->y);
+	cairo_move_to (cr, krad_text->krad_compositor_subunit->x, krad_text->krad_compositor_subunit->y);
 	cairo_show_text (cr, krad_text->text_actual);
 
 }

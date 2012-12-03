@@ -140,25 +140,25 @@ void krad_compositor_add_text (krad_compositor_t *krad_compositor, char *text, i
 	krad_text = NULL;
 
 	for (s = 0; s < KRAD_COMPOSITOR_MAX_TEXTS; s++) {
-		if (krad_compositor->krad_text[s].active == 0) {
+		if (krad_compositor->krad_text[s].krad_compositor_subunit->active == 0) {
 			krad_text = &krad_compositor->krad_text[s];
-			krad_text->active = 2;
+			krad_text->krad_compositor_subunit->active = 2;
 			break;
 		}
 	}
 	
-	krad_text_set_xy (krad_text, x, y);
-	krad_text_set_scale (krad_text, scale);
-	krad_text_set_opacity (krad_text, opacity);
+	krad_compositor_subunit_set_xy (krad_text->krad_compositor_subunit, x, y);
+	krad_compositor_subunit_set_scale (krad_text->krad_compositor_subunit, scale);
+	krad_compositor_subunit_set_opacity (krad_text->krad_compositor_subunit, opacity);
 	krad_text_set_text (krad_text, text);	
-	krad_text_set_rotation (krad_text, rotation);
-	krad_text_set_tickrate (krad_text, tickrate);
+	krad_compositor_subunit_set_rotation (krad_text->krad_compositor_subunit, rotation);
+	krad_compositor_subunit_set_tickrate (krad_text->krad_compositor_subunit, tickrate);
 	
 	krad_text_set_font (krad_text, font);	
 
 	krad_text_set_rgb (krad_text, red, green, blue);
 
-	krad_text->active = 1;
+	krad_text->krad_compositor_subunit->active = 1;
 	krad_compositor->active_texts++;
 
 }
@@ -172,11 +172,11 @@ void krad_compositor_set_text (krad_compositor_t *krad_compositor, int num, int 
 
 	krad_text = &krad_compositor->krad_text[num];
 
-	krad_text_set_new_xy (krad_text, x, y);
-	krad_text_set_new_scale (krad_text, scale);
-	krad_text_set_new_opacity (krad_text, opacity);
-	krad_text_set_new_rotation (krad_text, rotation);
-	krad_text_set_tickrate (krad_text, tickrate);
+	krad_compositor_subunit_set_new_xy (krad_text->krad_compositor_subunit, x, y);
+	krad_compositor_subunit_set_new_scale (krad_text->krad_compositor_subunit, scale);
+	krad_compositor_subunit_set_new_opacity (krad_text->krad_compositor_subunit, opacity);
+	krad_compositor_subunit_set_new_rotation (krad_text->krad_compositor_subunit, rotation);
+	krad_compositor_subunit_set_tickrate (krad_text->krad_compositor_subunit, tickrate);
 	krad_text_set_new_rgb (krad_text, red, green, blue);
 
 }
@@ -189,16 +189,16 @@ void krad_compositor_remove_text (krad_compositor_t *krad_compositor, int num) {
 
 	krad_text = &krad_compositor->krad_text[num];
 
-	if (krad_text->active != 1) {
+	if (krad_text->krad_compositor_subunit->active != 1) {
 		return;
 	}
 
-	krad_text->active = 3;
+	krad_text->krad_compositor_subunit->active = 3;
 
 	usleep (100000);
 	krad_text_reset (krad_text);
 	
-	krad_text->active = 0;
+	krad_text->krad_compositor_subunit->active = 0;
 	krad_compositor->active_texts--;
 
 }
@@ -365,6 +365,9 @@ void krad_compositor_videoport_render_frame (krad_compositor_t *krad_compositor,
 	  cairo_paint_with_alpha (krad_compositor->krad_gui->cr, port->krad_compositor_subunit->opacity);
   }
   cairo_restore (krad_compositor->krad_gui->cr);
+  
+  krad_compositor_subunit_update (port->krad_compositor_subunit);
+  
 }
 
 void krad_compositor_process (krad_compositor_t *krad_compositor) {
@@ -447,7 +450,7 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 	}
 	
 	for (p = 0; p < KRAD_COMPOSITOR_MAX_TEXTS; p++) {
-		if (krad_compositor->krad_text[p].active == 1) {
+		if (krad_compositor->krad_text[p].krad_compositor_subunit->active == 1) {
 			krad_text_render (&krad_compositor->krad_text[p], krad_compositor->krad_gui->cr);
 		}
 	}	
@@ -637,29 +640,42 @@ void krad_compositor_port_set_comp_params (krad_compositor_port_t *krad_composit
 										   int crop_width, int crop_height, float opacity, float rotation) {
 										   
 	printkd ("comp compy params func called");
+ 
+  if ((x != krad_compositor_port->krad_compositor_subunit->x) || (y != krad_compositor_port->krad_compositor_subunit->y)) {
+    krad_compositor_subunit_set_new_xy (krad_compositor_port->krad_compositor_subunit, x, y);
+  }
 
-	krad_compositor_port->krad_compositor_subunit->x = x;
-	krad_compositor_port->krad_compositor_subunit->y = y;
+  krad_compositor_port->krad_compositor_subunit->width = width;
+  krad_compositor_port->krad_compositor_subunit->height = height;
 
-	krad_compositor_port->krad_compositor_subunit->width = width;
-	krad_compositor_port->krad_compositor_subunit->height = height;
-	
-	krad_compositor_port->crop_x = crop_x;
-	krad_compositor_port->crop_y = crop_y;
+  krad_compositor_port->crop_x = crop_x;
+  krad_compositor_port->crop_y = crop_y;
 
-	krad_compositor_port->crop_width = crop_width;
-	krad_compositor_port->crop_height = crop_height;
+  krad_compositor_port->crop_width = crop_width;
+  krad_compositor_port->crop_height = crop_height;
 
-	krad_compositor_port->krad_compositor_subunit->opacity = opacity;
-	krad_compositor_port->krad_compositor_subunit->rotation = rotation;
+  if (opacity != krad_compositor_port->krad_compositor_subunit->opacity) {
+    krad_compositor_subunit_set_new_opacity (krad_compositor_port->krad_compositor_subunit, opacity);
+  }
 
-	krad_compositor_port->comp_params_updated = 1;
-										   
+  if (rotation != krad_compositor_port->krad_compositor_subunit->rotation) {
+    krad_compositor_subunit_set_new_rotation (krad_compositor_port->krad_compositor_subunit, rotation);
+  }  
+
+  krad_compositor_port->comp_params_updated = 1;
+
 }
 
 void krad_compositor_port_set_io_params (krad_compositor_port_t *krad_compositor_port,
 										 int width, int height) {
 
+  
+  int x;
+  int y;
+    
+  x = 0;
+  y = 0;
+  
 	printkd ("comp io params func called");
 										 
 	krad_compositor_port->source_width = width;
@@ -672,17 +688,19 @@ void krad_compositor_port_set_io_params (krad_compositor_port_t *krad_compositor
 	krad_compositor_port->crop_width = krad_compositor_port->krad_compositor_subunit->width;
 	krad_compositor_port->crop_height = krad_compositor_port->krad_compositor_subunit->height;
 
-	if (krad_compositor_port->krad_compositor_subunit->width < krad_compositor_port->krad_compositor->width) {
-		krad_compositor_port->krad_compositor_subunit->x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit->width) / 2;
-	}
-	
-	if (krad_compositor_port->krad_compositor_subunit->height < krad_compositor_port->krad_compositor->height) {
-		krad_compositor_port->krad_compositor_subunit->y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit->height) / 2;
-	}
+  if (krad_compositor_port->krad_compositor_subunit->width < krad_compositor_port->krad_compositor->width) {
+    x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit->width) / 2;
+  }
+  
+  if (krad_compositor_port->krad_compositor_subunit->height < krad_compositor_port->krad_compositor->height) {
+    y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit->height) / 2;
+  }
 
-	krad_compositor_port->io_params_updated = 1;
-					   
-}										   
+  krad_compositor_subunit_set_xy (krad_compositor_port->krad_compositor_subunit, x, y);
+
+  krad_compositor_port->io_params_updated = 1;
+
+}
 
 void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *krad_compositor_port, krad_frame_t *krad_frame) {
 
@@ -1083,8 +1101,13 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
 	krad_compositor_port_t *krad_compositor_port;
 
 	int p;
-
-	pthread_mutex_lock (&krad_compositor->settings_lock);
+  int x;
+  int y;
+  
+  x = 0;
+  y = 0;
+	
+  pthread_mutex_lock (&krad_compositor->settings_lock);
 
 	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
 		if (krad_compositor->port[p].krad_compositor_subunit->active == 0) {
@@ -1110,12 +1133,8 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
 	strcpy (krad_compositor_port->sysname, sysname);	
 	krad_compositor_port->start_timecode = 1;
 
-	krad_compositor_port->krad_compositor_subunit->x = 0;
-	krad_compositor_port->krad_compositor_subunit->y = 0;	
 	krad_compositor_port->crop_x = 0;
 	krad_compositor_port->crop_y = 0;
-	krad_compositor_port->krad_compositor_subunit->opacity = 1.0f;
-	krad_compositor_port->krad_compositor_subunit->rotation = 0.0f;
 	
   if (krad_compositor_port->direction == INPUT) {
     krad_compositor_port->source_width = width;
@@ -1125,13 +1144,15 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
                                   &krad_compositor_port->krad_compositor_subunit->width, &krad_compositor_port->krad_compositor_subunit->height);
 									  
     if (krad_compositor_port->krad_compositor_subunit->width < krad_compositor_port->krad_compositor->width) {
-      krad_compositor_port->krad_compositor_subunit->x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit->width) / 2;
+      x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit->width) / 2;
     }
 	
 	  if (krad_compositor_port->krad_compositor_subunit->height < krad_compositor_port->krad_compositor->height) {
-		  krad_compositor_port->krad_compositor_subunit->y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit->height) / 2;
-	  }
-
+      y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit->height) / 2;
+    }
+    
+    krad_compositor_subunit_set_xy (krad_compositor_port->krad_compositor_subunit, x, y);  
+    
 		krad_compositor_port->crop_width = krad_compositor_port->krad_compositor_subunit->width;
 		krad_compositor_port->crop_height = krad_compositor_port->krad_compositor_subunit->height;
 			
@@ -1604,38 +1625,38 @@ void krad_compositor_set_peak (krad_compositor_t *krad_compositor, int channel, 
 }
 
 
-void krad_compositor_text_subunit_controls_to_ebml( krad_ipc_server_t *krad_ipc, krad_text_t *krad_text) {
+void krad_compositor_subunit_controls_to_ebml( krad_ipc_server_t *krad_ipc, krad_compositor_subunit_t *krad_compositor_subunit) {
 	
 	krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
-	                       krad_text->x);
+	                       krad_compositor_subunit->x);
 	krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
-	                       krad_text->y);
+	                       krad_compositor_subunit->y);
 	krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
-	                       krad_text->z);
+	                       krad_compositor_subunit->z);
 	
 	krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
-	                       krad_text->width);
+	                       krad_compositor_subunit->width);
 	krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_NUMBER, 
-	                       krad_text->height);
+	                       krad_compositor_subunit->height);
 	
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2,
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_SCALE,
-	                       krad_text->xscale);
+	                       krad_compositor_subunit->xscale);
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2,
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_SCALE,
-	                       krad_text->yscale);							 
+	                       krad_compositor_subunit->yscale);							 
 	
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_ROTATION, 
-	                       krad_text->rotation);
+	                       krad_compositor_subunit->rotation);
 	krad_ebml_write_float (krad_ipc->current_client->krad_ebml2, 
 	                       EBML_ID_KRAD_COMPOSITOR_TEXT_OPACITY, 
-	                       krad_text->opacity);
+	                       krad_compositor_subunit->opacity);
 }
 
 void krad_compositor_sprite_subunit_controls_to_ebml( krad_ipc_server_t *krad_ipc, krad_sprite_t *krad_sprite) {
@@ -1717,7 +1738,7 @@ void krad_compositor_text_to_ebml ( krad_ipc_server_t *krad_ipc, krad_text_t *kr
 	                       EBML_ID_KRAD_COMPOSITOR_BLUE,
 	                       krad_text->blue);
 	
-	krad_compositor_text_subunit_controls_to_ebml (krad_ipc, krad_text);
+	krad_compositor_subunit_controls_to_ebml (krad_ipc, krad_text->krad_compositor_subunit);
 	
 	krad_ebml_finish_element (krad_ipc->current_client->krad_ebml2, cmd);
 
@@ -2220,8 +2241,8 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 		  krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT_LIST, &element);	
 		
 		  for (s = 0; s < KRAD_COMPOSITOR_MAX_TEXTS; s++) {
-			  if (krad_compositor->krad_text[s].active) {
-				  printk ("Text %d Active: %d", s, krad_compositor->krad_text[s].active);
+			  if (krad_compositor->krad_text[s].krad_compositor_subunit->active) {
+				  printk ("Text %d Active: %d", s, krad_compositor->krad_text[s].krad_compositor_subunit->active);
 				  krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->krad_text[s], s);
 			  }
 		  }
