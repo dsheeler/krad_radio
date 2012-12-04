@@ -38,8 +38,11 @@ station.cmd("record av \"#{File.expand_path('~')}/PublicHtml/krad_title_sequence
 
 station.cmd("xmms2 XMMS2 play")
 
+station.cmd("background \"#{File.expand_path('~')}/Pictures/GNOME-Constellation.jpg\"")
+
 #text(thetext, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0, font="sans")
 station.text("KRAD RADIO", 2000, 355, 5, 174, 1, 0, 255, 11, 2)
+
 
 #station.cmd("vuon")
 
@@ -47,7 +50,8 @@ sleep 0.25
 
 #set_text(num=0, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0)
 station.set_text(0, 25, 355, 150, 174, 1, 0, 255, 11, 2)
-#system('krad_radio djsh lstext')
+system('spd-say "k-rad radio"')
+system('krad_radio djsh lstext')
 sleep 5.0
 station.set_text(0, 25, 355, 5, 174, 0, 0, 255, 11, 2)
 sleep 2.5
@@ -57,9 +61,12 @@ station.text("Say hello to KRAD RADIOs creator", 2000, 155, 5, 50, 1, 0, 250, 25
 sleep 1.0
 
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "Say hello to k-rad radios creator. one-man"')
 sleep 2.0
 
 station.text("oneman", 55, 455, 5, 120, 1, 0, 250, 250, 250)
+station.set_text(1, 55, 455, 50, 120, 1, 720, 250, 250, 250)
+
 sleep 0.5
 	
 station.sprite("#{File.expand_path('~')}/Pictures/oneman.png", 600, 255, 10, 1, 1.0, 3600.0)
@@ -79,9 +86,11 @@ station.text("And meet a KRAD RADIO developer", 2000, 155, 5, 50, 1, 0, 250, 250
 sleep 1.0
 
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "And meet a k-rad radio developer. six600110"')
 sleep 2.0
 
 station.text("six600110", 55, 455, 5, 80, 1, 0, 250, 250, 250)
+station.set_text(1, 55, 455, 50, 80, 1, -720, 250, 250, 250)
 sleep 0.5
 
 station.sprite("#{File.expand_path('~')}/Pictures/six600110.png", 600, 215, 10, 1, 1.0, -3600.0)
@@ -89,7 +98,7 @@ sleep 2.0
 station.set_sprite(0, 600, 215, 80, 1, 1.0, 0.0)
 sleep 4.0
 station.throw_sprite(0)
-#system("krad_radio djsh lstext")
+system("krad_radio djsh lstext")
 station.rm_text(1)
 station.rm_text(0)
 sleep 1.0
@@ -98,19 +107,21 @@ sleep 0.1
 station.text("Lets watch a movie", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
-
-sleep 2.0
+system('spd-say "Lets watch a movie"')
+sleep 3.0
 station.rm_text(0)
 station.play("#{File.expand_path('~')}/Videos/holy_crap.ogv")
 sleep 1.0
 station.text("A screen capture", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 125, 155, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "A screen capture"')
 sleep 3.0
 station.rm_text(0)
 station.text("Zooming in with audacity and friends", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "Zooming in with audacity and friends"')
 sleep 5.0
 station.rm_text(0)
 
@@ -119,6 +130,7 @@ sleep 5.0
 station.text("How about we tune in something else too", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "How about we tune in something else, too?"')
 sleep 5.0
 station.rm_text(0)
 sleep 2.0
@@ -129,20 +141,34 @@ station.play("#{File.expand_path('~')}/Development/krad_radio_oneman/epII-verita
 sleep 0.01
 station.cmd("setport 2 640 300 560 420 0 0 560 420 1 0")
 
-for i in 0..75
-  sleep 0.001
-  y1 = (4*i)		
-  y2 = 300 - (4*i)	
-  station.cmd("setport 1 0 #{y1} 560 420 0 0 560 420 1 0")
-  station.cmd("setport 2 640 #{y2} 560 420 0 0 560 420 1 0")
-end
-for i in 0..75
-  sleep 0.001
-  y1 = 300 - (4*i)
-  y2 = 4*i		
-  station.cmd("setport 1 0 #{y1} 560 420 0 0 560 420 1 0")	
-  station.cmd("setport 2 640 #{y2} 560 420 0 0 560 420 1 0")
-end
+
+station.cmd("setport 1 0 300 560 420 0 0 560 420 1 0")
+station.cmd("setport 2 640 0 560 420 0 0 560 420 1 0")
+sleep 2.5
+station.cmd("setport 1 0 0 560 420 0 0 560 420 1 0")
+station.cmd("setport 2 640 300 560 420 0 0 560 420 1 0")
+sleep 2.5
+station.cmd("setport 1 640 150 560 420 0 0 560 420 1 0")
+station.cmd("setport 2 0 150 560 420 0 0 560 420 1 0")
+sleep 2.5
+system('spd-say "wow!"')
+station.cmd("setport 1 640 150 560 420 0 0 560 420 1 360")
+station.cmd("setport 2 0   150 560 420 0 0 560 420 1 -360")
+sleep 2.5
+#for i in 0..75
+#  sleep 0.001
+#  y1 = (4*i)		
+#  y2 = 300 - (4*i)	
+#  station.cmd("setport 1 0 #{y1} 560 420 0 0 560 420 1 0")
+#  station.cmd("setport 2 640 #{y2} 560 420 0 0 560 420 1 0")
+#end
+#for i in 0..75
+#  sleep 0.001
+#  y1 = 300 - (4*i)
+#  y2 = 4*i		
+#  station.cmd("setport 1 0 #{y1} 560 420 0 0 560 420 1 0")	
+#  station.cmd("setport 2 640 #{y2} 560 420 0 0 560 420 1 0")
+#end
 
 
 
@@ -151,24 +177,25 @@ station.cmd("rm 2")
 sleep 0.25
 station.cmd("xmms2 XMMS2 play")
 sleep 2.0
-station.text("And now a giant glowing spinning hexagon", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
-sleep 1.0
-station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
-sleep 2.0
+#station.text("And now a giant glowing spinning hexagon", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
+#sleep 1.0
+#station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+#sleep 2.0
 #station.cmd("hex 640 340 300")
-station.rm_text(0)
-sleep 2.0
+#station.rm_text(0)
+#sleep 2.0
 
 station.text("Kradradio loves open source software", 2000, 155, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "k-rad radio loves open source software"')
 sleep 3.0
 
 
 station.text("like jack", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
-
+system('spd-say "like jack"')
 station.sprite("#{File.expand_path('~')}/Pictures/logos/jack.png", 400, 350, 10, 1, 1.0, 0)
 sleep 2.0
 station.set_sprite(0, 100, 550, 50, 0.5, 1.0, -720)
@@ -179,6 +206,7 @@ station.rm_text(1)
 station.text("and projects from xiph", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "and projects from zif"')
 
 station.sprite("#{File.expand_path('~')}/Pictures/logos/fish_xiph_org.png", 400, 300, 10, 1, 1.0, 0)
 sleep 2.0
@@ -189,6 +217,7 @@ station.rm_text(1)
 station.text("xmms2", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "x m m s 2"')
 station.sprite("#{File.expand_path('~')}/Pictures/logos/xmms2-128.png", 200, 250, 10, 1, 1.0, 0)
 sleep 2.0
 station.set_sprite(2, 775, 505, 10, 1, 1.0, -720)
@@ -198,13 +227,14 @@ station.rm_text(1)
 station.text("and mozilla", 2000, 200, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 150, 50, 1, 0, 250, 250, 250)
+system('spd-say "and mozilla"')
 station.sprite("#{File.expand_path('~')}/Pictures/logos/mozilla_wordmark.png", 200, 250, 10, 0.15, 1.0, 0)
 sleep 2.0
 station.set_sprite(3, 900, 505, 10, 0.065, 1.0, 720)
 sleep 2.0
 station.rm_text(1)
 
-#system("krad_radio djsh lssprite")
+system("krad_radio djsh lssprite")
 
 station.throw_sprite(3)
 station.throw_sprite(2)
@@ -223,11 +253,12 @@ station.rm_sprite(0)
 
 sleep 3.0
 station.text("Thanks for watching", 135, 655, 5, 100, 1, 0, 255, 11, 2, "DroidSans")
-sleep 1
 station.set_text(0, 1535, -155, 15, 4, 0, -50)
-sleep 0.3
+system('spd-say "thanks for watching"')
+sleep 3.0
 station.text("See you next time, space cowboy!", 135, 655, 5, 64, 1, 0, 125, 155, 25, "Georgia")
 station.set_text(1, 135, 655, 5, 64, 1, 0, 25, 255, 225)
+system('spd-say "see you next time, space cowboy"')
 sleep 1
 station.set_text(0, 135, 655, 25, 64, 0, 0)
 sleep 1
