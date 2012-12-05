@@ -84,17 +84,15 @@ void krad_text_set_text (krad_text_t *krad_text, char *text) {
 
 	strcpy (krad_text->text_actual, text);
   
+
   krad_compositor_subunit_set_opacity(krad_text->krad_compositor_subunit, 0.0f);
   krad_compositor_subunit_set_new_opacity(krad_text->krad_compositor_subunit, krad_text->krad_compositor_subunit->opacity);
+
 }
 
 void krad_text_set_font (krad_text_t *krad_text, char *font) {
 	strcpy (krad_text->font, font);
 }
-
-
-
-
 
 void krad_text_set_new_rgb (krad_text_t *krad_text, float red, float green, float blue) {
 

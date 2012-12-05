@@ -1,6 +1,7 @@
 #ifndef KRAD_COMPOSITOR_COMMON_H
 #define KRAD_COMPOSITOR_COMMON_H
 
+
 #include <stdint.h>
 #include "krad_ebml.h"
 
@@ -54,6 +55,7 @@ struct krad_compositor_rep_St {
 	uint64_t current_frame_number;
 	
 };
+
 
 kr_compositor_subunit_controls_t *krad_compositor_subunit_controls_create ();
 kr_compositor_subunit_controls_t *krad_compositor_subunit_controls_create_and_init ( int x, int y, int z, int tickrate, int width, int height, float scale, float opacity, float rotation);

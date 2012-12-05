@@ -1420,6 +1420,7 @@ void krad_ipc_compositor_add_text (krad_ipc_client_t *client, char *text, int x,
   krad_ebml_write_string (client->krad_ebml,  EBML_ID_KRAD_COMPOSITOR_TEXT, text);
   krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_FONT, font);	
 
+
   krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_RED, red);
 	krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_GREEN, green);
 	krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_BLUE, blue);
@@ -2961,30 +2962,6 @@ int krad_ipc_client_read_port ( krad_ipc_client_t *client, char *text) {
 
 }
 
-//void krad_ipc_client_read_compositor_subunit_controls (krad_ipc_client_t *client, kr_compositor_subunit_controls_t *controls) {
-	
-//	uint32_t ebml_id;
-//	uint64_t ebml_data_size;
-	
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->x = krad_ebml_read_number (client->krad_ebml, ebml_data_size);
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->y = krad_ebml_read_number (client->krad_ebml, ebml_data_size);
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->z = krad_ebml_read_number (client->krad_ebml, ebml_data_size);
-
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->xscale = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
-	
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->yscale = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
-	
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->rotation = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
-//	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
-//	controls->opacity = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
-//}
-
 int krad_ipc_client_read_sprite ( krad_ipc_client_t *client, char *text, krad_sprite_rep_t **krad_sprite_rep) {
 
 	uint32_t ebml_id;
@@ -3015,6 +2992,7 @@ int krad_ipc_client_read_sprite ( krad_ipc_client_t *client, char *text, krad_sp
 	krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);	
 	krad_ebml_read_string( client->krad_ebml, krad_sprite->filename, ebml_data_size);
 	
+
   krad_sprite->controls = krad_compositor_read_subunit_controls (client->krad_ebml);
 	
 	sprintf (text, "Id: %d  Filename: \"%s\"  X: %d  Y: %d  Z: %d  Xscale: %f Yscale: %f  Rotation: %f  Opacity: %f", 
@@ -3089,6 +3067,7 @@ int krad_ipc_client_read_text ( krad_ipc_client_t *client, char *text, krad_text
 		
 	krad_text->blue = 
 	        krad_ebml_read_float (client->krad_ebml, ebml_data_size);
+
 
 	krad_text->controls = krad_compositor_read_subunit_controls (client->krad_ebml);
 

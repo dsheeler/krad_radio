@@ -3,6 +3,7 @@
 
 typedef struct krad_compositor_subunit_St krad_compositor_subunit_t;
 
+
 typedef enum {
   TEXT,
   SPRITE,
@@ -85,6 +86,7 @@ void krad_compositor_subunit_reset (krad_compositor_subunit_t *krad_compositor_s
 
 void krad_compositor_subunit_set_xy (krad_compositor_subunit_t *krad_compositor_subunit, int x, int y);
 void krad_compositor_subunit_set_new_xy (krad_compositor_subunit_t *krad_compositor_subunit, int x, int y);
+
 void krad_compositor_subunit_set_z (krad_compositor_subunit_t *krad_compositor_subunit, int z);
 
 void krad_compositor_subunit_set_scale (krad_compositor_subunit_t *krad_compositor_subunit, float scale);

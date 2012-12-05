@@ -22,6 +22,7 @@ void krad_compositor_subunit_reset (krad_compositor_subunit_t *krad_compositor_s
 	krad_compositor_subunit->x = 0;
 	krad_compositor_subunit->y = 0;
   krad_compositor_subunit->z = 0;
+  
 	krad_compositor_subunit->tickrate = KRAD_COMPOSITOR_SUBUNIT_DEFAULT_TICKRATE;
 	krad_compositor_subunit->tick = 0;
 
@@ -203,6 +204,7 @@ void krad_compositor_subunit_update (krad_compositor_subunit_t *krad_compositor_
 
 	if (krad_compositor_subunit->x_time != krad_compositor_subunit->x_duration) {
 		krad_compositor_subunit->x = krad_ease (krad_compositor_subunit->krad_ease_x, krad_compositor_subunit->x_time++, krad_compositor_subunit->start_x, krad_compositor_subunit->change_x_amount, krad_compositor_subunit->x_duration);
+
     if (krad_compositor_subunit->x_time == krad_compositor_subunit->x_duration) {
       krad_compositor_subunit->x = krad_compositor_subunit->new_x;
     }
@@ -242,7 +244,6 @@ void krad_compositor_subunit_update (krad_compositor_subunit_t *krad_compositor_
       krad_compositor_subunit->yscale = krad_compositor_subunit->new_yscale;
     }
   }
-  
 }
 
 
