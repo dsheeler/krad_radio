@@ -96,7 +96,7 @@ void krad_text_set_font (krad_text_t *krad_text, char *font) {
 
 
 
-void krad_text_set_new_rgb (krad_text_t *krad_text, int red, int green, int blue) {
+void krad_text_set_new_rgb (krad_text_t *krad_text, float red, float green, float blue) {
 
 	krad_text->new_red = red * 0.001f;
 	krad_text->new_green = green * 0.001f;
@@ -104,7 +104,7 @@ void krad_text_set_new_rgb (krad_text_t *krad_text, int red, int green, int blue
 
 }
 
-void krad_text_set_rgb (krad_text_t *krad_text, int red, int green, int blue) {
+void krad_text_set_rgb (krad_text_t *krad_text, float red, float green, float blue) {
 
 	krad_text->red = red * 0.001f;
 	krad_text->new_red = krad_text->red;

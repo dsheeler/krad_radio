@@ -17,6 +17,7 @@ libsources = """
 ../lib/krad_ipc/krad_ipc_client.c
 ../lib/krad_osc/krad_osc.c
 ../lib/krad_tone/krad_tone.c
+../lib/krad_compositor/krad_compositor_common.c
 """.split()
 
 includedirs = """

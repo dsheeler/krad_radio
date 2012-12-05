@@ -128,19 +128,19 @@ void krad_compositor_get_last_snapshot_name (krad_compositor_t *krad_compositor,
 
 void krad_compositor_create_keystone_matrix (krad_point_t q[4], double w, double h, pixman_transform_t *transform);
 
-void krad_compositor_add_text (krad_compositor_t *krad_compositor, char *text, int x, int y, int tickrate, 
-								 float scale, float opacity, float rotation, int red, int green, int blue, char *font);
+void krad_compositor_add_text (krad_compositor_t *krad_compositor, char *text, kr_compositor_subunit_controls_t *krad_compositor_subunit_controls,
+                               float red, float green, float blue, char *font);
 
-void krad_compositor_set_text (krad_compositor_t *krad_compositor, int num, int x, int y, int tickrate, 
-								 float scale, float opacity, float rotation, int red, int green, int blue);
+void krad_compositor_set_text (krad_compositor_t *krad_compositor, int num, kr_compositor_subunit_controls_t *krad_compositor_subunit_controls,
+                               float red, float green, float blue);
 
 void krad_compositor_remove_text (krad_compositor_t *krad_compositor, int num);
 
-void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filename, int x, int y, int tickrate, 
-								 float scale, float opacity, float rotation);
+void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filename, 
+                                 kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
 
-void krad_compositor_set_sprite (krad_compositor_t *krad_compositor, int num, int x, int y, int tickrate, 
-								 float scale, float opacity, float rotation);
+void krad_compositor_set_sprite (krad_compositor_t *krad_compositor, int number,
+                                 kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
 
 void krad_compositor_remove_sprite (krad_compositor_t *krad_compositor, int num);
 

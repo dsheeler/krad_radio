@@ -266,3 +266,5 @@ wscript
 lib/krad_compositor/krad_compositor_common.h
 lib/krad_compositor/krad_compositor_port.h
 lib/krad_compositor/krad_compositor_subunit.h
+lib/krad_radio/krad_radio_common.h
+lib/krad_compositor/krad_compositor_common.c

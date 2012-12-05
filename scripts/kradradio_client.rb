@@ -59,12 +59,12 @@ class KradStation
 		self.cmd("launch")
 	end
 
-	def sprite(filename, x=0, y=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
-		self.cmd("addsprite \"#{filename}\" #{x} #{y} #{rate} #{scale} #{opacity} #{rotation}")
+	def sprite(filename, x=0, y=0, z=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
+		self.cmd("addsprite \"#{filename}\" #{x} #{y} #{z} #{rate} #{scale} #{opacity} #{rotation}")
 	end
 	
-	def set_sprite(num=0, x=0, y=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
-		self.cmd("setsprite #{num} #{x} #{y} #{rate} #{scale} #{opacity} #{rotation}")
+	def set_sprite(num=0, x=0, y=0, z=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
+		self.cmd("setsprite #{num} #{x} #{y} #{z} #{rate} #{scale} #{opacity} #{rotation}")
 	end
 	
 	def rm_sprite(num=0)
@@ -75,40 +75,40 @@ class KradStation
 		if (rand(100) % 100 > 50)
 			if (rand(100) % 100 > 50)
 				if (rand(100) % 100 > 50)
-					self.set_sprite(num, 0, 2333, 5, 0.3, 0, 545)
+					self.set_sprite(num, 0, 2333, 0, 5, 0.3, 0, 545)
 				else
-					self.set_sprite(num, 0, -1333, 5, 3.3, 0, -545)
+					self.set_sprite(num, 0, -1333, 0, 5, 3.3, 0, -545)
 				end
 			else
 				if (rand(100) % 100 > 50)
-					self.set_sprite(num, 1333, 0, 5, 2.3, 0, 45)
+					self.set_sprite(num, 1333, 0, 0, 5, 2.3, 0, 45)
 				else
-					self.set_sprite(num, -1333, 0, 5, 0.1, 0, -45)
+					self.set_sprite(num, -1333, 0, 0, 5, 0.1, 0, -45)
 				end
 			end
 		else
 			if (rand(100) % 100 > 50)
 				if (rand(100) % 100 > 50)
-					self.set_sprite(num, 1333, 1333, 5, 0.3, 0, 45)
+					self.set_sprite(num, 1333, 1333, 0, 5, 0.3, 0, 45)
 				else
-					self.set_sprite(num, -1333, -1333, 5, 0.8, 0, -45)
+					self.set_sprite(num, -1333, -1333, 0, 5, 0.8, 0, -45)
 				end
 			else
 				if (rand(100) % 100 > 50)
-					self.set_sprite(num, -1333, 0, 45, 0.5, 0, 15)
+					self.set_sprite(num, -1333, 0, 0, 45, 0.5, 0, 15)
 				else
-					self.set_sprite(num, 0, -1333, 15, 0.5, 0, -45)
+					self.set_sprite(num, 0, -1333, 0, 15, 0.5, 0, -45)
 				end
 			end
 		end
 	end
 
-	def text(thetext, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0, font="sans")
-		self.cmd("addtext '#{thetext.gsub(/[^0-9a-z :@]/i, '')}' #{x} #{y} #{rate} #{scale} #{opacity} #{rotation} #{red} #{green} #{blue} #{font}")
+	def text(thetext, x=0, y=0, z=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0, font="sans")
+		self.cmd("addtext '#{thetext.gsub(/[^0-9a-z :@]/i, '')}' #{x} #{y} #{z} #{rate} #{scale} #{opacity} #{rotation} #{red} #{green} #{blue} #{font}")
 	end
 	
-	def set_text(num=0, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0)
-		self.cmd("settext #{num} #{x} #{y} #{rate} #{scale} #{opacity} #{rotation} #{red} #{green} #{blue}")
+	def set_text(num=0, x=0, y=0, z=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0)
+		self.cmd("settext #{num} #{x} #{y} #{z} #{rate} #{scale} #{opacity} #{rotation} #{red} #{green} #{blue}")
 	end
 	
 	def rm_text(num=0)
@@ -282,10 +282,10 @@ class KradStation
 				self.sprite(filename, x, y)
 				if item.include? "_frames_"
 					if (count == 0) or (count == 1)
-						self.set_sprite(1, 955, 255, 4, 3.3, 0.85, 25)
+						self.set_sprite(1, 955, 255, 0, 4, 3.3, 0.85, 25)
 					end
 					if (count == 2)
-						self.set_sprite(0, 450, 335, 4, 3.3, 1, -25)
+						self.set_sprite(0, 450, 335, 0, 4, 3.3, 1, -25)
 					end	
 				end
 				if (count == 1)
@@ -295,9 +295,9 @@ class KradStation
 					self.throw_sprite(1)
 				end
 				if (label == true)
-					self.text(item, 35, 155, 5, 44, 1, 0, 255, 255, 55, "DroidSans")
+					self.text(item, 35, 155, 0, 5, 44, 1, 0, 255, 255, 55, "DroidSans")
 					sleep 1.5
-					self.set_text(0, 35, 155, 5, 44, 0, 0, 255, 255, 2)
+					self.set_text(0, 35, 155, 0, 5, 44, 0, 0, 255, 255, 2)
 					sleep 1.5
 					self.rm_text(0)
 					sleep timeper - 1

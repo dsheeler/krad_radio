@@ -1,7 +1,8 @@
 #ifndef KRAD_COMPOSITOR_COMMON_H
 #define KRAD_COMPOSITOR_COMMON_H
 
-//#include "krad_compositor.h"
+#include <stdint.h>
+#include "krad_ebml.h"
 
 typedef struct krad_text_rep_St krad_text_rep_t;
 typedef struct krad_sprite_rep_St krad_sprite_rep_t;
@@ -14,6 +15,8 @@ struct kr_compositor_subunit_controls_St {
 	int y;
 	int z;
 
+  int tickrate;
+  
 	int width;
 	int height;
 
@@ -51,5 +54,12 @@ struct krad_compositor_rep_St {
 	uint64_t current_frame_number;
 	
 };
+
+kr_compositor_subunit_controls_t *krad_compositor_subunit_controls_create ();
+kr_compositor_subunit_controls_t *krad_compositor_subunit_controls_create_and_init ( int x, int y, int z, int tickrate, int width, int height, float scale, float opacity, float rotation);
+void krad_compositor_subunit_controls_reset (kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
+void krad_compositor_subunit_controls_destroy (kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
+void krad_compositor_subunit_controls_to_ebml (krad_ebml_t *krad_ebml, kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
+kr_compositor_subunit_controls_t *krad_compositor_read_subunit_controls (krad_ebml_t *krad_ebml);
 
 #endif // KRAD_COMPOSITOR_COMMON_H
