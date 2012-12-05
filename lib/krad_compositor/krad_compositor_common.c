@@ -108,3 +108,11 @@ void krad_compositor_subunit_controls_reset (kr_compositor_subunit_controls_t *k
   krad_compositor_subunit_controls->opacity = 0.0f;
 
 }
+
+int krad_compositor_validate_text_rep (krad_text_rep_t *krad_text_rep) {
+  
+  if ((krad_text_rep->red < 0.0) || (krad_text_rep->red > 255.0)) {
+    return 1;
+  }
+  return 0;
+}
