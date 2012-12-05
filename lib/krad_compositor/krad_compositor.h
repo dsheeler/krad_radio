@@ -22,9 +22,11 @@ typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 #include "krad_compositor_port.h"
 
 #define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
-#define KRAD_COMPOSITOR_MAX_PORTS 32
-#define KRAD_COMPOSITOR_MAX_SPRITES 64
-#define KRAD_COMPOSITOR_MAX_TEXTS 64
+#define KC_MAX_PORTS 32
+#define KC_MAX_SPRITES 64
+#define KC_MAX_TEXTS 64
+#define KC_MAX_VECTORS 64
+#define KC_MAX_SUBUNITS KC_MAX_PORTS * KC_MAX_SPRITES * KC_MAX_TEXTS * KC_MAX_VECTORS
 
 typedef enum {
 	SYNTHETIC = 13999,
@@ -119,6 +121,8 @@ struct krad_compositor_St {
 	int active_texts;
 	
 	struct timespec start_time;
+	
+  krad_compositor_subunit_t *subunit_z_order[KC_MAX_SUBUNITS];
 
 };
 void krad_compositor_unset_krad_mixer (krad_compositor_t *krad_compositor);

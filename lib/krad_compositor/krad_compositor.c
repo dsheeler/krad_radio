@@ -139,7 +139,7 @@ void krad_compositor_add_text (krad_compositor_t *krad_compositor, char *text, k
 	
 	krad_text = NULL;
 
-	for (s = 0; s < KRAD_COMPOSITOR_MAX_TEXTS; s++) {
+	for (s = 0; s < KC_MAX_TEXTS; s++) {
 		if (krad_compositor->krad_text[s].krad_compositor_subunit->active == 0) {
 			krad_text = &krad_compositor->krad_text[s];
 			krad_text->krad_compositor_subunit->active = 2;
@@ -216,7 +216,7 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filen
 	  return;
 	}
 
-  for (s = 0; s < KRAD_COMPOSITOR_MAX_SPRITES; s++) {
+  for (s = 0; s < KC_MAX_SPRITES; s++) {
 	  if (krad_compositor->krad_sprite[s].krad_compositor_subunit->active == 0) {
 		  krad_sprite = &krad_compositor->krad_sprite[s];
 		  krad_sprite->krad_compositor_subunit->active = 2;
@@ -437,7 +437,7 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
   
 	/* Composite Input Ports / Sprites / Texts */
 
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+	for (p = 0; p < KC_MAX_PORTS; p++) {
 		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == INPUT)) {
 			frame = krad_compositor_port_pull_frame (&krad_compositor->port[p]);		
 			if (frame != NULL) {
@@ -447,13 +447,13 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 		}
 	}
 
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_SPRITES; p++) {
+	for (p = 0; p < KC_MAX_SPRITES; p++) {
 		if (krad_compositor->krad_sprite[p].krad_compositor_subunit->active == 1) {
 			krad_sprite_render (&krad_compositor->krad_sprite[p], krad_compositor->krad_gui->cr);
 		}
 	}
 	
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_TEXTS; p++) {
+	for (p = 0; p < KC_MAX_TEXTS; p++) {
 		if (krad_compositor->krad_text[p].krad_compositor_subunit->active == 1) {
 			krad_text_render (&krad_compositor->krad_text[p], krad_compositor->krad_gui->cr);
 		}
@@ -463,7 +463,7 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 	
 	/* Push out the composited frame */
 	
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+	for (p = 0; p < KC_MAX_PORTS; p++) {
 		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == OUTPUT)) {
 			krad_compositor_port_push_frame (&krad_compositor->port[p], composite_frame);
 		}
@@ -613,7 +613,7 @@ void krad_compositor_passthru_process (krad_compositor_t *krad_compositor) {
 	
 	krad_frame = NULL;
 
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+	for (p = 0; p < KC_MAX_PORTS; p++) {
 		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == INPUT) &&
 			(krad_compositor->port[p].passthru == 1)) {
 				krad_frame = krad_compositor_port_pull_frame (&krad_compositor->port[p]);
@@ -625,7 +625,7 @@ void krad_compositor_passthru_process (krad_compositor_t *krad_compositor) {
 		return;
 	}
 
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+	for (p = 0; p < KC_MAX_PORTS; p++) {
 		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == OUTPUT) &&
 			(krad_compositor->port[p].passthru == 1)) {
 
@@ -1113,7 +1113,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
 	
   pthread_mutex_lock (&krad_compositor->settings_lock);
 
-	for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+	for (p = 0; p < KC_MAX_PORTS; p++) {
 		if (krad_compositor->port[p].krad_compositor_subunit->active == 0) {
 			krad_compositor_port = &krad_compositor->port[p];
       if (krad_compositor_port->krad_compositor_subunit) {
@@ -1362,7 +1362,7 @@ void krad_compositor_destroy (krad_compositor_t *krad_compositor) {
 	
   printk ("Krad compositor destroy started");
 
-	for (i = 0; i < KRAD_COMPOSITOR_MAX_PORTS; i++) {
+	for (i = 0; i < KC_MAX_PORTS; i++) {
 		if (krad_compositor->port[i].krad_compositor_subunit->active == 1) {
 			krad_compositor_port_destroy (krad_compositor, &krad_compositor->port[i]);
 		}
@@ -1378,8 +1378,8 @@ void krad_compositor_destroy (krad_compositor_t *krad_compositor) {
   krad_sprite_reset (krad_compositor->background);
 	free (krad_compositor->background);
 
-  krad_sprite_destroy_arr (krad_compositor->krad_sprite, KRAD_COMPOSITOR_MAX_SPRITES);
-  krad_text_destroy_arr (krad_compositor->krad_text, KRAD_COMPOSITOR_MAX_TEXTS);
+  krad_sprite_destroy_arr (krad_compositor->krad_sprite, KC_MAX_SPRITES);
+  krad_text_destroy_arr (krad_compositor->krad_text, KC_MAX_TEXTS);
 
 	free (krad_compositor);
 	
@@ -1441,19 +1441,19 @@ krad_compositor_t *krad_compositor_create (int width, int height,
 
 	krad_compositor->background = krad_sprite_create ();
 
-	krad_compositor->port = calloc(KRAD_COMPOSITOR_MAX_PORTS, sizeof(krad_compositor_port_t));
+	krad_compositor->port = calloc(KC_MAX_PORTS, sizeof(krad_compositor_port_t));
 	
-  for (i = 0; i < KRAD_COMPOSITOR_MAX_PORTS; i++) {
+  for (i = 0; i < KC_MAX_PORTS; i++) {
     krad_compositor->port[i].krad_compositor_subunit = krad_compositor_subunit_create();
   }
   
-	//krad_compositor->krad_sprite = calloc(KRAD_COMPOSITOR_MAX_SPRITES, sizeof(krad_sprite_t));
-	krad_compositor->krad_sprite = krad_sprite_create_arr (KRAD_COMPOSITOR_MAX_SPRITES);	
+	//krad_compositor->krad_sprite = calloc(KC_MAX_SPRITES, sizeof(krad_sprite_t));
+	krad_compositor->krad_sprite = krad_sprite_create_arr (KC_MAX_SPRITES);	
 
-	//krad_compositor->krad_text = calloc(KRAD_COMPOSITOR_MAX_TEXTS, sizeof(krad_text_t));
-	krad_compositor->krad_text = krad_text_create_arr (KRAD_COMPOSITOR_MAX_TEXTS);	
+	//krad_compositor->krad_text = calloc(KC_MAX_TEXTS, sizeof(krad_text_t));
+	krad_compositor->krad_text = krad_text_create_arr (KC_MAX_TEXTS);	
 	
-	for (i = 0; i < KRAD_COMPOSITOR_MAX_TEXTS; i++) {
+	for (i = 0; i < KC_MAX_TEXTS; i++) {
 		krad_text_reset (&krad_compositor->krad_text[i]);
 	}
 	
@@ -1906,7 +1906,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_MSG, &response);
 			krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_PORT_LIST, &element);	
 			
-			for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+			for (p = 0; p < KC_MAX_PORTS; p++) {
 				if (krad_compositor->port[p].krad_compositor_subunit->active == 1) {
 					//printf("Link %d Active: %s\n", k, krad_linker->krad_link[k]->mount);
 					krad_compositor_port_to_ebml ( krad_ipc, &krad_compositor->port[p]);
@@ -1995,7 +1995,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 		krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_MSG, &response);
 		krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_SPRITE_LIST, &element);	
 		
-		for (s = 0; s < KRAD_COMPOSITOR_MAX_SPRITES; s++) {
+		for (s = 0; s < KC_MAX_SPRITES; s++) {
 			if (krad_compositor->krad_sprite[s].krad_compositor_subunit->active) {
 				printk ("Sprite %d Active: %d", s, krad_compositor->krad_sprite[s].krad_compositor_subunit->active);
 				krad_compositor_sprite_to_ebml ( krad_ipc, &krad_compositor->krad_sprite[s], s);
@@ -2098,7 +2098,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 		  //krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT, "this is a test name");
 		  krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT_LIST, &element);	
 		
-		  for (s = 0; s < KRAD_COMPOSITOR_MAX_TEXTS; s++) {
+		  for (s = 0; s < KC_MAX_TEXTS; s++) {
 			  if (krad_compositor->krad_text[s].krad_compositor_subunit->active) {
 				  printk ("Text %d Active: %d", s, krad_compositor->krad_text[s].krad_compositor_subunit->active);
 				  krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->krad_text[s], s);
@@ -2120,7 +2120,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 			
 		case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
 
-			for (p = 0; p < KRAD_COMPOSITOR_MAX_PORTS; p++) {
+			for (p = 0; p < KC_MAX_PORTS; p++) {
 				if (krad_compositor->port[p].local == 1) {
 					krad_compositor_port_destroy (krad_compositor, &krad_compositor->port[p]);
 					break;
