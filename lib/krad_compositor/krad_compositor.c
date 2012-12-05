@@ -228,7 +228,7 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filen
 	
 	  krad_compositor_subunit_set_xy (krad_sprite->krad_compositor_subunit, krad_compositor_subunit_controls->x, krad_compositor_subunit_controls->y);
     krad_compositor_subunit_set_z (krad_sprite->krad_compositor_subunit, krad_compositor_subunit_controls->z);
-	  krad_compositor_subunit_set_scale (krad_sprite->krad_compositor_subunit, 1.0);
+	  krad_compositor_subunit_set_scale (krad_sprite->krad_compositor_subunit, krad_compositor_subunit_controls->xscale);
 	  krad_compositor_subunit_set_opacity (krad_sprite->krad_compositor_subunit, krad_compositor_subunit_controls->opacity);
 	  krad_compositor_subunit_set_rotation (krad_sprite->krad_compositor_subunit, krad_compositor_subunit_controls->rotation);
 	  krad_compositor_subunit_set_tickrate (krad_sprite->krad_compositor_subunit, krad_compositor_subunit_controls->tickrate);
