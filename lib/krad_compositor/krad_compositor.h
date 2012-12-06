@@ -64,7 +64,8 @@ struct krad_compositor_St {
 	cairo_t *mask_cr;
 
 	krad_gui_t *krad_gui;
-
+  krad_text_rep_t *krad_text_rep_ipc;
+  
 	int width;
 	int height;
 
@@ -132,19 +133,16 @@ void krad_compositor_get_last_snapshot_name (krad_compositor_t *krad_compositor,
 
 void krad_compositor_create_keystone_matrix (krad_point_t q[4], double w, double h, pixman_transform_t *transform);
 
-void krad_compositor_add_text (krad_compositor_t *krad_compositor, char *text, kr_compositor_subunit_controls_t *krad_compositor_subunit_controls,
-                               float red, float green, float blue, char *font);
+void krad_compositor_add_text (krad_compositor_t *krad_compositor, krad_text_rep_t *krad_text_rep);
 
-void krad_compositor_set_text (krad_compositor_t *krad_compositor, int num, kr_compositor_subunit_controls_t *krad_compositor_subunit_controls,
-                               float red, float green, float blue);
+void krad_compositor_set_text (krad_compositor_t *krad_compositor, krad_text_rep_t *krad_text_rep);
 
 void krad_compositor_remove_text (krad_compositor_t *krad_compositor, int num);
 
-void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, char *filename, 
-                                 kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
+void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, krad_sprite_rep_t *krad_sprite_rep);
 
-void krad_compositor_set_sprite (krad_compositor_t *krad_compositor, int number,
-                                 kr_compositor_subunit_controls_t *krad_compositor_subunit_controls);
+void krad_compositor_set_sprite (krad_compositor_t *krad_compositor,
+                                 krad_sprite_rep_t *krad_sprite_rep);
 
 void krad_compositor_remove_sprite (krad_compositor_t *krad_compositor, int num);
 

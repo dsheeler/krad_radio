@@ -12,6 +12,7 @@ typedef struct krad_text_St krad_text_t;
 
 struct krad_text_St {
 
+  
 	char font[128];
 	char text_actual[1024];
 
@@ -63,5 +64,6 @@ void krad_text_render (krad_text_t *krad_text, cairo_t *cr);
 void krad_text_tick (krad_text_t *krad_text);
 void krad_text_render_xy (krad_text_t *krad_text, cairo_t *cr, int x, int y);
 
+krad_text_rep_t *krad_text_to_text_rep (krad_text_t *krad_text, krad_text_rep_t *krad_text_rep);
 
 #endif

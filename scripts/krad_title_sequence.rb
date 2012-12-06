@@ -40,6 +40,7 @@ station.cmd("xmms2 XMMS2 play")
 
 station.cmd("background \"#{File.expand_path('~')}/Pictures/GNOME-Constellation.jpg\"")
 
+
 #text(thetext, x=0, y=0, rate=5, scale=32, opacity=1.0, rotation=0.0, red=0, green=0, blue=0, font="sans")
 station.text("KRAD RADIO", 2000, 355, 0, 5, 174, 1, 0, 255, 11, 2)
 
@@ -201,14 +202,18 @@ sleep 2.0
 #station.cmd("hex 640 340 300")
 #station.rm_text(0)
 #sleep 2.0
-
 station.text("Kradradio loves open source software", 2000, 155, 0, 5, 50, 1, 0, 250, 250, 250)
 sleep 1.0
 station.set_text(0, 25, 155, 0, 150, 50, 1, 0, 250, 250, 250)
 system('spd-say "k-rad radio loves open source software"')
 sleep 3.0
 
-
+#	def set_sprite(num=0, x=0, y=0, z=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
+#		self.cmd("setsprite #{num} #{x} #{y} #{rate} #{scale} #{opacity} #{rotation}")
+#	end
+#	def sprite(filename, x=0, y=0, z=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
+#		self.cmd("addsprite \"#{filename}\" #{x} #{y} #{rate} #{scale} #{opacity} #{rotation}")
+#	end
 station.text("like jack", 2000, 200, 0, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 0, 150, 50, 1, 0, 250, 250, 250)
@@ -235,7 +240,7 @@ station.text("xmms2", 2000, 200, 0, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 0, 150, 50, 1, 0, 250, 250, 250)
 system('spd-say "x m m s 2"')
-station.sprite("#{File.expand_path('~')}/Pictures/logos/xmms2-128.png", 200, 250, 0, 10, 1, 1.0, 0)
+station.sprite("#{File.expand_path('~')}/Pictures/logos/xmms2-128.png", 450, 275, 0, 10, 1, 1.0, 0)
 sleep 2.0
 station.set_sprite(2, 775, 505, 0, 10, 1, 1.0, -720)
 sleep 2.0
@@ -245,11 +250,13 @@ station.text("and mozilla", 2000, 200, 0, 5, 50, 1, 0, 250, 250, 250)
 sleep 0.5
 station.set_text(1, 25, 200, 0, 150, 50, 1, 0, 250, 250, 250)
 system('spd-say "and mozilla"')
-station.sprite("#{File.expand_path('~')}/Pictures/logos/mozilla_wordmark.png", 200, 250, 0, 10, 0.15, 1.0, 0)
+station.sprite("#{File.expand_path('~')}/Pictures/logos/mozilla_wordmark.png", 200, 250, 0, 10, 0.075, 1.0, 0)
+
 sleep 2.0
 station.set_sprite(3, 900, 505, 0, 10, 0.065, 1.0, 720)
-sleep 2.0
+sleep 2.5
 station.rm_text(1)
+
 
 system("krad_radio djsh lssprite")
 
@@ -300,13 +307,9 @@ sleep 1.0
 exit 0
 
 
-#	def sprite(filename, x=0, y=0, z=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
-#		self.cmd("addsprite \"#{filename}\" #{x} #{y} #{rate} #{scale} #{opacity} #{rotation}")
-#	end
+
 	
-#	def set_sprite(num=0, x=0, y=0, z=0, rate=5, scale=1, opacity=1.0, rotation=0.0)
-#		self.cmd("setsprite #{num} #{x} #{y} #{rate} #{scale} #{opacity} #{rotation}")
-#	end
+
 	
 #	def rm_sprite(num=0)
 #		self.cmd("rmsprite #{num}")

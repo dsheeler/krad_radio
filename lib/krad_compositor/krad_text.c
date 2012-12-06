@@ -250,3 +250,38 @@ void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
 	krad_text_tick (krad_text);			
 
 }
+
+krad_text_rep_t *krad_text_to_text_rep (krad_text_t *krad_text, krad_text_rep_t *krad_text_rep) {
+  
+  krad_text_rep_t *krad_text_rep_ret;
+  
+  if (krad_text_rep == NULL) {
+    krad_text_rep_ret = krad_compositor_text_rep_create();
+  } else {
+    krad_text_rep_ret = krad_text_rep;
+  }
+  
+  strncpy (krad_text_rep_ret->text, krad_text->text_actual, 1023);
+  strncpy (krad_text_rep_ret->font, krad_text->font, 127);
+  
+  krad_text_rep_ret->red = krad_text->red;
+  krad_text_rep_ret->green = krad_text->green;
+  krad_text_rep_ret->blue = krad_text->blue;
+  
+  krad_text_rep_ret->controls->x = krad_text->krad_compositor_subunit->x;
+  krad_text_rep_ret->controls->y = krad_text->krad_compositor_subunit->y;
+  krad_text_rep_ret->controls->z = krad_text->krad_compositor_subunit->z;
+  
+  krad_text_rep_ret->controls->tickrate = krad_text->krad_compositor_subunit->tickrate;
+
+  krad_text_rep_ret->controls->width = krad_text->krad_compositor_subunit->width;
+  krad_text_rep_ret->controls->height = krad_text->krad_compositor_subunit->height;
+    
+  krad_text_rep_ret->controls->xscale = krad_text->krad_compositor_subunit->xscale;
+  krad_text_rep_ret->controls->yscale = krad_text->krad_compositor_subunit->yscale;
+    
+  krad_text_rep_ret->controls->rotation = krad_text->krad_compositor_subunit->rotation;
+  krad_text_rep_ret->controls->opacity = krad_text->krad_compositor_subunit->opacity;
+   
+  return krad_text_rep_ret;
+}

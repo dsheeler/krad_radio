@@ -20,6 +20,7 @@ struct krad_compositor_subunit_St {
   compositor_subunit_type_t type;
   
   int active;
+  int number;
   
 	int x;
 	int y;
