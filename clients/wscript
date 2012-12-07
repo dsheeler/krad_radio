@@ -68,7 +68,7 @@ includedirs = """
 /usr/include
 """.split()
 
-shlibs = ["cairo", "opus", "xmms2-client", "vpx"]
+shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']

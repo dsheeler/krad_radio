@@ -1,7 +1,7 @@
 
 
 #include "krad_radio.h"
-
+#include <pango/pangocairo.h>
 #ifndef KRAD_TEXT_H
 #define KRAD_TEXT_H
 
@@ -16,8 +16,8 @@ struct krad_text_St {
 	char font[128];
 	char text_actual[1024];
 
-	cairo_surface_t *text;
-	cairo_pattern_t *text_pattern;
+  PangoLayout *layout;
+  PangoFontDescription *font_description;
 		
 	float red;
 	float blue;

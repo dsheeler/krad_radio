@@ -4,6 +4,9 @@
 void krad_text_destroy (krad_text_t *krad_text) {
 	
 	krad_text_reset (krad_text);
+	
+  pango_font_description_free (krad_text->font_description);	
+	
 	free (krad_text);
 
 }
@@ -33,6 +36,8 @@ krad_text_t *krad_text_create_arr (int count) {
 	if ((krad_text = calloc (count, sizeof (krad_text_t))) == NULL) {
 		failfast ("Krad Sprite mem alloc fail");
 	}
+	
+  krad_text->font_description = pango_font_description_new ();	
 
   for (s = 0; s < count; s++) {
     krad_text[s].krad_compositor_subunit = krad_compositor_subunit_create();
@@ -48,15 +53,6 @@ krad_text_t *krad_text_create () {
 }
 
 void krad_text_reset (krad_text_t *krad_text) {
-
-	if (krad_text->text_pattern != NULL) {
-		cairo_pattern_destroy ( krad_text->text_pattern );
-		krad_text->text_pattern = NULL;
-	}
-	if (krad_text->text != NULL) {
-		cairo_surface_destroy ( krad_text->text );
-		krad_text->text = NULL;
-	}
 	
 	strcpy (krad_text->font, KRAD_TEXT_DEFAULT_FONT);
   
@@ -224,6 +220,7 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
 		cairo_translate (cr, krad_text->krad_compositor_subunit->x * -1, krad_text->krad_compositor_subunit->y * -1);
 	}	
 	
+	/*
 	cairo_select_font_face (cr, krad_text->font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_set_font_size (cr, krad_text->krad_compositor_subunit->xscale);
 	cairo_set_source_rgba (cr,
@@ -234,6 +231,28 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
 	
 	cairo_move_to (cr, krad_text->krad_compositor_subunit->x, krad_text->krad_compositor_subunit->y);
 	cairo_show_text (cr, krad_text->text_actual);
+  */
+  
+  
+  pango_font_description_set_family (krad_text->font_description, krad_text->font);
+  pango_font_description_set_weight (krad_text->font_description, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size (krad_text->font_description, krad_text->krad_compositor_subunit->xscale * PANGO_SCALE);
+
+  krad_text->layout = pango_cairo_create_layout (cr);
+
+  pango_layout_set_font_description (krad_text->layout, krad_text->font_description);
+  pango_layout_set_text (krad_text->layout, krad_text->text_actual, -1);
+
+	cairo_set_source_rgba (cr,
+						   krad_text->red / 0.255 * 1.0,
+						   krad_text->green / 0.255 * 1.0,
+						   krad_text->blue / 0.255 * 1.0,
+						   krad_text->krad_compositor_subunit->opacity);
+	
+	cairo_move_to (cr, krad_text->krad_compositor_subunit->x, krad_text->krad_compositor_subunit->y);
+  pango_cairo_show_layout (cr, krad_text->layout);
+
+  g_object_unref (krad_text->layout);
 
 }
 

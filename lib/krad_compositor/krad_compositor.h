@@ -11,8 +11,7 @@
 
 #include <libswscale/swscale.h>
 
-#include "pixman.h"
-
+//#include "pixman.h"
 
 typedef struct krad_compositor_port_St krad_compositor_port_t;
 typedef struct krad_compositor_St krad_compositor_t;
@@ -131,7 +130,7 @@ void krad_compositor_set_krad_mixer (krad_compositor_t *krad_compositor, krad_mi
 
 void krad_compositor_get_last_snapshot_name (krad_compositor_t *krad_compositor, char *filename);
 
-void krad_compositor_create_keystone_matrix (krad_point_t q[4], double w, double h, pixman_transform_t *transform);
+//void krad_compositor_create_keystone_matrix (krad_point_t q[4], double w, double h, pixman_transform_t *transform);
 
 void krad_compositor_add_text (krad_compositor_t *krad_compositor, krad_text_rep_t *krad_text_rep);
 
