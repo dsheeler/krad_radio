@@ -132,10 +132,6 @@ krad_mixer_t *krad_mixer_create (char *name);
 void krad_mixer_destroy (krad_mixer_t *krad_mixer);
 void krad_mixer_set_ipc (krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc);
 
-void crossfade_group_set_crossfade (krad_mixer_crossfade_group_t *crossfade_group, float value);
-void portgroup_set_channel_volume (krad_mixer_portgroup_t *portgroup, int channel, float value);
-void portgroup_set_volume (krad_mixer_portgroup_t *portgroup, float value);
-void portgroup_set_crossfade (krad_mixer_portgroup_t *portgroup, float value);
 int krad_mixer_set_portgroup_control (krad_mixer_t *krad_mixer, char *sysname, char *control, float value, int duration, void *ptr);
 
 float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup);
