@@ -206,7 +206,7 @@ int krad_ipc_server_recvfd (krad_ipc_server_client_t *client) {
   }
 }
 
-void krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *interface, int port) {
+int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *interface, int port) {
 
   //FIXME needs to loop thru clients and disconnect remote ones .. optionally?
 
@@ -233,6 +233,8 @@ void krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *i
     printk ("Disable remote on interface %s port %d", interface, port);
     krad_ipc_server_update_pollfds (krad_ipc_server);
   }
+  
+  return d;  
 }
 #ifdef IS_LINUX
 int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server, char *adapter, int port) {
@@ -299,7 +301,7 @@ int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server, char *int
       return krad_ipc_server_enable_remote_on_adapter (krad_ipc_server, interface, port);
     }
     #else
-      return -1;
+      return 0;
     #endif
   }
 

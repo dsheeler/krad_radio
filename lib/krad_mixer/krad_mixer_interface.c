@@ -257,7 +257,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
 
       if (portgroup != NULL) {
         if (portgroup->direction == INPUT) {
-          krad_radio_broadcast_subunit_created ( krad_mixer, &portgroup->address, (void *)portgroup);
+          krad_radio_broadcast_subunit_created ( krad_mixer->broadcaster, &portgroup->address, (void *)portgroup);
         }
       }
 

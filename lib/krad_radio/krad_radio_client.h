@@ -68,6 +68,9 @@ typedef struct kr_response_St kr_crate_t;
 typedef struct kr_unit_path_St kr_unit_path_t;
 typedef struct kr_unit_control_St kr_unit_control_t;
 
+typedef struct kr_remote_St kr_remote_t;
+typedef struct kr_tag_St kr_tag_t;
+
 /*
 *  An address can be:
 *    Unit:           compositor/sprite/2
@@ -192,20 +195,6 @@ struct kr_unit_control_St {
   kr_unit_control_data_t data_type;
   kr_unit_control_value_t value;
   int duration;
-};
-
-typedef struct kr_remote_St kr_remote_t;
-struct kr_remote_St {
-  int port;
-  char interface[128];
-};
-
-typedef struct kr_tag_St kr_tag_t;
-struct kr_tag_St {
-  char unit[256];
-  char name[256];
-  char value[256];
-  char source[256];
 };
 
 typedef union {

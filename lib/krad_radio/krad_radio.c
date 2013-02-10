@@ -22,6 +22,10 @@ static void krad_radio_shutdown (krad_radio_t *krad_radio) {
     krad_ipc_server_broadcaster_unregister ( &krad_radio->system_broadcaster );
   }
   
+  if (krad_radio->remote_broadcaster != NULL) {
+    krad_ipc_server_broadcaster_unregister ( &krad_radio->remote_broadcaster );
+  }
+  
   if (krad_radio->remote.krad_ipc != NULL) {
     krad_ipc_server_disable (krad_radio->remote.krad_ipc);
   }
@@ -150,7 +154,14 @@ static krad_radio_t *krad_radio_create (char *sysname) {
   if (krad_radio->system_broadcaster == NULL) {
     krad_radio_shutdown (krad_radio);
     return NULL;
-  }  
+  }
+  
+  krad_radio->remote_broadcaster = krad_ipc_server_broadcaster_register ( krad_radio->remote.krad_ipc );
+  
+  if (krad_radio->remote_broadcaster == NULL) {
+    krad_radio_shutdown (krad_radio);
+    return NULL;
+  }
   
   krad_ipc_server_broadcaster_register_broadcast ( krad_radio->system_broadcaster, EBML_ID_KRAD_SYSTEM_BROADCAST );
 
