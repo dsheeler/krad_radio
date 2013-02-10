@@ -1530,7 +1530,7 @@ krad_compositor_t *krad_compositor_create (int width, int height,
 	krad_compositor_set_frame_rate (krad_compositor, frame_rate_numerator, frame_rate_denominator);
 
   krad_compositor->address.path.unit = KR_COMPOSITOR;
-  krad_compositor->address.path.subunit.mixer_subunit = KR_UNIT;
+  krad_compositor->address.path.subunit.compositor_subunit = KR_UNIT;
 
 	return krad_compositor;
 
@@ -1660,12 +1660,4 @@ void krad_compositor_set_dir (krad_compositor_t *krad_compositor, char *dir) {
 
 	krad_compositor->dir = strdup (dir);
 
-}
-
-void krad_compositor_set_krad_mixer (krad_compositor_t *krad_compositor, krad_mixer_t *krad_mixer) {
-	krad_compositor->krad_mixer = krad_mixer;
-}
-
-void krad_compositor_unset_krad_mixer (krad_compositor_t *krad_compositor) {
-	krad_compositor->krad_mixer = NULL;
 }

@@ -14,7 +14,6 @@ void krad_jack_portgroup_samples_callback (int frames, void *userdata, float **s
 		} else {
 			samples[c] = jack_port_get_buffer (portgroup->ports[c], frames);
 		}
-
 	}
 }
 
@@ -47,7 +46,6 @@ void krad_jack_check_connection (krad_jack_t *krad_jack, char *remote_port) {
 	}
 	
 	pthread_mutex_unlock (&krad_jack->connections_lock);
-	
 }
 
 void krad_jack_stay_connection (krad_jack_t *krad_jack, char *port, char *remote_port) {
@@ -66,8 +64,7 @@ void krad_jack_stay_connection (krad_jack_t *krad_jack, char *port, char *remote
 		}
 	}
 	
-	pthread_mutex_unlock (&krad_jack->connections_lock);		
-	
+	pthread_mutex_unlock (&krad_jack->connections_lock);
 }
 
 void krad_jack_unstay_connection (krad_jack_t *krad_jack, char *port, char *remote_port) {
@@ -90,7 +87,6 @@ void krad_jack_unstay_connection (krad_jack_t *krad_jack, char *port, char *remo
 	}
 	
 	pthread_mutex_unlock (&krad_jack->connections_lock);
-	
 }
 
 void krad_jack_port_registration_callback (jack_port_id_t portid, int regged, void *arg) {
@@ -236,7 +232,6 @@ krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char 
 	}
 
 	return portgroup;
-
 }
 
 int krad_jack_xrun (void *arg) {
@@ -244,11 +239,9 @@ int krad_jack_xrun (void *arg) {
 	krad_jack_t *krad_jack = (krad_jack_t *)arg;
 
 	krad_jack->xruns++;
-	
 	printke ("Krad Jack %s xrun number %d!\n", krad_jack->name, krad_jack->xruns);
 
 	return 0;
-
 }
 
 int krad_jack_process (jack_nframes_t nframes, void *arg) {
@@ -260,10 +253,7 @@ int krad_jack_process (jack_nframes_t nframes, void *arg) {
     krad_jack->set_thread_name_process = 1;
   }
 
-	return krad_mixer_process (nframes, krad_jack->krad_audio->krad_mixer);
-
-	return 0;
-
+	return krad_mixer_mix (nframes, krad_jack->krad_audio->krad_mixer);
 }
 
 void krad_jack_shutdown (void *arg) {
@@ -271,7 +261,6 @@ void krad_jack_shutdown (void *arg) {
   //krad_jack_t *krad_jack = (krad_jack_t *)arg;
 
   printke ("Krad Jack shutdown callback, oh dear!");
-
 }
 
 void krad_jack_destroy (krad_jack_t *krad_jack) {
@@ -293,7 +282,6 @@ void krad_jack_destroy (krad_jack_t *krad_jack) {
 	}
 	
 	free (krad_jack);
-
 }
 
 int krad_jack_detect () {
@@ -323,13 +311,10 @@ int krad_jack_detect_for_jack_server_name (char *server_name) {
 		jack_client_close (client);
 		return 1;
 	}
-
 }
 
 krad_jack_t *krad_jack_create (krad_audio_t *krad_audio) {
-
 	return krad_jack_create_for_jack_server_name (krad_audio, NULL);
-
 }
 
 krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, char *server_name) {
@@ -401,6 +386,5 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
 	krad_jack->active = 1;
 
 	return krad_jack;
-
 }
 

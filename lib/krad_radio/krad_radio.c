@@ -126,8 +126,6 @@ static krad_radio_t *krad_radio_create (char *sysname) {
     return NULL;
   }
   
-  krad_compositor_set_krad_mixer (krad_radio->krad_compositor, krad_radio->krad_mixer);  
-  
   krad_radio->krad_transponder = krad_transponder_create (krad_radio);
   
   if (krad_radio->krad_transponder == NULL) {

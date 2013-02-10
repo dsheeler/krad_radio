@@ -206,12 +206,12 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, portgroupname, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-      krad_mixer_bind_portgroup_xmms2 (krad_mixer, portgroupname, string);
+      krad_mixer_portgroup_bind_xmms2 (krad_mixer, portgroupname, string);
       break;
     case EBML_ID_KRAD_MIXER_CMD_UNBIND_PORTGROUP_XMMS2:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, portgroupname, ebml_data_size);
-      krad_mixer_unbind_portgroup_xmms2 (krad_mixer, portgroupname);
+      krad_mixer_portgroup_unbind_xmms2 (krad_mixer, portgroupname);
       break;
     case EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS:
       for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {

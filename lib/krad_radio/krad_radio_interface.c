@@ -234,7 +234,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			ret = krad_transponder_handler ( krad_radio->krad_transponder, kr_ipc );
       break;
 		case EBML_ID_KRAD_RADIO_CMD:
-			//printk ("Krad Radio Command");
 			return krad_radio_handler ( output, output_len, ptr );
 		case EBML_ID_KRAD_RADIO_CMD_LIST_TAGS:
 			//printk ("LIST_TAGS");
