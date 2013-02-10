@@ -122,6 +122,13 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
                                      krad_compositor->active_output_ports);
     krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
                                      krad_compositor->frame_num);
+    if (krad_compositor_get_background_name (krad_compositor, string)) {
+      krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, string);
+    } else {
+      krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, "");
+    }
+    krad_compositor_get_last_snapshot_name (krad_compositor, string);
+    krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, string);
     krad_ipc_server_response_finish ( krad_ipc, info_loc);
     krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
     krad_ipc_server_response_finish ( krad_ipc, response );
@@ -218,7 +225,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
     numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
     krad_compositor_remove_text (krad_compositor, numbers[0]);
     break;
-      
   case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_TEXTS:
     for (s = 0; s < KC_MAX_TEXTS; s++) {
       if (krad_compositor->krad_text[s].krad_compositor_subunit->active == 1) {
@@ -233,12 +239,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       }
     }
     return 1;
-  case EBML_ID_KRAD_COMPOSITOR_CMD_GET_LAST_SNAPSHOT_NAME:
-    krad_compositor_get_last_snapshot_name (krad_compositor, string);
-    krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_MSG, &response);
-    krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, string);
-    krad_ipc_server_response_finish ( krad_ipc, response);
-    break;
   case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
     for (p = 0; p < KC_MAX_PORTS; p++) {
       if (krad_compositor->port[p].local == 1) {

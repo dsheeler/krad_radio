@@ -116,8 +116,9 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "ls", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      kr_transponder_list (client);
-      kr_client_response_wait_print (client);
+      //FIXME
+      //kr_transponder_list (client);
+      //kr_client_response_wait_print (client);
 
       kr_compositor_port_list (client);
       kr_client_response_wait_print (client);
@@ -692,8 +693,9 @@ int main (int argc, char *argv[]) {
   }
   
   if (strncmp(argv[2], "lastsnap", 8) == 0) {
-    kr_compositor_last_snap_name (client);
-    kr_client_response_wait_print (client);        
+    //FIXME
+    //kr_compositor_info (client);
+    //kr_client_response_wait_print (client);        
   }
 
   if ((strncmp(argv[2], "comp", 4) == 0) ||
@@ -896,7 +898,7 @@ int main (int argc, char *argv[]) {
       kr_compositor_list_texts (client);
       kr_client_response_wait_print (client);      
     }
-  }                          
+  }
 
   if (strncmp(argv[2], "background", 10) == 0) {
     if (argc == 4) {

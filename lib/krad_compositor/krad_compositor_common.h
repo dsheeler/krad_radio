@@ -91,6 +91,9 @@ struct krad_compositor_rep_St {
 	uint32_t outputs;
 
 	uint64_t frames;
+	
+	char snapshot_filename[256];
+	char background_filename[256];
 };
 
 void krad_compositor_subunit_controls_init (kr_comp_controls_t *controls, int number, int x, int y, int z, int tickrate, int width, int height, float scale, float opacity, float rotation);

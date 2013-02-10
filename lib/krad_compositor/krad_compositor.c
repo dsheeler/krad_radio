@@ -321,6 +321,18 @@ void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *f
 	}
 }
 
+int krad_compositor_get_background_name (krad_compositor_t *krad_compositor, char *filename) {
+	
+	if ((filename == NULL) ||
+	    (krad_compositor->background->krad_compositor_subunit->active != 1)) {
+		return 0;
+	}
+	
+	strncpy (filename, krad_compositor->background->filename, sizeof(krad_compositor->background->filename));
+	
+  return 1;
+}
+
 void krad_compositor_render_background (krad_compositor_t *krad_compositor) {
 
 	if (krad_compositor->background->krad_compositor_subunit->active != 1) {

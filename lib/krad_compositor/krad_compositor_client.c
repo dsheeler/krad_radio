@@ -558,6 +558,12 @@ void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t **kr_c
 	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);	
   kr_compositor_rep->frames = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
+	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, kr_compositor_rep->background_filename);
+
+	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);	
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, kr_compositor_rep->snapshot_filename);
+
 }
 
 void kr_ebml_to_comp_controls (unsigned char *ebml_frag, kr_comp_controls_t *controls) {
@@ -635,7 +641,17 @@ int kr_compositor_response_get_string_from_compositor (unsigned char *ebml_frag,
   pos += sprintf (*string + pos, "Inputs: %u\n", kr_compositor->inputs);
   pos += sprintf (*string + pos, "Outputs: %u\n", kr_compositor->outputs);
   pos += sprintf (*string + pos, "Frames: %"PRIu64"\n", kr_compositor->frames);
-        
+  if (strlen(kr_compositor->background_filename)) {
+    pos += sprintf (*string + pos, "Background: %s\n", kr_compositor->background_filename);
+  } else {
+    pos += sprintf (*string + pos, "Background: Unset\n");
+  }
+  if (strlen(kr_compositor->snapshot_filename)) {
+    pos += sprintf (*string + pos, "Last Snapshot: %s", kr_compositor->snapshot_filename);
+  } else {
+    pos += sprintf (*string + pos, "Last Snapshot: None");
+  }
+
   kr_compositor_rep_destroy (kr_compositor);
   
   return pos; 

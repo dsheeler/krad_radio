@@ -146,6 +146,7 @@ void krad_compositor_set_sprite (krad_compositor_t *krad_compositor,
 
 void krad_compositor_remove_sprite (krad_compositor_t *krad_compositor, int num);
 
+int krad_compositor_get_background_name (krad_compositor_t *krad_compositor, char *filename);
 void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *filename);
 void krad_compositor_unset_background (krad_compositor_t *krad_compositor);
 void krad_compositor_render_background (krad_compositor_t *krad_compositor);
