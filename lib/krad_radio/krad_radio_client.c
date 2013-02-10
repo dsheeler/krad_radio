@@ -348,13 +348,15 @@ int kr_radio_response_get_string_from_remote (unsigned char *ebml_frag, uint64_t
   string_pos = 0;
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   string_pos += sprintf (*string + string_pos, "Interface: ");
   ret = krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *string + string_pos);
   item_pos += ret;
   string_pos += ret;
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   number = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  string_pos += sprintf (*string + string_pos, " Port: %d\n", number);
+  string_pos += sprintf (*string + string_pos, " Port: %d", number);
 
   return string_pos;
 
@@ -395,7 +397,7 @@ int kr_radio_response_get_string_from_radio (unsigned char *ebml_frag, uint64_t 
     pos += sprintf (*string + pos, "Logname: %s\n", kr_radio->logname);
   }
   pos += sprintf (*string + pos, "Station Uptime: %"PRIu64"\n", kr_radio->uptime);  
-  pos += sprintf (*string + pos, "System CPU Usage: %u%%\n", kr_radio->cpu_usage);  
+  pos += sprintf (*string + pos, "System CPU Usage: %u%%", kr_radio->cpu_usage);  
   kr_radio_rep_destroy (kr_radio);
   
   return pos; 
@@ -415,7 +417,7 @@ int kr_radio_response_get_string_from_cpu (unsigned char *ebml_frag, uint64_t it
   
   ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);
   usage = krad_ebml_read_number_from_frag (ebml_frag + ebml_pos, ebml_data_size);
-  pos += sprintf (*string + pos, "System CPU Usage: %u%%\n", usage);  
+  pos += sprintf (*string + pos, "System CPU Usage: %u%%", usage);  
 
   
   return pos; 
@@ -430,6 +432,9 @@ int kr_radio_response_to_string (kr_response_t *response, char **string) {
     case KR_CPU:
       *string = kr_response_alloc_string (response->size * 8);
       return kr_radio_response_get_string_from_cpu (response->buffer, response->size, string);
+    case KR_REMOTE:
+      *string = kr_response_alloc_string (response->size * 8);
+      return kr_radio_response_get_string_from_remote (response->buffer, response->size, string);
   }
   
   return 0;  

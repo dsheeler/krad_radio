@@ -113,6 +113,7 @@ typedef enum {
 typedef enum {
   KR_STATION_UNIT = 1,
   KR_CPU,
+  KR_REMOTE,  
 } kr_station_subunit_t;
 
 /* Control Types */

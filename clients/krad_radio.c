@@ -127,7 +127,8 @@ int main (int argc, char *argv[]) {
     }
   }      
 
-  if (((strncmp(argv[2], "jacked", 6) == 0) || (strncmp(argv[2], "jackup", 6) == 0)) && (strlen(argv[2]) == 6)) {
+  if (((strncmp(argv[2], "jacked", 6) == 0) || (strncmp(argv[2], "jackup", 6) == 0)) &&
+       (strlen(argv[2]) == 6)) {
     if (argc == 3) {
       kr_mixer_jack_running (client);
       kr_client_response_wait_print (client);
@@ -154,7 +155,7 @@ int main (int argc, char *argv[]) {
     kr_client_response_wait_print (client);
   }
 
-  if (strncmp(argv[2], "info", 4) == 0) {
+  if ((strncmp(argv[2], "info", 4) == 0) || (strncmp(argv[2], "sys", 3) == 0)) {
     kr_system_info (client);
     kr_client_response_wait_print (client);
   }
@@ -292,7 +293,8 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (((strncmp(argv[2], "mix", 3) == 0) && (strlen(argv[2]) == 3)) ||
+  if (((strncmp(argv[2], "m", 3) == 0) && (strlen(argv[2]) == 1)) ||
+      ((strncmp(argv[2], "mix", 3) == 0) && (strlen(argv[2]) == 3)) ||
       ((strncmp(argv[2], "mixer", 5) == 0) && (strlen(argv[2]) == 5))) {
     if (argc == 3) {
       kr_mixer_info (client);
@@ -701,7 +703,8 @@ int main (int argc, char *argv[]) {
     kr_client_response_wait_print (client);        
   }
 
-  if (strncmp(argv[2], "comp", 4) == 0) {
+  if ((strncmp(argv[2], "comp", 4) == 0) ||
+      ((strncmp(argv[2], "c", 1) == 0) && (strlen(argv[2]) == 1))) {
     if (argc == 3) {
       kr_compositor_info (client);
       kr_client_response_wait_print (client);
