@@ -333,6 +333,8 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			krad_ebml_read_element ( kr_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
 		  numbers[0] = krad_ebml_read_number ( kr_ipc->current_client->krad_ebml, ebml_data_size);
 			if (krad_ipc_server_enable_remote (kr_ipc, string1, numbers[0])) {
+			  //FIXME this is wrong in the case of adapter based matches with multiple ips
+			  // perhaps switch to callback based create broadcast?
         remote = kr_remote_rep_create_with (string1, numbers[0]);
 			  address.path.unit = KR_STATION;
 			  address.path.subunit.station_subunit = KR_REMOTE;
@@ -350,13 +352,16 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			krad_ebml_read_string (kr_ipc->current_client->krad_ebml, string1, ebml_data_size);
 			krad_ebml_read_element ( kr_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
 			numbers[0] = krad_ebml_read_number ( kr_ipc->current_client->krad_ebml, ebml_data_size);
-			if (krad_ipc_server_disable_remote (kr_ipc, string1, numbers[0])) {
-			  //FIXME this is invalid as it doesn't broadcast all interfaces de-listened
-			  // need to change remote disable to use address for destroy
+			while (1) {
+        i = krad_ipc_server_disable_remote (kr_ipc, string1, numbers[0]);
+        if (i < 0) {
+          break;
+        }
         address.path.unit = KR_STATION;
         address.path.subunit.mixer_subunit = KR_REMOTE;
-        address.id.number = numbers[0];
+        address.id.number = i;
         krad_radio_broadcast_subunit_destroyed (krad_radio->remote_broadcaster, &address);
+        
 			}
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_OSC_ENABLE:

@@ -210,10 +210,12 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *in
 
   //FIXME needs to loop thru clients and disconnect remote ones .. optionally?
 
+  // Note: This removes exactly one at a time in the case of multiple matches..
+
   int r;
   int d;
   
-  d = 0;
+  d = -1;
   
   if ((interface == NULL) || (strlen(interface) == 0)) {
     interface = "All";
@@ -225,11 +227,12 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *in
       krad_ipc_server->tcp_port[r] = 0;
       krad_ipc_server->tcp_sd[r] = 0;
       free (krad_ipc_server->tcp_interface[r]);
-      d++;
+      d = r;
+      break;
     }
   }
 
-  if (d > 0) {
+  if (d > -1) {
     printk ("Disable remote on interface %s port %d", interface, port);
     krad_ipc_server_update_pollfds (krad_ipc_server);
   }

@@ -743,6 +743,11 @@ int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, k
     case KR_STATION:
       krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_RADIO_MSG, element_loc);
       krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.station_subunit);
+      if (address->path.subunit.station_subunit != KR_UNIT) {
+        if (address->path.subunit.station_subunit == KR_REMOTE) {
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        }
+      }
       return 1;
   }
   
@@ -779,6 +784,10 @@ int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address) {
       address->path.unit = KR_STATION;
       krad_ebml_read_element (ebml, &ebml_id, &ebml_data_size);
       address->path.subunit.zero = krad_ebml_read_number ( ebml, ebml_data_size );
+      if (address->path.subunit.station_subunit == KR_REMOTE) {
+        krad_ebml_read_element (ebml, &ebml_id, &ebml_data_size);
+        address->id.number = krad_ebml_read_number ( ebml, ebml_data_size );
+      }
       break;
     case EBML_ID_KRAD_MIXER_MSG:
       address->path.unit = KR_MIXER;
@@ -1328,6 +1337,16 @@ void kr_address_debug_print (kr_address_t *addr) {
 
   switch (*unit) {
     case KR_STATION:
+      switch (subunit->station_subunit) {
+        case KR_CPU:
+          printf ("CPU Usage");
+          break;
+        case KR_REMOTE:
+          printf ("Remote %d", id->number);
+          break;
+        default:
+          break;
+      }
       break;
     case KR_MIXER:
       switch (subunit->mixer_subunit) {
