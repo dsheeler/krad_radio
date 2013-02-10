@@ -145,24 +145,6 @@ void krad_websocket_set_cpu_usage (kr_ws_client_t *kr_ws_client, int usage) {
 
 }
 
-void krad_websocket_update_portgroup ( kr_ws_client_t *kr_ws_client, char *portname, float floatval, char *crossfade_name, float crossfade_val ) {
-
-  cJSON *msg;
-  
-  cJSON_AddItemToArray (kr_ws_client->msgs, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "update_portgroup");
-  cJSON_AddStringToObject (msg, "portgroup_name", portname);
-  cJSON_AddNumberToObject (msg, "volume", floatval);
-  
-  cJSON_AddStringToObject (msg, "crossfade_name", crossfade_name);
-  cJSON_AddNumberToObject (msg, "crossfade", crossfade_val);
-  
-  //kr_tags (kr_ws_client->kr_client, portname);
-}
-
 void krad_websocket_add_portgroup ( kr_ws_client_t *kr_ws_client, kr_mixer_portgroup_t *portgroup) {
 
   cJSON *msg;
@@ -212,6 +194,22 @@ void krad_websocket_set_portgroup_control ( kr_ws_client_t *kr_ws_client, kr_add
   cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
   cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
   cJSON_AddNumberToObject (msg, "value", value);
+}
+
+void krad_websocket_update_portgroup ( kr_ws_client_t *kr_ws_client, kr_address_t *address, char *value ) {
+
+  cJSON *msg;
+  
+  cJSON_AddItemToArray (kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+  cJSON_AddStringToObject (msg, "com", "kradmixer");
+  
+  cJSON_AddStringToObject (msg, "cmd", "update_portgroup");
+  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
+  cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
+  cJSON_AddStringToObject (msg, "value", value);
+  
+  //kr_tags (kr_ws_client->kr_client, portname);
 }
 
 void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer) {
@@ -273,7 +271,9 @@ static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
   kr_address_t *address;
   kr_rep_t *rep;
   float real;
+  char *string;
   
+  string = NULL;  
   real = 0.0f;
   response = NULL;
   rep = NULL;
@@ -290,6 +290,16 @@ static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
         (address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
         if (kr_response_to_float (response, &real)) {
           krad_websocket_set_portgroup_control (kr_ws_client, address, real);
+        } else {
+          if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) ||
+              (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+            if (kr_uncrate_string (response, &string)) {
+              krad_websocket_update_portgroup (kr_ws_client, address, string);
+              kr_string_recycle (&string);
+            } else {
+              krad_websocket_update_portgroup (kr_ws_client, address, "");
+            }
+          }
         }
         kr_response_free (&response);
         return 0;

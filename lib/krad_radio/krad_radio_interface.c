@@ -91,6 +91,10 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
 }
 
 int krad_radio_broadcast_subunit_control (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address_in, int control, float value, void *client) {
+  return krad_radio_broadcast_subunit_update (broadcaster, address_in, control, KR_FLOAT, &value, client);
+}
+
+int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address_in, int control, int type, void *value, void *client) {
 
   size_t size;
   unsigned char *buffer;
@@ -99,6 +103,8 @@ int krad_radio_broadcast_subunit_control (krad_ipc_broadcaster_t *broadcaster, k
   kr_address_t address;
   uint64_t message_loc;
   uint64_t payload_loc;
+  float *value_float;
+  int *value_int;
   
   size = 256;
   buffer = malloc (size);
@@ -117,7 +123,19 @@ int krad_radio_broadcast_subunit_control (krad_ipc_broadcaster_t *broadcaster, k
   krad_radio_address_to_ebml (krad_ebml, &message_loc, &address);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CONTROL);
   krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, value);
+  switch (type) {
+    case KR_FLOAT:
+      value_float = (float *)value;
+      krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, *value_float);
+      break;
+    case KR_STRING:
+      krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, value);
+      break;
+    case KR_INT32:
+      value_int = (int *)value;
+      krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, *value_int);
+      break;
+  }
   krad_ebml_finish_element (krad_ebml, payload_loc);
   krad_ebml_finish_element (krad_ebml, message_loc);
 

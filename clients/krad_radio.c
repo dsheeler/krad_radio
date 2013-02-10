@@ -382,7 +382,13 @@ int main (int argc, char *argv[]) {
     if (argc == 5) {
       kr_mixer_update_portgroup (client, argv[3], EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, argv[4]);
     }
-  }      
+  }
+  
+  if ((strncmp(argv[2], "rmcrossfade", 11) == 0) || (strncmp(argv[2], "nocrossfade", 11) == 0)) {
+    if (argc == 4) {
+      kr_mixer_update_portgroup (client, argv[3], EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, "");
+    }
+  }     
 
   if (strncmp(argv[2], "xmms2", 5) == 0) {
     if (argc == 5) {

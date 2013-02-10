@@ -658,7 +658,7 @@ void kr_ebml_to_mixer_rep (unsigned char *ebml_frag, kr_mixer_t **kr_mixer_rep_i
 
 }
 
-int kr_mixer_response_get_string_from_subunit_control (unsigned char *ebml_frag, uint64_t item_size, char **string) {
+int kr_mixer_response_get_string_from_subunit_control (kr_address_t *address, unsigned char *ebml_frag, uint64_t item_size, char **string) {
 
 	int pos;
 	uint32_t ebml_id;
@@ -669,11 +669,14 @@ int kr_mixer_response_get_string_from_subunit_control (unsigned char *ebml_frag,
 	ebml_pos = 0;
   pos = 0;
 
-	ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);	
-  value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
-  
-  pos += sprintf (*string + pos, "Control Value: %5.2f\n", value);
-  
+	ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);
+	if ((address->control.portgroup_control == KR_VOLUME) || (address->control.portgroup_control == KR_CROSSFADE)) {
+    value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
+    pos += sprintf (*string + pos, "%5.2f", value);
+  }
+	if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) || (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+	  pos += krad_ebml_read_string_from_frag (ebml_frag + ebml_pos, ebml_data_size, *string + pos);
+  }
   return pos; 
 }
 
@@ -793,7 +796,7 @@ int kr_mixer_response_to_string (kr_response_t *kr_response, char **string) {
   switch ( kr_response->type ) {
     case EBML_ID_KRAD_SUBUNIT_CONTROL:
       *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_mixer_response_get_string_from_subunit_control (kr_response->buffer, kr_response->size, string);
+      return kr_mixer_response_get_string_from_subunit_control (&kr_response->address, kr_response->buffer, kr_response->size, string);
     case EBML_ID_KRAD_UNIT_INFO:
       *string = kr_response_alloc_string (kr_response->size * 4);
       return kr_mixer_response_get_string_from_mixer (kr_response->buffer, kr_response->size, string);

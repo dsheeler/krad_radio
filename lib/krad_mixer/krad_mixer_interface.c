@@ -259,10 +259,8 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
         if (portgroup->direction == INPUT) {
           krad_radio_broadcast_subunit_created ( krad_mixer->broadcaster, &portgroup->address, (void *)portgroup);
         }
+        krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);        
       }
-
-      krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);
-
       return 0;
     case EBML_ID_KRAD_MIXER_CMD_DESTROY_PORTGROUP:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  

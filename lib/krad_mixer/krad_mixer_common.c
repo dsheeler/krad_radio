@@ -108,6 +108,10 @@ char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_contro
       return "volume";
     case KR_CROSSFADE:
       return "crossfade";
+    case KR_CROSSFADE_GROUP:
+      return "crossfade_group";
+    case KR_XMMS2_IPC_PATH:
+      return "xmms2_ipc_path";
   }
   return "Unknown";
 }

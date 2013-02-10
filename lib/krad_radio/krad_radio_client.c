@@ -508,9 +508,12 @@ int kr_response_to_float (kr_response_t *response, float *number) {
     
       break;
     case KR_MIXER:
-      pos += krad_ebml_read_element_from_frag (response->buffer, &ebml_id, &ebml_data_size);	
-      *number = krad_ebml_read_float_from_frag_add (response->buffer + pos, ebml_data_size, &pos);
-      return 1;
+      if ((response->address.control.portgroup_control == KR_VOLUME) ||
+          (response->address.control.portgroup_control == KR_CROSSFADE)) {
+         pos += krad_ebml_read_element_from_frag (response->buffer, &ebml_id, &ebml_data_size);	
+        *number = krad_ebml_read_float_from_frag_add (response->buffer + pos, ebml_data_size, &pos);
+        return 1;
+      }
     case KR_COMPOSITOR:
       //
       break;
