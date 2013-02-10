@@ -164,7 +164,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 	
 	int ret;
 	uint32_t ebml_id;	
-	uint64_t list;	
 	uint32_t command;
 	uint64_t ebml_data_size;
 	uint64_t element;
@@ -373,7 +372,7 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 		
 			address.path.unit = KR_STATION;
 			address.path.subunit.station_subunit = KR_REMOTE;
-		
+
       for (i = 0; i < MAX_REMOTES; i++) {
         if (kr_ipc->tcp_port[i]) {
           address.id.number = i;

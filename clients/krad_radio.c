@@ -149,21 +149,31 @@ int main (int argc, char *argv[]) {
     }
   }
 
-
-  if (strncmp(argv[2], "uptime", 6) == 0) {
-    //kr_uptime (client);
-    kr_client_response_wait_print (client);
-  }
-
   if ((strncmp(argv[2], "info", 4) == 0) || (strncmp(argv[2], "sys", 3) == 0)) {
     kr_system_info (client);
     kr_client_response_wait_print (client);
   }
 
   if (strncmp(argv[2], "cpu", 4) == 0) {
-    //kr_system_cpu_usage (client);
-    kr_client_response_wait_print (client);
-  }      
+    //FIXME
+    //kr_client_response_wait_print (client);
+  }
+
+  if (strncmp(argv[2], "uptime", 6) == 0) {
+    //FIXME
+    //kr_client_response_wait_print (client);
+  }
+  
+  if (strncmp(argv[2], "setdir", 6) == 0) {
+    if (argc == 4) {
+      kr_set_dir (client, argv[3]);
+    }
+  }
+
+  if (strncmp(argv[2], "logname", 7) == 0) {
+    //FIXME
+    //kr_client_response_wait_print (client);
+  }  
 
   if (strncmp(argv[2], "tags", 4) == 0) {
 
@@ -216,9 +226,6 @@ int main (int argc, char *argv[]) {
     if (ret == -1) {
       printf ("Invalid Port Specified\n");
     }
-    if (ret == 1) {
-      //kr_client_response_wait_print (client);
-    }
   }  
 
   if ((strncmp(argv[2], "remoteoff", 9) == 0) || (strncmp(argv[2], "remote_off", 10) == 0)) {
@@ -234,9 +241,6 @@ int main (int argc, char *argv[]) {
     }
     if (ret == -1) {
       printf ("Invalid Port Specified\n");
-    }
-    if (ret == 1) {
-      //kr_client_response_wait_print (client);
     }
   }
 
@@ -271,17 +275,6 @@ int main (int argc, char *argv[]) {
     if (argc == 3) {
       kr_osc_disable (client);
     }
-  }
-
-  if (strncmp(argv[2], "setdir", 6) == 0) {
-    if (argc == 4) {
-      kr_set_dir (client, argv[3]);
-    }
-  }
-
-  if (strncmp(argv[2], "logname", 7) == 0) {
-    //kr_logname (client);
-    kr_client_response_wait_print (client);
   }
 
   /* Krad Mixer Commands */
