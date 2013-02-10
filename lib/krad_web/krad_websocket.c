@@ -224,33 +224,6 @@ void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer)
   cJSON_AddNumberToObject (msg, "sample_rate", mixer->sample_rate);
 }
 
-
-void krad_websocket_set_frame_rate ( kr_ws_client_t *kr_ws_client, int numerator, int denominator) {
-
-  cJSON *msg;
-  
-  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradcompositor");
-  
-  cJSON_AddStringToObject (msg, "cmd", "set_frame_rate");
-  cJSON_AddNumberToObject (msg, "numerator", numerator);
-  cJSON_AddNumberToObject (msg, "denominator", denominator);
-}
-
-void krad_websocket_set_frame_size ( kr_ws_client_t *kr_ws_client, int width, int height) {
-
-  cJSON *msg;
-  
-  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-
-  cJSON_AddStringToObject (msg, "com", "kradcompositor");
-  
-  cJSON_AddStringToObject (msg, "cmd", "set_frame_size");
-  cJSON_AddNumberToObject (msg, "width", width);
-  cJSON_AddNumberToObject (msg, "height", height);
-}
-
 /* Krad API Handler */
 
 static void rep_to_json (kr_ws_client_t *kr_ws_client, kr_rep_t *rep) {

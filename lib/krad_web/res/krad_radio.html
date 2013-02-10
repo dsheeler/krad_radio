@@ -1,70 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Krad Radio</title>
-	<meta charset="utf-8">
-	<!-- <link rel="shortcut icon" href="/favicon.png"> -->
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="/krad_radio.js"></script>
-	<style>
+  <title>Krad Radio</title>
+  <meta charset="utf-8">
+  <!-- <link rel="shortcut icon" href="/favicon.png"> -->
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="/krad_radio.js"></script>
+  <style>
     /*
     @font-face {
       font-family: "TradeGothicLTComBoldCondensed";
       src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
     }
     */
-		body {
-			font-family: Helvetica,sans-serif; 
-            user-select: none;
-            -moz-user-select: none;
-            -webkit-user-select: none;
-			color: #ccc;
-			background-color: #474747;
-			margin: 0px;
-			margin-left: 10%;
-			margin-right: 5%;			
-		}
-		a { text-decoration: none; }
-		a:visited { color: #222227; }
+    body {
+      font-family: Helvetica,sans-serif; 
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      color: #ccc;
+      background-color: #474747;
+      margin: 0px;
+      margin-left: 10%;
+      margin-right: 5%;      
+    }
+    a { text-decoration: none; }
+    a:visited { color: #222227; }
 
-		button::-moz-focus-outer, ::-moz-focus-inner {
-			border: 1px solid transparent !important;
-		}
+    button::-moz-focus-outer, ::-moz-focus-inner {
+      border: 1px solid transparent !important;
+    }
 
-		h1, h2, h3, h4, h5, h6 {
-			cursor: default;
-		}
+    h1, h2, h3, h4, h5, h6 {
+      cursor: default;
+    }
 
-		.kradlink_link h3 {
+    .kradlink_link h3 {
             color: #919191;
             text-shadow: 0px 0px 0px #444;
             font-weight: bold; 
             font-size: 26px;
-		}
-		
-		.prepare_link_server_info label, .prepare_link_file_info label {
-		   	font-weight: bold;
-		   	position: absolute;
-			width: 110px;
-			padding-top: 7px;
-		}
-		
-		input[type="text"], input[type="password"] {
-			padding: 3px;
-			margin: 6px;
-			margin-left: 120px;
-			background-color: #616161;
-			border: 1px solid #616161;
-		}
+    }
+    
+    .prepare_link_server_info label, .prepare_link_file_info label {
+         font-weight: bold;
+         position: absolute;
+      width: 110px;
+      padding-top: 7px;
+    }
+    
+    input[type="text"], input[type="password"] {
+      padding: 3px;
+      margin: 6px;
+      margin-left: 120px;
+      background-color: #616161;
+      border: 1px solid #616161;
+    }
 
-		.kradmixer_control {
-			margin-top: 24px;
-		}
+    .kradmixer_control {
+      margin-top: 24px;
+    }
 
-		.kradmixer_control, .kradlink_control { height: 188px; float: left; margin: 14px; }
+    .kradmixer_control, .kradlink_control { height: 188px; float: left; margin: 14px; }
 
-		.kradmixer_control h2, .kradlink_control h2, .kradlink_control h3 {
+    .kradmixer_control h2, .kradlink_control h2, .kradlink_control h3 {
             position: relative;
             right: 46px;
             bottom: 68px;
@@ -76,594 +75,603 @@
             font-weight: bold; 
             font-size: 26px;
         }
-		
-		.crossfade_control {
+    
+    .crossfade_control {
             position: relative;
             text-align: center;
             margin: 64px;
             -webkit-transform: none;
             -moz-transform: none;
             -o-transform: none;
-		}
-		
-		.crossfade_control h2 {
+    }
+    
+    .crossfade_control h2 {
             position: static;
             text-align: center;
             margin-top: 4px;
             -webkit-transform: none;
             -moz-transform: none;
             -o-transform: none;
-		}
-		.sysname {
-		
-		    color: #666;
+    }
+    .sysname {
+    
+        color: #666;
             text-shadow: 0px 0px 0px #444;
             font-weight: bold; 
             font-size: 42px;
             margin-left: 42px;
-		}
-		
-		.kradlink_prepare_link {
-			margin-left: 16px;
-		}
-		
-		.volume_control, .kradlink_param_control { padding-left: 78px; margin-right: 40px; padding-right: 20px; width: 50px; }
-		.crossfade_control { width: 200px; }
-		.kradmixer_tools, .kradcompositor_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }		
-		.kradlink_tools { width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
-		.kradlink_info, .kradmixer_info, .kradcompositor_info { width: 80%; margin: 2px; margin-bottom: 4px; padding: 2px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }
-		.kradlink_link { width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
-		.dtmf_pad { width: 254px; height: 230px; padding: 2px; }
-		.dtmf_button { color: #FFFFFF; 
-					   background-color: #0000FF; text-align: center; width: 22px; height: 22px; margin: 2px;
-					   border: 1px solid grey; cursor: pointer; float: left; }
-					   
-		.dtmf_button_mil { color: #FFFFFF;
-						   background-color: #FF0000;  text-align: center; width: 22px; height: 22px; margin: 2px;
-						   border: 1px solid grey; cursor: pointer; float: left; }
-						   
-        .kradlink { margin-top: 132px; }
+    }
+    
+    .kradlink_prepare_link {
+      margin-left: 16px;
+    }
+    
+    .volume_control, .kradlink_param_control { padding-left: 78px; margin-right: 40px; padding-right: 20px; width: 50px; }
+    .crossfade_control { width: 200px; }
+    .kradmixer_tools, .kradcompositor_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }    
+    .kradlink_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
+    .kradlink_info, .kradmixer_info, .kradcompositor_info { display: none; width: 80%; margin: 2px; margin-bottom: 4px; padding: 2px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }
+    .kradlink_link { width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
+    .dtmf_pad { width: 254px; height: 230px; padding: 2px; }
+    .dtmf_button { color: #FFFFFF; 
+             background-color: #0000FF; text-align: center; width: 22px; height: 22px; margin: 2px;
+             border: 1px solid grey; cursor: pointer; float: left; }
+             
+    .dtmf_button_mil { color: #FFFFFF;
+               background-color: #FF0000;  text-align: center; width: 22px; height: 22px; margin: 2px;
+               border: 1px solid grey; cursor: pointer; float: left; }
+               
+        .kradlink { display: none; margin-top: 132px; }
         .tag { cursor: default; white-space: nowrap; font-family: Helvetica,sans-serif; font-size: 14px; color: #ccc; margin-top: 4px}
-        .nowplaying { font-weight: normal; font-size: 18px; margin-left: 6px; white-space: wrap; color: #9faa8b; text-shadow: #111112 5px 2px 5px; }
+        .nowplaying { font-weight: normal; font-size: 18px; margin-left: 6px; white-space: normal; color: #9faa8b; text-shadow: #111112 5px 2px 5px; }
         .playtime { float: left; margin-left: 6px; margin-top: 9px; margin-bottom: 8px; box-shadow: inset #192122 1px 1px 2px; border-radius: 2px; border: 0px solid #444; padding: 3px; font-weight: normal; font-size: 16px; color: #8aaa03; background-color: #434244; text-align: right; padding-right: 9px; width: 48px; }
 
-	</style>
-	
-	<style>
-	
-		/* d2f700 */
-		
-		.krad_button_toggle {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(171,171,171,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(171,171,171,1);
-			border-left: 0px solid rgba(171,171,171,1);
-			border-right: 0.13em solid rgba(171,171,171,0.1);
-			border-bottom: 0.13em solid rgba(171,171,171,0.1);
+  </style>
+  
+  <style>
+  
+    /* d2f700 */
+    
+    .krad_button_toggle {
+      min-width: 20px;
+      text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(171,171,171,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(171,171,171,1);
+      border-left: 0px solid rgba(171,171,171,1);
+      border-right: 0.13em solid rgba(171,171,171,0.1);
+      border-bottom: 0.13em solid rgba(171,171,171,0.1);
 
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
-		}
+    }
 
- 		.krad_button_toggle:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background-color: rgba(22,222,5,1);			
-			background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
-			border-top: 0em solid rgba(22,222,5,1);
-			border-left: 0px solid rgba(22,222,5,1);
-			border-right: 0.13em solid rgba(22,222,5,1);
-			border-bottom: 0.13em solid rgba(22,222,5,1);
-			text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */		
- 		
- 		}
-	
-		.krad_button_toggle_on {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background-color: rgba(22,222,5,1);			
-			background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
-			border-top: 0em solid rgba(22,222,5,1);
-			border-left: 0px solid rgba(22,222,5,1);
-			border-right: 0.13em solid rgba(22,222,5,1);
-			border-bottom: 0.13em solid rgba(22,222,5,1);
-			text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
+     .krad_button_toggle:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background-color: rgba(22,222,5,1);      
+      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
+      border-top: 0em solid rgba(22,222,5,1);
+      border-left: 0px solid rgba(22,222,5,1);
+      border-right: 0.13em solid rgba(22,222,5,1);
+      border-bottom: 0.13em solid rgba(22,222,5,1);
+      text-shadow: rgba(22,22,222,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */    
+     
+     }
+  
+    .krad_button_toggle_on {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background-color: rgba(22,222,5,1);      
+      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
+      border-top: 0em solid rgba(22,222,5,1);
+      border-left: 0px solid rgba(22,222,5,1);
+      border-right: 0.13em solid rgba(22,222,5,1);
+      border-bottom: 0.13em solid rgba(22,222,5,1);
+      text-shadow: rgba(22,22,222,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
 
-		}		
-		
-		.krad_button {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(254,182,69,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(254,182,69,1);
-			border-left: 0px solid rgba(254,182,69,1);
-			border-right: 0.13em solid rgba(254,182,69,0.1);
-			border-bottom: 0.13em solid rgba(254,182,69,0.1);
+    }    
+    
+    .krad_button {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(254,182,69,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(254,182,69,1);
+      border-left: 0px solid rgba(254,182,69,1);
+      border-right: 0.13em solid rgba(254,182,69,0.1);
+      border-bottom: 0.13em solid rgba(254,182,69,0.1);
 
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */
 
-		}
-	
-		.krad_button:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #111117;
-			background: radial-gradient(ellipse at center, rgba(241,231,103,1) 12%,rgba(254,182,69,1) 100%);
-			border-top: 0em solid rgba(254,182,69,1);
-			border-left: 0px solid rgba(254,182,69,1);
-			border-right: 0.13em solid rgba(254,182,69,1);
-			border-bottom: 0.13em solid rgba(254,182,69,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(254,182,69,0.85) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #111117;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 12%,rgba(254,182,69,1) 100%);
+      border-top: 0em solid rgba(254,182,69,1);
+      border-left: 0px solid rgba(254,182,69,1);
+      border-right: 0.13em solid rgba(254,182,69,1);
+      border-bottom: 0.13em solid rgba(254,182,69,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(254,182,69,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
+    }
 
-		.krad_button2 {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(5,171,224,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(5,171,224,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(5,171,224,1);
-			border-left: 0px solid rgba(5,171,224,1);
-			border-right: 0.13em solid rgba(5,171,224,0.1);
-			border-bottom: 0.13em solid rgba(5,171,224,0.1);
+    .krad_button2 {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(5,171,224,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(5,171,224,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(5,171,224,1);
+      border-left: 0px solid rgba(5,171,224,1);
+      border-right: 0.13em solid rgba(5,171,224,0.1);
+      border-bottom: 0.13em solid rgba(5,171,224,0.1);
 
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(5,171,224,1) 0px 1px 5px; /* drop shadow */
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(5,171,224,1) 0px 1px 5px; /* drop shadow */
 
-		}
-	
-		.krad_button2:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(5,171,224,1) 100%);
-			border-top: 0em solid rgba(5,171,224,1);
-			border-left: 0px solid rgba(5,171,224,1);
-			border-right: 0.13em solid rgba(5,171,224,1);
-			border-bottom: 0.13em solid rgba(5,171,224,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(5,171,224,0.85) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button2:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(5,171,224,1) 100%);
+      border-top: 0em solid rgba(5,171,224,1);
+      border-left: 0px solid rgba(5,171,224,1);
+      border-right: 0.13em solid rgba(5,171,224,1);
+      border-bottom: 0.13em solid rgba(5,171,224,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(5,171,224,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
-		
-		.krad_button3 {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(171,171,171,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(171,171,171,1);
-			border-left: 0px solid rgba(171,171,171,1);
-			border-right: 0.13em solid rgba(171,171,171,0.1);
-			border-bottom: 0.13em solid rgba(171,171,171,0.1);
+    }
+    
+    .krad_button3 {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(171,171,171,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(171,171,171,1);
+      border-left: 0px solid rgba(171,171,171,1);
+      border-right: 0.13em solid rgba(171,171,171,0.1);
+      border-bottom: 0.13em solid rgba(171,171,171,0.1);
 
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
-		}
-	
-		.krad_button3:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
-			border-top: 0em solid rgba(171,171,171,1);
-			border-left: 0px solid rgba(171,171,171,1);
-			border-right: 0.13em solid rgba(171,171,171,1);
-			border-bottom: 0.13em solid rgba(171,171,171,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button3:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
+      border-top: 0em solid rgba(171,171,171,1);
+      border-left: 0px solid rgba(171,171,171,1);
+      border-right: 0.13em solid rgba(171,171,171,1);
+      border-bottom: 0.13em solid rgba(171,171,171,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
-		
-		
-		.krad_button4 {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(171,5,224,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(171,5,224,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(171,5,224,1);
-			border-left: 0px solid rgba(171,5,224,1);
-			border-right: 0.13em solid rgba(171,5,224,0.1);
-			border-bottom: 0.13em solid rgba(171,5,224,0.1);
+    }
+    
+    
+    .krad_button4 {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(171,5,224,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(171,5,224,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(171,5,224,1);
+      border-left: 0px solid rgba(171,5,224,1);
+      border-right: 0.13em solid rgba(171,5,224,0.1);
+      border-bottom: 0.13em solid rgba(171,5,224,0.1);
 
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,5,224,1) 0px 1px 5px; /* drop shadow */
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,5,224,1) 0px 1px 5px; /* drop shadow */
 
-		}
-	
-		.krad_button4:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(171,5,224,1) 100%);
-			border-top: 0em solid rgba(171,5,224,1);
-			border-left: 0px solid rgba(171,5,224,1);
-			border-right: 0.13em solid rgba(171,5,224,1);
-			border-bottom: 0.13em solid rgba(171,5,224,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,5,224,0.85) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button4:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(171,5,224,1) 100%);
+      border-top: 0em solid rgba(171,5,224,1);
+      border-left: 0px solid rgba(171,5,224,1);
+      border-right: 0.13em solid rgba(171,5,224,1);
+      border-bottom: 0.13em solid rgba(171,5,224,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,5,224,0.85) 0px 1px 5px; /* drop shadow */
 
-		}			
+    }      
 
-		
-		.krad_button5 {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(244,5,35,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(244,5,35,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(244,5,35,1);
-			border-left: 0px solid rgba(244,5,35,1);
-			border-right: 0.13em solid rgba(244,5,35,0.1);
-			border-bottom: 0.13em solid rgba(244,5,35,0.1);
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(244,5,35,1) 0px 1px 5px; /* drop shadow */
+    
+    .krad_button5 {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(244,5,35,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(244,5,35,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(244,5,35,1);
+      border-left: 0px solid rgba(244,5,35,1);
+      border-right: 0.13em solid rgba(244,5,35,0.1);
+      border-bottom: 0.13em solid rgba(244,5,35,0.1);
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(244,5,35,1) 0px 1px 5px; /* drop shadow */
 
-		}
-	
-		.krad_button5:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(244,5,35,1) 100%);
-			border-top: 0em solid rgba(244,5,35,1);
-			border-left: 0px solid rgba(244,5,35,1);
-			border-right: 0.13em solid rgba(244,5,35,1);
-			border-bottom: 0.13em solid rgba(244,5,35,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(244,5,35,0.85) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button5:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(244,5,35,1) 100%);
+      border-top: 0em solid rgba(244,5,35,1);
+      border-left: 0px solid rgba(244,5,35,1);
+      border-right: 0.13em solid rgba(244,5,35,1);
+      border-bottom: 0.13em solid rgba(244,5,35,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(244,5,35,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
+    }
 
-		.krad_button6 {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(222,5,22,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(202,5,22,1) 0%,rgba(222,5,22,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(222,5,22,1);
-			border-left: 0px solid rgba(222,5,22,1);
-			border-right: 0.13em solid rgba(222,5,22,0.1);
-			border-bottom: 0.13em solid rgba(222,5,22,0.1);
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(222,5,22,1) 0px 1px 5px; /* drop shadow */
+    .krad_button6 {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(222,5,22,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(202,5,22,1) 0%,rgba(222,5,22,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(222,5,22,1);
+      border-left: 0px solid rgba(222,5,22,1);
+      border-right: 0.13em solid rgba(222,5,22,0.1);
+      border-bottom: 0.13em solid rgba(222,5,22,0.1);
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(222,5,22,1) 0px 1px 5px; /* drop shadow */
 
-		}
-	
-		.krad_button6:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(202,5,22,1) 12%,rgba(222,5,22,1) 100%);
-			border-top: 0em solid rgba(222,5,22,1);
-			border-left: 0px solid rgba(222,5,22,1);
-			border-right: 0.13em solid rgba(222,5,22,1);
-			border-bottom: 0.13em solid rgba(222,5,22,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(222,5,22,0.85) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button6:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(202,5,22,1) 12%,rgba(222,5,22,1) 100%);
+      border-top: 0em solid rgba(222,5,22,1);
+      border-left: 0px solid rgba(222,5,22,1);
+      border-right: 0.13em solid rgba(222,5,22,1);
+      border-bottom: 0.13em solid rgba(222,5,22,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(222,5,22,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
-
-
-		.krad_button7 {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 8px;
-			margin-bottom: 8px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			font-size: 16px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(22,222,5,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(22,202,5,1) 0%,rgba(22,222,5,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(22,222,5,1);
-			border-left: 0px solid rgba(22,222,5,1);
-			border-right: 0.13em solid rgba(22,222,5,0.1);
-			border-bottom: 0.13em solid rgba(22,222,5,0.1);
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(22,222,5,1) 0px 1px 5px; /* drop shadow */
-
-		}
-	
-		.krad_button7:active {
-			margin-left: 10px;
-			margin-right: 10px;
-			margin-top: 9px;
-			margin-bottom: 9px;
-			padding-left: 10px;
-			padding-right: 10px;
-			padding-top: 8px;
-			padding-bottom: 7px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
-			border-top: 0em solid rgba(22,222,5,1);
-			border-left: 0px solid rgba(22,222,5,1);
-			border-right: 0.13em solid rgba(22,222,5,1);
-			border-bottom: 0.13em solid rgba(22,222,5,1);
-			text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
-
-		}
+    }
 
 
-		.krad_button_small {
-		    min-width: 20px;
-		    text-align: center;
-			cursor: default;
-			margin-left: 6px;
-			margin-right: 6px;
-			margin-top: 4px;
-			margin-bottom: 4px;
-			padding-left: 8px;
-			padding-right: 8px;
-			padding-top: 5px;
-			padding-bottom: 4px;
-			font-size: 14px;
-			font-weight: bold;
-			font-family: Helvetica, sans-serif;
-			color: #222227;
-			user-select: none;
-			background-color: rgba(171,171,171,1);
-			border-color: #553344;
-			border-radius: 2px;
-			background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-			text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-			border-top: 0em solid rgba(171,171,171,1);
-			border-left: 0px solid rgba(171,171,171,1);
-			border-right: 0.13em solid rgba(171,171,171,0.1);
-			border-bottom: 0.13em solid rgba(171,171,171,0.1);
+    .krad_button7 {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(22,222,5,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 0%,rgba(22,222,5,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(22,222,5,1);
+      border-left: 0px solid rgba(22,222,5,1);
+      border-right: 0.13em solid rgba(22,222,5,0.1);
+      border-bottom: 0.13em solid rgba(22,222,5,0.1);
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(22,222,5,1) 0px 1px 5px; /* drop shadow */
 
-			box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
+    }
+  
+    .krad_button7:active {
+      margin-left: 10px;
+      margin-right: 10px;
+      margin-top: 9px;
+      margin-bottom: 9px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 7px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
+      border-top: 0em solid rgba(22,222,5,1);
+      border-left: 0px solid rgba(22,222,5,1);
+      border-right: 0.13em solid rgba(22,222,5,1);
+      border-bottom: 0.13em solid rgba(22,222,5,1);
+      text-shadow: rgba(22,22,222,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
+    }
 
-		.krad_button_small:active {
-			margin-left: 6px;
-			margin-right: 6px;
-			margin-top: 5px;
-			margin-bottom: 5px;
-			padding-left: 8px;
-			padding-right: 8px;
-			padding-top: 5px;
-			padding-bottom: 4px;
-			color: #191915;
-			background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
-			border-top: 0em solid rgba(171,171,171,1);
-			border-left: 0px solid rgba(171,171,171,1);
-			border-right: 0.13em solid rgba(171,171,171,1);
-			border-bottom: 0.13em solid rgba(171,171,171,1);
-			text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-			box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-						/* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-						rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
 
-		}
+    .krad_button_small {
+        min-width: 20px;
+        text-align: center;
+      cursor: default;
+      margin-left: 6px;
+      margin-right: 6px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      color: #222227;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      background-color: rgba(171,171,171,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(171,171,171,1);
+      border-left: 0px solid rgba(171,171,171,1);
+      border-right: 0.13em solid rgba(171,171,171,0.1);
+      border-bottom: 0.13em solid rgba(171,171,171,0.1);
 
-		.krad_button a, .krad_button2 a {
-			color: #222227;
-		}
+      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
-		.button_wrap {
-			height: 50px;
-			float: left;
-		}
+    }
 
-	</style>
-	<style>
+    .krad_button_small:active {
+      margin-left: 6px;
+      margin-right: 6px;
+      margin-top: 5px;
+      margin-bottom: 5px;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 4px;
+      color: #191915;
+      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
+      border-top: 0em solid rgba(171,171,171,1);
+      border-left: 0px solid rgba(171,171,171,1);
+      border-right: 0.13em solid rgba(171,171,171,1);
+      border-bottom: 0.13em solid rgba(171,171,171,1);
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
+
+    }
+
+    .krad_button a, .krad_button2 a {
+      color: #222227;
+    }
+
+    .button_wrap {
+      height: 50px;
+      float: left;
+    }
+
+  </style>
+  <style>
 /*
  * jQuery UI CSS Framework 1.8.18
  *
@@ -681,8 +689,8 @@
 .ui-helper-reset { margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }
 .ui-helper-clearfix:before, .ui-helper-clearfix:after { content: ""; display: table; }
 .ui-helper-clearfix:after { clear: both; }
-.ui-helper-clearfix { zoom: 1; }
-.ui-helper-zfix { width: 100%; height: 100%; top: 0; left: 0; position: absolute; opacity: 0; filter:Alpha(Opacity=0); }
+.ui-helper-clearfix {  }
+.ui-helper-zfix { width: 100%; height: 100%; top: 0; left: 0; position: absolute; opacity: 0; }
 
 
 /* Interaction Cues
@@ -745,22 +753,16 @@
 .ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #cd0a0a; }
 .ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #cd0a0a; }
 .ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary { font-weight: bold; }
-.ui-priority-secondary, .ui-widget-content .ui-priority-secondary,  .ui-widget-header .ui-priority-secondary { opacity: .7; filter:Alpha(Opacity=70); font-weight: normal; }
+.ui-priority-secondary, .ui-widget-content .ui-priority-secondary,  .ui-widget-header .ui-priority-secondary { opacity: .7; font-weight: normal; }
 .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled { opacity: .35; background-image: none; }
 
 
 /* Misc visuals
 ----------------------------------*/
 
-/* Corner radius
-.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl { -moz-border-radius-topleft: 4px; -webkit-border-top-left-radius: 4px; -khtml-border-top-left-radius: 4px; border-top-left-radius: 4px; }
-.ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr { -moz-border-radius-topright: 4px; -webkit-border-top-right-radius: 4px; -khtml-border-top-right-radius: 4px; border-top-right-radius: 4px; }
-.ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl { -moz-border-radius-bottomleft: 4px; -webkit-border-bottom-left-radius: 4px; -khtml-border-bottom-left-radius: 4px; border-bottom-left-radius: 4px; }
-.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; -khtml-border-bottom-right-radius: 4px; border-bottom-right-radius: 4px; }
-*/
 /* Overlays */
-.ui-widget-overlay { background: #aaaaaa; opacity: .30;filter:Alpha(Opacity=30); }
-.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 8px; -khtml-border-radius: 8px; -webkit-border-radius: 8px; border-radius: 8px; }/*
+.ui-widget-overlay { background: #aaaaaa; opacity: .30; }
+.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa; opacity: .30; border-radius: 8px; }/*
  * jQuery UI Resizable 1.8.18
  *
  * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
@@ -800,13 +802,13 @@
  */
 /* IE/Win - Fix animation bug - #4615 */
 .ui-accordion { width: 100%; }
-.ui-accordion .ui-accordion-header { cursor: pointer; position: relative; margin-top: 1px; zoom: 1; }
+.ui-accordion .ui-accordion-header { cursor: pointer; position: relative; margin-top: 1px;  }
 .ui-accordion .ui-accordion-li-fix { display: inline; }
 .ui-accordion .ui-accordion-header-active { border-bottom: 0 !important; }
 .ui-accordion .ui-accordion-header a { display: block; font-size: 1em; padding: .5em .5em .5em .7em; }
 .ui-accordion-icons .ui-accordion-header a { padding-left: 2.2em; }
 .ui-accordion .ui-accordion-header .ui-icon { position: absolute; left: .5em; top: 50%; margin-top: -8px; }
-.ui-accordion .ui-accordion-content { padding: 1em 2.2em; border-top: 0; margin-top: -2px; position: relative; top: 1px; margin-bottom: 2px; overflow: auto; display: none; zoom: 1; }
+.ui-accordion .ui-accordion-content { padding: 1em 2.2em; border-top: 0; margin-top: -2px; position: relative; top: 1px; margin-bottom: 2px; overflow: auto; display: none;  }
 .ui-accordion .ui-accordion-content-active { display: block; }
 /*
  * jQuery UI Autocomplete 1.8.18
@@ -817,7 +819,7 @@
  *
  * http://docs.jquery.com/UI/Autocomplete#theming
  */
-.ui-autocomplete { position: absolute; cursor: default; }	
+.ui-autocomplete { position: absolute; cursor: default; }  
 
 
 /*
@@ -830,34 +832,34 @@
  * http://docs.jquery.com/UI/Menu#theming
  */
 .ui-menu {
-	list-style:none;
-	padding: 2px;
-	margin: 0;
-	display:block;
-	float: left;
+  list-style:none;
+  padding: 2px;
+  margin: 0;
+  display:block;
+  float: left;
 }
 .ui-menu .ui-menu {
-	margin-top: -3px;
+  margin-top: -3px;
 }
 .ui-menu .ui-menu-item {
-	margin:0;
-	padding: 0;
-	zoom: 1;
-	float: left;
-	clear: left;
-	width: 100%;
+  margin:0;
+  padding: 0;
+  
+  float: left;
+  clear: left;
+  width: 100%;
 }
 .ui-menu .ui-menu-item a {
-	text-decoration:none;
-	display:block;
-	padding:.2em .4em;
-	line-height:1.5;
-	zoom:1;
+  text-decoration:none;
+  display:block;
+  padding:.2em .4em;
+  line-height:1.5;
+  
 }
 .ui-menu .ui-menu-item a.ui-state-hover,
 .ui-menu .ui-menu-item a.ui-state-active {
-	font-weight: normal;
-	margin: -1px;
+  font-weight: normal;
+  margin: -1px;
 }
 /*
  * jQuery UI Button 1.8.18
@@ -884,8 +886,8 @@
 .ui-button:active { margin-top: 1px; margin-bottom: 0px; } 
 .ui-button.ui-state-hover { background-color: #66f944; }
 .ui-button.ui-state-active { background-color: #fcff7f; border: 1px solid gold; box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-						/*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-						rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */ }
+            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
+            rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */ }
 
 .ui-button-icon-only { width: 2.2em; } /* to make room for the icon, a width needs to be set here */
 button.ui-button-icon-only { width: 2.4em; } /* button elements seem to need a little more width */
@@ -930,7 +932,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; }
 .ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
 .ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
-.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: .5em 1em; background: none; overflow: auto; zoom: 1; }
+.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: .5em 1em; background: none; overflow: auto;  }
 .ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }
 .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
 .ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }
@@ -969,7 +971,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  *
  * http://docs.jquery.com/UI/Tabs#theming
  */
-.ui-tabs { position: relative; padding: .2em; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
+.ui-tabs { position: relative; padding: .2em;  } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }
 .ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }
@@ -1047,22 +1049,22 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 .ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
 
 
-	</style>
+  </style>
 
-	<script>
-		var kradradio = false;
-		var kradwebsocket = false;
-		$(window).bind('beforeunload', function() {
-			if (kradwebsocket != false) {
-				kradwebsocket.disconnect();
-			}
-		});		
-		$(document).ready(function() {
-			var websocket_port = ~;
-			kradwebsocket = new Kradwebsocket (websocket_port);
-		});
-	</script>
-	~
+  <script>
+    var kradradio = false;
+    var kradwebsocket = false;
+    $(window).bind('beforeunload', function() {
+      if (kradwebsocket != false) {
+        kradwebsocket.disconnect();
+      }
+    });    
+    $(document).ready(function() {
+      var websocket_port = ~;
+      kradwebsocket = new Kradwebsocket (websocket_port);
+    });
+  </script>
+  ~
 </head>
 <body>
 ~
