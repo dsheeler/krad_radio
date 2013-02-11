@@ -1448,9 +1448,10 @@ void krad_compositor_destroy (krad_compositor_t *krad_compositor) {
 	
 	free (krad_compositor->port);
 	
-  krad_sprite_reset (krad_compositor->background);
-	free (krad_compositor->background);
-
+	if (krad_compositor->background != NULL) {
+    krad_sprite_destroy (krad_compositor->background);
+    krad_compositor->background = NULL;
+  }
 
   krad_sprite_destroy_arr (krad_compositor->krad_sprite, KC_MAX_SPRITES);
   krad_text_destroy_arr (krad_compositor->krad_text, KC_MAX_TEXTS);
@@ -1518,7 +1519,7 @@ krad_compositor_t *krad_compositor_create (int width, int height,
 	krad_compositor->port = calloc(KC_MAX_PORTS, sizeof(krad_compositor_port_t));
 	
   for (i = 0; i < KC_MAX_PORTS; i++) {
-    krad_compositor->port[i].krad_compositor_subunit = krad_compositor_subunit_create();
+    //krad_compositor->port[i].krad_compositor_subunit = krad_compositor_subunit_create();
     krad_compositor->port[i].krad_compositor_subunit->address.path.unit = KR_COMPOSITOR;
     krad_compositor->port[i].krad_compositor_subunit->address.path.subunit.compositor_subunit = KR_VIDEOPORT;
     krad_compositor->port[i].krad_compositor_subunit->address.id.number = i;
