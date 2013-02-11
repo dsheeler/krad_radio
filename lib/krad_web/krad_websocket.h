@@ -33,6 +33,7 @@ struct kr_ws_client_St {
   krad_websocket_t *krad_websocket;
   kr_client_t *kr_client;
   cJSON *msgs;
+  unsigned char *buffer;
   char *msgstext;
   int msgstextlen;
   int kr_client_info;
@@ -46,7 +47,7 @@ struct krad_websocket_St {
   struct pollfd pollfds[KRAD_WEBSOCKET_MAX_POLL_FDS];
   int count_pollfds;
   enum fdclass fdof[KRAD_WEBSOCKET_MAX_POLL_FDS];
-  unsigned char *buffer;
+  //unsigned char *buffer;
   struct libwebsocket_context *context;
 
   int port;

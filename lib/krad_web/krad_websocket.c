@@ -385,7 +385,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
   int ret;
   krad_websocket_t *krad_websocket = krad_websocket_glob;
   kr_ws_client_t *kr_ws_client = user;
-  unsigned char *p = &krad_websocket->buffer[LWS_SEND_BUFFER_PRE_PADDING];
+  //unsigned char *p = &krad_websocket->buffer[LWS_SEND_BUFFER_PRE_PADDING];
   
   switch (reason) {
 
@@ -394,7 +394,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_ws_client->context = this;
       kr_ws_client->wsi = wsi;
       kr_ws_client->krad_websocket = krad_websocket;
-
+      kr_ws_client->buffer = malloc (4096);
       kr_ws_client->kr_client = kr_client_create ("websocket client");
       
       if (kr_ws_client->kr_client == NULL) {
@@ -423,28 +423,30 @@ static int callback_kr_client (struct libwebsocket_context *this,
       del_poll_fd (kr_client_get_fd (kr_ws_client->kr_client));
       kr_client_destroy (&kr_ws_client->kr_client);
       kr_ws_client->hello_sent = 0;
+      free (kr_ws_client->buffer);
       kr_ws_client->context = NULL;
       kr_ws_client->wsi = NULL;
       break;
 
     case LWS_CALLBACK_BROADCAST:
 
-      memcpy (p, in, len);
-      libwebsocket_write (wsi, p, len, LWS_WRITE_TEXT);
+      //memcpy (p, in, len);
+      //libwebsocket_write (wsi, p, len, LWS_WRITE_TEXT);
       break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
 
       if (kr_ws_client->kr_client_info == 1) {
-        memcpy (p, kr_ws_client->msgstext, kr_ws_client->msgstextlen + 1);
-        ret = libwebsocket_write (wsi, p, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
+        //memcpy (p, kr_ws_client->msgstext, kr_ws_client->msgstextlen + 1);
+        //ret = libwebsocket_write (wsi, p, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
+        ret = libwebsocket_write (wsi, (unsigned char *)kr_ws_client->msgstext, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
         if (ret < 0) {
           printke ("krad_ipc ERROR writing to socket");
           return 1;
         }
         kr_ws_client->kr_client_info = 0;
         kr_ws_client->msgstextlen = 0;
-        free (kr_ws_client->msgstext);
+        //free (kr_ws_client->msgstext);
       }
       break;
 
@@ -530,7 +532,9 @@ static void *krad_websocket_server_run (void *arg) {
                   
                   krad_api_handler (kr_ws_client);
                   
-                  kr_ws_client->msgstext = strdup(cJSON_Print (kr_ws_client->msgs));
+                  //kr_ws_client->msgstext = strdup(cJSON_Print (kr_ws_client->msgs));
+                  kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
+                  strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs));
                   kr_ws_client->msgstextlen = strlen (kr_ws_client->msgstext);
                   //cJSON_Delete (kr_ws_client->msgs);
                   cjson_memreset ();
@@ -571,7 +575,7 @@ void krad_websocket_server_destroy (krad_websocket_t *krad_websocket) {
     if (!krad_controller_shutdown (&krad_websocket->krad_control, &krad_websocket->server_thread, 30)) {
       krad_controller_destroy (&krad_websocket->krad_control, &krad_websocket->server_thread);
     }
-    free (krad_websocket->buffer);
+    //free (krad_websocket->buffer);
     libwebsocket_context_destroy (krad_websocket->context);
     free (krad_websocket);
     krad_websocket_glob = NULL;
@@ -595,7 +599,7 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
 
   add_poll_fd (krad_controller_get_client_fd (&krad_websocket->krad_control), POLLIN, KRAD_CONTROLLER, NULL, NULL);
 
-  krad_websocket->buffer = calloc(1, 32768 * 8);
+  //krad_websocket->buffer = calloc(1, 8192);
   krad_websocket->context = libwebsocket_create_context (krad_websocket->port, NULL, protocols,
                                                          libwebsocket_internal_extensions, 
                                                          NULL, NULL, -1, -1, 0, NULL);
