@@ -1779,7 +1779,6 @@ void krad_link_start (krad_link_t *krad_link) {
       krad_link->cap_graph_id = krad_Xtransponder_add_capture (krad_link->krad_transponder->krad_Xtransponder, watch);
       memset (watch, 0, sizeof(krad_transponder_watch_t));
       krad_link->cap_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap_graph_id);      
-      free (watch);
     }
     
     if (krad_link->video_source == DECKLINK) {
