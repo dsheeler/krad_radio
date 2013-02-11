@@ -1,7 +1,7 @@
 /*
  * libwebsockets - small server side websockets and web server implementation
  *
- * Copyright (C) 2010 Andy Green <andy@warmcat.com>
+ * Copyright (C) 2010-2013 Andy Green <andy@warmcat.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,39 +21,299 @@
 
 #include "private-libwebsockets.h"
 
-const struct lws_tokens lws_tokens[WSI_TOKEN_COUNT] = {
+#ifdef WIN32
+#include <io.h>
+#endif
 
-	/* win32 can't do C99 */
 
-/*	[WSI_TOKEN_GET_URI]	=	*/{ "GET ",			 4 },
-/*	[WSI_TOKEN_HOST]	=	*/{ "Host:",			 5 },
-/*	[WSI_TOKEN_CONNECTION]	=	*/{ "Connection:",		11 },
-/*	[WSI_TOKEN_KEY1]	=	*/{ "Sec-WebSocket-Key1:",	19 },
-/*	[WSI_TOKEN_KEY2]	=	*/{ "Sec-WebSocket-Key2:",	19 },
-/*	[WSI_TOKEN_PROTOCOL]	=	*/{ "Sec-WebSocket-Protocol:",	23 },
-/*	[WSI_TOKEN_UPGRADE]	=	*/{ "Upgrade:",			 8 },
-/*	[WSI_TOKEN_ORIGIN]	=	*/{ "Origin:",			 7 },
-/*	[WSI_TOKEN_DRAFT]	=	*/{ "Sec-WebSocket-Draft:",	20 },
-/*	[WSI_TOKEN_CHALLENGE]	=	*/{ "\x0d\x0a",			 2 },
-
-/*	[WSI_TOKEN_KEY]		=	*/{ "Sec-WebSocket-Key:",	18 },
-/*	[WSI_TOKEN_VERSION]	=	*/{ "Sec-WebSocket-Version:",	22 },
-/*	[WSI_TOKEN_SWORIGIN]=		*/{ "Sec-WebSocket-Origin:",	21 },
-
-/*	[WSI_TOKEN_EXTENSIONS]	=	*/{ "Sec-WebSocket-Extensions:", 25 },
-
-/*	[WSI_TOKEN_ACCEPT]	=	*/{ "Sec-WebSocket-Accept:",	21 },
-/*	[WSI_TOKEN_NONCE]	=	*/{ "Sec-WebSocket-Nonce:",	20 },
-/*	[WSI_TOKEN_HTTP]	=	*/{ "HTTP/1.1 ",		 9 },
-/*	[WSI_TOKEN_MUXURL]	=	*/{ "",		 -1 },
-
+unsigned char lextable[] = {
+/* pos 0: state 0 */
+   0x47 /* 'G' */, 0x07 /* to pos 14 state 1 */,
+   0x48 /* 'H' */, 0x0A /* to pos 22 state 5 */,
+   0x43 /* 'C' */, 0x0F /* to pos 34 state 10 */,
+   0x53 /* 'S' */, 0x19 /* to pos 56 state 21 */,
+   0x55 /* 'U' */, 0x3F /* to pos 134 state 51 */,
+   0x4F /* 'O' */, 0x46 /* to pos 150 state 59 */,
+   0x8D /* '.' */, 0x52 /* to pos 176 state 72 */,
+/* pos 14: state 1 */
+   0xC5 /* 'E' */, 0x01 /* to pos 16 state 2 */,
+/* pos 16: state 2 */
+   0xD4 /* 'T' */, 0x01 /* to pos 18 state 3 */,
+/* pos 18: state 3 */
+   0xA0 /* ' ' */, 0x01 /* to pos 20 state 4 */,
+/* pos 20: state 4 */
+   0x80, 0x00 /* terminal marker */, 
+/* pos 22: state 5 */
+   0x6F /* 'o' */, 0x02 /* to pos 26 state 6 */,
+   0xD4 /* 'T' */, 0x76 /* to pos 260 state 114 */,
+/* pos 26: state 6 */
+   0xF3 /* 's' */, 0x01 /* to pos 28 state 7 */,
+/* pos 28: state 7 */
+   0xF4 /* 't' */, 0x01 /* to pos 30 state 8 */,
+/* pos 30: state 8 */
+   0xBA /* ':' */, 0x01 /* to pos 32 state 9 */,
+/* pos 32: state 9 */
+   0x81, 0x00 /* terminal marker */, 
+/* pos 34: state 10 */
+   0xEF /* 'o' */, 0x01 /* to pos 36 state 11 */,
+/* pos 36: state 11 */
+   0xEE /* 'n' */, 0x01 /* to pos 38 state 12 */,
+/* pos 38: state 12 */
+   0xEE /* 'n' */, 0x01 /* to pos 40 state 13 */,
+/* pos 40: state 13 */
+   0xE5 /* 'e' */, 0x01 /* to pos 42 state 14 */,
+/* pos 42: state 14 */
+   0xE3 /* 'c' */, 0x01 /* to pos 44 state 15 */,
+/* pos 44: state 15 */
+   0xF4 /* 't' */, 0x01 /* to pos 46 state 16 */,
+/* pos 46: state 16 */
+   0xE9 /* 'i' */, 0x01 /* to pos 48 state 17 */,
+/* pos 48: state 17 */
+   0xEF /* 'o' */, 0x01 /* to pos 50 state 18 */,
+/* pos 50: state 18 */
+   0xEE /* 'n' */, 0x01 /* to pos 52 state 19 */,
+/* pos 52: state 19 */
+   0xBA /* ':' */, 0x01 /* to pos 54 state 20 */,
+/* pos 54: state 20 */
+   0x82, 0x00 /* terminal marker */, 
+/* pos 56: state 21 */
+   0xE5 /* 'e' */, 0x01 /* to pos 58 state 22 */,
+/* pos 58: state 22 */
+   0xE3 /* 'c' */, 0x01 /* to pos 60 state 23 */,
+/* pos 60: state 23 */
+   0xAD /* '-' */, 0x01 /* to pos 62 state 24 */,
+/* pos 62: state 24 */
+   0xD7 /* 'W' */, 0x01 /* to pos 64 state 25 */,
+/* pos 64: state 25 */
+   0xE5 /* 'e' */, 0x01 /* to pos 66 state 26 */,
+/* pos 66: state 26 */
+   0xE2 /* 'b' */, 0x01 /* to pos 68 state 27 */,
+/* pos 68: state 27 */
+   0xD3 /* 'S' */, 0x01 /* to pos 70 state 28 */,
+/* pos 70: state 28 */
+   0xEF /* 'o' */, 0x01 /* to pos 72 state 29 */,
+/* pos 72: state 29 */
+   0xE3 /* 'c' */, 0x01 /* to pos 74 state 30 */,
+/* pos 74: state 30 */
+   0xEB /* 'k' */, 0x01 /* to pos 76 state 31 */,
+/* pos 76: state 31 */
+   0xE5 /* 'e' */, 0x01 /* to pos 78 state 32 */,
+/* pos 78: state 32 */
+   0xF4 /* 't' */, 0x01 /* to pos 80 state 33 */,
+/* pos 80: state 33 */
+   0xAD /* '-' */, 0x01 /* to pos 82 state 34 */,
+/* pos 82: state 34 */
+   0x4B /* 'K' */, 0x08 /* to pos 98 state 35 */,
+   0x50 /* 'P' */, 0x10 /* to pos 116 state 42 */,
+   0x44 /* 'D' */, 0x27 /* to pos 164 state 66 */,
+   0x56 /* 'V' */, 0x2F /* to pos 182 state 75 */,
+   0x4F /* 'O' */, 0x36 /* to pos 198 state 83 */,
+   0x45 /* 'E' */, 0x3C /* to pos 212 state 90 */,
+   0x41 /* 'A' */, 0x46 /* to pos 234 state 101 */,
+   0xCE /* 'N' */, 0x4C /* to pos 248 state 108 */,
+/* pos 98: state 35 */
+   0xE5 /* 'e' */, 0x01 /* to pos 100 state 36 */,
+/* pos 100: state 36 */
+   0xF9 /* 'y' */, 0x01 /* to pos 102 state 37 */,
+/* pos 102: state 37 */
+   0x31 /* '1' */, 0x03 /* to pos 108 state 38 */,
+   0x32 /* '2' */, 0x04 /* to pos 112 state 40 */,
+   0xBA /* ':' */, 0x25 /* to pos 180 state 74 */,
+/* pos 108: state 38 */
+   0xBA /* ':' */, 0x01 /* to pos 110 state 39 */,
+/* pos 110: state 39 */
+   0x83, 0x00 /* terminal marker */, 
+/* pos 112: state 40 */
+   0xBA /* ':' */, 0x01 /* to pos 114 state 41 */,
+/* pos 114: state 41 */
+   0x84, 0x00 /* terminal marker */, 
+/* pos 116: state 42 */
+   0xF2 /* 'r' */, 0x01 /* to pos 118 state 43 */,
+/* pos 118: state 43 */
+   0xEF /* 'o' */, 0x01 /* to pos 120 state 44 */,
+/* pos 120: state 44 */
+   0xF4 /* 't' */, 0x01 /* to pos 122 state 45 */,
+/* pos 122: state 45 */
+   0xEF /* 'o' */, 0x01 /* to pos 124 state 46 */,
+/* pos 124: state 46 */
+   0xE3 /* 'c' */, 0x01 /* to pos 126 state 47 */,
+/* pos 126: state 47 */
+   0xEF /* 'o' */, 0x01 /* to pos 128 state 48 */,
+/* pos 128: state 48 */
+   0xEC /* 'l' */, 0x01 /* to pos 130 state 49 */,
+/* pos 130: state 49 */
+   0xBA /* ':' */, 0x01 /* to pos 132 state 50 */,
+/* pos 132: state 50 */
+   0x85, 0x00 /* terminal marker */, 
+/* pos 134: state 51 */
+   0xF0 /* 'p' */, 0x01 /* to pos 136 state 52 */,
+/* pos 136: state 52 */
+   0xE7 /* 'g' */, 0x01 /* to pos 138 state 53 */,
+/* pos 138: state 53 */
+   0xF2 /* 'r' */, 0x01 /* to pos 140 state 54 */,
+/* pos 140: state 54 */
+   0xE1 /* 'a' */, 0x01 /* to pos 142 state 55 */,
+/* pos 142: state 55 */
+   0xE4 /* 'd' */, 0x01 /* to pos 144 state 56 */,
+/* pos 144: state 56 */
+   0xE5 /* 'e' */, 0x01 /* to pos 146 state 57 */,
+/* pos 146: state 57 */
+   0xBA /* ':' */, 0x01 /* to pos 148 state 58 */,
+/* pos 148: state 58 */
+   0x86, 0x00 /* terminal marker */, 
+/* pos 150: state 59 */
+   0xF2 /* 'r' */, 0x01 /* to pos 152 state 60 */,
+/* pos 152: state 60 */
+   0xE9 /* 'i' */, 0x01 /* to pos 154 state 61 */,
+/* pos 154: state 61 */
+   0xE7 /* 'g' */, 0x01 /* to pos 156 state 62 */,
+/* pos 156: state 62 */
+   0xE9 /* 'i' */, 0x01 /* to pos 158 state 63 */,
+/* pos 158: state 63 */
+   0xEE /* 'n' */, 0x01 /* to pos 160 state 64 */,
+/* pos 160: state 64 */
+   0xBA /* ':' */, 0x01 /* to pos 162 state 65 */,
+/* pos 162: state 65 */
+   0x87, 0x00 /* terminal marker */, 
+/* pos 164: state 66 */
+   0xF2 /* 'r' */, 0x01 /* to pos 166 state 67 */,
+/* pos 166: state 67 */
+   0xE1 /* 'a' */, 0x01 /* to pos 168 state 68 */,
+/* pos 168: state 68 */
+   0xE6 /* 'f' */, 0x01 /* to pos 170 state 69 */,
+/* pos 170: state 69 */
+   0xF4 /* 't' */, 0x01 /* to pos 172 state 70 */,
+/* pos 172: state 70 */
+   0xBA /* ':' */, 0x01 /* to pos 174 state 71 */,
+/* pos 174: state 71 */
+   0x88, 0x00 /* terminal marker */, 
+/* pos 176: state 72 */
+   0x8A /* '.' */, 0x01 /* to pos 178 state 73 */,
+/* pos 178: state 73 */
+   0x89, 0x00 /* terminal marker */, 
+/* pos 180: state 74 */
+   0x8A, 0x00 /* terminal marker */, 
+/* pos 182: state 75 */
+   0xE5 /* 'e' */, 0x01 /* to pos 184 state 76 */,
+/* pos 184: state 76 */
+   0xF2 /* 'r' */, 0x01 /* to pos 186 state 77 */,
+/* pos 186: state 77 */
+   0xF3 /* 's' */, 0x01 /* to pos 188 state 78 */,
+/* pos 188: state 78 */
+   0xE9 /* 'i' */, 0x01 /* to pos 190 state 79 */,
+/* pos 190: state 79 */
+   0xEF /* 'o' */, 0x01 /* to pos 192 state 80 */,
+/* pos 192: state 80 */
+   0xEE /* 'n' */, 0x01 /* to pos 194 state 81 */,
+/* pos 194: state 81 */
+   0xBA /* ':' */, 0x01 /* to pos 196 state 82 */,
+/* pos 196: state 82 */
+   0x8B, 0x00 /* terminal marker */, 
+/* pos 198: state 83 */
+   0xF2 /* 'r' */, 0x01 /* to pos 200 state 84 */,
+/* pos 200: state 84 */
+   0xE9 /* 'i' */, 0x01 /* to pos 202 state 85 */,
+/* pos 202: state 85 */
+   0xE7 /* 'g' */, 0x01 /* to pos 204 state 86 */,
+/* pos 204: state 86 */
+   0xE9 /* 'i' */, 0x01 /* to pos 206 state 87 */,
+/* pos 206: state 87 */
+   0xEE /* 'n' */, 0x01 /* to pos 208 state 88 */,
+/* pos 208: state 88 */
+   0xBA /* ':' */, 0x01 /* to pos 210 state 89 */,
+/* pos 210: state 89 */
+   0x8C, 0x00 /* terminal marker */, 
+/* pos 212: state 90 */
+   0xF8 /* 'x' */, 0x01 /* to pos 214 state 91 */,
+/* pos 214: state 91 */
+   0xF4 /* 't' */, 0x01 /* to pos 216 state 92 */,
+/* pos 216: state 92 */
+   0xE5 /* 'e' */, 0x01 /* to pos 218 state 93 */,
+/* pos 218: state 93 */
+   0xEE /* 'n' */, 0x01 /* to pos 220 state 94 */,
+/* pos 220: state 94 */
+   0xF3 /* 's' */, 0x01 /* to pos 222 state 95 */,
+/* pos 222: state 95 */
+   0xE9 /* 'i' */, 0x01 /* to pos 224 state 96 */,
+/* pos 224: state 96 */
+   0xEF /* 'o' */, 0x01 /* to pos 226 state 97 */,
+/* pos 226: state 97 */
+   0xEE /* 'n' */, 0x01 /* to pos 228 state 98 */,
+/* pos 228: state 98 */
+   0xF3 /* 's' */, 0x01 /* to pos 230 state 99 */,
+/* pos 230: state 99 */
+   0xBA /* ':' */, 0x01 /* to pos 232 state 100 */,
+/* pos 232: state 100 */
+   0x8D, 0x00 /* terminal marker */, 
+/* pos 234: state 101 */
+   0xE3 /* 'c' */, 0x01 /* to pos 236 state 102 */,
+/* pos 236: state 102 */
+   0xE3 /* 'c' */, 0x01 /* to pos 238 state 103 */,
+/* pos 238: state 103 */
+   0xE5 /* 'e' */, 0x01 /* to pos 240 state 104 */,
+/* pos 240: state 104 */
+   0xF0 /* 'p' */, 0x01 /* to pos 242 state 105 */,
+/* pos 242: state 105 */
+   0xF4 /* 't' */, 0x01 /* to pos 244 state 106 */,
+/* pos 244: state 106 */
+   0xBA /* ':' */, 0x01 /* to pos 246 state 107 */,
+/* pos 246: state 107 */
+   0x8E, 0x00 /* terminal marker */, 
+/* pos 248: state 108 */
+   0xEF /* 'o' */, 0x01 /* to pos 250 state 109 */,
+/* pos 250: state 109 */
+   0xEE /* 'n' */, 0x01 /* to pos 252 state 110 */,
+/* pos 252: state 110 */
+   0xE3 /* 'c' */, 0x01 /* to pos 254 state 111 */,
+/* pos 254: state 111 */
+   0xE5 /* 'e' */, 0x01 /* to pos 256 state 112 */,
+/* pos 256: state 112 */
+   0xBA /* ':' */, 0x01 /* to pos 258 state 113 */,
+/* pos 258: state 113 */
+   0x8F, 0x00 /* terminal marker */, 
+/* pos 260: state 114 */
+   0xD4 /* 'T' */, 0x01 /* to pos 262 state 115 */,
+/* pos 262: state 115 */
+   0xD0 /* 'P' */, 0x01 /* to pos 264 state 116 */,
+/* pos 264: state 116 */
+   0xAF /* '/' */, 0x01 /* to pos 266 state 117 */,
+/* pos 266: state 117 */
+   0xB1 /* '1' */, 0x01 /* to pos 268 state 118 */,
+/* pos 268: state 118 */
+   0xAE /* '.' */, 0x01 /* to pos 270 state 119 */,
+/* pos 270: state 119 */
+   0xB1 /* '1' */, 0x01 /* to pos 272 state 120 */,
+/* pos 272: state 120 */
+   0xA0 /* ' ' */, 0x01 /* to pos 274 state 121 */,
+/* pos 274: state 121 */
+   0x90, 0x00 /* terminal marker */, 
+/* total size 276 bytes */
 };
+
+int lextable_decode(int pos, char c)
+{
+	while (pos >= 0) {
+		if (lextable[pos + 1] == 0) // terminal marker
+			return pos;
+
+		if ((lextable[pos] & 0x7f) == c)
+			return pos + (lextable[pos + 1] << 1);
+
+		if (lextable[pos] & 0x80)
+			return -1;
+
+		pos += 2;
+	}
+	return pos;
+}
+
+
 
 int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 {
 	int n;
 
-	switch (wsi->parser_state) {
+	switch (wsi->u.hdr.parser_state) {
 	case WSI_TOKEN_GET_URI:
 	case WSI_TOKEN_HOST:
 	case WSI_TOKEN_CONNECTION:
@@ -73,115 +333,117 @@ int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 	case WSI_TOKEN_HTTP:
 	case WSI_TOKEN_MUXURL:
 
-		debug("WSI_TOKEN_(%d) '%c'\n", wsi->parser_state, c);
+		lwsl_parser("WSI_TOKEN_(%d) '%c'\n", wsi->u.hdr.parser_state, c);
 
 		/* collect into malloc'd buffers */
 		/* optional space swallow */
-		if (!wsi->utf8_token[wsi->parser_state].token_len && c == ' ')
+		if (!wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len && c == ' ')
 			break;
 
 		/* special case space terminator for get-uri */
-		if (wsi->parser_state == WSI_TOKEN_GET_URI && c == ' ') {
-			wsi->utf8_token[wsi->parser_state].token[
-			   wsi->utf8_token[wsi->parser_state].token_len] = '\0';
-			wsi->parser_state = WSI_TOKEN_SKIPPING;
+		if (wsi->u.hdr.parser_state == WSI_TOKEN_GET_URI && c == ' ') {
+			wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token[
+			   wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len] = '\0';
+//			lwsl_parser("uri '%s'\n", wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token);
+			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
 			break;
 		}
 
 		/* allocate appropriate memory */
-		if (wsi->utf8_token[wsi->parser_state].token_len ==
-						   wsi->current_alloc_len - 1) {
+		if (wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len ==
+					     wsi->u.hdr.current_alloc_len - 1) {
 			/* need to extend */
-			wsi->current_alloc_len += LWS_ADDITIONAL_HDR_ALLOC;
-			if (wsi->current_alloc_len >= LWS_MAX_HEADER_LEN) {
+			wsi->u.hdr.current_alloc_len += LWS_ADDITIONAL_HDR_ALLOC;
+			if (wsi->u.hdr.current_alloc_len >= LWS_MAX_HEADER_LEN) {
 				/* it's waaay to much payload, fail it */
-				strcpy(wsi->utf8_token[wsi->parser_state].token,
+				strcpy(wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token,
 				   "!!! Length exceeded maximum supported !!!");
-				wsi->parser_state = WSI_TOKEN_SKIPPING;
+				wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
 				break;
 			}
-			wsi->utf8_token[wsi->parser_state].token =
-			       realloc(wsi->utf8_token[wsi->parser_state].token,
-							wsi->current_alloc_len);
+			wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token = (char *)
+			       realloc(wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token,
+							wsi->u.hdr.current_alloc_len);
+			if (wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token == NULL) {
+				lwsl_err("Out of mem\n");
+				return -1;
+			}
 		}
 
 		/* bail at EOL */
-		if (wsi->parser_state != WSI_TOKEN_CHALLENGE && c == '\x0d') {
-			wsi->utf8_token[wsi->parser_state].token[
-			   wsi->utf8_token[wsi->parser_state].token_len] = '\0';
-			wsi->parser_state = WSI_TOKEN_SKIPPING_SAW_CR;
-			debug("*\n");
+		if (wsi->u.hdr.parser_state != WSI_TOKEN_CHALLENGE && c == '\x0d') {
+			wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token[
+			   wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len] = '\0';
+			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING_SAW_CR;
+			lwsl_parser("*\n");
 			break;
 		}
 
-		wsi->utf8_token[wsi->parser_state].token[
-			    wsi->utf8_token[wsi->parser_state].token_len++] = c;
+		wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token[
+			    wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len++] = c;
 
 		/* per-protocol end of headers management */
 
-		if (wsi->parser_state != WSI_TOKEN_CHALLENGE)
+		if (wsi->u.hdr.parser_state != WSI_TOKEN_CHALLENGE)
 			break;
 
-		/* -76 has no version header ... server */
-		if (!wsi->utf8_token[WSI_TOKEN_VERSION].token_len &&
-		   wsi->mode != LWS_CONNMODE_WS_CLIENT_WAITING_SERVER_REPLY &&
-			      wsi->utf8_token[wsi->parser_state].token_len != 8)
-			break;
-
-		/* -76 has no version header ... client */
-		if (!wsi->utf8_token[WSI_TOKEN_VERSION].token_len &&
-		   wsi->mode == LWS_CONNMODE_WS_CLIENT_WAITING_SERVER_REPLY &&
-			wsi->utf8_token[wsi->parser_state].token_len != 16)
-			break;
-
-		/* <= 03 has old handshake with version header needs 8 bytes */
-		if (wsi->utf8_token[WSI_TOKEN_VERSION].token_len &&
-			 atoi(wsi->utf8_token[WSI_TOKEN_VERSION].token) < 4 &&
-			      wsi->utf8_token[wsi->parser_state].token_len != 8)
-			break;
-
-		/* no payload challenge in 01 + */
-
-		if (wsi->utf8_token[WSI_TOKEN_VERSION].token_len &&
-			   atoi(wsi->utf8_token[WSI_TOKEN_VERSION].token) > 0) {
-			wsi->utf8_token[WSI_TOKEN_CHALLENGE].token_len = 0;
-			free(wsi->utf8_token[WSI_TOKEN_CHALLENGE].token);
-			wsi->utf8_token[WSI_TOKEN_CHALLENGE].token = NULL;
-		}
-
-		/* For any supported protocol we have enough payload */
-
-		debug("Setting WSI_PARSING_COMPLETE\n");
-		wsi->parser_state = WSI_PARSING_COMPLETE;
-		break;
+		goto set_parsing_complete;
 
 	case WSI_INIT_TOKEN_MUXURL:
-		wsi->parser_state = WSI_TOKEN_MUXURL;
-		wsi->current_alloc_len = LWS_INITIAL_HDR_ALLOC;
+		wsi->u.hdr.parser_state = WSI_TOKEN_MUXURL;
+		wsi->u.hdr.current_alloc_len = LWS_INITIAL_HDR_ALLOC;
 
-		wsi->utf8_token[wsi->parser_state].token =
-					 malloc(wsi->current_alloc_len);
-		wsi->utf8_token[wsi->parser_state].token_len = 0;
+		wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token = (char *)
+					 malloc(wsi->u.hdr.current_alloc_len);
+		if (wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token == NULL) {
+			lwsl_err("Out of mem\n");
+			return -1;
+		}
+		wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len = 0;
 		break;
 
 		/* collecting and checking a name part */
 	case WSI_TOKEN_NAME_PART:
-		debug("WSI_TOKEN_NAME_PART '%c'\n", c);
+		lwsl_parser("WSI_TOKEN_NAME_PART '%c'\n", c);
 
-		if (wsi->name_buffer_pos == sizeof(wsi->name_buffer) - 1) {
+		if (wsi->u.hdr.name_buffer_pos == sizeof(wsi->u.hdr.name_buffer) - 1) {
 			/* name bigger than we can handle, skip until next */
-			wsi->parser_state = WSI_TOKEN_SKIPPING;
+			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
 			break;
 		}
-		wsi->name_buffer[wsi->name_buffer_pos++] = c;
-		wsi->name_buffer[wsi->name_buffer_pos] = '\0';
+		wsi->u.hdr.name_buffer[wsi->u.hdr.name_buffer_pos++] = c;
+		wsi->u.hdr.name_buffer[wsi->u.hdr.name_buffer_pos] = '\0';
 
-		for (n = 0; n < WSI_TOKEN_COUNT; n++) {
-			if (wsi->name_buffer_pos != lws_tokens[n].token_len)
-				continue;
-			if (strcasecmp(lws_tokens[n].token, wsi->name_buffer))
-				continue;
-			debug("known hdr '%s'\n", wsi->name_buffer);
+		wsi->u.hdr.lextable_pos = lextable_decode(wsi->u.hdr.lextable_pos, c);
+		if (wsi->u.hdr.lextable_pos < 0) {
+			/* this is not a header we know about */
+			if (wsi->u.hdr.hdrs[WSI_TOKEN_GET_URI].token_len) {
+				/* if not the method, just skip it all */
+				wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
+				break;
+			}
+			/* hm it's an unknown http method in fact */
+			if (c == ' ') {
+				lwsl_info("Unknown method %s\n", wsi->u.hdr.name_buffer);
+				/* treat it as GET */
+				wsi->u.hdr.parser_state = WSI_TOKEN_GET_URI;
+				wsi->u.hdr.current_alloc_len = LWS_INITIAL_HDR_ALLOC;
+				wsi->u.hdr.hdrs[WSI_TOKEN_GET_URI].token =
+					(char *)malloc(wsi->u.hdr.current_alloc_len);
+				if (wsi->u.hdr.hdrs[WSI_TOKEN_GET_URI].token == NULL) {
+					lwsl_err("Out of mem\n");
+					return -1;
+				}
+				break;
+			}
+		}
+		if (lextable[wsi->u.hdr.lextable_pos + 1] == 0) {
+
+			/* terminal state */
+
+			n = lextable[wsi->u.hdr.lextable_pos] & 0x7f;
+
+			lwsl_parser("known hdr '%s'\n", wsi->u.hdr.name_buffer);
 
 			/*
 			 * WSORIGIN is protocol equiv to ORIGIN,
@@ -190,78 +452,54 @@ int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 			if (n == WSI_TOKEN_SWORIGIN)
 				n = WSI_TOKEN_ORIGIN;
 
-			wsi->parser_state = WSI_TOKEN_GET_URI + n;
+			wsi->u.hdr.parser_state = (enum lws_token_indexes) (WSI_TOKEN_GET_URI + n);
 
 			n = WSI_TOKEN_COUNT;
 
 			/*  If the header has been seen already, just append */
-			if (wsi->utf8_token[wsi->parser_state].token)
-				continue;
+			if (!wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token) {
 
-			wsi->current_alloc_len = LWS_INITIAL_HDR_ALLOC;
-			wsi->utf8_token[wsi->parser_state].token =
-						 malloc(wsi->current_alloc_len);
-			wsi->utf8_token[wsi->parser_state].token_len = 0;
+				wsi->u.hdr.current_alloc_len = LWS_INITIAL_HDR_ALLOC;
+				wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token = (char *)
+							 malloc(wsi->u.hdr.current_alloc_len);
+				if (wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token == NULL) {
+					lwsl_err("Out of mem\n");
+					return -1;
+				}
+				wsi->u.hdr.hdrs[wsi->u.hdr.parser_state].token_len = 0;
+			}
 		}
 
-		/* colon delimiter means we just don't know this name */
-
-		if (wsi->parser_state == WSI_TOKEN_NAME_PART && c == ':') {
-			debug("skipping unknown header '%s'\n",
-							      wsi->name_buffer);
-			wsi->parser_state = WSI_TOKEN_SKIPPING;
-			break;
-		}
-
-		if (wsi->parser_state != WSI_TOKEN_CHALLENGE)
-			break;
-
-		/* don't look for payload when it can just be http headers */
-
-		if (!wsi->utf8_token[WSI_TOKEN_UPGRADE].token_len) {
-			/* they're HTTP headers, not websocket upgrade! */
-			debug("Setting WSI_PARSING_COMPLETE "
-							 "from http headers\n");
-			wsi->parser_state = WSI_PARSING_COMPLETE;
-		}
-
-		/* 04 version has no packet content after end of hdrs */
-
-		if (wsi->utf8_token[WSI_TOKEN_VERSION].token_len &&
-			 atoi(wsi->utf8_token[WSI_TOKEN_VERSION].token) >= 4) {
-			debug("04 header completed\n");
-			wsi->parser_state = WSI_PARSING_COMPLETE;
-			wsi->utf8_token[WSI_TOKEN_CHALLENGE].token_len = 0;
-			free(wsi->utf8_token[WSI_TOKEN_CHALLENGE].token);
-			wsi->utf8_token[WSI_TOKEN_CHALLENGE].token = NULL;
-		}
-
-		/* client parser? */
-
-		if (wsi->ietf_spec_revision >= 4) {
-			debug("04 header completed\n");
-			wsi->parser_state = WSI_PARSING_COMPLETE;
+		if (wsi->u.hdr.parser_state == WSI_TOKEN_CHALLENGE) {
+			if (wsi->u.hdr.hdrs[WSI_TOKEN_CHALLENGE].token) {
+				free(wsi->u.hdr.hdrs[WSI_TOKEN_CHALLENGE].token);
+				wsi->u.hdr.hdrs[WSI_TOKEN_CHALLENGE].token = NULL;
+			}
+			wsi->u.hdr.hdrs[WSI_TOKEN_CHALLENGE].token_len = 0;
+			goto set_parsing_complete;
 		}
 
 		break;
 
 		/* skipping arg part of a name we didn't recognize */
 	case WSI_TOKEN_SKIPPING:
-		debug("WSI_TOKEN_SKIPPING '%c'\n", c);
+		lwsl_parser("WSI_TOKEN_SKIPPING '%c'\n", c);
 		if (c == '\x0d')
-			wsi->parser_state = WSI_TOKEN_SKIPPING_SAW_CR;
+			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING_SAW_CR;
 		break;
+
 	case WSI_TOKEN_SKIPPING_SAW_CR:
-		debug("WSI_TOKEN_SKIPPING_SAW_CR '%c'\n", c);
-		if (c == '\x0a')
-			wsi->parser_state = WSI_TOKEN_NAME_PART;
-		else
-			wsi->parser_state = WSI_TOKEN_SKIPPING;
-		wsi->name_buffer_pos = 0;
+		lwsl_parser("WSI_TOKEN_SKIPPING_SAW_CR '%c'\n", c);
+		if (c == '\x0a') {
+			wsi->u.hdr.parser_state = WSI_TOKEN_NAME_PART;
+			wsi->u.hdr.lextable_pos = 0;
+		} else
+			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
+		wsi->u.hdr.name_buffer_pos = 0;
 		break;
 		/* we're done, ignore anything else */
 	case WSI_PARSING_COMPLETE:
-		debug("WSI_PARSING_COMPLETE '%c'\n", c);
+		lwsl_parser("WSI_PARSING_COMPLETE '%c'\n", c);
 		break;
 
 	default:	/* keep gcc happy */
@@ -269,139 +507,95 @@ int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 	}
 
 	return 0;
+
+set_parsing_complete:
+
+	if (wsi->u.hdr.hdrs[WSI_TOKEN_UPGRADE].token_len) {
+		if (!wsi->u.hdr.hdrs[WSI_TOKEN_VERSION].token_len) {
+//			lwsl_info("Missing Version Header\n");
+//			return 1;
+		} else
+			wsi->ietf_spec_revision =
+				atoi(wsi->u.hdr.hdrs[WSI_TOKEN_VERSION].token);
+
+		lwsl_parser("v%02d headers completed\n", wsi->ietf_spec_revision);
+	}
+	wsi->u.hdr.parser_state = WSI_PARSING_COMPLETE;
+
+	return 0;
 }
 
-unsigned char
-xor_no_mask(struct libwebsocket *wsi, unsigned char c)
+
+/**
+ * lws_frame_is_binary: true if the current frame was sent in binary mode
+ *
+ * @wsi: the connection we are inquiring about
+ *
+ * This is intended to be called from the LWS_CALLBACK_RECEIVE callback if
+ * it's interested to see if the frame it's dealing with was sent in binary
+ * mode.
+ */
+
+int lws_frame_is_binary(struct libwebsocket *wsi)
 {
-	return c;
+	return wsi->u.ws.frame_is_binary;
 }
-
-unsigned char
-xor_mask_04(struct libwebsocket *wsi, unsigned char c)
-{
-	c ^= wsi->masking_key_04[wsi->frame_mask_index++];
-	if (wsi->frame_mask_index == 20)
-		wsi->frame_mask_index = 0;
-
-	return c;
-}
-
-unsigned char
-xor_mask_05(struct libwebsocket *wsi, unsigned char c)
-{
-	return c ^ wsi->frame_masking_nonce_04[(wsi->frame_mask_index++) & 3];
-}
-
-
 
 int
 libwebsocket_rx_sm(struct libwebsocket *wsi, unsigned char c)
 {
 	int n;
-	unsigned char buf[20 + 4];
 	struct lws_tokens eff_buf;
+#ifndef LWS_NO_EXTENSIONS
 	int handled;
 	int m;
+#endif
 
 #if 0
-	fprintf(stderr, "RX: %02X ", c);
+	lwsl_debug("RX: %02X ", c);
 #endif
 
 	switch (wsi->lws_rx_parse_state) {
 	case LWS_RXPS_NEW:
 
 		switch (wsi->ietf_spec_revision) {
-		/* Firefox 4.0b6 likes this as of 30 Oct 2010 */
-		case 0:
-			if (c == 0xff)
-				wsi->lws_rx_parse_state = LWS_RXPS_SEEN_76_FF;
-			if (c == 0) {
-				wsi->lws_rx_parse_state =
-						       LWS_RXPS_EAT_UNTIL_76_FF;
-				wsi->rx_user_buffer_head = 0;
-			}
-			break;
-		case 4:
-		case 5:
-		case 6:
-			wsi->all_zero_nonce = 1;
-			wsi->frame_masking_nonce_04[0] = c;
-			if (c)
-				wsi->all_zero_nonce = 0;
-			wsi->lws_rx_parse_state = LWS_RXPS_04_MASK_NONCE_1;
-			break;
-		case 7:
-		case 8:
 		case 13:
 			/*
 			 * no prepended frame key any more
 			 */
-			wsi->all_zero_nonce = 1;
+			wsi->u.ws.all_zero_nonce = 1;
 			goto handle_first;
 
 		default:
-			fprintf(stderr, "libwebsocket_rx_sm doesn't know "
+			lwsl_warn("libwebsocket_rx_sm doesn't know "
 			    "about spec version %d\n", wsi->ietf_spec_revision);
 			break;
 		}
 		break;
 	case LWS_RXPS_04_MASK_NONCE_1:
-		wsi->frame_masking_nonce_04[1] = c;
+		wsi->u.ws.frame_masking_nonce_04[1] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
+			wsi->u.ws.all_zero_nonce = 0;
 		wsi->lws_rx_parse_state = LWS_RXPS_04_MASK_NONCE_2;
 		break;
 	case LWS_RXPS_04_MASK_NONCE_2:
-		wsi->frame_masking_nonce_04[2] = c;
+		wsi->u.ws.frame_masking_nonce_04[2] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
+			wsi->u.ws.all_zero_nonce = 0;
 		wsi->lws_rx_parse_state = LWS_RXPS_04_MASK_NONCE_3;
 		break;
 	case LWS_RXPS_04_MASK_NONCE_3:
-		wsi->frame_masking_nonce_04[3] = c;
+		wsi->u.ws.frame_masking_nonce_04[3] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
-
-		if (wsi->protocol->owning_server->options &
-					   LWS_SERVER_OPTION_DEFEAT_CLIENT_MASK)
-			goto post_mask;
-
-		if (wsi->ietf_spec_revision > 4)
-			goto post_sha1;
-
-		/*
-		 * we are able to compute the frame key now
-		 * it's a SHA1 of ( frame nonce we were just sent, concatenated
-		 * with the connection masking key we computed at handshake
-		 * time ) -- yeah every frame from the client invokes a SHA1
-		 * for no real reason so much for lightweight.
-		 */
-
-		buf[0] = wsi->frame_masking_nonce_04[0];
-		buf[1] = wsi->frame_masking_nonce_04[1];
-		buf[2] = wsi->frame_masking_nonce_04[2];
-		buf[3] = wsi->frame_masking_nonce_04[3];
-
-		memcpy(buf + 4, wsi->masking_key_04, 20);
-
-		/*
-		 * wsi->frame_mask_04 will be our recirculating 20-byte XOR key
-		 * for this frame
-		 */
-
-		SHA1((unsigned char *)buf, 4 + 20, wsi->frame_mask_04);
-
-post_sha1:
+			wsi->u.ws.all_zero_nonce = 0;
 
 		/*
 		 * start from the zero'th byte in the XOR key buffer since
 		 * this is the start of a frame with a new key
 		 */
 
-		wsi->frame_mask_index = 0;
+		wsi->u.ws.frame_mask_index = 0;
 
-post_mask:
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_1;
 		break;
 
@@ -455,79 +649,40 @@ handle_first:
 		 *		FIN (b7)
 		 */
 
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-
-		if (c & 0x70)
-			fprintf(stderr,
-			    "Frame has unknown extension bits set 1 %02X\n", c);
-
-		/* translate all incoming opcodes into v7+ map */
-		if (wsi->ietf_spec_revision < 7)
-			switch (c & 0xf) {
-			case LWS_WS_OPCODE_04__CONTINUATION:
-				wsi->opcode = LWS_WS_OPCODE_07__CONTINUATION;
-				break;
-			case LWS_WS_OPCODE_04__CLOSE:
-				wsi->opcode = LWS_WS_OPCODE_07__CLOSE;
-				break;
-			case LWS_WS_OPCODE_04__PING:
-				wsi->opcode = LWS_WS_OPCODE_07__PING;
-				break;
-			case LWS_WS_OPCODE_04__PONG:
-				wsi->opcode = LWS_WS_OPCODE_07__PONG;
-				break;
-			case LWS_WS_OPCODE_04__TEXT_FRAME:
-				wsi->opcode = LWS_WS_OPCODE_07__TEXT_FRAME;
-				break;
-			case LWS_WS_OPCODE_04__BINARY_FRAME:
-				wsi->opcode = LWS_WS_OPCODE_07__BINARY_FRAME;
-				break;
-			default:
-				fprintf(stderr, "reserved opcodes not "
-						    "usable pre v7 protocol\n");
-				return -1;
-			}
-		else
-			wsi->opcode = c & 0xf;
-
-		wsi->final = !!((c >> 7) & 1);
-
+		wsi->u.ws.opcode = c & 0xf;
+		wsi->u.ws.rsv = c & 0x70;
+		wsi->u.ws.final = !!((c >> 7) & 1);
+		switch (wsi->u.ws.opcode) {
+		case LWS_WS_OPCODE_07__TEXT_FRAME:
+		case LWS_WS_OPCODE_07__BINARY_FRAME:
+			wsi->u.ws.frame_is_binary = wsi->u.ws.opcode == LWS_WS_OPCODE_07__BINARY_FRAME;
+			break;
+		}
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN:
 
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-
-		if ((c & 0x80) && wsi->ietf_spec_revision < 7) {
-			fprintf(stderr, "Frame has extensions "
-							   "set illegally 2\n");
-			/* kill the connection */
-			return -1;
-		}
-
-		wsi->this_frame_masked = !!(c & 0x80);
+		wsi->u.ws.this_frame_masked = !!(c & 0x80);
 
 		switch (c & 0x7f) {
 		case 126:
 			/* control frames are not allowed to have big lengths */
-			if (wsi->opcode & 8)
+			if (wsi->u.ws.opcode & 8)
 				goto illegal_ctl_length;
 
 			wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN16_2;
 			break;
 		case 127:
 			/* control frames are not allowed to have big lengths */
-			if (wsi->opcode & 8)
+			if (wsi->u.ws.opcode & 8)
 				goto illegal_ctl_length;
 
 			wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_8;
 			break;
 		default:
-			wsi->rx_packet_length = c & 0x7f;
-			if (wsi->this_frame_masked)
+			wsi->u.ws.rx_packet_length = c & 0x7f;
+			if (wsi->u.ws.this_frame_masked)
 				wsi->lws_rx_parse_state =
 						LWS_RXPS_07_COLLECT_FRAME_KEY_1;
 			else
@@ -538,19 +693,13 @@ handle_first:
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN16_2:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-
-		wsi->rx_packet_length = c << 8;
+		wsi->u.ws.rx_packet_length = c << 8;
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN16_1;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN16_1:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-
-		wsi->rx_packet_length |= c;
-		if (wsi->this_frame_masked)
+		wsi->u.ws.rx_packet_length |= c;
+		if (wsi->u.ws.this_frame_masked)
 			wsi->lws_rx_parse_state =
 					LWS_RXPS_07_COLLECT_FRAME_KEY_1;
 		else
@@ -559,74 +708,58 @@ handle_first:
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_8:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
 		if (c & 0x80) {
-			fprintf(stderr, "b63 of length must be zero\n");
+			lwsl_warn("b63 of length must be zero\n");
 			/* kill the connection */
 			return -1;
 		}
 #if defined __LP64__
-		wsi->rx_packet_length = ((size_t)c) << 56;
+		wsi->u.ws.rx_packet_length = ((size_t)c) << 56;
 #else
-		wsi->rx_packet_length = 0;
+		wsi->u.ws.rx_packet_length = 0;
 #endif
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_7;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_7:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
 #if defined __LP64__
-		wsi->rx_packet_length |= ((size_t)c) << 48;
+		wsi->u.ws.rx_packet_length |= ((size_t)c) << 48;
 #endif
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_6;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_6:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
 #if defined __LP64__
-		wsi->rx_packet_length |= ((size_t)c) << 40;
+		wsi->u.ws.rx_packet_length |= ((size_t)c) << 40;
 #endif
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_5;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_5:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
 #if defined __LP64__
-		wsi->rx_packet_length |= ((size_t)c) << 32;
+		wsi->u.ws.rx_packet_length |= ((size_t)c) << 32;
 #endif
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_4;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_4:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-		wsi->rx_packet_length |= ((size_t)c) << 24;
+		wsi->u.ws.rx_packet_length |= ((size_t)c) << 24;
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_3;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_3:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-		wsi->rx_packet_length |= ((size_t)c) << 16;
+		wsi->u.ws.rx_packet_length |= ((size_t)c) << 16;
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_2;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_2:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-		wsi->rx_packet_length |= ((size_t)c) << 8;
+		wsi->u.ws.rx_packet_length |= ((size_t)c) << 8;
 		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_1;
 		break;
 
 	case LWS_RXPS_04_FRAME_HDR_LEN64_1:
-		if (wsi->ietf_spec_revision < 7)
-			c = wsi->xor_mask(wsi, c);
-		wsi->rx_packet_length |= ((size_t)c);
-		if (wsi->this_frame_masked)
+		wsi->u.ws.rx_packet_length |= ((size_t)c);
+		if (wsi->u.ws.this_frame_masked)
 			wsi->lws_rx_parse_state =
 					LWS_RXPS_07_COLLECT_FRAME_KEY_1;
 		else
@@ -634,92 +767,55 @@ handle_first:
 				LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
 		break;
 
-	case LWS_RXPS_EAT_UNTIL_76_FF:
-		if (c == 0xff) {
-			wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-			goto issue;
-		}
-		wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-					      (wsi->rx_user_buffer_head++)] = c;
-
-		if (wsi->rx_user_buffer_head != MAX_USER_RX_BUFFER)
-			break;
-issue:
-		if (wsi->protocol->callback)
-			wsi->protocol->callback(wsi->protocol->owning_server,
-			  wsi, LWS_CALLBACK_RECEIVE,
-			  wsi->user_space,
-			  &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-			  wsi->rx_user_buffer_head);
-		wsi->rx_user_buffer_head = 0;
-		break;
-	case LWS_RXPS_SEEN_76_FF:
-		if (c)
-			break;
-
-		debug("Seen that client is requesting "
-				"a v76 close, sending ack\n");
-		buf[0] = 0xff;
-		buf[1] = 0;
-		n = libwebsocket_write(wsi, buf, 2, LWS_WRITE_HTTP);
-		if (n < 0) {
-			fprintf(stderr, "ERROR writing to socket");
-			return -1;
-		}
-		debug("  v76 close ack sent, server closing skt\n");
-		/* returning < 0 will get it closed in parent */
-		return -1;
-
-	case LWS_RXPS_PULLING_76_LENGTH:
-		break;
-
-
 	case LWS_RXPS_07_COLLECT_FRAME_KEY_1:
-		wsi->frame_masking_nonce_04[0] = c;
+		wsi->u.ws.frame_masking_nonce_04[0] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
+			wsi->u.ws.all_zero_nonce = 0;
 		wsi->lws_rx_parse_state = LWS_RXPS_07_COLLECT_FRAME_KEY_2;
 		break;
 
 	case LWS_RXPS_07_COLLECT_FRAME_KEY_2:
-		wsi->frame_masking_nonce_04[1] = c;
+		wsi->u.ws.frame_masking_nonce_04[1] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
+			wsi->u.ws.all_zero_nonce = 0;
 		wsi->lws_rx_parse_state = LWS_RXPS_07_COLLECT_FRAME_KEY_3;
 		break;
 
 	case LWS_RXPS_07_COLLECT_FRAME_KEY_3:
-		wsi->frame_masking_nonce_04[2] = c;
+		wsi->u.ws.frame_masking_nonce_04[2] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
+			wsi->u.ws.all_zero_nonce = 0;
 		wsi->lws_rx_parse_state = LWS_RXPS_07_COLLECT_FRAME_KEY_4;
 		break;
 
 	case LWS_RXPS_07_COLLECT_FRAME_KEY_4:
-		wsi->frame_masking_nonce_04[3] = c;
+		wsi->u.ws.frame_masking_nonce_04[3] = c;
 		if (c)
-			wsi->all_zero_nonce = 0;
+			wsi->u.ws.all_zero_nonce = 0;
 		wsi->lws_rx_parse_state =
 					LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
-		wsi->frame_mask_index = 0;
+		wsi->u.ws.frame_mask_index = 0;
 		break;
 
 
 	case LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED:
-		if (wsi->ietf_spec_revision < 4 ||
-			 (wsi->all_zero_nonce && wsi->ietf_spec_revision >= 5))
-			wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-			       (wsi->rx_user_buffer_head++)] = c;
-		else
-			wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-			       (wsi->rx_user_buffer_head++)] =
-							  wsi->xor_mask(wsi, c);
 
-		if (--wsi->rx_packet_length == 0) {
+		if (!wsi->u.ws.rx_user_buffer)
+			lwsl_err("NULL user buffer...\n");
+
+		if (wsi->u.ws.all_zero_nonce)
+			wsi->u.ws.rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
+			       (wsi->u.ws.rx_user_buffer_head++)] = c;
+		else
+			wsi->u.ws.rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
+			       (wsi->u.ws.rx_user_buffer_head++)] =
+		c ^ wsi->u.ws.frame_masking_nonce_04[(wsi->u.ws.frame_mask_index++) & 3];
+
+		if (--wsi->u.ws.rx_packet_length == 0) {
 			wsi->lws_rx_parse_state = LWS_RXPS_NEW;
 			goto spill;
 		}
-		if (wsi->rx_user_buffer_head != MAX_USER_RX_BUFFER)
+		if (wsi->u.ws.rx_user_buffer_head != wsi->protocol->rx_buffer_size)
 			break;
 spill:
 		/*
@@ -727,9 +823,9 @@ spill:
 		 * layer?  If so service it and hide it from the user callback
 		 */
 
-		debug("spill on %s\n", wsi->protocol->name);
+		lwsl_parser("spill on %s\n", wsi->protocol->name);
 
-		switch (wsi->opcode) {
+		switch (wsi->u.ws.opcode) {
 		case LWS_WS_OPCODE_07__CLOSE:
 			/* is this an acknowledgement of our close? */
 			if (wsi->state == WSI_STATE_AWAITING_CLOSE_ACK) {
@@ -737,41 +833,45 @@ spill:
 				 * fine he has told us he is closing too, let's
 				 * finish our close
 				 */
-				debug("seen client close ack\n");
+				lwsl_parser("seen client close ack\n");
 				return -1;
 			}
-			debug("server sees client close packet\n");
+			lwsl_parser("server sees client close packet\n");
 			/* parrot the close packet payload back */
 			n = libwebsocket_write(wsi, (unsigned char *)
-			   &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-				     wsi->rx_user_buffer_head, LWS_WRITE_CLOSE);
+			   &wsi->u.ws.rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
+				     wsi->u.ws.rx_user_buffer_head, LWS_WRITE_CLOSE);
+			if (n)
+				lwsl_info("write of close ack failed %d\n", n);
 			wsi->state = WSI_STATE_RETURNED_CLOSE_ALREADY;
 			/* close the connection */
 			return -1;
 
 		case LWS_WS_OPCODE_07__PING:
+			lwsl_info("received %d byte ping, sending pong\n", wsi->u.ws.rx_user_buffer_head);
+			lwsl_hexdump(&wsi->u.ws.rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING], wsi->u.ws.rx_user_buffer_head);
 			/* parrot the ping packet payload back as a pong */
 			n = libwebsocket_write(wsi, (unsigned char *)
-			    &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-				    wsi->rx_user_buffer_head, LWS_WRITE_PONG);
+			    &wsi->u.ws.rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING], wsi->u.ws.rx_user_buffer_head, LWS_WRITE_PONG);
 			/* ... then just drop it */
-			wsi->rx_user_buffer_head = 0;
+			wsi->u.ws.rx_user_buffer_head = 0;
 			return 0;
 
 		case LWS_WS_OPCODE_07__PONG:
 			/* keep the statistics... */
-			wsi->pings_vs_pongs--;
+			wsi->u.ws.pings_vs_pongs--;
 			/* ... then just drop it */
-			wsi->rx_user_buffer_head = 0;
+			wsi->u.ws.rx_user_buffer_head = 0;
 			return 0;
 
 		case LWS_WS_OPCODE_07__TEXT_FRAME:
 		case LWS_WS_OPCODE_07__BINARY_FRAME:
+		case LWS_WS_OPCODE_07__CONTINUATION:
 			break;
 
 		default:
-
-			debug("passing opcode %x up to exts\n", wsi->opcode);
+#ifndef LWS_NO_EXTENSIONS
+			lwsl_parser("passing opcode %x up to exts\n", wsi->u.ws.opcode);
 
 			/*
 			 * It's something special we can't understand here.
@@ -779,9 +879,9 @@ spill:
 			 * state machine.
 			 */
 
-			eff_buf.token = &wsi->rx_user_buffer[
+			eff_buf.token = &wsi->u.ws.rx_user_buffer[
 						   LWS_SEND_BUFFER_PRE_PADDING];
-			eff_buf.token_len = wsi->rx_user_buffer_head;
+			eff_buf.token_len = wsi->u.ws.rx_user_buffer_head;
 
 			handled = 0;
 			for (n = 0; n < wsi->count_active_extensions; n++) {
@@ -796,10 +896,11 @@ spill:
 			}
 
 			if (!handled)
-				fprintf(stderr, "Unhandled extended opcode "
-					"0x%x - ignoring frame\n", wsi->opcode);
+#endif
+				lwsl_ext("Unhandled extended opcode "
+					"0x%x - ignoring frame\n", wsi->u.ws.opcode);
 
-			wsi->rx_user_buffer_head = 0;
+			wsi->u.ws.rx_user_buffer_head = 0;
 			return 0;
 		}
 
@@ -809,19 +910,40 @@ spill:
 		 * so it can be sent straight out again using libwebsocket_write
 		 */
 
-		wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-					       wsi->rx_user_buffer_head] = '\0';
+		eff_buf.token = &wsi->u.ws.rx_user_buffer[
+						LWS_SEND_BUFFER_PRE_PADDING];
+		eff_buf.token_len = wsi->u.ws.rx_user_buffer_head;
+#ifndef LWS_NO_EXTENSIONS
+		for (n = 0; n < wsi->count_active_extensions; n++) {
+			m = wsi->active_extensions[n]->callback(
+				wsi->protocol->owning_server,
+				wsi->active_extensions[n], wsi,
+				LWS_EXT_CALLBACK_PAYLOAD_RX,
+				wsi->active_extensions_user[n],
+				&eff_buf, 0);
+			if (m < 0) {
+				lwsl_ext(
+			          "Extension '%s' failed to handle payload!\n",
+			        	      wsi->active_extensions[n]->name);
+				return -1;
+			}
+		}
+#endif
+		if (eff_buf.token_len > 0) {
+		    eff_buf.token[eff_buf.token_len] = '\0';
 
-		if (wsi->protocol->callback)
-			wsi->protocol->callback(wsi->protocol->owning_server,
-						wsi, LWS_CALLBACK_RECEIVE,
-						wsi->user_space,
-			  &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-						      wsi->rx_user_buffer_head);
-		else
-			fprintf(stderr, "No callback on payload spill!\n");
+		    if (wsi->protocol->callback)
+			    user_callback_handle_rxflow(wsi->protocol->callback,
+						    wsi->protocol->owning_server,
+						    wsi, LWS_CALLBACK_RECEIVE,
+						    wsi->user_space,
+			                	    eff_buf.token,
+						    eff_buf.token_len);
+		    else
+			    lwsl_err("No callback on payload spill!\n");
+		}
 
-		wsi->rx_user_buffer_head = 0;
+		wsi->u.ws.rx_user_buffer_head = 0;
 		break;
 	}
 
@@ -829,1115 +951,69 @@ spill:
 
 illegal_ctl_length:
 
-	fprintf(stderr, "Control frame asking for "
+	lwsl_warn("Control frame asking for "
 			"extended length is illegal\n");
 	/* kill the connection */
 	return -1;
 }
 
 
-int libwebsocket_client_rx_sm(struct libwebsocket *wsi, unsigned char c)
-{
-	int n;
-	unsigned char buf[20 + 4];
-	int callback_action = LWS_CALLBACK_CLIENT_RECEIVE;
-	int handled;
-	struct lws_tokens eff_buf;
-	int m;
-
-	debug(" CRX: %02X %d\n", c, wsi->lws_rx_parse_state);
-
-	switch (wsi->lws_rx_parse_state) {
-	case LWS_RXPS_NEW:
-
-		switch (wsi->ietf_spec_revision) {
-		/* Firefox 4.0b6 likes this as of 30 Oct */
-		case 0:
-			if (c == 0xff)
-				wsi->lws_rx_parse_state = LWS_RXPS_SEEN_76_FF;
-			if (c == 0) {
-				wsi->lws_rx_parse_state =
-						       LWS_RXPS_EAT_UNTIL_76_FF;
-				wsi->rx_user_buffer_head = 0;
-			}
-			break;
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-		case 8:
-		case 13:
-	/*
-	 *  04 logical framing from the spec (all this is masked when
-	 *  incoming and has to be unmasked)
-	 *
-	 * We ignore the possibility of extension data because we don't
-	 * negotiate any extensions at the moment.
-	 *
-	 *    0                   1                   2                   3
-	 *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-	 *   +-+-+-+-+-------+-+-------------+-------------------------------+
-	 *   |F|R|R|R| opcode|R| Payload len |    Extended payload length    |
-	 *   |I|S|S|S|  (4)  |S|     (7)     |             (16/63)           |
-	 *   |N|V|V|V|       |V|             |   (if payload len==126/127)   |
-	 *   | |1|2|3|       |4|             |                               |
-	 *   +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
-	 *   |     Extended payload length continued, if payload len == 127  |
-	 *   + - - - - - - - - - - - - - - - +-------------------------------+
-	 *   |                               |         Extension data        |
-	 *   +-------------------------------+ - - - - - - - - - - - - - - - +
-	 *   :                                                               :
-	 *   +---------------------------------------------------------------+
-	 *   :                       Application data                        :
-	 *   +---------------------------------------------------------------+
-	 *
-	 *  We pass payload through to userland as soon as we get it, ignoring
-	 *  FIN.  It's up to userland to buffer it up if it wants to see a
-	 *  whole unfragmented block of the original size (which may be up to
-	 *  2^63 long!)
-	 *
-	 *  Notice in v7 RSV4 is set to indicate 32-bit frame key is coming in
-	 *  after length, unlike extension data which is now deprecated, this
-	 *  does not impact the payload length calculation.
-	 */
-
-		/*
-		 * 04 spec defines the opcode like this: (1, 2, and 3 are
-		 * "control frame" opcodes which may not be fragmented or
-		 * have size larger than 126)
-		 *
-		 *       frame-opcode           =
-		 *		  %x0 ; continuation frame
-		 *		/ %x1 ; connection close
-		 *		/ %x2 ; ping
-		 *		/ %x3 ; pong
-		 *		/ %x4 ; text frame
-		 *		/ %x5 ; binary frame
-		 *		/ %x6-F ; reserved
-		 *
-		 *		FIN (b7)
-		 */
-
-			if (c & 0x70)
-				fprintf(stderr, "Frame has unknown extension "
-				    "bits set on first framing byte %02X\n", c);
-
-			if (wsi->ietf_spec_revision < 7)
-				switch (c & 0xf) {
-				case LWS_WS_OPCODE_04__CONTINUATION:
-					wsi->opcode =
-						LWS_WS_OPCODE_07__CONTINUATION;
-					break;
-				case LWS_WS_OPCODE_04__CLOSE:
-					wsi->opcode = LWS_WS_OPCODE_07__CLOSE;
-					break;
-				case LWS_WS_OPCODE_04__PING:
-					wsi->opcode = LWS_WS_OPCODE_07__PING;
-					break;
-				case LWS_WS_OPCODE_04__PONG:
-					wsi->opcode = LWS_WS_OPCODE_07__PONG;
-					break;
-				case LWS_WS_OPCODE_04__TEXT_FRAME:
-					wsi->opcode =
-						  LWS_WS_OPCODE_07__TEXT_FRAME;
-					break;
-				case LWS_WS_OPCODE_04__BINARY_FRAME:
-					wsi->opcode =
-						LWS_WS_OPCODE_07__BINARY_FRAME;
-					break;
-				default:
-					fprintf(stderr, "reserved opcodes not "
-						   "usable pre v7 protocol\n");
-					return -1;
-				}
-			else
-				wsi->opcode = c & 0xf;
-
-			wsi->final = !!((c >> 7) & 1);
-
-			wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN;
-			break;
-
-		default:
-			fprintf(stderr, "client_rx_sm doesn't know how "
-				"to handle spec version %02d\n",
-						       wsi->ietf_spec_revision);
-			break;
-		}
-		break;
-
-
-	case LWS_RXPS_04_FRAME_HDR_LEN:
-
-		if ((c & 0x80) && wsi->ietf_spec_revision < 7) {
-			fprintf(stderr,
-				      "Frame has extensions set illegally 4\n");
-			/* kill the connection */
-			return -1;
-		}
-
-		wsi->this_frame_masked = !!(c & 0x80);
-
-		switch (c & 0x7f) {
-		case 126:
-			/* control frames are not allowed to have big lengths */
-			if (wsi->opcode & 8)
-				goto illegal_ctl_length;
-			wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN16_2;
-			break;
-		case 127:
-			/* control frames are not allowed to have big lengths */
-			if (wsi->opcode & 8)
-				goto illegal_ctl_length;
-			wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_8;
-			break;
-		default:
-			wsi->rx_packet_length = c;
-			if (wsi->this_frame_masked)
-				wsi->lws_rx_parse_state =
-						LWS_RXPS_07_COLLECT_FRAME_KEY_1;
-			else {
-				if (c)
-					wsi->lws_rx_parse_state =
-					LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
-				else {
-					wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-					goto spill;
-				}
-			}
-			break;
-		}
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN16_2:
-		wsi->rx_packet_length = c << 8;
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN16_1;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN16_1:
-		wsi->rx_packet_length |= c;
-		if (wsi->this_frame_masked)
-			wsi->lws_rx_parse_state =
-					LWS_RXPS_07_COLLECT_FRAME_KEY_1;
-		else {
-			if (wsi->rx_packet_length)
-				wsi->lws_rx_parse_state =
-					LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
-			else {
-				wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-				goto spill;
-			}
-		}
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_8:
-		if (c & 0x80) {
-			fprintf(stderr, "b63 of length must be zero\n");
-			/* kill the connection */
-			return -1;
-		}
-#if defined __LP64__
-		wsi->rx_packet_length = ((size_t)c) << 56;
-#else
-		wsi->rx_packet_length = 0;
-#endif
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_7;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_7:
-#if defined __LP64__
-		wsi->rx_packet_length |= ((size_t)c) << 48;
-#endif
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_6;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_6:
-#if defined __LP64__
-		wsi->rx_packet_length |= ((size_t)c) << 40;
-#endif
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_5;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_5:
-#if defined __LP64__
-		wsi->rx_packet_length |= ((size_t)c) << 32;
-#endif
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_4;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_4:
-		wsi->rx_packet_length |= ((size_t)c) << 24;
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_3;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_3:
-		wsi->rx_packet_length |= ((size_t)c) << 16;
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_2;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_2:
-		wsi->rx_packet_length |= ((size_t)c) << 8;
-		wsi->lws_rx_parse_state = LWS_RXPS_04_FRAME_HDR_LEN64_1;
-		break;
-
-	case LWS_RXPS_04_FRAME_HDR_LEN64_1:
-		wsi->rx_packet_length |= (size_t)c;
-		if (wsi->this_frame_masked)
-			wsi->lws_rx_parse_state =
-					LWS_RXPS_07_COLLECT_FRAME_KEY_1;
-		else {
-			if (wsi->rx_packet_length)
-				wsi->lws_rx_parse_state =
-					LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
-			else {
-				wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-				goto spill;
-			}
-		}
-		break;
-
-	case LWS_RXPS_07_COLLECT_FRAME_KEY_1:
-		wsi->frame_masking_nonce_04[0] = c;
-		if (c)
-			wsi->all_zero_nonce = 0;
-		wsi->lws_rx_parse_state = LWS_RXPS_07_COLLECT_FRAME_KEY_2;
-		break;
-
-	case LWS_RXPS_07_COLLECT_FRAME_KEY_2:
-		wsi->frame_masking_nonce_04[1] = c;
-		if (c)
-			wsi->all_zero_nonce = 0;
-		wsi->lws_rx_parse_state = LWS_RXPS_07_COLLECT_FRAME_KEY_3;
-		break;
-
-	case LWS_RXPS_07_COLLECT_FRAME_KEY_3:
-		wsi->frame_masking_nonce_04[2] = c;
-		if (c)
-			wsi->all_zero_nonce = 0;
-		wsi->lws_rx_parse_state = LWS_RXPS_07_COLLECT_FRAME_KEY_4;
-		break;
-
-	case LWS_RXPS_07_COLLECT_FRAME_KEY_4:
-		wsi->frame_masking_nonce_04[3] = c;
-		if (c)
-			wsi->all_zero_nonce = 0;
-
-		if (wsi->rx_packet_length)
-			wsi->lws_rx_parse_state =
-					LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
-		else {
-			wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-			goto spill;
-		}
-		break;
-
-	case LWS_RXPS_EAT_UNTIL_76_FF:
-		if (c == 0xff) {
-			wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-			goto issue;
-		}
-		wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-					      (wsi->rx_user_buffer_head++)] = c;
-
-		if (wsi->rx_user_buffer_head != MAX_USER_RX_BUFFER)
-			break;
-issue:
-		if (wsi->protocol->callback)
-			wsi->protocol->callback(wsi->protocol->owning_server,
-						wsi,
-						LWS_CALLBACK_CLIENT_RECEIVE,
-						wsi->user_space,
-			  &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-						      wsi->rx_user_buffer_head);
-		wsi->rx_user_buffer_head = 0;
-		break;
-	case LWS_RXPS_SEEN_76_FF:
-		if (c)
-			break;
-
-		debug("Seen that client is requesting "
-				"a v76 close, sending ack\n");
-		buf[0] = 0xff;
-		buf[1] = 0;
-		n = libwebsocket_write(wsi, buf, 2, LWS_WRITE_HTTP);
-		if (n < 0) {
-			fprintf(stderr, "ERROR writing to socket");
-			return -1;
-		}
-		debug("  v76 close ack sent, server closing skt\n");
-		/* returning < 0 will get it closed in parent */
-		return -1;
-
-	case LWS_RXPS_PULLING_76_LENGTH:
-		break;
-
-	case LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED:
-		if ((!wsi->this_frame_masked) || wsi->all_zero_nonce)
-			wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-			       (wsi->rx_user_buffer_head++)] = c;
-		else
-			wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING +
-			       (wsi->rx_user_buffer_head++)] =
-							  wsi->xor_mask(wsi, c);
-
-		if (--wsi->rx_packet_length == 0) {
-			wsi->lws_rx_parse_state = LWS_RXPS_NEW;
-			goto spill;
-		}
-		if (wsi->rx_user_buffer_head != MAX_USER_RX_BUFFER)
-			break;
-spill:
-
-		handled = 0;
-
-		/*
-		 * is this frame a control packet we should take care of at this
-		 * layer?  If so service it and hide it from the user callback
-		 */
-
-		switch (wsi->opcode) {
-		case LWS_WS_OPCODE_07__CLOSE:
-			/* is this an acknowledgement of our close? */
-			if (wsi->state == WSI_STATE_AWAITING_CLOSE_ACK) {
-				/*
-				 * fine he has told us he is closing too, let's
-				 * finish our close
-				 */
-				debug("seen server's close ack\n");
-				return -1;
-			}
-			debug("client sees server close packet len = %d\n", wsi->rx_user_buffer_head);
-			/* parrot the close packet payload back */
-			n = libwebsocket_write(wsi, (unsigned char *)
-			   &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-				     wsi->rx_user_buffer_head, LWS_WRITE_CLOSE);
-			debug("client writing close ack returned %d\n", n);
-			wsi->state = WSI_STATE_RETURNED_CLOSE_ALREADY;
-			/* close the connection */
-			return -1;
-
-		case LWS_WS_OPCODE_07__PING:
-			/* parrot the ping packet payload back as a pong*/
-			n = libwebsocket_write(wsi, (unsigned char *)
-			    &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-				    wsi->rx_user_buffer_head, LWS_WRITE_PONG);
-			handled = 1;
-			break;
-
-		case LWS_WS_OPCODE_07__PONG:
-			/* keep the statistics... */
-			wsi->pings_vs_pongs--;
-
-			/* issue it */
-			callback_action = LWS_CALLBACK_CLIENT_RECEIVE_PONG;
-			break;
-
-		case LWS_WS_OPCODE_07__CONTINUATION:
-		case LWS_WS_OPCODE_07__TEXT_FRAME:
-		case LWS_WS_OPCODE_07__BINARY_FRAME:
-			break;
-
-		default:
-
-			debug("Reserved opcode 0x%2X\n", wsi->opcode);
-			/*
-			 * It's something special we can't understand here.
-			 * Pass the payload up to the extension's parsing
-			 * state machine.
-			 */
-
-			eff_buf.token = &wsi->rx_user_buffer[
-						   LWS_SEND_BUFFER_PRE_PADDING];
-			eff_buf.token_len = wsi->rx_user_buffer_head;
-
-			for (n = 0; n < wsi->count_active_extensions; n++) {
-				m = wsi->active_extensions[n]->callback(
-					wsi->protocol->owning_server,
-					wsi->active_extensions[n], wsi,
-					LWS_EXT_CALLBACK_EXTENDED_PAYLOAD_RX,
-					    wsi->active_extensions_user[n],
-								   &eff_buf, 0);
-				if (m)
-					handled = 1;
-			}
-
-			if (!handled) {
-				fprintf(stderr, "Unhandled extended opcode "
-					"0x%x - ignoring frame\n", wsi->opcode);
-				wsi->rx_user_buffer_head = 0;
-
-				return 0;
-			}
-
-			break;
-		}
-
-		/*
-		 * No it's real payload, pass it up to the user callback.
-		 * It's nicely buffered with the pre-padding taken care of
-		 * so it can be sent straight out again using libwebsocket_write
-		 */
-
-		if (!handled && wsi->protocol->callback)
-			wsi->protocol->callback(wsi->protocol->owning_server,
-						wsi, callback_action,
-						wsi->user_space,
-			  &wsi->rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
-						      wsi->rx_user_buffer_head);
-		wsi->rx_user_buffer_head = 0;
-		break;
-	default:
-		fprintf(stderr, "client rx illegal state\n");
-		return 1;
-	}
-
-	return 0;
-
-illegal_ctl_length:
-
-	fprintf(stderr, "Control frame asking for "
-				"extended length is illegal\n");
-	/* kill the connection */
-	return -1;
-
-}
-
-
-
 int libwebsocket_interpret_incoming_packet(struct libwebsocket *wsi,
 						 unsigned char *buf, size_t len)
 {
-	int n;
+	size_t n;
+	int m;
+	int clear_rxflow = !!wsi->u.ws.rxflow_buffer;
+	struct libwebsocket_context *context = wsi->protocol->owning_server;
 
-#ifdef DEBUG
-	fprintf(stderr, "received %d byte packet\n", (int)len);
-	for (n = 0; n < len; n++)
-		fprintf(stderr, "%02X ", buf[n]);
-	fprintf(stderr, "\n");
+#if 0
+	lwsl_parser("received %d byte packet\n", (int)len);
+	lwsl_hexdump(buf, len);
 #endif
+
+	if (buf && wsi->u.ws.rxflow_buffer)
+		lwsl_err("!!!! libwebsocket_interpret_incoming_packet: was pending rxflow, data loss\n");
 
 	/* let the rx protocol state machine have as much as it needs */
 
 	n = 0;
-	while (n < len)
-		if (libwebsocket_rx_sm(wsi, buf[n++]) < 0)
-			return -1;
-
-	return 0;
-}
-
-
-static int
-libwebsocket_0405_frame_mask_generate(struct libwebsocket *wsi)
-{
-	char buf[4 + 20];
-	int n;
-
-	/* fetch the per-frame nonce */
-
-	n = libwebsockets_get_random(wsi->protocol->owning_server,
-						wsi->frame_masking_nonce_04, 4);
-	if (n != 4) {
-		fprintf(stderr, "Unable to read from random device %s %d\n",
-						     SYSTEM_RANDOM_FILEPATH, n);
-		return 1;
+	if (!buf) {
+		lwsl_info("dumping stored rxflow buffer len %d pos=%d\n", wsi->u.ws.rxflow_len, wsi->u.ws.rxflow_pos);
+		buf = wsi->u.ws.rxflow_buffer;
+		n = wsi->u.ws.rxflow_pos;
+		len = wsi->u.ws.rxflow_len;
+		/* let's pretend he's already allowing input */
+		context->fds[wsi->position_in_fds_table].events |= POLLIN;
 	}
 
-	/* start masking from first byte of masking key buffer */
-	wsi->frame_mask_index = 0;
-
-	if (wsi->ietf_spec_revision != 4)
-		return 0;
-
-	/* 04 only does SHA-1 more complex key */
-
-	/*
-	 * the frame key is the frame nonce (4 bytes) followed by the
-	 * connection masking key, hashed by SHA1
-	 */
-
-	memcpy(buf, wsi->frame_masking_nonce_04, 4);
-
-	memcpy(buf + 4, wsi->masking_key_04, 20);
-
-	/* concatenate the nonce with the connection key then hash it */
-
-	SHA1((unsigned char *)buf, 4 + 20, wsi->frame_mask_04);
-
-	return 0;
-}
-
-void lws_stderr_hexdump(unsigned char *buf, size_t len)
-{
-	int n;
-	int m;
-	int start;
-
-	fprintf(stderr, "\n");
-
-	for (n = 0; n < len;) {
-		start = n;
-
-		fprintf(stderr, "%04X: ", start);
-
-		for (m = 0; m < 16 && n < len; m++)
-			fprintf(stderr, "%02X ", buf[n++]);
-		while (m++ < 16)
-			fprintf(stderr, "   ");
-
-		fprintf(stderr, "   ");
-
-		for (m = 0; m < 16 && (start + m) < len; m++) {
-			if (buf[start + m] >= ' ' && buf[start + m] <= 127)
-				fprintf(stderr, "%c", buf[start + m]);
-			else
-				fprintf(stderr, ".");
-		}
-		while (m++ < 16)
-			fprintf(stderr, " ");
-
-		fprintf(stderr, "\n");
-	}
-	fprintf(stderr, "\n");
-}
-
-int lws_issue_raw(struct libwebsocket *wsi, unsigned char *buf, size_t len)
-{
-	int n;
-	int m;
-
-	/*
-	 * one of the extensions is carrying our data itself?  Like mux?
-	 */
-
-	for (n = 0; n < wsi->count_active_extensions; n++) {
-		/*
-		 * there can only be active extensions after handshake completed
-		 * so we can rely on protocol being set already in here
-		 */
-		m = wsi->active_extensions[n]->callback(
-				wsi->protocol->owning_server,
-				wsi->active_extensions[n], wsi,
-				LWS_EXT_CALLBACK_PACKET_TX_DO_SEND,
-				     wsi->active_extensions_user[n], &buf, len);
-		if (m < 0) {
-			fprintf(stderr, "Extension reports fatal error\n");
-			return -1;
-		}
-		if (m) /* handled */ {
-/*			fprintf(stderr, "ext sent it\n"); */
-			return 0;
-		}
-	}
-
-	if (!wsi->sock)
-		fprintf(stderr, "** error 0 sock but expected to send\n");
-
-	/*
-	 * nope, send it on the socket directly
-	 */
-
-#if 0
-	fprintf(stderr, "  TX: ");
-	lws_stderr_hexdump(buf, len);
-#endif
-
-#ifdef LWS_OPENSSL_SUPPORT
-	if (wsi->ssl) {
-		n = SSL_write(wsi->ssl, buf, len);
-		if (n < 0) {
-			fprintf(stderr,
-				   "ERROR writing to socket\n");
-			return -1;
-		}
-	} else {
-#endif
-		n = send(wsi->sock, buf, len, MSG_NOSIGNAL);
-		if (n < 0) {
-			fprintf(stderr,
-				   "ERROR writing to socket\n");
-			return -1;
-		}
-#ifdef LWS_OPENSSL_SUPPORT
-	}
-#endif
-	return 0;
-}
-
-int
-lws_issue_raw_ext_access(struct libwebsocket *wsi,
-						 unsigned char *buf, size_t len)
-{
-	int ret;
-	struct lws_tokens eff_buf;
-	int m;
-	int n;
-
-	eff_buf.token = (char *)buf;
-	eff_buf.token_len = len;
-
-	/*
-	 * while we have original buf to spill ourselves, or extensions report
-	 * more in their pipeline
-	 */
-
-	ret = 1;
-	while (ret == 1) {
-
-		/* default to nobody has more to spill */
-
-		ret = 0;
-
-		/* show every extension the new incoming data */
-
-		for (n = 0; n < wsi->count_active_extensions; n++) {
-			m = wsi->active_extensions[n]->callback(
-					wsi->protocol->owning_server,
-					wsi->active_extensions[n], wsi,
-					LWS_EXT_CALLBACK_PACKET_TX_PRESEND,
-				   wsi->active_extensions_user[n], &eff_buf, 0);
-			if (m < 0) {
-				fprintf(stderr, "Extension: fatal error\n");
-				return -1;
-			}
-			if (m)
-				/*
-				 * at least one extension told us he has more
-				 * to spill, so we will go around again after
-				 */
-				ret = 1;
-		}
-
-		/* assuming they left us something to send, send it */
-
-		if (eff_buf.token_len)
-			if (lws_issue_raw(wsi, (unsigned char *)eff_buf.token,
-							    eff_buf.token_len))
-				return -1;
-
-		/* we used up what we had */
-
-		eff_buf.token = NULL;
-		eff_buf.token_len = 0;
-
-		/*
-		 * Did that leave the pipe choked?
-		 */
-
-		if (!lws_send_pipe_choked(wsi))
-			/* no we could add more */
-			continue;
-
-		debug("choked\n");
-
-		/*
-		 * Yes, he's choked.  Don't spill the rest now get a callback
-		 * when he is ready to send and take care of it there
-		 */
-		libwebsocket_callback_on_writable(
-					     wsi->protocol->owning_server, wsi);
-		wsi->extension_data_pending = 1;
-		ret = 0;
-	}
-
-	debug("written %d bytes to client\n", eff_buf.token_len);
-
-	return 0;
-}
-
-/**
- * libwebsocket_write() - Apply protocol then write data to client
- * @wsi:	Websocket instance (available from user callback)
- * @buf:	The data to send.  For data being sent on a websocket
- *		connection (ie, not default http), this buffer MUST have
- *		LWS_SEND_BUFFER_PRE_PADDING bytes valid BEFORE the pointer
- *		and an additional LWS_SEND_BUFFER_POST_PADDING bytes valid
- *		in the buffer after (buf + len).  This is so the protocol
- *		header and trailer data can be added in-situ.
- * @len:	Count of the data bytes in the payload starting from buf
- * @protocol:	Use LWS_WRITE_HTTP to reply to an http connection, and one
- *		of LWS_WRITE_BINARY or LWS_WRITE_TEXT to send appropriate
- *		data on a websockets connection.  Remember to allow the extra
- *		bytes before and after buf if LWS_WRITE_BINARY or LWS_WRITE_TEXT
- *		are used.
- *
- *	This function provides the way to issue data back to the client
- *	for both http and websocket protocols.
- *
- *	In the case of sending using websocket protocol, be sure to allocate
- *	valid storage before and after buf as explained above.  This scheme
- *	allows maximum efficiency of sending data and protocol in a single
- *	packet while not burdening the user code with any protocol knowledge.
- */
-
-int libwebsocket_write(struct libwebsocket *wsi, unsigned char *buf,
-			  size_t len, enum libwebsocket_write_protocol protocol)
-{
-	int n;
-	int pre = 0;
-	int post = 0;
-	int shift = 7;
-	int masked7 = wsi->mode == LWS_CONNMODE_WS_CLIENT &&
-						  wsi->xor_mask != xor_no_mask;
-	unsigned char *dropmask = NULL;
-	unsigned char is_masked_bit = 0;
-
-	if (len == 0 && protocol != LWS_WRITE_CLOSE) {
-		fprintf(stderr, "zero length libwebsocket_write attempt\n");
-		return 0;
-	}
-
-	if (protocol == LWS_WRITE_HTTP)
-		goto send_raw;
-
-	/* websocket protocol, either binary or text */
-
-	if (wsi->state != WSI_STATE_ESTABLISHED)
-		return -1;
-
-	switch (wsi->ietf_spec_revision) {
-	/* chrome likes this as of 30 Oct 2010 */
-	/* Firefox 4.0b6 likes this as of 30 Oct 2010 */
-	case 0:
-		if ((protocol & 0xf) == LWS_WRITE_BINARY) {
-			/* in binary mode we send 7-bit used length blocks */
-			pre = 1;
-			while (len & (127 << shift)) {
-				pre++;
-				shift += 7;
-			}
-			n = 0;
-			shift -= 7;
-			while (shift >= 0) {
-				if (shift)
-					buf[0 - pre + n] =
-						  ((len >> shift) & 127) | 0x80;
-				else
-					buf[0 - pre + n] =
-						  ((len >> shift) & 127);
-				n++;
-				shift -= 7;
-			}
-			break;
-		}
-
-		/* frame type = text, length-free spam mode */
-
-		pre = 1;
-		buf[-pre] = 0;
-		buf[len] = 0xff; /* EOT marker */
-		post = 1;
-		break;
-
-	case 7:
-	case 8:
-	case 13:
-		if (masked7) {
-			pre += 4;
-			dropmask = &buf[0 - pre];
-			is_masked_bit = 0x80;
-		}
-		/* fallthru */
-	case 4:
-	case 5:
-	case 6:
-		switch (protocol & 0xf) {
-		case LWS_WRITE_TEXT:
-			if (wsi->ietf_spec_revision < 7)
-				n = LWS_WS_OPCODE_04__TEXT_FRAME;
-			else
-				n = LWS_WS_OPCODE_07__TEXT_FRAME;
-			break;
-		case LWS_WRITE_BINARY:
-			if (wsi->ietf_spec_revision < 7)
-				n = LWS_WS_OPCODE_04__BINARY_FRAME;
-			else
-				n = LWS_WS_OPCODE_07__BINARY_FRAME;
-			break;
-		case LWS_WRITE_CONTINUATION:
-			if (wsi->ietf_spec_revision < 7)
-				n = LWS_WS_OPCODE_04__CONTINUATION;
-			else
-				n = LWS_WS_OPCODE_07__CONTINUATION;
-			break;
-
-		case LWS_WRITE_CLOSE:
-			if (wsi->ietf_spec_revision < 7)
-				n = LWS_WS_OPCODE_04__CLOSE;
-			else
-				n = LWS_WS_OPCODE_07__CLOSE;
-
-			/*
-			 * v5 mandates the first byte of close packet
-			 * in both client and server directions
-			 */
-
-			switch (wsi->ietf_spec_revision) {
-			case 0:
-			case 4:
-				break;
-			case 5:
-				/* we can do this because we demand post-buf */
-
-				if (len < 1)
-					len = 1;
-
-				switch (wsi->mode) {
-				case LWS_CONNMODE_WS_SERVING:
-					/*
-					fprintf(stderr, "LWS_WRITE_CLOSE S\n");
-					*/
-					buf[0] = 'S';
-					break;
-				case LWS_CONNMODE_WS_CLIENT:
-					/*
-					fprintf(stderr, "LWS_WRITE_CLOSE C\n");
-					*/
-					buf[0] = 'C';
-					break;
-				default:
-					break;
-				}
-				break;
-			default:
-				/*
-				 * 06 has a 2-byte status code in network order
-				 * we can do this because we demand post-buf
-				 */
-
-				if (wsi->close_reason) {
-					/* reason codes count as data bytes */
-					buf -= 2;
-					buf[0] = wsi->close_reason >> 8;
-					buf[1] = wsi->close_reason;
-					len += 2;
-				}
-				break;
-			}
-			break;
-		case LWS_WRITE_PING:
-			if (wsi->ietf_spec_revision < 7)
-				n = LWS_WS_OPCODE_04__PING;
-			else
-				n = LWS_WS_OPCODE_07__PING;
-
-			wsi->pings_vs_pongs++;
-			break;
-		case LWS_WRITE_PONG:
-			if (wsi->ietf_spec_revision < 7)
-				n = LWS_WS_OPCODE_04__PONG;
-			else
-				n = LWS_WS_OPCODE_07__PONG;
-			break;
-		default:
-			fprintf(stderr, "libwebsocket_write: unknown write "
-							 "opcode / protocol\n");
-			return -1;
-		}
-
-		if (!(protocol & LWS_WRITE_NO_FIN))
-			n |= 1 << 7;
-
-		if (len < 126) {
-			pre += 2;
-			buf[-pre] = n;
-			buf[-pre + 1] = len | is_masked_bit;
-		} else {
-			if (len < 65536) {
-				pre += 4;
-				buf[-pre] = n;
-				buf[-pre + 1] = 126 | is_masked_bit;
-				buf[-pre + 2] = len >> 8;
-				buf[-pre + 3] = len;
+	while (n < len) {
+		if (!(context->fds[wsi->position_in_fds_table].events & POLLIN)) {
+			/* his RX is flowcontrolled */
+			if (!wsi->u.ws.rxflow_buffer) { /* a new rxflow in effect, buffer it and warn caller */
+				lwsl_info("new rxflow input buffer len %d\n", len - n);
+				wsi->u.ws.rxflow_buffer = (unsigned char *)malloc(len - n);
+				wsi->u.ws.rxflow_len = len - n;
+				wsi->u.ws.rxflow_pos = 0;
+				memcpy(wsi->u.ws.rxflow_buffer, buf + n, len - n);
 			} else {
-				pre += 10;
-				buf[-pre] = n;
-				buf[-pre + 1] = 127 | is_masked_bit;
-#if defined __LP64__
-					buf[-pre + 2] = (len >> 56) & 0x7f;
-					buf[-pre + 3] = len >> 48;
-					buf[-pre + 4] = len >> 40;
-					buf[-pre + 5] = len >> 32;
-#else
-					buf[-pre + 2] = 0;
-					buf[-pre + 3] = 0;
-					buf[-pre + 4] = 0;
-					buf[-pre + 5] = 0;
-#endif
-				buf[-pre + 6] = len >> 24;
-				buf[-pre + 7] = len >> 16;
-				buf[-pre + 8] = len >> 8;
-				buf[-pre + 9] = len;
+				lwsl_info("re-using rxflow input buffer\n");
+				/* rxflow while we were spilling previous rxflow buffer */
+				wsi->u.ws.rxflow_pos = n;
 			}
+			return 1;
 		}
-		break;
-	}
-
-	/*
-	 * Deal with masking if we are in client -> server direction and
-	 * the protocol demands it
-	 */
-
-	if (wsi->mode == LWS_CONNMODE_WS_CLIENT &&
-						 wsi->ietf_spec_revision >= 4) {
-
-		/*
-		 * this is only useful for security tests where it's required
-		 * to control the raw packet payload content
-		 */
-
-		if (!(protocol & LWS_WRITE_CLIENT_IGNORE_XOR_MASK) &&
-						wsi->xor_mask != xor_no_mask) {
-
-			if (libwebsocket_0405_frame_mask_generate(wsi)) {
-				fprintf(stderr, "libwebsocket_write: "
-					      "frame mask generation failed\n");
-				return 1;
-			}
-
-
-			if (wsi->ietf_spec_revision < 7)
-				/*
-				 * use the XOR masking against everything we
-				 * send past the frame key
-				 */
-				for (n = -pre; n < ((int)len + post); n++)
-					buf[n] = wsi->xor_mask(wsi, buf[n]);
-			else
-				/*
-				 * in v7, just mask the payload
-				 */
-				for (n = 0; n < (int)len; n++)
-					dropmask[n + 4] =
-					   wsi->xor_mask(wsi, dropmask[n + 4]);
-
-
-			if (wsi->ietf_spec_revision < 7) {
-				/* make space for the frame nonce in clear */
-				pre += 4;
-
-				dropmask = &buf[0 - pre];
-			}
-
-			if (dropmask)
-				/* copy the frame nonce into place */
-				memcpy(dropmask,
-					       wsi->frame_masking_nonce_04, 4);
-
-		} else {
-			if (wsi->ietf_spec_revision < 7) {
-
-				/* make space for the frame nonce in clear */
-				pre += 4;
-
-				buf[0 - pre] = 0;
-				buf[1 - pre] = 0;
-				buf[2 - pre] = 0;
-				buf[3 - pre] = 0;
-			} else {
-				if (dropmask && wsi->xor_mask != xor_no_mask) {
-					dropmask[0] = 0;
-					dropmask[1] = 0;
-					dropmask[2] = 0;
-					dropmask[3] = 0;
-				}
-			}
-		}
-
-	}
-
-send_raw:
-
-#if 0
-	fprintf(stderr, "send %ld: ", len + post);
-	for (n = -pre; n < ((int)len + post); n++)
-		fprintf(stderr, "%02X ", buf[n]);
-
-	fprintf(stderr, "\n");
-#endif
-
-	if (protocol == LWS_WRITE_HTTP) {
-		if (lws_issue_raw(wsi, (unsigned char *)buf - pre,
-							      len + pre + post))
+		m = libwebsocket_rx_sm(wsi, buf[n]);
+		if (m < 0)
 			return -1;
-
-		return 0;
+		n++;
 	}
 
-	/*
-	 * give any active extensions a chance to munge the buffer
-	 * before send.  We pass in a pointer to an lws_tokens struct
-	 * prepared with the default buffer and content length that's in
-	 * there.  Rather than rewrite the default buffer, extensions
-	 * that expect to grow the buffer can adapt .token to
-	 * point to their own per-connection buffer in the extension
-	 * user allocation.  By default with no extensions or no
-	 * extension callback handling, just the normal input buffer is
-	 * used then so it is efficient.
-	 *
-	 * callback returns 1 in case it wants to spill more buffers
-	 */
-
-	return lws_issue_raw_ext_access(wsi, buf - pre, len + pre + post);
-}
-
-
-/**
- * libwebsockets_serve_http_file() - Send a file back to the client using http
- * @wsi:		Websocket instance (available from user callback)
- * @file:		The file to issue over http
- * @content_type:	The http content type, eg, text/html
- *
- *	This function is intended to be called from the callback in response
- *	to http requests from the client.  It allows the callback to issue
- *	local files down the http link in a single step.
- */
-
-int libwebsockets_serve_http_file(struct libwebsocket *wsi, const char *file,
-						       const char *content_type)
-{
-	int fd;
-	struct stat stat_buf;
-	char buf[512];
-	char *p = buf;
-	int n;
-
-#ifdef WIN32
-	fd = open(file, O_RDONLY | _O_BINARY);
-#else
-	fd = open(file, O_RDONLY);
-#endif
-	if (fd < 1) {
-		p += sprintf(p, "HTTP/1.0 400 Bad\x0d\x0a"
-			"Server: libwebsockets\x0d\x0a"
-			"\x0d\x0a"
-		);
-		libwebsocket_write(wsi, (unsigned char *)buf, p - buf,
-								LWS_WRITE_HTTP);
-
-		return -1;
+	if (clear_rxflow) {
+		lwsl_info("flow: clearing it\n");
+		free(wsi->u.ws.rxflow_buffer);
+		wsi->u.ws.rxflow_buffer = NULL;
+		context->fds[wsi->position_in_fds_table].events &= ~POLLIN;
 	}
-
-	fstat(fd, &stat_buf);
-	p += sprintf(p, "HTTP/1.0 200 OK\x0d\x0a"
-			"Server: libwebsockets\x0d\x0a"
-			"Content-Type: %s\x0d\x0a"
-			"Content-Length: %u\x0d\x0a"
-			"\x0d\x0a", content_type,
-					(unsigned int)stat_buf.st_size);
-
-	libwebsocket_write(wsi, (unsigned char *)buf, p - buf, LWS_WRITE_HTTP);
-
-	n = 1;
-	while (n > 0) {
-		n = read(fd, buf, 512);
-		if (n <= 0)
-			continue;
-		libwebsocket_write(wsi, (unsigned char *)buf, n,
-								LWS_WRITE_HTTP);
-	}
-
-	close(fd);
 
 	return 0;
 }
@@ -1963,5 +1039,5 @@ int libwebsockets_serve_http_file(struct libwebsocket *wsi, const char *file,
 size_t
 libwebsockets_remaining_packet_payload(struct libwebsocket *wsi)
 {
-	return wsi->rx_packet_length;
+	return wsi->u.ws.rx_packet_length;
 }

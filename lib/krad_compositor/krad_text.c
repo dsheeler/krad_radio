@@ -4,7 +4,7 @@
 void krad_text_destroy (krad_text_t *krad_text) {
 	
 	krad_text_reset (krad_text);
-	
+  krad_compositor_subunit_destroy (krad_text->krad_compositor_subunit);
   pango_font_description_free (krad_text->font_description);	
 	
 	free (krad_text);
@@ -19,6 +19,8 @@ void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
 	
 	for (s = 0; s < count; s++) {
 	  krad_text_reset (&krad_text[s]);
+    pango_font_description_free (krad_text[s].font_description);	  
+    krad_compositor_subunit_destroy (krad_text[s].krad_compositor_subunit);		  
 	}
 
 	free (krad_text);
@@ -37,9 +39,8 @@ krad_text_t *krad_text_create_arr (int count) {
 		failfast ("Krad Sprite mem alloc fail");
 	}
 	
-  krad_text->font_description = pango_font_description_new ();	
-
   for (s = 0; s < count; s++) {
+    krad_text[s].font_description = pango_font_description_new ();
     krad_text[s].krad_compositor_subunit = krad_compositor_subunit_create();
     krad_text[s].krad_compositor_subunit->address.path.unit = KR_COMPOSITOR;
     krad_text[s].krad_compositor_subunit->address.path.subunit.compositor_subunit = KR_TEXT;

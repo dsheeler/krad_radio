@@ -1248,6 +1248,8 @@ void krad_mixer_destroy (krad_mixer_t *krad_mixer) {
     free ( krad_mixer->portgroup[p] );
   }
   
+  krad_audio_destroy (krad_mixer->krad_audio);
+  
   free ( krad_mixer->name );
   free ( krad_mixer );
   

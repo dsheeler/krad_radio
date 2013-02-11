@@ -1,7 +1,7 @@
 /*
  * libwebsockets - small server side websockets and web server implementation
  *
- * Copyright (C) 2010 Andy Green <andy@warmcat.com>
+ * Copyright (C) 2010-2013 Andy Green <andy@warmcat.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,11 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA  02110-1301  USA
  */
+
+#define LWS_NO_CLIENT 1
+#define LWS_NO_DAEMONIZE 1
+
+
 
 #ifndef __LIBWEBSOCKET_H__
 #define __LIBWEBSOCKET_H__
@@ -40,6 +45,7 @@ extern "C" {
 #include "../win32port/win32helpers/gettimeofday.h"
 
 #define strcasecmp stricmp
+#define getdtablesize() 30000
 
 typedef int ssize_t;
 
@@ -53,7 +59,10 @@ typedef int ssize_t;
 
 #else
 #include <poll.h>
+#include <unistd.h>
 #endif
+
+#include <assert.h>
 
 #ifndef LWS_EXTERN
 #define LWS_EXTERN extern
@@ -62,8 +71,57 @@ typedef int ssize_t;
 #define CONTEXT_PORT_NO_LISTEN 0
 #define MAX_MUX_RECURSION 2
 
+enum lws_log_levels {
+	LLL_ERR = 1 << 0,
+	LLL_WARN = 1 << 1,
+	LLL_NOTICE = 1 << 2,
+	LLL_INFO = 1 << 3,
+	LLL_DEBUG = 1 << 4,
+	LLL_PARSER = 1 << 5,
+	LLL_HEADER = 1 << 6,
+	LLL_EXT = 1 << 7,
+	LLL_CLIENT = 1 << 8,
+	LLL_LATENCY = 1 << 9,
+
+	LLL_COUNT = 10 /* set to count of valid flags */
+};
+
+extern void _lws_log(int filter, const char *format, ...);
+
+/* notice, warn and log are always compiled in */
+#define lwsl_notice(...) _lws_log(LLL_NOTICE, __VA_ARGS__)
+#define lwsl_warn(...) _lws_log(LLL_WARN, __VA_ARGS__)
+#define lwsl_err(...) _lws_log(LLL_ERR, __VA_ARGS__)
+/*
+ *  weaker logging can be deselected at configure time using --disable-debug
+ *  that gets rid of the overhead of checking while keeping _warn and _err
+ *  active
+ */
+#ifdef _DEBUG
+
+#define lwsl_info(...) _lws_log(LLL_INFO, __VA_ARGS__)
+#define lwsl_debug(...) _lws_log(LLL_DEBUG, __VA_ARGS__)
+#define lwsl_parser(...) _lws_log(LLL_PARSER, __VA_ARGS__)
+#define lwsl_header(...)  _lws_log(LLL_HEADER, __VA_ARGS__)
+#define lwsl_ext(...)  _lws_log(LLL_EXT, __VA_ARGS__)
+#define lwsl_client(...) _lws_log(LLL_CLIENT, __VA_ARGS__)
+#define lwsl_latency(...) _lws_log(LLL_LATENCY, __VA_ARGS__)
+extern void lwsl_hexdump(void *buf, size_t len);
+
+#else /* no debug */
+
+#define lwsl_info(...)
+#define lwsl_debug(...)
+#define lwsl_parser(...)
+#define lwsl_header(...)
+#define lwsl_ext(...)
+#define lwsl_client(...)
+#define lwsl_latency(...)
+#define lwsl_hexdump(a, b)
+
+#endif
+
 enum libwebsocket_context_options {
-	LWS_SERVER_OPTION_DEFEAT_CLIENT_MASK = 1,
 	LWS_SERVER_OPTION_REQUIRE_VALID_OPENSSL_CLIENT_CERT = 2,
 	LWS_SERVER_OPTION_SKIP_SERVER_CANONICAL_NAME = 4,
 };
@@ -71,6 +129,7 @@ enum libwebsocket_context_options {
 enum libwebsocket_callback_reasons {
 	LWS_CALLBACK_ESTABLISHED,
 	LWS_CALLBACK_CLIENT_CONNECTION_ERROR,
+	LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH,
 	LWS_CALLBACK_CLIENT_ESTABLISHED,
 	LWS_CALLBACK_CLOSED,
 	LWS_CALLBACK_RECEIVE,
@@ -79,7 +138,7 @@ enum libwebsocket_callback_reasons {
 	LWS_CALLBACK_CLIENT_WRITEABLE,
 	LWS_CALLBACK_SERVER_WRITEABLE,
 	LWS_CALLBACK_HTTP,
-	LWS_CALLBACK_BROADCAST,
+	LWS_CALLBACK_HTTP_FILE_COMPLETION,
 	LWS_CALLBACK_FILTER_NETWORK_CONNECTION,
 	LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION,
 	LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS,
@@ -95,6 +154,7 @@ enum libwebsocket_callback_reasons {
 	LWS_CALLBACK_CLEAR_MODE_POLL_FD,
 };
 
+#ifndef LWS_NO_EXTENSIONS
 enum libwebsocket_extension_callback_reasons {
 	LWS_EXT_CALLBACK_SERVER_CONTEXT_CONSTRUCT,
 	LWS_EXT_CALLBACK_CLIENT_CONTEXT_CONSTRUCT,
@@ -117,7 +177,10 @@ enum libwebsocket_extension_callback_reasons {
 	LWS_EXT_CALLBACK_1HZ,
 	LWS_EXT_CALLBACK_REQUEST_ON_WRITEABLE,
 	LWS_EXT_CALLBACK_IS_WRITEABLE,
+	LWS_EXT_CALLBACK_PAYLOAD_TX,
+	LWS_EXT_CALLBACK_PAYLOAD_RX,
 };
+#endif
 
 enum libwebsocket_write_protocol {
 	LWS_WRITE_TEXT,
@@ -191,16 +254,16 @@ enum lws_token_indexes {
 };
 
 /*
- * From 06 spec
+ * From RFC 6455
    1000
 
-      1000 indicates a normal closure, meaning whatever purpose the
-      connection was established for has been fulfilled.
+      1000 indicates a normal closure, meaning that the purpose for
+      which the connection was established has been fulfilled.
 
    1001
 
       1001 indicates that an endpoint is "going away", such as a server
-      going down, or a browser having navigated away from a page.
+      going down or a browser having navigated away from a page.
 
    1002
 
@@ -210,14 +273,73 @@ enum lws_token_indexes {
    1003
 
       1003 indicates that an endpoint is terminating the connection
-      because it has received a type of data it cannot accept (e.g. an
-      endpoint that understands only text data may send this if it
-      receives a binary message.)
+      because it has received a type of data it cannot accept (e.g., an
+      endpoint that understands only text data MAY send this if it
+      receives a binary message).
 
    1004
 
-      1004 indicates that an endpoint is terminating the connection
-      because it has received a message that is too large.
+      Reserved.  The specific meaning might be defined in the future.
+
+   1005
+
+      1005 is a reserved value and MUST NOT be set as a status code in a
+      Close control frame by an endpoint.  It is designated for use in
+      applications expecting a status code to indicate that no status
+      code was actually present.
+
+   1006
+
+      1006 is a reserved value and MUST NOT be set as a status code in a
+      Close control frame by an endpoint.  It is designated for use in
+      applications expecting a status code to indicate that the
+      connection was closed abnormally, e.g., without sending or
+      receiving a Close control frame.
+
+   1007
+
+      1007 indicates that an endpoint is terminating the connection
+      because it has received data within a message that was not
+      consistent with the type of the message (e.g., non-UTF-8 [RFC3629]
+      data within a text message).
+
+   1008
+
+      1008 indicates that an endpoint is terminating the connection
+      because it has received a message that violates its policy.  This
+      is a generic status code that can be returned when there is no
+      other more suitable status code (e.g., 1003 or 1009) or if there
+      is a need to hide specific details about the policy.
+
+   1009
+
+      1009 indicates that an endpoint is terminating the connection
+      because it has received a message that is too big for it to
+      process.
+
+   1010
+
+      1010 indicates that an endpoint (client) is terminating the
+      connection because it has expected the server to negotiate one or
+      more extension, but the server didn't return them in the response
+      message of the WebSocket handshake.  The list of extensions that
+      are needed SHOULD appear in the /reason/ part of the Close frame.
+      Note that this status code is not used by the server, because it
+      can fail the WebSocket handshake instead.
+
+   1011
+
+      1011 indicates that a server is terminating the connection because
+      it encountered an unexpected condition that prevented it from
+      fulfilling the request.
+
+   1015
+
+      1015 is a reserved value and MUST NOT be set as a status code in a
+      Close control frame by an endpoint.  It is designated for use in
+      applications expecting a status code to indicate that the
+      connection was closed due to a failure to perform a TLS handshake
+      (e.g., the server certificate can't be verified).
 */
 
 enum lws_close_status {
@@ -226,11 +348,20 @@ enum lws_close_status {
 	LWS_CLOSE_STATUS_GOINGAWAY = 1001,
 	LWS_CLOSE_STATUS_PROTOCOL_ERR = 1002,
 	LWS_CLOSE_STATUS_UNACCEPTABLE_OPCODE = 1003,
-	LWS_CLOSE_STATUS_PAYLOAD_TOO_LARGE = 1004,
+	LWS_CLOSE_STATUS_RESERVED = 1004,
+	LWS_CLOSE_STATUS_NO_STATUS = 1005,
+	LWS_CLOSE_STATUS_ABNORMAL_CLOSE = 1006,
+	LWS_CLOSE_STATUS_INVALID_PAYLOAD = 1007,
+	LWS_CLOSE_STATUS_POLICY_VIOLATION = 1008,
+	LWS_CLOSE_STATUS_MESSAGE_TOO_LARGE = 1009,
+	LWS_CLOSE_STATUS_EXTENSION_REQUIRED = 1010,
+    LWS_CLOSE_STATUS_UNEXPECTED_CONDITION = 1011,
+    LWS_CLOSE_STATUS_TLS_FAILURE = 1015,
 };
 
 struct libwebsocket;
 struct libwebsocket_context;
+/* needed even with extensions disabled for create context */
 struct libwebsocket_extension;
 
 /**
@@ -252,20 +383,24 @@ struct libwebsocket_extension;
  *	You get an opportunity to initialize user data when called back with
  *	LWS_CALLBACK_ESTABLISHED reason.
  *
- *	LWS_CALLBACK_ESTABLISHED:  after the server completes a handshake with
+ *  LWS_CALLBACK_ESTABLISHED:  after the server completes a handshake with
  *				an incoming client
  *
  *  LWS_CALLBACK_CLIENT_CONNECTION_ERROR: the request client connection has
  *        been unable to complete a handshake with the remote server
  *
+ *  LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH: this is the last chance for the
+ *  				client user code to examine the http headers
+ *  				and decide to reject the connection.  If the
+ *  				content in the headers is interesting to the
+ *  				client (url, etc) it needs to copy it out at
+ *  				this point since it will be destroyed before
+ *  				the CLIENT_ESTABLISHED call
+ *
  *  LWS_CALLBACK_CLIENT_ESTABLISHED: after your client connection completed
  *				a handshake with the remote server
  *
  *	LWS_CALLBACK_CLOSED: when the websocket session ends
- *
- *	LWS_CALLBACK_BROADCAST: signal to send to client (you would use
- *				libwebsocket_write() taking care about the
- *				special buffer requirements
  *
  *	LWS_CALLBACK_RECEIVE: data has appeared for this server endpoint from a
  *				remote client, it can be found at *in and is
@@ -287,6 +422,17 @@ struct libwebsocket_extension;
  *				@in points to the URI path requested and
  *				libwebsockets_serve_http_file() makes it very
  *				simple to send back a file to the client.
+ *				Normally after sending the file you are done
+ *				with the http connection, since the rest of the
+ *				activity will come by websockets from the script
+ *				that was delivered by http, so you will want to
+ *				return 1; to close and free up the connection.
+ *				That's important because it uses a slot in the
+ *				total number of client connections allowed set
+ *				by MAX_CLIENTS.
+ *
+ *	LWS_CALLBACK_HTTP_FILE_COMPLETION: a file requested to be send down
+ *				http link has completed.
  *
  *	LWS_CALLBACK_CLIENT_WRITEABLE:
  *      LWS_CALLBACK_SERVER_WRITEABLE:   If you call
@@ -437,7 +583,7 @@ typedef int (callback_function)(struct libwebsocket_context * context,
 			 enum libwebsocket_callback_reasons reason, void *user,
 							  void *in, size_t len);
 
-
+#ifndef LWS_NO_EXTENSIONS
 /**
  * extension_callback_function() - Hooks to allow extensions to operate
  * @context:	Websockets context
@@ -507,6 +653,7 @@ typedef int (extension_callback_function)(struct libwebsocket_context * context,
 			struct libwebsocket *wsi,
 			 enum libwebsocket_extension_callback_reasons reason, void *user,
 							  void *in, size_t len);
+#endif
 
 /**
  * struct libwebsocket_protocols -	List of protocols and handlers server
@@ -520,15 +667,16 @@ typedef int (extension_callback_function)(struct libwebsocket_context * context,
  *		this much memory allocated on connection establishment and
  *		freed on connection takedown.  A pointer to this per-connection
  *		allocation is passed into the callback in the 'user' parameter
+ * @rx_buffer_size: if you want atomic frames delivered to the callback, you
+ * 		should set this to the size of the biggest legal frame that
+ * 		you support.  If the frame size is exceeded, there is no
+ * 		error, but the buffer will spill to the user callback when
+ * 		full, which you can detect by using
+ * 		libwebsockets_remaining_packet_payload().  Notice that you
+ * 		just talk about frame size here, the LWS_SEND_BUFFER_PRE_PADDING
+ * 		and post-padding are automatically also allocated on top.
  * @owning_server:	the server init call fills in this opaque pointer when
  *		registering this protocol with the server.
- * @broadcast_socket_port: the server init call fills this in with the
- *		localhost port number used to forward broadcasts for this
- *		protocol
- * @broadcast_socket_user_fd:  the server init call fills this in ... the main()
- *		process context can write to this socket to perform broadcasts
- *		(use the libwebsockets_broadcast() api to do this instead,
- *		it works from any process context)
  * @protocol_index: which protocol we are starting from zero
  *
  *	This structure represents one protocol supported by the server.  An
@@ -540,6 +688,7 @@ struct libwebsocket_protocols {
 	const char *name;
 	callback_function *callback;
 	size_t per_session_data_size;
+	size_t rx_buffer_size;
 
 	/*
 	 * below are filled in on server init and can be left uninitialized,
@@ -547,11 +696,10 @@ struct libwebsocket_protocols {
 	 */
 
 	struct libwebsocket_context *owning_server;
-	int broadcast_socket_port;
-	int broadcast_socket_user_fd;
 	int protocol_index;
 };
 
+#ifndef LWS_NO_EXTENSIONS
 /**
  * struct libwebsocket_extension -	An extension we know how to cope with
  *
@@ -560,7 +708,7 @@ struct libwebsocket_protocols {
  * @per_session_data_size: 	Libwebsockets will auto-malloc this much
  * 				memory for the use of the extension, a pointer
  *				to it comes in the @user callback parameter
- * @per_context_private_data:   Optional storage for this externsion that
+ * @per_context_private_data:   Optional storage for this extension that
  * 				is per-context, so it can track stuff across
  * 				all sessions, etc, if it wants
  */
@@ -571,22 +719,72 @@ struct libwebsocket_extension {
 	size_t per_session_data_size;
 	void * per_context_private_data;
 };
+#endif
 
+/**
+ * struct lws_context_creation_info: parameters to create context with
+ *
+ * @port:	Port to listen on... you can use 0 to suppress listening on
+ *		any port, that's what you want if you are not running a
+ *		websocket server at all but just using it as a client
+ * @interface:  NULL to bind the listen socket to all interfaces, or the
+ *		interface name, eg, "eth2"
+ * @protocols:	Array of structures listing supported protocols and a protocol-
+ *		specific callback for each one.  The list is ended with an
+ *		entry that has a NULL callback pointer.
+ *		It's not const because we write the owning_server member
+ * @extensions: NULL or array of libwebsocket_extension structs listing the
+ *		extensions this context supports.  If you configured with
+ *		--without-extensions, you should give NULL here.
+ * @ssl_cert_filepath:	If libwebsockets was compiled to use ssl, and you want
+ *			to listen using SSL, set to the filepath to fetch the
+ *			server cert from, otherwise NULL for unencrypted
+ * @ssl_private_key_filepath: filepath to private key if wanting SSL mode,
+ *			else ignored
+ * @ssl_ca_filepath: CA certificate filepath or NULL
+ * @gid:	group id to change to after setting listen socket, or -1.
+ * @uid:	user id to change to after setting listen socket, or -1.
+ * @options:	0, or LWS_SERVER_OPTION_DEFEAT_CLIENT_MASK
+ * @user:	optional user pointer that can be recovered via the context
+ * 		pointer using libwebsocket_context_user
+ * @ka_time:	0 for no keepalive, otherwise apply this keepalive timeout to
+ *		all libwebsocket sockets, client or server
+ * @ka_probes:	if ka_time was nonzero, after the timeout expires how many
+ *		times to try to get a response from the peer before giving up
+ *		and killing the connection
+ * @ka_interval: if ka_time was nonzero, how long to wait before each ka_probes
+ *		attempt
+ */
 
+struct lws_context_creation_info {
+	int port;
+	const char *interface;
+	struct libwebsocket_protocols *protocols;
+	struct libwebsocket_extension *extensions;
+	const char *ssl_cert_filepath;
+	const char *ssl_private_key_filepath;
+	const char *ssl_ca_filepath;
+	int gid;
+	int uid;
+	unsigned int options;
+	void *user;
+	int ka_time;
+	int ka_probes;
+	int ka_interval;
+
+};
+
+LWS_EXTERN
+void lws_set_log_level(int level, void (*log_emit_function)(int level, const char *line));
+
+LWS_EXTERN void
+lwsl_emit_syslog(int level, const char *line);
 
 LWS_EXTERN struct libwebsocket_context *
-libwebsocket_create_context(int port, const char * interf,
-		  struct libwebsocket_protocols *protocols,
-		  struct libwebsocket_extension *extensions,
-		  const char *ssl_cert_filepath,
-		  const char *ssl_private_key_filepath, int gid, int uid,
-		  unsigned int options, void *user);
+libwebsocket_create_context(struct lws_context_creation_info *info);
 
 LWS_EXTERN void
 libwebsocket_context_destroy(struct libwebsocket_context *context);
-
-LWS_EXTERN int
-libwebsockets_fork_service_loop(struct libwebsocket_context *context);
 
 LWS_EXTERN int
 libwebsocket_service(struct libwebsocket_context *context, int timeout_ms);
@@ -630,21 +828,19 @@ libwebsocket_context_user(struct libwebsocket_context *context);
  */
 
 #define LWS_SEND_BUFFER_PRE_PADDING (4 + 10 + (2 * MAX_MUX_RECURSION))
-#define LWS_SEND_BUFFER_POST_PADDING 1
+#define LWS_SEND_BUFFER_POST_PADDING 4
 
 LWS_EXTERN int
 libwebsocket_write(struct libwebsocket *wsi, unsigned char *buf, size_t len,
 				     enum libwebsocket_write_protocol protocol);
 
 LWS_EXTERN int
-libwebsockets_serve_http_file(struct libwebsocket *wsi, const char *file,
+libwebsockets_serve_http_file(struct libwebsocket_context *context,
+			struct libwebsocket *wsi, const char *file,
 						     const char *content_type);
-
-/* notice - you need the pre- and post- padding allocation for buf below */
-
 LWS_EXTERN int
-libwebsockets_broadcast(const struct libwebsocket_protocols *protocol,
-						unsigned char *buf, size_t len);
+libwebsockets_serve_http_file_fragment(struct libwebsocket_context *context,
+			struct libwebsocket *wsi);
 
 LWS_EXTERN const struct libwebsocket_protocols *
 libwebsockets_get_protocol(struct libwebsocket *wsi);
@@ -662,6 +858,9 @@ libwebsocket_get_socket_fd(struct libwebsocket *wsi);
 
 LWS_EXTERN int
 libwebsocket_is_final_fragment(struct libwebsocket *wsi);
+
+LWS_EXTERN unsigned char
+libwebsocket_get_reserved_bits(struct libwebsocket *wsi);
 
 LWS_EXTERN void *
 libwebsocket_ensure_user_space(struct libwebsocket *wsi);
@@ -700,7 +899,8 @@ libwebsocket_canonical_hostname(struct libwebsocket_context *context);
 
 
 LWS_EXTERN void
-libwebsockets_get_peer_addresses(int fd, char *name, int name_len,
+libwebsockets_get_peer_addresses(struct libwebsocket_context *context,
+		struct libwebsocket *wsi, int fd, char *name, int name_len,
 					char *rip, int rip_len);
 
 LWS_EXTERN void
@@ -715,7 +915,13 @@ libwebsockets_get_random(struct libwebsocket_context *context,
 							    void *buf, int len);
 
 LWS_EXTERN int
+lws_daemonize(const char *_lock_path);
+
+LWS_EXTERN int
 lws_send_pipe_choked(struct libwebsocket *wsi);
+
+LWS_EXTERN int
+lws_frame_is_binary(struct libwebsocket *wsi);
 
 LWS_EXTERN unsigned char *
 libwebsockets_SHA1(const unsigned char *d, size_t n, unsigned char *md);
@@ -726,7 +932,22 @@ lws_b64_encode_string(const char *in, int in_len, char *out, int out_size);
 LWS_EXTERN int
 lws_b64_decode_string(const char *in, char *out, int out_size);
 
+LWS_EXTERN const char *
+lws_get_library_version(void);
+
+/*
+ * Note: this is not normally needed as a user api.  It's provided in case it is
+ * useful when integrating with other app poll loop service code.
+ */
+
+LWS_EXTERN int
+libwebsocket_read(struct libwebsocket_context *context,
+				struct libwebsocket *wsi,
+					       unsigned char *buf, size_t len);
+
+#ifndef LWS_NO_EXTENSIONS
 LWS_EXTERN struct libwebsocket_extension libwebsocket_internal_extensions[];
+#endif
 
 #ifdef __cplusplus
 }

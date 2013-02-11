@@ -1,7 +1,7 @@
 /*
  * libwebsockets - small server side websockets and web server implementation
  *
- * Copyright (C) 2010 Andy Green <andy@warmcat.com>
+ * Copyright (C) 2010 - 2013 Andy Green <andy@warmcat.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,18 +19,34 @@
  *  MA  02110-1301  USA
  */
 
+// System introspection configs.
+#ifdef CMAKE_BUILD
+#include "lws_config.h"
+#else
+#ifdef WIN32
+#define inline __inline
+#else
+#include "config.h"
+#endif
+#endif
+
+#if _MSC_VER > 1000 || defined(_WIN32)
+#else
 #include <unistd.h>
+#include <strings.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <limits.h>
 #ifdef  __MINGW64__
 #else
 #ifdef  __MINGW32__
+#elif _MSC_VER > 1000 || defined(_WIN32)
 #else
 #include <netdb.h>
 #endif
@@ -40,6 +56,9 @@
 #include <sys/stat.h>
 
 #ifdef WIN32
+#define LWS_NO_DAEMONIZE
+
+#define compatible_close(fd) closesocket(fd);
 #ifdef  __MINGW64__                                                             
 #else                                                                           
 #ifdef  __MINGW32__                                                             
@@ -50,9 +69,7 @@
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <windows.h>
-
 #else
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #ifndef LWS_NO_FORK
@@ -68,45 +85,25 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 
+#define compatible_close(fd) close(fd);
 #endif
 
 #ifdef LWS_OPENSSL_SUPPORT
+#ifdef USE_CYASSL
+#include <cyassl/openssl/ssl.h>
+#include <cyassl/error.h>
+unsigned char *
+SHA1(const unsigned char *d, size_t n, unsigned char *md);
+#else
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
+#endif /* not USE_CYASSL */
 #endif
-
 
 #include "libwebsockets.h"
-
-#if 0
-#define DEBUG
-#endif
-
-#ifdef DEBUG
-#ifdef WIN32
-static
-#else
-static inline
-#endif
-void debug(const char *format, ...)
-{
-	va_list ap;
-	va_start(ap, format); vfprintf(stderr, format, ap); va_end(ap);
-}
-#else
-#ifdef WIN32
-static
-#else
-static inline
-#endif
-void debug(const char *format, ...)
-{
-}
-#endif
-
 
 /*
  * Mac OSX as well as iOS do not define the MSG_NOSIGNAL flag,
@@ -116,41 +113,52 @@ void debug(const char *format, ...)
 #define MSG_NOSIGNAL SO_NOSIGPIPE
 #endif
 
-
-#define FD_HASHTABLE_MODULUS 32
-#define MAX_CLIENTS 100
+#ifndef LWS_MAX_HEADER_NAME_LENGTH
 #define LWS_MAX_HEADER_NAME_LENGTH 64
+#endif
+#ifndef LWS_MAX_HEADER_LEN
 #define LWS_MAX_HEADER_LEN 4096
+#endif
+#ifndef LWS_INITIAL_HDR_ALLOC
 #define LWS_INITIAL_HDR_ALLOC 256
+#endif
+#ifndef LWS_ADDITIONAL_HDR_ALLOC
 #define LWS_ADDITIONAL_HDR_ALLOC 64
-#define MAX_USER_RX_BUFFER 4096
-#define MAX_BROADCAST_PAYLOAD 2048
+#endif
+#ifndef LWS_MAX_PROTOCOLS
 #define LWS_MAX_PROTOCOLS 10
+#endif
+#ifndef LWS_MAX_EXTENSIONS_ACTIVE
 #define LWS_MAX_EXTENSIONS_ACTIVE 10
+#endif
+#ifndef SPEC_LATEST_SUPPORTED
 #define SPEC_LATEST_SUPPORTED 13
+#endif
+#ifndef AWAITING_TIMEOUT
+#define AWAITING_TIMEOUT 5
+#endif
+#ifndef CIPHERS_LIST_STRING
+#define CIPHERS_LIST_STRING "DEFAULT"
+#endif
+#ifndef LWS_SOMAXCONN
+#define LWS_SOMAXCONN SOMAXCONN
+#endif
 
 #define MAX_WEBSOCKET_04_KEY_LEN 128
+#define LWS_MAX_SOCKET_IO_BUF 4096
+
+#ifndef SYSTEM_RANDOM_FILEPATH
 #define SYSTEM_RANDOM_FILEPATH "/dev/urandom"
+#endif
+#ifndef LWS_MAX_ZLIB_CONN_BUFFER
+#define LWS_MAX_ZLIB_CONN_BUFFER (64 * 1024)
+#endif
 
-enum lws_websocket_opcodes_04 {
-	LWS_WS_OPCODE_04__CONTINUATION = 0,
-	LWS_WS_OPCODE_04__CLOSE = 1,
-	LWS_WS_OPCODE_04__PING = 2,
-	LWS_WS_OPCODE_04__PONG = 3,
-	LWS_WS_OPCODE_04__TEXT_FRAME = 4,
-	LWS_WS_OPCODE_04__BINARY_FRAME = 5,
-
-	LWS_WS_OPCODE_04__RESERVED_6 = 6,
-	LWS_WS_OPCODE_04__RESERVED_7 = 7,
-	LWS_WS_OPCODE_04__RESERVED_8 = 8,
-	LWS_WS_OPCODE_04__RESERVED_9 = 9,
-	LWS_WS_OPCODE_04__RESERVED_A = 0xa,
-	LWS_WS_OPCODE_04__RESERVED_B = 0xb,
-	LWS_WS_OPCODE_04__RESERVED_C = 0xc,
-	LWS_WS_OPCODE_04__RESERVED_D = 0xd,
-	LWS_WS_OPCODE_04__RESERVED_E = 0xe,
-	LWS_WS_OPCODE_04__RESERVED_F = 0xf,
-};
+/*
+ * if not in a connection storm, check for incoming
+ * connections this many normal connection services
+ */
+#define LWS_LISTEN_SERVICE_MODULO 10
 
 enum lws_websocket_opcodes_07 {
 	LWS_WS_OPCODE_07__CONTINUATION = 0,
@@ -169,6 +177,7 @@ enum lws_websocket_opcodes_07 {
 
 enum lws_connection_states {
 	WSI_STATE_HTTP,
+	WSI_STATE_HTTP_ISSUING_FILE,
 	WSI_STATE_HTTP_HEADERS,
 	WSI_STATE_DEAD_SOCKET,
 	WSI_STATE_ESTABLISHED,
@@ -179,10 +188,6 @@ enum lws_connection_states {
 
 enum lws_rx_parse_state {
 	LWS_RXPS_NEW,
-
-	LWS_RXPS_SEEN_76_FF,
-	LWS_RXPS_PULLING_76_LENGTH,
-	LWS_RXPS_EAT_UNTIL_76_FF,
 
 	LWS_RXPS_04_MASK_NONCE_1,
 	LWS_RXPS_04_MASK_NONCE_2,
@@ -211,8 +216,13 @@ enum lws_rx_parse_state {
 
 
 enum connection_mode {
+	LWS_CONNMODE_HTTP_SERVING,
+
 	LWS_CONNMODE_WS_SERVING,
 	LWS_CONNMODE_WS_CLIENT,
+
+	/* transient, ssl delay hiding */
+	LWS_CONNMODE_SSL_ACK_PENDING,
 
 	/* transient modes */
 	LWS_CONNMODE_WS_CLIENT_WAITING_PROXY_REPLY,
@@ -223,24 +233,16 @@ enum connection_mode {
 
 	/* special internal types */
 	LWS_CONNMODE_SERVER_LISTENER,
-	LWS_CONNMODE_BROADCAST_PROXY_LISTENER,
-	LWS_CONNMODE_BROADCAST_PROXY
-};
-
-
-#define LWS_FD_HASH(fd) ((fd ^ (fd >> 8) ^ (fd >> 16)) % FD_HASHTABLE_MODULUS)
-
-struct libwebsocket_fd_hashtable {
-	struct libwebsocket *wsi[MAX_CLIENTS + 1];
-	int length;
 };
 
 struct libwebsocket_protocols;
+struct libwebsocket;
 
 struct libwebsocket_context {
-	struct libwebsocket_fd_hashtable fd_hashtable[FD_HASHTABLE_MODULUS];
-	struct pollfd fds[MAX_CLIENTS * FD_HASHTABLE_MODULUS + 1];
+	struct pollfd *fds;
+	struct libwebsocket **lws_lookup; /* fd to wsi */
 	int fds_count;
+	int max_fds;
 	int listen_port;
 	char http_proxy_address[256];
 	char canonical_hostname[1024];
@@ -248,7 +250,29 @@ struct libwebsocket_context {
 	unsigned int options;
 	unsigned long last_timeout_check_s;
 
+	/*
+	 * usable by anything in the service code, but only if the scope
+	 * does not last longer than the service action (since next service
+	 * of any socket can likewise use it and overwrite)
+	 */
+	unsigned char service_buffer[LWS_MAX_SOCKET_IO_BUF];
+
+	int started_with_parent;
+
 	int fd_random;
+	int listen_service_modulo;
+	int listen_service_count;
+	int listen_service_fd;
+	int listen_service_extraseen;
+
+	int ka_time;
+	int ka_probes;
+	int ka_interval;
+
+#ifdef LWS_LATENCY
+	unsigned long worst_latency;
+	char worst_latency_info[256];
+#endif
 
 #ifdef LWS_OPENSSL_SUPPORT
 	int use_ssl;
@@ -257,8 +281,9 @@ struct libwebsocket_context {
 #endif
 	struct libwebsocket_protocols *protocols;
 	int count_protocols;
+#ifndef LWS_NO_EXTENSIONS
 	struct libwebsocket_extension *extensions;
-
+#endif
     void *user_space;
 };
 
@@ -271,6 +296,8 @@ enum pending_timeout {
 	PENDING_TIMEOUT_AWAITING_PING,
 	PENDING_TIMEOUT_CLOSE_ACK,
 	PENDING_TIMEOUT_AWAITING_EXTENSION_CONNECT_RESPONSE,
+	PENDING_TIMEOUT_SENT_CLIENT_HANDSHAKE,
+	PENDING_TIMEOUT_SSL_ACCEPT,
 };
 
 
@@ -280,39 +307,27 @@ enum pending_timeout {
  * other APIs to get information out of it.
  */
 
-struct libwebsocket {
-	const struct libwebsocket_protocols *protocol;
-	struct libwebsocket_extension *
-				   active_extensions[LWS_MAX_EXTENSIONS_ACTIVE];
-	void *active_extensions_user[LWS_MAX_EXTENSIONS_ACTIVE];
-	int count_active_extensions;
+struct _lws_http_mode_related {
+	int fd;
+	unsigned long filepos;
+	unsigned long filelen;
+};
 
-	enum lws_connection_states state;
-
+struct _lws_header_related {
 	char name_buffer[LWS_MAX_HEADER_NAME_LENGTH];
 	int name_buffer_pos;
-	int current_alloc_len;
+	struct lws_tokens hdrs[WSI_TOKEN_COUNT];
+	int lextable_pos;
 	enum lws_token_indexes parser_state;
-	struct lws_tokens utf8_token[WSI_TOKEN_COUNT];
-	int ietf_spec_revision;
-	char rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING + MAX_USER_RX_BUFFER +
-						  LWS_SEND_BUFFER_POST_PADDING];
+	int current_alloc_len;
+#ifndef LWS_NO_CLIENT
+	char initial_handshake_hash_base64[30];
+#endif
+};
+
+struct _lws_websocket_related {
+	char *rx_user_buffer;
 	int rx_user_buffer_head;
-	enum libwebsocket_write_protocol rx_frame_type;
-	int protocol_index_for_broadcast_proxy;
-	enum pending_timeout pending_timeout;
-	unsigned long pending_timeout_limit;
-
-	int sock;
-
-	enum lws_rx_parse_state lws_rx_parse_state;
-	char extension_data_pending;
-	struct libwebsocket *candidate_children_list;
-	struct libwebsocket *extension_handles;
-
-	/* 04 protocol specific */
-
-	char key_b64[150];
 	unsigned char masking_key_04[20];
 	unsigned char frame_masking_nonce_04[4];
 	unsigned char frame_mask_04[20];
@@ -320,19 +335,61 @@ struct libwebsocket {
 	size_t rx_packet_length;
 	unsigned char opcode;
 	unsigned char final;
-
+	unsigned char rsv;
+	int frame_is_binary:1;
 	int pings_vs_pongs;
-	unsigned char (*xor_mask)(struct libwebsocket *, unsigned char);
 	char all_zero_nonce;
-
 	enum lws_close_status close_reason;
-
-	/* 07 specific */
+	unsigned char *rxflow_buffer;
+	int rxflow_len;
+	int rxflow_pos;
+	int rxflow_change_to;
 	char this_frame_masked;
+};
 
-	/* client support */
-	char initial_handshake_hash_base64[30];
+struct libwebsocket {
+
+	/* lifetime members */
+
+	const struct libwebsocket_protocols *protocol;
+#ifndef LWS_NO_EXTENSIONS
+	struct libwebsocket_extension *
+				   active_extensions[LWS_MAX_EXTENSIONS_ACTIVE];
+	void *active_extensions_user[LWS_MAX_EXTENSIONS_ACTIVE];
+	int count_active_extensions;
+	char extension_data_pending;
+	struct libwebsocket *extension_handles;
+	struct libwebsocket *candidate_children_list;
+#endif
+	int ietf_spec_revision;
+
 	enum connection_mode mode;
+	enum lws_connection_states state;
+	enum lws_rx_parse_state lws_rx_parse_state;
+
+	enum pending_timeout pending_timeout;
+	unsigned long pending_timeout_limit;
+
+	int sock;
+	int position_in_fds_table;
+#ifdef LWS_LATENCY
+	unsigned long action_start;
+	unsigned long latency_start;
+#endif
+
+	void *user_space;
+
+	/* members with mutually exclusive lifetimes are unionized */
+
+	union u {
+		struct _lws_http_mode_related http;
+		struct _lws_header_related hdr;
+		struct _lws_websocket_related ws;
+	} u;
+	
+	enum libwebsocket_write_protocol rx_frame_type;
+
+#ifndef LWS_NO_CLIENT
 	char *c_path;
 	char *c_host;
 	char *c_origin;
@@ -341,16 +398,23 @@ struct libwebsocket {
 
 	char *c_address;
 	int c_port;
-
+#endif
 
 #ifdef LWS_OPENSSL_SUPPORT
 	SSL *ssl;
 	BIO *client_bio;
 	int use_ssl;
-#endif
-
-	void *user_space;
+#endif	
 };
+
+#ifndef LWS_LATENCY
+static inline void lws_latency(struct libwebsocket_context *context, struct libwebsocket *wsi, const char *action, int ret, int completion) { while (0); }
+static inline void lws_latency_pre(struct libwebsocket_context *context, struct libwebsocket *wsi) { while (0); }
+#else
+#define lws_latency_pre(_context, _wsi) lws_latency(_context, _wsi, NULL, 0, 0)
+extern void
+lws_latency(struct libwebsocket_context *context, struct libwebsocket *wsi, const char *action, int ret, int completion);
+#endif
 
 extern int
 libwebsocket_client_rx_sm(struct libwebsocket *wsi, unsigned char c);
@@ -363,30 +427,13 @@ libwebsocket_interpret_incoming_packet(struct libwebsocket *wsi,
 						unsigned char *buf, size_t len);
 
 extern int
-libwebsocket_read(struct libwebsocket_context *context,
-				struct libwebsocket *wsi,
-					       unsigned char *buf, size_t len);
-
-extern int
 lws_b64_selftest(void);
-
-extern unsigned char
-xor_no_mask(struct libwebsocket *wsi, unsigned char c);
-
-extern unsigned char
-xor_mask_04(struct libwebsocket *wsi, unsigned char c);
-
-extern unsigned char
-xor_mask_05(struct libwebsocket *wsi, unsigned char c);
 
 extern struct libwebsocket *
 wsi_from_fd(struct libwebsocket_context *context, int fd);
 
 extern int
-insert_wsi(struct libwebsocket_context *context, struct libwebsocket *wsi);
-
-extern int
-delete_from_fd(struct libwebsocket_context *context, int fd);
+insert_wsi_socket_into_fds(struct libwebsocket_context *context, struct libwebsocket *wsi);
 
 extern void
 libwebsocket_set_timeout(struct libwebsocket *wsi,
@@ -414,7 +461,7 @@ libwebsockets_generate_client_handshake(struct libwebsocket_context *context,
 extern int
 lws_handle_POLLOUT_event(struct libwebsocket_context *context,
 			      struct libwebsocket *wsi, struct pollfd *pollfd);
-
+#ifndef LWS_NO_EXTENSIONS
 extern int
 lws_any_extension_handled(struct libwebsocket_context *context,
 			  struct libwebsocket *wsi,
@@ -424,6 +471,7 @@ lws_any_extension_handled(struct libwebsocket_context *context,
 extern void *
 lws_get_extension_user_matching_ext(struct libwebsocket *wsi,
 			  struct libwebsocket_extension *ext);
+#endif
 
 extern int
 lws_client_interpret_server_handshake(struct libwebsocket_context *context,
@@ -436,12 +484,21 @@ extern int
 lws_issue_raw_ext_access(struct libwebsocket *wsi,
 						unsigned char *buf, size_t len);
 
+extern int
+_libwebsocket_rx_flow_control(struct libwebsocket *wsi);
+
+extern int
+user_callback_handle_rxflow(callback_function, struct libwebsocket_context * context,
+			struct libwebsocket *wsi,
+			 enum libwebsocket_callback_reasons reason, void *user,
+							  void *in, size_t len);
+
+extern int
+lws_set_socket_options(struct libwebsocket_context *context, int fd);
+
 #ifndef LWS_OPENSSL_SUPPORT
 
 unsigned char *
 SHA1(const unsigned char *d, size_t n, unsigned char *md);
-
-void
-MD5(const unsigned char *input, int ilen, unsigned char *output);
 
 #endif

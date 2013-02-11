@@ -3,6 +3,7 @@
 void krad_sprite_destroy (krad_sprite_t *krad_sprite) {
 	
 	krad_sprite_reset (krad_sprite);
+  krad_compositor_subunit_destroy (krad_sprite->krad_compositor_subunit);	
 	free (krad_sprite);
 
 }
@@ -15,6 +16,7 @@ void krad_sprite_destroy_arr (krad_sprite_t *krad_sprite, int count) {
 	
 	for (s = 0; s < count; s++) {
 	  krad_sprite_reset (&krad_sprite[s]);
+	  krad_compositor_subunit_destroy (krad_sprite[s].krad_compositor_subunit);
 	}
 
 	free (krad_sprite);

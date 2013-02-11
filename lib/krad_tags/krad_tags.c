@@ -19,6 +19,7 @@ void krad_tags_destroy (krad_tags_t *krad_tags) {
 	free (krad_tags->item);
 	pthread_rwlock_unlock (&krad_tags->krad_tags_rwlock);
 	pthread_rwlock_destroy (&krad_tags->krad_tags_rwlock);
+	free (krad_tags->tags);
 	free (krad_tags);
 
 }

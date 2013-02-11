@@ -7,7 +7,9 @@
 struct lws_ext_deflate_stream_conn {
 	z_stream zs_in;
 	z_stream zs_out;
-	unsigned char buf[2000];
+	int remaining_in;
+	unsigned char buf_in[LWS_MAX_SOCKET_IO_BUF];
+	unsigned char buf_out[LWS_MAX_SOCKET_IO_BUF];
 };
 
 extern int lws_extension_callback_deflate_stream(

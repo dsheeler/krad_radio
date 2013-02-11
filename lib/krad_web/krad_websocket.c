@@ -428,12 +428,6 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_ws_client->wsi = NULL;
       break;
 
-    case LWS_CALLBACK_BROADCAST:
-
-      //memcpy (p, in, len);
-      //libwebsocket_write (wsi, p, len, LWS_WRITE_TEXT);
-      break;
-
     case LWS_CALLBACK_SERVER_WRITEABLE:
 
       if (kr_ws_client->kr_client_info == 1) {
@@ -586,7 +580,10 @@ void krad_websocket_server_destroy (krad_websocket_t *krad_websocket) {
 krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
 
   krad_websocket_t *krad_websocket = calloc (1, sizeof (krad_websocket_t));
-
+  struct lws_context_creation_info lws_create;
+  
+  memset (&lws_create, 0, sizeof(struct lws_context_creation_info));
+  
   krad_websocket_glob = krad_websocket;
   krad_websocket->shutdown = KRAD_WEBSOCKET_STARTING;
   krad_websocket->port = port;
@@ -599,10 +596,15 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
 
   add_poll_fd (krad_controller_get_client_fd (&krad_websocket->krad_control), POLLIN, KRAD_CONTROLLER, NULL, NULL);
 
-  //krad_websocket->buffer = calloc(1, 8192);
-  krad_websocket->context = libwebsocket_create_context (krad_websocket->port, NULL, protocols,
-                                                         libwebsocket_internal_extensions, 
-                                                         NULL, NULL, -1, -1, 0, NULL);
+  lws_create.port = krad_websocket->port;
+	lws_create.protocols = protocols;
+	lws_create.extensions = libwebsocket_internal_extensions;
+	lws_create.interface = "";
+	lws_create.gid = -1;
+	lws_create.uid = -1;
+
+  krad_websocket->context = libwebsocket_create_context (&lws_create);
+
   if (krad_websocket->context == NULL) {
     printke ("libwebsocket init failed");
     krad_websocket_server_destroy (krad_websocket);

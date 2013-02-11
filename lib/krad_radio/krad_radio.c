@@ -100,7 +100,7 @@ static krad_radio_t *krad_radio_create (char *sysname) {
   krad_radio->log.startup_timer = krad_timer_create_with_name ("startup");
   krad_timer_start (krad_radio->log.startup_timer);  
   
-  strncpy (krad_radio->sysname, strdup (sysname), sizeof(krad_radio->sysname));
+  strncpy (krad_radio->sysname, sysname, sizeof(krad_radio->sysname));
 
   krad_radio->krad_tags = krad_tags_create ("station");
   

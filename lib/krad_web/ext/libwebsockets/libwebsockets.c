@@ -22,9 +22,15 @@
 #include "private-libwebsockets.h"
 
 #ifdef WIN32
-
+#include <tchar.h>
+#include <io.h>
+#else
+#ifdef LWS_BUILTIN_GETIFADDRS
+#include <getifaddrs.h>
 #else
 #include <ifaddrs.h>
+#endif
+#include <syslog.h>
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -42,115 +48,112 @@ int openssl_websocket_private_data_index;
 #endif
 #endif
 
-/*
- * In-place str to lower case
+#ifndef LWS_BUILD_HASH
+#define LWS_BUILD_HASH "unknown-build-hash"
+#endif
+
+#define LWS_LIBRARY_VERSION PACKAGE_VERSION
+
+static int log_level = LLL_ERR | LLL_WARN | LLL_NOTICE;
+static void lwsl_emit_stderr(int level, const char *line);
+static void (*lwsl_emit)(int level, const char *line) = lwsl_emit_stderr;
+
+static const char *library_version = LWS_LIBRARY_VERSION " " LWS_BUILD_HASH;
+
+static const char *log_level_names[] = {
+	"ERR",
+	"WARN",
+	"NOTICE",
+	"INFO",
+	"DEBUG",
+	"PARSER",
+	"HEADER",
+	"EXTENSION",
+	"CLIENT",
+	"LATENCY",
+};
+
+/**
+ * lws_get_library_version: get version and git hash library built from
+ *
+ *	returns a const char * to a string like "1.1 178d78c"
+ *	representing the library version followed by the git head hash it
+ *	was built from
  */
 
-static void
-strtolower(char *s)
+const char *
+lws_get_library_version(void)
 {
-	while (*s) {
-		*s = tolower(*s);
-		s++;
-	}
-}
-
-/* file descriptor hash management */
-
-struct libwebsocket *
-wsi_from_fd(struct libwebsocket_context *context, int fd)
-{
-	int h = LWS_FD_HASH(fd);
-	int n = 0;
-
-	for (n = 0; n < context->fd_hashtable[h].length; n++)
-		if (context->fd_hashtable[h].wsi[n]->sock == fd)
-			return context->fd_hashtable[h].wsi[n];
-
-	return NULL;
+	return library_version;
 }
 
 int
-insert_wsi(struct libwebsocket_context *context, struct libwebsocket *wsi)
+insert_wsi_socket_into_fds(struct libwebsocket_context *context, struct libwebsocket *wsi)
 {
-	int h = LWS_FD_HASH(wsi->sock);
-
-	if (context->fd_hashtable[h].length == MAX_CLIENTS - 1) {
-		fprintf(stderr, "hash table overflow\n");
+	if (context->fds_count >= context->max_fds) {
+		lwsl_err("Reached limit of fds tracking (%d)\n", context->max_fds);
 		return 1;
 	}
 
-	context->fd_hashtable[h].wsi[context->fd_hashtable[h].length++] = wsi;
+	if (wsi->sock > context->max_fds) {
+		lwsl_err("Socket fd %d is beyond what we can index (%d)\n", wsi->sock, context->max_fds);
+		return 1;
+	}
+
+	//assert(wsi);
+	//assert(wsi->sock);
+
+	lwsl_info("insert_wsi_socket_into_fds: wsi=%p, sock=%d, fds pos=%d\n", wsi, wsi->sock, context->fds_count);
+
+	context->lws_lookup[wsi->sock] = wsi;
+	wsi->position_in_fds_table = context->fds_count;
+	context->fds[context->fds_count].fd = wsi->sock;
+	context->fds[context->fds_count].events = POLLIN;
+	context->fds[context->fds_count++].revents = 0;
+
+	/* external POLL support via protocol 0 */
+	context->protocols[0].callback(context, wsi,
+		LWS_CALLBACK_ADD_POLL_FD,
+		(void *)(long)wsi->sock, NULL, POLLIN);
 
 	return 0;
 }
 
-int
-delete_from_fd(struct libwebsocket_context *context, int fd)
-{
-	int h = LWS_FD_HASH(fd);
-	int n = 0;
-
-	for (n = 0; n < context->fd_hashtable[h].length; n++)
-		if (context->fd_hashtable[h].wsi[n]->sock == fd) {
-			while (n < context->fd_hashtable[h].length) {
-				context->fd_hashtable[h].wsi[n] =
-					    context->fd_hashtable[h].wsi[n + 1];
-				n++;
-			}
-			context->fd_hashtable[h].length--;
-
-			return 0;
-		}
-
-	fprintf(stderr, "Failed to find fd %d requested for "
-						   "delete in hashtable\n", fd);
-	return 1;
-}
-
-#ifdef LWS_OPENSSL_SUPPORT
-static void
-libwebsockets_decode_ssl_error(void)
-{
-	char buf[256];
-	u_long err;
-
-	while ((err = ERR_get_error()) != 0) {
-		ERR_error_string_n(err, buf, sizeof(buf));
-		fprintf(stderr, "*** %s\n", buf);
-	}
-}
-#endif
-
-
 static int
-interface_to_sa(const char *ifname, struct sockaddr_in *addr, size_t addrlen)
+remove_wsi_socket_from_fds(struct libwebsocket_context *context, struct libwebsocket *wsi)
 {
-	int rc = -1;
-#ifdef WIN32
-	/* TODO */
-#else
-	struct ifaddrs *ifr;
-	struct ifaddrs *ifc;
-	struct sockaddr_in *sin;
+	int m;
 
-	getifaddrs(&ifr);
-	for (ifc = ifr; ifc != NULL; ifc = ifc->ifa_next) {
-		if (strcmp(ifc->ifa_name, ifname))
-			continue;
-		if (ifc->ifa_addr == NULL)
-			continue;
-		sin = (struct sockaddr_in *)ifc->ifa_addr;
-		if (sin->sin_family != AF_INET)
-			continue;
-		memcpy(addr, sin, addrlen);
-		rc = 0;
+	if (!--context->fds_count)
+		goto do_ext;
+
+	if (wsi->sock > context->max_fds) {
+		lwsl_err("Socket fd %d is beyond what we can index (%d)\n", wsi->sock, context->max_fds);
+		return 1;
 	}
 
-	freeifaddrs(ifr);
-#endif
-	return rc;
+	lwsl_info("remove_wsi_socket_from_fds: wsi=%p, sock=%d, fds pos=%d\n", wsi, wsi->sock, wsi->position_in_fds_table);
+
+	m = wsi->position_in_fds_table; /* replace the contents for this */
+
+	/* have the last guy take up the vacant slot */
+	context->fds[m] = context->fds[context->fds_count]; /* vacant fds slot filled with end one */
+	/* end guy's fds_lookup entry remains unchanged (still same fd pointing to same wsi) */
+	/* end guy's "position in fds table" changed */
+	context->lws_lookup[context->fds[context->fds_count].fd]->position_in_fds_table = m;
+	/* deletion guy's lws_lookup entry needs nuking */
+	context->lws_lookup[wsi->sock] = NULL; /* no WSI for the socket of the wsi being removed*/
+	wsi->position_in_fds_table = -1; /* removed wsi has no position any more */
+
+do_ext:
+	/* remove also from external POLL support via protocol 0 */
+	if (wsi->sock)
+		context->protocols[0].callback(context, wsi,
+		    LWS_CALLBACK_DEL_POLL_FD, (void *)(long)wsi->sock, NULL, 0);
+
+	return 0;
 }
+
 
 void
 libwebsocket_close_and_free_session(struct libwebsocket_context *context,
@@ -160,10 +163,12 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 	int old_state;
 	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 2 +
 						  LWS_SEND_BUFFER_POST_PADDING];
+#ifndef LWS_NO_EXTENSIONS
 	int ret;
 	int m;
 	struct lws_tokens eff_buf;
 	struct libwebsocket_extension *ext;
+#endif
 
 	if (!wsi)
 		return;
@@ -173,13 +178,18 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 	if (old_state == WSI_STATE_DEAD_SOCKET)
 		return;
 
-	wsi->close_reason = reason;
+	wsi->u.ws.close_reason = reason;
 
+	if (wsi->mode == LWS_CONNMODE_HTTP_SERVING && wsi->u.http.fd) {
+		close(wsi->u.http.fd);
+		wsi->u.http.fd = 0;
+	}
+
+#ifndef LWS_NO_EXTENSIONS
 	/*
 	 * are his extensions okay with him closing?  Eg he might be a mux
 	 * parent and just his ch1 aspect is closing?
 	 */
-
 
 	for (n = 0; n < wsi->count_active_extensions; n++) {
 		if (!wsi->active_extensions[n]->callback)
@@ -197,12 +207,10 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 		 */
 
 		if (m) {
-			debug("extension vetoed close\n");
+			lwsl_ext("extension vetoed close\n");
 			return;
 		}
 	}
-
-
 
 	/*
 	 * flush any tx pending from extensions, since we may send close packet
@@ -227,8 +235,7 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 					LWS_EXT_CALLBACK_FLUSH_PENDING_TX,
 				   wsi->active_extensions_user[n], &eff_buf, 0);
 			if (m < 0) {
-				fprintf(stderr, "Extension reports "
-							       "fatal error\n");
+				lwsl_ext("Extension reports fatal error\n");
 				goto just_kill_connection;
 			}
 			if (m)
@@ -243,9 +250,12 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 
 		if (eff_buf.token_len)
 			if (lws_issue_raw(wsi, (unsigned char *)eff_buf.token,
-							     eff_buf.token_len))
+							     eff_buf.token_len)) {
+				lwsl_debug("close: sending final extension spill had problems\n");
 				goto just_kill_connection;
+			}
 	}
+#endif
 
 	/*
 	 * signal we are closing, libsocket_write will
@@ -262,7 +272,7 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 	if (old_state == WSI_STATE_ESTABLISHED &&
 					  reason != LWS_CLOSE_STATUS_NOSTATUS) {
 
-		debug("sending close indication...\n");
+		lwsl_debug("sending close indication...\n");
 
 		n = libwebsocket_write(wsi, &buf[LWS_SEND_BUFFER_PRE_PADDING],
 							    0, LWS_WRITE_CLOSE);
@@ -274,51 +284,40 @@ libwebsocket_close_and_free_session(struct libwebsocket_context *context,
 
 			wsi->state = WSI_STATE_AWAITING_CLOSE_ACK;
 
-			/* and we should wait for a reply for a bit */
+			/* and we should wait for a reply for a bit out of politeness */
 
 			libwebsocket_set_timeout(wsi,
-						  PENDING_TIMEOUT_CLOSE_ACK, 5);
+						  PENDING_TIMEOUT_CLOSE_ACK, 1);
 
-			debug("sent close indication, awaiting ack\n");
+			lwsl_debug("sent close indication, awaiting ack\n");
 
 			return;
 		}
 
+		lwsl_info("close: sending the close packet failed, hanging up\n");
+
 		/* else, the send failed and we should just hang up */
 	}
 
+#ifndef LWS_NO_EXTENSIONS
 just_kill_connection:
+#endif
 
-	debug("libwebsocket_close_and_free_session: just_kill_connection\n");
+	lwsl_debug("libwebsocket_close_and_free_session: just_kill_connection\n");
 
 	/*
 	 * we won't be servicing or receiving anything further from this guy
-	 * remove this fd from wsi mapping hashtable
+	 * delete socket from the internal poll list if still present
 	 */
 
-	if (wsi->sock)
-		delete_from_fd(context, wsi->sock);
-
-	/* delete it from the internal poll list if still present */
-
-	for (n = 0; n < context->fds_count; n++) {
-		if (context->fds[n].fd != wsi->sock)
-			continue;
-		while (n < context->fds_count - 1) {
-			context->fds[n] = context->fds[n + 1];
-			n++;
-		}
-		context->fds_count--;
-		/* we only have to deal with one */
-		n = context->fds_count;
-	}
-
-	/* remove also from external POLL support via protocol 0 */
-	if (wsi->sock)
-		context->protocols[0].callback(context, wsi,
-		    LWS_CALLBACK_DEL_POLL_FD, (void *)(long)wsi->sock, NULL, 0);
+	remove_wsi_socket_from_fds(context, wsi);
 
 	wsi->state = WSI_STATE_DEAD_SOCKET;
+
+	if (old_state == WSI_STATE_ESTABLISHED && wsi->u.ws.rx_user_buffer) {
+		free(wsi->u.ws.rx_user_buffer);
+		wsi->u.ws.rx_user_buffer = NULL;
+	}
 
 	/* tell the user it's all over for this guy */
 
@@ -326,12 +325,13 @@ just_kill_connection:
 			((old_state == WSI_STATE_ESTABLISHED) ||
 			 (old_state == WSI_STATE_RETURNED_CLOSE_ALREADY) ||
 			 (old_state == WSI_STATE_AWAITING_CLOSE_ACK))) {
-		debug("calling back CLOSED\n");
+		lwsl_debug("calling back CLOSED\n");
 		wsi->protocol->callback(context, wsi, LWS_CALLBACK_CLOSED,
 						      wsi->user_space, NULL, 0);
 	} else
-		debug("not calling back closed, old_state=%d\n", old_state);
+		lwsl_debug("not calling back closed, old_state=%d\n", old_state);
 
+#ifndef LWS_NO_EXTENSIONS
 	/* deallocate any active extension contexts */
 
 	for (n = 0; n < wsi->count_active_extensions; n++) {
@@ -358,38 +358,34 @@ just_kill_connection:
 				       NULL, NULL, 0);
 		ext++;
 	}
+#endif
 
-	/* free up his parsing allocations */
-
-	for (n = 0; n < WSI_TOKEN_COUNT; n++)
-		if (wsi->utf8_token[n].token)
-			free(wsi->utf8_token[n].token);
-
+#ifndef LWS_NO_CLIENT
 	if (wsi->c_address)
 		free(wsi->c_address);
+#endif
+	if (wsi->u.ws.rxflow_buffer)
+		free(wsi->u.ws.rxflow_buffer);
 
-/*	fprintf(stderr, "closing fd=%d\n", wsi->sock); */
+/*	lwsl_info("closing fd=%d\n", wsi->sock); */
 
 #ifdef LWS_OPENSSL_SUPPORT
 	if (wsi->ssl) {
 		n = SSL_get_fd(wsi->ssl);
 		SSL_shutdown(wsi->ssl);
-#ifdef WIN32
-		closesocket(n);
-#else
-		close(n);
-#endif
+		compatible_close(n);
 		SSL_free(wsi->ssl);
 	} else {
 #endif
-		shutdown(wsi->sock, SHUT_RDWR);
-#ifdef WIN32
-		if (wsi->sock)
-			closesocket(wsi->sock);
-#else
-		if (wsi->sock)
-			close(wsi->sock);
-#endif
+		if (wsi->sock) {
+			n = shutdown(wsi->sock, SHUT_RDWR);
+			if (n)
+				lwsl_debug("closing: shutdown returned %d\n", errno);
+
+			n = compatible_close(wsi->sock);
+			if (n)
+				lwsl_debug("closing: close returned %d\n", errno);
+		}
 #ifdef LWS_OPENSSL_SUPPORT
 	}
 #endif
@@ -409,18 +405,21 @@ just_kill_connection:
 void
 libwebsockets_hangup_on_client(struct libwebsocket_context *context, int fd)
 {
-	struct libwebsocket *wsi = wsi_from_fd(context, fd);
+	struct libwebsocket *wsi = context->lws_lookup[fd];
 
-	if (wsi == NULL)
-		return;
-
-	libwebsocket_close_and_free_session(context, wsi,
-						     LWS_CLOSE_STATUS_NOSTATUS);
+	if (wsi) {
+		lwsl_info("closing connection at libwebsockets_hangup_on_client:\n");
+		libwebsocket_close_and_free_session(context,
+			wsi, LWS_CLOSE_STATUS_NOSTATUS);
+	} else
+		close(fd);
 }
 
 
 /**
  * libwebsockets_get_peer_addresses() - Get client address information
+ * @context:	Libwebsockets context
+ * @wsi:	Local struct libwebsocket associated with
  * @fd:		Connection socket descriptor
  * @name:	Buffer to take client address name
  * @name_len:	Length of client address name buffer
@@ -434,7 +433,8 @@ libwebsockets_hangup_on_client(struct libwebsocket_context *context, int fd)
  */
 
 void
-libwebsockets_get_peer_addresses(int fd, char *name, int name_len,
+libwebsockets_get_peer_addresses(struct libwebsocket_context *context,
+	struct libwebsocket *wsi, int fd, char *name, int name_len,
 					char *rip, int rip_len)
 {
 	unsigned int len;
@@ -444,22 +444,27 @@ libwebsockets_get_peer_addresses(int fd, char *name, int name_len,
 	char ip[128];
 	unsigned char *p;
 	int n;
-	struct sockaddr_un *un;
+	int ret = -1;
+#ifdef AF_LOCAL
+    struct sockaddr_un *un;
+#endif
 
 	rip[0] = '\0';
 	name[0] = '\0';
 
+	lws_latency_pre(context, wsi);
+
 	len = sizeof sin;
 	if (getpeername(fd, (struct sockaddr *) &sin, &len) < 0) {
 		perror("getpeername");
-		return;
+		goto bail;
 	}
 
 	host = gethostbyaddr((char *) &sin.sin_addr, sizeof sin.sin_addr,
 								       AF_INET);
 	if (host == NULL) {
 		perror("gethostbyaddr");
-		return;
+		goto bail;
 	}
 
 	strncpy(name, host->h_name, name_len);
@@ -467,7 +472,7 @@ libwebsockets_get_peer_addresses(int fd, char *name, int name_len,
 
 	host1 = gethostbyname(host->h_name);
 	if (host1 == NULL)
-		return;
+		goto bail;
 	p = (unsigned char *)host1;
 	n = 0;
 	while (p != NULL) {
@@ -494,13 +499,17 @@ libwebsockets_get_peer_addresses(int fd, char *name, int name_len,
 		strncpy(rip, ip, rip_len);
 		rip[rip_len - 1] = '\0';
 	}
+
+	ret = 0;
+bail:
+	lws_latency(context, wsi, "libwebsockets_get_peer_addresses", ret, 1);
 }
 
 int libwebsockets_get_random(struct libwebsocket_context *context,
 							     void *buf, int len)
 {
 	int n;
-	char *p = buf;
+	char *p = (char *)buf;
 
 #ifdef WIN32
 	for (n = 0; n < len; n++)
@@ -512,51 +521,67 @@ int libwebsockets_get_random(struct libwebsocket_context *context,
 	return n;
 }
 
-unsigned char *
-libwebsockets_SHA1(const unsigned char *d, size_t n, unsigned char *md)
+int lws_set_socket_options(struct libwebsocket_context *context, int fd)
 {
-	return SHA1(d, n, md);
-}
+	int optval = 1;
+	socklen_t optlen = sizeof(optval);
+#ifdef WIN32
+	unsigned long optl = 0;
+#endif
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__)
+	struct protoent *tcp_proto;
+#endif
 
-void libwebsockets_00_spaceout(char *key, int spaces, int seed)
-{
-	char *p;
+	if (context->ka_time) {
+		/* enable keepalive on this socket */
+		optval = 1;
+		if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
+					     (const void *)&optval, optlen) < 0)
+			return 1;
 
-	key++;
-	while (spaces--) {
-		if (*key && (seed & 1))
-			key++;
-		seed >>= 1;
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__)
 
-		p = key + strlen(key);
-		while (p >= key) {
-			p[1] = p[0];
-			p--;
-		}
-		*key++ = ' ';
+		/*
+		 * didn't find a way to set these per-socket, need to
+		 * tune kernel systemwide values
+		 */
+
+#else
+		/* set the keepalive conditions we want on it too */
+		optval = context->ka_time;
+		if (setsockopt(fd, IPPROTO_IP, TCP_KEEPIDLE,
+					     (const void *)&optval, optlen) < 0)
+			return 1;
+
+		optval = context->ka_probes;
+		if (setsockopt(fd, IPPROTO_IP, TCP_KEEPINTVL,
+					     (const void *)&optval, optlen) < 0)
+			return 1;
+
+		optval = context->ka_interval;
+		if (setsockopt(fd, IPPROTO_IP, TCP_KEEPCNT,
+					     (const void *)&optval, optlen) < 0)
+			return 1;
+#endif
 	}
-}
 
-void libwebsockets_00_spam(char *key, int count, int seed)
-{
-	char *p;
+	/* Disable Nagle */
+	optval = 1;
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__NetBSD__)
+	setsockopt(fd, SOL_TCP, TCP_NODELAY, (const void *)&optval, optlen);
+#else
+	tcp_proto = getprotobyname("TCP");
+	setsockopt(fd, tcp_proto->p_proto, TCP_NODELAY, &optval, optlen);
+#endif
 
-	key++;
-	while (count--) {
+	/* We are nonblocking... */
+#ifdef WIN32
+	ioctlsocket(fd, FIONBIO, &optl);
+#else
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+#endif
 
-		if (*key && (seed & 1))
-			key++;
-		seed >>= 1;
-
-		p = key + strlen(key);
-		while (p >= key) {
-			p[1] = p[0];
-			p--;
-		}
-		*key++ = 0x21 + ((seed & 0xffff) % 15);
-		/* 4 would use it up too fast.. not like it matters */
-		seed >>= 1;
-	}
+	return 0;
 }
 
 int lws_send_pipe_choked(struct libwebsocket *wsi)
@@ -582,8 +607,10 @@ int
 lws_handle_POLLOUT_event(struct libwebsocket_context *context,
 				struct libwebsocket *wsi, struct pollfd *pollfd)
 {
-	struct lws_tokens eff_buf;
 	int n;
+
+#ifndef LWS_NO_EXTENSIONS
+	struct lws_tokens eff_buf;
 	int ret;
 	int m;
 	int handled = 0;
@@ -632,7 +659,7 @@ lws_handle_POLLOUT_event(struct libwebsocket_context *context,
 					LWS_EXT_CALLBACK_PACKET_TX_PRESEND,
 				   wsi->active_extensions_user[n], &eff_buf, 0);
 			if (m < 0) {
-				fprintf(stderr, "ext reports fatal error\n");
+				lwsl_err("ext reports fatal error\n");
 				return -1;
 			}
 			if (m)
@@ -666,7 +693,7 @@ lws_handle_POLLOUT_event(struct libwebsocket_context *context,
 			/* no we could add more */
 			continue;
 
-		debug("choked in POLLOUT service\n");
+		lwsl_info("choked in POLLOUT service\n");
 
 		/*
 		 * Yes, he's choked.  Leave the POLLOUT masked on so we will
@@ -681,6 +708,7 @@ lws_handle_POLLOUT_event(struct libwebsocket_context *context,
 	wsi->extension_data_pending = 0;
 
 user_service:
+#endif
 	/* one shot */
 
 	if (pollfd) {
@@ -691,17 +719,17 @@ user_service:
 			LWS_CALLBACK_CLEAR_MODE_POLL_FD,
 			(void *)(long)wsi->sock, NULL, POLLOUT);
 	}
-
+#ifndef LWS_NO_EXTENSIONS
 notify_action:
+#endif
 
 	if (wsi->mode == LWS_CONNMODE_WS_CLIENT)
 		n = LWS_CALLBACK_CLIENT_WRITEABLE;
 	else
 		n = LWS_CALLBACK_SERVER_WRITEABLE;
 
-	wsi->protocol->callback(context, wsi, n, wsi->user_space, NULL, 0);
-
-	return 0;
+	return user_callback_handle_rxflow(wsi->protocol->callback, context,
+		wsi, (enum libwebsocket_callback_reasons) n, wsi->user_space, NULL, 0);
 }
 
 
@@ -710,6 +738,7 @@ void
 libwebsocket_service_timeout_check(struct libwebsocket_context *context,
 				     struct libwebsocket *wsi, unsigned int sec)
 {
+#ifndef LWS_NO_EXTENSIONS
 	int n;
 
 	/*
@@ -723,6 +752,7 @@ libwebsocket_service_timeout_check(struct libwebsocket_context *context,
 				    wsi, LWS_EXT_CALLBACK_1HZ,
 				    wsi->active_extensions_user[n], NULL, sec);
 
+#endif
 	if (!wsi->pending_timeout)
 		return;
 
@@ -732,714 +762,11 @@ libwebsocket_service_timeout_check(struct libwebsocket_context *context,
 	 */
 
 	if (sec > wsi->pending_timeout_limit) {
-		debug("TIMEDOUT WAITING\n");
+		lwsl_info("TIMEDOUT WAITING\n");
 		libwebsocket_close_and_free_session(context,
 				wsi, LWS_CLOSE_STATUS_NOSTATUS);
 	}
 }
-
-struct libwebsocket *
-libwebsocket_create_new_server_wsi(struct libwebsocket_context *context)
-{
-	struct libwebsocket *new_wsi;
-	int n;
-
-	new_wsi = malloc(sizeof(struct libwebsocket));
-	if (new_wsi == NULL) {
-		fprintf(stderr, "Out of memory for new connection\n");
-		return NULL;
-	}
-
-	memset(new_wsi, 0, sizeof(struct libwebsocket));
-	new_wsi->count_active_extensions = 0;
-	new_wsi->pending_timeout = NO_PENDING_TIMEOUT;
-
-	/* intialize the instance struct */
-
-	new_wsi->state = WSI_STATE_HTTP;
-	new_wsi->name_buffer_pos = 0;
-	new_wsi->mode = LWS_CONNMODE_WS_SERVING;
-
-	for (n = 0; n < WSI_TOKEN_COUNT; n++) {
-		new_wsi->utf8_token[n].token = NULL;
-		new_wsi->utf8_token[n].token_len = 0;
-	}
-
-	/*
-	 * these can only be set once the protocol is known
-	 * we set an unestablished connection's protocol pointer
-	 * to the start of the supported list, so it can look
-	 * for matching ones during the handshake
-	 */
-	new_wsi->protocol = context->protocols;
-	new_wsi->user_space = NULL;
-
-	/*
-	 * Default protocol is 76 / 00
-	 * After 76, there's a header specified to inform which
-	 * draft the client wants, when that's seen we modify
-	 * the individual connection's spec revision accordingly
-	 */
-	new_wsi->ietf_spec_revision = 0;
-
-	return new_wsi;
-}
-
-char *
-libwebsockets_generate_client_handshake(struct libwebsocket_context *context,
-		struct libwebsocket *wsi, char *pkt)
-{
-	char hash[20];
-	char *p = pkt;
-	int n;
-	struct libwebsocket_extension *ext;
-	struct libwebsocket_extension *ext1;
-	int ext_count = 0;
-	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 1 +
-			 MAX_BROADCAST_PAYLOAD + LWS_SEND_BUFFER_POST_PADDING];
-	static const char magic_websocket_guid[] =
-					 "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-
-	/*
-	 * create the random key
-	 */
-
-	n = libwebsockets_get_random(context, hash, 16);
-	if (n != 16) {
-		fprintf(stderr, "Unable to read from random dev %s\n",
-						SYSTEM_RANDOM_FILEPATH);
-		free(wsi->c_path);
-		free(wsi->c_host);
-		if (wsi->c_origin)
-			free(wsi->c_origin);
-		if (wsi->c_protocol)
-			free(wsi->c_protocol);
-		libwebsocket_close_and_free_session(context, wsi,
-					     LWS_CLOSE_STATUS_NOSTATUS);
-		return NULL;
-	}
-
-	lws_b64_encode_string(hash, 16, wsi->key_b64,
-						   sizeof wsi->key_b64);
-
-	/*
-	 * 00 example client handshake
-	 *
-	 * GET /socket.io/websocket HTTP/1.1
-	 * Upgrade: WebSocket
-	 * Connection: Upgrade
-	 * Host: 127.0.0.1:9999
-	 * Origin: http://127.0.0.1
-	 * Sec-WebSocket-Key1: 1 0 2#0W 9 89 7  92 ^
-	 * Sec-WebSocket-Key2: 7 7Y 4328 B2v[8(z1
-	 * Cookie: socketio=websocket
-	 *
-	 * (Á®Ä0¶†≥
-	 *
-	 * 04 example client handshake
-	 *
-	 * GET /chat HTTP/1.1
-	 * Host: server.example.com
-	 * Upgrade: websocket
-	 * Connection: Upgrade
-	 * Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
-	 * Sec-WebSocket-Origin: http://example.com
-	 * Sec-WebSocket-Protocol: chat, superchat
-	 * Sec-WebSocket-Version: 4
-	 */
-
-	p += sprintf(p, "GET %s HTTP/1.1\x0d\x0a", wsi->c_path);
-
-	if (wsi->ietf_spec_revision == 0) {
-		unsigned char spaces_1, spaces_2;
-		unsigned int max_1, max_2;
-		unsigned int num_1, num_2;
-		unsigned long product_1, product_2;
-		char key_1[40];
-		char key_2[40];
-		unsigned int seed;
-		unsigned int count;
-		char challenge[16];
-
-		libwebsockets_get_random(context, &spaces_1, sizeof(char));
-		libwebsockets_get_random(context, &spaces_2, sizeof(char));
-
-		spaces_1 = (spaces_1 % 12) + 1;
-		spaces_2 = (spaces_2 % 12) + 1;
-
-		max_1 = 4294967295 / spaces_1;
-		max_2 = 4294967295 / spaces_2;
-
-		libwebsockets_get_random(context, &num_1, sizeof(int));
-		libwebsockets_get_random(context, &num_2, sizeof(int));
-
-		num_1 = (num_1 % max_1);
-		num_2 = (num_2 % max_2);
-
-		challenge[0] = num_1 >> 24;
-		challenge[1] = num_1 >> 16;
-		challenge[2] = num_1 >> 8;
-		challenge[3] = num_1;
-		challenge[4] = num_2 >> 24;
-		challenge[5] = num_2 >> 16;
-		challenge[6] = num_2 >> 8;
-		challenge[7] = num_2;
-
-		product_1 = num_1 * spaces_1;
-		product_2 = num_2 * spaces_2;
-
-		sprintf(key_1, "%lu", product_1);
-		sprintf(key_2, "%lu", product_2);
-
-		libwebsockets_get_random(context, &seed, sizeof(int));
-		libwebsockets_get_random(context, &count, sizeof(int));
-
-		libwebsockets_00_spam(key_1, (count % 12) + 1, seed);
-
-		libwebsockets_get_random(context, &seed, sizeof(int));
-		libwebsockets_get_random(context, &count, sizeof(int));
-
-		libwebsockets_00_spam(key_2, (count % 12) + 1, seed);
-
-		libwebsockets_get_random(context, &seed, sizeof(int));
-
-		libwebsockets_00_spaceout(key_1, spaces_1, seed);
-		libwebsockets_00_spaceout(key_2, spaces_2, seed >> 16);
-
-		p += sprintf(p, "Upgrade: WebSocket\x0d\x0a"
-			"Connection: Upgrade\x0d\x0aHost: %s\x0d\x0a",
-			wsi->c_host);
-		if (wsi->c_origin)
-			p += sprintf(p, "Origin: %s\x0d\x0a", wsi->c_origin);
-
-		if (wsi->c_protocol)
-			p += sprintf(p, "Sec-WebSocket-Protocol: %s"
-					 "\x0d\x0a", wsi->c_protocol);
-
-		p += sprintf(p, "Sec-WebSocket-Key1: %s\x0d\x0a", key_1);
-		p += sprintf(p, "Sec-WebSocket-Key2: %s\x0d\x0a", key_2);
-
-		/* give userland a chance to append, eg, cookies */
-
-		context->protocols[0].callback(context, wsi,
-			LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER,
-				NULL, &p, (pkt + sizeof(pkt)) - p - 12);
-
-		p += sprintf(p, "\x0d\x0a");
-
-		if (libwebsockets_get_random(context, p, 8) != 8)
-			return NULL;
-		memcpy(&challenge[8], p, 8);
-		p += 8;
-
-		/* precompute what we want to see from the server */
-
-		MD5((unsigned char *)challenge, 16,
-		   (unsigned char *)wsi->initial_handshake_hash_base64);
-
-		goto issue_hdr;
-	}
-
-	p += sprintf(p, "Host: %s\x0d\x0a", wsi->c_host);
-	p += sprintf(p, "Upgrade: websocket\x0d\x0a");
-	p += sprintf(p, "Connection: Upgrade\x0d\x0a"
-				"Sec-WebSocket-Key: ");
-	strcpy(p, wsi->key_b64);
-	p += strlen(wsi->key_b64);
-	p += sprintf(p, "\x0d\x0a");
-	if (wsi->c_origin)
-		p += sprintf(p, "Sec-WebSocket-Origin: %s\x0d\x0a",
-							 wsi->c_origin);
-	if (wsi->c_protocol)
-		p += sprintf(p, "Sec-WebSocket-Protocol: %s\x0d\x0a",
-						       wsi->c_protocol);
-
-	/* tell the server what extensions we could support */
-
-	p += sprintf(p, "Sec-WebSocket-Extensions: ");
-
-	ext = context->extensions;
-	while (ext && ext->callback) {
-
-		n = 0;
-		ext1 = context->extensions;
-
-		while (ext1 && ext1->callback) {
-			n |= ext1->callback(context, ext1, wsi,
-				LWS_EXT_CALLBACK_CHECK_OK_TO_PROPOSE_EXTENSION,
-					NULL, (char *)ext->name, 0);
-
-			ext1++;
-		}
-
-		if (n) { /* an extension vetos us */
-			debug("ext %s vetoed\n", (char *)ext->name);
-			ext++;
-			continue;
-		}
-
-		n = context->protocols[0].callback(context, wsi,
-			LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED,
-				wsi->user_space, (char *)ext->name, 0);
-
-		/*
-		 * zero return from callback means
-		 * go ahead and allow the extension,
-		 * it's what we get if the callback is
-		 * unhandled
-		 */
-
-		if (n) {
-			ext++;
-			continue;
-		}
-
-		/* apply it */
-
-		if (ext_count)
-			*p++ = ',';
-		p += sprintf(p, "%s", ext->name);
-		ext_count++;
-
-		ext++;
-	}
-
-	p += sprintf(p, "\x0d\x0a");
-
-	if (wsi->ietf_spec_revision)
-		p += sprintf(p, "Sec-WebSocket-Version: %d\x0d\x0a",
-					       wsi->ietf_spec_revision);
-
-	/* give userland a chance to append, eg, cookies */
-
-	context->protocols[0].callback(context, wsi,
-		LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER,
-		NULL, &p, (pkt + sizeof(pkt)) - p - 12);
-
-	p += sprintf(p, "\x0d\x0a");
-
-	/* prepare the expected server accept response */
-
-	strcpy((char *)buf, wsi->key_b64);
-	strcpy((char *)&buf[strlen((char *)buf)], magic_websocket_guid);
-
-	SHA1(buf, strlen((char *)buf), (unsigned char *)hash);
-
-	lws_b64_encode_string(hash, 20,
-			wsi->initial_handshake_hash_base64,
-			     sizeof wsi->initial_handshake_hash_base64);
-
-issue_hdr:
-
-#if 0
-	puts(pkt);
-#endif
-
-	/* done with these now */
-
-	free(wsi->c_path);
-	free(wsi->c_host);
-	if (wsi->c_origin)
-		free(wsi->c_origin);
-
-	return p;
-}
-
-int
-lws_client_interpret_server_handshake(struct libwebsocket_context *context,
-		struct libwebsocket *wsi)
-{
-	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 1 +
-			MAX_BROADCAST_PAYLOAD + LWS_SEND_BUFFER_POST_PADDING];
-	char pkt[1024];
-	char *p = &pkt[0];
-	const char *pc;
-	const char *c;
-	int more = 1;
-	int okay = 0;
-	char ext_name[128];
-	struct libwebsocket_extension *ext;
-	void *v;
-	int len = 0;
-	int n;
-	static const char magic_websocket_04_masking_guid[] =
-					 "61AC5F19-FBBA-4540-B96F-6561F1AB40A8";
-
-	/*
-	 * 00 / 76 -->
-	 *
-	 * HTTP/1.1 101 WebSocket Protocol Handshake
-	 * Upgrade: WebSocket
-	 * Connection: Upgrade
-	 * Sec-WebSocket-Origin: http://127.0.0.1
-	 * Sec-WebSocket-Location: ws://127.0.0.1:9999/socket.io/websocket
-	 *
-	 * xxxxxxxxxxxxxxxx
-	 */
-
-	if (wsi->ietf_spec_revision == 0) {
-		if (!wsi->utf8_token[WSI_TOKEN_HTTP].token_len ||
-			!wsi->utf8_token[WSI_TOKEN_UPGRADE].token_len ||
-			!wsi->utf8_token[WSI_TOKEN_CHALLENGE].token_len ||
-			!wsi->utf8_token[WSI_TOKEN_CONNECTION].token_len ||
-			(!wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len &&
-			wsi->c_protocol != NULL)) {
-			debug("libwebsocket_client_handshake "
-					"missing required header(s)\n");
-			pkt[len] = '\0';
-			debug("%s", pkt);
-			goto bail3;
-		}
-
-		strtolower(wsi->utf8_token[WSI_TOKEN_HTTP].token);
-		if (strncmp(wsi->utf8_token[WSI_TOKEN_HTTP].token, "101", 3)) {
-			fprintf(stderr, "libwebsocket_client_handshake "
-				"server sent bad HTTP response '%s'\n",
-				wsi->utf8_token[WSI_TOKEN_HTTP].token);
-			goto bail3;
-		}
-
-		if (wsi->utf8_token[WSI_TOKEN_CHALLENGE].token_len < 16) {
-			fprintf(stderr, "libwebsocket_client_handshake "
-				"challenge reply too short %d\n",
-				wsi->utf8_token[
-					WSI_TOKEN_CHALLENGE].token_len);
-			pkt[len] = '\0';
-			debug("%s", pkt);
-			goto bail3;
-
-		}
-
-		goto select_protocol;
-	}
-
-	/*
-	 * well, what the server sent looked reasonable for syntax.
-	 * Now let's confirm it sent all the necessary headers
-	 */
-#if 0
-	fprintf(stderr, "WSI_TOKEN_HTTP: %d\n",
-				    wsi->utf8_token[WSI_TOKEN_HTTP].token_len);
-	fprintf(stderr, "WSI_TOKEN_UPGRADE: %d\n",
-				 wsi->utf8_token[WSI_TOKEN_UPGRADE].token_len);
-	fprintf(stderr, "WSI_TOKEN_CONNECTION: %d\n",
-			      wsi->utf8_token[WSI_TOKEN_CONNECTION].token_len);
-	fprintf(stderr, "WSI_TOKEN_ACCEPT: %d\n",
-				  wsi->utf8_token[WSI_TOKEN_ACCEPT].token_len);
-	fprintf(stderr, "WSI_TOKEN_NONCE: %d\n",
-				   wsi->utf8_token[WSI_TOKEN_NONCE].token_len);
-	fprintf(stderr, "WSI_TOKEN_PROTOCOL: %d\n",
-				wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len);
-#endif
-	if (!wsi->utf8_token[WSI_TOKEN_HTTP].token_len ||
-	    !wsi->utf8_token[WSI_TOKEN_UPGRADE].token_len ||
-	    !wsi->utf8_token[WSI_TOKEN_CONNECTION].token_len ||
-	    !wsi->utf8_token[WSI_TOKEN_ACCEPT].token_len ||
-	    (!wsi->utf8_token[WSI_TOKEN_NONCE].token_len &&
-				   wsi->ietf_spec_revision == 4) ||
-	    (!wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len &&
-						    wsi->c_protocol != NULL)) {
-		debug("libwebsocket_client_handshake "
-					"missing required header(s)\n");
-		pkt[len] = '\0';
-		debug("%s", pkt);
-		goto bail3;
-	}
-
-	/*
-	 * Everything seems to be there, now take a closer look at what
-	 * is in each header
-	 */
-
-	strtolower(wsi->utf8_token[WSI_TOKEN_HTTP].token);
-	if (strncmp(wsi->utf8_token[WSI_TOKEN_HTTP].token, "101", 3)) {
-		fprintf(stderr, "libwebsocket_client_handshake "
-				"server sent bad HTTP response '%s'\n",
-				 wsi->utf8_token[WSI_TOKEN_HTTP].token);
-		goto bail3;
-	}
-
-	strtolower(wsi->utf8_token[WSI_TOKEN_UPGRADE].token);
-	if (strcmp(wsi->utf8_token[WSI_TOKEN_UPGRADE].token,
-							 "websocket")) {
-		fprintf(stderr, "libwebsocket_client_handshake server "
-				"sent bad Upgrade header '%s'\n",
-				  wsi->utf8_token[WSI_TOKEN_UPGRADE].token);
-		goto bail3;
-	}
-
-	strtolower(wsi->utf8_token[WSI_TOKEN_CONNECTION].token);
-	if (strcmp(wsi->utf8_token[WSI_TOKEN_CONNECTION].token,
-							   "upgrade")) {
-		fprintf(stderr, "libwebsocket_client_handshake server "
-				"sent bad Connection hdr '%s'\n",
-			   wsi->utf8_token[WSI_TOKEN_CONNECTION].token);
-		goto bail3;
-	}
-
-select_protocol:
-	pc = wsi->c_protocol;
-	if (pc == NULL)
-		fprintf(stderr, "lws_client_interpret_server_handshake: "
-							  "NULL c_protocol\n");
-	else
-		debug("lws_client_interpret_server_handshake: "
-						      "cPprotocol='%s'\n", pc);
-
-	/*
-	 * confirm the protocol the server wants to talk was in the list
-	 * of protocols we offered
-	 */
-
-	if (!wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len) {
-
-		fprintf(stderr, "lws_client_interpret_server_handshake "
-					       "WSI_TOKEN_PROTOCOL is null\n");
-		/*
-		 * no protocol name to work from,
-		 * default to first protocol
-		 */
-		wsi->protocol = &context->protocols[0];
-		wsi->c_callback = wsi->protocol->callback;
-		free(wsi->c_protocol);
-
-		goto check_accept;
-	}
-
-	while (*pc && !okay) {
-		if ((!strncmp(pc, wsi->utf8_token[WSI_TOKEN_PROTOCOL].token,
-		 wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len)) &&
-		 (pc[wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len] == ',' ||
-		  pc[wsi->utf8_token[WSI_TOKEN_PROTOCOL].token_len] == '\0')) {
-			okay = 1;
-			continue;
-		}
-		while (*pc && *pc != ',')
-			pc++;
-		while (*pc && *pc != ' ')
-			pc++;
-	}
-
-	/* done with him now */
-
-	if (wsi->c_protocol)
-		free(wsi->c_protocol);
-
-	if (!okay) {
-		fprintf(stderr, "libwebsocket_client_handshake server "
-					"sent bad protocol '%s'\n",
-				 wsi->utf8_token[WSI_TOKEN_PROTOCOL].token);
-		goto bail2;
-	}
-
-	/*
-	 * identify the selected protocol struct and set it
-	 */
-	n = 0;
-	wsi->protocol = NULL;
-	while (context->protocols[n].callback && !wsi->protocol) {  /* Stop after finding first one?? */
-		if (strcmp(wsi->utf8_token[WSI_TOKEN_PROTOCOL].token,
-					   context->protocols[n].name) == 0) {
-			wsi->protocol = &context->protocols[n];
-			wsi->c_callback = wsi->protocol->callback;
-		}
-		n++;
-	}
-
-	if (wsi->protocol == NULL) {
-		fprintf(stderr, "libwebsocket_client_handshake server "
-				"requested protocol '%s', which we "
-				"said we supported but we don't!\n",
-				 wsi->utf8_token[WSI_TOKEN_PROTOCOL].token);
-		goto bail2;
-	}
-
-
-	/* instantiate the accepted extensions */
-
-	if (!wsi->utf8_token[WSI_TOKEN_EXTENSIONS].token_len) {
-		debug("no client extenstions allowed by server\n");
-		goto check_accept;
-	}
-
-	/*
-	 * break down the list of server accepted extensions
-	 * and go through matching them or identifying bogons
-	 */
-
-	c = wsi->utf8_token[WSI_TOKEN_EXTENSIONS].token;
-	n = 0;
-	while (more) {
-
-		if (*c && (*c != ',' && *c != ' ' && *c != '\t')) {
-			ext_name[n] = *c++;
-			if (n < sizeof(ext_name) - 1)
-				n++;
-			continue;
-		}
-		ext_name[n] = '\0';
-		if (!*c)
-			more = 0;
-		else {
-			c++;
-			if (!n)
-				continue;
-		}
-
-		/* check we actually support it */
-
-		debug("checking client ext %s\n", ext_name);
-
-		n = 0;
-		ext = wsi->protocol->owning_server->extensions;
-		while (ext && ext->callback) {
-
-			if (strcmp(ext_name, ext->name)) {
-				ext++;
-				continue;
-			}
-
-			n = 1;
-
-			debug("instantiating client ext %s\n", ext_name);
-
-			/* instantiate the extension on this conn */
-
-			wsi->active_extensions_user[
-				wsi->count_active_extensions] =
-					 malloc(ext->per_session_data_size);
-			memset(wsi->active_extensions_user[
-				wsi->count_active_extensions], 0,
-						    ext->per_session_data_size);
-			wsi->active_extensions[
-				  wsi->count_active_extensions] = ext;
-
-			/* allow him to construct his context */
-
-			ext->callback(wsi->protocol->owning_server,
-				ext, wsi,
-				   LWS_EXT_CALLBACK_CLIENT_CONSTRUCT,
-					wsi->active_extensions_user[
-					 wsi->count_active_extensions],
-								   NULL, 0);
-
-			wsi->count_active_extensions++;
-
-			ext++;
-		}
-
-		if (n == 0) {
-			fprintf(stderr, "Server said we should use"
-				  "an unknown extension '%s'!\n", ext_name);
-			goto bail2;
-		}
-
-		n = 0;
-	}
-
-
-check_accept:
-
-	if (wsi->ietf_spec_revision == 0) {
-
-		if (memcmp(wsi->initial_handshake_hash_base64,
-			  wsi->utf8_token[WSI_TOKEN_CHALLENGE].token, 16)) {
-			fprintf(stderr, "libwebsocket_client_handshake "
-					   "failed 00 challenge compare\n");
-				pkt[len] = '\0';
-				fprintf(stderr, "%s", pkt);
-				goto bail2;
-		}
-
-		goto accept_ok;
-	}
-
-	/*
-	 * Confirm his accept token is the one we precomputed
-	 */
-
-	if (strcmp(wsi->utf8_token[WSI_TOKEN_ACCEPT].token,
-				  wsi->initial_handshake_hash_base64)) {
-		fprintf(stderr, "libwebsocket_client_handshake server "
-			"sent bad ACCEPT '%s' vs computed '%s'\n",
-			wsi->utf8_token[WSI_TOKEN_ACCEPT].token,
-					wsi->initial_handshake_hash_base64);
-		goto bail2;
-	}
-
-	if (wsi->ietf_spec_revision == 4) {
-		/*
-		 * Calculate the 04 masking key to use when
-		 * sending data to server
-		 */
-
-		strcpy((char *)buf, wsi->key_b64);
-		p = (char *)buf + strlen(wsi->key_b64);
-		strcpy(p, wsi->utf8_token[WSI_TOKEN_NONCE].token);
-		p += wsi->utf8_token[WSI_TOKEN_NONCE].token_len;
-		strcpy(p, magic_websocket_04_masking_guid);
-		SHA1(buf, strlen((char *)buf), wsi->masking_key_04);
-	}
-accept_ok:
-
-	/* allocate the per-connection user memory (if any) */
-	if (wsi->protocol->per_session_data_size &&
-					  !libwebsocket_ensure_user_space(wsi))
-		goto bail2;
-
-	/* clear his proxy connection timeout */
-
-	libwebsocket_set_timeout(wsi, NO_PENDING_TIMEOUT, 0);
-
-	/* mark him as being alive */
-
-	wsi->state = WSI_STATE_ESTABLISHED;
-	wsi->mode = LWS_CONNMODE_WS_CLIENT;
-
-	debug("handshake OK for protocol %s\n", wsi->protocol->name);
-
-	/* call him back to inform him he is up */
-
-	wsi->protocol->callback(context, wsi,
-				LWS_CALLBACK_CLIENT_ESTABLISHED,
-						     wsi->user_space, NULL, 0);
-
-	/*
-	 * inform all extensions, not just active ones since they
-	 * already know
-	 */
-
-	ext = context->extensions;
-
-	while (ext && ext->callback) {
-		v = NULL;
-		for (n = 0; n < wsi->count_active_extensions; n++)
-			if (wsi->active_extensions[n] == ext)
-				v = wsi->active_extensions_user[n];
-
-		ext->callback(context, ext, wsi,
-			  LWS_EXT_CALLBACK_ANY_WSI_ESTABLISHED, v, NULL, 0);
-		ext++;
-	}
-
-	return 0;
-
-bail3:
-	if (wsi->c_protocol)
-		free(wsi->c_protocol);
-
-bail2:
-	if (wsi->c_callback) wsi->c_callback(context, wsi,
-       LWS_CALLBACK_CLIENT_CONNECTION_ERROR,
-			 wsi->user_space,
-			 NULL, 0);
-	libwebsocket_close_and_free_session(context, wsi,
-						 LWS_CLOSE_STATUS_NOSTATUS);  // But this should be LWS_CLOSE_STATUS_PROTOCOL_ERR
-
-	return 1;
-}
-
-
 
 /**
  * libwebsocket_service_fd() - Service polled socket with something waiting
@@ -1447,36 +774,41 @@ bail2:
  * @pollfd:	The pollfd entry describing the socket fd and which events
  *		happened.
  *
- *	This function closes any active connections and then frees the
- *	context.  After calling this, any further use of the context is
- *	undefined.
+ *	This function takes a pollfd that has POLLIN or POLLOUT activity and
+ *	services it according to the state of the associated struct libwebsocket.
+ *
+ *	The one call deals with all "service" that might happen on a socket
+ *	including listen accepts, http files as well as websocket protocol.
  */
 
 int
 libwebsocket_service_fd(struct libwebsocket_context *context,
 							  struct pollfd *pollfd)
 {
-	unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 1 +
-			 MAX_BROADCAST_PAYLOAD + LWS_SEND_BUFFER_POST_PADDING];
 	struct libwebsocket *wsi;
-	struct libwebsocket *new_wsi;
 	int n;
 	int m;
-	ssize_t len;
-	int accept_fd;
-	unsigned int clilen;
-	struct sockaddr_in cli_addr;
+	int listen_socket_fds_index = 0;
 	struct timeval tv;
-	char pkt[1024];
-	char *p = &pkt[0];
-	int more = 1;
-	struct lws_tokens eff_buf;
-	int opt = 1;
-	char c;
-
 #ifdef LWS_OPENSSL_SUPPORT
 	char ssl_err_buf[512];
 #endif
+
+#ifndef LWS_NO_EXTENSIONS
+	int more = 1;
+#endif
+	struct lws_tokens eff_buf;
+#ifndef LWS_NO_CLIENT
+	extern int lws_client_socket_service(struct libwebsocket_context *context, struct libwebsocket *wsi, struct pollfd *pollfd);
+#endif
+#ifndef LWS_NO_SERVER
+	extern int lws_server_socket_service(struct libwebsocket_context *context, struct libwebsocket *wsi, struct pollfd *pollfd);
+#endif
+
+	if (context->listen_service_fd)
+		listen_socket_fds_index = context->lws_lookup[
+			     context->listen_service_fd]->position_in_fds_table;
+
 	/*
 	 * you can call us with pollfd = NULL to just allow the once-per-second
 	 * global timeout checks; if less than a second since the last check
@@ -1488,13 +820,20 @@ libwebsocket_service_fd(struct libwebsocket_context *context,
 	if (context->last_timeout_check_s != tv.tv_sec) {
 		context->last_timeout_check_s = tv.tv_sec;
 
+		#ifndef WIN32
+		/* if our parent went down, don't linger around */
+		if (context->started_with_parent && kill(context->started_with_parent, 0) < 0)
+			kill(getpid(), SIGTERM);
+		#endif
+
 		/* global timeout check once per second */
 
 		for (n = 0; n < context->fds_count; n++) {
-			wsi = wsi_from_fd(context, context->fds[n].fd);
-
-			libwebsocket_service_timeout_check(context, wsi,
-								     tv.tv_sec);
+			struct libwebsocket *new_wsi = context->lws_lookup[context->fds[n].fd];
+			if (!new_wsi)
+				continue;
+			libwebsocket_service_timeout_check(context,
+				new_wsi, tv.tv_sec);
 		}
 	}
 
@@ -1505,450 +844,56 @@ libwebsocket_service_fd(struct libwebsocket_context *context,
 
 	/* no, here to service a socket descriptor */
 
-	wsi = wsi_from_fd(context, pollfd->fd);
+	/*
+	 * deal with listen service piggybacking
+	 * every listen_service_modulo services of other fds, we
+	 * sneak one in to service the listen socket if there's anything waiting
+	 *
+	 * To handle connection storms, as found in ab, if we previously saw a
+	 * pending connection here, it causes us to check again next time.
+	 */
 
-	if (wsi == NULL)
+	if (context->listen_service_fd && pollfd != &context->fds[listen_socket_fds_index]) {
+		context->listen_service_count++;
+		if (context->listen_service_extraseen ||
+				context->listen_service_count == context->listen_service_modulo) {
+			context->listen_service_count = 0;
+			m = 1;
+			if (context->listen_service_extraseen > 5)
+				m = 2;
+			while (m--) {
+				/* even with extpoll, we prepared this internal fds for listen */
+				n = poll(&context->fds[listen_socket_fds_index], 1, 0);
+				if (n > 0) { /* there's a connection waiting for us */
+					libwebsocket_service_fd(context, &context->fds[listen_socket_fds_index]);
+					context->listen_service_extraseen++;
+				} else {
+					if (context->listen_service_extraseen)
+						context->listen_service_extraseen--;
+					break;
+				}
+			}
+		}
+
+	}
+
+	/* okay, what we came here to do... */
+
+	wsi = context->lws_lookup[pollfd->fd];
+	if (wsi == NULL) {
+		if (pollfd->fd > 11)
+			lwsl_err("unexpected NULL wsi fd=%d fds_count=%d\n", pollfd->fd, context->fds_count);
 		return 0;
+	}
 
 	switch (wsi->mode) {
+
+#ifndef LWS_NO_SERVER
+	case LWS_CONNMODE_HTTP_SERVING:
 	case LWS_CONNMODE_SERVER_LISTENER:
-
-		/* pollin means a client has connected to us then */
-
-		if (!pollfd->revents & POLLIN)
-			break;
-
-		if (context->fds_count >= MAX_CLIENTS) {
-			fprintf(stderr, "too busy to accept new client\n");
-			break;
-		}
-
-		/* listen socket got an unencrypted connection... */
-
-		clilen = sizeof(cli_addr);
-		accept_fd  = accept(pollfd->fd, (struct sockaddr *)&cli_addr,
-								       &clilen);
-		if (accept_fd < 0) {
-			debug("ERROR on accept\n");
-			return -1;
-		}
-
-		/* Disable Nagle */
-		opt = 1;
-		setsockopt(accept_fd, IPPROTO_TCP, TCP_NODELAY,
-					      (const void *)&opt, sizeof(opt));
-
-		/*
-		 * look at who we connected to and give user code a chance
-		 * to reject based on client IP.  There's no protocol selected
-		 * yet so we issue this to protocols[0]
-		 */
-
-		if ((context->protocols[0].callback)(context, wsi,
-				LWS_CALLBACK_FILTER_NETWORK_CONNECTION,
-					   (void *)(long)accept_fd, NULL, 0)) {
-			debug("Callback denied network connection\n");
-#ifdef WIN32
-			closesocket(accept_fd);
-#else
-			close(accept_fd);
+	case LWS_CONNMODE_SSL_ACK_PENDING:
+		return lws_server_socket_service(context, wsi, pollfd);
 #endif
-			break;
-		}
-
-		/* accepting connection to main listener */
-
-		new_wsi = libwebsocket_create_new_server_wsi(context);
-		if (new_wsi == NULL)
-			break;
-
-		new_wsi->sock = accept_fd;
-
-
-#ifdef LWS_OPENSSL_SUPPORT
-		new_wsi->ssl = NULL;
-
-		if (context->use_ssl) {
-
-			new_wsi->ssl = SSL_new(context->ssl_ctx);
-			if (new_wsi->ssl == NULL) {
-				fprintf(stderr, "SSL_new failed: %s\n",
-				    ERR_error_string(SSL_get_error(
-				    new_wsi->ssl, 0), NULL));
-				    libwebsockets_decode_ssl_error();
-				free(new_wsi);
-				break;
-			}
-
-			SSL_set_fd(new_wsi->ssl, accept_fd);
-
-			n = SSL_accept(new_wsi->ssl);
-			if (n != 1) {
-				/*
-				 * browsers seem to probe with various
-				 * ssl params which fail then retry
-				 * and succeed
-				 */
-				debug("SSL_accept failed skt %u: %s\n",
-				      pollfd->fd,
-				      ERR_error_string(SSL_get_error(
-				      new_wsi->ssl, n), NULL));
-				SSL_free(
-				       new_wsi->ssl);
-				free(new_wsi);
-				break;
-			}
-
-			debug("accepted new SSL conn  "
-			      "port %u on fd=%d SSL ver %s\n",
-				ntohs(cli_addr.sin_port), accept_fd,
-				  SSL_get_version(new_wsi->ssl));
-
-		} else
-#endif
-			debug("accepted new conn  port %u on fd=%d\n",
-					  ntohs(cli_addr.sin_port), accept_fd);
-
-		insert_wsi(context, new_wsi);
-
-		/*
-		 * make sure NO events are seen yet on this new socket
-		 * (otherwise we inherit old fds[client].revents from
-		 * previous socket there and die mysteriously! )
-		 */
-		context->fds[context->fds_count].revents = 0;
-
-		context->fds[context->fds_count].events = POLLIN;
-		context->fds[context->fds_count++].fd = accept_fd;
-
-		/* external POLL support via protocol 0 */
-		context->protocols[0].callback(context, new_wsi,
-			LWS_CALLBACK_ADD_POLL_FD,
-			(void *)(long)accept_fd, NULL, POLLIN);
-
-		break;
-
-	case LWS_CONNMODE_BROADCAST_PROXY_LISTENER:
-
-		/* as we are listening, POLLIN means accept() is needed */
-
-		if (!pollfd->revents & POLLIN)
-			break;
-
-		/* listen socket got an unencrypted connection... */
-
-		clilen = sizeof(cli_addr);
-		accept_fd  = accept(pollfd->fd, (struct sockaddr *)&cli_addr,
-								       &clilen);
-		if (accept_fd < 0) {
-			debug("ERROR on accept\n");
-			return -1;
-		}
-
-		if (context->fds_count >= MAX_CLIENTS) {
-			fprintf(stderr, "too busy to accept new broadcast "
-							      "proxy client\n");
-#ifdef WIN32
-			closesocket(accept_fd);
-#else
-			close(accept_fd);
-#endif
-			break;
-		}
-
-		/* create a dummy wsi for the connection and add it */
-
-		new_wsi = malloc(sizeof(struct libwebsocket));
-		memset(new_wsi, 0, sizeof(struct libwebsocket));
-		new_wsi->sock = accept_fd;
-		new_wsi->mode = LWS_CONNMODE_BROADCAST_PROXY;
-		new_wsi->state = WSI_STATE_ESTABLISHED;
-		new_wsi->count_active_extensions = 0;
-		/* note which protocol we are proxying */
-		new_wsi->protocol_index_for_broadcast_proxy =
-					wsi->protocol_index_for_broadcast_proxy;
-		insert_wsi(context, new_wsi);
-
-		/* add connected socket to internal poll array */
-
-		context->fds[context->fds_count].revents = 0;
-		context->fds[context->fds_count].events = POLLIN;
-		context->fds[context->fds_count++].fd = accept_fd;
-
-		/* external POLL support via protocol 0 */
-		context->protocols[0].callback(context, new_wsi,
-			LWS_CALLBACK_ADD_POLL_FD,
-			(void *)(long)accept_fd, NULL, POLLIN);
-
-		break;
-
-	case LWS_CONNMODE_BROADCAST_PROXY:
-
-		/* handle session socket closed */
-
-		if (pollfd->revents & (POLLERR | POLLHUP)) {
-
-			debug("Session Socket %p (fd=%d) dead\n",
-				(void *)wsi, pollfd->fd);
-
-			libwebsocket_close_and_free_session(context, wsi,
-						       LWS_CLOSE_STATUS_NORMAL);
-			return 1;
-		}
-
-		/*
-		 * either extension code with stuff to spill, or the user code,
-		 * requested a callback when it was OK to write
-		 */
-
-		if (pollfd->revents & POLLOUT)
-			if (lws_handle_POLLOUT_event(context, wsi,
-								 pollfd) < 0) {
-				libwebsocket_close_and_free_session(
-					context, wsi, LWS_CLOSE_STATUS_NORMAL);
-				return 1;
-			}
-
-		/* any incoming data ready? */
-
-		if (!(pollfd->revents & POLLIN))
-			break;
-
-		/* get the issued broadcast payload from the socket */
-
-		len = read(pollfd->fd, buf + LWS_SEND_BUFFER_PRE_PADDING,
-							 MAX_BROADCAST_PAYLOAD);
-		if (len < 0) {
-			fprintf(stderr, "Error reading broadcast payload\n");
-			break;
-		}
-
-		/* broadcast it to all guys with this protocol index */
-
-		for (n = 0; n < FD_HASHTABLE_MODULUS; n++) {
-
-			for (m = 0; m < context->fd_hashtable[n].length; m++) {
-
-				new_wsi = context->fd_hashtable[n].wsi[m];
-
-				/* only to clients we are serving to */
-
-				if (new_wsi->mode != LWS_CONNMODE_WS_SERVING)
-					continue;
-
-				/*
-				 * never broadcast to non-established
-				 * connection
-				 */
-
-				if (new_wsi->state != WSI_STATE_ESTABLISHED)
-					continue;
-
-				/*
-				 * only broadcast to connections using
-				 * the requested protocol
-				 */
-
-				if (new_wsi->protocol->protocol_index !=
-					wsi->protocol_index_for_broadcast_proxy)
-					continue;
-
-				/* broadcast it to this connection */
-
-				new_wsi->protocol->callback(context, new_wsi,
-					LWS_CALLBACK_BROADCAST,
-					new_wsi->user_space,
-					buf + LWS_SEND_BUFFER_PRE_PADDING, len);
-			}
-		}
-		break;
-
-	case LWS_CONNMODE_WS_CLIENT_WAITING_PROXY_REPLY:
-
-		/* handle proxy hung up on us */
-
-		if (pollfd->revents & (POLLERR | POLLHUP)) {
-
-			fprintf(stderr, "Proxy connection %p (fd=%d) dead\n",
-				(void *)wsi, pollfd->fd);
-
-			libwebsocket_close_and_free_session(context, wsi,
-						     LWS_CLOSE_STATUS_NOSTATUS);
-			return 1;
-		}
-
-		n = recv(wsi->sock, pkt, sizeof pkt, 0);
-		if (n < 0) {
-			libwebsocket_close_and_free_session(context, wsi,
-						     LWS_CLOSE_STATUS_NOSTATUS);
-			fprintf(stderr, "ERROR reading from proxy socket\n");
-			return 1;
-		}
-
-		pkt[13] = '\0';
-		if (strcmp(pkt, "HTTP/1.0 200 ") != 0) {
-			libwebsocket_close_and_free_session(context, wsi,
-						     LWS_CLOSE_STATUS_NOSTATUS);
-			fprintf(stderr, "ERROR from proxy: %s\n", pkt);
-			return 1;
-		}
-
-		/* clear his proxy connection timeout */
-
-		libwebsocket_set_timeout(wsi, NO_PENDING_TIMEOUT, 0);
-
-		/* fallthru */
-
-	case LWS_CONNMODE_WS_CLIENT_ISSUE_HANDSHAKE:
-
-	#ifdef LWS_OPENSSL_SUPPORT
-		if (wsi->use_ssl && !wsi->ssl) {
-
-			wsi->ssl = SSL_new(context->ssl_client_ctx);
-			wsi->client_bio = BIO_new_socket(wsi->sock,
-								   BIO_NOCLOSE);
-			SSL_set_bio(wsi->ssl, wsi->client_bio, wsi->client_bio);
-
-			SSL_set_ex_data(wsi->ssl,
-					openssl_websocket_private_data_index,
-								       context);
-		}		
-
-		if (wsi->use_ssl) {
-			if (SSL_connect(wsi->ssl) <= 0) {
-
-				/*
-				 * retry if new data comes until we
-				 * run into the connection timeout or win
-				 */
-
-				fprintf(stderr, "SSL connect error %s\n",
-					ERR_error_string(ERR_get_error(),
-								  ssl_err_buf));
-				return 0;
-			}
-
-			n = SSL_get_verify_result(wsi->ssl);
-			if ((n != X509_V_OK) && (
-				n != X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT ||
-							   wsi->use_ssl != 2)) {
-
-				fprintf(stderr, "server's cert didn't "
-							   "look good %d\n", n);
-				libwebsocket_close_and_free_session(context,
-						wsi, LWS_CLOSE_STATUS_NOSTATUS);
-				return 1;
-			}
-		} else
-			wsi->ssl = NULL;
-	#endif
-
-		p = libwebsockets_generate_client_handshake(context, wsi, p);
-		if (p == NULL)
-			return 1;
-
-		/* send our request to the server */
-
-	#ifdef LWS_OPENSSL_SUPPORT
-		if (wsi->use_ssl)
-			n = SSL_write(wsi->ssl, pkt, p - pkt);
-		else
-	#endif
-			n = send(wsi->sock, pkt, p - pkt, 0);
-
-		if (n < 0) {
-			fprintf(stderr, "ERROR writing to client socket\n");
-			libwebsocket_close_and_free_session(context, wsi,
-						     LWS_CLOSE_STATUS_NOSTATUS);
-			return 1;
-		}
-
-		wsi->parser_state = WSI_TOKEN_NAME_PART;
-		wsi->mode = LWS_CONNMODE_WS_CLIENT_WAITING_SERVER_REPLY;
-		libwebsocket_set_timeout(wsi,
-				PENDING_TIMEOUT_AWAITING_SERVER_RESPONSE, 5);
-
-		break;
-
-	case LWS_CONNMODE_WS_CLIENT_WAITING_SERVER_REPLY:
-
-		/* handle server hung up on us */
-
-		if (pollfd->revents & (POLLERR | POLLHUP)) {
-
-			fprintf(stderr, "Server connection %p (fd=%d) dead\n",
-				(void *)wsi, pollfd->fd);
-
-			goto bail3;
-		}
-
-
-		/* interpret the server response */
-
-		/*
-		 *  HTTP/1.1 101 Switching Protocols
-		 *  Upgrade: websocket
-		 *  Connection: Upgrade
-		 *  Sec-WebSocket-Accept: me89jWimTRKTWwrS3aRrL53YZSo=
-		 *  Sec-WebSocket-Nonce: AQIDBAUGBwgJCgsMDQ4PEC==
-		 *  Sec-WebSocket-Protocol: chat
-		 */
-
-		/*
-		 * we have to take some care here to only take from the
-		 * socket bytewise.  The browser may (and has been seen to
-		 * in the case that onopen() performs websocket traffic)
-		 * coalesce both handshake response and websocket traffic
-		 * in one packet, since at that point the connection is
-		 * definitively ready from browser pov.
-		 */
-
-		len = 1;
-		while (wsi->parser_state != WSI_PARSING_COMPLETE && len > 0) {
-#ifdef LWS_OPENSSL_SUPPORT
-			if (wsi->use_ssl)
-				len = SSL_read(wsi->ssl, &c, 1);
-			 else
-#endif
-				len = recv(wsi->sock, &c, 1, 0);
-
-			libwebsocket_parse(wsi, c);
-		}
-
-		/*
-		 * hs may also be coming in multiple packets, there is a 5-sec
-		 * libwebsocket timeout still active here too, so if parsing did
-		 * not complete just wait for next packet coming in this state
-		 */
-
-		if (wsi->parser_state != WSI_PARSING_COMPLETE)
-			break;
-
-		/*
-		 * otherwise deal with the handshake.  If there's any
-		 * packet traffic already arrived we'll trigger poll() again
-		 * right away and deal with it that way
-		 */
-
-		return lws_client_interpret_server_handshake(context, wsi);
-
-bail3:
-		if (wsi->c_protocol)
-			free(wsi->c_protocol);
-		libwebsocket_close_and_free_session(context, wsi,
-						    LWS_CLOSE_STATUS_NOSTATUS);
-		return 1;
-
-	case LWS_CONNMODE_WS_CLIENT_WAITING_EXTENSION_CONNECT:
-		fprintf(stderr,
-			 "LWS_CONNMODE_WS_CLIENT_WAITING_EXTENSION_CONNECT\n");
-		break;
-
-	case LWS_CONNMODE_WS_CLIENT_PENDING_CANDIDATE_CHILD:
-		fprintf(stderr,
-			   "LWS_CONNMODE_WS_CLIENT_PENDING_CANDIDATE_CHILD\n");
-		break;
-
 
 	case LWS_CONNMODE_WS_SERVING:
 	case LWS_CONNMODE_WS_CLIENT:
@@ -1957,12 +902,12 @@ bail3:
 
 		if (pollfd->revents & (POLLERR | POLLHUP)) {
 
-			fprintf(stderr, "Session Socket %p (fd=%d) dead\n",
+			lwsl_debug("Session Socket %p (fd=%d) dead\n",
 				(void *)wsi, pollfd->fd);
 
 			libwebsocket_close_and_free_session(context, wsi,
 						     LWS_CLOSE_STATUS_NOSTATUS);
-			return 1;
+			return 0;
 		}
 
 		/* the guy requested a callback when it was OK to write */
@@ -1973,7 +918,7 @@ bail3:
 								  pollfd) < 0) {
 				libwebsocket_close_and_free_session(
 					 context, wsi, LWS_CLOSE_STATUS_NORMAL);
-				return 1;
+				return 0;
 			}
 
 
@@ -1983,22 +928,32 @@ bail3:
 			break;
 
 #ifdef LWS_OPENSSL_SUPPORT
-		if (wsi->ssl)
-			eff_buf.token_len = SSL_read(wsi->ssl, buf, sizeof buf);
-		else
+read_pending:
+		if (wsi->ssl) {
+			eff_buf.token_len = SSL_read(wsi->ssl,
+					context->service_buffer,
+						sizeof context->service_buffer);
+			if (!eff_buf.token_len) {
+				n = SSL_get_error(wsi->ssl, eff_buf.token_len);
+				lwsl_err("SSL_read returned 0 with reason %s\n",
+					      ERR_error_string(n, ssl_err_buf));
+			}
+		} else
 #endif
-			eff_buf.token_len =
-					   recv(pollfd->fd, buf, sizeof buf, 0);
+			eff_buf.token_len = recv(pollfd->fd,
+					context->service_buffer,
+					     sizeof context->service_buffer, 0);
 
 		if (eff_buf.token_len < 0) {
-			fprintf(stderr, "Socket read returned %d\n",
+			lwsl_debug("Socket read returned %d\n",
 							    eff_buf.token_len);
 			if (errno != EINTR && errno != EAGAIN)
 				libwebsocket_close_and_free_session(context,
 					       wsi, LWS_CLOSE_STATUS_NOSTATUS);
-			return 1;
+			return 0;
 		}
 		if (!eff_buf.token_len) {
+			lwsl_info("closing connection due to zero length read\n");
 			libwebsocket_close_and_free_session(context, wsi,
 						    LWS_CLOSE_STATUS_NOSTATUS);
 			return 0;
@@ -2016,8 +971,8 @@ bail3:
 		 * used then so it is efficient.
 		 */
 
-		eff_buf.token = (char *)buf;
-
+		eff_buf.token = (char *)context->service_buffer;
+#ifndef LWS_NO_EXTENSIONS
 		more = 1;
 		while (more) {
 
@@ -2030,17 +985,17 @@ bail3:
 					wsi->active_extensions_user[n],
 								   &eff_buf, 0);
 				if (m < 0) {
-					fprintf(stderr,
+					lwsl_ext(
 					    "Extension reports fatal error\n");
 					libwebsocket_close_and_free_session(
 						context, wsi,
 						    LWS_CLOSE_STATUS_NOSTATUS);
-					return 1;
+					return 0;
 				}
 				if (m)
 					more = 1;
 			}
-
+#endif
 			/* service incoming data */
 
 			if (eff_buf.token_len) {
@@ -2049,13 +1004,26 @@ bail3:
 							    eff_buf.token_len);
 				if (n < 0)
 					/* we closed wsi */
-					return 1;
+					return 0;
 			}
-
+#ifndef LWS_NO_EXTENSIONS
 			eff_buf.token = NULL;
 			eff_buf.token_len = 0;
 		}
+#endif
+
+#ifdef LWS_OPENSSL_SUPPORT
+		if (wsi->ssl && SSL_pending(wsi->ssl))
+			goto read_pending;
+#endif
 		break;
+
+	default:
+#ifdef LWS_NO_CLIENT
+		break;
+#else
+		return  lws_client_socket_service(context, wsi, pollfd);
+#endif
 	}
 
 	return 0;
@@ -2073,17 +1041,21 @@ bail3:
 void
 libwebsocket_context_destroy(struct libwebsocket_context *context)
 {
+#ifndef LWS_NO_EXTENSIONS
 	int n;
 	int m;
-	struct libwebsocket *wsi;
 	struct libwebsocket_extension *ext;
 
-	for (n = 0; n < FD_HASHTABLE_MODULUS; n++)
-		for (m = 0; m < context->fd_hashtable[n].length; m++) {
-			wsi = context->fd_hashtable[n].wsi[m];
-			libwebsocket_close_and_free_session(context, wsi,
-						    LWS_CLOSE_STATUS_GOINGAWAY);
-		}
+#ifdef LWS_LATENCY
+	if (context->worst_latency_info[0])
+		lwsl_notice("Worst latency: %s\n", context->worst_latency_info);
+#endif
+
+	for (n = 0; n < context->fds_count; n++) {
+		struct libwebsocket *wsi = context->lws_lookup[context->fds[n].fd];
+		libwebsocket_close_and_free_session(context,
+			wsi, LWS_CLOSE_STATUS_GOINGAWAY);
+	}
 
 	/*
 	 * give all extensions a chance to clean up any per-context
@@ -2095,9 +1067,10 @@ libwebsocket_context_destroy(struct libwebsocket_context *context)
 	if (context->listen_port)
 		m = LWS_EXT_CALLBACK_SERVER_CONTEXT_DESTRUCT;
 	while (ext && ext->callback) {
-		ext->callback(context, ext, NULL, m, NULL, NULL, 0);
+		ext->callback(context, ext, NULL, (enum libwebsocket_extension_callback_reasons)m, NULL, NULL, 0);
 		ext++;
 	}
+#endif
 
 #ifdef WIN32
 #else
@@ -2118,6 +1091,17 @@ libwebsocket_context_destroy(struct libwebsocket_context *context)
 #endif
 }
 
+/**
+ * libwebsocket_context_user() - get the user data associated with the whole context
+ * @context: Websocket context
+ *
+ *	This returns the optional user allocation that can be attached to
+ *	the context the sockets live in at context_create time.  It's a way
+ *	to let all sockets serviced in the same context share data without
+ *	using globals statics in the user code.
+ */
+
+
 LWS_EXTERN void *
 libwebsocket_context_user(struct libwebsocket_context *context)
 {
@@ -2137,10 +1121,7 @@ libwebsocket_context_user(struct libwebsocket_context *context)
  *
  *	1) Accept new connections to our context's server
  *
- *	2) Perform pending broadcast writes initiated from other forked
- *	   processes (effectively serializing asynchronous broadcasts)
- *
- *	3) Call the receive callback for incoming frame data received by
+ *	2) Call the receive callback for incoming frame data received by
  *	    server or client connections.
  *
  *	You need to call this service function periodically to all the above
@@ -2176,14 +1157,10 @@ libwebsocket_service(struct libwebsocket_context *context, int timeout_ms)
 	if (n == 0) /* poll timeout */
 		return 0;
 
-	if (n < 0) {
-		/*
-		fprintf(stderr, "Listen Socket dead\n");
-		*/
+	if (n < 0)
 		return -1;
-	}
 
-	/* handle accept on listening socket? */
+	/* any socket with events to service? */
 
 	for (n = 0; n < context->fds_count; n++)
 		if (context->fds[n].revents)
@@ -2193,6 +1170,7 @@ libwebsocket_service(struct libwebsocket_context *context, int timeout_ms)
 	return 0;
 }
 
+#ifndef LWS_NO_EXTENSIONS
 int
 lws_any_extension_handled(struct libwebsocket_context *context,
 			  struct libwebsocket *wsi,
@@ -2236,6 +1214,7 @@ lws_get_extension_user_matching_ext(struct libwebsocket *wsi,
 
 	return NULL;
 }
+#endif
 
 /**
  * libwebsocket_callback_on_writable() - Request a callback when this socket
@@ -2250,6 +1229,7 @@ int
 libwebsocket_callback_on_writable(struct libwebsocket_context *context,
 						      struct libwebsocket *wsi)
 {
+#ifndef LWS_NO_EXTENSIONS
 	int n;
 	int handled = 0;
 
@@ -2267,16 +1247,14 @@ libwebsocket_callback_on_writable(struct libwebsocket_context *context,
 
 	if (handled)
 		return 1;
-
-	for (n = 0; n < context->fds_count; n++)
-		if (context->fds[n].fd == wsi->sock) {
-			context->fds[n].events |= POLLOUT;
-			n = context->fds_count + 1;
-		}
-
-	if (n == context->fds_count)
-		fprintf(stderr, "libwebsocket_callback_on_writable: "
+#endif
+	if (wsi->position_in_fds_table < 0) {
+		lwsl_err("libwebsocket_callback_on_writable: "
 				      "failed to find socket %d\n", wsi->sock);
+		return -1;
+	}
+
+	context->fds[wsi->position_in_fds_table].events |= POLLOUT;
 
 	/* external POLL support via protocol 0 */
 	context->protocols[0].callback(context, wsi,
@@ -2301,18 +1279,14 @@ libwebsocket_callback_on_writable_all_protocol(
 {
 	struct libwebsocket_context *context = protocol->owning_server;
 	int n;
-	int m;
 	struct libwebsocket *wsi;
 
-	for (n = 0; n < FD_HASHTABLE_MODULUS; n++) {
-
-		for (m = 0; m < context->fd_hashtable[n].length; m++) {
-
-			wsi = context->fd_hashtable[n].wsi[m];
-
-			if (wsi->protocol == protocol)
-				libwebsocket_callback_on_writable(context, wsi);
-		}
+	for (n = 0; n < context->fds_count; n++) {
+		wsi = context->lws_lookup[context->fds[n].fd];
+		if (!wsi)
+			continue;
+		if (wsi->protocol == protocol)
+			libwebsocket_callback_on_writable(context, wsi);
 	}
 
 	return 0;
@@ -2355,6 +1329,93 @@ libwebsocket_get_socket_fd(struct libwebsocket *wsi)
 	return wsi->sock;
 }
 
+#ifdef LWS_LATENCY
+void
+lws_latency(struct libwebsocket_context *context, struct libwebsocket *wsi, const char *action, int ret, int completed)
+{
+	struct timeval tv;
+	unsigned long u;
+	char buf[256];
+
+	gettimeofday(&tv, NULL);
+
+	u = (tv.tv_sec * 1000000) + tv.tv_usec;
+
+	if (action) {
+		if (completed) {
+			if (wsi->action_start == wsi->latency_start)
+				sprintf(buf, "Completion first try lat %luus: %p: ret %d: %s\n", u - wsi->latency_start, (void *)wsi, ret, action);
+			else
+				sprintf(buf, "Completion %luus: lat %luus: %p: ret %d: %s\n", u - wsi->action_start, u - wsi->latency_start, (void *)wsi, ret, action);
+			wsi->action_start = 0;
+		} else
+			sprintf(buf, "lat %luus: %p: ret %d: %s\n", u - wsi->latency_start, (void *)wsi, ret, action);
+		if (u - wsi->latency_start > context->worst_latency) {
+			context->worst_latency = u - wsi->latency_start;
+			strcpy(context->worst_latency_info, buf);
+		}
+		lwsl_latency("%s", buf);
+	} else {
+		wsi->latency_start = u;
+		if (!wsi->action_start)
+			wsi->action_start = u;
+	}
+}
+#endif
+
+#ifdef LWS_NO_SERVER
+int
+_libwebsocket_rx_flow_control(struct libwebsocket *wsi)
+{
+	return 0;
+}
+#else
+int
+_libwebsocket_rx_flow_control(struct libwebsocket *wsi)
+{
+	struct libwebsocket_context *context = wsi->protocol->owning_server;
+	int n;
+
+	if (!(wsi->u.ws.rxflow_change_to & 2))
+		return 0;
+
+	wsi->u.ws.rxflow_change_to &= ~2;
+
+	lwsl_info("rxflow: wsi %p change_to %d\n", wsi, wsi->u.ws.rxflow_change_to);
+
+	/* if we're letting it come again, did we interrupt anything? */
+	if ((wsi->u.ws.rxflow_change_to & 1) && wsi->u.ws.rxflow_buffer) {
+		n = libwebsocket_interpret_incoming_packet(wsi, NULL, 0);
+		if (n < 0) {
+			lwsl_info("closing connection at libwebsocket_rx_flow_control:\n");
+			libwebsocket_close_and_free_session(context, wsi, LWS_CLOSE_STATUS_NOSTATUS);
+			return -1;
+		}
+		if (n)
+			/* oh he stuck again, do nothing */
+			return 0;
+	}
+
+	if (wsi->u.ws.rxflow_change_to & 1)
+		context->fds[wsi->position_in_fds_table].events |= POLLIN;
+	else
+		context->fds[wsi->position_in_fds_table].events &= ~POLLIN;
+
+	if (wsi->u.ws.rxflow_change_to & 1)
+		/* external POLL support via protocol 0 */
+		context->protocols[0].callback(context, wsi,
+			LWS_CALLBACK_SET_MODE_POLL_FD,
+			(void *)(long)wsi->sock, NULL, POLLIN);
+	else
+		/* external POLL support via protocol 0 */
+		context->protocols[0].callback(context, wsi,
+			LWS_CALLBACK_CLEAR_MODE_POLL_FD,
+			(void *)(long)wsi->sock, NULL, POLLIN);
+
+	return 1;
+}
+#endif
+
 /**
  * libwebsocket_rx_flow_control() - Enable and disable socket servicing for
  *				receieved packets.
@@ -2369,36 +1430,11 @@ libwebsocket_get_socket_fd(struct libwebsocket *wsi)
 int
 libwebsocket_rx_flow_control(struct libwebsocket *wsi, int enable)
 {
-	struct libwebsocket_context *context = wsi->protocol->owning_server;
-	int n;
+	wsi->u.ws.rxflow_change_to = 2 | !!enable;
 
-	for (n = 0; n < context->fds_count; n++)
-		if (context->fds[n].fd == wsi->sock) {
-			if (enable)
-				context->fds[n].events |= POLLIN;
-			else
-				context->fds[n].events &= ~POLLIN;
-
-			return 0;
-		}
-
-	if (enable)
-		/* external POLL support via protocol 0 */
-		context->protocols[0].callback(context, wsi,
-			LWS_CALLBACK_SET_MODE_POLL_FD,
-			(void *)(long)wsi->sock, NULL, POLLIN);
-	else
-		/* external POLL support via protocol 0 */
-		context->protocols[0].callback(context, wsi,
-			LWS_CALLBACK_CLEAR_MODE_POLL_FD,
-			(void *)(long)wsi->sock, NULL, POLLIN);
-
-#if 0
-	fprintf(stderr, "libwebsocket_rx_flow_control "
-						     "unable to find socket\n");
-#endif
-	return 1;
+	return 0;
 }
+
 
 /**
  * libwebsocket_canonical_hostname() - returns this host's hostname
@@ -2455,32 +1491,32 @@ OpenSSL_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
 }
 #endif
 
+int user_callback_handle_rxflow(callback_function callback_function,
+		struct libwebsocket_context * context,
+			struct libwebsocket *wsi,
+			 enum libwebsocket_callback_reasons reason, void *user,
+							  void *in, size_t len)
+{
+	int n;
+
+	n = callback_function(context, wsi, reason, user, in, len);
+	if (n) {
+		libwebsocket_close_and_free_session(context, wsi,
+					       LWS_CLOSE_STATUS_NOSTATUS);
+		return n;
+	}
+
+	_libwebsocket_rx_flow_control(wsi);
+
+	return 0;
+}
+
 
 /**
  * libwebsocket_create_context() - Create the websocket handler
- * @port:	Port to listen on... you can use 0 to suppress listening on
- *		any port, that's what you want if you are not running a
- *		websocket server at all but just using it as a client
- * @interf:  NULL to bind the listen socket to all interfaces, or the
- *		interface name, eg, "eth2"
- * @protocols:	Array of structures listing supported protocols and a protocol-
- *		specific callback for each one.  The list is ended with an
- *		entry that has a NULL callback pointer.
- *		It's not const because we write the owning_server member
- * @extensions: NULL or array of libwebsocket_extension structs listing the
- *		extensions this context supports
- * @ssl_cert_filepath:	If libwebsockets was compiled to use ssl, and you want
- *			to listen using SSL, set to the filepath to fetch the
- *			server cert from, otherwise NULL for unencrypted
- * @ssl_private_key_filepath: filepath to private key if wanting SSL mode,
- *			else ignored
- * @gid:	group id to change to after setting listen socket, or -1.
- * @uid:	user id to change to after setting listen socket, or -1.
- * @options:	0, or LWS_SERVER_OPTION_DEFEAT_CLIENT_MASK
- * @user:	optional user pointer that can be recovered via the context
- * 		pointer using libwebsocket_context_user 
+ * @info:	pointer to struct with parameters
  *
- *	This function creates the listening socket and takes care
+ *	This function creates the listening socket (if serving) and takes care
  *	of all initialization in one step.
  *
  *	After initialization, it returns a struct libwebsocket_context * that
@@ -2507,32 +1543,48 @@ OpenSSL_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
  */
 
 struct libwebsocket_context *
-libwebsocket_create_context(int port, const char *interf,
-			       struct libwebsocket_protocols *protocols,
-			       struct libwebsocket_extension *extensions,
-			       const char *ssl_cert_filepath,
-			       const char *ssl_private_key_filepath,
-			       int gid, int uid, unsigned int options,
-                   void *user)
+libwebsocket_create_context(struct lws_context_creation_info *info)
 {
 	int n;
-	int m;
-	int sockfd = 0;
-	int fd;
-	struct sockaddr_in serv_addr, cli_addr;
-	int opt = 1;
 	struct libwebsocket_context *context = NULL;
-	unsigned int slen;
 	char *p;
-	char hostname[1024] = "";
-//	struct hostent *he;
+#ifndef LWS_NO_SERVER
+	int opt = 1;
 	struct libwebsocket *wsi;
-	struct sockaddr sa;
+	struct sockaddr_in serv_addr;
+#endif
+#ifndef LWS_NO_EXTENSIONS
+	int m;
+	struct libwebsocket_extension *ext;
+#endif
 
 #ifdef LWS_OPENSSL_SUPPORT
 	SSL_METHOD *method;
 	char ssl_err_buf[512];
 #endif
+
+#ifndef LWS_NO_DAEMONIZE
+	extern int get_daemonize_pid();
+	int pid_daemon = get_daemonize_pid();
+#endif
+
+	lwsl_notice("Initial logging level %d\n", log_level);
+	lwsl_notice("Library version: %s\n", library_version);
+	lwsl_info(" LWS_MAX_HEADER_NAME_LENGTH: %u\n", LWS_MAX_HEADER_NAME_LENGTH);
+	lwsl_info(" LWS_MAX_HEADER_LEN: %u\n", LWS_MAX_HEADER_LEN);
+	lwsl_info(" LWS_INITIAL_HDR_ALLOC: %u\n", LWS_INITIAL_HDR_ALLOC);
+	lwsl_info(" LWS_ADDITIONAL_HDR_ALLOC: %u\n", LWS_ADDITIONAL_HDR_ALLOC);
+	lwsl_info(" LWS_MAX_PROTOCOLS: %u\n", LWS_MAX_PROTOCOLS);
+#ifndef LWS_NO_EXTENSIONS
+	lwsl_info(" LWS_MAX_EXTENSIONS_ACTIVE: %u\n", LWS_MAX_EXTENSIONS_ACTIVE);
+#else
+	lwsl_notice(" Configured without extension support\n");
+#endif
+	lwsl_info(" SPEC_LATEST_SUPPORTED: %u\n", SPEC_LATEST_SUPPORTED);
+	lwsl_info(" AWAITING_TIMEOUT: %u\n", AWAITING_TIMEOUT);
+	lwsl_info(" CIPHERS_LIST_STRING: '%s'\n", CIPHERS_LIST_STRING);
+	lwsl_info(" SYSTEM_RANDOM_FILEPATH: '%s'\n", SYSTEM_RANDOM_FILEPATH);
+	lwsl_info(" LWS_MAX_ZLIB_CONN_BUFFER: %u\n", LWS_MAX_ZLIB_CONN_BUFFER);
 
 #ifdef _WIN32
 	{
@@ -2548,8 +1600,7 @@ libwebsocket_create_context(int port, const char *interf,
 		if (err != 0) {
 			/* Tell the user that we could not find a usable */
 			/* Winsock DLL.                                  */
-			fprintf(stderr, "WSAStartup failed with error: %d\n",
-									   err);
+			lwsl_err("WSAStartup failed with error: %d\n", err);
 			return NULL;
 		}
 
@@ -2557,36 +1608,70 @@ libwebsocket_create_context(int port, const char *interf,
 		poll = emulated_poll;
 
 		/* if windows socket lib available, use his WSAPoll */
-		wsdll = GetModuleHandle("Ws2_32.dll");
+		wsdll = GetModuleHandle(_T("Ws2_32.dll"));
 		if (wsdll)
 			poll = (PFNWSAPOLL)GetProcAddress(wsdll, "WSAPoll");
+
+		/* Finally fall back to emulated poll if all else fails */
+		if (!poll)
+			poll = emulated_poll;
 	}
 #endif
 
-
-	context = malloc(sizeof(struct libwebsocket_context));
+	context = (struct libwebsocket_context *) malloc(sizeof(struct libwebsocket_context));
 	if (!context) {
-		fprintf(stderr, "No memory for websocket context\n");
+		lwsl_err("No memory for websocket context\n");
 		return NULL;
 	}
-	context->protocols = protocols;
-	context->listen_port = port;
+	memset(context, 0, sizeof(*context));
+#ifndef LWS_NO_DAEMONIZE
+	context->started_with_parent = pid_daemon;
+	lwsl_notice(" Started with daemon pid %d\n", pid_daemon);
+#endif
+	
+	context->listen_service_extraseen = 0;
+	context->protocols = info->protocols;
+	context->listen_port = info->port;
 	context->http_proxy_port = 0;
 	context->http_proxy_address[0] = '\0';
-	context->options = options;
+	context->options = info->options;
+	/* to reduce this allocation, */
+	context->max_fds = getdtablesize();
+	lwsl_notice(" max fd tracked: %u\n", context->max_fds);
+	lwsl_notice(" static allocation: %u bytes\n",
+		sizeof(struct libwebsocket_context) +
+		(sizeof(struct pollfd) * context->max_fds) +
+		(sizeof(struct libwebsocket *) * context->max_fds));
+
+	context->fds = (struct pollfd *)malloc(sizeof(struct pollfd) * context->max_fds);
+	if (context->fds == NULL) {
+		lwsl_err("Unable to allocate fds array for %d connections\n", context->max_fds);
+		free(context);
+		return NULL;
+	}
+	context->lws_lookup = (struct libwebsocket **)malloc(sizeof(struct libwebsocket *) * context->max_fds);
+	if (context->lws_lookup == NULL) {
+		lwsl_err("Unable to allocate lws_lookup array for %d connections\n", context->max_fds);
+		free(context->fds);
+		free(context);
+		return NULL;
+	}
+
 	context->fds_count = 0;
-	context->extensions = extensions;
+#ifndef LWS_NO_EXTENSIONS
+	context->extensions = info->extensions;
+#endif
 	context->last_timeout_check_s = 0;
-    context->user_space = user;
+	context->user_space = info->user;
 
 #ifdef WIN32
 	context->fd_random = 0;
 #else
 	context->fd_random = open(SYSTEM_RANDOM_FILEPATH, O_RDONLY);
 	if (context->fd_random < 0) {
-		fprintf(stderr, "Unable to open random device %s %d\n",
+		lwsl_err("Unable to open random device %s %d\n",
 				    SYSTEM_RANDOM_FILEPATH, context->fd_random);
-		return NULL;
+		goto bail;
 	}
 #endif
 
@@ -2597,11 +1682,12 @@ libwebsocket_create_context(int port, const char *interf,
 	openssl_websocket_private_data_index = 0;
 #endif
 
-	if (options & LWS_SERVER_OPTION_SKIP_SERVER_CANONICAL_NAME) {
+	strcpy(context->canonical_hostname, "unknown");
 
-		strcpy(context->canonical_hostname, "unknown");
-
-	} else {
+#ifndef LWS_NO_SERVER
+	if (!(info->options & LWS_SERVER_OPTION_SKIP_SERVER_CANONICAL_NAME)) {
+		struct sockaddr sa;
+		char hostname[1024] = "";
 
 		/* find canonical hostname */
 
@@ -2613,11 +1699,11 @@ libwebsocket_create_context(int port, const char *interf,
 
 		n = 0;
 
-		if (strlen(hostname) < sizeof(sa.sa_data) - 1) {	
+		if (strlen(hostname) < sizeof(sa.sa_data) - 1) {
 			strcpy(sa.sa_data, hostname);
-	//		fprintf(stderr, "my host name is %s\n", sa.sa_data);
+			lwsl_debug("my host name is %s\n", sa.sa_data);
 			n = getnameinfo(&sa, sizeof(sa), hostname,
-				(sizeof hostname) - 1, NULL, 0, 0);
+				(sizeof hostname) - 1, NULL, 0, NI_NAMEREQD);
 		}
 
 		if (!n) {
@@ -2629,9 +1715,9 @@ libwebsocket_create_context(int port, const char *interf,
 			strncpy(context->canonical_hostname, hostname,
 						sizeof context->canonical_hostname - 1);
 
-	//	fprintf(stderr, "context->canonical_hostname = %s\n",
-	//						context->canonical_hostname);
+		lwsl_notice(" canonical_hostname = %s\n", context->canonical_hostname);
 	}
+#endif
 
 	/* split the proxy ads:port if given */
 
@@ -2644,39 +1730,46 @@ libwebsocket_create_context(int port, const char *interf,
 
 		p = strchr(context->http_proxy_address, ':');
 		if (p == NULL) {
-			fprintf(stderr, "http_proxy needs to be ads:port\n");
-			return NULL;
+			lwsl_err("http_proxy needs to be ads:port\n");
+			goto bail;
 		}
 		*p = '\0';
 		context->http_proxy_port = atoi(p + 1);
 
-		fprintf(stderr, "Using proxy %s:%u\n",
+		lwsl_notice(" Proxy %s:%u\n",
 				context->http_proxy_address,
 						      context->http_proxy_port);
 	}
 
-	if (port) {
+#ifndef LWS_NO_SERVER
+	if (info->port) {
 
 #ifdef LWS_OPENSSL_SUPPORT
-		context->use_ssl = ssl_cert_filepath != NULL &&
-					       ssl_private_key_filepath != NULL;
+		context->use_ssl = info->ssl_cert_filepath != NULL &&
+					 info->ssl_private_key_filepath != NULL;
+#ifdef USE_CYASSL
+		lwsl_notice(" Compiled with CYASSL support\n");
+#else
+		lwsl_notice(" Compiled with OpenSSL support\n");
+#endif
 		if (context->use_ssl)
-			fprintf(stderr, " Compiled with SSL support, "
-								  "using it\n");
+			lwsl_notice(" Using SSL mode\n");
 		else
-			fprintf(stderr, " Compiled with SSL support, "
-							      "not using it\n");
+			lwsl_notice(" Using non-SSL mode\n");
 
 #else
-		if (ssl_cert_filepath != NULL &&
-					     ssl_private_key_filepath != NULL) {
-			fprintf(stderr, " Not compiled for OpenSSl support!\n");
-			return NULL;
+		if (info->ssl_cert_filepath != NULL &&
+				       info->ssl_private_key_filepath != NULL) {
+			lwsl_notice(" Not compiled for OpenSSl support!\n");
+			goto bail;
 		}
-		fprintf(stderr, " Compiled without SSL support, "
+		lwsl_notice(" Compiled without SSL support, "
 						       "serving unencrypted\n");
 #endif
+
+		lwsl_notice(" per-connection allocation: %u + headers during handshake + frame buffer set by protocol\n", sizeof(struct libwebsocket));
 	}
+#endif
 
 	/* ignore SIGPIPE */
 #ifdef WIN32
@@ -2704,44 +1797,66 @@ libwebsocket_create_context(int port, const char *interf,
 
 	method = (SSL_METHOD *)SSLv23_server_method();
 	if (!method) {
-		fprintf(stderr, "problem creating ssl method: %s\n",
+		lwsl_err("problem creating ssl method: %s\n",
 			ERR_error_string(ERR_get_error(), ssl_err_buf));
-		return NULL;
+		goto bail;
 	}
 	context->ssl_ctx = SSL_CTX_new(method);	/* create context */
 	if (!context->ssl_ctx) {
-		fprintf(stderr, "problem creating ssl context: %s\n",
+		lwsl_err("problem creating ssl context: %s\n",
 			ERR_error_string(ERR_get_error(), ssl_err_buf));
-		return NULL;
+		goto bail;
 	}
+
+#ifdef SSL_OP_NO_COMPRESSION
+	SSL_CTX_set_options(context->ssl_ctx, SSL_OP_NO_COMPRESSION);
+#endif
+	SSL_CTX_set_options(context->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+	SSL_CTX_set_cipher_list(context->ssl_ctx, CIPHERS_LIST_STRING);
+
+#ifndef LWS_NO_CLIENT
 
 	/* client context */
 
-	if (port == CONTEXT_PORT_NO_LISTEN) {
+	if (info->port == CONTEXT_PORT_NO_LISTEN) {
 		method = (SSL_METHOD *)SSLv23_client_method();
 		if (!method) {
-			fprintf(stderr, "problem creating ssl method: %s\n",
+			lwsl_err("problem creating ssl method: %s\n",
 				ERR_error_string(ERR_get_error(), ssl_err_buf));
-			return NULL;
+			goto bail;
 		}
 		/* create context */
 		context->ssl_client_ctx = SSL_CTX_new(method);
 		if (!context->ssl_client_ctx) {
-			fprintf(stderr, "problem creating ssl context: %s\n",
+			lwsl_err("problem creating ssl context: %s\n",
 				ERR_error_string(ERR_get_error(), ssl_err_buf));
-			return NULL;
+			goto bail;
 		}
 
-		/* openssl init for cert verification (for client sockets) */
+#ifdef SSL_OP_NO_COMPRESSION
+		SSL_CTX_set_options(context->ssl_client_ctx, SSL_OP_NO_COMPRESSION);
+#endif
+		SSL_CTX_set_options(context->ssl_client_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+		SSL_CTX_set_cipher_list(context->ssl_client_ctx, CIPHERS_LIST_STRING);
 
-		if (!SSL_CTX_load_verify_locations(
-					context->ssl_client_ctx, NULL,
-						      LWS_OPENSSL_CLIENT_CERTS))
-			fprintf(stderr,
-			    "Unable to load SSL Client certs from %s "
-			    "(set by --with-client-cert-dir= in configure) -- "
-				" client ssl isn't going to work",
-						      LWS_OPENSSL_CLIENT_CERTS);
+		/* openssl init for cert verification (for client sockets) */
+		if (!info->ssl_ca_filepath) {
+			if (!SSL_CTX_load_verify_locations(
+				context->ssl_client_ctx, NULL,
+						     LWS_OPENSSL_CLIENT_CERTS))
+				lwsl_err(
+					"Unable to load SSL Client certs from %s "
+					"(set by --with-client-cert-dir= in configure) -- "
+					" client ssl isn't going to work",
+						     LWS_OPENSSL_CLIENT_CERTS);
+		} else
+			if (!SSL_CTX_load_verify_locations(
+				context->ssl_client_ctx, info->ssl_ca_filepath,
+								  NULL))
+				lwsl_err(
+					"Unable to load SSL Client certs "
+					"file from %s -- client ssl isn't "
+					"going to work", info->ssl_ca_filepath);
 
 		/*
 		 * callback allowing user code to load extra verification certs
@@ -2752,10 +1867,11 @@ libwebsocket_create_context(int port, const char *interf,
 			LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS,
 			context->ssl_client_ctx, NULL, 0);
 	}
+#endif
 
 	/* as a server, are we requiring clients to identify themselves? */
 
-	if (options & LWS_SERVER_OPTION_REQUIRE_VALID_OPENSSL_CLIENT_CERT) {
+	if (info->options & LWS_SERVER_OPTION_REQUIRE_VALID_OPENSSL_CLIENT_CERT) {
 
 		/* absolutely require the client cert */
 
@@ -2778,26 +1894,27 @@ libwebsocket_create_context(int port, const char *interf,
 		/* openssl init for server sockets */
 
 		/* set the local certificate from CertFile */
-		n = SSL_CTX_use_certificate_file(context->ssl_ctx,
-					ssl_cert_filepath, SSL_FILETYPE_PEM);
+		n = SSL_CTX_use_certificate_chain_file(context->ssl_ctx,
+					info->ssl_cert_filepath);
 		if (n != 1) {
-			fprintf(stderr, "problem getting cert '%s': %s\n",
-				ssl_cert_filepath,
+			lwsl_err("problem getting cert '%s': %s\n",
+				info->ssl_cert_filepath,
 				ERR_error_string(ERR_get_error(), ssl_err_buf));
-			return NULL;
+			goto bail;
 		}
 		/* set the private key from KeyFile */
 		if (SSL_CTX_use_PrivateKey_file(context->ssl_ctx,
-			     ssl_private_key_filepath, SSL_FILETYPE_PEM) != 1) {
-			fprintf(stderr, "ssl problem getting key '%s': %s\n",
-						ssl_private_key_filepath,
+			     info->ssl_private_key_filepath,
+						       SSL_FILETYPE_PEM) != 1) {
+			lwsl_err("ssl problem getting key '%s': %s\n",
+						info->ssl_private_key_filepath,
 				ERR_error_string(ERR_get_error(), ssl_err_buf));
-			return NULL;
+			goto bail;
 		}
 		/* verify private key */
 		if (!SSL_CTX_check_private_key(context->ssl_ctx)) {
-			fprintf(stderr, "Private SSL key doesn't match cert\n");
-			return NULL;
+			lwsl_err("Private SSL key doesn't match cert\n");
+			goto bail;
 		}
 
 		/* SSL is happy and has a cert it's content with */
@@ -2807,70 +1924,83 @@ libwebsocket_create_context(int port, const char *interf,
 	/* selftest */
 
 	if (lws_b64_selftest())
-		return NULL;
+		goto bail;
 
-	/* fd hashtable init */
-
-	for (n = 0; n < FD_HASHTABLE_MODULUS; n++)
-		context->fd_hashtable[n].length = 0;
-
+#ifndef LWS_NO_SERVER
 	/* set up our external listening socket we serve on */
 
-	if (port) {
+	if (info->port) {
+		extern int interface_to_sa(const char *ifname, struct sockaddr_in *addr, size_t addrlen);
+		int sockfd;
 
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (sockfd < 0) {
-			fprintf(stderr, "ERROR opening socket");
-			return NULL;
+			lwsl_err("ERROR opening socket\n");
+			goto bail;
 		}
 
-		/* allow us to restart even if old sockets in TIME_WAIT */
+#ifndef WIN32
+		/* allow us to restart even if old sockets in TIME_WAIT
+		 * (REUSEADDR on Unix means, "don't hang on to this address after the
+		 * listener is closed."  On Windows, though, it means "don't keep other
+		 * processes from binding to this address while we're using it) */
 		setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
 					      (const void *)&opt, sizeof(opt));
+#endif
 
 		/* Disable Nagle */
 		opt = 1;
 		setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY,
 					      (const void *)&opt, sizeof(opt));
 
+		#ifdef WIN32
+		opt = 0;
+		ioctlsocket(sockfd, FIONBIO, (unsigned long *)&opt );
+		#else
+		fcntl(sockfd, F_SETFL, O_NONBLOCK);
+		#endif
+
 		bzero((char *) &serv_addr, sizeof(serv_addr));
 		serv_addr.sin_family = AF_INET;
-		if (interf == NULL)
+		if (info->interface == NULL)
 			serv_addr.sin_addr.s_addr = INADDR_ANY;
 		else
-			interface_to_sa(interf, &serv_addr,
+			interface_to_sa(info->interface, &serv_addr,
 						sizeof(serv_addr));
-		serv_addr.sin_port = htons(port);
+		serv_addr.sin_port = htons(info->port);
 
 		n = bind(sockfd, (struct sockaddr *) &serv_addr,
 							     sizeof(serv_addr));
 		if (n < 0) {
-			fprintf(stderr, "ERROR on binding to port %d (%d %d)\n",
-								port, n, errno);
-			return NULL;
+			lwsl_err("ERROR on binding to port %d (%d %d)\n",
+							info->port, n, errno);
+			close(sockfd);
+			goto bail;
 		}
 
-		wsi = malloc(sizeof(struct libwebsocket));
-		memset(wsi, 0, sizeof(struct libwebsocket));
+		wsi = (struct libwebsocket *)malloc(sizeof(struct libwebsocket));
+		if (wsi == NULL) {
+			lwsl_err("Out of mem\n");
+			close(sockfd);
+			goto bail;
+		}
+		memset(wsi, 0, sizeof (struct libwebsocket));
 		wsi->sock = sockfd;
+#ifndef LWS_NO_EXTENSIONS
 		wsi->count_active_extensions = 0;
+#endif
 		wsi->mode = LWS_CONNMODE_SERVER_LISTENER;
-		insert_wsi(context, wsi);
 
-		listen(sockfd, 5);
-		fprintf(stderr, " Listening on port %d\n", port);
+		insert_wsi_socket_into_fds(context, wsi);
 
-		/* list in the internal poll array */
+		context->listen_service_modulo = LWS_LISTEN_SERVICE_MODULO;
+		context->listen_service_count = 0;
+		context->listen_service_fd = sockfd;
 
-		context->fds[context->fds_count].fd = sockfd;
-		context->fds[context->fds_count++].events = POLLIN;
-
-		/* external POLL support via protocol 0 */
-		context->protocols[0].callback(context, wsi,
-			LWS_CALLBACK_ADD_POLL_FD,
-			(void *)(long)sockfd, NULL, POLLIN);
-
+		listen(sockfd, LWS_SOMAXCONN);
+		lwsl_notice(" Listening on port %d\n", info->port);
 	}
+#endif
 
 	/*
 	 * drop any root privs for this process
@@ -2879,194 +2009,56 @@ libwebsocket_create_context(int port, const char *interf,
 	 */
 #ifdef WIN32
 #else
-	if (gid != -1)
-		if (setgid(gid))
-			fprintf(stderr, "setgid: %s\n", strerror(errno));
-	if (uid != -1)
-		if (setuid(uid))
-			fprintf(stderr, "setuid: %s\n", strerror(errno));
+	if (info->gid != -1)
+		if (setgid(info->gid))
+			lwsl_warn("setgid: %s\n", strerror(errno));
+	if (info->uid != -1)
+		if (setuid(info->uid))
+			lwsl_warn("setuid: %s\n", strerror(errno));
 #endif
 
-	/* set up our internal broadcast trigger sockets per-protocol */
+	/* initialize supported protocols */
 
 	for (context->count_protocols = 0;
-			protocols[context->count_protocols].callback;
+		info->protocols[context->count_protocols].callback;
 						   context->count_protocols++) {
 
-		debug("  Protocol: %s\n", protocols[context->count_protocols].name);
+		lwsl_parser("  Protocol: %s\n",
+				info->protocols[context->count_protocols].name);
 
-		protocols[context->count_protocols].owning_server = context;
-		protocols[context->count_protocols].protocol_index =
+		info->protocols[context->count_protocols].owning_server =
+									context;
+		info->protocols[context->count_protocols].protocol_index =
 						       context->count_protocols;
-
-		fd = socket(AF_INET, SOCK_STREAM, 0);
-		if (fd < 0) {
-			fprintf(stderr, "ERROR opening socket");
-			return NULL;
-		}
-
-		/* allow us to restart even if old sockets in TIME_WAIT */
-		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt,
-								  sizeof(opt));
-
-		bzero((char *) &serv_addr, sizeof(serv_addr));
-		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-		serv_addr.sin_port = 0; /* pick the port for us */
-
-		n = bind(fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-		if (n < 0) {
-			fprintf(stderr, "ERROR on binding to port %d (%d %d)\n",
-								port, n, errno);
-			return NULL;
-		}
-
-		slen = sizeof cli_addr;
-		n = getsockname(fd, (struct sockaddr *)&cli_addr, &slen);
-		if (n < 0) {
-			fprintf(stderr, "getsockname failed\n");
-			return NULL;
-		}
-		protocols[context->count_protocols].broadcast_socket_port =
-						       ntohs(cli_addr.sin_port);
-		listen(fd, 5);
-
-		debug("  Protocol %s broadcast socket %d\n",
-				protocols[context->count_protocols].name,
-						      ntohs(cli_addr.sin_port));
-
-		/* dummy wsi per broadcast proxy socket */
-
-		wsi = malloc(sizeof(struct libwebsocket));
-		memset(wsi, 0, sizeof(struct libwebsocket));
-		wsi->sock = fd;
-		wsi->mode = LWS_CONNMODE_BROADCAST_PROXY_LISTENER;
-		wsi->count_active_extensions = 0;
-		/* note which protocol we are proxying */
-		wsi->protocol_index_for_broadcast_proxy =
-						       context->count_protocols;
-		insert_wsi(context, wsi);
-
-		/* list in internal poll array */
-
-		context->fds[context->fds_count].fd = fd;
-		context->fds[context->fds_count].events = POLLIN;
-		context->fds[context->fds_count].revents = 0;
-		context->fds_count++;
-
-		/* external POLL support via protocol 0 */
-		context->protocols[0].callback(context, wsi,
-			LWS_CALLBACK_ADD_POLL_FD,
-			(void *)(long)fd, NULL, POLLIN);
 	}
 
+#ifndef LWS_NO_EXTENSIONS
 	/*
 	 * give all extensions a chance to create any per-context
 	 * allocations they need
 	 */
 
 	m = LWS_EXT_CALLBACK_CLIENT_CONTEXT_CONSTRUCT;
-	if (port)
+	if (info->port)
 		m = LWS_EXT_CALLBACK_SERVER_CONTEXT_CONSTRUCT;
 	
-	if (extensions) {
-	    while (extensions->callback) {
-		    debug("  Extension: %s\n", extensions->name);
-		    extensions->callback(context, extensions,
-						NULL, m, NULL, NULL, 0);
-		    extensions++;
-	    }
-	}
-
-	return context;
-}
-
-
-#ifndef LWS_NO_FORK
-
-/**
- * libwebsockets_fork_service_loop() - Optional helper function forks off
- *				  a process for the websocket server loop.
- *				You don't have to use this but if not, you
- *				have to make sure you are calling
- *				libwebsocket_service periodically to service
- *				the websocket traffic
- * @context:	server context returned by creation function
- */
-
-int
-libwebsockets_fork_service_loop(struct libwebsocket_context *context)
-{
-	int fd;
-	struct sockaddr_in cli_addr;
-	int n;
-	int p;
-
-	n = fork();
-	if (n < 0)
-		return n;
-
-	if (!n) {
-
-		/* main process context */
-
-		/*
-		 * set up the proxy sockets to allow broadcast from
-		 * service process context
-		 */
-
-		for (p = 0; p < context->count_protocols; p++) {
-			fd = socket(AF_INET, SOCK_STREAM, 0);
-			if (fd < 0) {
-				fprintf(stderr, "Unable to create socket\n");
-				return -1;
-			}
-			cli_addr.sin_family = AF_INET;
-			cli_addr.sin_port = htons(
-			     context->protocols[p].broadcast_socket_port);
-			cli_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-			n = connect(fd, (struct sockaddr *)&cli_addr,
-							       sizeof cli_addr);
-			if (n < 0) {
-				fprintf(stderr, "Unable to connect to "
-						"broadcast socket %d, %s\n",
-						n, strerror(errno));
-				return -1;
-			}
-
-			context->protocols[p].broadcast_socket_user_fd = fd;
+	if (info->extensions) {
+		ext = info->extensions;
+		while (ext->callback) {
+			lwsl_ext("  Extension: %s\n", ext->name);
+			ext->callback(context, ext, NULL,
+			(enum libwebsocket_extension_callback_reasons)m,
+								NULL, NULL, 0);
+			ext++;
 		}
-
-		return 0;
 	}
-
-#ifdef HAVE_SYS_PRCTL_H
-	/* we want a SIGHUP when our parent goes down */
-	prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif
+	return context;
 
-	/* in this forked process, sit and service websocket connections */
-
-	while (1) {
-		if (libwebsocket_service(context, 1000))
-			break;
-//#ifndef HAVE_SYS_PRCTL_H
-/*
- * on systems without prctl() (i.e. anything but linux) we can notice that our
- * parent is dead if getppid() returns 1. FIXME apparently this is not true for
- * solaris, could remember ppid right after fork and wait for it to change.
- */
-
-        if (getppid() == 1)
-            break;
-//#endif
-    }
-
-
-	return 1;
+bail:
+	libwebsocket_context_destroy(context);
+	return NULL;
 }
-
-#endif
 
 /**
  * libwebsockets_get_protocol() - Returns a protocol pointer from a websocket
@@ -3074,8 +2066,8 @@ libwebsockets_fork_service_loop(struct libwebsocket_context *context)
  * @wsi:	pointer to struct websocket you want to know the protocol of
  *
  *
- *	This is useful to get the protocol to broadcast back to from inside
- * the callback.
+ *	Some apis can act on all live connections of a given protocol,
+ *	this is how you can get a pointer to the active protocol if needed.
  */
 
 const struct libwebsocket_protocols *
@@ -3084,101 +2076,16 @@ libwebsockets_get_protocol(struct libwebsocket *wsi)
 	return wsi->protocol;
 }
 
-/**
- * libwebsockets_broadcast() - Sends a buffer to the callback for all active
- *				  connections of the given protocol.
- * @protocol:	pointer to the protocol you will broadcast to all members of
- * @buf:  buffer containing the data to be broadcase.  NOTE: this has to be
- *		allocated with LWS_SEND_BUFFER_PRE_PADDING valid bytes before
- *		the pointer and LWS_SEND_BUFFER_POST_PADDING afterwards in the
- *		case you are calling this function from callback context.
- * @len:	length of payload data in buf, starting from buf.
- *
- *	This function allows bulk sending of a packet to every connection using
- * the given protocol.  It does not send the data directly; instead it calls
- * the callback with a reason type of LWS_CALLBACK_BROADCAST.  If the callback
- * wants to actually send the data for that connection, the callback itself
- * should call libwebsocket_write().
- *
- * libwebsockets_broadcast() can be called from another fork context without
- * having to take any care about data visibility between the processes, it'll
- * "just work".
- */
-
-
-int
-libwebsockets_broadcast(const struct libwebsocket_protocols *protocol,
-						 unsigned char *buf, size_t len)
-{
-	struct libwebsocket_context *context = protocol->owning_server;
-	int n;
-	int m;
-	struct libwebsocket *wsi;
-
-	if (!protocol->broadcast_socket_user_fd) {
-		/*
-		 * We are either running unforked / flat, or we are being
-		 * called from poll thread context
-		 * eg, from a callback.  In that case don't use sockets for
-		 * broadcast IPC (since we can't open a socket connection to
-		 * a socket listening on our own thread) but directly do the
-		 * send action.
-		 *
-		 * Locking is not needed because we are by definition being
-		 * called in the poll thread context and are serialized.
-		 */
-
-		for (n = 0; n < FD_HASHTABLE_MODULUS; n++) {
-
-			for (m = 0; m < context->fd_hashtable[n].length; m++) {
-
-				wsi = context->fd_hashtable[n].wsi[m];
-
-				if (wsi->mode != LWS_CONNMODE_WS_SERVING)
-					continue;
-
-				/*
-				 * never broadcast to
-				 * non-established connections
-				 */
-				if (wsi->state != WSI_STATE_ESTABLISHED)
-					continue;
-
-				/* only broadcast to guys using
-				 * requested protocol
-				 */
-				if (wsi->protocol != protocol)
-					continue;
-
-				wsi->protocol->callback(context, wsi,
-					 LWS_CALLBACK_BROADCAST,
-					 wsi->user_space,
-					 buf, len);
-			}
-		}
-
-		return 0;
-	}
-
-	/*
-	 * We're being called from a different process context than the server
-	 * loop.  Instead of broadcasting directly, we send our
-	 * payload on a socket to do the IPC; the server process will serialize
-	 * the broadcast action in its main poll() loop.
-	 *
-	 * There's one broadcast socket listening for each protocol supported
-	 * set up when the websocket server initializes
-	 */
-
-	n = send(protocol->broadcast_socket_user_fd, buf, len, MSG_NOSIGNAL);
-
-	return n;
-}
-
 int
 libwebsocket_is_final_fragment(struct libwebsocket *wsi)
 {
-	return wsi->final;
+	return wsi->u.ws.final;
+}
+
+unsigned char
+libwebsocket_get_reserved_bits(struct libwebsocket *wsi)
+{
+	return wsi->u.ws.rsv;
 }
 
 void *
@@ -3190,12 +2097,92 @@ libwebsocket_ensure_user_space(struct libwebsocket *wsi)
 		wsi->user_space = malloc(
 				  wsi->protocol->per_session_data_size);
 		if (wsi->user_space  == NULL) {
-			fprintf(stderr, "Out of memory for "
-						   "conn user space\n");
+			lwsl_err("Out of memory for conn user space\n");
 			return NULL;
 		}
 		memset(wsi->user_space, 0,
 					 wsi->protocol->per_session_data_size);
 	}
 	return wsi->user_space;
+}
+
+static void lwsl_emit_stderr(int level, const char *line)
+{
+	char buf[300];
+	struct timeval tv;
+	int n;
+
+	gettimeofday(&tv, NULL);
+
+	buf[0] = '\0';
+	for (n = 0; n < LLL_COUNT; n++)
+		if (level == (1 << n)) {
+			sprintf(buf, "[%ld:%04d] %s: ", tv.tv_sec,
+					(int)(tv.tv_usec / 100), log_level_names[n]);
+			break;
+		}
+	
+	fprintf(stderr, "%s%s", buf, line);
+}
+
+#ifdef WIN32
+void lwsl_emit_syslog(int level, const char *line)
+{
+	lwsl_emit_stderr(level, line);
+}
+#else
+void lwsl_emit_syslog(int level, const char *line)
+{
+	int syslog_level = LOG_DEBUG;
+
+	switch (level) {
+	case LLL_ERR:
+		syslog_level = LOG_ERR;
+		break;
+	case LLL_WARN:
+		syslog_level = LOG_WARNING;
+		break;
+	case LLL_NOTICE:
+		syslog_level = LOG_NOTICE;
+		break;
+	case LLL_INFO:
+		syslog_level = LOG_INFO;
+		break;
+	}
+	syslog(syslog_level, "%s", line);
+}
+#endif
+
+void _lws_log(int filter, const char *format, ...)
+{
+	char buf[256];
+	va_list ap;
+
+	if (!(log_level & filter))
+		return;
+
+	va_start(ap, format);
+	vsnprintf(buf, (sizeof buf), format, ap);
+	buf[(sizeof buf) - 1] = '\0';
+	va_end(ap);
+
+	lwsl_emit(filter, buf);
+}
+
+/**
+ * lws_set_log_level() - Set the logging bitfield
+ * @level:	OR together the LLL_ debug contexts you want output from
+ * @log_emit_function:	NULL to leave it as it is, or a user-supplied
+ *			function to perform log string emission instead of
+ *			the default stderr one.
+ *
+ *	log level defaults to "err" and "warn" contexts enabled only and
+ *	emission on stderr.
+ */
+
+void lws_set_log_level(int level, void (*log_emit_function)(int level, const char *line))
+{
+	log_level = level;
+	if (log_emit_function)
+		lwsl_emit = log_emit_function;
 }
