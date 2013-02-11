@@ -2708,7 +2708,6 @@ krad_ebml_t *krad_ebml_open_buffer(krad_ebml_io_mode_t mode) {
 		krad_ebml->record_cluster_info = 1;
 		krad_ebml->cluster_recording_space = CLUSTER_RECORDING_START_SIZE;
 		krad_ebml->clusters = calloc(krad_ebml->cluster_recording_space, sizeof(krad_ebml_cluster_t));
-		krad_ebml->tracks = calloc(10, sizeof(krad_ebml_track_t));
 	}
 
 	if (krad_ebml->io_adapter.mode == KRAD_EBML_IO_WRITEONLY) {

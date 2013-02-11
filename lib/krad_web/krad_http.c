@@ -377,6 +377,10 @@ void krad_http_server_destroy (krad_http_t *krad_http) {
       krad_controller_destroy (&krad_http->krad_control, &krad_http->server_thread);
     }
 		close (krad_http->listenfd);
+		if (krad_http->html != NULL) {
+		  free (krad_http->html);
+		  krad_http->html = NULL;
+		}
 		free (krad_http);
     printk ("Krad HTTP shutdown complete");
 	}

@@ -93,6 +93,10 @@ int kr_client_destroy (kr_client_t **client) {
     if (kr_connected (*client)) {
       kr_disconnect (*client);
     }
+    if ((*client)->name != NULL) {
+      free ((*client)->name);
+      (*client)->name = NULL;
+    }
     free (*client);
     *client = NULL;
     return 1;
@@ -690,7 +694,11 @@ int kr_response_to_rep (kr_response_t *response, kr_rep_t **kr_rep_in) {
 
 int kr_rep_free (kr_rep_t **kr_rep) {
   if (*kr_rep != NULL) {
-    free ((*kr_rep));
+    if ((*kr_rep)->rep_ptr.actual != NULL) {
+      free ((*kr_rep)->rep_ptr.actual);
+      (*kr_rep)->rep_ptr.actual = NULL;
+    }
+    free (*kr_rep);
     return 0;
   }
   return -1;

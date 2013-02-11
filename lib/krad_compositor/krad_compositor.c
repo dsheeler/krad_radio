@@ -1169,12 +1169,15 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
 	for (p = 0; p < KC_MAX_PORTS; p++) {
 		if (krad_compositor->port[p].krad_compositor_subunit->active == 0) {
 			krad_compositor_port = &krad_compositor->port[p];
-      if (krad_compositor_port->krad_compositor_subunit) {
+      if (krad_compositor_port->krad_compositor_subunit != NULL) {
         krad_compositor_subunit_destroy (krad_compositor_port->krad_compositor_subunit);
+        krad_compositor_port->krad_compositor_subunit = NULL;
       }
       
       krad_compositor_port->krad_compositor_subunit = krad_compositor_subunit_create ();
-        
+      krad_compositor_port->krad_compositor_subunit->address.path.unit = KR_COMPOSITOR;
+      krad_compositor_port->krad_compositor_subunit->address.path.subunit.compositor_subunit = KR_VIDEOPORT;
+      krad_compositor_port->krad_compositor_subunit->address.id.number = p;
 			krad_compositor_port->krad_compositor_subunit->active = 2;
 			break;
 		}
@@ -1397,13 +1400,16 @@ void krad_compositor_port_destroy_unlocked (krad_compositor_t *krad_compositor, 
 		krad_compositor_port->last_frame = NULL;
 	}
 
-	if (strstr(krad_compositor_port->sysname, "passthru") != NULL) { 
+  if (krad_compositor_port->krad_compositor_subunit != NULL) {
+    krad_compositor_subunit_destroy (krad_compositor_port->krad_compositor_subunit);
+    krad_compositor_port->krad_compositor_subunit = NULL;
+  }
+
+	if (strstr(krad_compositor_port->sysname, "passthru") != NULL) {
 		krad_compositor_port->passthru = 0;
 	} else {
 		krad_compositor->active_ports--;
 	}
-
-
 }
 
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port) {
