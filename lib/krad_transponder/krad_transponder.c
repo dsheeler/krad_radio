@@ -414,6 +414,7 @@ int video_encoding_unit_process (void *arg) {
   unsigned char *planes[3];
   int strides[3];
 
+  packet_size = 0;
   krad_frame = NULL;
   krad_slice = NULL;
 
@@ -676,6 +677,7 @@ int audio_encoding_unit_process (void *arg) {
   char buffer[1];
   krad_slice_t *krad_slice;
 
+  bytes = 0;
   krad_slice = NULL;
   
   ret = read (krad_link->socketpair[1], buffer, 1);
@@ -1198,6 +1200,7 @@ int video_decoding_unit_process (void *arg) {
   int port_updated;
   int h;
   
+  timecode = 0;
   port_updated = 0;
   krad_slice = NULL;
   

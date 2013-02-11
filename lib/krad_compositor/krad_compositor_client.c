@@ -481,7 +481,7 @@ void kr_compositor_info (kr_client_t *client) {
   krad_ebml_write_sync (client->krad_ebml);
 }
 
-void kr_compositor_set_port_mode (kr_client_t *client, int number, uint32_t x, uint32_t y,
+void kr_compositor_set_videoport (kr_client_t *client, int number, uint32_t x, uint32_t y,
                     uint32_t width, uint32_t height, uint32_t crop_x, uint32_t crop_y,
                     uint32_t crop_width, uint32_t crop_height, float opacity, float rotation) {
 

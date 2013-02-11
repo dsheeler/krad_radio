@@ -1553,7 +1553,7 @@ int krad_ebml_read_packet (krad_ebml_t *krad_ebml, int *track, uint64_t *timecod
   ebml_seek_id = 0;
 	known = 0;
 	number = 0;
-	
+	position = 0;
 	skip = 1;
 	
 	if ((timecode != NULL) && (!(krad_ebml->read_laced_frames))) {

@@ -141,17 +141,11 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, controlname, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      if (ebml_id == EBML_ID_KRAD_MIXER_CONTROL_VALUE) {
-        floatval = krad_ebml_read_float (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      }
+      floatval = krad_ebml_read_float (krad_ipc->current_client->krad_ebml, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      if (ebml_id == EBML_ID_KRAD_MIXER_CONTROL_DURATION) {
-        numbers[6] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      }
+      numbers[6] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      if (ebml_id == EBML_ID_KRAD_MIXER_CONTROL_DURATION) {
-        numbers[7] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      }
+      numbers[7] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
       if (portgroup != NULL) {
         kr_effects_effect_set_control (portgroup->effects, number, numbers[5],

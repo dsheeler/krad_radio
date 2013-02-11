@@ -1161,6 +1161,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
   
   x = 0;
   y = 0;
+  krad_compositor_port = NULL; 
 	
   pthread_mutex_lock (&krad_compositor->settings_lock);
 

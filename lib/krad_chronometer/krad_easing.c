@@ -22,6 +22,8 @@ krad_ease_t krad_ease_random () {
 float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr) {
 
   float value;
+  
+  value = 0.0f;
 
   if (krad_easing->update == 1) {
     while (__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1 ));

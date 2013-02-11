@@ -444,8 +444,9 @@ krad_opus_t *krad_opus_decoder_create (unsigned char *header_data, int header_le
 int krad_opus_decoder_write (krad_opus_t *krad_opus, unsigned char *buffer, int length) {
 
 	int i;
-	
 	int frames_decoded;
+
+  frames_decoded = 0;
 
 	krad_opus->opus_decoder_error = opus_multistream_decode_float (krad_opus->decoder,
 																  buffer,
