@@ -465,7 +465,7 @@ static void *krad_websocket_server_run (void *arg) {
 
   while (!krad_websocket->shutdown) {
 
-    n = poll (krad_websocket->pollfds, krad_websocket->count_pollfds, 500);
+    n = poll (krad_websocket->pollfds, krad_websocket->count_pollfds, -1);
     
     if ((n < 0) || (krad_websocket->shutdown)) {
       break;

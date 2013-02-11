@@ -802,7 +802,7 @@ static void *krad_ipc_server_run_thread (void *arg) {
 
   while (!krad_ipc_server->shutdown) {
 
-    ret = poll (krad_ipc_server->sockets, krad_ipc_server->socket_count, KRAD_IPC_SERVER_TIMEOUT_MS);
+    ret = poll (krad_ipc_server->sockets, krad_ipc_server->socket_count, -1);
 
     if (ret > 0) {
     
