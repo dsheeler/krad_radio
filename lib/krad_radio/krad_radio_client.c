@@ -930,6 +930,7 @@ void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response) {
   krad_read_message_type_from_ebml (kr_ipc_client->krad_ebml, &response->type);
   
   response->addr = &response->address;
+  response->notice = response->type;
   
   if (!client->subscriber) {
     if (response->type == EBML_ID_KRAD_SHIPMENT_TERMINATOR) {
@@ -951,6 +952,9 @@ void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response) {
       krad_ebml_read (kr_ipc_client->krad_ebml, response->buffer, ebml_data_size);
     }
   }
+  
+  kr_uncrate_int (response, &response->integer);
+  kr_uncrate_float (response, &response->real);
 
   //kr_response_payload_print_raw_ebml (response);
  

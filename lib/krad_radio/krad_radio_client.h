@@ -225,6 +225,8 @@ struct kr_response_St {
   uint32_t size;
   kr_rep_t *compartment;
   kr_rep_ptr_t inside;
+  int integer;
+  float real;
 };
 
 uint32_t kr_response_get_event (kr_response_t *response);

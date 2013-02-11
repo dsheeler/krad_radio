@@ -74,10 +74,14 @@ void get_delivery (kr_client_t *client) {
     
     if (kr_uncrate_int (crate, &integer)) {
       printf ("Int: %d\n", integer);
+      /* or but check first always! */
+      // crate->integer;
     }
     
     if (kr_uncrate_float (crate, &real)) {
       printf ("Float: %f\n", real);
+      /* or but check first always! */
+      // crate->real;
     }
     
     //crate->notice  << a type/reason/event    
