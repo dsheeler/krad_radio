@@ -7,8 +7,6 @@
 #define LWS_ZLIB_WINDOW_BITS 15
 #define LWS_ZLIB_MEMLEVEL 8
 
-#define MIN_SIZE_TO_DEFLATE 4
-
 int lws_extension_callback_deflate_frame(
 		struct libwebsocket_context *context,
 		struct libwebsocket_extension *ext,
@@ -52,8 +50,8 @@ int lws_extension_callback_deflate_frame(
 		}
 		conn->buf_pre_used = 0;
 		conn->buf_pre_length = 0;
-		conn->buf_in_length = sizeof conn->buf_in;;
-		conn->buf_out_length = sizeof conn->buf_out;
+		conn->buf_in_length = sizeof(conn->buf_in);
+		conn->buf_out_length = sizeof(conn->buf_out);
 		conn->compressed_out = 0;
 		conn->buf_pre = NULL;
 		conn->buf_in = (unsigned char *)
@@ -149,19 +147,21 @@ bail:
 
 		conn->zs_in.avail_in = total_payload + 4;
 
-               conn->zs_in.next_out = conn->buf_in + LWS_SEND_BUFFER_PRE_PADDING;
-               conn->zs_in.avail_out = conn->buf_in_length;
+		conn->zs_in.next_out =
+				conn->buf_in + LWS_SEND_BUFFER_PRE_PADDING;
+		conn->zs_in.avail_out = conn->buf_in_length;
 
-               while (1) {
-                       n = inflate(&conn->zs_in, Z_SYNC_FLUSH);
-                       switch (n) {
-                       case Z_NEED_DICT:
-                       case Z_STREAM_ERROR:
-                       case Z_DATA_ERROR:
-                       case Z_MEM_ERROR:
+		while (1) {
+			n = inflate(&conn->zs_in, Z_SYNC_FLUSH);
+			switch (n) {
+			case Z_NEED_DICT:
+			case Z_STREAM_ERROR:
+			case Z_DATA_ERROR:
+			case Z_MEM_ERROR:
 				/*
-				 * screwed.. close the connection... we will get a
-				 * destroy callback to take care of closing nicely
+				 * screwed.. close the connection...
+				 * we will get a destroy callback to take care
+				 * of closing nicely
 				 */
 				lwsl_err("zlib error inflate %d: %s\n",
 							   n, conn->zs_in.msg);
@@ -176,8 +176,7 @@ bail:
 
 			conn->buf_in_length *= 2;
 			if (conn->buf_in_length > LWS_MAX_ZLIB_CONN_BUFFER) {
-				lwsl_ext("zlib in buffer tried to exceed "
-					"max allowed of %u\n",
+				lwsl_ext("zlib in buffer hit limit %u\n",
 						LWS_MAX_ZLIB_CONN_BUFFER);
 				return -1;
 			}
@@ -193,13 +192,14 @@ bail:
 				"deflate-frame ext RX did realloc to %ld\n",
 					conn->buf_in_length);
 			conn->zs_in.next_out = conn->buf_in +
-                                    LWS_SEND_BUFFER_PRE_PADDING + len_so_far;
+				LWS_SEND_BUFFER_PRE_PADDING + len_so_far;
 			conn->zs_in.avail_out =
-                                             conn->buf_in_length - len_so_far;
-               }
+					conn->buf_in_length - len_so_far;
+		}
 
 		/* rewrite the buffer pointers and length */
-		eff_buf->token = (char *)(conn->buf_in + LWS_SEND_BUFFER_PRE_PADDING);
+		eff_buf->token =
+			(char *)(conn->buf_in + LWS_SEND_BUFFER_PRE_PADDING);
 		eff_buf->token_len = (int)(conn->zs_in.next_out -
 				 (conn->buf_in + LWS_SEND_BUFFER_PRE_PADDING));
 
@@ -211,21 +211,20 @@ bail:
 		 */
 		current_payload = eff_buf->token_len;
 
-		if (current_payload < MIN_SIZE_TO_DEFLATE)
-			return 0;
-
 		conn->zs_out.next_in = (unsigned char *)eff_buf->token;
 		conn->zs_out.avail_in = current_payload;
 
-		conn->zs_out.next_out = conn->buf_out + LWS_SEND_BUFFER_PRE_PADDING;
+		conn->zs_out.next_out =
+				conn->buf_out + LWS_SEND_BUFFER_PRE_PADDING;
 		conn->zs_out.avail_out = conn->buf_out_length;
 
 		while (1) {
 			n = deflate(&conn->zs_out, Z_SYNC_FLUSH);
 			if (n == Z_STREAM_ERROR) {
 				/*
-				 * screwed.. close the connection... we will get a
-				 * destroy callback to take care of closing nicely
+				 * screwed.. close the connection... we will
+				 * get a destroy callback to take care of
+				 * closing nicely
 				 */
 				lwsl_ext("zlib error deflate\n");
 
@@ -240,9 +239,8 @@ bail:
 						 LWS_SEND_BUFFER_PRE_PADDING));
 			conn->buf_out_length *= 2;
 			if (conn->buf_out_length > LWS_MAX_ZLIB_CONN_BUFFER) {
-				lwsl_ext("zlib out buffer tried to exceed "
-				  "max allowed of %u\n",
-					LWS_MAX_ZLIB_CONN_BUFFER);
+				lwsl_ext("zlib out hit limit %u\n",
+						LWS_MAX_ZLIB_CONN_BUFFER);
 				return -1;
 			}
 			conn->buf_out = (unsigned char *)realloc(

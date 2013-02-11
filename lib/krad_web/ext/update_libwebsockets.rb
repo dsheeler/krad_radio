@@ -13,6 +13,7 @@
 `cp /home/oneman/kode/libwebsockets/lib/output.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/output.c`
 `cp /home/oneman/kode/libwebsockets/lib/server.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/server.c`
 `cp /home/oneman/kode/libwebsockets/lib/server-handshake.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/server-handshake.c`
+`cp /home/oneman/kode/libwebsockets/lib/sha-1.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/sha-1.c`
 `cp /home/oneman/kode/libwebsockets/config.h /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/config.h`
 `touch  /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension-x-google-mux.h`
 

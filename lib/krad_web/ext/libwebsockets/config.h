@@ -103,6 +103,11 @@
 /* Version number of package */
 #define VERSION "1.1"
 
+#define LWS_LIBRARY_VERSION PACKAGE_VERSION
+#define LWS_NO_CLIENT
+#define LWS_NO_DAEMONIZE
+#define NDEBUG
+
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
