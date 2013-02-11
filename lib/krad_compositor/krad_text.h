@@ -1,7 +1,5 @@
-
-
 #include "krad_radio.h"
-#include <pango/pangocairo.h>
+
 #ifndef KRAD_TEXT_H
 #define KRAD_TEXT_H
 
@@ -12,12 +10,8 @@ typedef struct krad_text_St krad_text_t;
 
 struct krad_text_St {
 
-  
 	char font[128];
 	char text_actual[256];
-
-  PangoLayout *layout;
-  PangoFontDescription *font_description;
 		
 	float red;
 	float blue;
@@ -28,10 +22,7 @@ struct krad_text_St {
 	float new_green;	
   
   krad_compositor_subunit_t *krad_compositor_subunit;
-		
 };
-
-
 
 krad_text_t *krad_text_create ();
 krad_text_t *krad_text_create_arr (int count);
