@@ -111,6 +111,7 @@ typedef enum {
   KR_MUXER,
   KR_ENCODER,
   KR_DECODER,
+  KR_ADAPTER,
 } kr_transponder_subunit_t;
 
 typedef enum {

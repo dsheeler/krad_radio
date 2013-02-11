@@ -136,16 +136,12 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if ((strncmp(argv[2], "lsd", 3) == 0) && (strlen(argv[2]) == 3)) {
+  if ((((strncmp(argv[2], "lsv", 3) == 0) || 
+        (strncmp(argv[2], "lsd", 3) == 0) ||
+        (strncmp(argv[2], "lsa", 3) == 0)) &&
+        (strlen(argv[2]) == 3)) || (strncmp(argv[2], "adapters", 8) == 0)) {
     if (argc == 3) {
-      kr_transponder_decklink_list (client);
-      kr_client_response_wait_print (client);
-    }
-  }
-
-  if ((strncmp(argv[2], "lsv", 3) == 0) && (strlen(argv[2]) == 3)) {
-    if (argc == 3) {
-      kr_transponder_v4l2_list (client);
+      kr_transponder_adapters (client);
       kr_client_response_wait_print (client);
     }
   }

@@ -8,9 +8,6 @@ void krad_receiver_promote_client (krad_receiver_client_t *client) {
 
 	krad_transponder = client->krad_receiver->krad_transponder;
 
-	pthread_mutex_lock (&krad_transponder->change_lock);
-
-
 	for (k = 0; k < KRAD_TRANSPONDER_MAX_LINKS; k++) {
 		if (krad_transponder->krad_link[k] == NULL) {
 
@@ -41,8 +38,6 @@ void krad_receiver_promote_client (krad_receiver_client_t *client) {
 		}
 	}
 
-	pthread_mutex_unlock (&krad_transponder->change_lock);
-	
 	free (client);
 	
 	pthread_exit(0);	

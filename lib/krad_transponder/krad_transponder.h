@@ -31,7 +31,6 @@ typedef struct krad_transponder_St krad_transponder_t;
 struct krad_transponder_St {
 	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_LINKS];
 	krad_radio_t *krad_radio;
-	pthread_mutex_t change_lock;
 	krad_receiver_t *krad_receiver;	
 	krad_transmitter_t *krad_transmitter;	
 	krad_Xtransponder_t *krad_Xtransponder;

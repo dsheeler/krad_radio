@@ -1928,7 +1928,6 @@ krad_transponder_t *krad_transponder_create (krad_radio_t *krad_radio) {
   krad_transponder = calloc (1, sizeof(krad_transponder_t));
 
   krad_transponder->krad_radio = krad_radio;
-  pthread_mutex_init (&krad_transponder->change_lock, NULL);
   krad_transponder->krad_receiver = krad_receiver_create (krad_transponder);  
   krad_transponder->krad_transmitter = krad_transmitter_create ();
   krad_transponder->krad_Xtransponder = krad_Xtransponder_create (krad_transponder->krad_radio);
@@ -1943,8 +1942,6 @@ void krad_transponder_destroy (krad_transponder_t *krad_transponder) {
   
   printk ("Krad Transponder: Destroy Started");
 
-  pthread_mutex_lock (&krad_transponder->change_lock);
-  
   for (l = 0; l < KRAD_TRANSPONDER_MAX_LINKS; l++) {
     if (krad_transponder->krad_link[l] != NULL) {
       krad_link_destroy (krad_transponder->krad_link[l]);
@@ -1956,8 +1953,6 @@ void krad_transponder_destroy (krad_transponder_t *krad_transponder) {
   krad_transmitter_destroy (krad_transponder->krad_transmitter);
   krad_Xtransponder_destroy (&krad_transponder->krad_Xtransponder);
 
-  pthread_mutex_unlock (&krad_transponder->change_lock);    
-  pthread_mutex_destroy (&krad_transponder->change_lock);
   free (krad_transponder);
   
   printk ("Krad Transponder: Destroy Completed");

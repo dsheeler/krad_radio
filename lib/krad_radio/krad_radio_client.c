@@ -546,7 +546,7 @@ int kr_response_to_string (kr_response_t *response, char **string) {
     case KR_COMPOSITOR:
       return kr_compositor_response_to_string (response, string);
     case KR_TRANSPONDER:
-      //
+      return kr_transponder_response_to_string (response, string);
       break;
   }
   return 0;
@@ -749,8 +749,14 @@ int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, k
       }
       return 1;
     case KR_TRANSPONDER:
-      //FIXME
-      return 0;
+      krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_TRANSPONDER_MSG, element_loc);
+      krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.transponder_subunit);
+      if (address->path.subunit.transponder_subunit != KR_UNIT) {
+        //if (address->path.subunit.transponder_subunit == KR_ADAPTER) {
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        //}
+      }
+      return 1;
     case KR_STATION:
       krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_RADIO_MSG, element_loc);
       krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.station_subunit);
@@ -832,6 +838,12 @@ int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address) {
       break;
     case EBML_ID_KRAD_TRANSPONDER_MSG:
       address->path.unit = KR_TRANSPONDER;
+      krad_ebml_read_element (ebml, &ebml_id, &ebml_data_size);
+      address->path.subunit.transponder_subunit = krad_ebml_read_number ( ebml, ebml_data_size );
+      if (address->path.subunit.transponder_subunit != KR_UNIT) {
+        krad_ebml_read_element (ebml, &ebml_id, &ebml_data_size);
+        address->id.number = krad_ebml_read_number ( ebml, ebml_data_size );
+      }
       break;
   }
   
@@ -1398,6 +1410,9 @@ void kr_address_debug_print (kr_address_t *addr) {
       break;
     case KR_TRANSPONDER:
       switch (subunit->transponder_subunit) {
+        case KR_ADAPTER:
+          printf ("Adapter: %d", id->number);
+          break;
         case KR_TRANSMITTER:
           printf ("Transmitter");
           break;

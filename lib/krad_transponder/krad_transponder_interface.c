@@ -1,32 +1,5 @@
 #include "krad_transponder_interface.h"
 
-/*
-void krad_transponder_broadcast_link_created ( krad_ipc_server_t *krad_ipc_server, krad_link_t *krad_link) {
-
-	int c;
-	uint64_t element;
-	uint64_t subelement;
-
-	for (c = 0; c < KRAD_IPC_SERVER_MAX_CLIENTS; c++) {
-		//if ((krad_ipc_server->clients[c].confirmed == 1) && (krad_ipc_server->current_client != &krad_ipc_server->clients[c])) {
-		if (krad_ipc_server->clients[c].broadcasts == 1) {
-			if ((krad_ipc_server->current_client == &krad_ipc_server->clients[c]) || (krad_ipc_aquire_client (&krad_ipc_server->clients[c]))) {
-				krad_ebml_start_element (krad_ipc_server->clients[c].krad_ebml2, EBML_ID_KRAD_TRANSPONDER_MSG, &element);	
-				krad_ebml_start_element (krad_ipc_server->clients[c].krad_ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_CREATED, &subelement);		
-				krad_transponder_link_to_ebml ( &krad_ipc_server->clients[c], krad_link);
-				krad_ebml_finish_element (krad_ipc_server->clients[c].krad_ebml2, subelement);
-				krad_ebml_finish_element (krad_ipc_server->clients[c].krad_ebml2, element);
-				krad_ebml_write_sync (krad_ipc_server->clients[c].krad_ebml2);
-				if (krad_ipc_server->current_client != &krad_ipc_server->clients[c]) {
-					krad_ipc_release_client (&krad_ipc_server->clients[c]);
-				}
-				
-			}
-		}
-	}
-}
-*/
-
 void krad_transponder_ebml_to_link ( krad_ipc_server_t *krad_ipc_server, krad_link_t *krad_link ) {
 
 	uint32_t ebml_id;
@@ -639,10 +612,10 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 
 	uint32_t command;
 	uint64_t ebml_data_size;
-
+  kr_address_t address;
 	uint64_t element;
 	uint64_t response;
-	
+	uint64_t payload_loc;
 	char string[256];	
 	
 	uint64_t bigint;
@@ -656,8 +629,6 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 	bigint = 0;
 	k = 0;
 	
-	pthread_mutex_lock (&krad_transponder->change_lock);	
-
 	krad_ipc_server_read_command ( krad_ipc, &command, &ebml_data_size);
 
 	switch ( command ) {
@@ -872,49 +843,57 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 			
 			break;
 			
-		case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_DECKLINK:
-			printk ("krad transponder handler! LIST_DECKLINK");
-			
-			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_MSG, &response);
-			
+    case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_ADAPTERS:
+
+			address.path.unit = KR_TRANSPONDER;
+			address.path.subunit.transponder_subunit = KR_ADAPTER;
+
+			devices = krad_v4l2_detect_devices ();			
+
+			for (k = 0; k < devices; k++) {
+				if (krad_v4l2_get_device_filename (k, string) > 0) {
+          address.id.number = k;
+          krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
+                                                                 &address,
+                                                                 EBML_ID_KRAD_SUBUNIT_INFO,
+                                                                 &response);
+          krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
+
+					krad_ebml_write_string (krad_ipc->current_client->krad_ebml2, EBML_ID_KRAD_TRANSPONDER_V4L2_DEVICE_FILENAME, string);
+
+	        //krad_ebml_start_element (kr_ipc->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &element);
+			    //krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, kr_ipc->tcp_interface[i]);
+			    //krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_PORT, kr_ipc->tcp_port[i]);
+	        //krad_ebml_finish_element (kr_ipc->current_client->krad_ebml2, element);
+
+          krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
+          krad_ipc_server_response_finish ( krad_ipc, response );
+        }
+      }
+
 			devices = krad_decklink_detect_devices();
 
-			krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_DECKLINK_LIST, &element);
-			krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, EBML_ID_KRAD_LIST_COUNT, devices);
-			
 			for (k = 0; k < devices; k++) {
+        krad_decklink_get_device_name (k, string);
+        address.id.number = k;
+        krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
+                                                               &address,
+                                                               EBML_ID_KRAD_SUBUNIT_INFO,
+                                                               &response);
+        krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
 
-				krad_decklink_get_device_name (k, string);
 				krad_ebml_write_string (krad_ipc->current_client->krad_ebml2, EBML_ID_KRAD_TRANSPONDER_DECKLINK_DEVICE_NAME, string);
-					
-			}
-			
-			krad_ipc_server_response_list_finish ( krad_ipc, element );
-			krad_ipc_server_response_finish ( krad_ipc, response );	
-						
-			break;
-	
-		case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_V4L2:
-			printk ("krad transponder handler! LIST_V4L2");
-			
-			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_MSG, &response);
-			
-			devices = krad_v4l2_detect_devices ();
 
-			krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_V4L2_LIST, &element);
-			krad_ebml_write_int32 (krad_ipc->current_client->krad_ebml2, EBML_ID_KRAD_LIST_COUNT, devices);
-			
-			for (k = 0; k < devices; k++) {
+	        //krad_ebml_start_element (kr_ipc->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &element);
+			    //krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, kr_ipc->tcp_interface[i]);
+			    //krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_PORT, kr_ipc->tcp_port[i]);
+	        //krad_ebml_finish_element (kr_ipc->current_client->krad_ebml2, element);
 
-				if (krad_v4l2_get_device_filename (k, string) > 0) {
-					krad_ebml_write_string (krad_ipc->current_client->krad_ebml2, EBML_ID_KRAD_TRANSPONDER_V4L2_DEVICE_FILENAME, string);
-				}
-			}
-			
-			krad_ipc_server_response_list_finish ( krad_ipc, element );
-			krad_ipc_server_response_finish ( krad_ipc, response );	
-						
-			break;
+        krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
+        krad_ipc_server_response_finish ( krad_ipc, response );
+      }
+
+      return 1;
 	
 		case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_ENABLE:
 		
@@ -958,8 +937,6 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 			break;			
 
 	}
-
-	pthread_mutex_unlock (&krad_transponder->change_lock);
 
 	return 0;
 }

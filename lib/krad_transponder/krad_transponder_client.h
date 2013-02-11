@@ -20,8 +20,10 @@
 
 #include "krad_transponder_common.h"
 
-void kr_transponder_v4l2_list (kr_client_t *client);
-void kr_transponder_decklink_list (kr_client_t *client);
+
+int kr_transponder_response_to_string (kr_response_t *response, char **string);
+
+void kr_transponder_adapters (kr_client_t *client);
 
 /** Transponder **/
 
