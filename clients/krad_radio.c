@@ -118,13 +118,13 @@ int main (int argc, char *argv[]) {
     if (argc == 3) {
       //FIXME
       //kr_transponder_list (client);
-      //kr_client_response_wait_print (client);
+      //kr_delivery_accept_and_report (client);
 
       kr_compositor_port_list (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
 
       kr_mixer_portgroups_list (client);
-      kr_client_response_wait_print (client);          
+      kr_delivery_accept_and_report (client);          
     }
   }      
 
@@ -132,7 +132,7 @@ int main (int argc, char *argv[]) {
        (strlen(argv[2]) == 6)) {
     if (argc == 3) {
       kr_mixer_jack_running (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -142,23 +142,23 @@ int main (int argc, char *argv[]) {
         (strlen(argv[2]) == 3)) || (strncmp(argv[2], "adapters", 8) == 0)) {
     if (argc == 3) {
       kr_transponder_adapters (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
   if ((strncmp(argv[2], "info", 4) == 0) || (strncmp(argv[2], "sys", 3) == 0)) {
     kr_system_info (client);
-    kr_client_response_wait_print (client);
+    kr_delivery_accept_and_report (client);
   }
 
   if (strncmp(argv[2], "cpu", 4) == 0) {
     //FIXME
-    //kr_client_response_wait_print (client);
+    //kr_delivery_accept_and_report (client);
   }
 
   if (strncmp(argv[2], "uptime", 6) == 0) {
     //FIXME
-    //kr_client_response_wait_print (client);
+    //kr_delivery_accept_and_report (client);
   }
   
   if (strncmp(argv[2], "setdir", 6) == 0) {
@@ -169,29 +169,29 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "logname", 7) == 0) {
     //FIXME
-    //kr_client_response_wait_print (client);
+    //kr_delivery_accept_and_report (client);
   }  
 
   if (strncmp(argv[2], "tags", 4) == 0) {
 
     if (argc == 3) {
       kr_tags (client, NULL);    
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
     if (argc == 4) {
       kr_tags (client, argv[3]);    
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }          
 
   } else {
     if (strncmp(argv[2], "tag", 3) == 0) {
       if (argc == 4) {
         kr_tag (client, NULL, argv[3]);
-        kr_client_response_wait_print (client);
+        kr_delivery_accept_and_report (client);
       }
       if (argc == 5) {
         kr_tag (client, argv[3], argv[4]);
-        kr_client_response_wait_print (client);            
+        kr_delivery_accept_and_report (client);            
       }    
     }
   }
@@ -209,7 +209,7 @@ int main (int argc, char *argv[]) {
   if (((strlen(argv[2]) == 6) && (strncmp(argv[2], "remote", 6) == 0)) || 
       ((strlen(argv[2]) == 7) && (strncmp(argv[2], "remotes", 7) == 0))) {
     kr_remote_list (client);
-    kr_client_response_wait_print (client);
+    kr_delivery_accept_and_report (client);
   }
     
   if ((strncmp(argv[2], "remoteon", 8) == 0) || (strncmp(argv[2], "remote_on", 9) == 0)) {
@@ -279,7 +279,7 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "lm", 2) == 0) {
     if (argc == 3) {
       kr_mixer_portgroups_list (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -288,7 +288,7 @@ int main (int argc, char *argv[]) {
       ((strncmp(argv[2], "mixer", 5) == 0) && (strlen(argv[2]) == 5))) {
     if (argc == 3) {
       kr_mixer_info (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }      
 
@@ -307,7 +307,7 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "portinfo", 8) == 0) {
     if (argc == 4) {
       kr_mixer_portgroup_info (client, argv[3]);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -455,7 +455,7 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
       kr_transponder_list (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -670,7 +670,7 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "lc", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
       kr_compositor_port_list (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -697,14 +697,14 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "lastsnap", 8) == 0) {
     //FIXME
     //kr_compositor_info (client);
-    //kr_client_response_wait_print (client);        
+    //kr_delivery_accept_and_report (client);        
   }
 
   if ((strncmp(argv[2], "comp", 4) == 0) ||
       ((strncmp(argv[2], "c", 1) == 0) && (strlen(argv[2]) == 1))) {
     if (argc == 3) {
       kr_compositor_info (client);
-      kr_client_response_wait_print (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -794,7 +794,7 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "lssprite", 8) == 0) {
     if (argc == 3) {
       kr_compositor_list_sprites (client);
-      kr_client_response_wait_print (client);      
+      kr_delivery_accept_and_report (client);      
     }
   }
 
@@ -898,7 +898,7 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "lstext", 6) == 0) {
     if (argc == 3) {
       kr_compositor_list_texts (client);
-      kr_client_response_wait_print (client);      
+      kr_delivery_accept_and_report (client);      
     }
   }
 

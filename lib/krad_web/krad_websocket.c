@@ -1,8 +1,8 @@
 #include "krad_websocket.h"
 
-static void json_to_krad_api (kr_ws_client_t *kr_ws_client, char *value, int len);
-static int krad_api_handler (kr_ws_client_t *kr_ws_client);
-static void rep_to_json (kr_ws_client_t *kr_ws_client, kr_rep_t *rep);
+static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len);
+static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate);
+static int krad_delivery_handler (kr_ws_client_t *kr_ws_client);
 static void *krad_websocket_server_run (void *arg);
 static void add_poll_fd (int fd, short events, int fd_is, kr_ws_client_t *kr_ws_client, void *bspointer);
 static void del_poll_fd (int fd);
@@ -41,7 +41,7 @@ krad_websocket_t *krad_websocket_glob;
 
 /* interpret JSON to speak Krad API */
 
-static void json_to_krad_api (kr_ws_client_t *kr_ws_client, char *value, int len) {
+static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
   
   float floatval;
   cJSON *cmd;
@@ -227,48 +227,40 @@ void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer)
 
 /* Krad API Handler */
 
-static void rep_to_json (kr_ws_client_t *kr_ws_client, kr_rep_t *rep) {
-  switch ( rep->type ) {
+static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
+  switch ( crate->contains ) {
     case KR_MIXER:
-      krad_websocket_set_mixer (kr_ws_client, rep->rep_ptr.mixer);
+      krad_websocket_set_mixer (kr_ws_client, crate->inside.mixer);
       return;
     case KR_PORTGROUP:
-      krad_websocket_add_portgroup (kr_ws_client, rep->rep_ptr.portgroup);
+      krad_websocket_add_portgroup (kr_ws_client, crate->inside.portgroup);
       return;
   }
 }
 
-static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
+static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
 
   kr_crate_t *crate;
-  kr_address_t *address;
-  kr_rep_t *rep;
-  float real;
   char *string;
   
   string = NULL;  
-  real = 0.0f;
   crate = NULL;
-  rep = NULL;
 
   kr_delivery_get (kr_ws_client->kr_client, &crate);
 
   if (crate != NULL) {
-
-    kr_address_get (crate, &address);
-    
     if ((kr_crate_notice (crate) == EBML_ID_KRAD_SUBUNIT_CONTROL) &&
-        (address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-        if (kr_uncrate_float (crate, &real)) {
-          krad_websocket_set_portgroup_control (kr_ws_client, address, real);
+        (crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
+        if (kr_crate_contains_float (crate)) {
+          krad_websocket_set_portgroup_control (kr_ws_client, crate->addr, crate->real);
         } else {
-          if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) ||
-              (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+          if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) ||
+              (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
             if (kr_uncrate_string (crate, &string)) {
-              krad_websocket_update_portgroup (kr_ws_client, address, string);
+              krad_websocket_update_portgroup (kr_ws_client, crate->addr, string);
               kr_string_recycle (&string);
             } else {
-              krad_websocket_update_portgroup (kr_ws_client, address, "");
+              krad_websocket_update_portgroup (kr_ws_client, crate->addr, "");
             }
           }
         }
@@ -277,20 +269,17 @@ static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
     }
 
     if ((kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) &&
-        (address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-        krad_websocket_remove_portgroup (kr_ws_client, address);
+        (crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
+        krad_websocket_remove_portgroup (kr_ws_client, crate->addr);
         kr_crate_recycle (&crate);
         return 0;
     }
 
-    if (kr_uncrate (crate, &rep)) {
-      rep_to_json (kr_ws_client, rep);
-      kr_rep_free (&rep);
+    if (kr_crate_loaded (crate)) {
+      crate_to_json (kr_ws_client, crate);
     }
     
     kr_crate_recycle (&crate);
-  } else {
-    //printk ("Krad WebSocket: Krad API Handler.. I should have got a response :/");
   }
   
   return 0;
@@ -442,7 +431,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       break;
 
     case LWS_CALLBACK_RECEIVE:
-      json_to_krad_api (kr_ws_client, in, len);
+      json_to_cmd (kr_ws_client, in, len);
       break;
     default:
       break;
@@ -521,7 +510,7 @@ static void *krad_websocket_server_run (void *arg) {
                     kr_ws_client->hello_sent = 1;
                   }
                   
-                  krad_api_handler (kr_ws_client);
+                  krad_delivery_handler (kr_ws_client);
                   
                   //kr_ws_client->msgstext = strdup(cJSON_Print (kr_ws_client->msgs));
                   kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];

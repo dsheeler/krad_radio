@@ -856,6 +856,7 @@ int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address) {
 int kr_crate_loaded (kr_crate_t *crate) {
   if (kr_response_to_rep (crate, &crate->compartment)) {
     crate->inside = crate->compartment->rep_ptr;
+    crate->contains = crate->compartment->type;
     return 1;
   }
   return 0;
@@ -953,12 +954,24 @@ void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response) {
     }
   }
   
-  kr_uncrate_int (response, &response->integer);
-  kr_uncrate_float (response, &response->real);
+  if (kr_uncrate_int (response, &response->integer)) {
+    response->has_int = 1;
+  }
+  if (kr_uncrate_float (response, &response->real)) {
+    response->has_float = 1;
+  }
 
   //kr_response_payload_print_raw_ebml (response);
  
   //printf ("KR Client Response get finish\n");
+}
+
+int kr_crate_has_float (kr_crate_t *crate) {
+  return crate->has_float;
+}
+
+int kr_crate_has_int (kr_crate_t *crate) {
+  return crate->has_int;
 }
 
 void kr_client_response_wait (kr_client_t *client, kr_response_t **kr_response) {

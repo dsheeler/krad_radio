@@ -75,13 +75,17 @@ void get_delivery (kr_client_t *client) {
     if (kr_uncrate_int (crate, &integer)) {
       printf ("Int: %d\n", integer);
       /* or but check first always! */
-      // crate->integer;
+      // if (kr_crate_has_int (crate)) {
+      //   crate->integer;
+      // }
     }
     
     if (kr_uncrate_float (crate, &real)) {
       printf ("Float: %f\n", real);
       /* or but check first always! */
-      // crate->real;
+      // if (kr_crate_has_float (crate)) {
+      //   crate->real;
+      // }
     }
     
     //crate->notice  << a type/reason/event    
@@ -106,7 +110,7 @@ void take_deliveries_long_time (kr_client_t *client) {
   
   ret = 0;
   b = 0;
-  max = 10000000;
+  max = 10000;
   timeout_ms = 3000;
   
 
@@ -142,11 +146,11 @@ void one_shot_demo (kr_client_t *client) {
   kr_system_info (client);
   accept_some_deliveries (client);
 
-  //kr_remote_list (client);
-  //get_delivery (client);
+  kr_remote_list (client);
+  accept_some_deliveries (client);
 
   kr_compositor_info (client);
-  get_delivery (client);
+  accept_some_deliveries (client);
   
   kr_mixer_info (client);
   accept_some_deliveries (client);

@@ -225,8 +225,11 @@ struct kr_response_St {
   uint32_t size;
   kr_rep_t *compartment;
   kr_rep_ptr_t inside;
+  uint32_t contains;
   int integer;
   float real;
+  int has_int;
+  int has_float;
 };
 
 uint32_t kr_response_get_event (kr_response_t *response);
@@ -315,7 +318,12 @@ int kr_response_read_into_string (unsigned char *ebml_frag, uint64_t ebml_data_s
 void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response);
 
 int kr_crate_loaded (kr_crate_t *crate);
-
+int kr_crate_has_int (kr_crate_t *crate);
+int kr_crate_has_float (kr_crate_t *crate);
+#define kr_crate_contains_float kr_crate_has_float
+#define kr_crate_contains_int kr_crate_has_int
+#define kr_crate_contains_integer kr_crate_has_int
+#define kr_delivery_accept_and_report kr_client_response_wait_print
 #define kr_delivery_get kr_client_response_get
 #define kr_delivery_wait kr_poll
 #define kr_wait kr_poll
