@@ -215,6 +215,18 @@ struct kr_rep_St {
   //char *buffer;
 };
 
+struct kr_response_St {
+  kr_client_t *kr_client;
+  kr_address_t *addr;
+  kr_address_t address;
+  uint32_t type;
+  uint32_t notice;
+  unsigned char *buffer;
+  uint32_t size;
+  kr_rep_t *compartment;
+  kr_rep_ptr_t inside;
+};
+
 uint32_t kr_response_get_event (kr_response_t *response);
 int kr_string_to_address (char *string, kr_address_t *addr);
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc);
@@ -299,6 +311,8 @@ int kr_response_read_into_string (unsigned char *ebml_frag, uint64_t ebml_data_s
  * @param kr_client handle of the IPC-connection to the station
  */
 void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response);
+
+int kr_crate_loaded (kr_crate_t *crate);
 
 #define kr_delivery_get kr_client_response_get
 #define kr_delivery_wait kr_poll

@@ -1,24 +1,24 @@
 #include "kr_client.h"
 
-void my_remote_print (kr_remote_t *remote, void *user_ptr) {
+void my_remote_print (kr_remote_t *remote) {
   printf ("oh its a remote! %d on interface %s\n",
           remote->port,
           remote->interface);
 }
 
-void my_tag_print (kr_tag_t *tag, void *user_ptr) {
+void my_tag_print (kr_tag_t *tag) {
   printf ("The tag I wanted: %s - %s\n",
           tag->name,
           tag->value);
 }
 
-void my_portgroup_print (kr_portgroup_t *portgroup, void *user_ptr) {
+void my_portgroup_print (kr_portgroup_t *portgroup) {
   printf ("oh its a portgroup called %s and the volume is %0.2f%%\n",
            portgroup->sysname,
            portgroup->volume[0]);
 }
 
-void my_compositor_print (kr_compositor_t *compositor, void *user_ptr) {
+void my_compositor_print (kr_compositor_t *compositor) {
 
   printf ("Compositor Resolution: %d x %d Frame Rate: %d / %d - %f\n",
 					 compositor->width, compositor->height,
@@ -26,34 +26,28 @@ void my_compositor_print (kr_compositor_t *compositor, void *user_ptr) {
 					 ((float)compositor->fps_numerator / (float)compositor->fps_denominator));
 }
 
-void my_mixer_print (kr_mixer_t *mixer, void *user_ptr) {
+void my_mixer_print (kr_mixer_t *mixer) {
 
   printf ("Mixer Sample Rate: %d\n",
 					 mixer->sample_rate);
 }
 
-void my_print (kr_address_t *address, kr_rep_t *rep) {
+void my_print (kr_crate_t *crate) {
 
-  void *user_ptr;
-  
-  user_ptr = NULL;
-
-  if ((address->path.unit == KR_MIXER) && (address->path.subunit.zero == KR_UNIT)) {
-    my_mixer_print (rep->rep_ptr.actual, user_ptr);
+  if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.zero == KR_UNIT)) {
+    my_mixer_print (crate->inside.mixer);
   }
-  if ((address->path.unit == KR_COMPOSITOR) && (address->path.subunit.zero == KR_UNIT)) {
-    my_compositor_print (rep->rep_ptr.actual, user_ptr);
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_UNIT)) {
+    my_compositor_print (crate->inside.compositor);
   }
-  if ((address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-    my_portgroup_print (rep->rep_ptr.portgroup, user_ptr);
+  if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
+    my_portgroup_print (crate->inside.portgroup);
   }
 }
 
 void get_delivery (kr_client_t *client) {
 
   kr_crate_t *crate;
-  kr_address_t *address;
-  kr_rep_t *rep;
   char *string;
   int integer;
   float real;
@@ -62,17 +56,13 @@ void get_delivery (kr_client_t *client) {
   real = 0.0f;
   string = NULL;
   crate = NULL;
-  address = NULL;
-  rep = NULL;
-
   printf ("*** Delivery Start: \n");
 
   kr_delivery_get (client, &crate);
 
   if (crate != NULL) {
 
-    kr_address_get (crate, &address);
-    kr_address_debug_print (address); 
+    kr_address_debug_print (crate->addr); 
 
     /* Crate sometimes can be converted
        to a integer, float or string */
@@ -90,11 +80,12 @@ void get_delivery (kr_client_t *client) {
       printf ("Float: %f\n", real);
     }
     
+    //crate->notice  << a type/reason/event    
+    
     /* Crate has a rep struct */
     
-    if (kr_uncrate (crate, &rep)) {
-      my_print (address, rep);
-      kr_rep_free (&rep);
+    if (kr_crate_loaded (crate)) {
+      my_print (crate);
     }
 
     kr_crate_recycle (&crate);

@@ -1833,11 +1833,9 @@ void krad_link_start (krad_link_t *krad_link) {
         krad_Xtransponder_subunit_connect (krad_link->aud_subunit, krad_link->demux_subunit);
       }
     }
-    
   }
   
   if ((krad_link->operation_mode == TRANSMIT) || (krad_link->operation_mode == RECORD)) {
-
     if ((krad_link->video_passthru == 0) && ((krad_link->av_mode == VIDEO_ONLY) || (krad_link->av_mode == AUDIO_AND_VIDEO))) {
       video_encoding_unit_create ((void *)krad_link);
       watch->fd = krad_link->krad_compositor_port_fd;

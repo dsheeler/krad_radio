@@ -715,6 +715,9 @@ void kr_response_free (kr_response_t **kr_response) {
     if ((*kr_response)->buffer != NULL) {
       free ((*kr_response)->buffer);
     }
+    if ((*kr_response)->compartment != NULL) {
+      kr_rep_free (&(*kr_response)->compartment);
+    }
     free ((*kr_response));
   }
 }
@@ -850,6 +853,14 @@ int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address) {
   return 1;
 }
 
+int kr_crate_loaded (kr_crate_t *crate) {
+  if (kr_response_to_rep (crate, &crate->compartment)) {
+    crate->inside = crate->compartment->rep_ptr;
+    return 1;
+  }
+  return 0;
+}
+
 inline int krad_message_type_has_payload (uint32_t type) {
 
   if (type == EBML_ID_KRAD_SHIPMENT_TERMINATOR) {
@@ -917,6 +928,8 @@ void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response) {
 
   krad_read_address_from_ebml (kr_ipc_client->krad_ebml, &response->address);
   krad_read_message_type_from_ebml (kr_ipc_client->krad_ebml, &response->type);
+  
+  response->addr = &response->address;
   
   if (!client->subscriber) {
     if (response->type == EBML_ID_KRAD_SHIPMENT_TERMINATOR) {
