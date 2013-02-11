@@ -150,7 +150,7 @@ def hexilate_file(filename):
       
   hexed = binascii.hexlify(content)
   hexed_len = len(hexed)
-  hexed_txt = "unsigned char " + varname + "[] = {\n "
+  hexed_txt = "static unsigned char " + varname + "[] = {\n "
 
   if sys.version_info < (3, 0):
     count = 0
@@ -160,7 +160,7 @@ def hexilate_file(filename):
        if ((count % 24) == 0):
           hexed_txt += "\n "
 
-    hexed_txt += "\n};\nunsigned int " + varname + "_len = " + str(hexed_len / 2) + ";\n"
+    hexed_txt += "\n};\nstatic int " + varname + "_len = " + str(hexed_len / 2) + ";\n"
 
     with open(outname, 'wb') as f:
         content = f.write(hexed_txt)
@@ -173,7 +173,7 @@ def hexilate_file(filename):
        if ((count % 24) == 0):
           hexed_txt += "\n "
 
-    hexed_txt += "\n};\nunsigned int " + varname + "_len = " + str(hexed_len / 2) + ";\n"
+    hexed_txt += "\n};\nstatic int " + varname + "_len = " + str(hexed_len / 2) + ";\n"
 
     with open(outname, 'wb') as f:
         content = f.write(bytes(hexed_txt, 'ascii'))
