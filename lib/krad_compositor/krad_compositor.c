@@ -1437,6 +1437,7 @@ void krad_compositor_destroy (krad_compositor_t *krad_compositor) {
 		if (krad_compositor->port[i].krad_compositor_subunit->active == 1) {
 			krad_compositor_port_destroy (krad_compositor, &krad_compositor->port[i]);
 		}
+    krad_compositor_subunit_destroy (krad_compositor->port[i].krad_compositor_subunit);
 	}
 	
   krad_compositor_stop_ticker (krad_compositor);
@@ -1519,7 +1520,7 @@ krad_compositor_t *krad_compositor_create (int width, int height,
 	krad_compositor->port = calloc(KC_MAX_PORTS, sizeof(krad_compositor_port_t));
 	
   for (i = 0; i < KC_MAX_PORTS; i++) {
-    //krad_compositor->port[i].krad_compositor_subunit = krad_compositor_subunit_create();
+    krad_compositor->port[i].krad_compositor_subunit = krad_compositor_subunit_create();
     krad_compositor->port[i].krad_compositor_subunit->address.path.unit = KR_COMPOSITOR;
     krad_compositor->port[i].krad_compositor_subunit->address.path.subunit.compositor_subunit = KR_VIDEOPORT;
     krad_compositor->port[i].krad_compositor_subunit->address.id.number = i;

@@ -127,10 +127,15 @@ void krad_audio_destroy (krad_audio_t *krad_audio) {
 		}
 	}	
 
+	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+		if (krad_audio->portgroup[p] != NULL) {
+			free ( krad_audio->portgroup[p] );
+			krad_audio->portgroup[p] = NULL;
+		}
+	}
+
 	free (krad_audio);
-
 }
-
 
 krad_audio_t *krad_audio_create (krad_mixer_t *krad_mixer) {
 
