@@ -43,8 +43,37 @@ static int cJSON_strcasecmp(const char *s1,const char *s2)
 	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
 }
 
-static void *(*cJSON_malloc)(size_t sz) = malloc;
-static void (*cJSON_free)(void *ptr) = free;
+#define CJSON_MEMSIZE 4096
+
+static char cjson_mem[CJSON_MEMSIZE];
+static size_t cjson_mempos;
+
+static void *cjson_malloc (size_t sz) {
+
+  char *ptr;
+  
+  ptr = &cjson_mem[cjson_mempos];
+  cjson_mempos += sz;
+  
+  if (cjson_mempos > CJSON_MEMSIZE) {
+    exit(3);
+  }
+  
+  return ptr;
+}
+
+void cjson_free (void *ptr) {
+}
+
+void cjson_memreset () {
+  cjson_mempos = 0;
+}
+
+//static void *(*cJSON_malloc)(size_t sz) = malloc;
+//static void (*cJSON_free)(void *ptr) = free;
+
+static void *(*cJSON_malloc)(size_t sz) = cjson_malloc;
+static void (*cJSON_free)(void *ptr) = cjson_free;
 
 static char* cJSON_strdup(const char* str)
 {

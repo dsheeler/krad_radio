@@ -113,7 +113,8 @@ static void json_to_krad_api (kr_ws_client_t *kr_ws_client, char *value, int len
         }
       }  
     }
-    cJSON_Delete (cmd);
+    //cJSON_Delete (cmd);
+    cjson_memreset ();
   }
 }
 
@@ -529,10 +530,10 @@ static void *krad_websocket_server_run (void *arg) {
                   
                   krad_api_handler (kr_ws_client);
                   
-                  kr_ws_client->msgstext = cJSON_Print (kr_ws_client->msgs);
+                  kr_ws_client->msgstext = strdup(cJSON_Print (kr_ws_client->msgs));
                   kr_ws_client->msgstextlen = strlen (kr_ws_client->msgstext);
-                  cJSON_Delete (kr_ws_client->msgs);
-                  
+                  //cJSON_Delete (kr_ws_client->msgs);
+                  cjson_memreset ();
                   kr_ws_client->kr_client_info = 1;
                   libwebsocket_callback_on_writable (kr_ws_client->context, kr_ws_client->wsi);
                   break;

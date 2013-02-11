@@ -62,6 +62,8 @@ typedef struct cJSON_Hooks {
 extern void cJSON_InitHooks(cJSON_Hooks* hooks);
 
 
+void cjson_memreset ();
+
 /* Supply a block of JSON, and this returns a cJSON object you can interrogate. Call cJSON_Delete when finished. */
 extern cJSON *cJSON_Parse(const char *value);
 /* Render a cJSON entity to text for transfer/storage. Free the char* when finished. */
