@@ -308,6 +308,8 @@ void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response);
 #define kr_uncrate_string kr_response_to_string
 #define kr_uncrate_to_string kr_response_to_string
 
+#define kr_crate_notice kr_response_get_event
+
 #define kr_uncrate_int kr_response_to_int
 #define kr_uncrate_float kr_response_to_float
 #define kr_uncrate_rep kr_response_to_rep

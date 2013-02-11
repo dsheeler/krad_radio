@@ -240,8 +240,7 @@ static void rep_to_json (kr_ws_client_t *kr_ws_client, kr_rep_t *rep) {
 
 static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
 
-  kr_client_t *client;
-  kr_response_t *response;
+  kr_crate_t *crate;
   kr_address_t *address;
   kr_rep_t *rep;
   float real;
@@ -249,25 +248,23 @@ static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
   
   string = NULL;  
   real = 0.0f;
-  response = NULL;
+  crate = NULL;
   rep = NULL;
 
-  client = kr_ws_client->kr_client;
+  kr_delivery_get (kr_ws_client->kr_client, &crate);
 
-  kr_client_response_get (client, &response);
+  if (crate != NULL) {
 
-  if (response != NULL) {
-
-    kr_response_address (response, &address);
+    kr_address_get (crate, &address);
     
-    if ((kr_response_get_event (response) == EBML_ID_KRAD_SUBUNIT_CONTROL) &&
+    if ((kr_crate_notice (crate) == EBML_ID_KRAD_SUBUNIT_CONTROL) &&
         (address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-        if (kr_response_to_float (response, &real)) {
+        if (kr_uncrate_float (crate, &real)) {
           krad_websocket_set_portgroup_control (kr_ws_client, address, real);
         } else {
           if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) ||
               (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
-            if (kr_uncrate_string (response, &string)) {
+            if (kr_uncrate_string (crate, &string)) {
               krad_websocket_update_portgroup (kr_ws_client, address, string);
               kr_string_recycle (&string);
             } else {
@@ -275,23 +272,23 @@ static int krad_api_handler (kr_ws_client_t *kr_ws_client) {
             }
           }
         }
-        kr_response_free (&response);
+        kr_crate_recycle (&crate);
         return 0;
     }
 
-    if ((kr_response_get_event (response) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) &&
+    if ((kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) &&
         (address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
         krad_websocket_remove_portgroup (kr_ws_client, address);
-        kr_response_free (&response);
+        kr_crate_recycle (&crate);
         return 0;
     }
 
-    if (kr_response_to_rep (response, &rep)) {
+    if (kr_uncrate (crate, &rep)) {
       rep_to_json (kr_ws_client, rep);
       kr_rep_free (&rep);
     }
     
-    kr_response_free (&response);
+    kr_crate_recycle (&crate);
   } else {
     //printk ("Krad WebSocket: Krad API Handler.. I should have got a response :/");
   }
