@@ -160,12 +160,13 @@ void krad_compositor_add_text (krad_compositor_t *krad_compositor, krad_text_rep
 		}
 	}
 
-  krad_compositor_subunit_set_xy (&krad_text->krad_compositor_subunit, krad_text_rep->controls->x, krad_text_rep->controls->y);
-  krad_compositor_subunit_set_z (&krad_text->krad_compositor_subunit, krad_text_rep->controls->z);
-  krad_compositor_subunit_set_scale (&krad_text->krad_compositor_subunit, krad_text_rep->controls->xscale);
-  krad_compositor_subunit_set_new_opacity (&krad_text->krad_compositor_subunit, krad_text_rep->controls->opacity);
-  krad_compositor_subunit_set_rotation (&krad_text->krad_compositor_subunit, krad_text_rep->controls->rotation);
-  krad_compositor_subunit_set_tickrate (&krad_text->krad_compositor_subunit, krad_text_rep->controls->tickrate);
+  krad_compositor_subunit_set_xy (&krad_text->krad_compositor_subunit, krad_text_rep->controls.x, krad_text_rep->controls.y);
+  krad_compositor_subunit_set_z (&krad_text->krad_compositor_subunit, krad_text_rep->controls.z);
+  krad_compositor_subunit_set_scale (&krad_text->krad_compositor_subunit, krad_text_rep->controls.xscale);
+  krad_compositor_subunit_set_opacity (&krad_text->krad_compositor_subunit, krad_text_rep->controls.opacity);
+  krad_compositor_subunit_set_new_opacity (&krad_text->krad_compositor_subunit, 1.0f);
+  krad_compositor_subunit_set_rotation (&krad_text->krad_compositor_subunit, krad_text_rep->controls.rotation);
+  krad_compositor_subunit_set_tickrate (&krad_text->krad_compositor_subunit, krad_text_rep->controls.tickrate);
 
   krad_text_set_text (krad_text, krad_text_rep->text);	
 
@@ -184,13 +185,13 @@ void krad_compositor_set_text (krad_compositor_t *krad_compositor, krad_text_rep
 	
 	krad_text = NULL;
 
-	krad_text = &krad_compositor->krad_text[krad_text_rep->controls->number];
+	krad_text = &krad_compositor->krad_text[krad_text_rep->controls.number];
 
-	krad_compositor_subunit_set_new_xy (&krad_text->krad_compositor_subunit, krad_text_rep->controls->x, krad_text_rep->controls->y);
-	krad_compositor_subunit_set_new_scale (&krad_text->krad_compositor_subunit, krad_text_rep->controls->xscale);
-	krad_compositor_subunit_set_new_opacity (&krad_text->krad_compositor_subunit, krad_text_rep->controls->opacity);
-	krad_compositor_subunit_set_new_rotation (&krad_text->krad_compositor_subunit, krad_text_rep->controls->rotation);
-	krad_compositor_subunit_set_tickrate (&krad_text->krad_compositor_subunit, krad_text_rep->controls->tickrate);
+	krad_compositor_subunit_set_new_xy (&krad_text->krad_compositor_subunit, krad_text_rep->controls.x, krad_text_rep->controls.y);
+	krad_compositor_subunit_set_new_scale (&krad_text->krad_compositor_subunit, krad_text_rep->controls.xscale);
+	krad_compositor_subunit_set_new_opacity (&krad_text->krad_compositor_subunit, krad_text_rep->controls.opacity);
+	krad_compositor_subunit_set_new_rotation (&krad_text->krad_compositor_subunit, krad_text_rep->controls.rotation);
+	krad_compositor_subunit_set_tickrate (&krad_text->krad_compositor_subunit, krad_text_rep->controls.tickrate);
 
 	krad_text_set_new_rgb (krad_text, krad_text_rep->red, krad_text_rep->green, krad_text_rep->blue);
 

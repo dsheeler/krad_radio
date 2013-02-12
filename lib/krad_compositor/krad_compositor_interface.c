@@ -23,7 +23,7 @@ void krad_compositor_port_to_ebml ( krad_ipc_server_t *krad_ipc, krad_compositor
 void krad_compositor_text_to_ebml ( krad_compositor_t *krad_compositor, krad_ipc_server_t *krad_ipc, krad_text_t *krad_text, int number) {
 
   krad_text_rep_t *ktr = krad_text_to_text_rep (krad_text, NULL);
-  ktr->controls->number = number;
+  ktr->controls.number = number;
   krad_compositor_text_rep_to_ebml (ktr, krad_ipc->current_client->krad_ebml2);
   krad_compositor_text_rep_destroy(ktr);
   

@@ -29,9 +29,9 @@ void kr_compositor_port_list (kr_client_t *client);
 void kr_compositor_list_texts (kr_client_t *client);
 void kr_compositor_list_sprites (kr_client_t *client);
 
-void kr_compositor_add_text (kr_client_t *client, char *text, int x, int y, int z, int tickrate, 
+void kr_compositor_add_text (kr_client_t *client, char *text, int x, int y, int z,
 									float scale, float opacity, float rotation, float red, float green, float blue, char *font);
-void kr_compositor_set_text (kr_client_t *client, int num, int x, int y, int z, int tickrate, 
+void kr_compositor_set_text (kr_client_t *client, int num, int x, int y, int z,
 									float scale, float opacity, float rotation, float red, float green, float blue);
 
 void kr_compositor_add_sprite (kr_client_t *client, char *filename, int x, int y, int z, int tickrate, 

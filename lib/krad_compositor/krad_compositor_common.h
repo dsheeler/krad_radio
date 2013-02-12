@@ -63,7 +63,7 @@ struct krad_text_rep_St {
 	float green;
 	float blue;
 	
-	kr_compositor_subunit_controls_t *controls;
+	kr_comp_controls_t controls;
 };
 
 struct krad_vector_rep_St {
@@ -74,7 +74,7 @@ struct krad_vector_rep_St {
 	float green;
 	float blue;
 	
-	kr_compositor_subunit_controls_t *controls;
+	kr_comp_controls_t controls;
 };
 
 struct krad_compositor_rep_St {
