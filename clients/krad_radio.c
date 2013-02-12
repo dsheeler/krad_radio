@@ -128,14 +128,6 @@ int main (int argc, char *argv[]) {
     }
   }      
 
-  if (((strncmp(argv[2], "jacked", 6) == 0) || (strncmp(argv[2], "jackup", 6) == 0)) &&
-       (strlen(argv[2]) == 6)) {
-    if (argc == 3) {
-      kr_mixer_jack_running (client);
-      kr_delivery_accept_and_report (client);
-    }
-  }
-
   if ((((strncmp(argv[2], "lsv", 3) == 0) || 
         (strncmp(argv[2], "lsd", 3) == 0) ||
         (strncmp(argv[2], "lsa", 3) == 0)) &&

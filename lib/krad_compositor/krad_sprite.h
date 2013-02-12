@@ -12,7 +12,7 @@
 #endif
 
 typedef struct krad_sprite_St krad_sprite_t;
-
+#include "krad_compositor_subunit.h"
 #include "krad_radio.h"
 
 #define KRAD_SPRITE_DEFAULT_TICKRATE 4
@@ -30,7 +30,7 @@ struct krad_sprite_St {
   int sheet_width;
 	int sheet_height;
   
-  krad_compositor_subunit_t *krad_compositor_subunit;
+  krad_compositor_subunit_t krad_compositor_subunit;
   
 };
 

@@ -1,6 +1,7 @@
 #ifndef KRAD_COMPOSITOR_PORT_H
 #define KRAD_COMPOSITOR_PORT_H
 
+#include "krad_compositor_subunit.h"
 #include "krad_radio.h"
 
 struct krad_compositor_port_St {
@@ -12,8 +13,6 @@ struct krad_compositor_port_St {
 	
 	krad_frame_t *last_frame;
 	krad_ringbuffer_t *frame_ring;
-	
-	int passthru;
 
 	int source_width;
 	int source_height;
@@ -42,7 +41,7 @@ struct krad_compositor_port_St {
 	int local_buffer_size;
 	krad_frame_t *local_frame;	
 	
-  krad_compositor_subunit_t *krad_compositor_subunit;
+  krad_compositor_subunit_t krad_compositor_subunit;
 	
   int socketpair[2];	
 	

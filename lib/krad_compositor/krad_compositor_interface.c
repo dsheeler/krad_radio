@@ -155,9 +155,9 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
     break;
   case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_PORTS:
     for (p = 0; p < KC_MAX_PORTS; p++) {
-      if (krad_compositor->port[p].krad_compositor_subunit->active == 1) {
+      if (krad_compositor->port[p].krad_compositor_subunit.active == 1) {
         krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
-                                                               &krad_compositor->port[p].krad_compositor_subunit->address,
+                                                               &krad_compositor->port[p].krad_compositor_subunit.address,
                                                                EBML_ID_KRAD_SUBUNIT_INFO,
                                                                &response);
         krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
@@ -199,9 +199,9 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
     break;
   case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SPRITES:
     for (s = 0; s < KC_MAX_SPRITES; s++) {
-      if (krad_compositor->krad_sprite[s].krad_compositor_subunit->active == 1) {
+      if (krad_compositor->krad_sprite[s].krad_compositor_subunit.active == 1) {
         krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
-                                                               &krad_compositor->krad_sprite[s].krad_compositor_subunit->address,
+                                                               &krad_compositor->krad_sprite[s].krad_compositor_subunit.address,
                                                                EBML_ID_KRAD_SUBUNIT_INFO,
                                                                &response);
         krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
@@ -227,9 +227,9 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
     break;
   case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_TEXTS:
     for (s = 0; s < KC_MAX_TEXTS; s++) {
-      if (krad_compositor->krad_text[s].krad_compositor_subunit->active == 1) {
+      if (krad_compositor->krad_text[s].krad_compositor_subunit.active == 1) {
         krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
-                                                               &krad_compositor->krad_text[s].krad_compositor_subunit->address,
+                                                               &krad_compositor->krad_text[s].krad_compositor_subunit.address,
                                                                EBML_ID_KRAD_SUBUNIT_INFO,
                                                                &response);
         krad_ipc_server_payload_start ( krad_ipc, &payload_loc);

@@ -1,3 +1,4 @@
+#include "krad_compositor_subunit.h"
 #include "krad_radio.h"
 
 #ifndef KRAD_TEXT_H
@@ -21,7 +22,7 @@ struct krad_text_St {
 	float new_blue;
 	float new_green;	
   
-  krad_compositor_subunit_t *krad_compositor_subunit;
+  krad_compositor_subunit_t krad_compositor_subunit;
 };
 
 krad_text_t *krad_text_create ();

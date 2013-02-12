@@ -152,20 +152,20 @@ void krad_compositor_add_text (krad_compositor_t *krad_compositor, krad_text_rep
 	krad_text = NULL;
 
 	for (s = 0; s < KC_MAX_TEXTS; s++) {
-		if (krad_compositor->krad_text[s].krad_compositor_subunit->active == 0) {
+		if (krad_compositor->krad_text[s].krad_compositor_subunit.active == 0) {
 			krad_text = &krad_compositor->krad_text[s];
-			krad_text->krad_compositor_subunit->active = 2;
-      krad_text->krad_compositor_subunit->number = s;
+			krad_text->krad_compositor_subunit.active = 2;
+      krad_text->krad_compositor_subunit.number = s;
 			break;
 		}
 	}
 
-  krad_compositor_subunit_set_xy (krad_text->krad_compositor_subunit, krad_text_rep->controls->x, krad_text_rep->controls->y);
-  krad_compositor_subunit_set_z (krad_text->krad_compositor_subunit, krad_text_rep->controls->z);
-  krad_compositor_subunit_set_scale (krad_text->krad_compositor_subunit, krad_text_rep->controls->xscale);
-  krad_compositor_subunit_set_new_opacity (krad_text->krad_compositor_subunit, krad_text_rep->controls->opacity);
-  krad_compositor_subunit_set_rotation (krad_text->krad_compositor_subunit, krad_text_rep->controls->rotation);
-  krad_compositor_subunit_set_tickrate (krad_text->krad_compositor_subunit, krad_text_rep->controls->tickrate);
+  krad_compositor_subunit_set_xy (&krad_text->krad_compositor_subunit, krad_text_rep->controls->x, krad_text_rep->controls->y);
+  krad_compositor_subunit_set_z (&krad_text->krad_compositor_subunit, krad_text_rep->controls->z);
+  krad_compositor_subunit_set_scale (&krad_text->krad_compositor_subunit, krad_text_rep->controls->xscale);
+  krad_compositor_subunit_set_new_opacity (&krad_text->krad_compositor_subunit, krad_text_rep->controls->opacity);
+  krad_compositor_subunit_set_rotation (&krad_text->krad_compositor_subunit, krad_text_rep->controls->rotation);
+  krad_compositor_subunit_set_tickrate (&krad_text->krad_compositor_subunit, krad_text_rep->controls->tickrate);
 
   krad_text_set_text (krad_text, krad_text_rep->text);	
 
@@ -173,7 +173,7 @@ void krad_compositor_add_text (krad_compositor_t *krad_compositor, krad_text_rep
 
 	krad_text_set_rgb (krad_text, krad_text_rep->red, krad_text_rep->green, krad_text_rep->blue);
 
-	krad_text->krad_compositor_subunit->active = 1;
+	krad_text->krad_compositor_subunit.active = 1;
 	krad_compositor->active_texts++;
 
 }
@@ -186,11 +186,11 @@ void krad_compositor_set_text (krad_compositor_t *krad_compositor, krad_text_rep
 
 	krad_text = &krad_compositor->krad_text[krad_text_rep->controls->number];
 
-	krad_compositor_subunit_set_new_xy (krad_text->krad_compositor_subunit, krad_text_rep->controls->x, krad_text_rep->controls->y);
-	krad_compositor_subunit_set_new_scale (krad_text->krad_compositor_subunit, krad_text_rep->controls->xscale);
-	krad_compositor_subunit_set_new_opacity (krad_text->krad_compositor_subunit, krad_text_rep->controls->opacity);
-	krad_compositor_subunit_set_new_rotation (krad_text->krad_compositor_subunit, krad_text_rep->controls->rotation);
-	krad_compositor_subunit_set_tickrate (krad_text->krad_compositor_subunit, krad_text_rep->controls->tickrate);
+	krad_compositor_subunit_set_new_xy (&krad_text->krad_compositor_subunit, krad_text_rep->controls->x, krad_text_rep->controls->y);
+	krad_compositor_subunit_set_new_scale (&krad_text->krad_compositor_subunit, krad_text_rep->controls->xscale);
+	krad_compositor_subunit_set_new_opacity (&krad_text->krad_compositor_subunit, krad_text_rep->controls->opacity);
+	krad_compositor_subunit_set_new_rotation (&krad_text->krad_compositor_subunit, krad_text_rep->controls->rotation);
+	krad_compositor_subunit_set_tickrate (&krad_text->krad_compositor_subunit, krad_text_rep->controls->tickrate);
 
 	krad_text_set_new_rgb (krad_text, krad_text_rep->red, krad_text_rep->green, krad_text_rep->blue);
 
@@ -204,16 +204,16 @@ void krad_compositor_remove_text (krad_compositor_t *krad_compositor, int num) {
 
 	krad_text = &krad_compositor->krad_text[num];
 
-	if (krad_text->krad_compositor_subunit->active != 1) {
+	if (krad_text->krad_compositor_subunit.active != 1) {
 		return;
 	}
 
-	krad_text->krad_compositor_subunit->active = 3;
+	krad_text->krad_compositor_subunit.active = 3;
 
 	usleep (100000);
 	krad_text_reset (krad_text);
 	
-	krad_text->krad_compositor_subunit->active = 0;
+	krad_text->krad_compositor_subunit.active = 0;
 	krad_compositor->active_texts--;
 
 }
@@ -231,9 +231,9 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, krad_sprite
 	}
 
   for (s = 0; s < KC_MAX_SPRITES; s++) {
-	  if (krad_compositor->krad_sprite[s].krad_compositor_subunit->active == 0) {
+	  if (krad_compositor->krad_sprite[s].krad_compositor_subunit.active == 0) {
 		  krad_sprite = &krad_compositor->krad_sprite[s];
-		  krad_sprite->krad_compositor_subunit->active = 2;
+		  krad_sprite->krad_compositor_subunit.active = 2;
 		  break;
 	  }
   }
@@ -241,18 +241,18 @@ void krad_compositor_add_sprite (krad_compositor_t *krad_compositor, krad_sprite
 	if (krad_sprite_open_file (krad_sprite, krad_sprite_rep->filename)) {
 	
 
-	  krad_compositor_subunit_set_xy (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.x, krad_sprite_rep->controls.y);
-    krad_compositor_subunit_set_z (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.z);
-	  krad_compositor_subunit_set_scale (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.xscale);
-    krad_compositor_subunit_set_new_opacity (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.opacity);
-	  krad_compositor_subunit_set_rotation (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.rotation);
-	  krad_compositor_subunit_set_tickrate (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.tickrate);
+	  krad_compositor_subunit_set_xy (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.x, krad_sprite_rep->controls.y);
+    krad_compositor_subunit_set_z (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.z);
+	  krad_compositor_subunit_set_scale (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.xscale);
+    krad_compositor_subunit_set_new_opacity (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.opacity);
+	  krad_compositor_subunit_set_rotation (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.rotation);
+	  krad_compositor_subunit_set_tickrate (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.tickrate);
 
-	  krad_sprite->krad_compositor_subunit->active = 1;
+	  krad_sprite->krad_compositor_subunit.active = 1;
 	  krad_compositor->active_sprites++;
 
 	} else {
-    krad_sprite->krad_compositor_subunit->active = 0;	  
+    krad_sprite->krad_compositor_subunit.active = 0;	  
 	}
 
 }
@@ -266,12 +266,12 @@ void krad_compositor_set_sprite (krad_compositor_t *krad_compositor,
 
 	krad_sprite = &krad_compositor->krad_sprite[krad_sprite_rep->controls.number];
 
-	krad_compositor_subunit_set_new_xy (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.x, krad_sprite_rep->controls.y);
-  krad_compositor_subunit_set_z (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.z);
-	krad_compositor_subunit_set_new_scale (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.xscale);
-	krad_compositor_subunit_set_new_opacity (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.opacity);
-	krad_compositor_subunit_set_new_rotation (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.rotation);
-	krad_compositor_subunit_set_tickrate (krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.tickrate);
+	krad_compositor_subunit_set_new_xy (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.x, krad_sprite_rep->controls.y);
+  krad_compositor_subunit_set_z (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.z);
+	krad_compositor_subunit_set_new_scale (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.xscale);
+	krad_compositor_subunit_set_new_opacity (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.opacity);
+	krad_compositor_subunit_set_new_rotation (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.rotation);
+	krad_compositor_subunit_set_tickrate (&krad_sprite->krad_compositor_subunit, krad_sprite_rep->controls.tickrate);
 
 }
 
@@ -283,28 +283,28 @@ void krad_compositor_remove_sprite (krad_compositor_t *krad_compositor, int num)
 
 	krad_sprite = &krad_compositor->krad_sprite[num];
 
-	if (krad_sprite->krad_compositor_subunit->active != 1) {
+	if (krad_sprite->krad_compositor_subunit.active != 1) {
 		return;
 	}
 
-	krad_sprite->krad_compositor_subunit->active = 3;
+	krad_sprite->krad_compositor_subunit.active = 3;
 
 	usleep (100000);
 	krad_sprite_reset (krad_sprite);
 	
-	krad_sprite->krad_compositor_subunit->active = 0;
+	krad_sprite->krad_compositor_subunit.active = 0;
 	krad_compositor->active_sprites--;
 
 }
 
 void krad_compositor_unset_background (krad_compositor_t *krad_compositor) {
-	if (krad_compositor->background->krad_compositor_subunit->active != 1) {
+	if (krad_compositor->background->krad_compositor_subunit.active != 1) {
 		return;
 	}
-	krad_compositor->background->krad_compositor_subunit->active = 3;
+	krad_compositor->background->krad_compositor_subunit.active = 3;
 	usleep (100000);
 	krad_sprite_reset (krad_compositor->background);
-	krad_compositor->background->krad_compositor_subunit->active = 0;
+	krad_compositor->background->krad_compositor_subunit.active = 0;
 }
 
 void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *filename) {
@@ -315,16 +315,16 @@ void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *f
 	}
 	
 	if (krad_sprite_open_file (krad_compositor->background, filename)) {
-	  krad_compositor->background->krad_compositor_subunit->active = 1;
+	  krad_compositor->background->krad_compositor_subunit.active = 1;
 	} else {
-    krad_compositor->background->krad_compositor_subunit->active = 0;	  
+    krad_compositor->background->krad_compositor_subunit.active = 0;	  
 	}
 }
 
 int krad_compositor_get_background_name (krad_compositor_t *krad_compositor, char *filename) {
 	
 	if ((filename == NULL) ||
-	    (krad_compositor->background->krad_compositor_subunit->active != 1)) {
+	    (krad_compositor->background->krad_compositor_subunit.active != 1)) {
 		return 0;
 	}
 	
@@ -335,11 +335,11 @@ int krad_compositor_get_background_name (krad_compositor_t *krad_compositor, cha
 
 void krad_compositor_render_background (krad_compositor_t *krad_compositor) {
 
-	if (krad_compositor->background->krad_compositor_subunit->active != 1) {
+	if (krad_compositor->background->krad_compositor_subunit.active != 1) {
 		return;
 	}
   cairo_save (krad_compositor->cr);
-  if ((krad_compositor->background->krad_compositor_subunit->width != krad_compositor->width) || (krad_compositor->background->krad_compositor_subunit->height != krad_compositor->height)) {
+  if ((krad_compositor->background->krad_compositor_subunit.width != krad_compositor->width) || (krad_compositor->background->krad_compositor_subunit.height != krad_compositor->height)) {
 		cairo_set_source (krad_compositor->cr, krad_compositor->background->sprite_pattern);
   } else {
 		cairo_set_source_surface ( krad_compositor->cr, krad_compositor->background->sprite, 0, 0 );
@@ -349,7 +349,7 @@ void krad_compositor_render_background (krad_compositor_t *krad_compositor) {
 }
 
 int krad_compositor_has_background (krad_compositor_t *krad_compositor) {
-  if (krad_compositor->background->krad_compositor_subunit->active == 1) {
+  if (krad_compositor->background->krad_compositor_subunit.active == 1) {
     return 1;
 	}
   return 0;
@@ -377,37 +377,37 @@ void krad_compositor_clear_frame (krad_compositor_t *krad_compositor) {
 
 void krad_compositor_videoport_render_frame (krad_compositor_t *krad_compositor, krad_compositor_port_t *port, krad_frame_t *frame) {
 
-  if (port->krad_compositor_subunit->opacity == 0.0f) {
+  if (port->krad_compositor_subunit.opacity == 0.0f) {
 
-    krad_compositor_subunit_update (port->krad_compositor_subunit);  
+    krad_compositor_subunit_update (&port->krad_compositor_subunit);  
 
 	  return;
   }
   cairo_save (krad_compositor->cr);
 
-  if (port->krad_compositor_subunit->rotation != 0.0f) {
+  if (port->krad_compositor_subunit.rotation != 0.0f) {
 	  cairo_translate (krad_compositor->cr, port->crop_width / 2, port->crop_height / 2);
-	  cairo_rotate (krad_compositor->cr, port->krad_compositor_subunit->rotation * (M_PI/180.0));
+	  cairo_rotate (krad_compositor->cr, port->krad_compositor_subunit.rotation * (M_PI/180.0));
 	  cairo_translate (krad_compositor->cr, port->crop_width / -2, port->crop_height / -2);
   }
 
   cairo_set_source_surface (krad_compositor->cr, frame->cst,
-                            port->krad_compositor_subunit->x - port->crop_x, port->krad_compositor_subunit->y - port->crop_y);
+                            port->krad_compositor_subunit.x - port->crop_x, port->krad_compositor_subunit.y - port->crop_y);
 
   cairo_rectangle (krad_compositor->cr,
-                   port->krad_compositor_subunit->x, port->krad_compositor_subunit->y,
+                   port->krad_compositor_subunit.x, port->krad_compositor_subunit.y,
                    port->crop_width, port->crop_height);
 
   cairo_clip (krad_compositor->cr);
 
-  if (port->krad_compositor_subunit->opacity == 1.0f) {
+  if (port->krad_compositor_subunit.opacity == 1.0f) {
 	  cairo_paint (krad_compositor->cr);
   } else {
-	  cairo_paint_with_alpha (krad_compositor->cr, port->krad_compositor_subunit->opacity);
+	  cairo_paint_with_alpha (krad_compositor->cr, port->krad_compositor_subunit.opacity);
   }
   cairo_restore (krad_compositor->cr);
   
-  krad_compositor_subunit_update (port->krad_compositor_subunit);
+  krad_compositor_subunit_update (&port->krad_compositor_subunit);
   
 }
 
@@ -476,7 +476,7 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 
 
 	for (p = 0; p < KC_MAX_PORTS; p++) {
-		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == INPUT)) {
+		if ((krad_compositor->port[p].krad_compositor_subunit.active == 1) && (krad_compositor->port[p].direction == INPUT)) {
 			frame = krad_compositor_port_pull_frame (&krad_compositor->port[p]);		
 			if (frame != NULL) {
         krad_compositor_videoport_render_frame (krad_compositor, &krad_compositor->port[p], frame);
@@ -487,14 +487,14 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 
 
 	for (p = 0; p < KC_MAX_SPRITES; p++) {
-		if (krad_compositor->krad_sprite[p].krad_compositor_subunit->active == 1) {
+		if (krad_compositor->krad_sprite[p].krad_compositor_subunit.active == 1) {
 			krad_sprite_render (&krad_compositor->krad_sprite[p], krad_compositor->cr);
 		}
 	}
 	
 
 	for (p = 0; p < KC_MAX_TEXTS; p++) {
-		if (krad_compositor->krad_text[p].krad_compositor_subunit->active == 1) {
+		if (krad_compositor->krad_text[p].krad_compositor_subunit.active == 1) {
 			krad_text_render (&krad_compositor->krad_text[p], krad_compositor->cr);
 		}
 	}	
@@ -502,7 +502,7 @@ void krad_compositor_process (krad_compositor_t *krad_compositor) {
 	/* Push out the composited frame */
 
 	for (p = 0; p < KC_MAX_PORTS; p++) {
-		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == OUTPUT)) {
+		if ((krad_compositor->port[p].krad_compositor_subunit.active == 1) && (krad_compositor->port[p].direction == OUTPUT)) {
 			krad_compositor_port_push_frame (&krad_compositor->port[p], composite_frame);
 		}
 	}
@@ -646,42 +646,6 @@ void krad_compositor_take_snapshot (krad_compositor_t *krad_compositor, krad_fra
 
 }
 
-
-void krad_compositor_passthru_process (krad_compositor_t *krad_compositor) {
-
-	int p;
-	
-	krad_frame_t *krad_frame;
-	
-	krad_frame = NULL;
-
-
-	for (p = 0; p < KC_MAX_PORTS; p++) {
-		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == INPUT) &&
-			(krad_compositor->port[p].passthru == 1)) {
-				krad_frame = krad_compositor_port_pull_frame (&krad_compositor->port[p]);
-			break;
-		}
-	}
-	
-	if (krad_frame == NULL) {
-		return;
-	}
-
-
-	for (p = 0; p < KC_MAX_PORTS; p++) {
-		if ((krad_compositor->port[p].krad_compositor_subunit->active == 1) && (krad_compositor->port[p].direction == OUTPUT) &&
-			(krad_compositor->port[p].passthru == 1)) {
-
-			krad_compositor_port_push_frame (&krad_compositor->port[p], krad_frame);
-			break;
-		}
-	}
-	
-	krad_framepool_unref_frame (krad_frame);
-
-}
-
 void krad_compositor_port_set_comp_params (krad_compositor_port_t *krad_compositor_port,
 										   int x, int y, int width, int height, 
 										   int crop_x, int crop_y,
@@ -689,12 +653,12 @@ void krad_compositor_port_set_comp_params (krad_compositor_port_t *krad_composit
 										   
 	printkd ("comp compy params func called");
  
-  if ((x != krad_compositor_port->krad_compositor_subunit->x) || (y != krad_compositor_port->krad_compositor_subunit->y)) {
-    krad_compositor_subunit_set_new_xy (krad_compositor_port->krad_compositor_subunit, x, y);
+  if ((x != krad_compositor_port->krad_compositor_subunit.x) || (y != krad_compositor_port->krad_compositor_subunit.y)) {
+    krad_compositor_subunit_set_new_xy (&krad_compositor_port->krad_compositor_subunit, x, y);
   }
 
-  krad_compositor_port->krad_compositor_subunit->width = width;
-  krad_compositor_port->krad_compositor_subunit->height = height;
+  krad_compositor_port->krad_compositor_subunit.width = width;
+  krad_compositor_port->krad_compositor_subunit.height = height;
 
   krad_compositor_port->crop_x = crop_x;
   krad_compositor_port->crop_y = crop_y;
@@ -702,12 +666,12 @@ void krad_compositor_port_set_comp_params (krad_compositor_port_t *krad_composit
   krad_compositor_port->crop_width = crop_width;
   krad_compositor_port->crop_height = crop_height;
 
-  if (opacity != krad_compositor_port->krad_compositor_subunit->opacity) {
-    krad_compositor_subunit_set_new_opacity (krad_compositor_port->krad_compositor_subunit, opacity);
+  if (opacity != krad_compositor_port->krad_compositor_subunit.opacity) {
+    krad_compositor_subunit_set_new_opacity (&krad_compositor_port->krad_compositor_subunit, opacity);
   }
 
-  if (rotation != krad_compositor_port->krad_compositor_subunit->rotation) {
-    krad_compositor_subunit_set_new_rotation (krad_compositor_port->krad_compositor_subunit, rotation);
+  if (rotation != krad_compositor_port->krad_compositor_subunit.rotation) {
+    krad_compositor_subunit_set_new_rotation (&krad_compositor_port->krad_compositor_subunit, rotation);
   }  
 
   krad_compositor_port->comp_params_updated = 1;
@@ -731,20 +695,20 @@ void krad_compositor_port_set_io_params (krad_compositor_port_t *krad_compositor
 
 	krad_compositor_aspect_scale (krad_compositor_port->source_width, krad_compositor_port->source_height,
 								  krad_compositor_port->krad_compositor->width, krad_compositor_port->krad_compositor->height,
-								  &krad_compositor_port->krad_compositor_subunit->width, &krad_compositor_port->krad_compositor_subunit->height);
+								  &krad_compositor_port->krad_compositor_subunit.width, &krad_compositor_port->krad_compositor_subunit.height);
 
-	krad_compositor_port->crop_width = krad_compositor_port->krad_compositor_subunit->width;
-	krad_compositor_port->crop_height = krad_compositor_port->krad_compositor_subunit->height;
+	krad_compositor_port->crop_width = krad_compositor_port->krad_compositor_subunit.width;
+	krad_compositor_port->crop_height = krad_compositor_port->krad_compositor_subunit.height;
 
-  if (krad_compositor_port->krad_compositor_subunit->width < krad_compositor_port->krad_compositor->width) {
-    x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit->width) / 2;
+  if (krad_compositor_port->krad_compositor_subunit.width < krad_compositor_port->krad_compositor->width) {
+    x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit.width) / 2;
   }
   
-  if (krad_compositor_port->krad_compositor_subunit->height < krad_compositor_port->krad_compositor->height) {
-    y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit->height) / 2;
+  if (krad_compositor_port->krad_compositor_subunit.height < krad_compositor_port->krad_compositor->height) {
+    y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit.height) / 2;
   }
 
-  krad_compositor_subunit_set_xy (krad_compositor_port->krad_compositor_subunit, x, y);
+  krad_compositor_subunit_set_xy (&krad_compositor_port->krad_compositor_subunit, x, y);
 
   krad_compositor_port->io_params_updated = 1;
 
@@ -754,10 +718,10 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *krad_composito
 
   int dststride;
   
-  if (krad_compositor_port->krad_compositor->width > krad_compositor_port->krad_compositor_subunit->width) {
+  if (krad_compositor_port->krad_compositor->width > krad_compositor_port->krad_compositor_subunit.width) {
     dststride = krad_compositor_port->krad_compositor->width;
   } else {
-    dststride = krad_compositor_port->krad_compositor_subunit->width;
+    dststride = krad_compositor_port->krad_compositor_subunit.width;
   }
 
 	int rgb_stride_arr[3] = {4*dststride, 0, 0};
@@ -787,8 +751,8 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *krad_composito
 			sws_getContext ( krad_compositor_port->source_width,
 							 krad_compositor_port->source_height,
 							 krad_compositor_port->yuv_color_depth,
-							 krad_compositor_port->krad_compositor_subunit->width,
-							 krad_compositor_port->krad_compositor_subunit->height,
+							 krad_compositor_port->krad_compositor_subunit.width,
+							 krad_compositor_port->krad_compositor_subunit.height,
 							 PIX_FMT_RGB32, 
 							 SWS_BICUBIC,
 							 NULL, NULL, NULL);
@@ -798,8 +762,8 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *krad_composito
 				krad_compositor_port->source_height,
 				krad_compositor_port->crop_width,
 				krad_compositor_port->crop_height,				
-				krad_compositor_port->krad_compositor_subunit->width,
-				krad_compositor_port->krad_compositor_subunit->height);				 
+				krad_compositor_port->krad_compositor_subunit.width,
+				krad_compositor_port->krad_compositor_subunit.height);				 
 							 
 
 	}									 
@@ -850,8 +814,8 @@ krad_frame_t *krad_compositor_port_pull_yuv_frame (krad_compositor_port_t *krad_
 			sws_getContext ( krad_compositor_port->krad_compositor->width,
 							 krad_compositor_port->krad_compositor->height,
 							 PIX_FMT_RGB32,
-							 krad_compositor_port->krad_compositor_subunit->width,
-							 krad_compositor_port->krad_compositor_subunit->height,
+							 krad_compositor_port->krad_compositor_subunit.width,
+							 krad_compositor_port->krad_compositor_subunit.height,
 							 krad_compositor_port->yuv_color_depth, 
 							 SWS_BICUBIC,
 							 NULL, NULL, NULL);
@@ -881,8 +845,8 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *krad_composit
 	
 	krad_frame->format = PIX_FMT_RGB32;
 	
-	if ((krad_compositor_port->source_width != krad_compositor_port->krad_compositor_subunit->width) ||
-		(krad_compositor_port->source_height != krad_compositor_port->krad_compositor_subunit->height)) {
+	if ((krad_compositor_port->source_width != krad_compositor_port->krad_compositor_subunit.width) ||
+		(krad_compositor_port->source_height != krad_compositor_port->krad_compositor_subunit.height)) {
 	
 		if ((krad_compositor_port->io_params_updated) || (krad_compositor_port->comp_params_updated)) {
 			if (krad_compositor_port->sws_converter != NULL) {
@@ -900,8 +864,8 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *krad_composit
 				sws_getContext ( krad_compositor_port->source_width,
 								 krad_compositor_port->source_height,
 								 krad_frame->format,
-								 krad_compositor_port->krad_compositor_subunit->width,
-								 krad_compositor_port->krad_compositor_subunit->height,
+								 krad_compositor_port->krad_compositor_subunit.width,
+								 krad_compositor_port->krad_compositor_subunit.height,
 								 PIX_FMT_RGB32, 
 								 SWS_BICUBIC,
 								 NULL, NULL, NULL);
@@ -911,8 +875,8 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *krad_composit
 			}
 								 
 			printk ("set scaling to w %d h %d sw %d sh %d",
-					krad_compositor_port->krad_compositor_subunit->width,
-					krad_compositor_port->krad_compositor_subunit->height,
+					krad_compositor_port->krad_compositor_subunit.width,
+					krad_compositor_port->krad_compositor_subunit.height,
 					krad_compositor_port->source_width,
 					krad_compositor_port->source_height);							 
 								 
@@ -1011,7 +975,7 @@ krad_frame_t *krad_compositor_port_pull_frame (krad_compositor_port_t *krad_comp
 		return krad_compositor_port_pull_frame_local (krad_compositor_port);
 	}
 	
-	if ((krad_compositor_port->direction == INPUT) && (krad_compositor_port->passthru == 0)) {
+	if (krad_compositor_port->direction == INPUT) {
 
 		if (krad_compositor_port->last_frame != NULL) {
 
@@ -1167,18 +1131,12 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
 
 
 	for (p = 0; p < KC_MAX_PORTS; p++) {
-		if (krad_compositor->port[p].krad_compositor_subunit->active == 0) {
+		if (krad_compositor->port[p].krad_compositor_subunit.active == 0) {
 			krad_compositor_port = &krad_compositor->port[p];
-      if (krad_compositor_port->krad_compositor_subunit != NULL) {
-        krad_compositor_subunit_destroy (krad_compositor_port->krad_compositor_subunit);
-        krad_compositor_port->krad_compositor_subunit = NULL;
-      }
-      
-      krad_compositor_port->krad_compositor_subunit = krad_compositor_subunit_create ();
-      krad_compositor_port->krad_compositor_subunit->address.path.unit = KR_COMPOSITOR;
-      krad_compositor_port->krad_compositor_subunit->address.path.subunit.compositor_subunit = KR_VIDEOPORT;
-      krad_compositor_port->krad_compositor_subunit->address.id.number = p;
-			krad_compositor_port->krad_compositor_subunit->active = 2;
+      krad_compositor_port->krad_compositor_subunit.address.path.unit = KR_COMPOSITOR;
+      krad_compositor_port->krad_compositor_subunit.address.path.subunit.compositor_subunit = KR_VIDEOPORT;
+      krad_compositor_port->krad_compositor_subunit.address.id.number = p;
+			krad_compositor_port->krad_compositor_subunit.active = 2;
 			break;
 		}
 	}
@@ -1201,20 +1159,20 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
     krad_compositor_port->source_height = height;
     krad_compositor_aspect_scale (krad_compositor_port->source_width, krad_compositor_port->source_height,
                                   krad_compositor->width, krad_compositor->height,
-                                  &krad_compositor_port->krad_compositor_subunit->width, &krad_compositor_port->krad_compositor_subunit->height);
+                                  &krad_compositor_port->krad_compositor_subunit.width, &krad_compositor_port->krad_compositor_subunit.height);
 									  
-    if (krad_compositor_port->krad_compositor_subunit->width < krad_compositor_port->krad_compositor->width) {
-      x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit->width) / 2;
+    if (krad_compositor_port->krad_compositor_subunit.width < krad_compositor_port->krad_compositor->width) {
+      x = (krad_compositor_port->krad_compositor->width - krad_compositor_port->krad_compositor_subunit.width) / 2;
     }
 	
-	  if (krad_compositor_port->krad_compositor_subunit->height < krad_compositor_port->krad_compositor->height) {
-      y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit->height) / 2;
+	  if (krad_compositor_port->krad_compositor_subunit.height < krad_compositor_port->krad_compositor->height) {
+      y = (krad_compositor_port->krad_compositor->height - krad_compositor_port->krad_compositor_subunit.height) / 2;
     }
     
-    krad_compositor_subunit_set_xy (krad_compositor_port->krad_compositor_subunit, x, y);  
+    krad_compositor_subunit_set_xy (&krad_compositor_port->krad_compositor_subunit, x, y);  
     
-		krad_compositor_port->crop_width = krad_compositor_port->krad_compositor_subunit->width;
-		krad_compositor_port->crop_height = krad_compositor_port->krad_compositor_subunit->height;
+		krad_compositor_port->crop_width = krad_compositor_port->krad_compositor_subunit.width;
+		krad_compositor_port->crop_height = krad_compositor_port->krad_compositor_subunit.height;
 			
 	} else {
 	
@@ -1226,66 +1184,44 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
 	
 		krad_compositor_port->source_width = krad_compositor->width;
 		krad_compositor_port->source_height = krad_compositor->height;
-		krad_compositor_port->krad_compositor_subunit->width = width;
-		krad_compositor_port->krad_compositor_subunit->height = height;
+		krad_compositor_port->krad_compositor_subunit.width = width;
+		krad_compositor_port->krad_compositor_subunit.height = height;
 		krad_compositor_port->crop_width = krad_compositor->width;
 		krad_compositor_port->crop_height = krad_compositor->height;
 		krad_compositor_port->yuv_color_depth = PIX_FMT_YUV420P;
 	}
-	
-	if (strstr(krad_compositor_port->sysname, "passthru") != NULL) {
-		krad_compositor_port->passthru = 1;
-		krad_compositor->active_passthru_ports++;
-	
-		krad_compositor_port->frame_ring = 
-		krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * 5 * sizeof(krad_frame_t *) );
-		if (krad_compositor_port->frame_ring == NULL) {
-			failfast ("oh dearringp im out of mem");
-		}
-	} else {
 
-		krad_compositor_alloc_resources (krad_compositor);
+  krad_compositor_alloc_resources (krad_compositor);
 
-		krad_compositor_port->frame_ring = 
-		krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * sizeof(krad_frame_t *) );
+  krad_compositor_port->frame_ring = 
+  krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * sizeof(krad_frame_t *) );
 
-		if (krad_compositor_port->local == 0) {
-			krad_compositor_port->frame_ring = 
-			krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * sizeof(krad_frame_t *) );
-			if (krad_compositor_port->frame_ring == NULL) {
-				failfast ("oh dearring im out of mem");
-			}
-		} else {
-			krad_compositor_port->frame_ring = NULL;
-		}
+  if (krad_compositor_port->local == 0) {
+	  krad_compositor_port->frame_ring = 
+	  krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * sizeof(krad_frame_t *) );
+	  if (krad_compositor_port->frame_ring == NULL) {
+		  failfast ("oh dearring im out of mem");
+	  }
+  } else {
+	  krad_compositor_port->frame_ring = NULL;
+  }
 
-		krad_compositor->active_ports++;
-		if (krad_compositor_port->direction == INPUT) {
-			krad_compositor->active_input_ports++;
-		}
-		if (krad_compositor_port->direction == OUTPUT) {
-			krad_compositor->active_output_ports++;
-		}
-	}
+  krad_compositor->active_ports++;
+  if (krad_compositor_port->direction == INPUT) {
+	  krad_compositor->active_input_ports++;
+  }
+  if (krad_compositor_port->direction == OUTPUT) {
+	  krad_compositor->active_output_ports++;
+  }
 
 	if (holdlock == 0) {
-		krad_compositor_port->krad_compositor_subunit->active = 1;
+		krad_compositor_port->krad_compositor_subunit.active = 1;
 		pthread_mutex_unlock (&krad_compositor->settings_lock);		
 	}
 	
 	return krad_compositor_port;
 
 }
-
-krad_compositor_port_t *krad_compositor_passthru_port_create (krad_compositor_t *krad_compositor,
-														   char *sysname, int direction) {
-
-	krad_compositor_port_t *krad_compositor_port;
-	krad_compositor_port = krad_compositor_port_create (krad_compositor, sysname, direction,
-														1,1);
-	return krad_compositor_port;	
-}
-
 
 krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *krad_compositor,
 														   char *sysname, int direction, int shm_sd, int msg_sd) {
@@ -1327,7 +1263,7 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
 		
 		
 		
-		krad_compositor_port->krad_compositor_subunit->active = 1;
+		krad_compositor_port->krad_compositor_subunit.active = 1;
 		pthread_mutex_unlock (&krad_compositor->settings_lock);
 	} else {
 		printke ("Krad Compositor: failed to create local port");
@@ -1341,24 +1277,20 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
 
 void krad_compositor_port_destroy_unlocked (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port) {
 
-	krad_compositor_port->krad_compositor_subunit->active = 3;
+	krad_compositor_port->krad_compositor_subunit.active = 3;
 	
 	//FIXME kludge to wait for nonuse
 	
 	usleep (45000);
 
-	if (strstr(krad_compositor_port->sysname, "passthru") != NULL) {
-		krad_compositor->active_passthru_ports--;
-	} else {
-		if (krad_compositor_port->direction == INPUT) {
-			krad_compositor->active_input_ports--;
-		}
-		if (krad_compositor_port->direction == OUTPUT) {
-			krad_compositor->active_output_ports--;
-      close (krad_compositor_port->socketpair[0]);
-      close (krad_compositor_port->socketpair[1]);			
-		}
- 	}
+	if (krad_compositor_port->direction == INPUT) {
+		krad_compositor->active_input_ports--;
+	}
+	if (krad_compositor_port->direction == OUTPUT) {
+		krad_compositor->active_output_ports--;
+    close (krad_compositor_port->socketpair[0]);
+    close (krad_compositor_port->socketpair[1]);			
+	}
  	
  	if (krad_compositor_port->local == 1) {
 		if (krad_compositor_port->msg_sd != 0) {
@@ -1388,7 +1320,7 @@ void krad_compositor_port_destroy_unlocked (krad_compositor_t *krad_compositor, 
 		krad_compositor_port->frame_ring = NULL;
 	}
 	krad_compositor_port->start_timecode = 0;
-	krad_compositor_port->krad_compositor_subunit->active = 0;
+	krad_compositor_port->krad_compositor_subunit.active = 0;
 
 	if (krad_compositor_port->sws_converter != NULL) {
 		sws_freeContext ( krad_compositor_port->sws_converter );
@@ -1400,16 +1332,8 @@ void krad_compositor_port_destroy_unlocked (krad_compositor_t *krad_compositor, 
 		krad_compositor_port->last_frame = NULL;
 	}
 
-  if (krad_compositor_port->krad_compositor_subunit != NULL) {
-    krad_compositor_subunit_destroy (krad_compositor_port->krad_compositor_subunit);
-    krad_compositor_port->krad_compositor_subunit = NULL;
-  }
+  krad_compositor->active_ports--;
 
-	if (strstr(krad_compositor_port->sysname, "passthru") != NULL) {
-		krad_compositor_port->passthru = 0;
-	} else {
-		krad_compositor->active_ports--;
-	}
 }
 
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port) {
@@ -1434,10 +1358,9 @@ void krad_compositor_destroy (krad_compositor_t *krad_compositor) {
 #endif
 
 	for (i = 0; i < KC_MAX_PORTS; i++) {
-		if (krad_compositor->port[i].krad_compositor_subunit->active == 1) {
+		if (krad_compositor->port[i].krad_compositor_subunit.active == 1) {
 			krad_compositor_port_destroy (krad_compositor, &krad_compositor->port[i]);
 		}
-    krad_compositor_subunit_destroy (krad_compositor->port[i].krad_compositor_subunit);
 	}
 	
   krad_compositor_stop_ticker (krad_compositor);
@@ -1520,10 +1443,9 @@ krad_compositor_t *krad_compositor_create (int width, int height,
 	krad_compositor->port = calloc(KC_MAX_PORTS, sizeof(krad_compositor_port_t));
 	
   for (i = 0; i < KC_MAX_PORTS; i++) {
-    krad_compositor->port[i].krad_compositor_subunit = krad_compositor_subunit_create();
-    krad_compositor->port[i].krad_compositor_subunit->address.path.unit = KR_COMPOSITOR;
-    krad_compositor->port[i].krad_compositor_subunit->address.path.subunit.compositor_subunit = KR_VIDEOPORT;
-    krad_compositor->port[i].krad_compositor_subunit->address.id.number = i;
+    krad_compositor->port[i].krad_compositor_subunit.address.path.unit = KR_COMPOSITOR;
+    krad_compositor->port[i].krad_compositor_subunit.address.path.subunit.compositor_subunit = KR_VIDEOPORT;
+    krad_compositor->port[i].krad_compositor_subunit.address.id.number = i;
   }
   
 	krad_compositor->krad_sprite = krad_sprite_create_arr (KC_MAX_SPRITES);

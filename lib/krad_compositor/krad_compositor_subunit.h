@@ -1,8 +1,10 @@
 #ifndef KRAD_COMPOSITOR_SUBUNIT_H
 #define KRAD_COMPOSITOR_SUBUNIT_H
 
-typedef struct krad_compositor_subunit_St krad_compositor_subunit_t;
+#include "krad_radio_client.h"
+#include "krad_easing.h"
 
+typedef struct krad_compositor_subunit_St krad_compositor_subunit_t;
 
 typedef enum {
   TEXT,
@@ -10,8 +12,6 @@ typedef enum {
   VECTOR,
   VIDEO_PORT
 } compositor_subunit_type_t;
-
-#include "krad_radio.h"
 
 struct krad_compositor_subunit_St {
 

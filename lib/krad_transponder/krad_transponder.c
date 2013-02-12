@@ -47,14 +47,7 @@ void v4l2_capture_unit_create (void *arg) {
   }
 
   if (krad_link->video_passthru == 1) {
-    if (krad_link->video_codec == MJPEG) {
-      krad_link->krad_compositor_port = 
-      krad_compositor_passthru_port_create (krad_link->krad_radio->krad_compositor, "V4L2MJPEGpassthruIn", INPUT);
-    }
-    if (krad_link->video_codec == H264) {
-      krad_link->krad_compositor_port = 
-      krad_compositor_passthru_port_create (krad_link->krad_radio->krad_compositor, "V4L2H264passthruIn", INPUT);
-    }  
+    //FIXME
   } else {
     krad_link->krad_compositor_port = 
     krad_compositor_port_create (krad_link->krad_radio->krad_compositor, "V4L2In", INPUT,
@@ -104,7 +97,7 @@ int v4l2_capture_unit_process (void *arg) {
   krad_framepool_unref_frame (krad_frame);
 
   if (krad_link->video_passthru == 1) {
-    krad_compositor_passthru_process (krad_link->krad_radio->krad_compositor);
+    //FIXME
   }
 
   return 0;
@@ -117,8 +110,6 @@ void v4l2_capture_unit_destroy (void *arg) {
   krad_v4l2_stop_capturing (krad_link->krad_v4l2);
   krad_v4l2_close(krad_link->krad_v4l2);
   krad_v4l2_destroy(krad_link->krad_v4l2);
-
-  krad_compositor_port_destroy (krad_link->krad_radio->krad_compositor, krad_link->krad_compositor_port);
 
   printk ("v4l2 capture unit destroy");
   
@@ -872,9 +863,7 @@ void muxer_unit_create (void *arg) {
         krad_link->muxer_seen_passthu_keyframe = 1;
       }
     
-      krad_link->krad_compositor_port = krad_compositor_passthru_port_create (krad_link->krad_radio->krad_compositor,
-                                         "passthruStreamOut",
-                                         OUTPUT);
+      //FIXME
     }
     
     if (krad_link->video_codec == Y4M) {
