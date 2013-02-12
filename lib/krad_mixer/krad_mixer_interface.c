@@ -436,15 +436,6 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
         
       break;
       
-    case EBML_ID_KRAD_MIXER_CMD_JACK_RUNNING:
-    
-      krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_MIXER_MSG, &response);
-      krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_MIXER_JACK_RUNNING,
-                       krad_jack_detect ());
-      krad_ipc_server_response_finish ( krad_ipc, response);
-    
-      return 1;
-  
     case EBML_ID_KRAD_MIXER_CMD_GET_INFO:
     
       numbers[0] = 0;

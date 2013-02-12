@@ -27,10 +27,8 @@ typedef struct kr_audioport_St kr_audioport_t;
 
 void kr_ebml_to_mixer_rep (unsigned char *ebml_frag, kr_mixer_t **kr_mixer_rep_in);
 int kr_ebml_to_mixer_portgroup_rep (unsigned char *ebml_frag, kr_mixer_portgroup_t **portgroup_rep_in);
-
 int kr_mixer_response_get_string_from_portgroup (unsigned char *ebml_frag, uint64_t item_size, char **string);
 int kr_mixer_response_to_string (kr_response_t *kr_response, char **string);
-
 int kr_mixer_read_control ( kr_client_t *client, char **portgroup_name, char **control_name, float *value );
 
 void kr_mixer_portgroup_xmms2_cmd (kr_client_t *client, char *portgroupname, char *xmms2_cmd);
@@ -43,22 +41,15 @@ void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgr
 void kr_mixer_push_tone (kr_client_t *client, char *tone);
 void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, char *ipc_path);
 void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname);
-// FIXME creation is functionally incomplete
 void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction, int channels);
 void kr_mixer_remove_portgroup (kr_client_t *client, char *portgroupname);
 void kr_mixer_portgroups_list (kr_client_t *client);
 void kr_mixer_info (kr_client_t *client);
 void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname);
 void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *control_name, float control_value, int duration);
-/*
-void kr_mixer_add_effect (kr_client_t *client, char *portgroup_name, char *effect_name);
-void kr_mixer_remove_effect (kr_client_t *client, char *portgroup_name, int effect_num);
-*/
 void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
                                   int control_id, char *control_name, float control_value, int duration,
                                   krad_ease_t ease);
-
-void kr_mixer_jack_running (kr_client_t *client);
 
 /* Mixer Local Audio Ports */
 

@@ -463,22 +463,6 @@ void kr_mixer_remove_portgroup (kr_client_t *client, char *name) {
 	krad_ebml_write_sync (client->krad_ebml);
 }
 
-void kr_mixer_jack_running (kr_client_t *client) {
-
-	uint64_t mixer_command;
-	uint64_t jack_running;
-	
-	mixer_command = 0;
-
-	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
-	krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD_JACK_RUNNING, &jack_running);
-
-	krad_ebml_finish_element (client->krad_ebml, jack_running);
-	krad_ebml_finish_element (client->krad_ebml, mixer_command);
-		
-	krad_ebml_write_sync (client->krad_ebml);
-}
-
 void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
                                   int control_id, char *control_name, float control_value, int duration,
                                   krad_ease_t ease) {
