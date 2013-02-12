@@ -264,18 +264,26 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			if (strncmp("station", tag_item, 7) == 0) {
 				krad_tags = krad_radio->krad_tags;
 			} else {
-				krad_tags = krad_radio_find_tags_for_item ( krad_radio, tag_item );
+			//	krad_tags = krad_radio_find_tags_for_item ( krad_radio, tag_item );
 			}
 			if (krad_tags != NULL) {
-				//printk ("Got Tags for %s", tag_item);
-				krad_ipc_server_response_start ( kr_ipc, EBML_ID_KRAD_RADIO_MSG, &response);
-				krad_ipc_server_response_list_start ( kr_ipc, EBML_ID_KRAD_RADIO_TAG_LIST, &element);
+        i = 0;
+        address.path.unit = KR_STATION;
+			  address.path.subunit.station_subunit = KR_TAGS;
+
+        krad_ipc_server_response_start_with_address_and_type ( kr_ipc,
+                                                               &address,
+                                                               EBML_ID_KRAD_SUBUNIT_INFO,
+                                                               &response);
+        krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
+
 				while (krad_tags_get_next_tag ( krad_tags, &i, &tag_name, &tag_value)) {
 					krad_ipc_server_response_add_tag ( kr_ipc, tag_item, tag_name, tag_value);
-					//printk ("Tag %d: %s - %s", i, tag_name, tag_value);
 				}
-				krad_ipc_server_response_list_finish ( kr_ipc, element );
-				krad_ipc_server_response_finish ( kr_ipc, response );
+
+        krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
+        krad_ipc_server_response_finish ( kr_ipc, response );
+
 			} else {
 				printke ("Could not find %s", tag_item);
 			}
@@ -295,7 +303,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 				}
 			}
 			//krad_ipc_server_broadcast_tag ( kr_ipc, tag_item, tag_name, tag_value);
-			ret = 1;
 			break;
 		case EBML_ID_KRAD_RADIO_CMD_GET_TAG:
 			krad_ipc_server_read_tag ( kr_ipc, &tag_item, &tag_name, &tag_value );
@@ -303,19 +310,31 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			if (strncmp("station", tag_item, 7) == 0) {
 				tag_value = krad_tags_get_tag (krad_radio->krad_tags, tag_name);
 			} else {
-				krad_tags = krad_radio_find_tags_for_item ( krad_radio, tag_item );
-				if (krad_tags != NULL) {
-					tag_value = krad_tags_get_tag ( krad_tags, tag_name );
-					//printk ("Got Tag %s on %s - %s", tag_name, tag_item, tag_value);
-				} else {
-					printke ("Could not find %s", tag_item);
-				}
+				//krad_tags = krad_radio_find_tags_for_item ( krad_radio, tag_item );
+				//if (krad_tags != NULL) {
+				//	tag_value = krad_tags_get_tag ( krad_tags, tag_name );
+				//	//printk ("Got Tag %s on %s - %s", tag_name, tag_item, tag_value);
+				//} else {
+				//	printke ("Could not find %s", tag_item);
+				//}
 			}
 			
 			if (strlen(tag_value)) {
-				krad_ipc_server_response_start ( kr_ipc, EBML_ID_KRAD_RADIO_MSG, &response);
+
+			  address.path.unit = KR_STATION;
+			  address.path.subunit.station_subunit = KR_TAGS;
+
+        krad_ipc_server_response_start_with_address_and_type ( kr_ipc,
+                                                               &address,
+                                                               EBML_ID_KRAD_SUBUNIT_INFO,
+                                                               &response);
+        krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
+
 				krad_ipc_server_response_add_tag ( kr_ipc, tag_item, tag_name, tag_value);
-				krad_ipc_server_response_finish ( kr_ipc, response);
+
+        krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
+        krad_ipc_server_response_finish ( kr_ipc, response );
+   
 			}
 			ret = 1;
 			break;

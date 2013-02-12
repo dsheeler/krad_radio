@@ -427,7 +427,42 @@ int kr_radio_response_get_string_from_cpu (unsigned char *ebml_frag, uint64_t it
   return pos; 
 }
 
+int kr_radio_response_get_string_from_tags (unsigned char *ebml_frag, uint64_t item_size, char **string) {
+
+  int pos;
+  int ebml_pos;
+
+  ebml_pos = 0;
+  pos = 0;
+
+	char tag_item_actual[256];	
+	char tag_name_actual[256];
+	char tag_value_actual[256];
+	
+	char *tag_item = tag_item_actual;	
+	char *tag_name = tag_name_actual;
+	char *tag_value = tag_value_actual;
+	
+	tag_item_actual[0] = '\0';	
+	tag_name_actual[0] = '\0';
+	tag_value_actual[0] = '\0';
+  
+  while (ebml_pos < item_size) {
+    if (ebml_pos > 0) {
+      pos += sprintf (*string + pos, "\n");  
+    }
+    ebml_pos += kr_read_tag_frag ( ebml_frag + ebml_pos, &tag_item, &tag_name, &tag_value );
+    pos += sprintf (*string + pos, "%s tag: %s - %s", tag_item, tag_name, tag_value);  
+  }
+  return pos; 
+}
+
 int kr_radio_response_to_string (kr_response_t *response, char **string) {
+
+  if (response->address.path.subunit.zero == KR_TAGS) {
+    *string = kr_response_alloc_string (response->size * 4);
+    return kr_radio_response_get_string_from_tags (response->buffer, response->size, string);
+  }
 
   switch ( response->address.path.subunit.station_subunit ) {
     case KR_STATION_UNIT:
@@ -1230,6 +1265,33 @@ void kr_read_tag_inner ( kr_client_t *client, char **tag_item, char **tag_name, 
   krad_ebml_read_string (client->krad_ebml, *tag_value, ebml_data_size);
 }
 
+int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_name, char **tag_value ) {
+
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
+  int item_pos;
+  
+  item_pos = 0;
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+
+  
+  if (ebml_id != EBML_ID_KRAD_RADIO_TAG) {
+    //printf("hrm wtf\n");
+  }
+
+	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_item);
+
+	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_name);
+ 
+	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_value);
+  
+  return item_pos;
+}
+
 int kr_read_tag ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value ) {
 
   uint32_t ebml_id;
@@ -1390,6 +1452,10 @@ void kr_address_debug_print (kr_address_t *addr) {
 
   switch (*unit) {
     case KR_STATION:
+      if (subunit->zero == KR_TAGS) {
+        printf ("Station Tags");
+        break;
+      }
       switch (subunit->station_subunit) {
         case KR_CPU:
           printf ("CPU Usage");

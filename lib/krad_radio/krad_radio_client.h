@@ -89,6 +89,7 @@ typedef enum {
 } kr_unit_t;
 
 #define KR_UNIT 0
+#define KR_TAGS 666
 
 /* Subunits */
 
@@ -209,10 +210,10 @@ typedef union {
 } kr_rep_ptr_t;
 
 typedef struct kr_rep_St kr_rep_t;
+
 struct kr_rep_St {
   kr_rep_ptr_t rep_ptr;
   uint32_t type;
-  //char *buffer;
 };
 
 struct kr_response_St {
@@ -495,6 +496,9 @@ void kr_osc_disable (kr_client_t *client);
  * @param tag_name
  * @param tag_value
  */
+ 
+int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_name, char **tag_value );
+ 
 void kr_read_tag_inner ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value );
 
 /**

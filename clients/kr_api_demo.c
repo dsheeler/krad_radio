@@ -143,6 +143,9 @@ void accept_some_deliveries (kr_client_t *client) {
 
 void one_shot_demo (kr_client_t *client) {
 
+  kr_tags (client, NULL);    
+  kr_delivery_accept_and_report (client);
+
   kr_system_info (client);
   accept_some_deliveries (client);
 
