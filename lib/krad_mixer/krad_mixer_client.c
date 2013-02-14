@@ -654,13 +654,22 @@ int kr_mixer_response_get_string_from_subunit_control (kr_address_t *address, un
   pos = 0;
 
   ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);
-  if ((address->control.portgroup_control == KR_VOLUME) || (address->control.portgroup_control == KR_CROSSFADE)) {
+
+  if (address->path.subunit.mixer_subunit == KR_PORTGROUP) {
+    if ((address->control.portgroup_control == KR_VOLUME) || (address->control.portgroup_control == KR_CROSSFADE)) {
+      value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
+      pos += sprintf (*string + pos, "%5.2f", value);
+    }
+    if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) || (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+      pos += krad_ebml_read_string_from_frag (ebml_frag + ebml_pos, ebml_data_size, *string + pos);
+    }
+  }
+
+  if (address->path.subunit.mixer_subunit == KR_EFFECT) {
     value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
     pos += sprintf (*string + pos, "%5.2f", value);
   }
-  if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) || (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
-    pos += krad_ebml_read_string_from_frag (ebml_frag + ebml_pos, ebml_data_size, *string + pos);
-  }
+    
   return pos; 
 }
 
