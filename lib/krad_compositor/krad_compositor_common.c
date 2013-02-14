@@ -295,13 +295,14 @@ void krad_compositor_vector_rep_destroy (krad_vector_rep_t *krad_vector_rep) {
 }
 
 void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *krad_vector_rep, krad_ebml_t *krad_ebml) {
-  
+
   uint64_t cmd;
-  char vector_type_string [128];
-  
-  krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, &cmd);  
-  krad_vector_type_to_string(krad_vector_rep->krad_vector_type, vector_type_string);
-  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, vector_type_string);
+
+  krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, &cmd);
+
+  krad_ebml_write_string (krad_ebml,
+                          EBML_ID_KRAD_COMPOSITOR_TEXT,
+                          krad_vector_type_to_string (krad_vector_rep->krad_vector_type));
   
   krad_ebml_write_float (krad_ebml,
                          EBML_ID_KRAD_COMPOSITOR_RED,
@@ -312,10 +313,8 @@ void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *krad_vector_rep, kra
   krad_ebml_write_float (krad_ebml,
                          EBML_ID_KRAD_COMPOSITOR_BLUE,
                          krad_vector_rep->blue);
-  
 
   krad_compositor_subunit_controls_to_ebml (krad_ebml, &krad_vector_rep->controls);
-
   krad_ebml_finish_element (krad_ebml, cmd);
 }
 
@@ -387,51 +386,70 @@ krad_vector_type_t krad_string_to_vector_type (char *string) {
 
   if (strncmp (string, "hex", 3) == 0) {
     return HEX;
-  } 
+  }
   if (strncmp (string, "circle", 6) == 0) {
     return CIRCLE;
-  } 
+  }
   if (strncmp (string, "rect", 4) == 0) {
     return RECT;
-  } 
+  }
   if (strncmp (string, "triangle", 3) == 0) {
     return TRIANGLE;
-  } 
+  }
   if (strncmp (string, "viper", 5) == 0) {
     return VIPER;
-  } 
+  }
   if (strncmp (string, "meter", 5) == 0) {
     return METER;
-  } 
+  }
   if (strncmp (string, "grid", 4) == 0) {
     return GRID;
-  } 
-
+  }
+  if (strncmp (string, "curve", 5) == 0) {
+    return CURVE;
+  }
+  if (strncmp (string, "arrow", 5) == 0) {
+    return ARROW;
+  }
+  if (strncmp (string, "clock", 5) == 0) {
+    return CLOCK;
+  }
+  if (strncmp (string, "shadow", 6) == 0) {
+    return SHADOW;
+  }
   return NOTHING;
 }
 
-void krad_vector_type_to_string (krad_vector_type_t krad_vector_type, char *string) {
-  if (krad_vector_type == HEX) {
-    strcpy ( string, "hex");
+char *krad_vector_type_to_string (krad_vector_type_t type) {
+
+  switch ( type ) {
+    case HEX:
+      return "hex";
+    case CIRCLE:
+      return "circle";
+    case RECT:
+      return "rect";
+    case TRIANGLE:
+      return "triangle";
+    case VIPER:
+      return "viper";
+    case METER:
+      return "meter";
+    case GRID:
+      return "grid";
+    case CURVE:
+      return "curve";
+    case ARROW:
+      return "arrow";
+    case CLOCK:
+      return "clock";
+    case SHADOW:
+      return "shadow";
+    default:
+      break;    
   }
-  if (krad_vector_type == CIRCLE) {
-    strcpy ( string, "circle");
-  }
-  if (krad_vector_type == RECT) {
-    strcpy ( string, "rect");
-  }
-  if (krad_vector_type == TRIANGLE) {
-    strcpy ( string, "triangle");
-  }
-  if (krad_vector_type == VIPER) {
-    strcpy ( string, "viper");
-  }
-  if (krad_vector_type == METER) {
-    strcpy ( string, "meter");
-  }
-  if (krad_vector_type == GRID) {
-    strcpy ( string, "grid");
-  }
+
+  return "Unknown";
 }
 
 char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type) {
