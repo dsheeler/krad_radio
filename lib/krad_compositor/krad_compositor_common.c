@@ -369,7 +369,6 @@ void krad_compositor_vector_rep_reset (krad_vector_rep_t *krad_vector_rep) {
   //krad_vector_rep->controls = krad_controls;
 }
 
-
 krad_vector_rep_t *krad_compositor_vector_rep_create_and_init (int number, char *vector_type_string, float red, float green, float blue, int x, int y, int z, int tickrate, float scale, float opacity, float rotation) {
 
   krad_vector_rep_t *krad_vector_rep = calloc(1, sizeof (krad_vector_rep_t));
@@ -380,6 +379,50 @@ krad_vector_rep_t *krad_compositor_vector_rep_create_and_init (int number, char 
 
   krad_compositor_subunit_controls_init (&krad_vector_rep->controls, number, x, y, z, tickrate, 0, 0, scale, opacity, rotation); 
   return krad_vector_rep;
+}
+
+kr_compositor_control_t krad_string_to_compositor_control (char *string) {
+
+  if (strncmp (string, "xscale", 2) == 0) {
+    return KR_XSCALE;
+  }
+  if (strncmp (string, "yscale", 2) == 0) {
+    return KR_YSCALE;
+  }
+  if (strncmp (string, "red", 2) == 0) {
+    return KR_RED;
+  }
+  if (strncmp (string, "x", 1) == 0) {
+    return KR_X;
+  }
+  if (strncmp (string, "y", 1) == 0) {
+    return KR_Y;
+  }
+  if (strncmp (string, "z", 1) == 0) {
+    return KR_Z;
+  }
+  if (strncmp (string, "width", 1) == 0) {
+    return KR_WIDTH;
+  }
+  if (strncmp (string, "height", 1) == 0) {
+    return KR_HEIGHT;
+  }
+  if (strncmp (string, "rotation", 1) == 0) {
+    return KR_ROTATION;
+  }
+  if (strncmp (string, "opacity", 1) == 0) {
+    return KR_OPACITY;
+  }
+  if (strncmp (string, "green", 1) == 0) {
+    return KR_GREEN;
+  }
+  if (strncmp (string, "blue", 1) == 0) {
+    return KR_BLUE;
+  }
+  if (strncmp (string, "alpha", 1) == 0) {
+    return KR_ALPHA;
+  }
+  return 0;
 }
 
 krad_vector_type_t krad_string_to_vector_type (char *string) {

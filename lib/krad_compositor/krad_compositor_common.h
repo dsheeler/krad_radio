@@ -28,6 +28,22 @@ typedef enum {
   SHADOW,
 } krad_vector_type_t;
 
+typedef enum {
+  KR_X,
+  KR_Y,
+  KR_Z,
+  KR_WIDTH,
+  KR_HEIGHT,
+  KR_ROTATION,
+  KR_OPACITY,
+  KR_XSCALE,
+  KR_YSCALE,
+  KR_RED,
+  KR_GREEN,
+  KR_BLUE,
+  KR_ALPHA,
+} kr_compositor_control_t;
+
 typedef struct krad_text_rep_St krad_text_rep_t;
 typedef struct krad_text_rep_St kr_text_t;
 typedef struct krad_sprite_rep_St krad_sprite_rep_t;
@@ -137,7 +153,8 @@ void krad_compositor_vector_rep_destroy (krad_vector_rep_t *krad_vector_rep);
 void krad_compositor_validate_vector_rep (krad_vector_rep_t *krad_vector_rep);
 void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *krad_vector_rep, krad_ebml_t *krad_ebml);
 void krad_compositor_vector_rep_reset (krad_vector_rep_t *krad_vector_rep);
-krad_vector_type_t krad_string_to_vector_type (char *string); 
+krad_vector_type_t krad_string_to_vector_type (char *string);
+kr_compositor_control_t krad_string_to_compositor_control (char *string);
 char *krad_vector_type_to_string (krad_vector_type_t type);
 
 kr_compositor_t *kr_compositor_rep_create ();

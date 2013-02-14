@@ -393,6 +393,15 @@ int main (int argc, char *argv[]) {
     }
   }
 
+  if (strncmp(argv[2], "setmix", 6) == 0) {
+    if (argc == 6) {
+      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), 0);
+    }
+    if (argc == 7) {
+      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), atoi(argv[6]));
+    }
+  }
+
   if (((argc == 5) || (argc == 6)) &&
       (((strlen(argv[2]) == 1) && (strncmp(argv[2], "s", 1) == 0)) ||
        ((strlen(argv[2]) == 3) && (strncmp(argv[2], "set", 3) == 0)))) {
@@ -404,34 +413,33 @@ int main (int argc, char *argv[]) {
         uc.duration = 0;
       }
       if (argc == 6) {
-        uc.value.real = atoi(argv[4]);
+        uc.value.real = atof(argv[4]);
         uc.duration = atoi(argv[5]);
       }
       kr_unit_control_set (client, &uc);
     }
   }
-
-  if (strncmp(argv[2], "setmix", 6) == 0) {
-    if (argc == 6) {
-      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), 0);
-    }
-    if (argc == 7) {
-      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), atoi(argv[6]));
-    }
-  }
   
   if (((argc == 4) || (argc == 5)) &&
-      (((strlen(argv[2]) > 2) && (argv[2][1] == '/')) ||
+      (((strlen(argv[2]) > 2) && (strchr(argv[2], '/') != NULL)) ||
        (0))) {
 
     memset (&uc, 0, sizeof (uc));
     if (kr_string_to_address (argv[2], &uc.address)) {
-      if (argc == 4) {
+      kr_unit_control_data_type_from_address (&uc.address, &uc.data_type);
+      if (uc.data_type == KR_FLOAT) {
         uc.value.real = atof(argv[3]);
+      }
+      if (uc.data_type == KR_INT32) {
+        uc.value.integer = atoi(argv[3]);
+      }
+      if (uc.data_type == KR_STRING) {
+        uc.value.string = argv[3];
+      }
+      if (argc == 4) {
         uc.duration = 0;
       }
       if (argc == 5) {
-        uc.value.real = atoi(argv[3]);
         uc.duration = atoi(argv[4]);
       }
       kr_unit_control_set (client, &uc);

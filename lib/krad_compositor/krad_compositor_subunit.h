@@ -41,6 +41,8 @@ void krad_compositor_subunit_set_x (krad_compositor_subunit_t *subunit, int x, i
 void krad_compositor_subunit_set_y (krad_compositor_subunit_t *subunit, int y, int duration);
 void krad_compositor_subunit_set_xy (krad_compositor_subunit_t *subunit, int x, int y, int duration);
 void krad_compositor_subunit_set_z (krad_compositor_subunit_t *subunit, int z);
+void krad_compositor_subunit_set_width (krad_compositor_subunit_t *subunit, int width);
+void krad_compositor_subunit_set_height (krad_compositor_subunit_t *subunit, int height);
 void krad_compositor_subunit_set_opacity (krad_compositor_subunit_t *subunit, float opacity, int duration);
 void krad_compositor_subunit_set_rotation (krad_compositor_subunit_t *subunit, float rotation, int duration);
 void krad_compositor_subunit_set_xscale (krad_compositor_subunit_t *subunit, float xscale, int duration);

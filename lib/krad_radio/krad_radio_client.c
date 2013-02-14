@@ -1786,6 +1786,11 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
           addr->id.number = atoi(tokens[1]);
           return 1;
       }
+      if ((subunit->compositor_subunit > 0) && (t == 3)) {
+          addr->id.number = atoi(tokens[1]);
+          addr->control.compositor_control = krad_string_to_compositor_control (tokens[2]);
+          return 1;
+      }
       printf ("Invalid COMPOSITOR Control\n");
       return -1;
       break;
@@ -1798,6 +1803,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
       return -1;
       break;
   }
+ 
 
   //kr_address_debug_print (addr); 
 
@@ -1820,26 +1826,38 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
   }
 }
 
-int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
 
-  //uint64_t command;
-  //uint64_t control_set;
+int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type) {
 
-  switch (uc->address.path.unit) {
+  switch (address->path.unit) {
     case KR_MIXER:
-      //krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_MIXER_CMD, &command);
-      break;
+      *data_type = KR_FLOAT;
+      return 1;
     case KR_COMPOSITOR:
-      //krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-      break;
-    case KR_TRANSPONDER:
-      //krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_TRANSPONDER_CMD, &command);
-      break;
-    case KR_STATION:
+      if ((address->control.compositor_control == KR_X) || (address->control.compositor_control == KR_Y) ||
+          (address->control.compositor_control == KR_Z) || (address->control.compositor_control == KR_WIDTH) ||
+          (address->control.compositor_control == KR_HEIGHT)) {
+          *data_type = KR_INT32;
+      } else {
+        *data_type = KR_FLOAT;
+      }  
+      return 1;
+    default:
       break;
   }
+
+  return 0;
+}
+
+int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
+
+  uint64_t command;
+  uint64_t set_control;
+
+  command = 0;
+  set_control = 0;
   
-  //krad_ebml_start_element (client->krad_ebml, EBML_ID_CONTROL_SET, &control_set);
+  kr_unit_control_data_type_from_address (&uc->address, &uc->data_type);
 
   switch (uc->address.path.unit) {
     case KR_MIXER:
@@ -1860,10 +1878,29 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
       }
       break;
     case KR_COMPOSITOR:
-      // subunit type
-      // subunit number
-      // control type
-      // value
+
+      krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+      krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT, &set_control);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, uc->address.path.subunit.compositor_subunit);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, uc->address.id.number);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->address.control.compositor_control);
+      if (uc->data_type == KR_FLOAT) {
+        krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.real);
+      }
+      if (uc->data_type == KR_INT32) {
+        krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.integer);
+      }
+      if (uc->data_type == KR_STRING) {
+        krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.string);
+      }
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->duration);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, 666);
+      krad_ebml_finish_element (client->krad_ebml, set_control);
+      krad_ebml_finish_element (client->krad_ebml, command);
+        
+      krad_ebml_write_sync (client->krad_ebml);
+      
+      
       break;
     case KR_STATION:
       break;

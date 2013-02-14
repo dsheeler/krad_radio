@@ -36,6 +36,14 @@ void krad_compositor_subunit_set_z (krad_compositor_subunit_t *subunit, int z) {
   subunit->z = z;
 }
 
+void krad_compositor_subunit_set_width (krad_compositor_subunit_t *subunit, int width) {
+  subunit->width = width;
+}
+
+void krad_compositor_subunit_set_height (krad_compositor_subunit_t *subunit, int height) {
+  subunit->height = height;
+}
+
 void krad_compositor_subunit_set_xscale (krad_compositor_subunit_t *subunit, float xscale, int duration) {
   subunit->xscale = xscale;
 }

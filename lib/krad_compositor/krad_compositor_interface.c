@@ -13,6 +13,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
   uint32_t command;
   uint64_t ebml_data_size;
   kr_address_t address;
+  kr_unit_control_t unit_control;
   uint64_t response;
   uint64_t info_loc;
   uint64_t payload_loc;
@@ -39,9 +40,51 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
 
   switch ( command ) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT:
-      //krad_sprite_rep = krad_compositor_ebml_to_new_krad_sprite_rep (krad_ipc->current_client->krad_ebml, numbers);
-      //krad_compositor_set_sprite (krad_compositor, krad_sprite_rep);
-      //kr_compositor_sprite_rep_destroy (krad_sprite_rep);
+
+/*
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, uc->address.path.subunit.compositor_subunit);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, uc->address.id.number);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->address.control.compositor_control);
+      if (uc->data_type == KR_FLOAT) {
+        krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.real);
+      }
+      if (uc->data_type == KR_INT32) {
+        krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.integer);
+      }
+      if (uc->data_type == KR_STRING) {
+        krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.string);
+      }
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->duration);
+      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, 666);
+*/
+
+      unit_control.address.path.unit = KR_COMPOSITOR;
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      unit_control.address.path.subunit.compositor_subunit = numbers[0];
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      unit_control.address.id.number = numbers[0];
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      unit_control.address.control.compositor_control = numbers[0];
+      kr_unit_control_data_type_from_address (&unit_control.address, &unit_control.data_type);
+      if (unit_control.data_type == KR_FLOAT) {
+        krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+        unit_control.value.real = krad_ebml_read_float (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      }
+      if (unit_control.data_type == KR_INT32) {
+        krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+        unit_control.value.integer = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      }
+      if (unit_control.data_type == KR_STRING) {
+        //bah
+      }
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      unit_control.duration = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      numbers[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      krad_compositor_subunit_update (krad_compositor, &unit_control);
       break;  
     case EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT:
       address.path.unit = KR_COMPOSITOR;

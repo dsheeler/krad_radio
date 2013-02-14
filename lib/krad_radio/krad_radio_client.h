@@ -131,22 +131,6 @@ typedef union {
 /* Control Names */
 
 typedef enum {
-  KR_X,
-  KR_Y,
-  KR_Z,
-  KR_WIDTH,
-  KR_HEIGHT,
-  KR_ROTATION,
-  KR_OPACITY,
-  KR_XSCALE,
-  KR_YSCALE,
-  KR_RED,
-  KR_GREEN,
-  KR_BLUE,
-  KR_ALPHA,
-} kr_compositor_control_t;
-
-typedef enum {
   KR_BUFFER = 1,
   KR_BITRATE,
 } kr_transponder_control_t;
@@ -226,6 +210,7 @@ struct kr_response_St {
   int has_float;
 };
 
+int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type);
 uint32_t kr_response_get_event (kr_response_t *response);
 int kr_string_to_address (char *string, kr_address_t *addr);
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc);

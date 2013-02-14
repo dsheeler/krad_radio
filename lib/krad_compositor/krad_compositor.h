@@ -111,7 +111,7 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
                                      kr_compositor_subunit_t type,
                                      char *option);
 void krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address);
-//void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_address_t *address);
+void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_control_t *uc);
 
 int krad_compositor_get_background_name (krad_compositor_t *krad_compositor, char *filename);
 void krad_compositor_set_background (krad_compositor_t *krad_compositor, char *filename);
