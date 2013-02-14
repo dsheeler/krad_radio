@@ -25,6 +25,12 @@ struct krad_compositor_subunit_St {
 
   float xscale;
   float yscale;
+
+  float red;
+  float blue;
+  float green;
+  float alpha;
+  
 };
 
 

@@ -382,13 +382,12 @@ krad_vector_rep_t *krad_compositor_vector_rep_create_and_init (int number, char 
   krad_compositor_subunit_controls_init (&krad_vector_rep->controls, number, x, y, z, tickrate, 0, 0, scale, opacity, rotation); 
   return krad_vector_rep;
 }
+
 krad_vector_type_t krad_string_to_vector_type (char *string) {
+
   if (strcmp (string, "hex") == 0) {
     return HEX;
   } 
-  if (strcmp (string, "selector") == 0) {
-    return SELECTOR;
-  }
   if (strcmp (string, "circle") == 0) {
     return CIRCLE;
   } 
@@ -414,9 +413,6 @@ krad_vector_type_t krad_string_to_vector_type (char *string) {
 void krad_vector_type_to_string (krad_vector_type_t krad_vector_type, char *string) {
   if (krad_vector_type == HEX) {
     strcpy ( string, "hex");
-  }
-  if (krad_vector_type == SELECTOR) {
-    strcpy ( string, "selector");
   }
   if (krad_vector_type == CIRCLE) {
     strcpy ( string, "circle");

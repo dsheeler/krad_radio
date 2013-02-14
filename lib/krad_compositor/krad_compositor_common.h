@@ -14,14 +14,18 @@ typedef enum {
 } kr_compositor_subunit_t;
 
 typedef enum {
+  NOTHING,
   HEX,
-  SELECTOR,
   CIRCLE,
   RECT,
   TRIANGLE,
   VIPER,
   METER,
   GRID,
+  CURVE,
+  ARROW,
+  CLOCK,
+  SHADOW,
 } krad_vector_type_t;
 
 typedef struct krad_text_rep_St krad_text_rep_t;

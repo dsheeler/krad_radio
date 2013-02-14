@@ -21,7 +21,7 @@ krad_text_t *krad_text_create_arr (int count) {
   s = 0;
 
   if ((krad_text = calloc (count, sizeof (krad_text_t))) == NULL) {
-    failfast ("Krad Sprite mem alloc fail");
+    failfast ("Krad Text mem alloc fail");
   }
   
   for (s = 0; s < count; s++) {
@@ -89,9 +89,9 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
   cairo_select_font_face (cr, krad_text->font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, krad_text->subunit.xscale);
   cairo_set_source_rgba (cr,
-                         krad_text->red / 0.255 * 1.0,
-                         krad_text->green / 0.255 * 1.0,
-                         krad_text->blue / 0.255 * 1.0,
+                         krad_text->subunit.red / 0.255 * 1.0,
+                         krad_text->subunit.green / 0.255 * 1.0,
+                         krad_text->subunit.blue / 0.255 * 1.0,
                          krad_text->subunit.opacity);
   
   cairo_move_to (cr, krad_text->subunit.x, krad_text->subunit.y);
@@ -114,9 +114,9 @@ int krad_text_to_rep (krad_text_t *text, krad_text_rep_t *text_rep) {
   strncpy (text_rep->text, text->text_actual, sizeof(text_rep->text));
   strncpy (text_rep->font, text->font, sizeof(text_rep->font));
   
-  text_rep->red = text->red;
-  text_rep->green = text->green;
-  text_rep->blue = text->blue;
+  text_rep->red = text->subunit.red;
+  text_rep->green = text->subunit.green;
+  text_rep->blue = text->subunit.blue;
   
   text_rep->controls.x = text->subunit.x;
   text_rep->controls.y = text->subunit.y;

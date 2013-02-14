@@ -13,10 +13,6 @@ struct krad_text_St {
   char font[128];
   char text_actual[256];
 
-  float red;
-  float blue;
-  float green;
-
   krad_compositor_subunit_t subunit;
 };
 
