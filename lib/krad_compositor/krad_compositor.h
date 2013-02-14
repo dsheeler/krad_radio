@@ -77,7 +77,7 @@ struct krad_compositor_St {
   krad_text_t *text;
   int active_texts;
   
-  //krad_vector_t *vector;
+  krad_vector_t *vector;
   int active_vectors;  
   
   krad_compositor_port_t *port;

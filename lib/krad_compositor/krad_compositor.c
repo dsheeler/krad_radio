@@ -332,7 +332,9 @@ static void krad_compositor_composite (krad_compositor_t *compositor) {
   }
   
   for (i = 0; i < KC_MAX_VECTORS; i++) {
-    // do vector
+    if (compositor->vector[i].subunit.active == 1) {
+      krad_vector_render (&compositor->vector[i], compositor->cr);
+    }
   }
 }
 
@@ -1318,7 +1320,7 @@ void krad_compositor_destroy (krad_compositor_t *compositor) {
   krad_sprite_destroy (compositor->background);
   krad_sprite_destroy_arr (compositor->sprite, KC_MAX_SPRITES);
   krad_text_destroy_arr (compositor->text, KC_MAX_TEXTS);
-
+  krad_vector_destroy_arr (compositor->vector, KC_MAX_VECTORS);
   free (compositor);
 
   printk ("Krad Compositor: Destroy Complete");
@@ -1339,7 +1341,8 @@ krad_compositor_t *krad_compositor_create (int width, int height, int fps_numera
   compositor->background = krad_sprite_create ();
   krad_compositor_ports_create_all (compositor);
   compositor->sprite = krad_sprite_create_arr (KC_MAX_SPRITES);
-  compositor->text = krad_text_create_arr (KC_MAX_TEXTS);  
+  compositor->text = krad_text_create_arr (KC_MAX_TEXTS);
+  compositor->vector = krad_vector_create_arr (KC_MAX_VECTORS);
 
   krad_compositor_alloc_framepool (compositor);
 
