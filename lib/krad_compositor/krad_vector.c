@@ -34,7 +34,6 @@ krad_vector_t *krad_vector_create_arr (krad_mixer_t *krad_mixer, int count) {
   }
 
   for (s = 0; s < count; s++) {
-    krad_vector[s].krad_compositor_subunit = krad_compositor_subunit_create();
     krad_vector_reset (&krad_vector[s]);
   }
   

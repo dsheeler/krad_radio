@@ -4,20 +4,20 @@ void krad_compositor_subunit_controls_to_ebml (krad_ebml_t *krad_ebml, kr_compos
   
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_NUMBER, krad_compositor_subunit_controls->number);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_X, krad_compositor_subunit_controls->x);
-	krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_Y, krad_compositor_subunit_controls->y);
+  krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_Y, krad_compositor_subunit_controls->y);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_Y, krad_compositor_subunit_controls->z);
-	krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_TICKRATE, krad_compositor_subunit_controls->tickrate);
-	
+  krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_TICKRATE, krad_compositor_subunit_controls->tickrate);
+  
   krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, krad_compositor_subunit_controls->xscale);
   krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, krad_compositor_subunit_controls->yscale);
-	krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, krad_compositor_subunit_controls->opacity);
-	krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, krad_compositor_subunit_controls->rotation);
+  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, krad_compositor_subunit_controls->opacity);
+  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, krad_compositor_subunit_controls->rotation);
 
 }
 void krad_compositor_subunit_controls_read (krad_ebml_t *krad_ebml, kr_compositor_subunit_controls_t *subunit_controls) {
   uint32_t ebml_id;
-	
-	uint64_t ebml_data_size;
+  
+  uint64_t ebml_data_size;
   
   krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);
   if (ebml_id == EBML_ID_KRAD_COMPOSITOR_SPRITE_NUMBER) {
@@ -62,17 +62,17 @@ void krad_compositor_subunit_controls_read (krad_ebml_t *krad_ebml, kr_composito
   krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);
   if (ebml_id == EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION) {
     subunit_controls->rotation = krad_ebml_read_float (krad_ebml, ebml_data_size);
-  }		
+  }    
   
 }
 
 void krad_compositor_subunit_controls_init (kr_comp_controls_t *controls, int number, int x, int y, int z, int tickrate, int width, int height,
                                                                                     float scale, float opacity, float rotation) {
 
-	krad_compositor_subunit_controls_reset (controls);
+  krad_compositor_subunit_controls_reset (controls);
   
   controls->x = x;
-	controls->y = y;
+  controls->y = y;
   controls->z = z;
   
   controls->number = number;
@@ -90,7 +90,7 @@ void krad_compositor_subunit_controls_init (kr_comp_controls_t *controls, int nu
 
 void krad_compositor_subunit_controls_reset (kr_compositor_subunit_controls_t *krad_compositor_subunit_controls) {
   krad_compositor_subunit_controls->x = 0;
-	krad_compositor_subunit_controls->y = 0;
+  krad_compositor_subunit_controls->y = 0;
   krad_compositor_subunit_controls->z = 0;
   
   krad_compositor_subunit_controls->tickrate = KRAD_COMPOSITOR_SUBUNIT_DEFAULT_TICKRATE;
@@ -138,31 +138,31 @@ void krad_compositor_text_rep_to_ebml (krad_text_rep_t *krad_text_rep, krad_ebml
   
   //uint64_t cmd;
   
-  //krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, &cmd);	
-	
-	krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, krad_text_rep->text);
-	krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_FONT, krad_text_rep->font);
-	
-	krad_ebml_write_float (krad_ebml,
-	                       EBML_ID_KRAD_COMPOSITOR_RED,
-	                       krad_text_rep->red);
-	krad_ebml_write_float (krad_ebml,
-	                       EBML_ID_KRAD_COMPOSITOR_GREEN,
-	                       krad_text_rep->green);
-	krad_ebml_write_float (krad_ebml,
-	                       EBML_ID_KRAD_COMPOSITOR_BLUE,
-	                       krad_text_rep->blue);
-	
+  //krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, &cmd);  
+  
+  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, krad_text_rep->text);
+  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_FONT, krad_text_rep->font);
+  
+  krad_ebml_write_float (krad_ebml,
+                         EBML_ID_KRAD_COMPOSITOR_RED,
+                         krad_text_rep->red);
+  krad_ebml_write_float (krad_ebml,
+                         EBML_ID_KRAD_COMPOSITOR_GREEN,
+                         krad_text_rep->green);
+  krad_ebml_write_float (krad_ebml,
+                         EBML_ID_KRAD_COMPOSITOR_BLUE,
+                         krad_text_rep->blue);
+  
 
-	krad_compositor_subunit_controls_to_ebml (krad_ebml, &krad_text_rep->controls);
+  krad_compositor_subunit_controls_to_ebml (krad_ebml, &krad_text_rep->controls);
 
-	//krad_ebml_finish_element (krad_ebml, cmd);
+  //krad_ebml_finish_element (krad_ebml, cmd);
 }
 
 krad_text_rep_t *krad_compositor_ebml_to_krad_text_rep (krad_ebml_t *krad_ebml, uint64_t *data_read, krad_text_rep_t *krad_text_rep) {
   
   uint32_t ebml_id;
-	uint64_t ebml_data_size;
+  uint64_t ebml_data_size;
   krad_text_rep_t *krad_text_rep_ret;
   
   if (krad_text_rep == NULL) {
@@ -175,14 +175,14 @@ krad_text_rep_t *krad_compositor_ebml_to_krad_text_rep (krad_ebml_t *krad_ebml, 
   //  *data_read = ebml_data_size;
   //}
   
-  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);	
+  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);  
   if (ebml_id == EBML_ID_KRAD_COMPOSITOR_TEXT) {
     krad_ebml_read_string (krad_ebml, krad_text_rep_ret->text, ebml_data_size);
   }
   
-  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);	
+  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);  
   if (ebml_id == EBML_ID_KRAD_COMPOSITOR_FONT) {
-    krad_ebml_read_string (krad_ebml, krad_text_rep_ret->font, ebml_data_size);		  
+    krad_ebml_read_string (krad_ebml, krad_text_rep_ret->font, ebml_data_size);      
   } 
   
   krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);
@@ -259,7 +259,7 @@ krad_sprite_rep_t *krad_compositor_ebml_to_new_krad_sprite_rep (krad_ebml_t *kra
 
   krad_sprite_rep_t *krad_sprite_rep = kr_compositor_sprite_rep_create ();
 
-  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);	
+  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);  
   if (ebml_id == EBML_ID_KRAD_COMPOSITOR_FILENAME) {
     krad_ebml_read_string (krad_ebml, krad_sprite_rep->filename, ebml_data_size);
   }
@@ -299,30 +299,30 @@ void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *krad_vector_rep, kra
   uint64_t cmd;
   char vector_type_string [128];
   
-  krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, &cmd);	
+  krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, &cmd);  
   krad_vector_type_to_string(krad_vector_rep->krad_vector_type, vector_type_string);
-	krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, vector_type_string);
-	
-	krad_ebml_write_float (krad_ebml,
-	                       EBML_ID_KRAD_COMPOSITOR_RED,
-	                       krad_vector_rep->red);
-	krad_ebml_write_float (krad_ebml,
-	                       EBML_ID_KRAD_COMPOSITOR_GREEN,
-	                       krad_vector_rep->green);
-	krad_ebml_write_float (krad_ebml,
-	                       EBML_ID_KRAD_COMPOSITOR_BLUE,
-	                       krad_vector_rep->blue);
-	
+  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, vector_type_string);
+  
+  krad_ebml_write_float (krad_ebml,
+                         EBML_ID_KRAD_COMPOSITOR_RED,
+                         krad_vector_rep->red);
+  krad_ebml_write_float (krad_ebml,
+                         EBML_ID_KRAD_COMPOSITOR_GREEN,
+                         krad_vector_rep->green);
+  krad_ebml_write_float (krad_ebml,
+                         EBML_ID_KRAD_COMPOSITOR_BLUE,
+                         krad_vector_rep->blue);
+  
 
-	krad_compositor_subunit_controls_to_ebml (krad_ebml, &krad_vector_rep->controls);
+  krad_compositor_subunit_controls_to_ebml (krad_ebml, &krad_vector_rep->controls);
 
-	krad_ebml_finish_element (krad_ebml, cmd);
+  krad_ebml_finish_element (krad_ebml, cmd);
 }
 
 krad_vector_rep_t *krad_compositor_ebml_to_krad_vector_rep (krad_ebml_t *krad_ebml, uint64_t *data_read, krad_vector_rep_t *krad_vector_rep) {
   
   uint32_t ebml_id;
-	uint64_t ebml_data_size;
+  uint64_t ebml_data_size;
   krad_vector_rep_t *krad_vector_rep_ret;
   char vector_type_string[128];
   
@@ -336,7 +336,7 @@ krad_vector_rep_t *krad_compositor_ebml_to_krad_vector_rep (krad_ebml_t *krad_eb
     *data_read = ebml_data_size;
   }
   
-  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);	
+  krad_ebml_read_element (krad_ebml, &ebml_id, &ebml_data_size);  
   if (ebml_id == EBML_ID_KRAD_COMPOSITOR_TEXT) {
     krad_ebml_read_string (krad_ebml, vector_type_string, ebml_data_size);
   }
@@ -436,7 +436,24 @@ void krad_vector_type_to_string (krad_vector_type_t krad_vector_type, char *stri
   if (krad_vector_type == GRID) {
     strcpy ( string, "grid");
   }
-  
+}
+
+char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type) {
+
+  switch ( type ) {
+    case KR_SPRITE:
+      return "sprite";
+    case KR_TEXT:
+      return "text";
+    case KR_VECTOR:
+      return "vector";
+    case KR_VIDEOPORT:
+      return "videoport";
+    default:
+      break;    
+  }
+
+  return "Unknown";
 }
 
 kr_compositor_t *kr_compositor_rep_create () {

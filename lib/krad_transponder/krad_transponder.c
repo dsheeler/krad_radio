@@ -149,8 +149,8 @@ int x11_capture_unit_process (void *arg) {
   krad_frame_t *krad_frame;
 
   if (krad_link->krad_ticker == NULL) {
-    krad_link->krad_ticker = krad_ticker_create (krad_link->krad_radio->krad_compositor->frame_rate_numerator,
-                      krad_link->krad_radio->krad_compositor->frame_rate_denominator);
+    krad_link->krad_ticker = krad_ticker_create (krad_link->krad_radio->krad_compositor->fps_numerator,
+                      krad_link->krad_radio->krad_compositor->fps_denominator);
     krad_ticker_start (krad_link->krad_ticker);
   } else {
     krad_ticker_wait (krad_link->krad_ticker);

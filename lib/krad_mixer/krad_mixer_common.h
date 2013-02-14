@@ -35,35 +35,35 @@ typedef enum {
 } kr_mixer_effect_control_t;
 
 typedef enum {
-	KRAD_TONE = 1,
-	KLOCALSHM,
-	KRAD_AUDIO, /* i.e local audio i/o */
-	KRAD_LINK, /* i.e. remote audio i/o */
-	MIXBUS,	/* i.e. mixer internal i/o */
+  KRAD_TONE = 1,
+  KLOCALSHM,
+  KRAD_AUDIO, /* i.e local audio i/o */
+  KRAD_LINK, /* i.e. remote audio i/o */
+  MIXBUS,  /* i.e. mixer internal i/o */
 } krad_mixer_portgroup_io_t;
 
 typedef enum {
   NOTOUTPUT,
-	DIRECT,
-	AUX,
+  DIRECT,
+  AUX,
 } krad_mixer_output_t;
 
 typedef enum {
-	NIL,
-	MONO,
-	STEREO,
-	THREE,
-	QUAD,
-	FIVE,
-	SIX,
-	SEVEN,
-	EIGHT,
+  NIL,
+  MONO,
+  STEREO,
+  THREE,
+  QUAD,
+  FIVE,
+  SIX,
+  SEVEN,
+  EIGHT,
 } channels_t;
 
 typedef enum {
-	OUTPUT,
-	INPUT,
-	MIX,
+  OUTPUT,
+  INPUT,
+  MIX,
 } krad_mixer_portgroup_direction_t;
 
 struct krad_mixer_portgroup_rep_St {
@@ -79,10 +79,10 @@ struct krad_mixer_portgroup_rep_St {
   float volume[KRAD_MIXER_MAX_CHANNELS];
   
   int map[KRAD_MIXER_MAX_CHANNELS];
-  int mixmap[KRAD_MIXER_MAX_CHANNELS];	
+  int mixmap[KRAD_MIXER_MAX_CHANNELS];  
   
   float rms[KRAD_MIXER_MAX_CHANNELS];
-	float peak[KRAD_MIXER_MAX_CHANNELS];
+  float peak[KRAD_MIXER_MAX_CHANNELS];
   int delay;
 
   kr_eq_rep_t eq;

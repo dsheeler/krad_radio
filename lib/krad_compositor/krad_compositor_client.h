@@ -13,49 +13,35 @@
   @{
   */
 
-
 typedef struct kr_videoport_St kr_videoport_t;
 
-int kr_compositor_response_to_string (kr_response_t *kr_response, char **string);
+
+// Should be internal / private
 void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t **kr_compositor_rep_in);
-int kr_compositor_read_frame_rate ( kr_client_t *client, char *text, krad_compositor_rep_t **krad_compositor_rep);
-int kr_compositor_read_frame_size ( kr_client_t *client, char *text, krad_compositor_rep_t **krad_compositor_rep);
+int kr_compositor_response_to_string (kr_response_t *kr_response, char **string);
 
-int kr_compositor_read_text ( kr_client_t *client, char *text);
-int kr_compositor_read_sprite ( kr_client_t *client, char *text);
-int kr_compositor_read_port ( kr_client_t *client, char *text);
+// Public
 
-void kr_compositor_port_list (kr_client_t *client);
-void kr_compositor_list_texts (kr_client_t *client);
-void kr_compositor_list_sprites (kr_client_t *client);
-
-void kr_compositor_add_text (kr_client_t *client, char *text, int x, int y, int z,
-									float scale, float opacity, float rotation, float red, float green, float blue, char *font);
-void kr_compositor_set_text (kr_client_t *client, int num, int x, int y, int z,
-									float scale, float opacity, float rotation, float red, float green, float blue);
-
-void kr_compositor_add_sprite (kr_client_t *client, char *filename, int x, int y, int z, int tickrate, 
-									float scale, float opacity, float rotation);
-void kr_compositor_set_sprite (kr_client_t *client, int num, int x, int y, int z,  int tickrate, 
-									float scale, float opacity, float rotation);
 void kr_compositor_set_videoport (kr_client_t *client, int number, uint32_t x, uint32_t y,
-										uint32_t width, uint32_t height, uint32_t crop_x, uint32_t crop_y,
-										uint32_t crop_width, uint32_t crop_height, float opacity, float rotation);
+                                  uint32_t width, uint32_t height, uint32_t crop_x, uint32_t crop_y,
+                                  uint32_t crop_width, uint32_t crop_height, float opacity, float rotation);
 
-void kr_compositor_remove_text (kr_client_t *client, int num);
-void kr_compositor_remove_sprite (kr_client_t *client, int num);
+void kr_compositor_subunit_list (kr_client_t *client);
+int kr_compositor_subunit_create (kr_client_t *client,
+                                  kr_compositor_subunit_t type,
+                                  char *option);
+void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address);
 
+void kr_compositor_info (kr_client_t *client);
 void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denominator);
 void kr_compositor_set_resolution (kr_client_t *client, int width, int height);
-void kr_compositor_info (kr_client_t *client);
 
 void kr_compositor_close_display (kr_client_t *client);
 void kr_compositor_open_display (kr_client_t *client, int width, int height);
-void kr_compositor_background (kr_client_t *client, char *filename);
+int kr_compositor_background (kr_client_t *client, char *filename);
 
 void kr_compositor_snapshot (kr_client_t *client);
 void kr_compositor_snapshot_jpeg (kr_client_t *client);
-void kr_compositor_last_snap_name (kr_client_t *client);
 
 /* Compositor Local Video Ports */
 

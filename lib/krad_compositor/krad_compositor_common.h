@@ -7,6 +7,13 @@
 #include "krad_ebml.h"
 
 typedef enum {
+  KR_VIDEOPORT = 1,
+  KR_SPRITE,
+  KR_TEXT,
+  KR_VECTOR,
+} kr_compositor_subunit_t;
+
+typedef enum {
   HEX,
   SELECTOR,
   CIRCLE,
@@ -32,68 +39,68 @@ struct kr_compositor_subunit_controls_St {
 
   int number;
 
-	int x;
-	int y;
-	int z;
+  int x;
+  int y;
+  int z;
 
   int tickrate;
   
-	int width;
-	int height;
+  int width;
+  int height;
 
-	float xscale;
-	float yscale;
+  float xscale;
+  float yscale;
 
-	float rotation;
-	float opacity;
+  float rotation;
+  float opacity;
 
 };
 
 struct krad_sprite_rep_St {
-	char filename[256];
-	kr_comp_controls_t controls;
+  char filename[256];
+  kr_comp_controls_t controls;
 };
 
 struct krad_text_rep_St {
 
-	char text[1024];
-	char font[128];
-	
-	float red;
-	float green;
-	float blue;
-	
-	kr_comp_controls_t controls;
+  char text[1024];
+  char font[128];
+  
+  float red;
+  float green;
+  float blue;
+  
+  kr_comp_controls_t controls;
 };
 
 struct krad_vector_rep_St {
-	
+  
   krad_vector_type_t krad_vector_type;
   
-	float red;
-	float green;
-	float blue;
-	
-	kr_comp_controls_t controls;
+  float red;
+  float green;
+  float blue;
+  
+  kr_comp_controls_t controls;
 };
 
 struct krad_compositor_rep_St {
-	
-	uint32_t width;
-	uint32_t height;
-	uint32_t fps_numerator;
-	uint32_t fps_denominator;
+  
+  uint32_t width;
+  uint32_t height;
+  uint32_t fps_numerator;
+  uint32_t fps_denominator;
 
-	uint32_t sprites;
-	uint32_t vectors;
-	uint32_t texts;
-	uint32_t inputs;
-	uint32_t outputs;
+  uint32_t sprites;
+  uint32_t vectors;
+  uint32_t texts;
+  uint32_t inputs;
+  uint32_t outputs;
 
-	uint64_t frames;
-	
-	char snapshot_filename[256];
-	char background_filename[256];
+  uint64_t frames;
+  
+  char snapshot_filename[256];
+  char background_filename[256];
 };
 
 void krad_compositor_subunit_controls_init (kr_comp_controls_t *controls, int number, int x, int y, int z, int tickrate, int width, int height, float scale, float opacity, float rotation);
@@ -101,6 +108,7 @@ void krad_compositor_subunit_controls_reset (kr_comp_controls_t *krad_compositor
 void krad_compositor_subunit_controls_to_ebml (krad_ebml_t *krad_ebml, kr_comp_controls_t *krad_compositor_subunit_controls);
 void krad_compositor_subunit_controls_read (krad_ebml_t *krad_ebml, kr_comp_controls_t *subunit_controls);
 
+char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 
 krad_text_rep_t *krad_compositor_text_rep_create ();
 krad_text_rep_t *krad_compositor_text_rep_create_and_init (int number, char *text, char *font, float red, float green, float blue, int x, int y, int z, int tickrate, float scale, float opacity, float rotation);

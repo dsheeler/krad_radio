@@ -84,6 +84,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
       }
     }
     
+    /*
     if ((part != NULL) && (strcmp(part->valuestring, "kradcompositor") == 0)) {
       part = cJSON_GetObjectItem (cmd, "cmd");    
       if ((part != NULL) && (strcmp(part->valuestring, "jsnap") == 0)) {
@@ -97,11 +98,12 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
         part2 = cJSON_GetObjectItem (cmd, "x");
         part3 = cJSON_GetObjectItem (cmd, "y");
       
-        kr_compositor_set_sprite (kr_ws_client->kr_client, 0, part2->valueint, part3->valueint,  0, 4,
-                                  1.0f, 1.0f, 0.0f);
+        //kr_compositor_set_sprite (kr_ws_client->kr_client, 0, part2->valueint, part3->valueint,  0, 4,
+        //                          1.0f, 1.0f, 0.0f);
       }
     }
-  
+    */
+   
     if ((part != NULL) && (strcmp(part->valuestring, "kradradio") == 0)) {
       part = cJSON_GetObjectItem (cmd, "cmd");    
       if ((part != NULL) && (strcmp(part->valuestring, "stag") == 0)) {
@@ -583,11 +585,11 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
   add_poll_fd (krad_controller_get_client_fd (&krad_websocket->krad_control), POLLIN, KRAD_CONTROLLER, NULL, NULL);
 
   lws_create.port = krad_websocket->port;
-	lws_create.protocols = protocols;
-	lws_create.extensions = libwebsocket_internal_extensions;
-	lws_create.interface = "";
-	lws_create.gid = -1;
-	lws_create.uid = -1;
+  lws_create.protocols = protocols;
+  lws_create.extensions = libwebsocket_internal_extensions;
+  lws_create.interface = "";
+  lws_create.gid = -1;
+  lws_create.uid = -1;
 
   krad_websocket->context = libwebsocket_create_context (&lws_create);
 

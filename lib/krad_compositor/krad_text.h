@@ -11,16 +11,16 @@ typedef struct krad_text_St krad_text_t;
 
 struct krad_text_St {
 
-	char font[128];
-	char text_actual[256];
-		
-	float red;
-	float blue;
-	float green;
-		
-	float new_red;
-	float new_blue;
-	float new_green;	
+  char font[128];
+  char text_actual[256];
+    
+  float red;
+  float blue;
+  float green;
+    
+  float new_red;
+  float new_blue;
+  float new_green;  
   
   krad_compositor_subunit_t krad_compositor_subunit;
 };

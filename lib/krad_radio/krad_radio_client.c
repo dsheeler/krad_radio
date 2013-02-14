@@ -307,10 +307,10 @@ int kr_radio_response_get_string_from_tag (unsigned char *ebml_frag, uint64_t it
   int item_pos;
   int string_pos;
   int ret;
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
-	
-	ret = 0;
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
+  
+  ret = 0;
   item_pos = 0;
   string_pos = 0;
 
@@ -343,11 +343,11 @@ int kr_radio_response_get_string_from_remote (unsigned char *ebml_frag, uint64_t
   int item_pos;
   int string_pos;
   int ret;
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
-	int number;
-	
-	ret = 0;
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
+  int number;
+  
+  ret = 0;
   item_pos = 0;
   string_pos = 0;
 
@@ -389,7 +389,7 @@ rep_to_string_t kr_response_get_rep_to_string_converter (kr_address_t *address) 
 
 int kr_radio_response_get_string_from_radio (unsigned char *ebml_frag, uint64_t item_size, char **string) {
 
-	int pos;
+  int pos;
   kr_radio_t *kr_radio;
 
   pos = 0;
@@ -409,10 +409,10 @@ int kr_radio_response_get_string_from_radio (unsigned char *ebml_frag, uint64_t 
 
 int kr_radio_response_get_string_from_cpu (unsigned char *ebml_frag, uint64_t item_size, char **string) {
 
-	int ebml_pos;
+  int ebml_pos;
   int pos;
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
 
   ebml_pos = 0;
   pos = 0;
@@ -435,17 +435,17 @@ int kr_radio_response_get_string_from_tags (unsigned char *ebml_frag, uint64_t i
   ebml_pos = 0;
   pos = 0;
 
-	char tag_item_actual[256];	
-	char tag_name_actual[256];
-	char tag_value_actual[256];
-	
-	char *tag_item = tag_item_actual;	
-	char *tag_name = tag_name_actual;
-	char *tag_value = tag_value_actual;
-	
-	tag_item_actual[0] = '\0';	
-	tag_name_actual[0] = '\0';
-	tag_value_actual[0] = '\0';
+  char tag_item_actual[256];  
+  char tag_name_actual[256];
+  char tag_value_actual[256];
+  
+  char *tag_item = tag_item_actual;  
+  char *tag_name = tag_name_actual;
+  char *tag_value = tag_value_actual;
+  
+  tag_item_actual[0] = '\0';  
+  tag_name_actual[0] = '\0';
+  tag_value_actual[0] = '\0';
   
   while (ebml_pos < item_size) {
     if (ebml_pos > 0) {
@@ -482,8 +482,8 @@ int kr_radio_response_to_string (kr_response_t *response, char **string) {
 int kr_radio_response_to_int (kr_response_t *kr_response, int *number) {
 
   int pos;
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
 
   pos = 0;
   
@@ -528,8 +528,8 @@ int kr_response_to_int (kr_response_t *response, int *number) {
 
 int kr_response_to_float (kr_response_t *response, float *number) {
 
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
   int pos;
   
   pos = 0;
@@ -549,7 +549,7 @@ int kr_response_to_float (kr_response_t *response, float *number) {
     case KR_MIXER:
       if ((response->address.control.portgroup_control == KR_VOLUME) ||
           (response->address.control.portgroup_control == KR_CROSSFADE)) {
-         pos += krad_ebml_read_element_from_frag (response->buffer, &ebml_id, &ebml_data_size);	
+         pos += krad_ebml_read_element_from_frag (response->buffer, &ebml_id, &ebml_data_size);  
         *number = krad_ebml_read_float_from_frag_add (response->buffer + pos, ebml_data_size, &pos);
         return 1;
       }
@@ -590,9 +590,9 @@ int kr_response_to_string (kr_response_t *response, char **string) {
 int kr_ebml_to_remote_status_rep (unsigned char *ebml_frag, kr_remote_t *remote) {
     
   int item_pos;
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
-	
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
+  
   item_pos = 0;
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
@@ -608,9 +608,9 @@ int kr_ebml_to_remote_status_rep (unsigned char *ebml_frag, kr_remote_t *remote)
 int kr_ebml_to_tag_rep (unsigned char *ebml_frag, kr_tag_t *tag) {
     
   int item_pos;
-	uint32_t ebml_id;
-	uint64_t ebml_data_size;
-	
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
+  
   item_pos = 0;
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
@@ -633,7 +633,7 @@ void kr_response_address (kr_response_t *response, kr_address_t **address) {
 static int kr_ebml_to_radio_rep (unsigned char *ebml_frag, kr_radio_t **radio_rep_in) {
 
   uint32_t ebml_id;
-	uint64_t ebml_data_size;
+  uint64_t ebml_data_size;
   int item_pos;
   kr_radio_t *radio_rep;
 
@@ -646,16 +646,16 @@ static int kr_ebml_to_radio_rep (unsigned char *ebml_frag, kr_radio_t **radio_re
   
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
 
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, radio_rep->sysinfo);
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, radio_rep->sysinfo);
 
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, radio_rep->logname);
-	
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);	
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, radio_rep->logname);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   radio_rep->uptime = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);	
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   radio_rep->cpu_usage = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
   return 1;
@@ -850,7 +850,7 @@ int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address) {
       address->path.subunit.mixer_subunit = krad_ebml_read_number ( ebml, ebml_data_size );
       if (address->path.subunit.mixer_subunit != KR_UNIT) {
         krad_ebml_read_element (ebml, &ebml_id, &ebml_data_size);
-			  krad_ebml_read_string (ebml, address->id.name, ebml_data_size);
+        krad_ebml_read_string (ebml, address->id.name, ebml_data_size);
         if (address->path.subunit.mixer_subunit == KR_EFFECT) {
           krad_ebml_read_element (ebml, &ebml_id, &ebml_data_size);
           address->sub_id = krad_ebml_read_number ( ebml, ebml_data_size );
@@ -1280,14 +1280,14 @@ int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_nam
     //printf("hrm wtf\n");
   }
 
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_item);
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_item);
 
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_name);
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_name);
  
-	item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-	item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_value);
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_value);
   
   return item_pos;
 }

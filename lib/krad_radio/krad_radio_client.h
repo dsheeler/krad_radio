@@ -99,13 +99,6 @@ typedef enum {
 } kr_mixer_subunit_t;
 
 typedef enum {
-  KR_VIDEOPORT = 1,
-  KR_SPRITE,
-  KR_TEXT,
-  KR_VECTOR,
-} kr_compositor_subunit_t;
-
-typedef enum {
   KR_TRANSMITTER = 1,
   KR_RECEIVER,
   KR_DEMUXER,
