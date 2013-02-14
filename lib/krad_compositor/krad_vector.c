@@ -109,125 +109,118 @@ void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr) {
     cairo_translate (cr, krad_vector->subunit.x * -1, krad_vector->subunit.y * -1);
   }
 
-
-  
   switch ( krad_vector->type ) {
 
-  case METER:
-    //peak = krad_mixer_portgroup_read_peak (krad_vector->krad_mixer_portgroup);
-    //peak = krad_mixer_peak_scale (peak);
-    peak = 50.0f;
-    krad_vector_render_meter (cr, krad_vector->subunit.x, krad_vector->subunit.y, krad_vector->subunit.yscale, peak, krad_vector->subunit.opacity);
-    break;
-    
-  case HEX:
+    case METER:
+      peak = 50.0f;
+      krad_vector_render_meter (cr, krad_vector->subunit.x, krad_vector->subunit.y, krad_vector->subunit.yscale, peak, krad_vector->subunit.opacity);
+      break;
+      
+    case HEX:
 
-    krad_vector_render_hex (cr, krad_vector->subunit.x, 
-                            krad_vector->subunit.y, 
-                            krad_vector->subunit.width,
-//                            0.3 * peak,
-                            krad_vector->subunit.red,
-                            krad_vector->subunit.green,
-                            krad_vector->subunit.blue,
-                            krad_vector->subunit.opacity);
-    break;
+      krad_vector_render_hex (cr, krad_vector->subunit.x, 
+                              krad_vector->subunit.y, 
+                              krad_vector->subunit.width,
+                              krad_vector->subunit.red,
+                              krad_vector->subunit.green,
+                              krad_vector->subunit.blue,
+                              krad_vector->subunit.opacity);
+      break;
+      
+    case CURVE:
+      krad_vector_render_curve (cr, krad_vector->subunit.x,
+                                krad_vector->subunit.y);
+      break;
     
-  case CURVE:
-    krad_vector_render_curve (cr, krad_vector->subunit.x,
-                              krad_vector->subunit.y);
-    break;
-  
-  case CIRCLE:
-    krad_vector_render_circle (cr, krad_vector->subunit.x,
+    case CIRCLE:
+      krad_vector_render_circle (cr, krad_vector->subunit.x,
+                                 krad_vector->subunit.y,
+                                 krad_vector->subunit.width,
+                                 krad_vector->subunit.red,
+                                 krad_vector->subunit.green,
+                                 krad_vector->subunit.blue,
+                                 krad_vector->subunit.opacity);
+       break;
+    case RECT:
+
+      krad_vector_render_rectangle (cr, krad_vector->subunit.x,
+                                    krad_vector->subunit.y,
+                                    krad_vector->subunit.width,
+                                    krad_vector->subunit.height,
+                                    krad_vector->subunit.red,
+                                    krad_vector->subunit.green,
+                                    krad_vector->subunit.blue,
+                                    krad_vector->subunit.opacity);
+      break;
+
+    case TRIANGLE:
+
+
+      krad_vector_render_triangle (cr, krad_vector->subunit.x - krad_vector->subunit.xscale * sin (krad_vector->subunit.rotation * M_PI/180.0),
+                                   krad_vector->subunit.y - krad_vector->subunit.xscale * cos( 30 * M_PI/180.0) * cos (krad_vector->subunit.rotation * M_PI/180.0),
+                                   krad_vector->subunit.width,
+                                   krad_vector->subunit.height,
+                                   krad_vector->subunit.red,
+                                   krad_vector->subunit.green,
+                                   krad_vector->subunit.blue,
+                                   krad_vector->subunit.opacity);
+      break;
+
+    case ARROW:
+
+      krad_vector_render_arrow (cr, krad_vector->subunit.x,
+                                   krad_vector->subunit.y,
+                                   krad_vector->subunit.width,
+                                   krad_vector->subunit.height,
+                                   krad_vector->subunit.red,
+                                   krad_vector->subunit.green,
+                                   krad_vector->subunit.blue,
+                                   krad_vector->subunit.opacity);
+      break;
+
+    case GRID:
+
+
+      krad_vector_render_grid (cr, krad_vector->subunit.x,
                                krad_vector->subunit.y,
                                krad_vector->subunit.width,
+                               krad_vector->subunit.height,
+                               6,
                                krad_vector->subunit.red,
                                krad_vector->subunit.green,
                                krad_vector->subunit.blue,
                                krad_vector->subunit.opacity);
-     break;
-  case RECT:
+      break;
 
-    //krad_vector->subunit.width = krad_vector->subunit.xscale;
-    //krad_vector->subunit.height = krad_vector->subunit.yscale;
-    krad_vector_render_rectangle (cr, krad_vector->subunit.x,
-                                  krad_vector->subunit.y,
-                                  krad_vector->subunit.width,
-                                  krad_vector->subunit.height,
-                                  krad_vector->subunit.red,
-                                  krad_vector->subunit.green,
-                                  krad_vector->subunit.blue,
-                                  krad_vector->subunit.opacity);
-    break;
+    case VIPER:
+      krad_vector_render_viper (cr, krad_vector->subunit.x,
+                                krad_vector->subunit.y,
+                                (int) krad_vector->subunit.xscale, (int) krad_vector->subunit.yscale);
+      break;
 
-  case TRIANGLE:
+    case CLOCK:
 
 
-    krad_vector_render_triangle (cr, krad_vector->subunit.x - krad_vector->subunit.xscale * sin (krad_vector->subunit.rotation * M_PI/180.0),
-                                 krad_vector->subunit.y - krad_vector->subunit.xscale * cos( 30 * M_PI/180.0) * cos (krad_vector->subunit.rotation * M_PI/180.0),
-                                 krad_vector->subunit.width,
-                                 krad_vector->subunit.height,
-                                 krad_vector->subunit.red,
-                                 krad_vector->subunit.green,
-                                 krad_vector->subunit.blue,
+      krad_vector_render_clock (cr, krad_vector->subunit.x,
+                                krad_vector->subunit.y,
+                                (int) krad_vector->subunit.width,
+                                (int) krad_vector->subunit.height,
                                  krad_vector->subunit.opacity);
-    break;
+      break;
 
-  case ARROW:
+    case SHADOW:
 
-    krad_vector_render_arrow (cr, krad_vector->subunit.x,
-                                 krad_vector->subunit.y,
-                                 krad_vector->subunit.width,
-                                 krad_vector->subunit.height,
-                                 krad_vector->subunit.red,
-                                 krad_vector->subunit.green,
-                                 krad_vector->subunit.blue,
-                                 krad_vector->subunit.opacity);
-    break;
-
-  case GRID:
-
-
-    krad_vector_render_grid (cr, krad_vector->subunit.x,
-                             krad_vector->subunit.y,
-                             krad_vector->subunit.width,
-                             krad_vector->subunit.height,
-                             6,
-                             krad_vector->subunit.red,
-                             krad_vector->subunit.green,
-                             krad_vector->subunit.blue,
-                             krad_vector->subunit.opacity);
-    break;
-
-  case VIPER:
-    krad_vector_render_viper (cr, krad_vector->subunit.x,
-                              krad_vector->subunit.y,
-                              (int) krad_vector->subunit.xscale, (int) krad_vector->subunit.yscale);
-    break;
-
-  case CLOCK:
-
-
-    krad_vector_render_clock (cr, krad_vector->subunit.x,
-                              krad_vector->subunit.y,
-                              (int) krad_vector->subunit.width,
-                              (int) krad_vector->subunit.height,
-                               krad_vector->subunit.opacity);
-    break;
-
-  case SHADOW:
-
-    krad_vector_render_blurred_rectangle (cr, krad_vector->subunit.x,
-                                          krad_vector->subunit.y,
-                                          krad_vector->subunit.width,
-                                          krad_vector->subunit.height,
-                                          krad_vector->subunit.red,
-                                          krad_vector->subunit.green,
-                                          krad_vector->subunit.blue,
-                                          krad_vector->subunit.opacity);
-    break;
-  default:
-    break;
+      krad_vector_render_blurred_rectangle (cr, krad_vector->subunit.x,
+                                            krad_vector->subunit.y,
+                                            krad_vector->subunit.width,
+                                            krad_vector->subunit.height,
+                                            krad_vector->subunit.red,
+                                            krad_vector->subunit.green,
+                                            krad_vector->subunit.blue,
+                                            krad_vector->subunit.opacity);
+      break;
+    default:
+      break;
   }
   
   cairo_restore (cr);
@@ -325,27 +318,23 @@ patch_rect (cairo_pattern_t *pattern,
 
 static void krad_vector_render_blurred_rectangle (cairo_t *cr, int x, int y, int w, int h, float r, float g, float b, float a) {
 
-    cairo_pattern_t *pattern;
-    float radius = 60;
+  cairo_pattern_t *pattern;
+  float radius = 60;
 
-    pattern = cairo_pattern_create_mesh ();
+  pattern = cairo_pattern_create_mesh ();
 
-    cairo_set_source_rgba (cr, r, g, b, a);
-    cairo_paint (cr);
+  cairo_set_source_rgba (cr, r, g, b, a);
+  cairo_paint (cr);
 
-    patch_rect (pattern, x - w /2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0, radius, 0, 0, 0, a);
+  patch_rect (pattern, x - w /2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0, radius, 0, 0, 0, a);
 
-    cairo_set_source (cr, pattern);
-    cairo_paint (cr);
-
+  cairo_set_source (cr, pattern);
+  cairo_paint (cr);
 }
 
 static void krad_vector_render_meter (cairo_t *cr, int x, int y, int size, float pos, float opacity) {
 
-
   pos = pos * 1.8f - 90.0f;
-
-  cairo_save(cr);
 
   cairo_new_path ( cr );
 
@@ -366,7 +355,7 @@ static void krad_vector_render_meter (cairo_t *cr, int x, int y, int size, float
   cairo_save(cr);
   cairo_translate (cr, 0.05 * size, 0);
   cairo_rotate (cr, pos * (M_PI/180.0));  
-  //
+
   cairo_pattern_t *pat;
   pat = cairo_pattern_create_linear (0, 0, 0.11 * size, 0);
   cairo_pattern_add_color_stop_rgba (pat, 0, 0, 0, 0, 0);
@@ -387,8 +376,6 @@ static void krad_vector_render_meter (cairo_t *cr, int x, int y, int size, float
   cairo_arc (cr, 0.05 * size, 0, 0.1 * size, 0, 2 * M_PI);
   cairo_fill(cr);
 
-  cairo_restore(cr);
-
 }
 
 static void krad_vector_render_hex (cairo_t *cr, int x, int y, int w, float r, float g, float b, float opacity) {
@@ -396,8 +383,6 @@ static void krad_vector_render_hex (cairo_t *cr, int x, int y, int w, float r, f
   cairo_pattern_t *pat;
 
   static float hexrot = 0;
-
-  cairo_save(cr);
 
   cairo_set_line_width(cr, 1);
   cairo_set_source_rgba(cr, r, g, b, opacity);
@@ -413,11 +398,6 @@ static void krad_vector_render_hex (cairo_t *cr, int x, int y, int w, float r, f
   cairo_rotate (cr, hexrot * (M_PI/180.0));
   cairo_translate (cr, -(w/2), -r1);
 
-  // draw radius 
-  //cairo_move_to (cr, w/2, 0);
-  //cairo_line_to (cr, w/2, r1);
-  //cairo_stroke (cr);
-
   cairo_move_to (cr, 0, 0);
   cairo_rel_line_to (cr, w, 0);
   cairo_rotate (cr, 60 * (M_PI/180.0));
@@ -430,16 +410,11 @@ static void krad_vector_render_hex (cairo_t *cr, int x, int y, int w, float r, f
   cairo_rel_line_to (cr, w, 0);
   cairo_rotate (cr, 60 * (M_PI/180.0));
   cairo_rel_line_to (cr, w, 0);
-  //cairo_stroke_preserve (cr);
-
 
   hexrot += 1.5;
   cairo_fill (cr);
 
   cairo_restore(cr);
-
-
-//-----------------------
 
   cairo_save(cr);
 
@@ -447,12 +422,10 @@ static void krad_vector_render_hex (cairo_t *cr, int x, int y, int w, float r, f
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_source_rgba(cr, GREY, opacity);
 
-
   cairo_translate (cr, x, y);
   cairo_rotate (cr, hexrot * (M_PI/180.0));
   cairo_translate (cr, -((w * scale)/2), -r1 * scale);
   cairo_scale(cr, scale, scale);
-  //hexrot += 0.11;
 
   cairo_move_to (cr, 0, 0);
   cairo_rel_line_to (cr, w, 0);
@@ -467,30 +440,16 @@ static void krad_vector_render_hex (cairo_t *cr, int x, int y, int w, float r, f
   cairo_rotate (cr, 60 * (M_PI/180.0));
   cairo_rel_line_to (cr, w, 0);
 
-  //cairo_stroke_preserve (cr);
-
   cairo_rotate (cr, 60 * (M_PI/180.0));
-
-
-  // draw radius 
-  //cairo_move_to (cr, w/2, 0);
-  //cairo_line_to (cr, w/2, r1);
-  //cairo_stroke_preserve (cr);
 
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   pat = cairo_pattern_create_radial (w/2, r1, 3, w/2, r1, r1*scale);
   cairo_pattern_add_color_stop_rgba (pat, 0, r, g, b, opacity);
-  //cairo_pattern_add_color_stop_rgba (pat, 0.6, 0, 0, 1, 0.3);
-  //cairo_pattern_add_color_stop_rgba (pat, 0.8, 0, 0, 1, 0.05);
   cairo_pattern_add_color_stop_rgba (pat, 0.4, 0, 0, 0, 0);
   cairo_set_source (cr, pat);
 
   cairo_fill (cr);
   cairo_pattern_destroy (pat);
-
-
-
-  cairo_restore(cr);
 
 }
 
@@ -498,8 +457,6 @@ static void krad_vector_render_grid (cairo_t *cr, int x, int y, int w, int h, in
 
   int count;
 
-  //srand(time(NULL));
-  cairo_save(cr);
   cairo_translate (cr, x + w/2, y + h/2);
 
   cairo_translate (cr, -x + -w/2, -y + -h/2);
@@ -510,34 +467,27 @@ static void krad_vector_render_grid (cairo_t *cr, int x, int y, int w, int h, in
   cairo_save(cr);
 
   for (count = 1; count != lines; count++) {
-
     cairo_move_to (cr, x + (w/lines) * count, y);
     cairo_line_to (cr, x + (w/lines) * count, y + h);
     cairo_stroke (cr);
-
   }
 
   cairo_restore(cr);
 
   for (count = 1; count != lines; count++) {
-
     cairo_move_to (cr, x, y + (h/lines) * count);
     cairo_line_to (cr, x + w, y + (h/lines) * count);
     cairo_stroke (cr);
-
   }
-
 
   cairo_rectangle (cr, x, y, w, h);
   cairo_stroke (cr);
-
-  cairo_restore(cr);
 }
 
 static void krad_vector_render_curve (cairo_t *cr, int w, int h) {
 
-  cairo_set_line_width(cr, 3.5);
-  cairo_set_source_rgb(cr, BLUE);
+  cairo_set_line_width (cr, 3.5);
+  cairo_set_source_rgb (cr, BLUE);
 
   static float pointy_positioner = 0.0f;
   int pointy;
@@ -553,7 +503,6 @@ static void krad_vector_render_curve (cairo_t *cr, int w, int h) {
 
   if (pointy_positioner >= 2 * M_PI) {
     pointy_positioner -= 2 * M_PI;
-    //new_speed = 1;
   }
   
   pointy_final = pointy * 0.01f;
@@ -569,32 +518,22 @@ static void krad_vector_render_curve (cairo_t *cr, int w, int h) {
   
   point1_y =  pointy_final * h;
   point2_y =  pointy_final * h;
-    
-  ///printk ("f1 %f f2 %f\n", pointy_final, pointy_final_adj);
+
   cairo_move_to (cr, 20, 70);
   cairo_curve_to (cr, point1_x, point1_y, point2_x, point2_y, 0.85 * w, 0.85 * h);
   cairo_stroke (cr);
-  
 }
 
 static void krad_vector_render_circle (cairo_t *cr, int x, int y, float radius, float r, float g, float b, float opacity) {
-  
   cairo_set_source_rgba(cr, r, g, b, opacity);
   cairo_arc (cr, x, y, radius, 0, 2*M_PI);
   cairo_fill (cr);
-  
 }
 
 static void krad_vector_render_rectangle (cairo_t *cr, int x, int y, float w, float h, float r, float g, float b, float opacity) {
 
-  cairo_save(cr);
-
   cairo_set_source_rgba(cr, r, g, b, opacity);
-//  printk ("scales: %f %f", w, h);
   cairo_set_line_width(cr, 0);
-  
-//    cairo_rectangle(cr, (double)x, (double)y, (double)w, (double)h);
-    
 
   cairo_move_to (cr, x-w/2.0, y-h/2.0);
   cairo_rel_line_to (cr, w, 0);
@@ -605,14 +544,9 @@ static void krad_vector_render_rectangle (cairo_t *cr, int x, int y, float w, fl
   cairo_stroke_preserve(cr);
 
   cairo_fill(cr);
-
-  cairo_restore(cr);
-
 }
 
 static void krad_vector_render_triangle (cairo_t *cr, int x, int y, float w, float h, float r, float g, float b, float opacity) {
-
-  cairo_save(cr);
 
   cairo_set_source_rgba(cr, r, g, b, opacity);
   cairo_set_line_width(cr, 0);
@@ -626,17 +560,10 @@ static void krad_vector_render_triangle (cairo_t *cr, int x, int y, float w, flo
   cairo_close_path (cr);
 
   cairo_stroke_preserve(cr);
-
   cairo_fill(cr);
-
-  cairo_restore(cr);
-
 }
 
-
 static void krad_vector_render_arrow (cairo_t *cr, int x, int y, float w, float h, float r, float g, float b, float opacity) {
-
-  cairo_save(cr);
 
   cairo_set_source_rgba(cr, r, g, b, opacity);
   cairo_set_line_width(cr, 0);
@@ -651,18 +578,12 @@ static void krad_vector_render_arrow (cairo_t *cr, int x, int y, float w, float 
   cairo_rel_line_to (cr, 0, -h);
 
   cairo_close_path (cr);
-
   cairo_stroke_preserve(cr);
-
   cairo_fill(cr);
-
-  cairo_restore(cr);
-
 }
 
 static void krad_vector_render_viper (cairo_t * cr, int x, int y, int size, int direction) {
 
-  cairo_save(cr);
   cairo_set_line_cap (cr, CAIRO_LINE_CAP_BUTT);
 
   cairo_set_line_width(cr, size/7);
@@ -709,9 +630,6 @@ static void krad_vector_render_viper (cairo_t * cr, int x, int y, int size, int 
   cairo_move_to(cr, size/1.6, 0.0);
   cairo_rel_line_to (cr, size/8, 0.0);
   cairo_stroke(cr);
-
-  cairo_restore(cr);
-
 }
 
 static void krad_vector_render_clock (cairo_t *cr, int x, int y, int width, int height, float opacity) {
@@ -721,18 +639,10 @@ static void krad_vector_render_clock (cairo_t *cr, int x, int y, int width, int 
   int i;
 
   cairo_translate(cr, x, y);
-
-  // scale to unit square and translate (0, 0) to be (0.5, 0.5), i.e.
-  // the center of the window
-
   cairo_scale(cr, width, height);
   cairo_translate(cr, 0.5, 0.5);
   cairo_set_line_width(cr, m_line_width);
   cairo_set_source_rgba(cr,  0.117, 0.337, 0.612, opacity);
- // cairo_save(cr) ;
- // cairo_set_source_rgba(cr, 0.337, 0.612, 0.117, 0.9*opacity);   // green
- // cairo_paint(cr) ;
- // cairo_restore(cr) ;
   cairo_arc(cr, 0, 0, m_radius, 0, 2 * M_PI);
   cairo_save(cr) ;
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.8*opacity);
@@ -742,15 +652,13 @@ static void krad_vector_render_clock (cairo_t *cr, int x, int y, int width, int 
   cairo_clip(cr) ;
 
   //clock ticks
-  for (i = 0; i < 12; i++)
-  {
+  for (i = 0; i < 12; i++) {
     double inset = 0.05;
 
     cairo_save(cr) ;
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-    if(i % 3 != 0)
-    {
+    if(i % 3 != 0) {
       inset *= 0.8;
       cairo_set_line_width(cr, 0.03);
     }
@@ -806,7 +714,5 @@ static void krad_vector_render_clock (cairo_t *cr, int x, int y, int width, int 
   // draw a little dot in the middle
   cairo_arc(cr, 0, 0, m_line_width / 3.0, 0, 2 * M_PI);
   cairo_fill(cr) ;
-
-
 }
 
