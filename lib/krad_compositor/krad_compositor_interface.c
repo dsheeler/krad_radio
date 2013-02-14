@@ -17,7 +17,8 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
   uint64_t info_loc;
   uint64_t payload_loc;
   
-  uint64_t numbers[4];    
+  uint64_t numbers[4];
+  int nums[4];
   char string[256];
   
   int type;
@@ -119,17 +120,17 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      nums[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      numbers[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      krad_compositor_set_frame_rate (krad_compositor, numbers[0], numbers[1]);
+      nums[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      printke ("Krad Compositor: FIXME Set frame rate - %d / %d", nums[0], nums[1]);
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_RESOLUTION:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      nums[2] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      numbers[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      krad_compositor_update_resolution (krad_compositor, numbers[0], numbers[1]);
+      nums[3] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      printke ("Krad Compositor: FIXME Set resolution - %d x %d", nums[2], nums[3]);
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  

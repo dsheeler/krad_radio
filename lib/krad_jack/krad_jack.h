@@ -10,46 +10,39 @@ typedef struct krad_jack_portgroup_St krad_jack_portgroup_t;
 
 struct krad_jack_portgroup_St {
 
-	krad_jack_t *krad_jack;
+  krad_jack_t *krad_jack;
 
-	char name[256];
-	jack_port_t *ports[8];
-	float *samples[8];
-	int direction;
-	int channels;
+  char name[256];
+  jack_port_t *ports[8];
+  float *samples[8];
+  int direction;
+  int channels;
 
 };
 
 struct krad_jack_St {
 
-	krad_audio_t *krad_audio;
+  krad_audio_t *krad_audio;
 
-	int active;
-	
-	int set_thread_name_process;
+  int active;
+  
+  int set_thread_name_process;
 
-	int xruns;
-	char server_name[256];
-	const char *name;
-	jack_options_t options;
-	jack_status_t status;
-	jack_client_t *client;
-	
-	int sample_rate;
-	
-	char *stay_connected[256];
-	char *stay_connected_to[256];
-	
-	pthread_mutex_t connections_lock;	
+  int xruns;
+  char server_name[256];
+  const char *name;
+  jack_options_t options;
+  jack_status_t status;
+  jack_client_t *client;
+  
+  int sample_rate;
+  
+  char *stay_connected[256];
+  char *stay_connected_to[256];
+  
+  pthread_mutex_t connections_lock;  
     
 };
-
-//jack_port_t *input_ports[2];
-//jack_port_t *output_ports[2];
-
-//void jack_connect_to_ports (krad_audio_t *krad_audio, krad_audio_portgroup_direction_t direction, char *ports);
-//void krad_jack_connect_port(jack_client_t *client, char *port_one, char *port_two);
-
 
 int krad_jack_detect ();
 int krad_jack_detect_for_jack_server_name (char *server_name);

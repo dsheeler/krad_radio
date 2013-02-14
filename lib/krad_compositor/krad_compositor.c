@@ -10,6 +10,8 @@ static void krad_compositor_prepare_subunits (krad_compositor_t *compositor);
 static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor);
 static void *krad_compositor_ticker_thread (void *arg);
 static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height);
+static void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
+                                            int fps_numerator, int fps_denominator);
 
 #ifdef KRAD_USE_WAYLAND
 
@@ -1240,21 +1242,6 @@ krad_display_api_t krad_compositor_get_pusher (krad_compositor_t *krad_composito
   return krad_compositor->pusher;
 }
 
-void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
-                                     int fps_numerator, int fps_denominator) {
-
-  krad_compositor->fps_numerator = fps_numerator;
-  krad_compositor->fps_denominator = fps_denominator;  
-    
-  if (krad_compositor->ticker_running == 1) {
-    krad_compositor_stop_ticker (krad_compositor);
-    krad_compositor->frames = 0;
-    krad_compositor_start_ticker (krad_compositor);
-  } else {
-    krad_compositor->frames = 0;  
-  }
-}
-
 void krad_compositor_set_dir (krad_compositor_t *krad_compositor, char *dir) {
 
   if (krad_compositor->dir != NULL) {
@@ -1264,34 +1251,17 @@ void krad_compositor_set_dir (krad_compositor_t *krad_compositor, char *dir) {
   krad_compositor->dir = strdup (dir);
 }
 
-void krad_compositor_get_resolution (krad_compositor_t *krad_compositor, int *width, int *height) {
-
-  *width = krad_compositor->width;
-  *height = krad_compositor->height;
-}
-
 void krad_compositor_get_frame_rate (krad_compositor_t *krad_compositor,
-                   int *fps_numerator, int *fps_denominator) {
+                                     int *fps_numerator, int *fps_denominator) {
 
   *fps_numerator = krad_compositor->fps_numerator;
   *fps_denominator = krad_compositor->fps_denominator;
 }
 
-static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height) {
+void krad_compositor_get_resolution (krad_compositor_t *krad_compositor, int *width, int *height) {
 
-  krad_compositor->width = width;
-  krad_compositor->height = height;
-
-  krad_compositor->frame_byte_size = krad_compositor->width * krad_compositor->height * 4;
-}
-
-void krad_compositor_update_resolution (krad_compositor_t *krad_compositor, int width, int height) {
-
-  if ((krad_compositor->active_input_ports == 0) && (krad_compositor->active_output_ports == 0)) {
-    krad_compositor_free_framepool (krad_compositor);
-    krad_compositor_set_resolution (krad_compositor, width, height);
-    krad_compositor_alloc_framepool (krad_compositor);
-  }
+  *width = krad_compositor->width;
+  *height = krad_compositor->height;
 }
 
 void krad_compositor_subunit_create (krad_compositor_t *compositor,
@@ -1385,6 +1355,20 @@ void krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_
         return;
     }
   }
+}
+
+static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height) {
+
+  krad_compositor->width = width;
+  krad_compositor->height = height;
+  krad_compositor->frame_byte_size = krad_compositor->width * krad_compositor->height * 4;
+}
+
+static void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
+                                            int fps_numerator, int fps_denominator) {
+
+  krad_compositor->fps_numerator = fps_numerator;
+  krad_compositor->fps_denominator = fps_denominator;  
 }
 
 static void krad_compositor_ports_destroy_all (krad_compositor_t *compositor) {

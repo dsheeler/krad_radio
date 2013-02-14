@@ -128,7 +128,7 @@ int main (int argc, char *argv[]) {
       kr_mixer_portgroup_list (client);
       kr_delivery_accept_and_report (client);          
     }
-  }      
+  }
 
   if ((((strncmp(argv[2], "lsv", 3) == 0) || 
         (strncmp(argv[2], "lsd", 3) == 0) ||
@@ -598,20 +598,19 @@ int main (int argc, char *argv[]) {
 
     if (argc == 11) {
       kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                       atoi(argv[9]), atoi(argv[10]), 0, "");
+                               atoi(argv[9]), atoi(argv[10]), 0, "");
     }
 
     if (argc == 12) {
       kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                       atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), "");
+                               atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), "");
     }
 
     if (argc == 13) {
       kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                       atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), argv[12]);
-    }                                
-
-  }    
+                               atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), argv[12]);
+    }
+  }
 
   if (strncmp(argv[2], "capture", 7) == 0) {
 

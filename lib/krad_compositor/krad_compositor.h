@@ -126,11 +126,6 @@ int krad_compositor_has_pusher (krad_compositor_t *krad_compositor);
 void krad_compositor_set_pusher (krad_compositor_t *krad_compositor, krad_display_api_t pusher);
 void krad_compositor_unset_pusher (krad_compositor_t *krad_compositor);
 
-void krad_compositor_update_resolution (krad_compositor_t *krad_compositor, int width, int height);
-void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
-                                     int fps_numerator, int fps_denominator);
-
-
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port);
 krad_compositor_port_t *krad_compositor_port_create (krad_compositor_t *krad_compositor, char *sysname, int direction,
                                                      int width, int height);
