@@ -6,6 +6,8 @@ static void krad_compositor_aspect_scale (int width, int height,
                                           int *new_width, int *new_heigth);
 static void krad_compositor_free_framepool (krad_compositor_t *compositor);
 static void krad_compositor_alloc_framepool (krad_compositor_t *compositor);
+static void krad_compositor_prepare_subunits (krad_compositor_t *compositor);
+static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor);
 static void *krad_compositor_ticker_thread (void *arg);
 static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height);
 
@@ -22,7 +24,6 @@ struct krad_compositor_wayland_display_St {
   int w;
   int h;
 };
-
 
 int krad_compositor_wayland_display_render_callback (void *pointer, uint32_t time) {
 
@@ -153,7 +154,7 @@ void krad_compositor_unset_background (krad_compositor_t *krad_compositor) {
   if (krad_compositor->background->subunit.active != 1) {
     return;
   }
-  krad_compositor->background->subunit.active = 3;
+  krad_compositor->background->subunit.active = 2;
   usleep (100000);
   krad_sprite_reset (krad_compositor->background);
   krad_compositor->background->subunit.active = 0;
@@ -230,8 +231,8 @@ void krad_compositor_clear_frame (krad_compositor_t *compositor) {
   cairo_restore (compositor->cr);
 }
 
-void krad_compositor_videoport_render (krad_compositor_t *compositor,
-                                       krad_compositor_port_t *port) {
+void krad_compositor_videoport_render (krad_compositor_port_t *port,
+                                       cairo_t *cr) {
 
   krad_frame_t *frame;
   
@@ -243,31 +244,31 @@ void krad_compositor_videoport_render (krad_compositor_t *compositor,
 
     if (port->subunit.opacity > 0.0f) {
 
-      cairo_save (compositor->cr);
+      cairo_save (cr);
 
       if (port->subunit.rotation != 0.0f) {
-        cairo_translate (compositor->cr, port->crop_width / 2, port->crop_height / 2);
-        cairo_rotate (compositor->cr, port->subunit.rotation * (M_PI/180.0));
-        cairo_translate (compositor->cr, port->crop_width / -2, port->crop_height / -2);
+        cairo_translate (cr, port->crop_width / 2, port->crop_height / 2);
+        cairo_rotate (cr, port->subunit.rotation * (M_PI/180.0));
+        cairo_translate (cr, port->crop_width / -2, port->crop_height / -2);
       }
 
-      cairo_set_source_surface (compositor->cr, frame->cst,
+      cairo_set_source_surface (cr, frame->cst,
                                 port->subunit.x - port->crop_x,
                                 port->subunit.y - port->crop_y);
 
-      cairo_rectangle (compositor->cr,
+      cairo_rectangle (cr,
                        port->subunit.x, port->subunit.y,
                        port->crop_width, port->crop_height);
 
-      cairo_clip (compositor->cr);
+      cairo_clip (cr);
 
       if (port->subunit.opacity == 1.0f) {
-        cairo_paint (compositor->cr);
+        cairo_paint (cr);
       } else {
-        cairo_paint_with_alpha (compositor->cr, port->subunit.opacity);
+        cairo_paint_with_alpha (cr, port->subunit.opacity);
       }
 
-      cairo_restore (compositor->cr);
+      cairo_restore (cr);
     }
     
     krad_compositor_subunit_tick (&port->subunit);
@@ -307,15 +308,15 @@ static void krad_compositor_composite (krad_compositor_t *compositor) {
   /* Handle situation of maybe having absolutly no input */  
   if ((compositor->active_input_ports == 0) &&
       (compositor->active_sprites == 0) &&
-      (compositor->active_vectors == 0) &&
-      (compositor->active_texts == 0)) {
+      (compositor->active_texts == 0) &&
+      (compositor->active_vectors == 0)) {
       krad_compositor_render_no_input (compositor);
   }
 
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if ((compositor->port[i].subunit.active == 1) &&
         (compositor->port[i].direction == INPUT)) {
-        krad_compositor_videoport_render (compositor, &compositor->port[i]);
+        krad_compositor_videoport_render (&compositor->port[i], compositor->cr);
     }
   }
 
@@ -352,6 +353,42 @@ static void krad_compositor_output (krad_compositor_t *compositor) {
   }
 }
 
+static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor) {
+
+  int i;
+
+  i = 0;
+
+  for (i = 0; i < KC_MAX_PORTS; i++) {
+    if ((compositor->port[i].subunit.active == 2) &&
+        (compositor->port[i].direction == INPUT)) {
+        //FIXME
+        compositor->port[i].subunit.active = 0;
+    }
+  }
+
+  for (i = 0; i < KC_MAX_SPRITES; i++) {
+    if (compositor->sprite[i].subunit.active == 2) {
+      krad_sprite_reset (&compositor->sprite[i]);
+      compositor->sprite[i].subunit.active = 0;
+    }
+  }
+
+  for (i = 0; i < KC_MAX_TEXTS; i++) {
+    if (compositor->text[i].subunit.active == 2) {
+      krad_text_reset (&compositor->text[i]);
+      compositor->text[i].subunit.active = 0;
+    }
+  }
+  
+  for (i = 0; i < KC_MAX_VECTORS; i++) {
+    if (compositor->vector[i].subunit.active == 2) {
+      krad_vector_reset (&compositor->vector[i]);
+      compositor->vector[i].subunit.active = 0;
+    }
+  }
+}
+
 static void krad_compositor_finish (krad_compositor_t *compositor) {
 
   if (compositor->snapshot > 0) {
@@ -369,6 +406,7 @@ static void krad_compositor_finish (krad_compositor_t *compositor) {
   
   compositor->frame = NULL;
   
+  krad_compositor_deactivate_subunits (compositor); 
 }
 
 static inline void krad_compositor_tick (krad_compositor_t *compositor) {
@@ -1048,7 +1086,7 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
 
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port) {
 
-  krad_compositor_port->subunit.active = 3;
+  krad_compositor_port->subunit.active = 2;
   
   //FIXME kludge to wait for nonuse
   
@@ -1260,16 +1298,47 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
                                      kr_compositor_subunit_t type,
                                      char *option) {
 
+  int i;
+  
+  i = 0;
+
   printk ("Krad Compositor: Subunit create type: %s and option: %s",
           kr_compositor_subunit_type_to_string (type),
           option);
 
   switch ( type ) {
     case KR_SPRITE:
+      for (i = 0; i < KC_MAX_SPRITES; i++) {
+        if (compositor->sprite[i].subunit.active == 0) {
+          if (krad_sprite_open_file (&compositor->sprite[i], option)) {
+            compositor->sprite[i].subunit.active = 1;
+            compositor->active_sprites++;
+          }
+          break;
+        }
+      }
       return;
     case KR_TEXT:
+      for (i = 0; i < KC_MAX_TEXTS; i++) {
+        if (compositor->text[i].subunit.active == 0) {
+          krad_text_set_text (&compositor->text[i], option);
+          compositor->text[i].subunit.active = 1;
+          compositor->active_texts++;
+          break;
+        }
+      }
       return;
     case KR_VECTOR:
+      for (i = 0; i < KC_MAX_VECTORS; i++) {
+        if (compositor->vector[i].subunit.active == 0) {
+          if (krad_string_to_vector_type(option) != NOTHING) {
+            krad_vector_set_type (&compositor->vector[i], option);
+            compositor->vector[i].subunit.active = 1;
+            compositor->active_vectors++;
+          }
+          break;
+        }
+      }
       return;
     case KR_VIDEOPORT:
       return;
@@ -1277,7 +1346,45 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
 }
 
 void krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address) {
-  printk ("Krad Compositor: Subunit destroy...");
+
+  if ((compositor == NULL) || (address == NULL) || (address->id.number < 0)) {
+    return;
+  }
+
+  if (address->path.unit == KR_COMPOSITOR) {
+    switch ( address->path.subunit.compositor_subunit ) {
+      case KR_SPRITE:
+        if (address->id.number < KC_MAX_SPRITES) {
+          if (compositor->sprite[address->id.number].subunit.active == 1) {
+            compositor->sprite[address->id.number].subunit.active = 2;
+          }
+        }
+        return;
+      case KR_TEXT:
+        if (address->id.number < KC_MAX_TEXTS) {
+          if (compositor->text[address->id.number].subunit.active == 1) {
+            compositor->text[address->id.number].subunit.active = 2;
+          }
+        }
+        return;
+      case KR_VECTOR:
+        if (address->id.number < KC_MAX_VECTORS) {
+          if (compositor->vector[address->id.number].subunit.active == 1) {
+            compositor->vector[address->id.number].subunit.active = 2;
+          }
+        }
+        return;
+      case KR_VIDEOPORT:
+        if (address->id.number < KC_MAX_PORTS) {
+          if (compositor->port[address->id.number].subunit.active == 1) {
+            compositor->port[address->id.number].subunit.active = 2;
+          }
+        }
+        return;
+      default:
+        return;
+    }
+  }
 }
 
 static void krad_compositor_ports_destroy_all (krad_compositor_t *compositor) {
@@ -1303,6 +1410,34 @@ static void krad_compositor_ports_create_all (krad_compositor_t *compositor) {
     compositor->port[i].subunit.address.path.unit = KR_COMPOSITOR;
     compositor->port[i].subunit.address.path.subunit.compositor_subunit = KR_VIDEOPORT;
     compositor->port[i].subunit.address.id.number = i;
+  }
+}
+
+static void krad_compositor_prepare_subunits (krad_compositor_t *compositor) {
+
+  int i;
+
+  krad_compositor_ports_create_all (compositor);
+  compositor->sprite = krad_sprite_create_arr (KC_MAX_SPRITES);
+  compositor->text = krad_text_create_arr (KC_MAX_TEXTS);
+  compositor->vector = krad_vector_create_arr (KC_MAX_VECTORS);
+
+  for (i = 0; i < KC_MAX_SUBUNITS; i++) {
+    if (i < KC_MAX_PORTS) {
+      compositor->subunit[i] = &compositor->port[i].subunit;
+    } else {
+      if (i < (KC_MAX_SPRITES + KC_MAX_PORTS)) {
+        compositor->subunit[i] = &compositor->sprite[i - KC_MAX_PORTS].subunit;
+      } else {
+        if (i < (KC_MAX_TEXTS + KC_MAX_SPRITES + KC_MAX_PORTS)) {
+          compositor->subunit[i] = &compositor->text[i - (KC_MAX_PORTS + KC_MAX_SPRITES)].subunit;
+        } else {
+          if (i < (KC_MAX_VECTORS + KC_MAX_TEXTS + KC_MAX_SPRITES + KC_MAX_PORTS)) {
+            compositor->subunit[i] = &compositor->vector[i - (KC_MAX_PORTS + KC_MAX_SPRITES + KC_MAX_TEXTS)].subunit;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -1337,13 +1472,8 @@ krad_compositor_t *krad_compositor_create (int width, int height, int fps_numera
 
   compositor->address.path.unit = KR_COMPOSITOR;
   compositor->address.path.subunit.compositor_subunit = KR_UNIT;
-
   compositor->background = krad_sprite_create ();
-  krad_compositor_ports_create_all (compositor);
-  compositor->sprite = krad_sprite_create_arr (KC_MAX_SPRITES);
-  compositor->text = krad_text_create_arr (KC_MAX_TEXTS);
-  compositor->vector = krad_vector_create_arr (KC_MAX_VECTORS);
-
+  krad_compositor_prepare_subunits (compositor);
   krad_compositor_alloc_framepool (compositor);
 
   return compositor;

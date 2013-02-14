@@ -1,20 +1,16 @@
 #include "kr_client.h"
 
 void krad_radio_command_help () {
-
   printf ("krad_radio STATION_SYSNAME COMMAND OPTIONS...");
   printf ("\n\n");
   printf ("Commands:\n");
-
-  printf ("launch ls destroy uptime info tag tags stag remoteon remoteoff webon weboff oscon oscoff setrate getrate mix");
+  printf ("launch destroy info tag tags stag remoteon remoteoff webon weboff oscon oscoff setrate mix");
   printf ("\n");
-  printf ("setdir lm ll lc tone input output rmport plug unplug map mixmap xmms2 noxmms2 receiver_on receiver_off link");
+  printf ("setdir ls lm lc tone input output plug unplug map mixmap xmms2 noxmms2 receiver_on receiver_off");
   printf ("\n");
-  printf ("transmitter_on transmitter_off closedisplay display lstext rmtext addtest lssprites addsprite rmsprite");
+  printf ("transmitter_on transmitter_off closedisplay display");
   printf ("\n");
-  printf ("setsprite comp setres setfps snap jsnap setport update play record capture");
-  printf ("\n");
-  printf ("addfx rmfx setfx");
+  printf ("comp res fps snap jsnap play record capture");
   printf ("\n");
 }
 
@@ -120,10 +116,16 @@ int main (int argc, char *argv[]) {
       //kr_transponder_list (client);
       //kr_delivery_accept_and_report (client);
 
-      //kr_compositor_port_list (client);
-      //kr_delivery_accept_and_report (client);
+      kr_remote_list (client);
+      kr_delivery_accept_and_report (client);
 
-      kr_mixer_portgroups_list (client);
+      kr_transponder_adapters (client);
+      kr_delivery_accept_and_report (client);
+      
+      kr_compositor_subunit_list (client);
+      kr_delivery_accept_and_report (client);
+
+      kr_mixer_portgroup_list (client);
       kr_delivery_accept_and_report (client);          
     }
   }      
@@ -270,7 +272,7 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "lm", 2) == 0) {
     if (argc == 3) {
-      kr_mixer_portgroups_list (client);
+      kr_mixer_portgroup_list (client);
       kr_delivery_accept_and_report (client);
     }
   }
@@ -327,12 +329,6 @@ int main (int argc, char *argv[]) {
     }
     if (argc == 5) {
       kr_mixer_create_portgroup (client, argv[3], "auxout", atoi (argv[4]));
-    }
-  }
-
-  if (strncmp(argv[2], "rmport", 6) == 0) {
-    if (argc == 4) {
-      kr_mixer_remove_portgroup (client, argv[3]);
     }
   }
 
@@ -414,6 +410,15 @@ int main (int argc, char *argv[]) {
       kr_unit_control_set (client, &uc);
     }
   }
+
+  if (strncmp(argv[2], "setmix", 6) == 0) {
+    if (argc == 6) {
+      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), 0);
+    }
+    if (argc == 7) {
+      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), atoi(argv[6]));
+    }
+  }
   
   if (((argc == 4) || (argc == 5)) &&
       (((strlen(argv[2]) > 2) && (argv[2][1] == '/')) ||
@@ -432,13 +437,14 @@ int main (int argc, char *argv[]) {
       kr_unit_control_set (client, &uc);
     }
   }
+  
+  if ((argc == 4) && ((strncmp(argv[2], "rm", 2) == 0) && (strlen(argv[2]) == 2)) &&
+      (((strlen(argv[3]) > 2) && (strchr(argv[3], '/') != NULL)) ||
+       (0))) {
 
-  if (strncmp(argv[2], "setmix", 6) == 0) {
-    if (argc == 6) {
-      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), 0);
-    }
-    if (argc == 7) {
-      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), atoi(argv[6]));
+    memset (&uc, 0, sizeof (uc));
+    if (kr_string_to_address (argv[3], &uc.address)) {
+      kr_unit_destroy (client, &uc.address);
     }
   }
 
@@ -446,8 +452,8 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "lc", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      //kr_compositor_port_list (client);
-      //kr_delivery_accept_and_report (client);
+      kr_compositor_subunit_list (client);
+      kr_delivery_accept_and_report (client);
     }
   }
   
@@ -460,6 +466,12 @@ int main (int argc, char *argv[]) {
   if ((strlen(argv[2]) == 7) && (strncmp(argv[2], "addtext", 7) == 0)) {
     if (argc == 4) {
       kr_compositor_subunit_create (client, KR_TEXT, argv[3]);
+    }
+  }
+  
+  if ((strlen(argv[2]) > 5) && (strncmp(argv[2], "addvec", 6) == 0)) {
+    if (argc == 4) {
+      kr_compositor_subunit_create (client, KR_VECTOR, argv[3]);
     }
   }
 
@@ -532,8 +544,8 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      kr_transponder_list (client);
-      kr_delivery_accept_and_report (client);
+      //kr_transponder_list (client);
+      //kr_delivery_accept_and_report (client);
     }
   }
 
@@ -689,12 +701,6 @@ int main (int argc, char *argv[]) {
     }
     if (argc == 6) {
       kr_transponder_play_remote (client, argv[3], atoi(argv[4]), argv[5] );
-    }
-  }
-
-  if ((strncmp(argv[2], "rm", 2) == 0) && (strlen(argv[2]) == 2)) {
-    if (argc == 4) {
-      kr_transponder_destroy (client, atoi(argv[3]));
     }
   }
 

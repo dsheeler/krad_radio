@@ -385,29 +385,29 @@ krad_vector_rep_t *krad_compositor_vector_rep_create_and_init (int number, char 
 
 krad_vector_type_t krad_string_to_vector_type (char *string) {
 
-  if (strcmp (string, "hex") == 0) {
+  if (strncmp (string, "hex", 3) == 0) {
     return HEX;
   } 
-  if (strcmp (string, "circle") == 0) {
+  if (strncmp (string, "circle", 6) == 0) {
     return CIRCLE;
   } 
-  if (strcmp (string, "rect") == 0) {
+  if (strncmp (string, "rect", 4) == 0) {
     return RECT;
   } 
-  if (strcmp (string, "triangle") == 0) {
+  if (strncmp (string, "triangle", 3) == 0) {
     return TRIANGLE;
   } 
-  if (strcmp (string, "viper") == 0) {
+  if (strncmp (string, "viper", 5) == 0) {
     return VIPER;
   } 
-  if (strcmp (string, "meter") == 0) {
+  if (strncmp (string, "meter", 5) == 0) {
     return METER;
   } 
-  if (strcmp (string, "grid") == 0) {
+  if (strncmp (string, "grid", 4) == 0) {
     return GRID;
   } 
 
-  return 0;
+  return NOTHING;
 }
 
 void krad_vector_type_to_string (krad_vector_type_t krad_vector_type, char *string) {

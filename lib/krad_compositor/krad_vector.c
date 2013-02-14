@@ -47,11 +47,12 @@ krad_vector_t *krad_vector_create_arr (int count) {
 }
 
 void krad_vector_reset (krad_vector_t *vector) {
+  vector->type = NOTHING;
   krad_compositor_subunit_reset (&vector->subunit);
 }
 
-void krad_vector_set_type (krad_vector_t *krad_vector, char *vector_type) {
-  krad_vector->type = krad_string_to_vector_type (vector_type);
+void krad_vector_set_type (krad_vector_t *vector, char *type) {
+  vector->type = krad_string_to_vector_type (type);
 }
 
 int krad_vector_to_rep (krad_vector_t *vector, krad_vector_rep_t *vector_rep) {

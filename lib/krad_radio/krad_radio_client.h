@@ -229,6 +229,7 @@ struct kr_response_St {
 uint32_t kr_response_get_event (kr_response_t *response);
 int kr_string_to_address (char *string, kr_address_t *addr);
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc);
+void kr_unit_destroy (kr_client_t *client, kr_address_t *address);
 int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, kr_address_t *address);
 
 
@@ -343,7 +344,9 @@ int kr_crate_has_float (kr_crate_t *crate);
 
 #define kr_subscribe kr_broadcast_subscribe
 
-#define kr_mixer_portgroups kr_mixer_portgroups_list
+#define kr_mixer_portgroups_list kr_mixer_portgroup_list
+#define kr_mixer_portgroups kr_mixer_portgroup_list
+#define kr_compositor_subunits kr_compositor_subunit_list
 
 int kr_delivery_wait_until_final (kr_client_t *client, uint32_t timeout_ms);
 int kr_delivery_final (kr_client_t *client);

@@ -1782,6 +1782,10 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
       }
       break;
     case KR_COMPOSITOR:
+      if ((subunit->compositor_subunit > 0) && (t == 2)) {
+          addr->id.number = atoi(tokens[1]);
+          return 1;
+      }
       printf ("Invalid COMPOSITOR Control\n");
       return -1;
       break;
@@ -1800,6 +1804,21 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
   return 1;
 }
 
+void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
+
+  if ((client == NULL) || (address == NULL)) {
+    return;
+  }
+  if (address->path.unit == KR_COMPOSITOR) {
+    kr_compositor_subunit_destroy (client, address);
+  }
+  if (address->path.unit == KR_MIXER) {
+    kr_mixer_remove_portgroup (client, address->id.name);
+  }
+  if (address->path.unit == KR_TRANSPONDER) {
+    kr_transponder_destroy (client, address->id.number);
+  }
+}
 
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
 

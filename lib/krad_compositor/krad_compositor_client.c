@@ -525,6 +525,40 @@ int kr_compositor_subunit_create (kr_client_t *client,
   return 1;
 }
 
+void kr_compositor_subunit_list (kr_client_t *client) {
+
+  uint64_t command;
+  uint64_t list;
+  
+  command = 0;
+  list = 0;
+  
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS, &list);
+  krad_ebml_finish_element (client->krad_ebml, list);
+  krad_ebml_finish_element (client->krad_ebml, command);
+    
+  krad_ebml_write_sync (client->krad_ebml);
+}
+
+void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address) {
+
+  uint64_t command;
+  uint64_t destroy;
+  
+  command = 0;
+  destroy = 0;
+  
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT, &destroy);
+  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
+  krad_ebml_finish_element (client->krad_ebml, destroy);
+  krad_ebml_finish_element (client->krad_ebml, command);
+    
+  krad_ebml_write_sync (client->krad_ebml);
+}
+
 void kr_videoport_destroy_cmd (kr_client_t *client) {
 
   uint64_t compositor_command;

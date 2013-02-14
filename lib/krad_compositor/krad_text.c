@@ -41,6 +41,7 @@ void krad_text_reset (krad_text_t *krad_text) {
 
 void krad_text_set_text (krad_text_t *krad_text, char *text) {
   strcpy (krad_text->text_actual, text);
+  krad_text->subunit.xscale = 32.0f;
 }
 
 void krad_text_set_font (krad_text_t *krad_text, char *font) {
@@ -89,9 +90,9 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
   cairo_select_font_face (cr, krad_text->font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, krad_text->subunit.xscale);
   cairo_set_source_rgba (cr,
-                         krad_text->subunit.red / 0.255 * 1.0,
-                         krad_text->subunit.green / 0.255 * 1.0,
-                         krad_text->subunit.blue / 0.255 * 1.0,
+                         krad_text->subunit.red,
+                         krad_text->subunit.green,
+                         krad_text->subunit.blue,
                          krad_text->subunit.opacity);
   
   cairo_move_to (cr, krad_text->subunit.x, krad_text->subunit.y);

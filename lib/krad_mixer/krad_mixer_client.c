@@ -22,7 +22,7 @@ struct kr_audioport_St {
   
 };
 
-void kr_mixer_portgroups_list (kr_client_t *client) {
+void kr_mixer_portgroup_list (kr_client_t *client) {
 
   uint64_t mixer_command;
   uint64_t get_portgroups;

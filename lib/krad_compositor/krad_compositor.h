@@ -22,9 +22,9 @@ typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 
 #define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
 #define KC_MAX_PORTS 32
-#define KC_MAX_SPRITES 64
-#define KC_MAX_TEXTS 64
-#define KC_MAX_VECTORS 64
+#define KC_MAX_SPRITES 32
+#define KC_MAX_TEXTS 32
+#define KC_MAX_VECTORS 32
 #define KC_MAX_SUBUNITS KC_MAX_PORTS * KC_MAX_SPRITES * KC_MAX_TEXTS * KC_MAX_VECTORS
 
 #define RED 0.244 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0
@@ -84,6 +84,8 @@ struct krad_compositor_St {
   int active_ports;
   int active_output_ports;
   int active_input_ports;
+  
+  krad_compositor_subunit_t *subunit[KC_MAX_SUBUNITS];
 
   krad_sprite_t *background;
 

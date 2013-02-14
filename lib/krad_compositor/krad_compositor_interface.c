@@ -12,7 +12,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
   
   uint32_t command;
   uint64_t ebml_data_size;
-
+  kr_address_t address;
   uint64_t response;
   uint64_t info_loc;
   uint64_t payload_loc;
@@ -43,23 +43,22 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       //kr_compositor_sprite_rep_destroy (krad_sprite_rep);
       break;  
     case EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT:
-      //krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      //if (ebml_id == EBML_ID_KRAD_COMPOSITOR_SPRITE_NUMBER) {
-      //  numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      //}
-      //krad_compositor_remove_sprite (krad_compositor, numbers[0]);
-      //krad_compositor_subunit_destroy (krad_compositor, address);
+      address.path.unit = KR_COMPOSITOR;
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      address.path.subunit.compositor_subunit = numbers[0];
+      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      address.id.number = numbers[0];
+      krad_compositor_subunit_destroy (krad_compositor, &address);
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT:
-
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       type = numbers[0];
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-
       krad_compositor_subunit_create (krad_compositor, type, string);
-
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS:
       for (s = 0; s < KC_MAX_SPRITES; s++) {
@@ -70,18 +69,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
                                                                  &response);
           krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
           krad_compositor_sprite_to_ebml ( krad_ipc, &krad_compositor->sprite[s]);
-          krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
-          krad_ipc_server_response_finish ( krad_ipc, response );
-        }
-      }
-      for (s = 0; s < KC_MAX_TEXTS; s++) {
-        if (krad_compositor->text[s].subunit.active == 1) {
-          krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
-                                                                 &krad_compositor->text[s].subunit.address,
-                                                                 EBML_ID_KRAD_SUBUNIT_INFO,
-                                                                 &response);
-          krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
-          //krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->text[s]);
           krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
           krad_ipc_server_response_finish ( krad_ipc, response );
         }
@@ -106,7 +93,7 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_TEXT_COUNT,
                                        krad_compositor->active_texts);
       krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_VECTOR_COUNT,
-                                       0);
+                                       krad_compositor->active_vectors);
       krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
                                        krad_compositor->active_input_ports);
       krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
