@@ -40,7 +40,7 @@ struct krad_compositor_port_St {
   int local_buffer_size;
   krad_frame_t *local_frame;  
   
-  krad_compositor_subunit_t krad_compositor_subunit;
+  krad_compositor_subunit_t subunit;
   
   int socketpair[2];
 };

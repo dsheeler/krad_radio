@@ -30,7 +30,7 @@ struct krad_sprite_St {
   int sheet_width;
   int sheet_height;
   
-  krad_compositor_subunit_t krad_compositor_subunit;
+  krad_compositor_subunit_t subunit;
 };
 
 krad_sprite_t *krad_sprite_create ();

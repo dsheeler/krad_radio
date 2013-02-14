@@ -63,9 +63,9 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS:
       for (s = 0; s < KC_MAX_SPRITES; s++) {
-        if (krad_compositor->sprite[s].krad_compositor_subunit.active == 1) {
+        if (krad_compositor->sprite[s].subunit.active == 1) {
           krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
-                                                                 &krad_compositor->sprite[s].krad_compositor_subunit.address,
+                                                                 &krad_compositor->sprite[s].subunit.address,
                                                                  EBML_ID_KRAD_SUBUNIT_INFO,
                                                                  &response);
           krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
@@ -75,9 +75,9 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
         }
       }
       for (s = 0; s < KC_MAX_TEXTS; s++) {
-        if (krad_compositor->text[s].krad_compositor_subunit.active == 1) {
+        if (krad_compositor->text[s].subunit.active == 1) {
           krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
-                                                                 &krad_compositor->text[s].krad_compositor_subunit.address,
+                                                                 &krad_compositor->text[s].subunit.address,
                                                                  EBML_ID_KRAD_SUBUNIT_INFO,
                                                                  &response);
           krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
