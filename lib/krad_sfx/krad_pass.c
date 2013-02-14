@@ -97,7 +97,8 @@ kr_pass_t *kr_pass_create2 (int sample_rate, kr_effect_type_t type, krad_mixer_t
   kr_pass_t *kr_pass = calloc (1, sizeof(kr_pass_t));
 
   kr_pass->krad_mixer = krad_mixer;
-
+  kr_pass->type = type;
+  kr_pass->new_type = kr_pass->type;
   kr_pass->address.path.unit = KR_MIXER;
   kr_pass->address.path.subunit.mixer_subunit = KR_EFFECT;
   strncpy (kr_pass->address.id.name, portgroupname, sizeof(kr_pass->address.id.name));
@@ -111,9 +112,6 @@ kr_pass_t *kr_pass_create2 (int sample_rate, kr_effect_type_t type, krad_mixer_t
   kr_pass->address.sub_id2 = 0;
 
   kr_pass->new_sample_rate = sample_rate;
-
-  kr_pass->type = type;
-  kr_pass->new_type = kr_pass->type;
   kr_pass->bandwidth = 1;
   
   if (kr_pass->type == KRAD_LOWPASS) {

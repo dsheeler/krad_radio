@@ -1576,7 +1576,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
   while ((pch != NULL) && (t < MAX_TOKENS)) {
     tokens[t] = pch;
     t++;
-    printf ("%s ", pch);
+    //printf ("%s ", pch);
     pch = strtok_r (NULL, "/ ", &save);
   }
 
@@ -1586,7 +1586,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
     //printf ("%d: %s  ", i + 1, tokens[i]);
   }
   
-  printf ("\n");
+  //printf ("\n");
   
   if (t < 2) {
     printf ("Invalid Unit Control Address: Less than 2 parts\n");
@@ -1833,7 +1833,7 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
           }
           break;
         case KR_EFFECT:
-          printf( "eff c %s val %f\n", effect_control_to_string(uc->address.control.effect_control), uc->value.real);
+          //printf( "eff id %d c %s val %f\n", uc->address.sub_id, effect_control_to_string(uc->address.control.effect_control), uc->value.real);
           kr_mixer_set_effect_control (client, uc->address.id.name, uc->address.sub_id, uc->address.sub_id2,
                                        effect_control_to_string(uc->address.control.effect_control),
                                        uc->value.real, uc->duration, EASEINOUTSINE);
