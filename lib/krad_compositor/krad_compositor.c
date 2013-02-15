@@ -1,5 +1,6 @@
 #include "krad_compositor.h"
 
+static void krad_compositor_port_destroy_actual (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port);
 static void *krad_compositor_snapshot_thread (void *arg);
 static void krad_compositor_aspect_scale (int width, int height,
                                           int avail_width, int avail_height,
@@ -362,11 +363,9 @@ static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor) 
   i = 0;
 
   for (i = 0; i < KC_MAX_PORTS; i++) {
-    if ((compositor->port[i].subunit.active == 2) &&
-        (compositor->port[i].direction == INPUT)) {
-        //FIXME
-        compositor->active_ports--;
-        compositor->active_input_ports--;
+    if (compositor->port[i].subunit.active == 2) {
+        krad_compositor_port_destroy_actual (compositor, &compositor->port[i]);
+        krad_compositor_subunit_reset (&compositor->port[i].subunit);
         compositor->port[i].subunit.active = 0;
     }
   }
@@ -1092,12 +1091,10 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
 }
 
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port) {
-
   krad_compositor_port->subunit.active = 2;
-  
-  //FIXME kludge to wait for nonuse
-  
-  usleep (45000);
+}
+
+static void krad_compositor_port_destroy_actual (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port) {
 
   if (krad_compositor_port->direction == INPUT) {
     krad_compositor->active_input_ports--;
@@ -1136,7 +1133,6 @@ void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_comp
     krad_compositor_port->frame_ring = NULL;
   }
   krad_compositor_port->start_timecode = 0;
-  krad_compositor_port->subunit.active = 0;
 
   if (krad_compositor_port->sws_converter != NULL) {
     sws_freeContext ( krad_compositor_port->sws_converter );
@@ -1147,7 +1143,6 @@ void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_comp
     krad_framepool_unref_frame (krad_compositor_port->last_frame);
     krad_compositor_port->last_frame = NULL;
   }
-
   krad_compositor->active_ports--;
 }
 
@@ -1282,6 +1277,8 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
         if (uc->address.id.number < KC_MAX_SPRITES) {
           if (compositor->sprite[uc->address.id.number].subunit.active == 1) {
             switch (uc->address.control.compositor_control) {
+              case KR_NO:
+                break;
               case KR_X:
                 krad_compositor_subunit_set_x (&compositor->sprite[uc->address.id.number].subunit,
                                                uc->value.integer, uc->duration);                
@@ -1319,9 +1316,21 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                                                     uc->value.real, uc->duration);
                 break;
               case KR_RED:
+                krad_compositor_subunit_set_red (&compositor->sprite[uc->address.id.number].subunit,
+                                                 uc->value.real, uc->duration);
               case KR_GREEN:
+                krad_compositor_subunit_set_green (&compositor->sprite[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
               case KR_BLUE:
+                krad_compositor_subunit_set_blue (&compositor->sprite[uc->address.id.number].subunit,
+                                                  uc->value.real, uc->duration);
               case KR_ALPHA:
+                krad_compositor_subunit_set_alpha (&compositor->sprite[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
+                break;
+              case KR_TICKRATE:
+                krad_sprite_set_tickrate (&compositor->sprite[uc->address.id.number],
+                                          uc->value.integer);
                 break;
             }
           }
@@ -1331,6 +1340,9 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
         if (uc->address.id.number < KC_MAX_TEXTS) {
           if (compositor->text[uc->address.id.number].subunit.active == 1) {
             switch (uc->address.control.compositor_control) {
+              case KR_NO:
+              case KR_TICKRATE:
+                break;
               case KR_X:
                 krad_compositor_subunit_set_x (&compositor->text[uc->address.id.number].subunit,
                                                uc->value.integer, uc->duration);                
@@ -1368,9 +1380,17 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                                                     uc->value.real, uc->duration);
                 break;
               case KR_RED:
+                krad_compositor_subunit_set_red (&compositor->text[uc->address.id.number].subunit,
+                                                 uc->value.real, uc->duration);
               case KR_GREEN:
+                krad_compositor_subunit_set_green (&compositor->text[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
               case KR_BLUE:
+                krad_compositor_subunit_set_blue (&compositor->text[uc->address.id.number].subunit,
+                                                  uc->value.real, uc->duration);
               case KR_ALPHA:
+                krad_compositor_subunit_set_alpha (&compositor->text[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
                 break;
             }
           }
@@ -1380,6 +1400,9 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
         if (uc->address.id.number < KC_MAX_VECTORS) {
           if (compositor->vector[uc->address.id.number].subunit.active == 1) {
             switch (uc->address.control.compositor_control) {
+              case KR_NO:
+              case KR_TICKRATE:
+                break;
               case KR_X:
                 krad_compositor_subunit_set_x (&compositor->vector[uc->address.id.number].subunit,
                                                uc->value.integer, uc->duration);                
@@ -1417,9 +1440,17 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                                                     uc->value.real, uc->duration);
                 break;
               case KR_RED:
+                krad_compositor_subunit_set_red (&compositor->vector[uc->address.id.number].subunit,
+                                                 uc->value.real, uc->duration);
               case KR_GREEN:
+                krad_compositor_subunit_set_green (&compositor->vector[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
               case KR_BLUE:
+                krad_compositor_subunit_set_blue (&compositor->vector[uc->address.id.number].subunit,
+                                                  uc->value.real, uc->duration);
               case KR_ALPHA:
+                krad_compositor_subunit_set_alpha (&compositor->vector[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
                 break;
             }
           }
@@ -1427,8 +1458,62 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
         return;
       case KR_VIDEOPORT:
         if (uc->address.id.number < KC_MAX_PORTS) {
-          if (compositor->port[uc->address.id.number].subunit.active == 1) {
-            //BAH
+          if ((compositor->port[uc->address.id.number].subunit.active == 1) &&
+              (compositor->port[uc->address.id.number].direction == INPUT)) {
+            switch (uc->address.control.compositor_control) {
+              case KR_NO:
+              case KR_TICKRATE:
+                break;
+              case KR_X:
+                krad_compositor_subunit_set_x (&compositor->port[uc->address.id.number].subunit,
+                                               uc->value.integer, uc->duration);                
+                break;
+              case KR_Y:
+                krad_compositor_subunit_set_y (&compositor->port[uc->address.id.number].subunit,
+                                               uc->value.integer, uc->duration);                
+                break;
+              case KR_Z:
+                krad_compositor_subunit_set_z (&compositor->port[uc->address.id.number].subunit,
+                                               uc->value.integer);                
+                break;
+              case KR_WIDTH:
+                krad_compositor_subunit_set_width (&compositor->port[uc->address.id.number].subunit,
+                                               uc->value.integer);                
+                break;
+              case KR_HEIGHT:
+                krad_compositor_subunit_set_height (&compositor->port[uc->address.id.number].subunit,
+                                               uc->value.integer);                
+                break;
+              case KR_ROTATION:
+                krad_compositor_subunit_set_rotation (&compositor->port[uc->address.id.number].subunit,
+                                                      uc->value.real, uc->duration);
+                break;
+              case KR_OPACITY:
+                krad_compositor_subunit_set_opacity (&compositor->port[uc->address.id.number].subunit,
+                                                     uc->value.real, uc->duration);
+                break;
+              case KR_XSCALE:
+                krad_compositor_subunit_set_xscale (&compositor->port[uc->address.id.number].subunit,
+                                                    uc->value.real, uc->duration);
+                break;
+              case KR_YSCALE:
+                krad_compositor_subunit_set_yscale (&compositor->port[uc->address.id.number].subunit,
+                                                    uc->value.real, uc->duration);
+                break;
+              case KR_RED:
+                krad_compositor_subunit_set_red (&compositor->port[uc->address.id.number].subunit,
+                                                 uc->value.real, uc->duration);
+              case KR_GREEN:
+                krad_compositor_subunit_set_green (&compositor->port[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
+              case KR_BLUE:
+                krad_compositor_subunit_set_blue (&compositor->port[uc->address.id.number].subunit,
+                                                  uc->value.real, uc->duration);
+              case KR_ALPHA:
+                krad_compositor_subunit_set_alpha (&compositor->port[uc->address.id.number].subunit,
+                                                   uc->value.real, uc->duration);
+                break;
+            }
           }
         }
         return;
@@ -1551,7 +1636,7 @@ static void krad_compositor_ports_destroy_all (krad_compositor_t *compositor) {
 
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if (compositor->port[i].subunit.active == 1) {
-      krad_compositor_port_destroy (compositor, &compositor->port[i]);
+      krad_compositor_port_destroy_actual (compositor, &compositor->port[i]);
     }
   }
 
@@ -1568,6 +1653,7 @@ static void krad_compositor_ports_create_all (krad_compositor_t *compositor) {
     compositor->port[i].subunit.address.path.unit = KR_COMPOSITOR;
     compositor->port[i].subunit.address.path.subunit.compositor_subunit = KR_VIDEOPORT;
     compositor->port[i].subunit.address.id.number = i;
+    krad_compositor_subunit_reset (&compositor->port[i].subunit);
   }
 }
 

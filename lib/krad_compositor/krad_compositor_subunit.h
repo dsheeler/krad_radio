@@ -48,6 +48,9 @@ void krad_compositor_subunit_set_rotation (krad_compositor_subunit_t *subunit, f
 void krad_compositor_subunit_set_xscale (krad_compositor_subunit_t *subunit, float xscale, int duration);
 void krad_compositor_subunit_set_yscale (krad_compositor_subunit_t *subunit, float yscale, int duration);
 void krad_compositor_subunit_set_scale (krad_compositor_subunit_t *subunit, float scale, int duration);
-
+void krad_compositor_subunit_set_red (krad_compositor_subunit_t *subunit, float red, int duration);
+void krad_compositor_subunit_set_green (krad_compositor_subunit_t *subunit, float green, int duration);
+void krad_compositor_subunit_set_blue (krad_compositor_subunit_t *subunit, float blue, int duration);
+void krad_compositor_subunit_set_alpha (krad_compositor_subunit_t *subunit, float alpha, int duration);
 
 #endif // KRAD_COMPOSITOR_SUBUNIT_H

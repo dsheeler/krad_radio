@@ -1836,7 +1836,7 @@ int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_contr
     case KR_COMPOSITOR:
       if ((address->control.compositor_control == KR_X) || (address->control.compositor_control == KR_Y) ||
           (address->control.compositor_control == KR_Z) || (address->control.compositor_control == KR_WIDTH) ||
-          (address->control.compositor_control == KR_HEIGHT)) {
+          (address->control.compositor_control == KR_HEIGHT) || (address->control.compositor_control == KR_TICKRATE)) {
           *data_type = KR_INT32;
       } else {
         *data_type = KR_FLOAT;

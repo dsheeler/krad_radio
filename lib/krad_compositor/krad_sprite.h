@@ -22,6 +22,8 @@ struct krad_sprite_St {
 
   char filename[256];
   int frames;
+  int tick;
+  int tickrate;
   int frame;
   cairo_surface_t *sprite;
   cairo_surface_t **sprite_frames;

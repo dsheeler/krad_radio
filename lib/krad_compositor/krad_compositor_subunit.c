@@ -64,6 +64,22 @@ void krad_compositor_subunit_set_rotation (krad_compositor_subunit_t *subunit, f
   subunit->rotation = rotation;
 }
 
+void krad_compositor_subunit_set_red (krad_compositor_subunit_t *subunit, float red, int duration) {
+  subunit->red = red;
+}
+
+void krad_compositor_subunit_set_green (krad_compositor_subunit_t *subunit, float green, int duration) {
+  subunit->green = green;
+}
+
+void krad_compositor_subunit_set_blue (krad_compositor_subunit_t *subunit, float blue, int duration) {
+  subunit->blue = blue;
+}
+
+void krad_compositor_subunit_set_alpha (krad_compositor_subunit_t *subunit, float alpha, int duration) {
+  subunit->alpha = alpha;
+}
+
 void krad_compositor_subunit_tick (krad_compositor_subunit_t *subunit) {
 
 }

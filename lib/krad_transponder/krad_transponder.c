@@ -111,6 +111,8 @@ void v4l2_capture_unit_destroy (void *arg) {
   krad_v4l2_close(krad_link->krad_v4l2);
   krad_v4l2_destroy(krad_link->krad_v4l2);
 
+  krad_compositor_port_destroy (krad_link->krad_radio->krad_compositor, krad_link->krad_compositor_port);
+
   printk ("v4l2 capture unit destroy");
   
 }
@@ -163,8 +165,6 @@ int x11_capture_unit_process (void *arg) {
   krad_compositor_port_push_rgba_frame (krad_link->krad_compositor_port, krad_frame);
 
   krad_framepool_unref_frame (krad_frame);
-
-  printk ("captured!");
 
   return 0;
 }

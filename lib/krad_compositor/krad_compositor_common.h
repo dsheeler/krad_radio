@@ -29,6 +29,7 @@ typedef enum {
 } krad_vector_type_t;
 
 typedef enum {
+  KR_NO,
   KR_X,
   KR_Y,
   KR_Z,
@@ -42,6 +43,7 @@ typedef enum {
   KR_GREEN,
   KR_BLUE,
   KR_ALPHA,
+  KR_TICKRATE,
 } kr_compositor_control_t;
 
 typedef struct krad_text_rep_St krad_text_rep_t;

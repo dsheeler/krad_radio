@@ -430,16 +430,21 @@ void krad_sprite_reset (krad_sprite_t *krad_sprite) {
   krad_sprite->multisurface = 0;
   krad_sprite->frame = 0;
   krad_sprite->frames = 1;
-
+  krad_sprite->tickrate = KRAD_SPRITE_DEFAULT_TICKRATE;
+  krad_sprite->tick = 0;
   krad_compositor_subunit_reset (&krad_sprite->subunit);
 }
 
-static void krad_sprite_tick (krad_sprite_t *krad_sprite) {
-/*
-  krad_sprite->subunit.tick++;
+void krad_sprite_set_tickrate (krad_sprite_t *krad_sprite, int tickrate) {
+  krad_sprite->tickrate = tickrate;
+}
 
-  if (krad_sprite->subunit.tick >= krad_sprite->subunit.tickrate) {
-    krad_sprite->subunit.tick = 0;
+static void krad_sprite_tick (krad_sprite_t *krad_sprite) {
+
+  krad_sprite->tick++;
+
+  if (krad_sprite->tick >= krad_sprite->tickrate) {
+    krad_sprite->tick = 0;
     krad_sprite->frame++;
     if (krad_sprite->frame == krad_sprite->frames) {
       krad_sprite->frame = 0;
@@ -448,9 +453,6 @@ static void krad_sprite_tick (krad_sprite_t *krad_sprite) {
       krad_sprite->sprite = krad_sprite->sprite_frames[krad_sprite->frame];
     }
   }
-  
-  */
-  
   krad_compositor_subunit_tick (&krad_sprite->subunit);
 }
 

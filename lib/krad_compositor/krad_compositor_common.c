@@ -14,6 +14,7 @@ void krad_compositor_subunit_controls_to_ebml (krad_ebml_t *krad_ebml, kr_compos
   krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, krad_compositor_subunit_controls->rotation);
 
 }
+
 void krad_compositor_subunit_controls_read (krad_ebml_t *krad_ebml, kr_compositor_subunit_controls_t *subunit_controls) {
   uint32_t ebml_id;
   
@@ -421,6 +422,9 @@ kr_compositor_control_t krad_string_to_compositor_control (char *string) {
   }
   if (strncmp (string, "alpha", 1) == 0) {
     return KR_ALPHA;
+  }
+  if (strncmp (string, "tickrate", 1) == 0) {
+    return KR_TICKRATE;
   }
   return 0;
 }
