@@ -426,10 +426,18 @@ static inline void krad_compositor_tick (krad_compositor_t *compositor) {
 
 void krad_compositor_process (krad_compositor_t *compositor) {
   krad_compositor_tick (compositor);
-  krad_compositor_prepare (compositor);
-  krad_compositor_composite (compositor);
-  krad_compositor_output (compositor);
-  krad_compositor_finish (compositor);
+  
+  if (compositor->had_a_subunit == 1) {
+    krad_compositor_alloc_framepool (compositor);
+    compositor->had_a_subunit = 2;
+  }
+  
+  if (compositor->had_a_subunit == 1) {
+    krad_compositor_prepare (compositor);
+    krad_compositor_composite (compositor);
+    krad_compositor_output (compositor);
+    krad_compositor_finish (compositor);
+  }
 }
 
 void krad_compositor_get_last_snapshot_name (krad_compositor_t *krad_compositor, char *filename) {
@@ -900,9 +908,8 @@ static void krad_compositor_free_framepool (krad_compositor_t *compositor) {
 
 static void krad_compositor_alloc_framepool (krad_compositor_t *compositor) {
 
-  printk ("Krad Compositor: Allocing Resources");
-
   if (compositor->framepool == NULL) {
+    printk ("Krad Compositor: Allocing Resources");
     compositor->framepool = krad_framepool_create ( compositor->width,
                                                     compositor->height,
                                                     DEFAULT_COMPOSITOR_BUFFER_FRAMES);
@@ -1535,6 +1542,10 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
           kr_compositor_subunit_type_to_string (type),
           option);
 
+  if (compositor->had_a_subunit == 0) {
+    compositor->had_a_subunit = 1;
+  }
+
   switch ( type ) {
     case KR_SPRITE:
       for (i = 0; i < KC_MAX_SPRITES; i++) {
@@ -1718,7 +1729,7 @@ krad_compositor_t *krad_compositor_create (int width, int height, int fps_numera
   compositor->address.path.subunit.compositor_subunit = KR_UNIT;
   compositor->background = krad_sprite_create ();
   krad_compositor_prepare_subunits (compositor);
-  krad_compositor_alloc_framepool (compositor);
+  //krad_compositor_alloc_framepool (compositor);
 
   return compositor;
 }

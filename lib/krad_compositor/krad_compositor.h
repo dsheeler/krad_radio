@@ -105,6 +105,10 @@ struct krad_compositor_St {
 
   struct timespec start_time;
   kr_address_t address;
+  
+  
+  int had_a_subunit;
+  
 };
 
 void krad_compositor_subunit_create (krad_compositor_t *compositor,
