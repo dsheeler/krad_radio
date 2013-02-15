@@ -418,6 +418,7 @@ uint64_t krad_ebml_read_number (krad_ebml_t *krad_ebml, uint64_t ebml_data_size)
 uint64_t krad_ebml_read_command (krad_ebml_t *krad_ebml, unsigned char *buffer);
 krad_ebml_t *krad_ebml_open_buffer(krad_ebml_io_mode_t mode);
 krad_ebml_t *krad_ebml_open_buffer_nk (krad_ebml_io_mode_t mode);
+krad_ebml_t *krad_ebml_open_buffer_nk2(krad_ebml_io_mode_t mode);
 void krad_ebml_destroy_nk (krad_ebml_t *krad_ebml);
 int krad_ebml_io_buffer_push (krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
 int krad_ebml_io_buffer_read_space (krad_ebml_io_t *krad_ebml_io);

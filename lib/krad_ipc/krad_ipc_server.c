@@ -389,7 +389,7 @@ static krad_ipc_server_client_t *krad_ipc_server_accept_client (krad_ipc_server_
     }
 */
     client->active = 1;
-    client->krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_READONLY);
+    client->krad_ebml = krad_ebml_open_buffer_nk2 (KRAD_EBML_IO_READONLY);
     krad_ipc_server_update_pollfds (client->krad_ipc_server);
     //printk ("Krad IPC Server: Client accepted!");  
     return client;

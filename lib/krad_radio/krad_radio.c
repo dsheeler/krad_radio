@@ -215,7 +215,7 @@ void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) 
   address.path.unit = KR_STATION;
   address.path.subunit.station_subunit = KR_CPU;
 
-  krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);
 
   krad_radio_address_to_ebml (krad_ebml, &message_loc, &address);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
@@ -226,7 +226,7 @@ void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) 
   
   size = krad_ebml->io_adapter.write_buffer_pos;
   memcpy (buffer, krad_ebml->io_adapter.write_buffer, size);
-  krad_ebml_destroy (krad_ebml);
+  krad_ebml_destroy_nk (krad_ebml);
 
   broadcast_msg = krad_broadcast_msg_create (buffer, size);
 

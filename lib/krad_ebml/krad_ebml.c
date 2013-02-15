@@ -2720,6 +2720,31 @@ krad_ebml_t *krad_ebml_open_buffer(krad_ebml_io_mode_t mode) {
 
 }
 
+krad_ebml_t *krad_ebml_open_buffer_nk2(krad_ebml_io_mode_t mode) {
+
+	krad_ebml_t *krad_ebml;
+	
+	krad_ebml = krad_ebml_create();
+
+	krad_ebml->io_adapter.mode = mode;
+	krad_ebml->io_adapter.read = krad_ebml_io_buffer_read;
+	krad_ebml->io_adapter.write = krad_ebml_io_buffer_write;	
+
+	if (krad_ebml->io_adapter.mode == KRAD_EBML_IO_READONLY) {
+		krad_ebml->io_adapter.buffer_io_buffer = malloc (4096 * 6);
+		krad_ebml->record_cluster_info = 0;
+		krad_ebml->cluster_recording_space = 0;
+		//krad_ebml->clusters = calloc(krad_ebml->cluster_recording_space, sizeof(krad_ebml_cluster_t));
+	}
+
+	if (krad_ebml->io_adapter.mode == KRAD_EBML_IO_WRITEONLY) {
+		krad_ebml->io_adapter.write_buffer = malloc(KRADEBML_WRITE_BUFFER_SIZE);
+	}
+	
+	return krad_ebml;
+
+}
+
 void krad_ebml_destroy_nk (krad_ebml_t *krad_ebml) {
   free (krad_ebml->io_adapter.write_buffer);
   free (krad_ebml);
