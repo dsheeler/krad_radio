@@ -13,7 +13,8 @@ int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster,
   krad_ebml_t *krad_ebml;
   uint64_t message_loc;
 
-  krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  //krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);  
   
   krad_radio_address_to_ebml (krad_ebml, &message_loc, address);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_RADIO_UNIT_DESTROYED);
@@ -21,7 +22,7 @@ int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster,
 
   size = krad_ebml->io_adapter.write_buffer_pos;
   memcpy (buffer, krad_ebml->io_adapter.write_buffer, size);
-  krad_ebml_destroy (krad_ebml);
+  krad_ebml_destroy_nk (krad_ebml);
 
   broadcast_msg = krad_broadcast_msg_create (buffer, size);
 
@@ -51,7 +52,8 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
 
   payload_loc = 0;
 
-  krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  //krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);  
   
   krad_radio_address_to_ebml (krad_ebml, &message_loc, address);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CREATED);
@@ -77,7 +79,7 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
 
   size = krad_ebml->io_adapter.write_buffer_pos;
   memcpy (buffer, krad_ebml->io_adapter.write_buffer, size);
-  krad_ebml_destroy (krad_ebml);
+  krad_ebml_destroy_nk (krad_ebml);
 
   broadcast_msg = krad_broadcast_msg_create (buffer, size);
 
@@ -105,7 +107,8 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
   float *value_float;
   int *value_int;
 
-  krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  //krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
+  krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);
   
   address.path.unit = address_in->path.unit;
   address.path.subunit.mixer_subunit = address_in->path.subunit.mixer_subunit;
@@ -141,7 +144,7 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
   broadcast_msg = krad_broadcast_msg_create (krad_ebml->io_adapter.write_buffer, size);
   broadcast_msg->skip_client = client;
 
-  krad_ebml_destroy (krad_ebml);
+  krad_ebml_destroy_nk (krad_ebml);
 
   if (broadcast_msg->skip_client != NULL) {
     //printk ("want to Goint to skip a client!!\n");

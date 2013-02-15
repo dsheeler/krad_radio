@@ -291,7 +291,7 @@ struct krad_ebml_St {
 	
 	int header_read;
 	
-  char bsbuffer[1024];
+  char bsbuffer[256];
 	int stream;
 
 	krad_transmission_t *krad_transmission;
@@ -303,7 +303,7 @@ struct krad_ebml_St {
 	
 	
 	int read_laced_frames;
-	uint64_t frame_sizes[256];
+	uint64_t frame_sizes[16];
 	int current_laced_frame;
 	
 	//writing
@@ -417,6 +417,8 @@ uint64_t krad_ebml_read_number_from_frag (unsigned char *ebml_frag, uint64_t ebm
 uint64_t krad_ebml_read_number (krad_ebml_t *krad_ebml, uint64_t ebml_data_size);
 uint64_t krad_ebml_read_command (krad_ebml_t *krad_ebml, unsigned char *buffer);
 krad_ebml_t *krad_ebml_open_buffer(krad_ebml_io_mode_t mode);
+krad_ebml_t *krad_ebml_open_buffer_nk (krad_ebml_io_mode_t mode);
+void krad_ebml_destroy_nk (krad_ebml_t *krad_ebml);
 int krad_ebml_io_buffer_push (krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
 int krad_ebml_io_buffer_read_space (krad_ebml_io_t *krad_ebml_io);
 krad_ebml_t *krad_ebml_open_active_socket (int socket, krad_ebml_io_mode_t mode);

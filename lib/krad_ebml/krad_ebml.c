@@ -1998,7 +1998,7 @@ int krad_ebml_read_packet (krad_ebml_t *krad_ebml, int *track, uint64_t *timecod
 				if (ebml_data_size != EBML_DATA_SIZE_UNKNOWN) {
 
           if (ebml_data_size > sizeof(krad_ebml->bsbuffer)) {
-            failfast ("I needed to skip more than 1024 bytes in a stream..");
+            failfast ("I needed to skip more than 256 bytes in a stream..");
           }
 
 					krad_ebml_read ( krad_ebml, krad_ebml->bsbuffer, ebml_data_size);
@@ -2570,9 +2570,11 @@ void krad_ebml_destroy(krad_ebml_t *krad_ebml) {
 		free (krad_ebml->header->doctype.v.s);
 	}
 	
-	free (krad_ebml->header);
-	free (krad_ebml);
+	if (krad_ebml->header != NULL) {
+	  free (krad_ebml->header);
+	}
 
+	free (krad_ebml);
 }
 
 krad_ebml_t *krad_ebml_create() {
@@ -2716,6 +2718,34 @@ krad_ebml_t *krad_ebml_open_buffer(krad_ebml_io_mode_t mode) {
 	
 	return krad_ebml;
 
+}
+
+void krad_ebml_destroy_nk (krad_ebml_t *krad_ebml) {
+  free (krad_ebml->io_adapter.write_buffer);
+  free (krad_ebml);
+}
+
+krad_ebml_t *krad_ebml_open_buffer_nk (krad_ebml_io_mode_t mode) {
+
+	krad_ebml_t *krad_ebml;
+	
+  krad_ebml = calloc(1, sizeof(krad_ebml_t));
+	krad_ebml->current_track = 1;
+	krad_ebml->ebml_level = -1;
+
+	krad_ebml->io_adapter.mode = mode;
+	krad_ebml->io_adapter.read = krad_ebml_io_buffer_read;
+	krad_ebml->io_adapter.write = krad_ebml_io_buffer_write;	
+
+	if (krad_ebml->io_adapter.mode == KRAD_EBML_IO_READONLY) {
+		failfast ("no its a test mmk");
+	}
+
+	if (krad_ebml->io_adapter.mode == KRAD_EBML_IO_WRITEONLY) {
+		krad_ebml->io_adapter.write_buffer = malloc (2048);
+	}
+	
+	return krad_ebml;
 }
 
 krad_ebml_t *krad_ebml_open_active_socket (int socket, krad_ebml_io_mode_t mode) {
