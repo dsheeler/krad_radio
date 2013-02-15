@@ -104,6 +104,7 @@ void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
   krad_text_prepare (krad_text, cr);
   cairo_stroke (cr);
   cairo_restore (cr);
+  krad_compositor_subunit_tick (&krad_text->subunit);
 }
 
 int krad_text_to_rep (krad_text_t *text, krad_text_rep_t *text_rep) {

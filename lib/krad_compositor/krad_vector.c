@@ -225,6 +225,9 @@ void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr) {
   }
   
   cairo_restore (cr);
+  
+  krad_compositor_subunit_tick (&krad_vector->subunit);
+  
 }
 
 static void krad_vector_render_meter (cairo_t *cr, int x, int y, int size, float pos, float opacity) {

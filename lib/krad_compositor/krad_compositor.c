@@ -1293,11 +1293,11 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                 break;
               case KR_WIDTH:
                 krad_compositor_subunit_set_width (&compositor->sprite[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_HEIGHT:
                 krad_compositor_subunit_set_height (&compositor->sprite[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_ROTATION:
                 krad_compositor_subunit_set_rotation (&compositor->sprite[uc->address.id.number].subunit,
@@ -1357,11 +1357,11 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                 break;
               case KR_WIDTH:
                 krad_compositor_subunit_set_width (&compositor->text[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_HEIGHT:
                 krad_compositor_subunit_set_height (&compositor->text[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_ROTATION:
                 krad_compositor_subunit_set_rotation (&compositor->text[uc->address.id.number].subunit,
@@ -1417,11 +1417,11 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                 break;
               case KR_WIDTH:
                 krad_compositor_subunit_set_width (&compositor->vector[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_HEIGHT:
                 krad_compositor_subunit_set_height (&compositor->vector[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_ROTATION:
                 krad_compositor_subunit_set_rotation (&compositor->vector[uc->address.id.number].subunit,
@@ -1478,11 +1478,11 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                 break;
               case KR_WIDTH:
                 krad_compositor_subunit_set_width (&compositor->port[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_HEIGHT:
                 krad_compositor_subunit_set_height (&compositor->port[uc->address.id.number].subunit,
-                                               uc->value.integer);                
+                                               uc->value.integer, uc->duration);                
                 break;
               case KR_ROTATION:
                 krad_compositor_subunit_set_rotation (&compositor->port[uc->address.id.number].subunit,
