@@ -524,7 +524,7 @@ int krad_sprite_to_rep (krad_sprite_t *sprite, krad_sprite_rep_t *sprite_rep) {
   sprite_rep->controls.y = sprite->subunit.y;
   sprite_rep->controls.z = sprite->subunit.z;
   
-  //sprite_rep->controls.tickrate = sprite->subunit.tickrate;
+  sprite_rep->controls.tickrate = sprite->tickrate;
 
   sprite_rep->controls.width = sprite->subunit.width;
   sprite_rep->controls.height = sprite->subunit.height;

@@ -280,25 +280,41 @@ void kr_ebml_to_comp_controls (unsigned char *ebml_frag, kr_comp_controls_t *con
   controls->rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 }
 
-void kr_ebml_to_sprite_rep (unsigned char *ebml_frag, kr_sprite_t **kr_sprite_rep_in) {
+void kr_ebml_to_sprite_rep (unsigned char *ebml_frag, kr_sprite_t *sprite) {
 
   uint32_t ebml_id;
   uint64_t ebml_data_size;
-  kr_sprite_t *kr_sprite_rep;
   int item_pos;
 
   item_pos = 0;
-
-  if (*kr_sprite_rep_in == NULL) {
-    *kr_sprite_rep_in = kr_compositor_sprite_rep_create ();
-  }
-  
-  kr_sprite_rep = *kr_sprite_rep_in;
   
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, kr_sprite_rep->filename);
+  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, sprite->filename);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
   
-  kr_ebml_to_comp_controls (ebml_frag + item_pos, &kr_sprite_rep->controls);
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.tickrate = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+ 
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.yscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  sprite->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
 }
 
 void kr_ebml_to_text_rep (unsigned char *ebml_frag, krad_text_rep_t **krad_text_rep_in) {
@@ -390,16 +406,21 @@ int kr_compositor_response_get_string_from_subunit_controls (kr_comp_controls_t 
 int kr_compositor_response_get_string_from_sprite (unsigned char *ebml_frag, char **string) {
 
   int pos;
-  kr_sprite_t *kr_sprite;
+  kr_sprite_t sprite;
 
   pos = 0;
-  kr_sprite = NULL;
+  //memset (&sprite, 0, sizeof(kr_sprite_t));
 
-  kr_ebml_to_sprite_rep (ebml_frag, &kr_sprite);
-  pos += sprintf (*string + pos, "Filename: %s\n", kr_sprite->filename);
-  pos += kr_compositor_response_get_string_from_subunit_controls (&kr_sprite->controls, *string + pos);
-
-  kr_compositor_sprite_rep_destroy (kr_sprite);
+  kr_ebml_to_sprite_rep (ebml_frag, &sprite);
+  pos += sprintf (*string + pos, "Filename: %s\n", sprite.filename);
+  pos += sprintf (*string + pos, "X: %d\n", sprite.controls.x);
+  pos += sprintf (*string + pos, "Y: %d\n", sprite.controls.y);
+  pos += sprintf (*string + pos, "Z: %d\n", sprite.controls.z);
+  pos += sprintf (*string + pos, "Y Scale: %4.2f\n", sprite.controls.yscale);
+  pos += sprintf (*string + pos, "X Scale: %4.2f\n", sprite.controls.xscale);
+  pos += sprintf (*string + pos, "Opacity: %4.2f\n", sprite.controls.opacity);
+  pos += sprintf (*string + pos, "Rotation: %4.2f\n", sprite.controls.rotation);
+  pos += sprintf (*string + pos, "Tickrate: %d\n", sprite.controls.tickrate);
   
   return pos; 
 }
@@ -481,7 +502,7 @@ int kr_compositor_response_to_string (kr_response_t *kr_response, char **string)
       *string = kr_response_alloc_string (kr_response->size * 4);
       return kr_compositor_response_get_string_from_compositor (kr_response->buffer, string);
     case EBML_ID_KRAD_SUBUNIT_INFO:
-      *string = kr_response_alloc_string (kr_response->size * 4);
+      *string = kr_response_alloc_string (kr_response->size * 6);
       return kr_compositor_response_get_string_from_subunit (kr_response, kr_response->buffer, string);
     case EBML_ID_KRAD_SUBUNIT_CREATED:
       *string = kr_response_alloc_string (kr_response->size * 4);

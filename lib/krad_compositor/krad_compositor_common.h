@@ -145,7 +145,7 @@ void kr_compositor_sprite_rep_destroy (kr_sprite_t *sprite);
 
 krad_sprite_rep_t *krad_compositor_ebml_to_new_krad_sprite_rep (krad_ebml_t *krad_ebml, uint64_t *bytes_read);
 krad_sprite_rep_t *krad_compositor_sprite_rep_create_and_init ( int number, char *filename, int x, int y, int z, int tickrate, float scale, float opacity, float rotation);
-void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *krad_sprite_rep, krad_ebml_t *krad_ebml);
+void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
 
 
 krad_vector_rep_t *krad_compositor_vector_rep_create ();
