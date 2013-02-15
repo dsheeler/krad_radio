@@ -1,7 +1,6 @@
 #include "krad_radio_client_internal.h"
 #include "krad_radio_client.h"
 
-
 #include "krad_radio_common.h"
 #include "krad_compositor_common.h"
 #include "krad_transponder_common.h"
@@ -335,7 +334,6 @@ int kr_radio_response_get_string_from_tag (unsigned char *ebml_frag, uint64_t it
   string_pos += sprintf (*string + string_pos, "\n");
 
   return string_pos;
-
 }
 
 int kr_radio_response_get_string_from_remote (unsigned char *ebml_frag, uint64_t item_size, char **string) {
@@ -363,7 +361,6 @@ int kr_radio_response_get_string_from_remote (unsigned char *ebml_frag, uint64_t
   string_pos += sprintf (*string + string_pos, " Port: %d", number);
 
   return string_pos;
-
 }
 
 rep_to_string_t kr_response_get_rep_to_string_converter (kr_address_t *address) {
@@ -418,12 +415,10 @@ int kr_radio_response_get_string_from_cpu (unsigned char *ebml_frag, uint64_t it
   pos = 0;
 
   uint32_t usage;
-  
+
   ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);
   usage = krad_ebml_read_number_from_frag (ebml_frag + ebml_pos, ebml_data_size);
-  pos += sprintf (*string + pos, "System CPU Usage: %u%%", usage);  
-
-  
+  pos += sprintf (*string + pos, "System CPU Usage: %u%%", usage);
   return pos; 
 }
 
@@ -604,12 +599,10 @@ int kr_ebml_to_remote_status_rep (unsigned char *ebml_frag, kr_remote_t *remote)
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, remote->interface);
-
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   remote->port = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
   return item_pos;
-
 }
 
 int kr_ebml_to_tag_rep (unsigned char *ebml_frag, kr_tag_t *tag) {
@@ -622,15 +615,12 @@ int kr_ebml_to_tag_rep (unsigned char *ebml_frag, kr_tag_t *tag) {
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, tag->unit);
-
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, tag->name);
-
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, tag->value);
 
   return item_pos;
-
 }
 
 void kr_response_address (kr_response_t *response, kr_address_t **address) {
@@ -746,8 +736,6 @@ int kr_rep_free (kr_rep_t **kr_rep) {
   return -1;
 }
 
-
-
 uint32_t kr_response_size (kr_response_t *kr_response) {
   return kr_response->size;
 }
@@ -828,7 +816,6 @@ inline int krad_read_message_type_from_ebml (krad_ebml_t *ebml, uint32_t *messag
   *message_type = krad_ebml_read_number ( ebml, ebml_data_size);
 
   return 0;
-
 }
 
 int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address) {
@@ -1060,12 +1047,9 @@ void kr_set_dir (kr_client_t *client, char *dir) {
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &command);
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_SET_DIR, &setdir);
-
   krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_DIR, dir);
-  
   krad_ebml_finish_element (client->krad_ebml, setdir);
   krad_ebml_finish_element (client->krad_ebml, command);
-    
   krad_ebml_write_sync (client->krad_ebml);
 }
 
@@ -1077,23 +1061,16 @@ void kr_system_info (kr_client_t *client) {
   info_command = 0;
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &command);
-
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_GET_SYSTEM_INFO, &info_command);
   krad_ebml_finish_element (client->krad_ebml, info_command);
-
   krad_ebml_finish_element (client->krad_ebml, command);
-    
   krad_ebml_write_sync (client->krad_ebml);
 }
 
-/* Remote Control */
-
 static int kr_remote_port_valid (int port) {
-
   if ((port >= 0) && (port <= 65535)) {
     return 1;
   }
-
   return 0;
 }
 
@@ -1117,25 +1094,18 @@ int kr_remote_on (kr_client_t *client, char *interface, int port) {
   if (!kr_remote_port_valid (port)) {
     return -1;
   }
-
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_REMOTE_ENABLE, &enable_remote);  
-
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_REMOTE_ENABLE, &enable_remote);
   if ((interface != NULL) && (strlen(interface))) {
     krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, interface);
   } else {
     krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, "");
   }
-
   krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_TCP_PORT, port);
-
   krad_ebml_finish_element (client->krad_ebml, enable_remote);
   krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
   krad_ebml_write_sync (client->krad_ebml);
-  
   return 1;
-  
 }
 
 int kr_remote_off (kr_client_t *client, char *interface, int port) {
@@ -1149,43 +1119,33 @@ int kr_remote_off (kr_client_t *client, char *interface, int port) {
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_REMOTE_DISABLE, &disable_remote);
-
   if ((interface != NULL) && (strlen(interface))) {
     krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, interface);
   } else {
     krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, "");
   }
-  
   krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_TCP_PORT, port);
-
   krad_ebml_finish_element (client->krad_ebml, disable_remote);
   krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
   krad_ebml_write_sync (client->krad_ebml);
-  
   return 1;
-  
 }
 
 void kr_web_enable (kr_client_t *client, int http_port, int websocket_port,
-          char *headcode, char *header, char *footer) {
+                    char *headcode, char *header, char *footer) {
 
   uint64_t radio_command;
   uint64_t webon;
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_WEB_ENABLE, &webon);  
-
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_HTTP_PORT, http_port);  
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_WEBSOCKET_PORT, websocket_port);  
-
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_WEB_ENABLE, &webon);
+  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_HTTP_PORT, http_port);
+  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_WEBSOCKET_PORT, websocket_port);
   krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_WEB_HEADCODE, headcode);
   krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_WEB_HEADER, header);
   krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_WEB_FOOTER, footer);
-  
   krad_ebml_finish_element (client->krad_ebml, webon);
   krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
   krad_ebml_write_sync (client->krad_ebml);
 }
 
@@ -1196,10 +1156,8 @@ void kr_web_disable (kr_client_t *client) {
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_WEB_DISABLE, &weboff);
-
   krad_ebml_finish_element (client->krad_ebml, weboff);
   krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
   krad_ebml_write_sync (client->krad_ebml);
 }
 
@@ -1210,12 +1168,9 @@ void kr_osc_enable (kr_client_t *client, int port) {
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_OSC_ENABLE, &enable_osc);  
-
   krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_UDP_PORT, port);
-
   krad_ebml_finish_element (client->krad_ebml, enable_osc);
   krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
   krad_ebml_write_sync (client->krad_ebml);
 }
 
@@ -1226,15 +1181,10 @@ void kr_osc_disable (kr_client_t *client) {
 
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_OSC_DISABLE, &disable_osc);
-
   krad_ebml_finish_element (client->krad_ebml, disable_osc);
   krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
   krad_ebml_write_sync (client->krad_ebml);
 }
-
-
-/* Tagging */
 
 void kr_read_tag_inner ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value ) {
 
@@ -1242,33 +1192,10 @@ void kr_read_tag_inner ( kr_client_t *client, char **tag_item, char **tag_name, 
   uint64_t ebml_data_size;
 
   krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
-
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG_ITEM) {
-    //printf("hrm wtf2\n");
-  } else {
-    //printf("tag name size %zu\n", ebml_data_size);
-  }
-
   krad_ebml_read_string (client->krad_ebml, *tag_item, ebml_data_size);
-
   krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG_NAME) {
-    //printf("hrm wtf2\n");
-  } else {
-    //printf("tag name size %zu\n", ebml_data_size);
-  }
-
   krad_ebml_read_string (client->krad_ebml, *tag_name, ebml_data_size);
-  
   krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG_VALUE) {
-    //printf("hrm wtf3\n");
-  } else {
-    //printf("tag value size %zu\n", ebml_data_size);
-  }
-
   krad_ebml_read_string (client->krad_ebml, *tag_value, ebml_data_size);
 }
 
@@ -1281,11 +1208,6 @@ int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_nam
   item_pos = 0;
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-
-  
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG) {
-    //printf("hrm wtf\n");
-  }
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_item);
@@ -1304,50 +1226,18 @@ int kr_read_tag ( kr_client_t *client, char **tag_item, char **tag_name, char **
   uint32_t ebml_id;
   uint64_t ebml_data_size;
   int bytes_read;
-  
+
   bytes_read = 0;
 
   krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
-  
   bytes_read += ebml_data_size + 9;
-  
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG) {
-    //printf("hrm wtf\n");
-  } else {
-    //printf("tag size %zu\n", ebml_data_size);
-  }
-  
+  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
+  krad_ebml_read_string (client->krad_ebml, *tag_item, ebml_data_size);
   krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG_ITEM) {
-    //printf("hrm wtf2\n");
-  } else {
-    //printf("tag name size %zu\n", ebml_data_size);
-  }
-
-  krad_ebml_read_string (client->krad_ebml, *tag_item, ebml_data_size);  
-  
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG_NAME) {
-    //printf("hrm wtf2\n");
-  } else {
-    //printf("tag name size %zu\n", ebml_data_size);
-  }
-
   krad_ebml_read_string (client->krad_ebml, *tag_name, ebml_data_size);
-  
-  
   krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-
-  if (ebml_id != EBML_ID_KRAD_RADIO_TAG_VALUE) {
-    //printf("hrm wtf3\n");
-  } else {
-    //printf("tag value size %zu\n", ebml_data_size);
-  }
-
   krad_ebml_read_string (client->krad_ebml, *tag_value, ebml_data_size);
-  
+
   return bytes_read;
 }
 
@@ -1396,7 +1286,6 @@ void kr_tag (kr_client_t *client, char *item, char *tag_name) {
   krad_ebml_write_sync (client->krad_ebml);
 }
 
-
 void kr_set_tag (kr_client_t *client, char *item, char *tag_name, char *tag_value) {
 
   uint64_t radio_command;
@@ -1421,7 +1310,6 @@ void kr_set_tag (kr_client_t *client, char *item, char *tag_name, char *tag_valu
     
   krad_ebml_write_sync (client->krad_ebml);
 }
-
 
 void kr_address_debug_print (kr_address_t *addr) {
 
@@ -1537,10 +1425,8 @@ void kr_address_debug_print (kr_address_t *addr) {
       }
       break;
   }
-    
 
   printf ("\n");
-    
 }
 
 #define MAX_TOKENS 8
@@ -1906,12 +1792,7 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
       return -1;
       break;
   }
-  
-  //krad_ebml_finish_element (client->krad_ebml, control_set);
-  //krad_ebml_finish_element (client->krad_ebml, command);
-  //krad_ebml_write_sync (client->krad_ebml);
 
   return 0;
 }
-
 

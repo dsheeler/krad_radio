@@ -1,9 +1,7 @@
 #include "krad_radio.h"
-//#include "krad_compositor.h"
 
 #ifndef KRAD_VECTOR_H
 #define KRAD_VECTOR_H
-
 
 #include <math.h>
 #include <stdlib.h>
@@ -27,7 +25,6 @@
 #define NORMAL_REEL_SPEED 19.05
 #define SLOW_NORMAL_REEL_SPEED 9.53
 
-// device colors
 #define BLUE 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0
 #define BLUE_TRANS 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0, 0.255
 #define BLUE_TRANS2 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0, 0.144 / 0.255 * 1.0

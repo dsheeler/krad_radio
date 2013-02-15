@@ -75,7 +75,6 @@ struct kr_compositor_subunit_controls_St {
 
   float rotation;
   float opacity;
-
 };
 
 struct krad_sprite_rep_St {
@@ -125,41 +124,24 @@ struct krad_compositor_rep_St {
   char background_filename[256];
 };
 
-void krad_compositor_subunit_controls_init (kr_comp_controls_t *controls, int number, int x, int y, int z, int tickrate, int width, int height, float scale, float opacity, float rotation);
-void krad_compositor_subunit_controls_reset (kr_comp_controls_t *krad_compositor_subunit_controls);
-void krad_compositor_subunit_controls_to_ebml (krad_ebml_t *krad_ebml, kr_comp_controls_t *krad_compositor_subunit_controls);
-void krad_compositor_subunit_controls_read (krad_ebml_t *krad_ebml, kr_comp_controls_t *subunit_controls);
-
 char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 
 krad_text_rep_t *krad_compositor_text_rep_create ();
-krad_text_rep_t *krad_compositor_text_rep_create_and_init (int number, char *text, char *font, float red, float green, float blue, int x, int y, int z, int tickrate, float scale, float opacity, float rotation);
-krad_text_rep_t *krad_compositor_ebml_to_krad_text_rep (krad_ebml_t *krad_ebml, uint64_t *ebml_data_size, krad_text_rep_t *krad_text_rep);
 void krad_compositor_text_rep_destroy (krad_text_rep_t *krad_text_rep);
-void krad_compositor_validate_text_rep (krad_text_rep_t *krad_text_rep);
-
-void krad_compositor_text_rep_reset (krad_text_rep_t *krad_text_rep);
-
-
 void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml);
 
 kr_sprite_t *kr_compositor_sprite_rep_create ();
 void kr_compositor_sprite_rep_destroy (kr_sprite_t *sprite);
 void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
 
-
 krad_vector_rep_t *krad_compositor_vector_rep_create ();
-krad_vector_rep_t *krad_compositor_vector_rep_create_and_init (int number, char *vector_type, float red, float green, float blue, int x, int y, int z, int tickrate, float scale, float opacity, float rotation);
-krad_vector_rep_t *krad_compositor_ebml_to_krad_vector_rep (krad_ebml_t *krad_ebml, uint64_t *ebml_data_size, krad_vector_rep_t *krad_vector_rep);
 void krad_compositor_vector_rep_destroy (krad_vector_rep_t *krad_vector_rep);
-void krad_compositor_validate_vector_rep (krad_vector_rep_t *krad_vector_rep);
-void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *krad_vector_rep, krad_ebml_t *krad_ebml);
-void krad_compositor_vector_rep_reset (krad_vector_rep_t *krad_vector_rep);
-krad_vector_type_t krad_string_to_vector_type (char *string);
-kr_compositor_control_t krad_string_to_compositor_control (char *string);
-char *krad_vector_type_to_string (krad_vector_type_t type);
 
 kr_compositor_t *kr_compositor_rep_create ();
 void kr_compositor_rep_destroy (kr_compositor_t *compositor);
+
+krad_vector_type_t krad_string_to_vector_type (char *string);
+kr_compositor_control_t krad_string_to_compositor_control (char *string);
+char *krad_vector_type_to_string (krad_vector_type_t type);
 
 #endif // KRAD_COMPOSITOR_COMMON_H
