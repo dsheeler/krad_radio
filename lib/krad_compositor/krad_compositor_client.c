@@ -286,20 +286,13 @@ void kr_ebml_to_sprite_rep (unsigned char *ebml_frag, kr_sprite_t *sprite) {
 
 }
 
-void kr_ebml_to_text_rep (unsigned char *ebml_frag, krad_text_rep_t **krad_text_rep_in) {
+void kr_ebml_to_text_rep (unsigned char *ebml_frag, kr_text_t *text) {
   
   uint32_t ebml_id;
   uint64_t ebml_data_size;
-  kr_text_t *text;
   int item_pos;
 
   item_pos = 0;
-
-  if (*krad_text_rep_in == NULL) {
-    *krad_text_rep_in = krad_compositor_text_rep_create ();
-  }
-  
-  text = *krad_text_rep_in;
   
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, text->text);
@@ -314,9 +307,31 @@ void kr_ebml_to_text_rep (unsigned char *ebml_frag, krad_text_rep_t **krad_text_
   text->green = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
   
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->red = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  text->blue = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
-  kr_ebml_to_comp_controls (ebml_frag + item_pos, &text->controls);
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  text->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 }
 
 int kr_compositor_response_get_string_from_compositor (unsigned char *ebml_frag, char **string) {
@@ -397,20 +412,25 @@ int kr_compositor_response_get_string_from_sprite (unsigned char *ebml_frag, cha
 int kr_compositor_response_get_string_from_text (unsigned char *ebml_frag, char **string) {
 
   int pos;
-  kr_text_t *kr_text;
+  kr_text_t text;
 
   pos = 0;
-  kr_text = NULL;
+  //memset (&text, 0, sizeof(kr_text_t));
 
-  kr_ebml_to_text_rep (ebml_frag, &kr_text);
-  pos += sprintf (*string + pos, "Text: %s\n", kr_text->text);
-  pos += sprintf (*string + pos, "Font: %s\n", kr_text->font);
-  pos += sprintf (*string + pos, "Red: %6.2f Green: %6.2f Blue: %6.2f\n",
-                  kr_text->red, kr_text->green, kr_text->blue);
-  pos += kr_compositor_response_get_string_from_subunit_controls (&kr_text->controls, *string + pos);
-
-  krad_compositor_text_rep_destroy (kr_text);
-  
+  kr_ebml_to_text_rep (ebml_frag, &text);
+  pos += sprintf (*string + pos, "Text: %s\n", text.text);
+  pos += sprintf (*string + pos, "Font: %s\n", text.font);
+  pos += sprintf (*string + pos, "Red: %4.2f Green: %4.2f Blue: %4.2f\n",
+                  text.red, text.green, text.blue);
+  pos += sprintf (*string + pos, "X: %d\n", text.controls.x);
+  pos += sprintf (*string + pos, "Y: %d\n", text.controls.y);
+  pos += sprintf (*string + pos, "Z: %d\n", text.controls.z);
+  pos += sprintf (*string + pos, "Width: %d\n", text.controls.width);
+  pos += sprintf (*string + pos, "Height: %d\n", text.controls.height);
+  pos += sprintf (*string + pos, "Size: %4.2f\n", text.controls.xscale);
+  pos += sprintf (*string + pos, "Opacity: %4.2f\n", text.controls.opacity);
+  pos += sprintf (*string + pos, "Rotation: %4.2f\n", text.controls.rotation);
+ 
   return pos; 
 }
 

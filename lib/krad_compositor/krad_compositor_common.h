@@ -137,14 +137,14 @@ krad_text_rep_t *krad_compositor_text_rep_create_and_init (int number, char *tex
 krad_text_rep_t *krad_compositor_ebml_to_krad_text_rep (krad_ebml_t *krad_ebml, uint64_t *ebml_data_size, krad_text_rep_t *krad_text_rep);
 void krad_compositor_text_rep_destroy (krad_text_rep_t *krad_text_rep);
 void krad_compositor_validate_text_rep (krad_text_rep_t *krad_text_rep);
-void krad_compositor_text_rep_to_ebml (krad_text_rep_t *krad_text_rep, krad_ebml_t *krad_ebml);
+
 void krad_compositor_text_rep_reset (krad_text_rep_t *krad_text_rep);
+
+
+void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml);
 
 kr_sprite_t *kr_compositor_sprite_rep_create ();
 void kr_compositor_sprite_rep_destroy (kr_sprite_t *sprite);
-
-krad_sprite_rep_t *krad_compositor_ebml_to_new_krad_sprite_rep (krad_ebml_t *krad_ebml, uint64_t *bytes_read);
-krad_sprite_rep_t *krad_compositor_sprite_rep_create_and_init ( int number, char *filename, int x, int y, int z, int tickrate, float scale, float opacity, float rotation);
 void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
 
 

@@ -432,7 +432,7 @@ void krad_compositor_process (krad_compositor_t *compositor) {
     compositor->had_a_subunit = 2;
   }
   
-  if (compositor->had_a_subunit == 1) {
+  if (compositor->had_a_subunit == 2) {
     krad_compositor_prepare (compositor);
     krad_compositor_composite (compositor);
     krad_compositor_output (compositor);
