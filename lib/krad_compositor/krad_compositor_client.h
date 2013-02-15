@@ -22,10 +22,6 @@ int kr_compositor_response_to_string (kr_response_t *kr_response, char **string)
 
 // Public
 
-void kr_compositor_set_videoport (kr_client_t *client, int number, uint32_t x, uint32_t y,
-                                  uint32_t width, uint32_t height, uint32_t crop_x, uint32_t crop_y,
-                                  uint32_t crop_width, uint32_t crop_height, float opacity, float rotation);
-
 void kr_compositor_subunit_list (kr_client_t *client);
 int kr_compositor_subunit_create (kr_client_t *client,
                                   kr_compositor_subunit_t type,
@@ -38,8 +34,8 @@ void kr_compositor_set_resolution (kr_client_t *client, int width, int height);
 
 void kr_compositor_close_display (kr_client_t *client);
 void kr_compositor_open_display (kr_client_t *client, int width, int height);
-int kr_compositor_background (kr_client_t *client, char *filename);
 
+int kr_compositor_background (kr_client_t *client, char *filename);
 void kr_compositor_snapshot (kr_client_t *client);
 void kr_compositor_snapshot_jpeg (kr_client_t *client);
 

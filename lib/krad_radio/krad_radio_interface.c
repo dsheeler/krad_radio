@@ -96,8 +96,7 @@ int krad_radio_broadcast_subunit_control (krad_ipc_broadcaster_t *broadcaster, k
 
 int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address_in, int control, int type, void *value, void *client) {
 
-  size_t size;
-  unsigned char *buffer;
+  uint32_t size;
   krad_broadcast_msg_t *broadcast_msg;
   krad_ebml_t *krad_ebml;
   kr_address_t address;
@@ -105,9 +104,6 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
   uint64_t payload_loc;
   float *value_float;
   int *value_int;
-  
-  size = 256;
-  buffer = malloc (size);
 
   krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
   
@@ -136,21 +132,20 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
       krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, *value_int);
       break;
   }
+
   krad_ebml_finish_element (krad_ebml, payload_loc);
   krad_ebml_finish_element (krad_ebml, message_loc);
 
   size = krad_ebml->io_adapter.write_buffer_pos;
-  memcpy (buffer, krad_ebml->io_adapter.write_buffer, size);
+
+  broadcast_msg = krad_broadcast_msg_create (krad_ebml->io_adapter.write_buffer, size);
+  broadcast_msg->skip_client = client;
+
   krad_ebml_destroy (krad_ebml);
 
-  broadcast_msg = krad_broadcast_msg_create (buffer, size);
-  broadcast_msg->skip_client = client;
-  
   if (broadcast_msg->skip_client != NULL) {
-    printk ("want to Goint to skip a client!!\n");
+    //printk ("want to Goint to skip a client!!\n");
   }
-  
-  free (buffer);
 
   if (broadcast_msg != NULL) {
     return krad_ipc_server_broadcaster_broadcast ( broadcaster, &broadcast_msg );
