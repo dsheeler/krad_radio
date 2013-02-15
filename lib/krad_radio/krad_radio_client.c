@@ -1803,7 +1803,6 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
       return -1;
       break;
   }
- 
 
   //kr_address_debug_print (addr); 
 
@@ -1825,7 +1824,6 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
     kr_transponder_destroy (client, address->id.number);
   }
 }
-
 
 int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type) {
 
