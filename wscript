@@ -81,6 +81,7 @@ def configure(conf):
     conf.options.nowayland = True
     conf.options.nox11 = True
     conf.options.nogtk = True
+    conf.options.nogif = True
 
   check_gif(conf)
   check_x11(conf)
