@@ -4,64 +4,39 @@
 
 static int krad_radio_pid (char *sysname);
 
+#ifdef __MACH__
+
 char *krad_radio_running_stations () {
 
-  char *unix_sockets;
-  int fd;
-  int bytes;
-  int pos;
-  int flag_check;
-  int flag_pos;
   static char list[4096];
-  
+  int prelen;
+  char *prefix = "krad_radio_";
+  DIR *dp;
+  struct dirent *ep;
+    
+  prelen = strlen (prefix);
   memset (list, '\0', sizeof(list));
   
-  fd = open ( "/proc/net/unix", O_RDONLY );
+  dp = opendir ("/tmp");
   
-  if (fd < 1) {
-    printke ("krad_radio_list_running_daemons: Could not open /proc/net/unix");
-    return NULL;
+  if (dp == NULL) {
+    printke ("Couldn't open the /tmp directory");
+    return 0;
   }
   
-  unix_sockets = malloc (512000);
-  
-  bytes = read (fd, unix_sockets, 512000);  
-  
-  if (bytes > 512000) {
-    printke("lots of unix sockets oh my");
-  }
-  
-  for (pos = 0; pos < bytes - 12; pos++) {  
-    if (unix_sockets[pos] == '@') {
-      if (memcmp(unix_sockets + pos, "@krad_radio_", 12) == 0) {
-      
-        /* back up a few spaces and check that its a listening socket */
-        flag_pos = 0;
-        flag_check = 5;
-        while (flag_check != 0) {
-          flag_pos--;
-          if (unix_sockets[pos + flag_pos] == ' ') {
-            flag_check--;
-          }
-        }
-        flag_pos++;
-        if (memcmp(unix_sockets + (pos + flag_pos), "00010000", 8) == 0) {
-          strncat(list, unix_sockets + pos + 12, strcspn(unix_sockets + pos + 12, "_"));
-          strcat(list, "\n");
-        }
+  while ((ep = readdir(dp))) {
+    if (strlen(ep->d_name) > prelen) {
+      if (strncmp (prefix, ep->d_name, prelen) == 0) {
+        strcat (ep->d_name + prelen, "\n");
+        strcat (list, "\n");
       }
     }
   }
-  
-  list[strlen(list) - 1] = '\0';
-  
-  free (unix_sockets);
-  
-  return list;
-  
-}
 
-#ifdef __MACH__
+  closedir (dp);
+
+  return list;
+}
 
 static int krad_radio_pid (char *sysname) {
 
@@ -96,6 +71,65 @@ static int krad_radio_pid (char *sysname) {
 }
 
 #else
+
+char *krad_radio_running_stations () {
+
+  char *unix_sockets;
+  int fd;
+  int bytes;
+  int pos;
+  int flag_check;
+  int flag_pos;
+  int prelen;
+  static char list[4096];
+  char *prefix = "@krad_radio_";
+  
+  prelen = strlen (prefix);
+  memset (list, '\0', sizeof(list));
+  
+  fd = open ( "/proc/net/unix", O_RDONLY );
+  
+  if (fd < 1) {
+    printke ("krad_radio_list_running_daemons: Could not open /proc/net/unix");
+    return NULL;
+  }
+  
+  unix_sockets = malloc (512000);
+  
+  bytes = read (fd, unix_sockets, 512000);  
+  
+  if (bytes > 512000) {
+    printke("lots of unix sockets oh my");
+  }
+  
+  for (pos = 0; pos < bytes - prelen; pos++) {
+    if (unix_sockets[pos] == '@') {
+      if (memcmp(unix_sockets + pos, prefix, prelen) == 0) {
+      
+        /* back up a few spaces and check that its a listening socket */
+        flag_pos = 0;
+        flag_check = 5;
+        while (flag_check != 0) {
+          flag_pos--;
+          if (unix_sockets[pos + flag_pos] == ' ') {
+            flag_check--;
+          }
+        }
+        flag_pos++;
+        if (memcmp(unix_sockets + (pos + flag_pos), "00010000", 8) == 0) {
+          strncat(list, unix_sockets + pos + prelen, strcspn(unix_sockets + pos + prelen, "_"));
+          strcat(list, "\n");
+        }
+      }
+    }
+  }
+  
+  list[strlen(list) - 1] = '\0';
+  
+  free (unix_sockets);
+  
+  return list;
+}
 
 static int krad_radio_pid (char *sysname) {
 
