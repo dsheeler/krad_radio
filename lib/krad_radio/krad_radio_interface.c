@@ -424,8 +424,8 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			if (krad_radio->remote.krad_websocket != NULL) {
 				krad_websocket_server_destroy (krad_radio->remote.krad_websocket);
 			}
-			krad_radio->remote.krad_http = krad_http_server_create ( krad_radio, numbers[0], numbers[1],
-																	  string1, string2, string3 );
+			krad_radio->remote.krad_http = krad_http_server_create (numbers[0], numbers[1],
+                                                              string1, string2, string3 );
       krad_radio->remote.krad_websocket = krad_websocket_server_create ( krad_radio->sysname, numbers[1] );
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_WEB_DISABLE:
