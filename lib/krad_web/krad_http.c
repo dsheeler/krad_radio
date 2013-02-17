@@ -46,7 +46,7 @@ void krad_http_write_buffer (krad_http_client_t *client, char *buffer, int lengt
   if (length != pos) {
     printf ("http client write failed...\n");
   }
-  printf ("Wrote %d buffer bytes\n", pos);
+  //printf ("Wrote %d buffer bytes\n", pos);
   krad_http_destroy_client (client);
 }
 
@@ -73,7 +73,7 @@ void krad_http_write_headers (krad_http_client_t *client, char *content_type) {
     krad_http_destroy_client (client);
   }
   
-  printf ("Wrote %d header bytes\n", pos);
+  //printf ("Wrote %d header bytes\n", pos);
 }
 
 void krad_http_write_404 (krad_http_client_t *client) {
@@ -123,7 +123,7 @@ void *krad_http_client_thread (void *arg) {
     krad_http_destroy_client (client);
   }
   
-  printf ("ret is %d\n", ret);
+  //printf ("ret is %d\n", ret);
 
   while (pos < ret) {
     if (strncmp(buffer, "GET /", 5) == 0) {
