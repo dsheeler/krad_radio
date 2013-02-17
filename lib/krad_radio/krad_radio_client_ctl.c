@@ -2,20 +2,25 @@
 #include "krad_radio_client.h"
 #include "krad_radio_client_internal.h"
 
+#define LISTMAX 4096
+
 static int krad_radio_pid (char *sysname);
 
 #ifdef __MACH__
 
 char *krad_radio_running_stations () {
 
-  static char list[4096];
+  static char list[LISTMAX];
   int prelen;
+  int pos;
+  int len;
   char *prefix = "krad_radio_";
   DIR *dp;
   struct dirent *ep;
-    
+  char *format;
+ 
+  pos = 0;
   prelen = strlen (prefix);
-  memset (list, '\0', sizeof(list));
   
   dp = opendir ("/tmp");
   
@@ -27,14 +32,22 @@ char *krad_radio_running_stations () {
   while ((ep = readdir(dp))) {
     if (strlen(ep->d_name) > prelen) {
       if (strncmp (prefix, ep->d_name, prelen) == 0) {
-        strcat (ep->d_name + prelen, "\n");
-        strcat (list, "\n");
+		len = strcspn (ep->d_name + prelen, "_");
+		if (len + 2 < LISTMAX - pos) {
+		  if (pos > 0) {
+			format = "\n%s";
+			len += 2;
+		  } else {
+			format = "%s";
+			len += 1;
+		  }
+		  snprintf (list + pos, len, format, ep->d_name + prelen);
+		  pos += len - 1;
+		}
       }
     }
   }
-
   closedir (dp);
-
   return list;
 }
 
@@ -81,7 +94,7 @@ char *krad_radio_running_stations () {
   int flag_check;
   int flag_pos;
   int prelen;
-  static char list[4096];
+  static char list[LISTMAX];
   char *prefix = "@krad_radio_";
   
   prelen = strlen (prefix);
@@ -117,8 +130,8 @@ char *krad_radio_running_stations () {
         }
         flag_pos++;
         if (memcmp(unix_sockets + (pos + flag_pos), "00010000", 8) == 0) {
-          strncat(list, unix_sockets + pos + prelen, strcspn(unix_sockets + pos + prelen, "_"));
-          strcat(list, "\n");
+          strncat (list, unix_sockets + pos + prelen, strcspn(unix_sockets + pos + prelen, "_"));
+          strcat (list, "\n");
         }
       }
     }

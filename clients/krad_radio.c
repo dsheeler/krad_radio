@@ -127,7 +127,7 @@ int main (int argc, char *argv[]) {
       }
 
       if ((strlen(argv[1]) == 2) && (strncmp(argv[1], "ls", 2) == 0)) {
-        printf ("Running Stations: \n\n%s\n", krad_radio_running_stations ());
+        printf ("%s\n", krad_radio_running_stations ());
         return 0;
       }
     }
