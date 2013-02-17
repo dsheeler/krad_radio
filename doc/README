@@ -11,49 +11,13 @@ ncurses, GUI or web based, and any number of clients can be connected to the dae
 any time. This design is directly inspired from the design of XMMS2.
 
 The Krad Radio daemon can be thought of in three parts, the mixer, the compositor and 
-the linker.
+the transponder.
 
-                      [Krad Compositor]
- [Incoming Links] >>                     >>  [Outgoing Links]
-                      [Krad Mixer]
-
-
-Links can be a variety of things, files, network streams, or local A/V hardware.
-
-Capture Support: V4L2, Decklink, X11, Jack, PulseAudio, ALSA
-
-### Codec and container support
-
-Krad Radio natively supports a certain set of container and codecs that
-are suited for its purpose. Native support meaning that KR interfaces
-directly with the codecs and containers for the most precise control possible.
-
-Support of non-native codecs will be though Jack for audio, and gstreamer audio
-and video sinks. Videojack should it come back to life will also be supported, or 
-should there be some other local shared memory video routing software come into
-existence. 
-
-All native codecs will work in Ogg and MKV containers for incoming and outgoing links.
-For UDP and WebRTC connections, only a subset will be supported, Opus for audio and TBD
-for video.
-
-Native Containers Ogg, MKV/WebM, Krad UDP*
-Planned Containers: TransOgg, WebRTC 
-
-Native Codec Support List
-
-Current Video: VP8 (libvpx), Theora, Dirac*, MJPEG, PNG*
-Planned Video: VP8 (xvp8), daala
-Thinking about it: DNxHD, CinemaDNG
-
-Current Audio: Opus, Vorbis, FLAC, Codec2*
-
-* Code existing, but not fully baked
+                   [Compositor]
+[Incoming A/V] >>               >> [Outgoing A/V]
+                     [Mixer]
 
 
+A/V can come and go from a variety of things, files, network streams, or local A/V hardware.
 
-### Host system support
 
-Krad Radio is built and tested on x86, x86_64 and ARM CPU's running linux. Support for other
-CPU types and legacy operating systems is not currently planned, but is possible. Krad makes 
-use of the Linux only unix abstract socket namespace and epoll(), but these are both optional.

@@ -32,7 +32,7 @@ char *krad_ebml_codec_to_ebml_codec_id (krad_codec_t codec) {
 	}
 }
 
-inline void rmemcpy(void *dst, void *src, int len) {
+inline void rmemcpy (void *dst, void *src, int len) {
 
 	unsigned char *a_dst;
 	unsigned char *a_src;

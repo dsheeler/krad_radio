@@ -20,14 +20,17 @@
 #include <netdb.h>
 #include <poll.h>
 
-#include "krad_system.h"
+//#include "krad_system.h"
+#include "kr_client.h"
+
+#define OSC_BUF_SIZE 256
 
 typedef struct krad_osc_St krad_osc_t;
 
 struct krad_osc_St {
-
-	unsigned char *buffer;
-
+  char sysname[64];
+  kr_client_t *client;
+	//unsigned char *buffer;
 	int port;
 	int sd;
 	struct sockaddr_in local_address;
@@ -36,13 +39,9 @@ struct krad_osc_St {
 	pthread_t listening_thread;
 };
 
-void krad_osc_parse_message (krad_osc_t *krad_osc, unsigned char *message, int size);
-
-void *krad_osc_listening_thread (void *arg);
-
 void krad_osc_stop_listening (krad_osc_t *krad_osc);
 int krad_osc_listen (krad_osc_t *krad_osc, int port);
 
 void krad_osc_destroy (krad_osc_t *krad_osc);
-krad_osc_t *krad_osc_create ();
+krad_osc_t *krad_osc_create (char *sysname);
 

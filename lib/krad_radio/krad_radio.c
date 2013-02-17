@@ -133,7 +133,7 @@ static krad_radio_t *krad_radio_create (char *sysname) {
     return NULL;
   }
 
-  krad_radio->remote.krad_osc = krad_osc_create ();
+  krad_radio->remote.krad_osc = krad_osc_create (krad_radio->sysname);
   
   if (krad_radio->remote.krad_osc == NULL) {
     krad_radio_shutdown (krad_radio);
