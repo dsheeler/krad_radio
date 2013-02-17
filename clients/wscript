@@ -9,33 +9,41 @@ kr_api_demo.c
 """.split()
 
 programs2 = """
-krad_radio_manager.c
+krad_radio_osc.c
 """.split()
 
 programs3 = """
+krad_radio_manager.c
+""".split()
+
+programs4 = """
 krad_radio_vp.c
 krad_radio_ap.c
+""".split()
+
+libsources = """
+../lib/krad_ebml/krad_ebml.c
+../lib/krad_system/krad_system.c
+../lib/krad_ipc/krad_ipc_client.c
+../lib/krad_radio/krad_radio_client.c
+../lib/krad_radio/krad_radio_client_ctl.c
+../lib/krad_mixer/krad_mixer_client.c
+../lib/krad_compositor/krad_compositor_client.c
+../lib/krad_transponder/krad_transponder_client.c
+../lib/krad_radio/krad_radio_common.c
+../lib/krad_mixer/krad_mixer_common.c
+../lib/krad_compositor/krad_compositor_common.c
+../lib/krad_transponder/krad_transponder_common.c
 """.split()
 
 # FIXME we should not be having krad_transmitter and krad_ring in the below
 # but right now ebml and mkv/webm muxing is mangled together
 
-libsources = """
-../lib/krad_compositor/krad_compositor_client.c
-../lib/krad_radio/krad_radio_client.c
-../lib/krad_system/krad_system.c
-../lib/krad_ebml/krad_ebml.c
+libsources = libsources + ["../lib/krad_transmitter/krad_transmitter.c"]
+libsources = libsources + ["../lib/krad_ring/krad_ring.c"]
+
+libsources2 = """
 ../lib/krad_osc/krad_osc.c
-../lib/krad_ipc/krad_ipc_client.c
-../lib/krad_radio/krad_radio_common.c
-../lib/krad_mixer/krad_mixer_common.c
-../lib/krad_mixer/krad_mixer_client.c
-../lib/krad_radio/krad_radio_client_ctl.c
-../lib/krad_transmitter/krad_transmitter.c
-../lib/krad_ring/krad_ring.c
-../lib/krad_transponder/krad_transponder_client.c
-../lib/krad_transponder/krad_transponder_common.c
-../lib/krad_compositor/krad_compositor_common.c
 """.split()
 
 includedirs = """
@@ -94,94 +102,101 @@ syslibs2 = ['rt']
 
 def check_system(systm):
 
-	global programs
-	global includedirs
-	global libsources
-	global shlibs
-	global shlibs2	
-	global syslibs
-	global syslibs2
+  global programs
+  global includedirs
+  global libsources
+  global shlibs
+  global shlibs2  
+  global syslibs
+  global syslibs2
 
-	if systm.env['IS_LINUX']:
-		#shlibs = shlibs + ["alsa"]    
-		#libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
-		#programs = ["krad_radio_ev.c"] + programs
-		syslibs = syslibs + syslibs2
+  if systm.env['IS_LINUX']:
+    #shlibs = shlibs + ["alsa"]    
+    #libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
+    #programs = ["krad_radio_ev.c"] + programs
+    syslibs = syslibs + syslibs2
 
 
-	if systm.env['IS_MACOSX']:
-		libsources = ["../lib/krad_legacy/krad_mach.c"] + libsources
-		includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
-		shlibs = shlibs + ['turbojpeg']
+  if systm.env['IS_MACOSX']:
+    libsources = ["../lib/krad_legacy/krad_mach.c"] + libsources
+    includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
+    shlibs = shlibs + ['turbojpeg']
 
 def configure(conf):
 
-	global programs
-	global shlibs
-	global shlibs2	
-	global syslibs
-	check_system(conf)
+  global programs
+  global shlibs
+  global shlibs2  
+  global syslibs
+  check_system(conf)
 
-	for l in syslibs:
-		conf.check(lib = l, cflags='-Wall', uselib_store = l)
+  for l in syslibs:
+    conf.check(lib = l, cflags='-Wall', uselib_store = l)
 
-	for l in shlibs:
-		conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+  for l in shlibs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
-	if conf.options.nogtk == False:
-		conf.env['KRAD_GTK'] = "yes"
-		for l in shlibs2:
-			conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+  if conf.options.nogtk == False:
+    conf.env['KRAD_GTK'] = "yes"
+    for l in shlibs2:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
-	for l in stlibs:
-		conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
+  for l in stlibs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
 
 def build(bld):
 
-	global programs
-	global shlibs
-	global shlibs2	
-	global syslibs
-	global syslibs2
-	check_system(bld)
+  global programs
+  global shlibs
+  global shlibs2  
+  global syslibs
+  global syslibs2
+  check_system(bld)
 
-	# read version number to be used for the shared library
-	f = open("lib/krad_radio/krad_radio_version.h", "r")
-	for line in f:
-		if "#define VERSION_NUMBER" in line:
-			krad_version = line.split(' ')[2].strip()
-			break
-	f.close()
+  # read version number to be used for the shared library
+  f = open("lib/krad_radio/krad_radio_version.h", "r")
+  for line in f:
+    if "#define VERSION_NUMBER" in line:
+      krad_version = line.split(' ')[2].strip()
+      break
+  f.close()
 
-	# we use "KRAD_VERSION.0.0" for now as vnum. this basically means 
-	# that we advise to rebuild clients every new version due to 
-	# possible API-breakages. closest to reality currently.
-	# plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only 
-	# needed when we _really_ break the API
+  # we use "KRAD_VERSION.0.0" for now as vnum. this basically means 
+  # that we advise to rebuild clients every new version due to 
+  # possible API-breakages. closest to reality currently.
+  # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only 
+  # needed when we _really_ break the API
 
 
-	for p in programs:
+  for p in programs:
+    bld(features = 'c cprogram', 
+    source = [p], 
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["kradradio_client"],
+    uselib = shlibs + stlibs + syslibs)
 
-		bld(features = 'c cprogram', 
-			source = [p], 
-			includes = includedirs, 
-			target = p.replace(".c", ""),
-			use = ["kradradio_client"],
-			uselib = shlibs + stlibs + syslibs)
-			
-	if bld.env['KRAD_GTK'] == "yes":
-		for p in programs2:
-			bld(features = 'c cprogram', 
-				source = [p], 
-				includes = includedirs, 
-				target = p.replace(".c", ""),
-				use = ["kradradio_client"],
-				uselib = shlibs + shlibs2 + stlibs + syslibs)
+  for p in programs2:
+    bld(features = 'c cprogram', 
+      source = [p] + libsources2,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs + stlibs + syslibs)
+      
+  if bld.env['KRAD_GTK'] == "yes":
+    for p in programs3:
+      bld(features = 'c cprogram', 
+        source = [p], 
+        includes = includedirs, 
+        target = p.replace(".c", ""),
+        use = ["kradradio_client"],
+        uselib = shlibs + shlibs2 + stlibs + syslibs)
 
-	bld.shlib(
-		source = libsources, 
-		includes = includedirs, 
-		target = "kradradio_client",
-		vnum = krad_version + ".0.0",
-		uselib = shlibs + stlibs + syslibs)
+  bld.shlib(
+    source = libsources, 
+    includes = includedirs, 
+    target = "kradradio_client",
+    vnum = krad_version + ".0.0",
+    uselib = shlibs + stlibs + syslibs)
 

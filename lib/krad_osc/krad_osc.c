@@ -265,7 +265,6 @@ void krad_osc_stop_listening (krad_osc_t *krad_osc) {
 	}
 }
 
-
 int krad_osc_listen (krad_osc_t *krad_osc, int port) {
 
 	if (krad_osc->listening == 1) {
@@ -283,19 +282,19 @@ int krad_osc_listen (krad_osc_t *krad_osc, int port) {
 		printke ("Krad OSC system call socket error");
 		krad_osc->listening = 0;
 		krad_osc->port = 0;		
-		return 1;
+		return 0;
 	}
 
 	if (bind (krad_osc->sd, (struct sockaddr *)&krad_osc->local_address, sizeof(krad_osc->local_address)) == -1) {
 		printke ("Krad OSC bind error for udp port %d", krad_osc->port);
 		krad_osc->listening = 0;
 		krad_osc->port = 0;
-		return 1;
+		return 0;
 	}
 	
 	pthread_create (&krad_osc->listening_thread, NULL, krad_osc_listening_thread, (void *)krad_osc);
 	
-	return 0;
+	return 1;
 }
 
 
