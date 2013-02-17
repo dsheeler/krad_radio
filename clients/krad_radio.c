@@ -4,14 +4,87 @@ void krad_radio_command_help () {
   printf ("krad_radio STATION_SYSNAME COMMAND OPTIONS...");
   printf ("\n\n");
   printf ("Commands:\n");
-  printf ("launch destroy info tag tags stag remoteon remoteoff webon weboff oscon oscoff setrate mix");
-  printf ("\n");
-  printf ("setdir ls lm lc tone input output plug unplug map mixmap xmms2 noxmms2 receiver_on receiver_off");
-  printf ("\n");
-  printf ("transmitter_on transmitter_off closedisplay display");
-  printf ("\n");
-  printf ("comp res fps snap jsnap play record capture");
-  printf ("\n");
+  printf ("launch destroy info tag tags stag remoteon remoteoff webon weboff oscon oscoff\n");
+  printf ("setdir ls lm lc tone input output plug unplug map mixmap xmms2 noxmms2 mix\n");
+  printf ("transmitter_on transmitter_off closedisplay display receiver_on receiver_off\n");
+  printf ("comp res fps snap jsnap play record capture\n");
+}
+
+int get_logname (kr_client_t *client, char *logname, int max) {
+
+  kr_crate_t *crate;
+  crate = NULL;
+  int wait_ms;
+  int ret;
+  
+  kr_system_info (client);
+  wait_ms = 250;
+  ret = 0;
+
+  while (kr_delivery_wait_until_final (client, wait_ms)) {
+    kr_delivery_get (client, &crate);
+
+    if (crate != NULL) {
+      if (kr_crate_loaded (crate)) {
+        if ((crate->addr->path.unit == KR_STATION) && (crate->addr->path.subunit.zero == KR_STATION_UNIT)) {
+          ret = strlen(crate->inside.radio->logname);
+          if (ret > 0) {
+            if (ret < max) {
+              strncpy (logname, crate->inside.radio->logname, max);
+            } else {
+              ret = 0;
+            }
+          }
+        }
+      }
+      kr_crate_recycle (&crate);
+    }
+  }
+  
+  return ret;
+}
+
+void print_logname (kr_client_t *client) {
+
+  char logname[256];
+
+  if (get_logname (client, logname, 256)) {
+    printf ("%s\n", logname);
+  }
+}
+
+void tail_log (kr_client_t *client, int lines, int dofollow) {
+
+  int ret;
+  char logname[256];
+  char last[32];
+  char *args[6];
+  
+  if (lines < 0) {
+    lines = 0;
+  }
+  
+  snprintf (last, sizeof (last), "%d", lines);
+
+  if (get_logname (client, logname, 256)) {
+    kr_client_destroy (&client);
+    args[0] = "tail";
+    args[1] = "-n";
+    args[2] = last;
+    if (dofollow == 1) {
+      args[3] = "-f";
+      args[4] = logname;
+      args[5] = NULL;    
+    } else {
+      args[3] = logname;
+      args[4] = NULL;
+    }
+    ret = execv ("/usr/bin/tail", args);
+    if (ret == -1) {
+      printf ("Error running tail...\n");
+    }
+    exit (1);
+  }
 }
 
 int main (int argc, char *argv[]) {
@@ -161,10 +234,27 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (strncmp(argv[2], "logname", 7) == 0) {
-    //FIXME
-    //kr_delivery_accept_and_report (client);
-  }  
+  if (strncmp(argv[2], "log", 3) == 0) {
+    print_logname (client);
+  }
+  
+  if ((strncmp(argv[2], "tailf", 5) == 0) || (strncmp(argv[2], "ftail", 5) == 0)) {
+    if (argc == 3) {
+      tail_log (client, 25, 1);
+    }
+    if (argc == 4) {
+      tail_log (client, atoi(argv[3]), 1);
+    }    
+  }
+
+  if (strncmp(argv[2], "tail", 4) == 0) {
+    if (argc == 3) {
+      tail_log (client, 25, 0);
+    }
+    if (argc == 4) {
+      tail_log (client, atoi(argv[3]), 0);
+    }    
+  }
 
   if (strncmp(argv[2], "tags", 4) == 0) {
 
