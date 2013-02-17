@@ -64,7 +64,7 @@ static int krad_radio_pid (char *sysname) {
   }
 
   memset (buf, 0, sizeof(buf));
-  snprintf (cmd, sizeof(cmd), "pgrep -f \"%s %s\"", "krad_radio_daemon", sysname);
+  snprintf (cmd, sizeof(cmd), "pgrep -fx \"%s %s\"", "krad_radio_daemon", sysname);
 
   fp = popen(cmd, "r");
   if (fp == NULL) {
