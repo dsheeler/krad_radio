@@ -239,7 +239,7 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *in
   
   return d;  
 }
-#ifdef IS_LINUX
+#ifdef KR_LINUX
 int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server, char *adapter, int port) {
 
   struct ifaddrs *ifaddr, *ifa;
@@ -298,7 +298,7 @@ int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server, char *int
   if ((interface == NULL) || (strlen(interface) == 0)) {
     interface = "[::]";
   } else {
-    #ifdef IS_LINUX
+    #ifdef KR_LINUX
     if (krad_system_is_adapter (interface)) {
       //printk ("Krad IPC Server: its an adapter, we should probably bind to all ips of this adapter");
       return krad_ipc_server_enable_remote_on_adapter (krad_ipc_server, interface, port);

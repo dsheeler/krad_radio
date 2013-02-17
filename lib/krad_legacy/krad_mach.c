@@ -1,5 +1,3 @@
-//#ifdef __MACH__
-
 #include "krad_mach.h"
 
 void clock_gettime (int clocktype, struct timespec *ts) {
@@ -70,4 +68,3 @@ int kradv4l2_get_device_filename (int device_num, char *device_name) {
   return 0;
 }
 
-//#endif

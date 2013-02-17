@@ -1,7 +1,7 @@
 #include "krad_decklink.h"
 
 void krad_decklink_info (krad_decklink_t *krad_decklink) {
-#ifdef IS_LINUX
+#ifdef KR_LINUX
 	krad_decklink_capture_info();
 #endif
 }

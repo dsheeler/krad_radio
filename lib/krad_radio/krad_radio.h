@@ -22,7 +22,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_radio_version.h"
 #include "krad_system.h"
 #include "krad_ebml.h"
-///#include "krad_radio_interface.h"
 #include "krad_ogg.h"
 #include "krad_io.h"
 #include "krad_codec_header.h"
@@ -44,7 +43,7 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_audio.h"
 #include "krad_jack.h"
 #include "krad_vhs.h"
-#ifndef __MACH__
+#ifdef KR_LINUX
 #include "krad_v4l2.h"
 #include "krad_alsa.h"
 #endif

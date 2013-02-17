@@ -19,7 +19,7 @@ typedef struct krad_audio_portgroup_St krad_audio_portgroup_t;
 #define RINGBUFFER_SIZE 2000000
 #endif
 
-#ifndef __MACH__
+#ifdef KR_LINUX
 #include "krad_alsa.h"
 #endif
 #include "krad_jack.h"

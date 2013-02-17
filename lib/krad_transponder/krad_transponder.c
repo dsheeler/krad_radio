@@ -1758,7 +1758,7 @@ void krad_link_start (krad_link_t *krad_link) {
       memset (watch, 0, sizeof(krad_transponder_watch_t));
       krad_link->cap_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap_graph_id);
     }
-#ifndef __MACH__
+#ifdef KR_LINUX
     if (krad_link->video_source == V4L2) {
       v4l2_capture_unit_create ((void *)krad_link);
       watch->fd = krad_link->krad_v4l2->fd;

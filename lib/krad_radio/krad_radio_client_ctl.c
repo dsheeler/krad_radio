@@ -6,7 +6,7 @@
 
 static int krad_radio_pid (char *sysname);
 
-#ifdef __MACH__
+#ifdef FRAK_MACOSX
 
 char *krad_radio_running_stations () {
 
@@ -234,7 +234,7 @@ int krad_radio_destroy (char *sysname) {
     pid = krad_radio_pid (sysname);
     if (pid != 0) {
       kill (pid, 9);
-#ifdef __MACH__
+#ifdef FRAK_MACOSX
 	char ipc_filename[256];
 	sprintf (ipc_filename, "/tmp/krad_radio_%s_ipc", sysname);
 	unlink (ipc_filename);
@@ -253,7 +253,7 @@ void krad_radio_launch (char *sysname) {
   pid_t pid;
   FILE *refp;
 
-#ifdef __MACH__
+#ifdef FRAK_MACOSX
   if (krad_radio_running (sysname)) {
     return;
   }

@@ -186,7 +186,7 @@ def check_system(systm):
   global syslibs
   global syslibs2    
 
-  if systm.env['IS_LINUX']:
+  if systm.env['KR_LINUX']:
     shlibs = shlibs + ["alsa"]    
     depsources = ["../lib/krad_v4l2/krad_v4l2.c", "../lib/krad_alsa/krad_alsa.c",
     "../lib/krad_alsa/krad_alsa_seq.c"] + depsources
@@ -195,7 +195,7 @@ def check_system(systm):
     syslibs = syslibs + syslibs2
 
 
-  if systm.env['IS_MACOSX']:
+  if systm.env['FRAK_MACOSX']:
     depsources = ["../lib/krad_legacy/krad_mach.c"] + depsources
     includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
     includedirs = ["../lib/krad_decklink/vendor/osx"] + includedirs

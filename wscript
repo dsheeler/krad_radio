@@ -66,18 +66,18 @@ def get_git_ver(conf):
 def configure(conf):
 
   platform = sys.platform
-  conf.env['IS_MACOSX'] = platform == 'darwin'
-  conf.env['IS_LINUX'] = platform == 'linux' or platform == 'linux2'
+  conf.env['FRAK_MACOSX'] = platform == 'darwin'
+  conf.env['KR_LINUX'] = platform == 'linux' or platform == 'linux2'
 
-  if conf.env['IS_LINUX']:
+  if conf.env['KR_LINUX']:
     print("Linux detected :D")
-    conf.env.append_unique('CFLAGS', ['-DIS_LINUX'])
-    conf.env.append_unique('CXXFLAGS', ['-DIS_LINUX'])
+    conf.env.append_unique('CFLAGS', ['-DKR_LINUX'])
+    conf.env.append_unique('CXXFLAGS', ['-DKR_LINUX'])
 
-  if conf.env['IS_MACOSX']:
+  if conf.env['FRAK_MACOSX']:
     print("MacOS X detected :(")
-    conf.env.append_unique('CFLAGS', ['-DIS_MACOSX'])
-    conf.env.append_unique('CXXFLAGS', ['-DIS_MACOSX'])
+    conf.env.append_unique('CFLAGS', ['-DFRAK_MACOSX'])
+    conf.env.append_unique('CXXFLAGS', ['-DFRAK_MACOSX'])
 
   check_gif(conf)
   check_x11(conf)
@@ -107,5 +107,5 @@ def build(bld):
   bld.add_post_fun(post)
 
 def post(pst):
-  if pst.cmd == 'install' and pst.env['IS_LINUX'] == True: 
+  if pst.cmd == 'install' and pst.env['KR_LINUX'] == True: 
     pst.exec_command('/sbin/ldconfig')

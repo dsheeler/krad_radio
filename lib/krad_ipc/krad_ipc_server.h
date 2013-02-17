@@ -24,7 +24,7 @@
 
 #include <pthread.h>
 
-#ifdef IS_LINUX
+#ifdef KR_LINUX
 #include <ifaddrs.h>
 #endif
 

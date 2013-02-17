@@ -131,14 +131,14 @@ def check_system(systm):
   global syslibs
   global syslibs2
 
-  if systm.env['IS_LINUX']:
+  if systm.env['KR_LINUX']:
     #shlibs = shlibs + ["alsa"]    
     #libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
     #programs = ["krad_radio_ev.c"] + programs
     syslibs = syslibs + syslibs2
 
 
-  if systm.env['IS_MACOSX']:
+  if systm.env['FRAK_MACOSX']:
     libsources = ["../lib/krad_legacy/krad_mach.c"] + libsources
     includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
     shlibs = shlibs + ['turbojpeg']

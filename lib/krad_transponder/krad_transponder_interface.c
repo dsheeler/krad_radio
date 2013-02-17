@@ -847,7 +847,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 
 			address.path.unit = KR_TRANSPONDER;
 			address.path.subunit.transponder_subunit = KR_ADAPTER;
-#ifndef __MACH__
+#ifdef KR_LINUX
 			devices = krad_v4l2_detect_devices ();			
 
 			for (k = 0; k < devices; k++) {

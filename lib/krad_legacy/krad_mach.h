@@ -1,4 +1,4 @@
-#ifdef __MACH__
+#ifdef FRAK_MACOSX
 
 #ifndef KRAD_MACH_H
 #define KRAD_MACH_H

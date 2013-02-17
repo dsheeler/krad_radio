@@ -590,7 +590,7 @@ int krad_valid_host_and_port (char *string) {
   return 0;
 }
 
-#ifdef IS_LINUX
+#ifdef KR_LINUX
 
 int krad_system_is_adapter (char *adapter) {
 
