@@ -64,7 +64,7 @@ static int krad_radio_pid (char *sysname) {
   }
 
   memset (buf, 0, sizeof(buf));
-  snprintf (cmd, sizeof(cmd), "pgrep -f %s %s", "krad_radio_daemon", sysname);
+  snprintf (cmd, sizeof(cmd), "pgrep -f \"%s %s\"", "krad_radio_daemon", sysname);
 
   fp = popen(cmd, "r");
   if (fp == NULL) {
@@ -234,6 +234,11 @@ int krad_radio_destroy (char *sysname) {
     pid = krad_radio_pid (sysname);
     if (pid != 0) {
       kill (pid, 9);
+#ifdef __MACH__
+	char ipc_filename[256];
+	sprintf (ipc_filename, "/tmp/krad_radio_%s_ipc", sysname);
+	unlink (ipc_filename);
+#endif
       return 1;
     } else {
       return 0;
