@@ -68,30 +68,6 @@ static void clear_list (kr_manager_t *kr_manager) {
   gtk_list_store_clear(store);
 }
 
-void check_uptime (kr_manager_t *kr_manager) {
-
-  GtkTreeIter iter;
-  GtkTreeModel *model;
-  GtkTreeSelection *selection;  
-  char *name;
-  char *result;
-
-  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(kr_manager->list));
-  if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
-
-    gtk_tree_model_get(model, &iter, LIST_ITEM, &name,  -1);
-
-    result = kr_station_uptime (name);
-
-    if (result != NULL) {
-      gtk_statusbar_push(GTK_STATUSBAR(kr_manager->statusbar),
-          gtk_statusbar_get_context_id(GTK_STATUSBAR(kr_manager->statusbar), 
-              name), result);
-    }
-    g_free(name);
-  }
-}
-
 static gboolean destroy_selected (gpointer data) {
 
   kr_manager_t *kr_manager = (kr_manager_t *)data;
@@ -145,13 +121,10 @@ static gboolean kr_manager_check_running_stations (gpointer data) {
         (strncmp(kr_manager->running_stations,
                  kr_manager->last_running_stations,
                  strlen(kr_manager->running_stations)) == 0)) {
-        check_uptime (kr_manager);
         return TRUE;
     }
     free (kr_manager->last_running_stations);
   }
-
-  check_uptime (kr_manager);
 
   kr_manager->last_running_stations = strdup (kr_manager->running_stations);
   if (kr_manager->status_icon != NULL) {

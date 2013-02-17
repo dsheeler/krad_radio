@@ -61,6 +61,42 @@ char *krad_radio_running_stations () {
   
 }
 
+#ifdef __MACH__
+
+static int krad_radio_pid (char *sysname) {
+
+  int pid;
+  FILE *fp;
+  char buf[64];
+  char cmd[64];
+  pid = 0;
+  
+  if (!krad_valid_sysname (sysname)) {
+    return 0;
+  }
+
+  memset (buf, 0, sizeof(buf);
+  snprintf (cmd, sizeof(cmd), "pgrep -f %s %s", "krad_radio_daemon", sysname);
+
+  fp = popen(cmd, "r");
+  if (fp == NULL) {
+    return;
+  }
+
+  while (fgets(buf, 64, fp) != NULL) {
+    if (strlen (buf)) {
+      pid = atoi (buf);
+    }
+    break;
+  }
+
+  pclose (fp);
+  
+  return pid;
+}
+
+#else
+
 static int krad_radio_pid (char *sysname) {
 
   DIR *dp;
@@ -115,8 +151,9 @@ static int krad_radio_pid (char *sysname) {
   closedir (dp);
 
   return 0;
-
 }
+#endif
+
 
 int krad_radio_running (char *sysname) {
   if ((krad_radio_pid (sysname)) > 0) {
@@ -204,49 +241,3 @@ void krad_radio_launch (char *sysname) {
 
 }
 
-/* the implementation of this is very silly */
-char *kr_station_uptime (char *sysname) {
-
-  kr_client_t *client;
-  static char uptime[128];
-  kr_response_t *response;
-  char *string;
-  int len;
-
-  len = 0;
-  client = NULL;
-  string = NULL;
-  response = NULL;  
-  memset (uptime, 0, sizeof(uptime));
-  
-  client = kr_client_create ("kr_station_uptime_checker");
-
-  if (client == NULL) {
-    fprintf (stderr, "Could not create client\n");
-    return NULL;
-  }
-
-  if (!(kr_connect (client, sysname))) {
-    fprintf (stderr, "Could not connect to %s krad radio daemon\n", sysname);
-    kr_client_destroy (&client);
-    return NULL;
-  }
-  
-  kr_system_info (client);
-  kr_client_response_wait (client, &response);
-
-  if (response != NULL) {
-    len = kr_response_to_string (response, &string);
-    if (len > 0) {
-      strncpy (uptime, string, sizeof(uptime));
-      kr_response_free_string (&string);
-    }
-    kr_response_free (&response);
-  } else {
-    fprintf (stderr, "No response after waiting\n");
-  }
-
-  kr_client_destroy (&client);
-
-  return uptime;
-}

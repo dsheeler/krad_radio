@@ -34,11 +34,4 @@ int krad_radio_running (char *sysname);
  */
 char *krad_radio_running_stations ();
 
-/**
- * @brief get the uptime of the station identified by sysname
- * @param sysname
- * @return string containing the uptime in human readable form. NULL on error (station not found)
- */
-char *kr_station_uptime (char *sysname);
-
 /** @}*/
