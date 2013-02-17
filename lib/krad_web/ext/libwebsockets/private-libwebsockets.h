@@ -74,7 +74,7 @@
 #include <sys/socket.h>
 #ifndef LWS_NO_FORK
 #ifdef HAVE_SYS_PRCTL_H
-#include <sys/prctl.h>
+//#include <sys/prctl.h>
 #endif
 #endif
 #include <netinet/in.h>

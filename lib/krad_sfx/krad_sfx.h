@@ -5,11 +5,12 @@
 #include "krad_hardlimiter.h"
 #include "krad_system.h"
 
+#ifndef KRAD_SFX_H
+#define KRAD_SFX_H
+
 typedef struct kr_effect_St kr_effect_t;
 typedef struct kr_effects_St kr_effects_t;
 
-#ifndef KRAD_SFX_H
-#define KRAD_SFX_H
 
 struct kr_effect_St {
 

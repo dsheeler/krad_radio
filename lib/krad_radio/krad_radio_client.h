@@ -68,9 +68,6 @@ typedef struct kr_response_St kr_crate_t;
 typedef struct kr_unit_path_St kr_unit_path_t;
 typedef struct kr_unit_control_St kr_unit_control_t;
 
-typedef struct kr_remote_St kr_remote_t;
-typedef struct kr_tag_St kr_tag_t;
-
 /*
 *  An address can be:
 *    Unit:           compositor/sprite/2

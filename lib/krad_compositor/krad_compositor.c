@@ -1043,6 +1043,10 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
   if (holdlock == 0) {
     krad_compositor_port->subunit.active = 1;
   }
+
+  if (krad_compositor->had_a_subunit == 0) {
+    krad_compositor->had_a_subunit = 1;
+  }
   
   return krad_compositor_port;
 }

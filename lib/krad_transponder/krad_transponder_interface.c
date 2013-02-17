@@ -847,7 +847,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 
 			address.path.unit = KR_TRANSPONDER;
 			address.path.subunit.transponder_subunit = KR_ADAPTER;
-
+#ifndef __MACH__
 			devices = krad_v4l2_detect_devices ();			
 
 			for (k = 0; k < devices; k++) {
@@ -870,7 +870,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
           krad_ipc_server_response_finish ( krad_ipc, response );
         }
       }
-
+#endif
 			devices = krad_decklink_detect_devices();
 
 			for (k = 0; k < devices; k++) {
