@@ -78,6 +78,9 @@ def configure(conf):
     print("MacOS X detected :(")
     conf.env.append_unique('CFLAGS', ['-DFRAK_MACOSX'])
     conf.env.append_unique('CXXFLAGS', ['-DFRAK_MACOSX'])
+    conf.options.nowayland = True
+    conf.options.nox11 = True
+    conf.options.nogtk = True
 
   check_gif(conf)
   check_x11(conf)
