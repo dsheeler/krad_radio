@@ -23,7 +23,6 @@ int get_logname (kr_client_t *client, char *logname, int max) {
 
   while (kr_delivery_wait_until_final (client, wait_ms)) {
     kr_delivery_get (client, &crate);
-
     if (crate != NULL) {
       if (kr_crate_loaded (crate)) {
         if ((crate->addr->path.unit == KR_STATION) && (crate->addr->path.subunit.zero == KR_STATION_UNIT)) {
@@ -40,7 +39,6 @@ int get_logname (kr_client_t *client, char *logname, int max) {
       kr_crate_recycle (&crate);
     }
   }
-  
   return ret;
 }
 

@@ -240,20 +240,15 @@ int kr_delivery_wait_until_final (kr_client_t *client, uint32_t timeout_ms) {
   return kr_poll (client, timeout_ms);
 }
 
-int kr_radio_uptime_to_string (uint64_t uptime, char **string) {
+int kr_radio_uptime_to_string (uint64_t uptime, char *string) {
 
   int days;
   int hours;
   int minutes;
   int seconds;
-  
   int pos;
   
   pos = 0;
-
-  *string = kr_response_alloc_string (64);
-
-  pos += sprintf (*string + pos, "up");
 
   days = uptime / (60*60*24);
   minutes = uptime / 60;
@@ -262,15 +257,15 @@ int kr_radio_uptime_to_string (uint64_t uptime, char **string) {
   seconds = uptime % 60;
 
   if (days) {
-    pos += sprintf (*string + pos, " %d day%s,", days, (days != 1) ? "s" : "");
+    pos += sprintf (string + pos, "%d day%s,", days, (days != 1) ? "s" : "");
   }
   if (hours) {
-    pos += sprintf (*string + pos, " %d:%02d", hours, minutes);
+    pos += sprintf (string + pos, "%d:%02d", hours, minutes);
   } else {
     if (minutes) {
-      pos += sprintf (*string + pos, " %02d min", minutes);
+      pos += sprintf (string + pos, "%02d min", minutes);
     } else {
-      pos += sprintf (*string + pos, " %02d seconds", seconds);
+      pos += sprintf (string + pos, "%02d seconds", seconds);
     }
   }
   return pos;
@@ -397,7 +392,9 @@ int kr_radio_response_get_string_from_radio (unsigned char *ebml_frag, uint64_t 
   if (kr_radio->logname[0] != '\0') {
     pos += sprintf (*string + pos, "Logname: %s\n", kr_radio->logname);
   }
-  pos += sprintf (*string + pos, "Station Uptime: %"PRIu64"\n", kr_radio->uptime);  
+  pos += sprintf (*string + pos, "Station Uptime: ");
+  pos += kr_radio_uptime_to_string (kr_radio->uptime, *string + pos);
+  pos += sprintf (*string + pos, "\n");  
   pos += sprintf (*string + pos, "System CPU Usage: %u%%", kr_radio->cpu_usage);  
   kr_radio_rep_destroy (kr_radio);
   
