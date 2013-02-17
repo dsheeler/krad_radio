@@ -253,6 +253,12 @@ void krad_radio_launch (char *sysname) {
   pid_t pid;
   FILE *refp;
 
+#ifdef __MACH__
+  if (krad_radio_running (sysname)) {
+    return;
+  }
+#endif
+
   pid = fork();
 
   if (pid < 0) {
