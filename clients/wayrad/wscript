@@ -65,6 +65,8 @@ def configure(conf):
   global shlibs2  
   global syslibs
 
+  if conf.env['KRAD_USE_WAYLAND'] == False:
+    programs = [""]
 
   for l in syslibs:
     conf.check(lib = l, cflags='-Wall', uselib_store = l)
