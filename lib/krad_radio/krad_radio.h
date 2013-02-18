@@ -47,6 +47,9 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_v4l2.h"
 #include "krad_alsa.h"
 #endif
+#ifdef FRAK_MACOSX
+#include "krad_coreaudio.h"
+#endif
 #include "krad_mixer.h"
 #include "krad_mixer_common.h"
 #include "krad_websocket.h"

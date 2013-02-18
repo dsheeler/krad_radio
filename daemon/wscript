@@ -197,10 +197,14 @@ def check_system(systm):
 
   if systm.env['FRAK_MACOSX']:
     depsources = ["../lib/krad_legacy/krad_mach.c"] + depsources
+    depsources = ["../lib/krad_legacy/krad_coreaudio.c"] + depsources
     includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
     includedirs = ["../lib/krad_decklink/vendor/osx"] + includedirs
     depsources = ["../lib/krad_decklink/vendor/osx/DeckLinkAPIDispatch.cpp"] + depsources
     shlibs = shlibs + ['turbojpeg']
+    systm.check_cxx(framework_name='CoreAudio')
+    systm.check_cxx(framework_name='AudioToolbox')
+    systm.check_cxx(framework_name='CoreServices')
 
 def check_way(way):
 

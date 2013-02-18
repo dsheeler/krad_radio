@@ -1,43 +1,28 @@
 #include "krad_coreaudio.h"
 
-/*
-void monkey () {
-//reset
-  res = AudioUnitReset (data->au, kAudioUnitScope_Global, 0);
+OSStatus SetDefaultInputDeviceAsCurrent(coreaudio_t *coreaudio) {
 
+    UInt32 size;
+    OSStatus err =noErr;
+    size = sizeof(AudioDeviceID);
 
-// start / stop
-  AudioOutputUnitStart (data->au);
-  AudioOutputUnitStop (data->au);
+    AudioDeviceID inputDevice;
+    err = AudioHardwareGetProperty(kAudioHardwarePropertyDefaultInputDevice,
+                                                  &size, 
+                                                  &inputDevice);
 
-//
+  
 
-  AudioStreamBasicDescription fmt;
+    err =AudioUnitSetProperty(coreaudio->au,
+                         kAudioOutputUnitProperty_CurrentDevice, 
+                         kAudioUnitScope_Global, 
+                         0, 
+                         &inputDevice, 
+                         sizeof(inputDevice));
 
-  guint flags;
-
-  data = xmms_output_private_data_get (output);
-
-  fmt.mFormatID = kAudioFormatLinearPCM;
-  fmt.mFramesPerPacket = 1;
-
-  fmt.mSampleRate = xmms_stream_type_get_int (stype, XMMS_STREAM_TYPE_FMT_SAMPLERATE);
-  fmt.mChannelsPerFrame = xmms_stream_type_get_int (stype, XMMS_STREAM_TYPE_FMT_CHANNELS);
-
-  flags = kAudioFormatFlagIsPacked | kAudioFormatFlagsNativeEndian;
-  fmt.mFormatFlags = flags;
-
-
-  fmt.mBytesPerFrame = fmt.mBitsPerChannel * fmt.mChannelsPerFrame / 8;
-  fmt.mBytesPerPacket = fmt.mBytesPerFrame * fmt.mFramesPerPacket;
-
-  res = AudioUnitSetProperty (data->au, kAudioUnitProperty_StreamFormat,
-                              kAudioUnitScope_Input, 0, &fmt,
-                              sizeof (AudioStreamBasicDescription));
-
+   return err;
 
 }
-*/
 
 
 int coreaudio_process (void *user_ptr,
@@ -51,100 +36,152 @@ int coreaudio_process (void *user_ptr,
 
   coreaudio_t *coreaudio = (coreaudio_t *)user_ptr;
 
-  printf ("got a coreaudio process callback!\n");
+  printf ("got a coreaudio process callback! %u\n", inNumberFrames);
 
-  for (b = 0; b < ioData->mNumberBuffers; ++ b) {
-    gint size;
-    gint ret;
-
-    size = ioData->mBuffers[b].mDataByteSize;
-
-    //ret = xmms_output_read (output, (gchar *)ioData->mBuffers[b].mData, size);
-    if (ret == -1)
-      ret = 0;
-
-    if (ret < size) {
-      memset (ioData->mBuffers[b].mData+ret, 0, size - ret);
-    }
-  }
 
   return noErr;
 }
 
+void coreaudio_start (coreaudio_t *coreaudio) {
+  AudioOutputUnitStart (coreaudio->au);
+}
+
+void coreaudio_stop (coreaudio_t *coreaudio) {
+  AudioOutputUnitStop (coreaudio->au);
+}
 
 void coreaudio_destroy (coreaudio_t *coreaudio) {
   AudioUnitUninitialize (coreaudio->au);
-  CloseComponent (coreaudio->au);
 }
-
 
 coreaudio_t *coreaudio_create () {
 
-  OSStatus res;
-  ComponentDescription desc;
-  AURenderCallbackStruct input;
-  Component comp;
-  AudioDeviceID device = 0;
-  UInt32 size = sizeof (device);
-  gint i;
+  //OSStatus res;
+
+  //int i;
   
   coreaudio_t *coreaudio;
   
   coreaudio = calloc (1, sizeof (coreaudio_t));
 
-  desc.componentType = kAudioUnitType_Output;
-  desc.componentSubType = kAudioUnitSubType_DefaultOutput;
-  desc.componentManufacturer = kAudioUnitManufacturer_Apple;
-  desc.componentFlags = 0;
-  desc.componentFlagsMask = 0;
 
-  comp = FindNextComponent (NULL, &desc);
-  if (!comp) {
-    printf ("Couldn't find that component in my list!\n");
-    free (coreaudio);
-    return NULL;
-  }
+ 	AudioComponent comp;
+    AudioComponentDescription desc;
+    //AudioComponentInstance auHAL;
 
-  res = OpenAComponent (comp, &coreaudio->au);
-  if (comp == NULL) {
-    printf ("Opening component failed!\n");
-    return NULL;
-  }
+    desc.componentType = kAudioUnitType_Output;
+    desc.componentSubType = kAudioUnitSubType_HALOutput;
+    desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+    desc.componentFlags = 0;
+    desc.componentFlagsMask = 0;
 
-  input.inputProc = coreaudio_process;
-  input.inputProcRefCon = (void*)coreaudio;
+    //Finds a component that meets the desc spec's
+    comp = AudioComponentFindNext(NULL, &desc);
+    if (comp == NULL) exit (-1);
 
-  res = AudioUnitSetProperty (coreaudio->au, kAudioUnitProperty_SetRenderCallback,
-                              kAudioUnitScope_Input, 0,
-                              &input, sizeof (input));
+     //gains access to the services provided by the component
+    AudioComponentInstanceNew(comp, &coreaudio->au);
 
-  if (res) {
-    printf ("Set Callback failed!\n");
-    free (coreaudio);
-    return NULL;
-  }
 
-  res = AudioUnitInitialize (data->au);
-  if (res) {
-    printf ("Audio Unit wouldn't initialize!\n");
-    free (coreaudio);
-    return NULL;
-  }
+	AudioUnitInitialize (coreaudio->au);
 
-  printf ("CoreAudio initialized!\n");
 
-  res = AudioUnitGetProperty (data->au,
-                              kAudioOutputUnitProperty_CurrentDevice,
-                              kAudioUnitScope_Global,
-                              0,
-                              &device,
-                              &size);
 
-  if (res) {
-    printf ("getprop failed!\n");
-    free (coreaudio);
-    return NULL;
-  }
+ UInt32 enableIO;
+     UInt32 size=0;
 
-  return 0;
+     //When using AudioUnitSetProperty the 4th parameter in the method
+     //refer to an AudioUnitElement. When using an AudioOutputUnit
+     //the input element will be '1' and the output element will be '0'.
+
+
+      enableIO = 1;
+      AudioUnitSetProperty(coreaudio->au,
+                kAudioOutputUnitProperty_EnableIO,
+                kAudioUnitScope_Input,
+                1, // input element
+                &enableIO,
+                sizeof(enableIO));
+
+      enableIO = 0;
+      AudioUnitSetProperty(coreaudio->au,
+                kAudioOutputUnitProperty_EnableIO,
+                kAudioUnitScope_Output,
+                0,   //output element
+                &enableIO,
+                sizeof(enableIO));
+
+
+			SetDefaultInputDeviceAsCurrent(coreaudio);
+
+
+		 AudioStreamBasicDescription DeviceFormat;
+		    AudioStreamBasicDescription DesiredFormat;
+		   //Use CAStreamBasicDescriptions instead of 'naked' 
+		   //AudioStreamBasicDescriptions to minimize errors.
+		   //CAStreamBasicDescription.h can be found in the CoreAudio SDK.
+
+		    size = sizeof(AudioStreamBasicDescription);
+
+		     //Get the input device format
+		    AudioUnitGetProperty (coreaudio->au,
+		                                   kAudioUnitProperty_StreamFormat,
+		                                   kAudioUnitScope_Input,
+		                                   1,
+		                                   &DeviceFormat,
+		                                   &size);
+
+		    //set the desired format to the device's sample rate
+		    DesiredFormat.mSampleRate =  DeviceFormat.mSampleRate;
+
+		     //set format to output scope
+		    AudioUnitSetProperty(
+		                            coreaudio->au,
+		                            kAudioUnitProperty_StreamFormat,
+		                            kAudioUnitScope_Output,
+		                            1,
+		                            &DesiredFormat,
+		                            sizeof(AudioStreamBasicDescription));
+
+								AudioUnitInitialize (coreaudio->au);
+								//AudioOutputUnitStart (coreaudio->au);
+
+
+		   AURenderCallbackStruct input;
+		 input.inputProc = coreaudio_process;
+		  input.inputProcRefCon = (void*)coreaudio;
+
+			AudioUnitSetProperty(
+		            coreaudio->au, 
+		            kAudioOutputUnitProperty_SetInputCallback, 
+		            kAudioUnitScope_Global,
+		            0,
+		            &input, 
+		            sizeof(input));
+
+
+
+				AudioUnitInitialize (coreaudio->au);
+				//AudioOutputUnitStart (coreaudio->au);
+
+
+
+
+  return coreaudio;
 }
+
+void coreaudio_test () {
+	
+	coreaudio_t *coreaudio;
+
+	coreaudio = coreaudio_create ();
+	printf ("yay!\n");
+	coreaudio_start (coreaudio);
+	while (1) {
+		usleep (100000);
+	}
+
+	return 0;
+}
+
+
