@@ -10,6 +10,7 @@ from subprocess import check_output
 
 libdir = "lib"
 clientsdir = "clients"
+wayraddir = "clients/wayrad"
 daemondir = "daemon"
 subdirs = os.listdir('./' + libdir)
 
@@ -17,6 +18,7 @@ for s in subdirs:
   subdirs[subdirs.index(s)] = os.getcwd() + "/" + libdir + "/" + s
 
 subdirs += [os.getcwd() + "/" + clientsdir]
+subdirs += [os.getcwd() + "/" + wayraddir]
 subdirs += [os.getcwd() + "/" + daemondir]
 
 def options(opt):
