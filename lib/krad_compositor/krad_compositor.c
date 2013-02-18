@@ -976,7 +976,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
   krad_compositor_port->krad_compositor = krad_compositor;
   krad_compositor_port->local = local;
   krad_compositor_port->direction = direction;  
-  strcpy (krad_compositor_port->sysname, sysname);  
+  strncpy (krad_compositor_port->sysname, sysname, sizeof(krad_compositor_port->sysname));  
   krad_compositor_port->start_timecode = 1;
 
   krad_compositor_port->crop_x = 0;

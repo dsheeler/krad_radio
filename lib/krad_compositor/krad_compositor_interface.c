@@ -1,5 +1,39 @@
 #include "krad_compositor_interface.h"
 
+int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videoport_rep) {
+  
+  if ((videoport == NULL) || (videoport_rep == NULL)) {
+    return 0;
+  }
+
+  strncpy (videoport_rep->sysname, videoport->sysname, sizeof(videoport_rep->sysname));
+
+  videoport_rep->direction = videoport->direction;
+
+  videoport_rep->controls.x = videoport->subunit.x;
+  videoport_rep->controls.y = videoport->subunit.y;
+  videoport_rep->controls.z = videoport->subunit.z;
+ 
+  videoport_rep->source_width = videoport->source_width;
+  videoport_rep->source_height = videoport->source_height;
+  
+  videoport_rep->crop_x = videoport->crop_x;
+  videoport_rep->crop_y = videoport->crop_y;
+  
+  videoport_rep->crop_width = videoport->crop_width;
+  videoport_rep->crop_height = videoport->crop_height;
+ 
+ 
+  
+  videoport_rep->controls.width = videoport->subunit.width;
+  videoport_rep->controls.height = videoport->subunit.height;
+    
+  videoport_rep->controls.rotation = videoport->subunit.rotation;
+  videoport_rep->controls.opacity = videoport->subunit.opacity;
+   
+  return 1;
+}
+
 void krad_compositor_sprite_to_ebml ( krad_ipc_server_t *krad_ipc, krad_sprite_t *sprite ) {
   krad_sprite_rep_t sprite_rep;
   krad_sprite_to_rep (sprite, &sprite_rep);
@@ -10,6 +44,12 @@ void krad_compositor_text_to_ebml ( krad_ipc_server_t *krad_ipc, krad_text_t *te
   krad_text_rep_t text_rep;
   krad_text_to_rep (text, &text_rep);
   krad_compositor_text_rep_to_ebml (&text_rep, krad_ipc->current_client->krad_ebml2);
+}
+
+void krad_compositor_videoport_to_ebml ( krad_ipc_server_t *krad_ipc, krad_compositor_port_t *videoport ) {
+  kr_port_t videoport_rep;
+  krad_videoport_to_rep (videoport, &videoport_rep);
+  krad_compositor_videoport_rep_to_ebml (&videoport_rep, krad_ipc->current_client->krad_ebml2);
 }
 
 int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_server_t *krad_ipc ) {
@@ -113,6 +153,18 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
                                                                  &response);
           krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
           krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->text[s]);
+          krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
+          krad_ipc_server_response_finish ( krad_ipc, response );
+        }
+      }
+      for (s = 0; s < KC_MAX_PORTS; s++) {
+        if (krad_compositor->port[s].subunit.active == 1) {
+          krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
+                                                                 &krad_compositor->port[s].subunit.address,
+                                                                 EBML_ID_KRAD_SUBUNIT_INFO,
+                                                                 &response);
+          krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
+          krad_compositor_videoport_to_ebml ( krad_ipc, &krad_compositor->port[s]);
           krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
           krad_ipc_server_response_finish ( krad_ipc, response );
         }

@@ -17,7 +17,7 @@ typedef struct kr_videoport_St kr_videoport_t;
 
 
 // Should be internal / private
-void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t **kr_compositor_rep_in);
+void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t *kr_compositor_rep);
 int kr_compositor_response_to_string (kr_response_t *kr_response, char **string);
 
 // Public

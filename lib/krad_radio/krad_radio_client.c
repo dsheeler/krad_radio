@@ -707,8 +707,12 @@ int kr_response_to_rep (kr_response_t *response, kr_rep_t **kr_rep_in) {
       if ((response->address.path.unit == KR_COMPOSITOR) && (response->address.path.subunit.zero == KR_UNIT) && 
           (response->type == EBML_ID_KRAD_UNIT_INFO)) {
         kr_rep->type = KR_COMPOSITOR;
-        kr_ebml_to_compositor_rep (response->buffer, &kr_rep->rep_ptr.compositor);
-        return 1;
+        
+        //FIXME
+        break;
+        
+        //kr_ebml_to_compositor_rep (response->buffer, &kr_rep->rep_ptr.compositor);
+        //return 1;
       }
       break;
     case KR_TRANSPONDER:

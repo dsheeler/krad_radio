@@ -43,6 +43,7 @@ float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr
                        krad_easing->start_value,
                        krad_easing->change_amount,
                        krad_easing->duration);
+    value = floorf (value * 100.0f + 0.5f) / 100.0f;
     krad_easing->elapsed_time++;
   } else {
     krad_easing->duration = 0;

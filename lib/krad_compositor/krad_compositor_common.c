@@ -1,5 +1,24 @@
 #include "krad_compositor_common.h"
 
+void krad_compositor_videoport_rep_to_ebml (kr_port_t *port, krad_ebml_t *ebml) {
+
+  krad_ebml_write_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, port->sysname);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->direction);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->controls.x);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.y);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.z);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->source_width);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->source_height);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_x);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_y);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_width);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_height);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.width);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.height);  
+  krad_ebml_write_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, port->controls.opacity);
+  krad_ebml_write_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, port->controls.rotation);
+}
+
 void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml) {
 
   krad_ebml_write_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, text->text);
@@ -171,41 +190,3 @@ char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type) {
 
   return "Unknown";
 }
-
-kr_compositor_t *kr_compositor_rep_create () {
-  kr_compositor_t *compositor = (kr_compositor_t *) calloc (1, sizeof (kr_compositor_t));
-  return compositor;
-}
-
-void kr_compositor_rep_destroy (kr_compositor_t *compositor) {
-  free (compositor);
-}
-
-krad_text_rep_t *krad_compositor_text_rep_create () {
-  
-  krad_text_rep_t *krad_text_rep = calloc(1, sizeof (krad_text_rep_t));
-  return krad_text_rep;
-}
-
-void krad_compositor_text_rep_destroy (krad_text_rep_t *krad_text_rep) {
-  free (krad_text_rep);
-}
-
-kr_sprite_t *kr_compositor_sprite_rep_create () {
-  kr_sprite_t *sprite = calloc (1, sizeof (kr_sprite_t));
-  return sprite;
-}
-
-void kr_compositor_sprite_rep_destroy (kr_sprite_t *sprite) {
-  free (sprite);
-}
-
-krad_vector_rep_t *krad_compositor_vector_rep_create () {
-  krad_vector_rep_t *krad_vector_rep = calloc(1, sizeof (krad_vector_rep_t));
-  return krad_vector_rep;
-}
-
-void krad_compositor_vector_rep_destroy (krad_vector_rep_t *krad_vector_rep) {
-  free (krad_vector_rep);
-}
-

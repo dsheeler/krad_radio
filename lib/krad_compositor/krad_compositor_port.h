@@ -8,7 +8,7 @@ struct krad_compositor_port_St {
 
   krad_compositor_t *krad_compositor;
 
-  char sysname[256];
+  char sysname[128];
   int direction;
   
   krad_frame_t *last_frame;

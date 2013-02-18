@@ -52,6 +52,8 @@ typedef struct krad_sprite_rep_St krad_sprite_rep_t;
 typedef struct krad_sprite_rep_St kr_sprite_t;
 typedef struct krad_vector_rep_St krad_vector_rep_t;
 typedef struct krad_vector_rep_St kr_vector_t;
+typedef struct krad_port_rep_St krad_port_rep_t;
+typedef struct krad_port_rep_St kr_port_t;
 typedef struct kr_compositor_subunit_controls_St kr_compositor_subunit_controls_t;
 typedef struct kr_compositor_subunit_controls_St kr_comp_controls_t;
 typedef struct krad_compositor_rep_St krad_compositor_rep_t;
@@ -105,6 +107,23 @@ struct krad_vector_rep_St {
   kr_comp_controls_t controls;
 };
 
+struct krad_port_rep_St {
+  
+  char sysname[128];
+  int direction;
+  
+  int source_width;
+  int source_height;
+  
+  int crop_x;
+  int crop_y;
+  
+  int crop_width;
+  int crop_height;
+  
+  kr_comp_controls_t controls;
+};
+
 struct krad_compositor_rep_St {
   
   uint32_t width;
@@ -124,22 +143,11 @@ struct krad_compositor_rep_St {
   char background_filename[256];
 };
 
-char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
-
-krad_text_rep_t *krad_compositor_text_rep_create ();
-void krad_compositor_text_rep_destroy (krad_text_rep_t *krad_text_rep);
+void krad_compositor_videoport_rep_to_ebml (kr_port_t *port, krad_ebml_t *ebml);
 void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml);
-
-kr_sprite_t *kr_compositor_sprite_rep_create ();
-void kr_compositor_sprite_rep_destroy (kr_sprite_t *sprite);
 void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
 
-krad_vector_rep_t *krad_compositor_vector_rep_create ();
-void krad_compositor_vector_rep_destroy (krad_vector_rep_t *krad_vector_rep);
-
-kr_compositor_t *kr_compositor_rep_create ();
-void kr_compositor_rep_destroy (kr_compositor_t *compositor);
-
+char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 krad_vector_type_t krad_string_to_vector_type (char *string);
 kr_compositor_control_t krad_string_to_compositor_control (char *string);
 char *krad_vector_type_to_string (krad_vector_type_t type);
