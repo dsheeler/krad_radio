@@ -56,10 +56,10 @@ class KradStation
         self.cmd("m/Music1 0 20")
         self.cmd("m/Music2 0 20")
         self.cmd("m/Video 0 20")
-        sleep 0.25
+        sleep 0.075
       #end
       self.cmd("destroy")
-      sleep 0.0266
+      sleep 0.01
     end
     if launch == "Yes"
 		  self.launch_daemon
@@ -68,7 +68,7 @@ class KradStation
 
 	def launch_daemon
 		self.cmd("launch")
-    sleep 0.05
+    sleep 0.03
 	end
 
 	def sprite(filename, x=0, y=0, rate=2, z=1, scale=1, opacity=1.0, rotation=0.0)

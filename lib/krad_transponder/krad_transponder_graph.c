@@ -82,7 +82,7 @@ void krad_Xtransponder_port_read (krad_Xtransponder_input_port_t *inport, void *
   }
 
   if (msg != NULL) {
-    printk ("Krad Transponder: msg read space %zu", krad_ringbuffer_read_space (inport->msg_ring));  
+    //printk ("Krad Transponder: msg read space %zu", krad_ringbuffer_read_space (inport->msg_ring));  
     ret = krad_ringbuffer_read (inport->msg_ring, (char *)msg, sizeof(void *));
     if (ret != sizeof(void *)) {
       printk ("Krad Transponder: invalid msg read len %d", ret);
@@ -90,7 +90,7 @@ void krad_Xtransponder_port_read (krad_Xtransponder_input_port_t *inport, void *
   } else {
     printk ("uh oh nullzor!");
   }
-  printk ("Krad Transponder: input port read");
+  //printk ("Krad Transponder: input port read");
 
 }
 
@@ -106,7 +106,7 @@ void krad_Xtransponder_port_write (krad_Xtransponder_input_port_t *input, void *
     }
   }
 
-  printk ("Krad Transponder: port write");
+  //printk ("Krad Transponder: port write");
 
 }
 
@@ -114,7 +114,7 @@ void krad_Xtransponder_port_broadcast (krad_Xtransponder_output_port_t *outport,
 
   int p;
   
-  printk ("Krad Transponder: output port broadcasting");  
+  //printk ("Krad Transponder: output port broadcasting");  
   
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
     if (outport->connections[p] != NULL) {
@@ -122,7 +122,7 @@ void krad_Xtransponder_port_broadcast (krad_Xtransponder_output_port_t *outport,
     }
   }
 
-  printk ("Krad Transponder: output port broadcasted");
+  //printk ("Krad Transponder: output port broadcasted");
 
 }
 
@@ -424,12 +424,12 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
 				      krad_Xtransponder_port_read (krad_Xtransponder_subunit->inputs[1], (void **)&krad_slice);
             }
             if (krad_slice != NULL) {
-              printk ("Krad Transponder Subunit: Got a packet!");
+              //printk ("Krad Transponder Subunit: Got a packet!");
               
               if (krad_slice->final == 1) {
                 printk ("Krad Transponder Subunit: Got FINAL packet!");
               } else {
-                printk ("Krad Transponder Subunit: packet size %u", krad_slice->size);
+                //printk ("Krad Transponder Subunit: packet size %u", krad_slice->size);
               }
               
               krad_Xtransponder_subunit->krad_slice = krad_slice;
@@ -726,7 +726,7 @@ int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransp
     port = 1;
   }
   
-  printk ("Krad Transponder: output port broadcasting");  
+  //printk ("Krad Transponder: output port broadcasting");  
   
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
     if (krad_Xtransponder_subunit->outputs[port]->connections[p] != NULL) {
@@ -736,7 +736,7 @@ int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransp
     }
   }
 
-  printk ("Krad Transponder: output port broadcasted to %d", b);
+  //printk ("Krad Transponder: output port broadcasted to %d", b);
 
   return p;
 
