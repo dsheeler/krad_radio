@@ -42,7 +42,7 @@ krad_audio_portgroup_t *krad_audio_portgroup_create (krad_audio_t *krad_audio, c
 	portgroup->direction = direction;
 	portgroup->channels = channels;
 	
-	strncpy (portgroup->name, name, 256);
+	strncpy (portgroup->name, name, sizeof(portgroup->name));
 
 	switch (portgroup->audio_api) {
 	

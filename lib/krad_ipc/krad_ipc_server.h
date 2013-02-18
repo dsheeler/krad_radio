@@ -115,6 +115,9 @@ struct krad_ipc_server_St {
   uint32_t broadcasts[MAX_BROADCASTS];
   int broadcasts_count;
   
+  
+  krad_ipc_broadcaster_t *ipc_broadcaster;
+  
 };
 
 struct krad_ipc_server_client_St {

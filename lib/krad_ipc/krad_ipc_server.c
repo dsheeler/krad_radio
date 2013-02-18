@@ -371,7 +371,7 @@ static krad_ipc_server_client_t *krad_ipc_server_accept_client (krad_ipc_server_
   sin_len = sizeof (sin);
   client->sd = accept (sd, (struct sockaddr *)&sin, &sin_len);
 
-  if (client->sd >= 0) {
+  if (client->sd > 0) {
 
     flags = fcntl (client->sd, F_GETFL, 0);
 
@@ -393,6 +393,8 @@ static krad_ipc_server_client_t *krad_ipc_server_accept_client (krad_ipc_server_
     krad_ipc_server_update_pollfds (client->krad_ipc_server);
     //printk ("Krad IPC Server: Client accepted!");  
     return client;
+  } else {
+    printke ("Krad IPC Server: Client NOT accepted!");  
   }
 
   return NULL;
@@ -480,6 +482,7 @@ static void krad_ipc_server_update_pollfds (krad_ipc_server_t *krad_ipc_server) 
 }
 
 int krad_ipc_server_read_command (krad_ipc_server_t *krad_ipc_server, uint32_t *ebml_id_ptr, uint64_t *ebml_data_size_ptr) {
+    //printk ("Krad IPC Server: read_command!");  
   return krad_ebml_read_element (krad_ipc_server->current_client->krad_ebml, ebml_id_ptr, ebml_data_size_ptr);
 }
 
@@ -852,7 +855,7 @@ static void *krad_ipc_server_run_thread (void *arg) {
     
               client->input_buffer_pos += recv(krad_ipc_server->sockets[s].fd, client->input_buffer + client->input_buffer_pos, (sizeof (client->input_buffer) - client->input_buffer_pos), 0);
             
-              //printk ("Krad IPC Server: Got %d bytes\n", client->input_buffer_pos);
+              //printk ("Krad IPC Server %d: Got %d bytes\n", s, client->input_buffer_pos);
             
               if (client->input_buffer_pos == 0) {
                 //printk ("Krad IPC Server: Client EOF\n");
@@ -910,8 +913,8 @@ static void *krad_ipc_server_run_thread (void *arg) {
             }
 
             if (krad_ipc_server->sockets[s].revents & POLLHUP) {
-              //printk ("Krad IPC Server: POLLHUP\n");
-              krad_ipc_disconnect_client (client);
+              //printk ("Krad IPC Server %d : POLLHUP\n", s);
+              //krad_ipc_disconnect_client (client);
               continue;
             }
 
@@ -991,6 +994,7 @@ void krad_ipc_server_destroy (krad_ipc_server_t *ipc_server) {
 }
 
 void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server) {
+  krad_ipc_server->ipc_broadcaster = krad_ipc_server_broadcaster_register ( krad_ipc_server );
   pthread_create (&krad_ipc_server->server_thread, NULL, krad_ipc_server_run_thread, (void *)krad_ipc_server);
 }
 

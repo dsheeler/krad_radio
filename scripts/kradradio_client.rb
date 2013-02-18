@@ -52,14 +52,14 @@ class KradStation
 		Kernel.srand
     if (ARGV[0] == "restart")
       #if (ARGV[1] == "smooth")
-        self.cmd("m/Music 0 40")
-        self.cmd("m/Music1 0 40")
-        self.cmd("m/Music2 0 40")
-        self.cmd("m/Video 0 40")
+        self.cmd("m/Music 0 20")
+        self.cmd("m/Music1 0 20")
+        self.cmd("m/Music2 0 20")
+        self.cmd("m/Video 0 20")
         sleep 0.25
       #end
       self.cmd("destroy")
-      sleep 0.0666
+      sleep 0.0266
     end
     if launch == "Yes"
 		  self.launch_daemon
@@ -68,7 +68,7 @@ class KradStation
 
 	def launch_daemon
 		self.cmd("launch")
-    sleep 0.1
+    sleep 0.05
 	end
 
 	def sprite(filename, x=0, y=0, rate=2, z=1, scale=1, opacity=1.0, rotation=0.0)
@@ -217,6 +217,10 @@ class KradStation
 		puts "command: #{thecmd}"
 		ret = `#{thecmd}`.chomp
 		#sleep 0.05
+		#puts ret
+		if $CHILD_STATUS.to_i != 0
+		  puts "ruh oh!"
+		end
 		return ret
 	end
 

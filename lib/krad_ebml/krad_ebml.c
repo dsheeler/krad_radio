@@ -2388,15 +2388,20 @@ int krad_ebml_streamio_close(krad_ebml_io_t *krad_ebml_io) {
 int krad_ebml_streamio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length) {
 
 	int bytes;
+	int ret;
 	
 	bytes = 0;
-
+  ret = 0;
+  
 	while (bytes != length) {
 
-		bytes += send (krad_ebml_io->sd, buffer + bytes, length - bytes, 0);
+		ret = send (krad_ebml_io->sd, buffer + bytes, length - bytes, 0);
 
-		if (bytes <= 0) {
-			failfast ("Krad EBML stream io write: Got Disconnected from server. bytes ret %d len %zu", bytes, length);
+		if (ret <= 0) {
+			fprintf (stderr, "Krad EBML stream io write: Got Disconnected from server. ret %d bytes %d len %zu", ret, bytes, length);
+			failfast ("Krad EBML stream io write: Got Disconnected from server. ret %d bytes %d len %zu", ret, bytes, length);
+		} else {
+		  bytes += ret;
 		}
 	}
 	

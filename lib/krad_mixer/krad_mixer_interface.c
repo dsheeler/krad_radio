@@ -205,7 +205,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
     case EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS:
       for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
         portgroup = krad_mixer->portgroup[p];
-        if ((portgroup != NULL) && (portgroup->active) && (portgroup->direction == INPUT)) {
+        if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2)) && (portgroup->direction == INPUT)) {
           krad_mixer_portgroup_to_rep (portgroup, &portgroup_rep);
           krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
                                                                  &portgroup->address,
@@ -237,7 +237,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
           output_type = NOTOUTPUT;
         }
       }
-      
+      //printk ("Krad Mixer: Creating portgroup: %s", portgroupname);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       portgroup = krad_mixer_portgroup_create (krad_mixer, portgroupname, direction, output_type, numbers[0],
@@ -245,9 +245,12 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
 
       if (portgroup != NULL) {
         if (portgroup->direction == INPUT) {
-          krad_radio_broadcast_subunit_created ( krad_mixer->broadcaster, &portgroup->address, (void *)portgroup);
+          krad_radio_broadcast_subunit_created ( krad_ipc->ipc_broadcaster, &portgroup->address, (void *)portgroup);
         }
-        krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);        
+        krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);
+        //printk ("Krad Mixer: Created portgroup: %s", portgroupname);
+      } else {
+        printke ("Krad Mixer: Failed to create portgroup: %s", portgroupname);
       }
       return 0;
     case EBML_ID_KRAD_MIXER_CMD_DESTROY_PORTGROUP:
@@ -259,7 +262,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
         address.path.unit = KR_MIXER;
         address.path.subunit.mixer_subunit = KR_PORTGROUP;
         strncpy (address.id.name, portgroupname, sizeof (address.id.name));
-        krad_radio_broadcast_subunit_destroyed (krad_mixer->broadcaster, &address);
+        krad_radio_broadcast_subunit_destroyed (krad_ipc->ipc_broadcaster, &address);
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PORTGROUP_INFO:  
@@ -267,7 +270,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, portgroupname, ebml_data_size);
       portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
-      if ((portgroup != NULL) && (portgroup->active) && (portgroup->direction == INPUT)) {
+      if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2)) && (portgroup->direction == INPUT)) {
         
         krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
                                                                &portgroup->address,
@@ -353,13 +356,10 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
         }
         numbers[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);      
       
-      
-        krad_mixer_portgroup_map_channel (krad_mixer_get_portgroup_from_sysname (krad_mixer,
-                                             portgroupname),
-                                             numbers[0],
-                                             numbers[1]);      
-      
-      
+        portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
+        if (portgroup != NULL) {
+          krad_mixer_portgroup_map_channel (portgroup, numbers[0], numbers[1]);      
+        }
       }
 
       if (ebml_id == EBML_ID_KRAD_MIXER_MIXMAP_CHANNEL) {
@@ -378,12 +378,10 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
         numbers[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);      
       
       
-        krad_mixer_portgroup_mixmap_channel (krad_mixer_get_portgroup_from_sysname (krad_mixer,
-                                             portgroupname),
-                                             numbers[0],
-                                             numbers[1]);      
-      
-      
+        portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
+        if (portgroup != NULL) {
+          krad_mixer_portgroup_mixmap_channel (portgroup, numbers[0], numbers[1]);
+        }
       }
 
       break;
@@ -436,7 +434,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       numbers[2] = 0;
       for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
         portgroup = krad_mixer->portgroup[p];
-        if ((portgroup != NULL) && (portgroup->active == 1)) {
+        if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2))) {
           if (portgroup->direction == INPUT) {
             numbers[0]++;
           }

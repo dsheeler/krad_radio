@@ -34,10 +34,10 @@ void krad_jack_check_connection (krad_jack_t *krad_jack, char *remote_port) {
           flags = jack_port_flags (port);
         
           if (flags == JackPortIsOutput) {    
-            printk ("Krad Jack: Replugging %s to %s", remote_port, krad_jack->stay_connected[p]);
+            //printk ("Krad Jack: Replugging %s to %s", remote_port, krad_jack->stay_connected[p]);
             jack_connect (krad_jack->client, remote_port, krad_jack->stay_connected[p]);
           } else {
-            printk ("Krad Jack: Replugging %s to %s", krad_jack->stay_connected[p], remote_port);
+            //printk ("Krad Jack: Replugging %s to %s", krad_jack->stay_connected[p], remote_port);
             jack_connect (krad_jack->client, krad_jack->stay_connected[p], remote_port);
           }        
         }
@@ -98,17 +98,17 @@ void krad_jack_port_registration_callback (jack_port_id_t portid, int regged, vo
   port = jack_port_by_id (krad_jack->client, portid);
   
   if (regged == 1) {
-    printk ("Krad Jack: %s registered", jack_port_name (port));
+    //printk ("Krad Jack: %s registered", jack_port_name (port));
     if (jack_port_is_mine(krad_jack->client, port) == 0) {
       krad_jack_check_connection (krad_jack, (char *)jack_port_name(port));
     }
   } else {
-    printk ("Krad Jack: %s unregistered", jack_port_name (port));
+    //printk ("Krad Jack: %s unregistered", jack_port_name (port));
   }
 }
 
 void krad_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int connect, void *arg) {
-
+/*
   krad_jack_t *krad_jack = (krad_jack_t *)arg;
   
   jack_port_t *ports[2];
@@ -117,10 +117,11 @@ void krad_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int
   ports[1] = jack_port_by_id (krad_jack->client, b);  
 
   if (connect == 1) {
-    printk ("Krad Jack: %s connected to %s ", jack_port_name (ports[0]), jack_port_name (ports[1]));
+    //printk ("Krad Jack: %s connected to %s ", jack_port_name (ports[0]), jack_port_name (ports[1]));
   } else {
-    printk ("Krad Jack: %s disconnected from %s ", jack_port_name (ports[0]), jack_port_name (ports[1]));
+    //printk ("Krad Jack: %s disconnected from %s ", jack_port_name (ports[0]), jack_port_name (ports[1]));
   }
+*/
 }
 
 void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_name) {
@@ -142,10 +143,10 @@ void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_na
       if (ports[c]) {
         krad_jack_stay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), (char *)ports[c]);
         if (portgroup->direction == INPUT) {  
-          printk ("Krad Jack: Plugging %s to %s", ports[c], jack_port_name(portgroup->ports[c]));
+          //printk ("Krad Jack: Plugging %s to %s", ports[c], jack_port_name(portgroup->ports[c]));
           jack_connect (portgroup->krad_jack->client, ports[c], jack_port_name(portgroup->ports[c]));
         } else {
-          printk ("Krad Jack: Plugging %s to %s", jack_port_name(portgroup->ports[c]), ports[c]);
+          //printk ("Krad Jack: Plugging %s to %s", jack_port_name(portgroup->ports[c]), ports[c]);
           jack_connect (portgroup->krad_jack->client, jack_port_name(portgroup->ports[c]), ports[c]);
         }      
       } else {

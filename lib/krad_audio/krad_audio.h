@@ -44,7 +44,7 @@ struct krad_audio_portgroup_St {
 
 	void *api_portgroup;
 
-	char name[256];
+	char name[64];
 
 	int channels;
 	int active;
