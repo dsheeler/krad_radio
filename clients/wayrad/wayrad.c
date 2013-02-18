@@ -1,6 +1,6 @@
-#include "krad_wayland.h"
+#include "wayrad.h"
 
-int krad_wayland_test_frame (void *pointer, uint32_t time) {
+int wayrad_frame (void *pointer, uint32_t time) {
 
 	int updated;
 
@@ -12,52 +12,94 @@ int krad_wayland_test_frame (void *pointer, uint32_t time) {
 	return updated;
 }
 
-int main (int argc, char *argv[]) {
+void wayrad_run (wayrad_t *wayrad) {
+  
+  int count;
+  
+  count = 0;
 
-	krad_wayland_t *krad_wayland;
+  while (count < 2000) {
+    krad_wayland_iterate (wayrad->krad_wayland);
+    count++;
+  }
+}
 
-	int width;
-	int height;
+void wayrad_destroy (wayrad_t *wayrad) {
 
-	void *buffer;
+  krad_wayland_close_window (wayrad->krad_wayland);
 
-	width = 960;
-	height = 540;
+	krad_wayland_destroy (wayrad->krad_wayland);
+  
+  printf ("Disconnecting from %s..\n", wayrad->sysname);
+  kr_disconnect (wayrad->client);
+  printf ("Disconnected from %s.\n", wayrad->sysname);
+  printf ("Destroying client..\n");
+  kr_client_destroy (&wayrad->client);
 
-	if (argc == 3) {
-		width = atoi(argv[1]);
-		height = atoi(argv[2]);
-	}
+  free (wayrad);
+}
 
-	krad_wayland = krad_wayland_create ();
+wayrad_t *wayrad_create (char *sysname) {
 
-	krad_wayland->render_test_pattern = 1;
+  wayrad_t *wayrad;
+  
+  wayrad = calloc (1, sizeof (wayrad_t));
+  
+  strncpy (wayrad->sysname, sysname, sizeof(wayrad->sysname));
+	wayrad->width = 960;
+	wayrad->height = 540;
 
-	krad_wayland_prepare_window (krad_wayland, width, height, &buffer);
+	wayrad->client = kr_client_create ("wayrad");
+
+  if (wayrad->client == NULL) {
+    fprintf (stderr, "Could create client\n");
+    exit (1);
+  }
+
+  if (!kr_connect (wayrad->client, wayrad->sysname)) {
+    fprintf (stderr, "Could not connect to %s krad radio daemon\n", wayrad->sysname);
+    kr_client_destroy (&wayrad->client);
+    exit (1);
+  }
+
+  printf ("Connected to %s!\n", wayrad->sysname);
+
+	wayrad->krad_wayland = krad_wayland_create ();
+
+	wayrad->krad_wayland->render_test_pattern = 1;
+
+	krad_wayland_prepare_window (wayrad->krad_wayland, wayrad->width, wayrad->height, &wayrad->buffer);
 
   //krad_wayland_set_frame_callback (krad_compositor_wayland_display->krad_wayland,
   //                 krad_compositor_wayland_display_render_callback,
   //                 krad_compositor_wayland_display);
 
-  krad_wayland_prepare_window (krad_wayland,
-                 width,
-                 height,
-                 &buffer);
+  krad_wayland_prepare_window (wayrad->krad_wayland,
+                 wayrad->width,
+                 wayrad->height,
+                 &wayrad->buffer);
 
   printk("Wayland display prepared");
 
-  krad_wayland_open_window (krad_wayland);
+  krad_wayland_open_window (wayrad->krad_wayland);
 
   printk("Wayland display running");
 
-  while (1) {
-    krad_wayland_iterate (krad_wayland);
+  return wayrad;  
+  
+}
+
+int main (int argc, char *argv[]) {
+
+  wayrad_t *wayrad;
+
+  if (argc == 2) {
+    wayrad = wayrad_create (argv[1]);
+    wayrad_run (wayrad);
+    wayrad_destroy (wayrad);
+  } else {
+    printf ("need station name\n");
   }
-
-  krad_wayland_close_window (krad_wayland);
-
-	krad_wayland_destroy (krad_wayland);
-
 
 	return 0;
 
