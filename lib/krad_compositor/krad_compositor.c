@@ -1589,10 +1589,10 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
   }
 }
 
-void krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address) {
+int krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address) {
 
   if ((compositor == NULL) || (address == NULL) || (address->id.number < 0)) {
-    return;
+    return 0;
   }
 
   if (address->path.unit == KR_COMPOSITOR) {
@@ -1601,34 +1601,39 @@ void krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_
         if (address->id.number < KC_MAX_SPRITES) {
           if (compositor->sprite[address->id.number].subunit.active == 1) {
             compositor->sprite[address->id.number].subunit.active = 2;
+            return 1;
           }
         }
-        return;
+        return 0;
       case KR_TEXT:
         if (address->id.number < KC_MAX_TEXTS) {
           if (compositor->text[address->id.number].subunit.active == 1) {
             compositor->text[address->id.number].subunit.active = 2;
+            return 1;
           }
         }
-        return;
+        return 0;
       case KR_VECTOR:
         if (address->id.number < KC_MAX_VECTORS) {
           if (compositor->vector[address->id.number].subunit.active == 1) {
             compositor->vector[address->id.number].subunit.active = 2;
+            return 1;
           }
         }
-        return;
+        return 0;
       case KR_VIDEOPORT:
         if (address->id.number < KC_MAX_PORTS) {
           if (compositor->port[address->id.number].subunit.active == 1) {
             compositor->port[address->id.number].subunit.active = 2;
+            return 1;
           }
         }
-        return;
+        return 0;
       default:
-        return;
+        return 0;
     }
   }
+  return 0;  
 }
 
 static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height) {

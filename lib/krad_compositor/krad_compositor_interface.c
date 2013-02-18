@@ -118,7 +118,9 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       numbers[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       address.id.number = numbers[0];
-      krad_compositor_subunit_destroy (krad_compositor, &address);
+      if (krad_compositor_subunit_destroy (krad_compositor, &address)) {
+        krad_radio_broadcast_subunit_destroyed (krad_ipc->ipc_broadcaster, &address);
+      }
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
