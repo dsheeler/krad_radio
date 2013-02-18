@@ -8,7 +8,10 @@ int wayrad_frame (void *pointer, uint32_t time) {
 	
 	wayrad_t *wayrad = (wayrad_t *)pointer;
 	
-	hexagon (wayrad->width, wayrad->height, wayrad->buffer);
+	hexagon (wayrad->width, wayrad->height,
+	         wayrad->krad_wayland->display->pointer_x,
+	         wayrad->krad_wayland->display->pointer_y,
+	         time, wayrad->buffer);
 
   updated = 1;
 
@@ -21,13 +24,34 @@ int wayrad_frame (void *pointer, uint32_t time) {
 void wayrad_run (wayrad_t *wayrad) {
   
   int count;
+  kr_unit_control_t uc;
+  char address[128];
   
   count = 0;
 
-  while (count < 2000) {
+  while (count < 5000) {
     krad_wayland_iterate (wayrad->krad_wayland);
+    
+    if ((wayrad->krad_wayland->mousein) && (wayrad->krad_wayland->click)) {
+      memset (&uc, 0, sizeof (uc));
+      strcpy (address, "m/Music/c");
+      if (kr_string_to_address (address, &uc.address)) {
+        kr_unit_control_data_type_from_address (&uc.address, &uc.data_type);
+        uc.value.real = (wayrad->krad_wayland->display->pointer_x / (float)wayrad->width);
+        //vol
+        //uc.value.real = ((uc.value.real * 100.0f) - 0.0f);
+        //cross
+        uc.value.real = ((uc.value.real * 200.0f) - 100.0f);
+        uc.duration = 0;
+        kr_unit_control_set (wayrad->client, &uc);
+      }
+    }
+
     count++;
   }
+    
+  printf ("bye bye now!\n");
+    
 }
 
 void wayrad_destroy (wayrad_t *wayrad) {

@@ -30,7 +30,7 @@ static void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_rel_line_to (cr, w, 0);
 	cairo_rotate (cr, 60 * (M_PI/180.0));
 	cairo_rel_line_to (cr, w, 0);
-	hexrot += 1.5;
+	hexrot += 2.5;
 	cairo_fill (cr);
 	
 	cairo_restore(cr);
@@ -74,7 +74,7 @@ static void render_hex (cairo_t *cr, int x, int y, int w) {
 }
 
 
-void hexagon (int width, int height, void *buffer) {
+void hexagon (int width, int height, int x, int y, uint32_t time, void *buffer) {
 
 	cairo_surface_t *cst;
 	cairo_t *cr;
@@ -86,12 +86,26 @@ void hexagon (int width, int height, void *buffer) {
 												 width * 4);
 	
 	cr = cairo_create (cst);
-	cairo_save (cr);
-	cairo_set_source_rgba (cr, BGCOLOR_CLR);
-	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
-	cairo_paint (cr);
-	cairo_restore (cr);
-	render_hex (cr, width / 2, height / 2, 66);
+	//cairo_save (cr);
+	//cairo_set_source_rgba (cr, BGCOLOR_CLR);
+	//cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
+	//cairo_paint (cr);
+	//cairo_restore (cr);
+	
+	
+	uint32_t *p;
+	int i, end, offset;
+
+	p = buffer;
+	end = width * height;
+	offset = time >> 4;
+	for (i = 0; i < end; i++) {
+		p[i] = (i + offset) * 0x0080401;
+	}
+	
+	if ((x > 0) && (y > 0)) {
+	  render_hex (cr, x, y, 66);
+	}
 	cairo_surface_flush (cst);
 	cairo_destroy (cr);
 	cairo_surface_destroy (cst);
