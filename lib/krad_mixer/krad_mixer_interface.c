@@ -24,6 +24,9 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
     strncpy (portgroup_rep->xmms2_ipc_path,
              portgroup->krad_xmms->ipc_path,
              sizeof(portgroup_rep->xmms2_ipc_path));
+  } else {
+    portgroup_rep->has_xmms2 = 0;
+    portgroup_rep->xmms2_ipc_path[0] = '\0';
   }
   
   kr_eq_t *eq;
@@ -55,6 +58,8 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
     strncpy (portgroup_rep->crossfade_group,
              portgroup->crossfade_group->portgroup[1]->sysname,
              sizeof(portgroup_rep->crossfade_group));
+  } else {
+    portgroup_rep->crossfade_group[0] = '\0';
   }
 }
 
