@@ -197,30 +197,13 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
   uint64_t info_loc;
   kr_address_t address;
   kr_remote_t remote;
+	int i;
 	uint64_t numbers[10];
 	krad_tags_t *krad_tags;
-	
-	char tag_item_actual[256];	
-	char tag_name_actual[256];
-	char tag_value_actual[1024];
-	
-	tag_item_actual[0] = '\0';	
-	tag_name_actual[0] = '\0';
-	tag_value_actual[0] = '\0';
-	
-	char *tag_item = tag_item_actual;	
-	char *tag_name = tag_name_actual;
-	char *tag_value = tag_value_actual;
-	
-	int i;
 	
 	char string1[512];	
 	char string2[512];
 	char string3[512];	
-	
-	string1[0] = '\0';
-	string2[0] = '\0';
-	string3[0] = '\0';	
 	
 	krad_tags = NULL;
 	i = 0;
@@ -230,7 +213,15 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 	element = 0;
 	response = 0;
 	ret = 0;
+
+	string1[0] = '\0';
+	string2[0] = '\0';
+	string3[0] = '\0';	
 	
+	char *tag_item = string1;	
+	char *tag_name = string2;
+	char *tag_value = string3;
+
 	krad_ipc_server_read_command ( kr_ipc, &command, &ebml_data_size);
 
 	switch ( command ) {
@@ -457,9 +448,9 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			break;
 		case EBML_ID_KRAD_RADIO_CMD_SET_DIR:
 			krad_ebml_read_element ( kr_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-			krad_ebml_read_string (kr_ipc->current_client->krad_ebml, tag_value_actual, ebml_data_size);
-			if (strlen(tag_value_actual)) {
-				krad_radio_set_dir ( krad_radio, tag_value_actual );
+			krad_ebml_read_string (kr_ipc->current_client->krad_ebml, string1, ebml_data_size);
+			if (strlen(string1)) {
+				krad_radio_set_dir ( krad_radio, string1 );
 			}
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE:

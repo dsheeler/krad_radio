@@ -60,6 +60,7 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
              sizeof(portgroup_rep->crossfade_group));
   } else {
     portgroup_rep->crossfade_group[0] = '\0';
+    portgroup_rep->fade = 0.0f;
   }
 }
 
@@ -72,48 +73,42 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
 
   krad_mixer_portgroup_t *portgroup;
   krad_mixer_portgroup_t *portgroup2;
-  
   krad_mixer_portgroup_rep_t portgroup_rep;
-  
-  //kr_mixer_t *kr_mixer;
-  uint64_t info_loc;
   uint64_t response;
-
   krad_mixer_output_t output_type;
-
-  int p;
-  
-  int sd1;
-  int sd2;
-  
   kr_address_t address;
   
-  char portname[256];
-  char portgroupname[256];
-  char portgroupname2[256];  
-  char controlname[256];  
+  char portgroupname[64];
+  char portgroupname2[64];  
+  char controlname[16];  
+  char string[64];
   float floatval;
-
-  char string[512];
+  int numbers[16];
   int direction;
   int number;
-  int numbers[16];
+  int p;
+  int sd1;
+  int sd2;
       
   sd1 = 0;
   sd2 = 0;
   ebml_id = 0;
   number = 0;
   direction = 0;
-  
   payload_loc = 0;
-  
+
+  portgroupname[0] = '\0';
+  portgroupname2[0] = '\0';
+  controlname[0] = '\0';
+  string[0] = '\0';
+
   krad_ipc_server_read_command ( krad_ipc, &command, &ebml_data_size );
 
   switch ( command ) {
   
     case EBML_ID_KRAD_MIXER_CMD_SET_CONTROL:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
-      krad_ebml_read_string (krad_ipc->current_client->krad_ebml, portname, ebml_data_size);
+      krad_ebml_read_string (krad_ipc->current_client->krad_ebml, portgroupname, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, controlname, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
@@ -123,11 +118,11 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
         number = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
         if ((number == 0) && (krad_ipc_server_current_client_is_subscriber (krad_ipc))) {
           //printk ("will want Goint to skip a client!!\n");
-          krad_mixer_set_portgroup_control ( krad_mixer, portname, controlname, floatval, number, krad_ipc->current_client );
+          krad_mixer_set_portgroup_control ( krad_mixer, portgroupname, controlname, floatval, number, krad_ipc->current_client );
         } else {
-          krad_mixer_set_portgroup_control ( krad_mixer, portname, controlname, floatval, number, NULL );
+          krad_mixer_set_portgroup_control ( krad_mixer, portgroupname, controlname, floatval, number, NULL );
         }
-        //krad_mixer_broadcast_portgroup_control ( krad_mixer, portname, controlname, floatval );
+        //krad_mixer_broadcast_portgroup_control ( krad_mixer, portgroupname, controlname, floatval );
       }
       return 0;
 
@@ -461,7 +456,6 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
 
       krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
 
-      krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_MIXER, &info_loc);
       krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_MIXER_SAMPLE_RATE,
                        krad_mixer_get_sample_rate (krad_mixer));
       krad_ipc_server_respond_number ( krad_ipc, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT,
@@ -475,7 +469,6 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       } else {
         krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_MIXER_TIME_SOURCE, "Internal Chronometer");
       }
-      krad_ipc_server_response_finish ( krad_ipc, info_loc);
       
       krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
       krad_ipc_server_response_finish ( krad_ipc, response );

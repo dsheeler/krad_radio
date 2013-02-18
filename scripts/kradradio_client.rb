@@ -51,16 +51,24 @@ class KradStation
 		@comp_height = 0
 		Kernel.srand
     if (ARGV[0] == "restart")
+      #if (ARGV[1] == "smooth")
+        self.cmd("m/Music 0 40")
+        self.cmd("m/Music1 0 40")
+        self.cmd("m/Music2 0 40")
+        self.cmd("m/Video 0 40")
+        sleep 0.25
+      #end
       self.cmd("destroy")
+      sleep 0.0666
     end
     if launch == "Yes"
 		  self.launch_daemon
-      sleep 0.666
 		end
 	end
 
 	def launch_daemon
 		self.cmd("launch")
+    sleep 0.1
 	end
 
 	def sprite(filename, x=0, y=0, rate=2, z=1, scale=1, opacity=1.0, rotation=0.0)
@@ -208,7 +216,7 @@ class KradStation
 		thecmd = "krad_radio #{@name} #{action}"
 		puts "command: #{thecmd}"
 		ret = `#{thecmd}`.chomp
-		sleep 0.05
+		#sleep 0.05
 		return ret
 	end
 

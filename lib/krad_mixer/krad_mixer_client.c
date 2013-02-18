@@ -610,7 +610,6 @@ void kr_ebml_to_mixer_rep (unsigned char *ebml_frag, kr_mixer_t *mixer_rep) {
 
   item_pos = 0;
   
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   mixer_rep->sample_rate = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
@@ -671,7 +670,7 @@ int kr_mixer_response_get_string_from_mixer (unsigned char *ebml_frag, uint64_t 
   pos += sprintf (*string + pos, "Inputs: %u\n", kr_mixer.inputs);
   pos += sprintf (*string + pos, "Outputs: %u\n", kr_mixer.outputs);
   pos += sprintf (*string + pos, "Buses: %u\n", kr_mixer.buses);
-  pos += sprintf (*string + pos, "Time Source: %s\n", kr_mixer.time_source);
+  pos += sprintf (*string + pos, "Time Source: %s", kr_mixer.time_source);
   
   return pos; 
 }

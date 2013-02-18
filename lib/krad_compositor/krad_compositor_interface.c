@@ -55,7 +55,6 @@ void krad_compositor_videoport_to_ebml ( krad_ipc_server_t *krad_ipc, krad_compo
 int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_server_t *krad_ipc ) {
   
   uint32_t ebml_id;
-  
   uint32_t command;
   uint64_t ebml_data_size;
   kr_address_t address;
@@ -63,17 +62,14 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
   uint64_t response;
   uint64_t info_loc;
   uint64_t payload_loc;
-  
   uint64_t numbers[4];
   int nums[4];
-  char string[256];
-  
   int type;
-  
   int p;
   int s;
   int sd1;
   int sd2;
+  char string[256];
       
   type = 0;
   sd1 = 0;
