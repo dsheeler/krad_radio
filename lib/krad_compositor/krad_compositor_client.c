@@ -547,7 +547,7 @@ int kr_compositor_response_get_string_from_subunit (kr_response_t *kr_response, 
 
 int kr_compositor_response_to_string (kr_response_t *kr_response, char **string) {
 
-  switch ( kr_response->type ) {
+  switch ( kr_response->notice ) {
     case EBML_ID_KRAD_UNIT_INFO:
       *string = kr_response_alloc_string (kr_response->size * 4);
       return kr_compositor_response_get_string_from_compositor (kr_response->buffer, string);

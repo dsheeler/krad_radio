@@ -1,12 +1,9 @@
 #include "krad_mixer_interface.h"
 
-kr_portgroup_t *krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
-                                             kr_portgroup_t *portgroup_rep) {
+void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
+                                  kr_portgroup_t *portgroup_rep) {
+
   int i;
-  
-  if (portgroup_rep == NULL) {
-    portgroup_rep = kr_portgroup_rep_create ();
-  }
   
   strcpy (portgroup_rep->sysname, portgroup->sysname);
   portgroup_rep->channels = portgroup->channels;
@@ -59,8 +56,6 @@ kr_portgroup_t *krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
              portgroup->crossfade_group->portgroup[1]->sysname,
              sizeof(portgroup_rep->crossfade_group));
   }
-  
-  return portgroup_rep;
 }
 
 int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc ) {
@@ -73,7 +68,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
   krad_mixer_portgroup_t *portgroup;
   krad_mixer_portgroup_t *portgroup2;
   
-  krad_mixer_portgroup_rep_t *portgroup_rep;
+  krad_mixer_portgroup_rep_t portgroup_rep;
   
   //kr_mixer_t *kr_mixer;
   uint64_t info_loc;
@@ -211,16 +206,15 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
         portgroup = krad_mixer->portgroup[p];
         if ((portgroup != NULL) && (portgroup->active) && (portgroup->direction == INPUT)) {
-          portgroup_rep = krad_mixer_portgroup_to_rep (portgroup, NULL);
+          krad_mixer_portgroup_to_rep (portgroup, &portgroup_rep);
           krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
                                                                  &portgroup->address,
                                                                  EBML_ID_KRAD_SUBUNIT_INFO,
                                                                  &response);
           krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
-          krad_mixer_portgroup_rep_to_ebml (portgroup_rep, krad_ipc->current_client->krad_ebml2);
+          krad_mixer_portgroup_rep_to_ebml (&portgroup_rep, krad_ipc->current_client->krad_ebml2);
           krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
           krad_ipc_server_response_finish ( krad_ipc, response );
-          kr_portgroup_rep_destroy (portgroup_rep);
         }
       }
       return 1;
@@ -282,10 +276,9 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
 
         krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
         
-        portgroup_rep = krad_mixer_portgroup_to_rep(portgroup, NULL);
-        krad_mixer_portgroup_rep_to_ebml (portgroup_rep, krad_ipc->current_client->krad_ebml2);
-        kr_portgroup_rep_destroy (portgroup_rep);
-        
+        krad_mixer_portgroup_to_rep(portgroup, &portgroup_rep);
+        krad_mixer_portgroup_rep_to_ebml (&portgroup_rep, krad_ipc->current_client->krad_ebml2);
+      
         krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
         krad_ipc_server_response_finish ( krad_ipc, response );
       }

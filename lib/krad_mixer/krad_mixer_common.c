@@ -1,25 +1,5 @@
 #include "krad_mixer_common.h"
 
-kr_portgroup_t *kr_portgroup_rep_create () {
-  kr_portgroup_t *portgroup_rep;
-  portgroup_rep = calloc (1, sizeof (kr_portgroup_t));
-  return portgroup_rep;
-}
-
-void kr_portgroup_rep_destroy (kr_portgroup_t *portgroup_rep) {
-  free (portgroup_rep);
-}
-
-kr_mixer_t *kr_mixer_rep_create () {
-  kr_mixer_t *mixer_rep;
-  mixer_rep = calloc (1, sizeof (kr_mixer_t));
-  return mixer_rep;
-}
-
-void kr_mixer_rep_destroy (kr_mixer_t *mixer_rep) {
-  free (mixer_rep);
-}
-
 void krad_mixer_portgroup_rep_to_ebml (kr_portgroup_t *portgroup_rep, krad_ebml_t *krad_ebml) {
 
   uint64_t portgroup;

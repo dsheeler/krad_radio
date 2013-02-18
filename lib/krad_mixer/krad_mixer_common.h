@@ -116,9 +116,4 @@ char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_contro
 
 void krad_mixer_portgroup_rep_to_ebml (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, krad_ebml_t *krad_ebml);
 
-kr_portgroup_t *kr_portgroup_rep_create ();
-void kr_portgroup_rep_destroy (kr_portgroup_t *portgroup_rep);
-kr_mixer_t *kr_mixer_rep_create ();
-void kr_mixer_rep_destroy (kr_mixer_t *mixer_rep);
-
 #endif

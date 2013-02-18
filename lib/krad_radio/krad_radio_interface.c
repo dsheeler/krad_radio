@@ -41,7 +41,7 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
   unsigned char *buffer;
   krad_broadcast_msg_t *broadcast_msg;
   krad_subunit_ptr_t subunit;
-  kr_rep_ptr_t rep;
+  kr_rep_actual_t rep;
 
   size = 2048;
   buffer = malloc (size);
@@ -52,23 +52,18 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
 
   payload_loc = 0;
 
-  //krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
   krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);  
   
   krad_radio_address_to_ebml (krad_ebml, &message_loc, address);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CREATED);
   krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
   
-  
   if ((address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-  
     subunit.portgroup = subunit_in;
-     
-    rep.portgroup = krad_mixer_portgroup_to_rep (subunit.portgroup, NULL);
-    krad_mixer_portgroup_rep_to_ebml (rep.portgroup, krad_ebml);
-    kr_portgroup_rep_destroy (rep.portgroup);
+    krad_mixer_portgroup_to_rep (subunit.portgroup, &rep.portgroup);
+    krad_mixer_portgroup_rep_to_ebml (&rep.portgroup, krad_ebml);
   }
-  
+
   if ((address->path.unit == KR_STATION) && (address->path.subunit.station_subunit == KR_REMOTE)) {
     subunit.remote = subunit_in;
     krad_radio_remote_rep_to_ebml (subunit.remote, krad_ebml);
@@ -201,7 +196,7 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
   uint64_t payload_loc;
   uint64_t info_loc;
   kr_address_t address;
-  kr_remote_t *remote;
+  kr_remote_t remote;
 	uint64_t numbers[10];
 	krad_tags_t *krad_tags;
 	
@@ -363,13 +358,12 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			break;
 		case EBML_ID_KRAD_RADIO_CMD_REMOTE_ENABLE:
 			krad_ebml_read_element ( kr_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-			krad_ebml_read_string (kr_ipc->current_client->krad_ebml, string1, ebml_data_size);
+			krad_ebml_read_string (kr_ipc->current_client->krad_ebml, remote.interface, ebml_data_size);
 			krad_ebml_read_element ( kr_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-		  numbers[0] = krad_ebml_read_number ( kr_ipc->current_client->krad_ebml, ebml_data_size);
-			if (krad_ipc_server_enable_remote (kr_ipc, string1, numbers[0])) {
+		  remote.port = krad_ebml_read_number ( kr_ipc->current_client->krad_ebml, ebml_data_size);
+			if (krad_ipc_server_enable_remote (kr_ipc, remote.interface, remote.port)) {
 			  //FIXME this is wrong in the case of adapter based matches with multiple ips
 			  // perhaps switch to callback based create broadcast?
-        remote = kr_remote_rep_create_with (string1, numbers[0]);
 			  address.path.unit = KR_STATION;
 			  address.path.subunit.station_subunit = KR_REMOTE;
         for (i = 0; i < MAX_REMOTES; i++) {
@@ -377,8 +371,7 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
             address.id.number = i;
           }
         }
-        krad_radio_broadcast_subunit_created ( krad_radio->remote_broadcaster, &address, (void *)remote);
-        kr_remote_rep_destroy (remote);
+        krad_radio_broadcast_subunit_created ( krad_radio->remote_broadcaster, &address, (void *)&remote);
 			}
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_REMOTE_DISABLE:

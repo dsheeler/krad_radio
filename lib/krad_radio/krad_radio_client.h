@@ -62,8 +62,8 @@ typedef struct kr_client_St kr_client_t;
  */
 typedef struct kr_shm_St kr_shm_t;
 
-typedef struct kr_response_St kr_response_t;
-typedef struct kr_response_St kr_crate_t;
+typedef struct kr_crate_St kr_response_t;
+typedef struct kr_crate_St kr_crate_t;
 
 typedef struct kr_unit_path_St kr_unit_path_t;
 typedef struct kr_unit_control_St kr_unit_control_t;
@@ -183,24 +183,27 @@ typedef union {
   kr_radio_t *radio;
 } kr_rep_ptr_t;
 
-typedef struct kr_rep_St kr_rep_t;
 
-struct kr_rep_St {
-  kr_rep_ptr_t rep_ptr;
-  uint32_t type;
-};
+typedef union {
+  char actual;
+  kr_tag_t tag;
+  kr_remote_t remote;
+  kr_mixer_t mixer;
+  kr_mixer_portgroup_t portgroup;
+  kr_compositor_t compositor;
+  kr_radio_t radio;
+} kr_rep_actual_t;
 
-struct kr_response_St {
+struct kr_crate_St {
   kr_client_t *kr_client;
   kr_address_t *addr;
   kr_address_t address;
-  uint32_t type;
+  kr_rep_ptr_t inside;
+  kr_rep_actual_t rep;
+  uint32_t contains;
   uint32_t notice;
   unsigned char *buffer;
   uint32_t size;
-  kr_rep_t *compartment;
-  kr_rep_ptr_t inside;
-  uint32_t contains;
   int integer;
   float real;
   int has_int;
@@ -277,12 +280,11 @@ int kr_response_to_float (kr_response_t *response, float *number);
 char *kr_response_alloc_string (int length);
 void kr_response_free_string (char **string);
 int kr_response_get_string (unsigned char *ebml_frag, uint64_t ebml_data_size, char **string);
-int kr_rep_free (kr_rep_t **);
-int kr_response_to_rep (kr_response_t *response, kr_rep_t **kr_rep_in);
+int kr_response_to_rep (kr_crate_t *crate);
 void kr_response_address (kr_response_t *response, kr_address_t **address);
 void kr_address_debug_print (kr_address_t *addr);
 int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address);
-inline int krad_message_type_has_payload (uint32_t type);
+inline int krad_message_notice_has_payload (uint32_t type);
 inline int krad_read_message_type_from_ebml (krad_ebml_t *ebml, uint32_t *message_type);
 uint32_t kr_response_size (kr_response_t *kr_response);
 void kr_client_response_wait_print (kr_client_t *client);
