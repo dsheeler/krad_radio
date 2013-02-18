@@ -347,9 +347,10 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
         for (i = 0; i < MAX_REMOTES; i++) {
           if (kr_ipc->tcp_port[i] == remote.port) {
             address.id.number = i;
+            break;
           }
         }
-        krad_radio_broadcast_subunit_created ( krad_radio->remote_broadcaster, &address, (void *)&remote);
+        krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster, &address, (void *)&remote);
 			}
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_REMOTE_DISABLE:
@@ -365,7 +366,7 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
         address.path.unit = KR_STATION;
         address.path.subunit.mixer_subunit = KR_REMOTE;
         address.id.number = i;
-        krad_radio_broadcast_subunit_destroyed (krad_radio->remote_broadcaster, &address);
+        krad_radio_broadcast_subunit_destroyed (kr_ipc->ipc_broadcaster, &address);
 			}
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_OSC_ENABLE:
