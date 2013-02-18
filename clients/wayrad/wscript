@@ -65,18 +65,15 @@ def configure(conf):
   global shlibs2  
   global syslibs
 
-  if conf.env['KRAD_USE_WAYLAND'] == False:
-    programs = [""]
-    shlibs = [""]
+  if conf.env['KRAD_USE_WAYLAND']:
+    for l in syslibs:
+      conf.check(lib = l, cflags='-Wall', uselib_store = l)
 
-  for l in syslibs:
-    conf.check(lib = l, cflags='-Wall', uselib_store = l)
+    for l in shlibs:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
-  for l in shlibs:
-    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
-
-  for l in stlibs:
-    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
+    for l in stlibs:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
 
 def build(bld):
 
@@ -86,12 +83,12 @@ def build(bld):
   global syslibs
   global syslibs2
 
-
-  for p in programs:
-    bld(features = 'c cprogram', 
-    source = [p] + depsources, 
-    includes = includedirs, 
-    target = p.replace(".c", ""),
-    use = ["kradradio_client"],
-    uselib = shlibs + stlibs + syslibs)
+  if bld.env['KRAD_USE_WAYLAND']:
+    for p in programs:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources, 
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs + stlibs + syslibs)
 
