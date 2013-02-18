@@ -194,7 +194,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 	uint64_t element;
 	uint64_t response;
   uint64_t payload_loc;
-  uint64_t info_loc;
   kr_address_t address;
   kr_remote_t remote;
 	int i;
@@ -254,7 +253,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
         i = 0;
         address.path.unit = KR_STATION;
 			  address.path.subunit.station_subunit = KR_TAGS;
-
         krad_ipc_server_response_start_with_address_and_type ( kr_ipc,
                                                                &address,
                                                                EBML_ID_KRAD_SUBUNIT_INFO,
@@ -264,10 +262,8 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 				while (krad_tags_get_next_tag ( krad_tags, &i, &tag_name, &tag_value)) {
 					krad_ipc_server_response_add_tag ( kr_ipc, tag_item, tag_name, tag_value);
 				}
-
         krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
         krad_ipc_server_response_finish ( kr_ipc, response );
-
 			} else {
 				printke ("Could not find %s", tag_item);
 			}
@@ -304,29 +300,22 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			}
 			
 			if (strlen(tag_value)) {
-
 			  address.path.unit = KR_STATION;
 			  address.path.subunit.station_subunit = KR_TAGS;
-
         krad_ipc_server_response_start_with_address_and_type ( kr_ipc,
                                                                &address,
                                                                EBML_ID_KRAD_SUBUNIT_INFO,
                                                                &response);
         krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
-
 				krad_ipc_server_response_add_tag ( kr_ipc, tag_item, tag_name, tag_value);
-
         krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
         krad_ipc_server_response_finish ( kr_ipc, response );
-   
 			}
 			ret = 1;
 			break;
 		case EBML_ID_KRAD_RADIO_CMD_GET_REMOTE_STATUS:
-		
 			address.path.unit = KR_STATION;
 			address.path.subunit.station_subunit = KR_REMOTE;
-
       for (i = 0; i < MAX_REMOTES; i++) {
         if (kr_ipc->tcp_port[i]) {
           address.id.number = i;
@@ -335,12 +324,10 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
                                                                  EBML_ID_KRAD_SUBUNIT_INFO,
                                                                  &response);
           krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
-
 	        krad_ebml_start_element (kr_ipc->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &element);
 			    krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, kr_ipc->tcp_interface[i]);
 			    krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_PORT, kr_ipc->tcp_port[i]);
 	        krad_ebml_finish_element (kr_ipc->current_client->krad_ebml2, element);
-
           krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
           krad_ipc_server_response_finish ( kr_ipc, response );
         }
@@ -358,7 +345,7 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			  address.path.unit = KR_STATION;
 			  address.path.subunit.station_subunit = KR_REMOTE;
         for (i = 0; i < MAX_REMOTES; i++) {
-          if (kr_ipc->tcp_port[i] == numbers[0]) {
+          if (kr_ipc->tcp_port[i] == remote.port) {
             address.id.number = i;
           }
         }
@@ -379,7 +366,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
         address.path.subunit.mixer_subunit = KR_REMOTE;
         address.id.number = i;
         krad_radio_broadcast_subunit_destroyed (krad_radio->remote_broadcaster, &address);
-        
 			}
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_OSC_ENABLE:
@@ -419,31 +405,20 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			krad_radio->remote.krad_websocket = NULL;
 			return 0;
 		case EBML_ID_KRAD_RADIO_CMD_GET_SYSTEM_INFO:
-		
 			address.path.unit = KR_STATION;
 			address.path.subunit.station_subunit = KR_STATION_UNIT;
-			
       krad_ipc_server_response_start_with_address_and_type ( kr_ipc,
                                                              &address,
                                                              EBML_ID_KRAD_UNIT_INFO,
                                                              &response);
 
       krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
-
-      krad_ipc_server_response_start ( kr_ipc, EBML_ID_KRAD_RADIO_SYSTEM_INFO, &info_loc);
-
 			krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_SYSTEM_INFO, krad_system_info());
 			krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_LOGNAME, krad_radio->log.filename);
 			krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_UPTIME, krad_system_daemon_uptime());
 			krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, krad_system_get_cpu_usage());
-
-
-      krad_ipc_server_response_finish ( kr_ipc, info_loc);
-      
       krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
       krad_ipc_server_response_finish ( kr_ipc, response );
-			
-			
 			ret = 1;
 			break;
 		case EBML_ID_KRAD_RADIO_CMD_SET_DIR:

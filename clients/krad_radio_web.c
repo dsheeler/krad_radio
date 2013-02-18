@@ -83,7 +83,9 @@ int main (int argc, char *argv[]) {
     printf ("HTTP Listening on port %d\n", port[0]);
     printf ("Websockets Listening on port %d\n", port[1]);
     printf ("Press enter key to exit...\n");
-    read (STDIN_FILENO, &buf, 1);
+    if (read (STDIN_FILENO, &buf, 1) != 1) {
+      fprintf (stderr, "Hrm weird..\n");
+    }
   }
   
   if (http != NULL) {

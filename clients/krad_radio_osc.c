@@ -60,7 +60,9 @@ int main (int argc, char *argv[]) {
   if (osc && krad_osc_listen (osc, port)) {
     printf ("OSC Listening on port %d\n", port);
     printf ("Press enter key to exit...\n");
-    read (STDIN_FILENO, &buf, 1);
+    if (read (STDIN_FILENO, &buf, 1) != 1) {
+      fprintf (stderr, "Hrm weird..\n");
+    }
   }
 
   printf ("Shutting down OSC..\n");

@@ -629,8 +629,6 @@ static int kr_ebml_to_radio_rep (unsigned char *ebml_frag, kr_radio_t *radio_rep
   int item_pos;
 
   item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, radio_rep->sysinfo);
