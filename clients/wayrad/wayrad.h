@@ -1,6 +1,8 @@
 #include "kr_client.h"
 #include "krad_wayland.h"
 
+#include "hex.h"
+
 typedef struct wayrad_St wayrad_t;
 
 struct wayrad_St {

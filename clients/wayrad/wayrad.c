@@ -5,6 +5,12 @@ int wayrad_frame (void *pointer, uint32_t time) {
 	int updated;
 
 	updated = 0;
+	
+	wayrad_t *wayrad = (wayrad_t *)pointer;
+	
+	hexagon (wayrad->width, wayrad->height, wayrad->buffer);
+
+  updated = 1;
 
 	printf ("frame callback time is %u\r", time);
 	fflush (stdout);
@@ -66,13 +72,11 @@ wayrad_t *wayrad_create (char *sysname) {
 
 	wayrad->krad_wayland = krad_wayland_create ();
 
-	wayrad->krad_wayland->render_test_pattern = 1;
+	//wayrad->krad_wayland->render_test_pattern = 1;
 
 	krad_wayland_prepare_window (wayrad->krad_wayland, wayrad->width, wayrad->height, &wayrad->buffer);
 
-  //krad_wayland_set_frame_callback (krad_compositor_wayland_display->krad_wayland,
-  //                 krad_compositor_wayland_display_render_callback,
-  //                 krad_compositor_wayland_display);
+  krad_wayland_set_frame_callback (wayrad->krad_wayland, wayrad_frame, wayrad);
 
   krad_wayland_prepare_window (wayrad->krad_wayland,
                  wayrad->width,

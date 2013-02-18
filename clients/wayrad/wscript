@@ -52,7 +52,7 @@ includedirs = """
 """.split()
 
 shlibs = ["cairo", "wayland-client"]
-depsources = ["../../lib/krad_wayland/krad_wayland.c"]
+depsources = ["hex.c", "../../lib/krad_wayland/krad_wayland.c"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
