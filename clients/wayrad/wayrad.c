@@ -76,8 +76,8 @@ wayrad_t *wayrad_create (char *sysname) {
   wayrad = calloc (1, sizeof (wayrad_t));
   
   strncpy (wayrad->sysname, sysname, sizeof(wayrad->sysname));
-	wayrad->width = 960;
-	wayrad->height = 540;
+	wayrad->width = 1280;
+	wayrad->height = 720;
 
 	wayrad->client = kr_client_create ("wayrad");
 
