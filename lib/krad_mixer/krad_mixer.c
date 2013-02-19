@@ -361,7 +361,6 @@ static void krad_mixer_update_portgroups (krad_mixer_t *krad_mixer) {
 static void krad_mixer_local_audio_samples_callback (int nframes,
                                                      krad_mixer_local_portgroup_t *krad_mixer_local_portgroup,
                                                      float **samples) {
-
   int ret;
   int wrote;
   char buf[1];
@@ -373,16 +372,13 @@ static void krad_mixer_local_audio_samples_callback (int nframes,
   if (krad_mixer_local_portgroup->direction == OUTPUT) {
     memcpy (krad_mixer_local_portgroup->local_buffer, samples[0], 2 * 4 * 1600);
   }
-
   wrote = write (krad_mixer_local_portgroup->msg_sd, buf, 1);
-
   if (wrote == 1) {
     ret = read (krad_mixer_local_portgroup->msg_sd, buf, 1);
     if (ret == 1) {
 
     }
   }
-
   return;
 }
 
@@ -626,7 +622,6 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
           portgroup_mix_samples ( mixbus, portgroup, nframes );
         }
       }
-      //krad_mixer_portgroup_compute_peaks (mixbus, nframes);
     }
   }
 
@@ -644,14 +639,24 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
   
   if (krad_mixer->master_mix != NULL) {
     krad_mixer_portgroup_compute_meters (krad_mixer->master_mix, nframes);
-    krad_mixer->frames_since_peak_read += nframes;
-    if (krad_mixer->frames_since_peak_read >= krad_mixer->frames_per_peak_broadcast) {
-      krad_mixer->frames_since_peak_read = 0;
-      krad_radio_broadcast_subunit_control (krad_mixer->broadcaster, &krad_mixer->master_mix->address, KR_PEAK,
-                                            krad_mixer_portgroup_read_peak_scaled (krad_mixer->master_mix), NULL);    
-    }    
   }
+  
+  krad_mixer->frames_since_peak_read += nframes;
 
+  if (krad_mixer->frames_since_peak_read >= krad_mixer->frames_per_peak_broadcast) {
+    krad_mixer->frames_since_peak_read = 0;
+    for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+      portgroup = krad_mixer->portgroup[p];
+      if ((portgroup != NULL) && (portgroup->active == 2) && (portgroup->direction == INPUT)) {
+        krad_radio_broadcast_subunit_control (krad_mixer->broadcaster, &portgroup->address, KR_PEAK,
+                                              krad_mixer_portgroup_read_peak_scaled (portgroup), NULL);    
+      }
+    }
+    if (krad_mixer->master_mix != NULL) {
+       krad_radio_broadcast_subunit_control (krad_mixer->broadcaster, &krad_mixer->master_mix->address, KR_PEAK,
+                                              krad_mixer_portgroup_read_peak_scaled (krad_mixer->master_mix), NULL);    
+    }
+  }
   return 0;
 }
 
