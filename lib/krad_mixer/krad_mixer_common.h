@@ -21,6 +21,7 @@ typedef struct krad_mixer_portgroup_rep_St krad_mixer_portgroup_rep_t;
 typedef enum {
   KR_VOLUME = 1,
   KR_CROSSFADE,
+  KR_PEAK,
   KR_CROSSFADE_GROUP,
   KR_XMMS2_IPC_PATH,
 } kr_mixer_portgroup_control_t;

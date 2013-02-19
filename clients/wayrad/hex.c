@@ -1,6 +1,6 @@
 #include "hex.h"
 
-static void krad_vector_render_meter (cairo_t *cr, int x, int y, int size, float pos, float opacity) {
+void render_meter (cairo_t *cr, int x, int y, int size, float pos, float opacity) {
 
   pos = pos * 1.8f - 90.0f;
 
@@ -116,10 +116,10 @@ void hexagon (int width, int height, int x, int y, uint32_t time, void *buffer) 
 	}
 	cairo_restore (cr);
   cairo_save (cr);
-  krad_vector_render_meter (cr, 168, height - 40, 232, x / (float)width * 100.0f, 1);	
+  render_meter (cr, 168, height - 40, 232, x / (float)width * 100.0f, 1);	
 	cairo_restore (cr);
   cairo_save (cr);
-  krad_vector_render_meter (cr, width - 268, height - 40, 232, 100.0f - (x / (float)width * 100.0f), 1);	
+  render_meter (cr, width - 268, height - 40, 232, 100.0f - (x / (float)width * 100.0f), 1);	
 	cairo_surface_flush (cst);
 	cairo_destroy (cr);
 	cairo_surface_destroy (cst);

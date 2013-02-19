@@ -102,16 +102,25 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
   float *value_float;
   int *value_int;
 
-  //krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
   krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);
   
   address.path.unit = address_in->path.unit;
-  address.path.subunit.mixer_subunit = address_in->path.subunit.mixer_subunit;
+  if (address.path.unit == KR_MIXER) {
+    address.path.subunit.mixer_subunit = address_in->path.subunit.mixer_subunit;
+    strncpy (address.id.name, address_in->id.name, sizeof (address.id.name));
+  } else {
+    if (address.path.unit == KR_COMPOSITOR) {
+      address.path.subunit.compositor_subunit = address_in->path.subunit.compositor_subunit;
+    } else {
+      if (address.path.unit == KR_TRANSPONDER) {
+        address.path.subunit.transponder_subunit = address_in->path.subunit.transponder_subunit;
+      }
+    }
+    address.id.number = address_in->id.number;
+  }
   
-  strncpy (address.id.name, address_in->id.name, sizeof (address.id.name));
   address.sub_id = address_in->sub_id;
   address.sub_id2 = address_in->sub_id2;
-  
   address.control.portgroup_control = control;
 
   krad_radio_address_to_ebml (krad_ebml, &message_loc, &address);

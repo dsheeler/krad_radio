@@ -1,6 +1,7 @@
 #include "wayrad.h"
 
 static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer);
+static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer);
 
 int wayrad_frame (void *pointer, uint32_t time) {
 
@@ -16,16 +17,58 @@ int wayrad_frame (void *pointer, uint32_t time) {
 	//         time, wayrad->buffer);
 
 
-  if (wayrad->cratezone.crates != wayrad->cratezone.crates_last) {
-    render_cratezone (wayrad, time, wayrad->buffer);
-    wayrad->cratezone.crates_last = wayrad->cratezone.crates;
-    updated = 1;
-  }
+  //if (wayrad->cratezone.crates != wayrad->cratezone.crates_last) {
+  //  render_cratezone (wayrad, time, wayrad->buffer);
+  //  wayrad->cratezone.crates_last = wayrad->cratezone.crates;
+  //  updated = 1;
+  //}
 
+  render_peak_meter (wayrad, time, wayrad->buffer);
+  updated = 1;
 	//printf ("frame callback time is %u\r", time);
 	//fflush (stdout);
 
 	return updated;
+}
+
+static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer) {
+
+	cairo_surface_t *cst;
+	cairo_t *cr;
+	char text[256];
+  float fall_rate;
+  
+	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
+												 CAIRO_FORMAT_ARGB32,
+												 wayrad->width,
+												 wayrad->height,
+												 wayrad->width * 4);
+	
+	cr = cairo_create (cst);
+
+  cairo_save (cr);
+	cairo_set_source_rgba (cr, BGCOLOR_CLR);
+	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
+	cairo_paint (cr);
+	cairo_restore (cr);
+
+  fall_rate = 0.4f;
+
+  if (wayrad->current_level < wayrad->master_peak) {
+    wayrad->current_level = wayrad->master_peak;
+  } else {
+    wayrad->current_level -= fall_rate;
+  }
+
+  render_meter (cr, 320, 180, 200, wayrad->current_level, 1.0f);
+
+  //printf ("frame callback time is %f\r", wayrad->master_peak);
+  //fflush (stdout);
+
+	cairo_surface_flush (cst);
+	cairo_destroy (cr);
+	cairo_surface_destroy (cst);
+
 }
 
 static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer) {
@@ -55,7 +98,7 @@ static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer) {
   cairo_set_font_size (cr, 100);
   cairo_set_source_rgba (cr, GREY2, 0.8);
   
-  cairo_move_to (cr, 128, 320);
+  cairo_move_to (cr, 128, 120);
   cairo_show_text (cr, text);
   cairo_stroke (cr);
 
@@ -72,12 +115,19 @@ void get_delivery (wayrad_t *wayrad) {
   kr_delivery_get (wayrad->client, &crate);
 
   if (crate != NULL) {
-    //if (kr_crate_loaded (crate)) {
-      //if ((crate->addr->path.unit == KR_MIXER) && 
-      //    (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-        wayrad->cratezone.crates++;
-      //}
-    //}
+    if ((crate->addr->path.unit == KR_MIXER) && 
+        (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP) && 
+        (crate->addr->control.portgroup_control == KR_PEAK)) {
+      if (kr_uncrate_float (crate, &wayrad->master_peak)) {
+
+      }
+    }
+    
+    if (kr_crate_loaded (crate)) {
+    
+    }
+
+    wayrad->cratezone.crates++;
     kr_crate_recycle (&crate);
   }
 }
@@ -94,7 +144,7 @@ void *deliveries_thread (void *arg) {
     
   ret = 0;
   b = 0;
-  max = 1000;
+  max = 50000000;
   timeout_ms = 3000;
   
 

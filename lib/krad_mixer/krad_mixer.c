@@ -17,6 +17,9 @@ static void portgroup_update_samples (krad_mixer_portgroup_t *portgroup, uint32_
 static void portgroup_get_samples (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
 static int portgroup_handle_delay (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
 static void portgroup_clear_samples (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
+static float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup);
+static float krad_mixer_portgroup_read_peak_scaled (krad_mixer_portgroup_t *portgroup);
+//static float krad_mixer_portgroup_read_channel_peak (krad_mixer_portgroup_t *portgroup, int channel);
 static void krad_mixer_portgroup_compute_meters (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
 static void krad_mixer_portgroup_compute_peaks (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
 static void krad_mixer_portgroup_compute_channel_peak (krad_mixer_portgroup_t *portgroup, int channel, uint32_t nframes);
@@ -118,6 +121,63 @@ static void portgroup_apply_volume (krad_mixer_portgroup_t *portgroup, int nfram
         portgroup->last_sign[c] = sign;
       }
     }
+  }
+}
+/*
+float krad_mixer_portgroup_read_channel_peak (krad_mixer_portgroup_t *portgroup, int channel) {
+
+  float peak;
+  
+  peak = portgroup->peak[channel];
+  portgroup->peak[channel] = 0.0f;
+
+  return peak;
+}
+*/
+
+static float krad_mixer_portgroup_read_peak_scaled (krad_mixer_portgroup_t *portgroup) {
+
+  //  return krad_mixer_portgroup_read_peak (portgroup) * 100.0f;
+
+  float db;
+  float def;
+
+  db = 20.0f * log10f (krad_mixer_portgroup_read_peak (portgroup) * 1.0f);
+
+  if (db < -70.0f) {
+      def = 0.0f;
+    } else if (db < -60.0f) {
+      def = (db + 70.0f) * 0.25f;
+    } else if (db < -50.0f) {
+      def = (db + 60.0f) * 0.5f + 2.5f;
+    } else if (db < -40.0f) {
+      def = (db + 50.0f) * 0.75f + 7.5;
+    } else if (db < -30.0f) {
+      def = (db + 40.0f) * 1.5f + 15.0f;
+    } else if (db < -20.0f) {
+      def = (db + 30.0f) * 2.0f + 30.0f;
+    } else if (db < 0.0f) {
+      def = (db + 20.0f) * 2.5f + 50.0f;
+    } else {
+      def = 100.0f;
+  }
+
+  return def;
+}
+
+static float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup) {
+
+  //FIXME N channels
+
+  float tmp = portgroup->peak[0];
+  portgroup->peak[0] = 0.0f;
+
+  float tmp2 = portgroup->peak[1];
+  portgroup->peak[1] = 0.0f;
+  if (tmp > tmp2) {
+    return tmp;
+  } else {
+    return tmp2;
   }
 }
 
@@ -584,6 +644,12 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
   
   if (krad_mixer->master_mix != NULL) {
     krad_mixer_portgroup_compute_meters (krad_mixer->master_mix, nframes);
+    krad_mixer->frames_since_peak_read += nframes;
+    if (krad_mixer->frames_since_peak_read >= krad_mixer->frames_per_peak_broadcast) {
+      krad_mixer->frames_since_peak_read = 0;
+      krad_radio_broadcast_subunit_control (krad_mixer->broadcaster, &krad_mixer->master_mix->address, KR_PEAK,
+                                            krad_mixer_portgroup_read_peak_scaled (krad_mixer->master_mix), NULL);    
+    }    
   }
 
   return 0;
@@ -998,32 +1064,6 @@ int krad_mixer_set_portgroup_control (krad_mixer_t *krad_mixer, char *sysname, c
   return 0;
 }
 
-float krad_mixer_portgroup_read_channel_peak (krad_mixer_portgroup_t *portgroup, int channel) {
-
-  float peak;
-  
-  peak = portgroup->peak[channel];
-  portgroup->peak[channel] = 0.0f;
-
-  return peak;
-}
-
-float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup) {
-
-  //FIXME N channels
-
-  float tmp = portgroup->peak[0];
-  portgroup->peak[0] = 0.0f;
-
-  float tmp2 = portgroup->peak[1];
-  portgroup->peak[1] = 0.0f;
-  if (tmp > tmp2) {
-    return tmp;
-  } else {
-    return tmp2;
-  }
-}
-
 void krad_mixer_portgroup_map_channel (krad_mixer_portgroup_t *portgroup, int in_channel, int out_channel) {
   portgroup->map[in_channel] = out_channel;
   portgroup->mapped_samples[in_channel] = &portgroup->samples[out_channel];
@@ -1269,6 +1309,7 @@ krad_mixer_t *krad_mixer_create (char *name) {
   krad_mixer->sample_rate = KRAD_MIXER_DEFAULT_SAMPLE_RATE;
   krad_mixer->rms_window_size = (krad_mixer->sample_rate / 1000) * KRAD_MIXER_RMS_WINDOW_SIZE_MS;
   krad_mixer->ticker_period = KRAD_MIXER_DEFAULT_TICKER_PERIOD;
+  krad_mixer->frames_per_peak_broadcast = 1024;
   
   krad_mixer->crossfade_group = calloc (KRAD_MIXER_MAX_PORTGROUPS / 2, sizeof (krad_mixer_crossfade_group_t));
 

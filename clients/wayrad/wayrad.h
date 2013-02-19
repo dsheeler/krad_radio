@@ -28,6 +28,10 @@ struct wayrad_St {
   cratezone_t cratezone;
   pthread_t deliveries_thread;
   int done;
+  
+  float current_level;
+  float master_peak;
+  
 };
 
 void wayrad_run (wayrad_t *wayrad);

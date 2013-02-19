@@ -539,7 +539,8 @@ int kr_response_to_float (kr_response_t *response, float *number) {
     case KR_MIXER:
       if (response->address.path.subunit.mixer_subunit == KR_PORTGROUP) {
         if ((response->address.control.portgroup_control == KR_VOLUME) ||
-            (response->address.control.portgroup_control == KR_CROSSFADE)) {
+            (response->address.control.portgroup_control == KR_CROSSFADE) ||
+            (response->address.control.portgroup_control == KR_PEAK)) {
            pos += krad_ebml_read_element_from_frag (response->buffer, &ebml_id, &ebml_data_size);  
           *number = krad_ebml_read_float_from_frag_add (response->buffer + pos, ebml_data_size, &pos);
           return 1;
@@ -1337,6 +1338,9 @@ void kr_address_debug_print (kr_address_t *addr) {
           }
           if (control->portgroup_control == KR_CROSSFADE) {
             printf ("Crossfade");
+          }
+          if (control->portgroup_control == KR_PEAK) {
+            printf ("Peak");
           }
           break;
         case KR_EFFECT:

@@ -96,6 +96,9 @@ struct krad_mixer_St {
   krad_mixer_portgroup_t *portgroup[KRAD_MIXER_MAX_PORTGROUPS];
   krad_mixer_crossfade_group_t *crossfade_group;
 
+  int frames_since_peak_read;
+  int frames_per_peak_broadcast;
+
   struct timespec start_time;
 
   krad_ipc_broadcaster_t *broadcaster;
@@ -133,9 +136,6 @@ void krad_mixer_destroy (krad_mixer_t *krad_mixer);
 void krad_mixer_set_ipc (krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc);
 
 int krad_mixer_set_portgroup_control (krad_mixer_t *krad_mixer, char *sysname, char *control, float value, int duration, void *ptr);
-
-float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup);
-float krad_mixer_portgroup_read_channel_peak (krad_mixer_portgroup_t *portgroup, int channel);
 
 void krad_mixer_portgroup_mixmap_channel (krad_mixer_portgroup_t *portgroup, int in_channel, int out_channel);
 void krad_mixer_portgroup_map_channel (krad_mixer_portgroup_t *portgroup, int in_channel, int out_channel);

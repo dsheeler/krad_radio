@@ -19,4 +19,4 @@
 #define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255   * 1.0, 0.255 / 0.255   * 1.0
 
 void hexagon (int width, int height, int x, int y, uint32_t time, void *buffer);
-
+void render_meter (cairo_t *cr, int x, int y, int size, float pos, float opacity);

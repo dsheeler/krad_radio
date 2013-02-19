@@ -200,34 +200,6 @@ void kr_audioport_destroy (kr_audioport_t *kr_audioport) {
   }
 }
 
-int kr_mixer_read_control ( kr_client_t *client, char **portgroup_name, char **control_name, float *value ) {
-
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  if (ebml_id != EBML_ID_KRAD_MIXER_PORTGROUP_NAME) {
-    //printf("hrm wtf1\n");
-  }
-  krad_ebml_read_string (client->krad_ebml, *portgroup_name, ebml_data_size);
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  if (ebml_id != EBML_ID_KRAD_MIXER_CONTROL_NAME) {
-    //printf("hrm wtf2\n");
-  }
-  krad_ebml_read_string (client->krad_ebml, *control_name, ebml_data_size);
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  if (ebml_id != EBML_ID_KRAD_MIXER_CONTROL_VALUE) {
-    //printf("hrm wtf3\n");
-  }
-  
-  *value = krad_ebml_read_float (client->krad_ebml, ebml_data_size);
-
-  //printf("krad_ipc_client_read_mixer_control %s %s %f\n", *portgroup_name, *control_name, *value );
-    
-  return 0;
-}
-
-
 void kr_mixer_portgroup_xmms2_cmd (kr_client_t *client, char *portgroupname, char *xmms2_cmd) {
 
   uint64_t mixer_command;
@@ -641,7 +613,8 @@ int kr_mixer_response_get_string_from_subunit_control (kr_address_t *address, un
   ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);
 
   if (address->path.subunit.mixer_subunit == KR_PORTGROUP) {
-    if ((address->control.portgroup_control == KR_VOLUME) || (address->control.portgroup_control == KR_CROSSFADE)) {
+    if ((address->control.portgroup_control == KR_VOLUME) || (address->control.portgroup_control == KR_CROSSFADE) ||
+         (address->control.portgroup_control == KR_PEAK)) {
       value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
       pos += sprintf (*string + pos, "%5.2f", value);
     }
