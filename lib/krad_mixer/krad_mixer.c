@@ -19,6 +19,7 @@ static int portgroup_handle_delay (krad_mixer_portgroup_t *portgroup, uint32_t n
 static void portgroup_clear_samples (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
 static float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup);
 static float krad_mixer_portgroup_read_peak_scaled (krad_mixer_portgroup_t *portgroup);
+static void krad_mixer_portgroup_update_meter_readings (krad_mixer_portgroup_t *portgroup);
 //static float krad_mixer_portgroup_read_channel_peak (krad_mixer_portgroup_t *portgroup, int channel);
 static void krad_mixer_portgroup_compute_meters (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
 static void krad_mixer_portgroup_compute_peaks (krad_mixer_portgroup_t *portgroup, uint32_t nframes);
@@ -169,11 +170,11 @@ static float krad_mixer_portgroup_read_peak (krad_mixer_portgroup_t *portgroup) 
 
   //FIXME N channels
 
-  float tmp = portgroup->peak[0];
-  portgroup->peak[0] = 0.0f;
+  float tmp = portgroup->running_peak[0];
+  portgroup->running_peak[0] = 0.0f;
 
-  float tmp2 = portgroup->peak[1];
-  portgroup->peak[1] = 0.0f;
+  float tmp2 = portgroup->running_peak[1];
+  portgroup->running_peak[1] = 0.0f;
   if (tmp > tmp2) {
     return tmp;
   } else {
@@ -188,8 +189,8 @@ static void krad_mixer_portgroup_compute_channel_peak (krad_mixer_portgroup_t *p
 
   for(s = 0; s < nframes; s++) {
     sample = fabs(portgroup->samples[channel][s]);
-    if (sample > portgroup->peak[channel]) {
-      portgroup->peak[channel] = sample;
+    if (sample > portgroup->running_peak[channel]) {
+      portgroup->running_peak[channel] = sample;
     }
   }
 }
@@ -547,6 +548,17 @@ static void portgroup_set_channel_volume (krad_mixer_portgroup_t *portgroup, int
   }
 }
 
+static void krad_mixer_portgroup_update_meter_readings (krad_mixer_portgroup_t *portgroup) {
+  portgroup->peak[0] = krad_mixer_portgroup_read_peak_scaled (portgroup);
+  if (portgroup->peak[0] != portgroup->last_peak[0]) {
+    portgroup->peak[1] = portgroup->peak[0];
+    portgroup->last_peak[0] = portgroup->peak[0];
+    portgroup->last_peak[1] = portgroup->peak[0];
+    krad_radio_broadcast_subunit_control (portgroup->krad_mixer->broadcaster, &portgroup->address, KR_PEAK,
+                                          portgroup->peak[0], NULL);
+  }
+}
+
 static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
   
   int p, m;
@@ -648,13 +660,11 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
     for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
       portgroup = krad_mixer->portgroup[p];
       if ((portgroup != NULL) && (portgroup->active == 2) && (portgroup->direction == INPUT)) {
-        krad_radio_broadcast_subunit_control (krad_mixer->broadcaster, &portgroup->address, KR_PEAK,
-                                              krad_mixer_portgroup_read_peak_scaled (portgroup), NULL);    
+        krad_mixer_portgroup_update_meter_readings (portgroup);
       }
     }
     if (krad_mixer->master_mix != NULL) {
-       krad_radio_broadcast_subunit_control (krad_mixer->broadcaster, &krad_mixer->master_mix->address, KR_PEAK,
-                                              krad_mixer_portgroup_read_peak_scaled (krad_mixer->master_mix), NULL);    
+      krad_mixer_portgroup_update_meter_readings (krad_mixer->master_mix);
     }
   }
   return 0;
@@ -907,10 +917,6 @@ krad_mixer_portgroup_t *krad_mixer_portgroup_create (krad_mixer_t *krad_mixer, c
   }
 
   if (portgroup->direction == INPUT) {
-    //kr_effects_effect_add (portgroup->effects, kr_effects_string_to_effect ("eq"));
-    //kr_effects_effect_add (portgroup->effects, kr_effects_string_to_effect ("lowpass"));
-    //kr_effects_effect_add (portgroup->effects, kr_effects_string_to_effect ("highpass"));
-    //kr_effects_effect_add (portgroup->effects, kr_effects_string_to_effect ("analog"));
     kr_effects_effect_add2 (portgroup->effects, kr_effects_string_to_effect ("eq"),
                             portgroup->krad_mixer, portgroup->sysname);
     kr_effects_effect_add2 (portgroup->effects, kr_effects_string_to_effect ("lowpass"),
@@ -1314,7 +1320,7 @@ krad_mixer_t *krad_mixer_create (char *name) {
   krad_mixer->sample_rate = KRAD_MIXER_DEFAULT_SAMPLE_RATE;
   krad_mixer->rms_window_size = (krad_mixer->sample_rate / 1000) * KRAD_MIXER_RMS_WINDOW_SIZE_MS;
   krad_mixer->ticker_period = KRAD_MIXER_DEFAULT_TICKER_PERIOD;
-  krad_mixer->frames_per_peak_broadcast = 1024;
+  krad_mixer->frames_per_peak_broadcast = 1536;
   
   krad_mixer->crossfade_group = calloc (KRAD_MIXER_MAX_PORTGROUPS / 2, sizeof (krad_mixer_crossfade_group_t));
 

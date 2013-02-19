@@ -16,12 +16,13 @@ int wayrad_frame (void *pointer, uint32_t time) {
 	//         wayrad->krad_wayland->display->pointer_y,
 	//         time, wayrad->buffer);
 
-
-  //if (wayrad->cratezone.crates != wayrad->cratezone.crates_last) {
-  //  render_cratezone (wayrad, time, wayrad->buffer);
-  //  wayrad->cratezone.crates_last = wayrad->cratezone.crates;
-  //  updated = 1;
-  //}
+  if (0) {
+    if (wayrad->cratezone.crates != wayrad->cratezone.crates_last) {
+      render_cratezone (wayrad, time, wayrad->buffer);
+      wayrad->cratezone.crates_last = wayrad->cratezone.crates;
+      updated = 1;
+    }
+  }
 
   render_peak_meter (wayrad, time, wayrad->buffer);
   updated = 1;
@@ -35,7 +36,6 @@ static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer) {
 
 	cairo_surface_t *cst;
 	cairo_t *cr;
-	char text[256];
   float fall_rate;
   
 	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,

@@ -52,6 +52,8 @@ struct krad_mixer_portgroup_St {
 
   float rms[KRAD_MIXER_MAX_CHANNELS];
   float peak[KRAD_MIXER_MAX_CHANNELS];
+  float running_peak[KRAD_MIXER_MAX_CHANNELS];
+  float last_peak[KRAD_MIXER_MAX_CHANNELS];
   float *samples[KRAD_MIXER_MAX_CHANNELS];
 
   float **mapped_samples[KRAD_MIXER_MAX_CHANNELS];
