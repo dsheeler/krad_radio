@@ -199,6 +199,20 @@ void krad_websocket_set_portgroup_control ( kr_ws_client_t *kr_ws_client, kr_add
   cJSON_AddNumberToObject (msg, "value", value);
 }
 
+void krad_websocket_set_portgroup_peak ( kr_ws_client_t *kr_ws_client, kr_address_t *address, float value) {
+
+  cJSON *msg;  
+  
+  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+  cJSON_AddStringToObject (msg, "com", "kradmixer");
+  
+  cJSON_AddStringToObject (msg, "cmd", "peak_portgroup");
+  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
+  //cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
+  cJSON_AddNumberToObject (msg, "value", value);
+}
+
 void krad_websocket_update_portgroup ( kr_ws_client_t *kr_ws_client, kr_address_t *address, char *value ) {
 
   cJSON *msg;
@@ -254,7 +268,11 @@ static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
     if ((kr_crate_notice (crate) == EBML_ID_KRAD_SUBUNIT_CONTROL) &&
         (crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
         if (kr_crate_contains_float (crate)) {
-          krad_websocket_set_portgroup_control (kr_ws_client, crate->addr, crate->real);
+          if (crate->addr->control.portgroup_control == KR_PEAK) {
+            krad_websocket_set_portgroup_peak (kr_ws_client, crate->addr, crate->real);
+          } else {
+            krad_websocket_set_portgroup_control (kr_ws_client, crate->addr, crate->real);
+          }
         } else {
           if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) ||
               (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
