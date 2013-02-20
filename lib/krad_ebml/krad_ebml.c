@@ -2389,16 +2389,17 @@ int krad_ebml_streamio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t 
 
 	int bytes;
 	int ret;
+	unsigned char *buf;
 	
 	bytes = 0;
   ret = 0;
+  buf = (unsigned char *)buffer;  
   
 	while (bytes != length) {
 
-		ret = send (krad_ebml_io->sd, buffer + bytes, length - bytes, 0);
+		ret = send (krad_ebml_io->sd, buf + bytes, length - bytes, 0);
 
 		if (ret <= 0) {
-			fprintf (stderr, "Krad EBML stream io write: Got Disconnected from server. ret %d bytes %d len %zu", ret, bytes, length);
 			failfast ("Krad EBML stream io write: Got Disconnected from server. ret %d bytes %d len %zu", ret, bytes, length);
 		} else {
 		  bytes += ret;
@@ -2412,12 +2413,14 @@ int krad_ebml_streamio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t 
 int krad_ebml_streamio_read(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length) {
 
 	int bytes;
-	
+	unsigned char *buf;
+
 	bytes = 0;
+  buf = (unsigned char *)buffer;
 
 	while (bytes != length) {
 
-		bytes += recv (krad_ebml_io->sd, buffer + bytes, length - bytes, 0);
+		bytes += recv (krad_ebml_io->sd, buf + bytes, length - bytes, 0);
 
 		if (bytes <= 0) {
 			failfast ("Krad EBML Source: recv Got Disconnected from server");
@@ -2442,7 +2445,7 @@ int krad_ebml_streamio_open(krad_ebml_io_t *krad_ebml_io) {
 
 	http_string_pos = 0;
 
-	//printf ("Krad EBML: Connecting to %s:%d\n", krad_ebml_io->host, krad_ebml_io->port);
+  printk ("Krad EBML: Connecting to %s:%d\n", krad_ebml_io->host, krad_ebml_io->port);
 
 	if ((krad_ebml_io->sd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
