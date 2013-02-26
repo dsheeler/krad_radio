@@ -17,7 +17,6 @@ struct krad_jack_portgroup_St {
   float *samples[8];
   int direction;
   int channels;
-
 };
 
 struct krad_jack_St {
@@ -39,9 +38,6 @@ struct krad_jack_St {
   
   char *stay_connected[256];
   char *stay_connected_to[256];
-  
-  pthread_mutex_t connections_lock;  
-    
 };
 
 int krad_jack_detect ();

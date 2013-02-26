@@ -16,14 +16,12 @@ void krad_jack_portgroup_samples_callback (int frames, void *userdata, float **s
     }
   }
 }
-
+/*
 void krad_jack_check_connection (krad_jack_t *krad_jack, char *remote_port) {
 
   int p;
   int flags;
   jack_port_t *port;
-  
-  pthread_mutex_lock (&krad_jack->connections_lock);  
   
   if (strlen(remote_port)) {
     for (p = 0; p < 256; p++) {
@@ -44,15 +42,11 @@ void krad_jack_check_connection (krad_jack_t *krad_jack, char *remote_port) {
       }
     }
   }
-  
-  pthread_mutex_unlock (&krad_jack->connections_lock);
 }
 
 void krad_jack_stay_connection (krad_jack_t *krad_jack, char *port, char *remote_port) {
 
   int p;
-  
-  pthread_mutex_lock (&krad_jack->connections_lock);  
   
   if (strlen(port) && strlen(remote_port)) {
     for (p = 0; p < 256; p++) {
@@ -63,15 +57,11 @@ void krad_jack_stay_connection (krad_jack_t *krad_jack, char *port, char *remote
       }
     }
   }
-  
-  pthread_mutex_unlock (&krad_jack->connections_lock);
 }
 
 void krad_jack_unstay_connection (krad_jack_t *krad_jack, char *port, char *remote_port) {
 
   int p;
-  
-  pthread_mutex_lock (&krad_jack->connections_lock);  
   
   for (p = 0; p < 256; p++) {
     if (krad_jack->stay_connected[p] != NULL) {
@@ -85,8 +75,6 @@ void krad_jack_unstay_connection (krad_jack_t *krad_jack, char *port, char *remo
       }
     }
   }
-  
-  pthread_mutex_unlock (&krad_jack->connections_lock);
 }
 
 void krad_jack_port_registration_callback (jack_port_id_t portid, int regged, void *arg) {
@@ -108,7 +96,7 @@ void krad_jack_port_registration_callback (jack_port_id_t portid, int regged, vo
 }
 
 void krad_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int connect, void *arg) {
-/*
+
   krad_jack_t *krad_jack = (krad_jack_t *)arg;
   
   jack_port_t *ports[2];
@@ -121,9 +109,9 @@ void krad_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int
   } else {
     //printk ("Krad Jack: %s disconnected from %s ", jack_port_name (ports[0]), jack_port_name (ports[1]));
   }
-*/
-}
 
+}
+*/
 void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_name) {
 
   const char **ports;
@@ -141,7 +129,7 @@ void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_na
   if (ports) {
     for (c = 0; c < portgroup->channels; c++) {
       if (ports[c]) {
-        krad_jack_stay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), (char *)ports[c]);
+        //krad_jack_stay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), (char *)ports[c]);
         if (portgroup->direction == INPUT) {  
           //printk ("Krad Jack: Plugging %s to %s", ports[c], jack_port_name(portgroup->ports[c]));
           jack_connect (portgroup->krad_jack->client, ports[c], jack_port_name(portgroup->ports[c]));
@@ -161,7 +149,7 @@ void krad_jack_portgroup_unplug (krad_jack_portgroup_t *portgroup, char *remote_
   int c;
   
   for (c = 0; c < portgroup->channels; c++) {
-    krad_jack_unstay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), remote_name);
+    //krad_jack_unstay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), remote_name);
     jack_port_disconnect (portgroup->krad_jack->client, portgroup->ports[c]);
   }
 }
@@ -269,8 +257,6 @@ void krad_jack_destroy (krad_jack_t *krad_jack) {
   
   krad_mixer_unset_pusher (krad_jack->krad_audio->krad_mixer);
   
-  pthread_mutex_destroy (&krad_jack->connections_lock);
-  
   for (p = 0; p < 256; p++) {
     if (krad_jack->stay_connected[p] != NULL) {
       free (krad_jack->stay_connected[p]);
@@ -366,15 +352,13 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
     printk ("Krad Jack: Set Krad Mixer sample rate to %d", krad_jack->sample_rate);    
   }
 
-  pthread_mutex_init (&krad_jack->connections_lock, NULL);
-
   // Set up Callbacks
 
   jack_set_process_callback (krad_jack->client, krad_jack_process, krad_jack);
   jack_on_shutdown (krad_jack->client, krad_jack_shutdown, krad_jack);
   jack_set_xrun_callback (krad_jack->client, krad_jack_xrun, krad_jack);
-  jack_set_port_registration_callback ( krad_jack->client, krad_jack_port_registration_callback, krad_jack );
-  jack_set_port_connect_callback ( krad_jack->client, krad_jack_port_connection_callback, krad_jack );
+  //jack_set_port_registration_callback ( krad_jack->client, krad_jack_port_registration_callback, krad_jack );
+  //jack_set_port_connect_callback ( krad_jack->client, krad_jack_port_connection_callback, krad_jack );
 
   // Activate
 
