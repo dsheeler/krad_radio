@@ -405,7 +405,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_ws_client->context = this;
       kr_ws_client->wsi = wsi;
       kr_ws_client->krad_websocket = krad_websocket;
-      kr_ws_client->buffer = malloc (4096);
+      kr_ws_client->buffer = malloc (4096 * 8);
       kr_ws_client->kr_client = kr_client_create ("websocket client");
       
       if (kr_ws_client->kr_client == NULL) {
@@ -536,6 +536,10 @@ static void *krad_websocket_server_run (void *arg) {
                   }
                   
                   krad_delivery_handler (kr_ws_client);
+                  
+                  while (kr_wait (kr_ws_client->kr_client, 0)) {
+                    krad_delivery_handler (kr_ws_client);
+                  }
                   
                   //kr_ws_client->msgstext = strdup(cJSON_Print (kr_ws_client->msgs));
                   kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
