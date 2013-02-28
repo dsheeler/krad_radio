@@ -107,13 +107,13 @@ void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr) {
 
   if ((krad_vector->subunit.xscale != 1.0f) || (krad_vector->subunit.yscale != 1.0f)) {
     cairo_translate (cr, krad_vector->subunit.x, krad_vector->subunit.y);
-    //cairo_translate (cr, ((krad_vector->subunit.width / 2) * krad_vector->subunit.xscale),
-    //       ((krad_vector->subunit.height / 2) * krad_vector->subunit.yscale));
+    cairo_translate (cr, ((krad_vector->subunit.width / 2) * krad_vector->subunit.xscale),
+           ((krad_vector->subunit.height / 2) * krad_vector->subunit.yscale));
     cairo_translate (cr, krad_vector->subunit.width / 2, krad_vector->subunit.height / 2);
     cairo_scale (cr, krad_vector->subunit.xscale, krad_vector->subunit.yscale);
     cairo_translate (cr, ((krad_vector->subunit.width / -2) * krad_vector->subunit.xscale),
             ((krad_vector->subunit.height / -2) * krad_vector->subunit.yscale));
-    //cairo_translate (cr, krad_vector->subunit.width / -2, krad_vector->subunit.height / -2);
+    cairo_translate (cr, krad_vector->subunit.width / -2, krad_vector->subunit.height / -2);
     cairo_translate (cr, krad_vector->subunit.x * -1, krad_vector->subunit.y * -1);    
   }
   
