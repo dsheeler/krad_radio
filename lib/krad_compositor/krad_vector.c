@@ -103,7 +103,6 @@ int krad_vector_to_rep (krad_vector_t *vector, krad_vector_rep_t *vector_rep) {
 
 void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr) {
 
-  float peak;
   cairo_save (cr);
 
   if ((krad_vector->subunit.xscale != 1.0f) || (krad_vector->subunit.yscale != 1.0f)) {
@@ -131,8 +130,9 @@ void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr) {
   switch ( krad_vector->type ) {
 
     case METER:
-      peak = 50.0f;
-      krad_vector_render_meter (cr, krad_vector->subunit.x, krad_vector->subunit.y, krad_vector->subunit.yscale, peak, krad_vector->subunit.opacity);
+      krad_vector_render_meter (cr, krad_vector->subunit.x, krad_vector->subunit.y,
+                                krad_vector->subunit.width,
+                                krad_vector->subunit.rotation, krad_vector->subunit.opacity);
       break;
       
     case HEX:
