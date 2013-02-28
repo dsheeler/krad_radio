@@ -525,7 +525,6 @@ static void portgroup_set_volume (krad_mixer_portgroup_t *portgroup, float value
         }
       }
     }
-    printk ("Mixbus %s volume set to %f", portgroup->sysname, portgroup->volume[0]);
   }
 }
 
@@ -598,10 +597,8 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
     portgroup = krad_mixer->portgroup[p];
     if ((portgroup != NULL) && (portgroup->active == 2) && (portgroup->volume_easing.active)) {
       portgroup_set_volume (portgroup, krad_easing_process (&portgroup->volume_easing, portgroup->volume[0], &client));
-      if (portgroup->direction == INPUT) {
-        krad_radio_broadcast_subunit_control ( krad_mixer->broadcaster, &portgroup->address, KR_VOLUME, 
-                                               portgroup->volume[0], client );
-      }
+      krad_radio_broadcast_subunit_control ( krad_mixer->broadcaster, &portgroup->address, KR_VOLUME, 
+                                             portgroup->volume[0], client );
     }
   }
 

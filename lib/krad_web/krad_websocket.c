@@ -152,6 +152,11 @@ void krad_websocket_add_portgroup ( kr_ws_client_t *kr_ws_client, kr_mixer_portg
 
   cJSON *msg;
 
+  //for the moment will ignore these
+  if ((portgroup->direction == OUTPUT) && (portgroup->output_type == DIRECT)) {
+    return;
+  }
+
   cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
   
   cJSON_AddStringToObject (msg, "com", "kradmixer");
