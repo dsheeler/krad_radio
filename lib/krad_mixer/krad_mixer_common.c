@@ -134,13 +134,30 @@ char *effect_control_to_string (kr_mixer_effect_control_t effect_control) {
     case HZ:
       return "hz";
     case BANDWIDTH:
-      return "bandwidth";
+      return "bw";
     case TYPE:
       return "type";
     case DRIVE:
       return "drive";
     case BLEND:
       return "blend";
+  }
+  return "Unknown";
+}
+
+char *effect_type_to_string (kr_effect_type_t effect_type) {
+
+  switch (effect_type) {
+    case KRAD_NOFX:
+      return "Unknown";
+    case KRAD_EQ:
+      return "eq";
+    case KRAD_LOWPASS:
+      return "lowpass";
+    case KRAD_HIGHPASS:
+      return "highpass";
+    case KRAD_ANALOG:
+      return "analog";
   }
   return "Unknown";
 }

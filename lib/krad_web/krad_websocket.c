@@ -43,14 +43,18 @@ krad_websocket_t *krad_websocket_glob;
 
 static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
   
+  int sub_id;
   float floatval;
   cJSON *cmd;
   cJSON *part;
   cJSON *part2;
   cJSON *part3;
+  cJSON *part4;
   
   part = NULL;
   part2 = NULL;
+  part3 = NULL;
+  part4 = NULL;
   
   cmd = cJSON_Parse (value);
   
@@ -75,7 +79,33 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
           }
         }
       }
-      
+      if ((part != NULL) && (strcmp(part->valuestring, "control_effect") == 0)) {
+        part = cJSON_GetObjectItem (cmd, "portgroup_name");
+        part2 = cJSON_GetObjectItem (cmd, "effect_name");
+        part3 = cJSON_GetObjectItem (cmd, "control_name");
+        part4 = cJSON_GetObjectItem (cmd, "value");
+        if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
+          floatval = part4->valuedouble;
+          if (part2->valuestring[0] == 'e') {
+            sub_id = 0;
+          } else {
+            if (part2->valuestring[0] == 'l') {
+              sub_id = 1;
+            } else {
+              if (part2->valuestring[0] == 'h') {
+                sub_id = 2;
+              } else {
+                if (part2->valuestring[0] == 'a') {
+                  sub_id = 3;
+                }
+              }
+            }
+          }
+          kr_mixer_set_effect_control (kr_ws_client->kr_client, part->valuestring, sub_id, 0,
+                                       part3->valuestring,
+                                       floatval, 0, EASEINOUTSINE);
+        }
+      }
       if ((part != NULL) && (strcmp(part->valuestring, "push_dtmf") == 0)) {
         part = cJSON_GetObjectItem (cmd, "dtmf");
         if (part != NULL) {
@@ -150,6 +180,7 @@ void krad_websocket_set_cpu_usage (kr_ws_client_t *kr_ws_client, int usage) {
 
 void krad_websocket_add_portgroup ( kr_ws_client_t *kr_ws_client, kr_mixer_portgroup_t *portgroup) {
 
+  int i;
   cJSON *msg;
 
   //for the moment will ignore these
@@ -173,9 +204,29 @@ void krad_websocket_add_portgroup ( kr_ws_client_t *kr_ws_client, kr_mixer_portg
     cJSON_AddNumberToObject (msg, "crossfade", 0);
   }
   
-  cJSON_AddNumberToObject (msg, "xmms2", portgroup->has_xmms2);  
+  cJSON_AddNumberToObject (msg, "xmms2", portgroup->has_xmms2);
+  cJSON_AddNumberToObject (msg, "direction", portgroup->direction);
+
+  if (portgroup->direction == INPUT) {
   
-  //kr_tags (kr_ws_client->kr_client, portgroup->sysname);
+    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+    //  pos += sprintf (*string + pos, "     %2d:\t %6.2f \t %6.0f \t %0.2f\n",
+    //                  i, 
+    //                  portgroup->eq.band[i].db,
+    //                  portgroup->eq.band[i].hz,
+    //                  portgroup->eq.band[i].bandwidth);
+    }
+    
+    cJSON_AddNumberToObject (msg, "lowpass_hz", portgroup->lowpass.hz);
+    cJSON_AddNumberToObject (msg, "lowpass_bw", portgroup->lowpass.bandwidth);
+
+    cJSON_AddNumberToObject (msg, "highpass_hz", portgroup->highpass.hz);
+    cJSON_AddNumberToObject (msg, "highpass_bw", portgroup->highpass.bandwidth);
+    
+    cJSON_AddNumberToObject (msg, "analog_drive", portgroup->analog.drive);
+    cJSON_AddNumberToObject (msg, "analog_blend", portgroup->analog.blend);
+
+  }
 }
 
 void krad_websocket_remove_portgroup ( kr_ws_client_t *kr_ws_client, kr_address_t *address ) {
@@ -188,6 +239,21 @@ void krad_websocket_remove_portgroup ( kr_ws_client_t *kr_ws_client, kr_address_
   
   cJSON_AddStringToObject (msg, "cmd", "remove_portgroup");
   cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
+}
+
+void krad_websocket_set_portgroup_eff ( kr_ws_client_t *kr_ws_client, kr_address_t *address, float value) {
+
+  cJSON *msg;  
+  
+  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+  cJSON_AddStringToObject (msg, "com", "kradmixer");
+  
+  cJSON_AddStringToObject (msg, "cmd", "effect_control");
+  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
+  cJSON_AddStringToObject (msg, "effect_name", effect_type_to_string (address->sub_id + 1));
+  cJSON_AddStringToObject (msg, "control_name", effect_control_to_string(address->control.effect_control));
+  cJSON_AddNumberToObject (msg, "value", value);
 }
 
 void krad_websocket_set_portgroup_control ( kr_ws_client_t *kr_ws_client, kr_address_t *address, float value) {
@@ -271,24 +337,34 @@ static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
 
   if (crate != NULL) {
     if ((kr_crate_notice (crate) == EBML_ID_KRAD_SUBUNIT_CONTROL) &&
-        (crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-        if (kr_crate_contains_float (crate)) {
-          if (crate->addr->control.portgroup_control == KR_PEAK) {
-            krad_websocket_set_portgroup_peak (kr_ws_client, crate->addr, crate->real);
-          } else {
-            krad_websocket_set_portgroup_control (kr_ws_client, crate->addr, crate->real);
-          }
-        } else {
-          if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) ||
-              (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
-            if (kr_uncrate_string (crate, &string)) {
-              krad_websocket_update_portgroup (kr_ws_client, crate->addr, string);
-              kr_string_recycle (&string);
+        (crate->addr->path.unit == KR_MIXER)) {
+        
+        if (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP) {
+          if (kr_crate_contains_float (crate)) {
+            if (crate->addr->control.portgroup_control == KR_PEAK) {
+              krad_websocket_set_portgroup_peak (kr_ws_client, crate->addr, crate->real);
             } else {
-              krad_websocket_update_portgroup (kr_ws_client, crate->addr, "");
+              krad_websocket_set_portgroup_control (kr_ws_client, crate->addr, crate->real);
+            }
+          } else {
+            if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) ||
+                (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+              if (kr_uncrate_string (crate, &string)) {
+                krad_websocket_update_portgroup (kr_ws_client, crate->addr, string);
+                kr_string_recycle (&string);
+              } else {
+                krad_websocket_update_portgroup (kr_ws_client, crate->addr, "");
+              }
             }
           }
         }
+        
+        if (crate->addr->path.subunit.mixer_subunit == KR_EFFECT) {
+          if (kr_crate_contains_float (crate)) {
+            krad_websocket_set_portgroup_eff (kr_ws_client, crate->addr, crate->real);
+          }
+        }
+        
         kr_crate_recycle (&crate);
         return 0;
     }

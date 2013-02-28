@@ -114,6 +114,7 @@ struct krad_effects_rep_St {
 };
 
 char *krad_mixer_channel_number_to_string (int channel);
+char *effect_type_to_string (kr_effect_type_t effect_type);
 char *effect_control_to_string (kr_mixer_effect_control_t effect_control);
 char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_control);
 char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction);

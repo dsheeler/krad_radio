@@ -249,23 +249,26 @@ int kr_effects_string_to_effect_control (kr_effect_type_t effect_type, char *str
 	  if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
 		  return KRAD_EQ_CONTROL_DB;
 	  }
-	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-		  return KRAD_EQ_CONTROL_BANDWIDTH;
-	  }
 	  if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
 		  return KRAD_EQ_CONTROL_HZ;
+	  }
+	  if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
+		  return KRAD_EQ_CONTROL_BANDWIDTH;
+	  }
+	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
+		  return KRAD_EQ_CONTROL_BANDWIDTH;
 	  }
   }
 
   if (((effect_type == KRAD_LOWPASS) || (effect_type == KRAD_HIGHPASS))) {
-	  //if ((strlen(string) == 4) && (strncmp(string, "type", 4) == 0)) {
-		//  return KRAD_PASS_CONTROL_TYPE;
-	  //}
-	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-		  return KRAD_PASS_CONTROL_BANDWIDTH;
-	  }
 	  if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
 		  return KRAD_PASS_CONTROL_HZ;
+	  }
+	  if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
+		  return KRAD_PASS_CONTROL_BANDWIDTH;
+	  }
+	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
+		  return KRAD_PASS_CONTROL_BANDWIDTH;
 	  }
   }
   

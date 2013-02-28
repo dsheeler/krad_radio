@@ -11,14 +11,11 @@
 
 #include "krad_system.h"
 #include "krad_easing.h"
-
 #include "krad_sfx_common.h"
-
 #include "krad_mixer.h"
 
 #ifndef KRAD_PASS_H
 #define KRAD_PASS_H
-
 
 #define KRAD_PASS_CONTROL_TYPE 788
 #define KRAD_PASS_CONTROL_BANDWIDTH 789
@@ -30,13 +27,10 @@
 #define KRAD_PASS_HZ_MAX 20000.0
 #define KRAD_LOWPASS_HZ_MAX 12000.0
 
-
 typedef struct krad_pass_St krad_pass_t;
 typedef struct krad_pass_St kr_pass_t;
 typedef struct krad_pass_St kr_highpass_t;
 typedef struct krad_pass_St kr_lowpass_t;
-
-
 
 struct krad_pass_St {
 
