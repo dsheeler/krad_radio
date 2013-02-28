@@ -9,9 +9,7 @@ void clock_gettime (int clocktype, struct timespec *ts) {
   mach_port_deallocate(mach_task_self(), cclock);
   ts->tv_sec = mts.tv_sec;
   ts->tv_nsec = mts.tv_nsec;
-
 }
-
 
 int prctl (int n0, int n1, int n2, int n3, int n4) {
   return 0;
@@ -57,14 +55,6 @@ int epoll_ctl (int __epfd, int __op, int __fd,
 
 int epoll_wait (int __epfd, struct epoll_event *__events,
 		       int __maxevents, int __timeout) {
-  return 0;
-}
-
-int kradv4l2_detect_devices () {
-  return 0;
-}
-
-int kradv4l2_get_device_filename (int device_num, char *device_name) {
   return 0;
 }
 

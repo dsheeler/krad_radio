@@ -213,26 +213,6 @@ void krad_ipc_set_handler_callback (krad_ipc_client_t *client, int handler (krad
   client->ptr = ptr;
 }
 
-
-void krad_ipc_send (krad_ipc_client_t *client, char *cmd) {
-
-
-  int len;
-  fd_set set;
-  
-  strcat(cmd, "|");
-  len = strlen(cmd);
-
-  FD_ZERO (&set);
-  FD_SET (client->sd, &set);
-
-  select (client->sd+1, NULL, &set, NULL, NULL);
-  send (client->sd, cmd, len, 0);
-
-}
-
-
-
 int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd) {
   char buf[1];
   struct iovec iov;

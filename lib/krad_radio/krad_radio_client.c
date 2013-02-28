@@ -204,24 +204,12 @@ char *kr_response_alloc_string (int length) {
 
 int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
 
-  krad_ipc_client_t *kr_ipc_client;
-  
-  kr_ipc_client = client->krad_ipc_client;
+  struct pollfd pollfds[1];
 
-  fd_set set;
-  struct timeval tv;
-  
-  if (kr_ipc_client->tcp_port) {
-    tv.tv_sec = 1;
-  } else {
-      tv.tv_sec = 0;
-  }
-  tv.tv_usec = timeout_ms * 1000;
-  
-  FD_ZERO (&set);
-  FD_SET (kr_ipc_client->sd, &set);  
+  pollfds[0].fd = client->krad_ipc_client->sd;
+  pollfds[0].events = POLLIN;
 
-  return select (kr_ipc_client->sd+1, &set, NULL, NULL, &tv);
+  return poll (pollfds, 1, timeout_ms);
 }
 
 int kr_delivery_final (kr_client_t *client) {

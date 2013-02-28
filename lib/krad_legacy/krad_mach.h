@@ -1,8 +1,6 @@
 #ifdef FRAK_MACOSX
-
 #ifndef KRAD_MACH_H
 #define KRAD_MACH_H
-
 
 #include <time.h>
 #include <sys/time.h>
@@ -87,9 +85,6 @@ int epoll_ctl (int __epfd, int __op, int __fd,
 
 int epoll_wait (int __epfd, struct epoll_event *__events,
 		       int __maxevents, int __timeout);
-
-int kradv4l2_detect_devices ();
-int kradv4l2_get_device_filename (int device_num, char *device_name);
 
 #endif
 #endif
