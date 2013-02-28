@@ -346,6 +346,12 @@ void kr_ebml_to_vector_rep (unsigned char *ebml_frag, kr_vector_t *vector) {
   vector->type = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   vector->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
@@ -524,6 +530,8 @@ int kr_compositor_response_get_string_from_vector (unsigned char *ebml_frag, cha
 
   kr_ebml_to_vector_rep (ebml_frag, &vector);
   pos += sprintf (*string + pos, "Vector: %s\n", krad_vector_type_to_string (vector.type));
+  pos += sprintf (*string + pos, "Width: %d\n", vector.controls.width);
+  pos += sprintf (*string + pos, "Height: %d\n", vector.controls.height);  
   pos += sprintf (*string + pos, "X: %d\n", vector.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", vector.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", vector.controls.z);

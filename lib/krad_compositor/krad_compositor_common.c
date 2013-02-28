@@ -57,8 +57,9 @@ void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t 
 }
 
 void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *vector, krad_ebml_t *ebml) {
-  //krad_ebml_write_string (ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, krad_vector_type_to_string (vector->type));
   krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->type);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.width);
+  krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.height);  
   krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->controls.x);
   krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.y);
   krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.z);
