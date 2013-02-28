@@ -56,7 +56,7 @@ typedef struct krad_control_St krad_control_t;
 #define KRAD_SYSNAME_MAX 32
 
 #define KRAD_BUFLEN_CPUSTAT 128
-#define KRAD_CPU_MONITOR_INTERVAL 2000
+#define KRAD_CPU_MONITOR_INTERVAL 4000
 
 struct krad_control_St {
   int sockets[2];

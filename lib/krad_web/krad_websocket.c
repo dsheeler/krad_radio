@@ -541,11 +541,9 @@ static void *krad_websocket_server_run (void *arg) {
                     krad_delivery_handler (kr_ws_client);
                   }
                   
-                  //kr_ws_client->msgstext = strdup(cJSON_Print (kr_ws_client->msgs));
                   kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
                   strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs));
                   kr_ws_client->msgstextlen = strlen (kr_ws_client->msgstext);
-                  //cJSON_Delete (kr_ws_client->msgs);
                   cjson_memreset ();
                   kr_ws_client->kr_client_info = 1;
                   libwebsocket_callback_on_writable (kr_ws_client->context, kr_ws_client->wsi);
