@@ -54,8 +54,8 @@ void krad_vector_destroy_arr (krad_vector_t *vector, int count);
 void krad_vector_reset (krad_vector_t *vector);
 void krad_vector_set_type (krad_vector_t *vector, char *type);
 
-krad_vector_rep_t *krad_vector_to_vector_rep (krad_vector_t *krad_vector, krad_vector_rep_t *krad_vector_rep);
-
 void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr);
+
+int krad_vector_to_rep (krad_vector_t *krad_vector, krad_vector_rep_t *krad_vector_rep);
 
 #endif

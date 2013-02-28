@@ -40,6 +40,12 @@ void krad_compositor_sprite_to_ebml ( krad_ipc_server_t *krad_ipc, krad_sprite_t
   krad_compositor_sprite_rep_to_ebml (&sprite_rep, krad_ipc->current_client->krad_ebml2);
 }
 
+void krad_compositor_vector_to_ebml ( krad_ipc_server_t *krad_ipc, krad_vector_t *vector ) {
+  krad_vector_rep_t vector_rep;
+  krad_vector_to_rep (vector, &vector_rep);
+  krad_compositor_vector_rep_to_ebml (&vector_rep, krad_ipc->current_client->krad_ebml2);
+}
+
 void krad_compositor_text_to_ebml ( krad_ipc_server_t *krad_ipc, krad_text_t *text ) {
   krad_text_rep_t text_rep;
   krad_text_to_rep (text, &text_rep);
@@ -154,6 +160,18 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
                                                                  &response);
           krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
           krad_compositor_text_to_ebml ( krad_ipc, &krad_compositor->text[s]);
+          krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
+          krad_ipc_server_response_finish ( krad_ipc, response );
+        }
+      }
+      for (s = 0; s < KC_MAX_VECTORS; s++) {
+        if (krad_compositor->vector[s].subunit.active == 1) {
+          krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
+                                                                 &krad_compositor->vector[s].subunit.address,
+                                                                 EBML_ID_KRAD_SUBUNIT_INFO,
+                                                                 &response);
+          krad_ipc_server_payload_start ( krad_ipc, &payload_loc);
+          krad_compositor_vector_to_ebml ( krad_ipc, &krad_compositor->vector[s]);
           krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
           krad_ipc_server_response_finish ( krad_ipc, response );
         }

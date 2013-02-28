@@ -333,6 +333,41 @@ void kr_ebml_to_sprite_rep (unsigned char *ebml_frag, kr_sprite_t *sprite) {
 
 }
 
+void kr_ebml_to_vector_rep (unsigned char *ebml_frag, kr_vector_t *vector) {
+
+  uint32_t ebml_id;
+  uint64_t ebml_data_size;
+  int item_pos;
+
+  item_pos = 0;
+  
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->type = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+ 
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.yscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  vector->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+}
+
 void kr_ebml_to_text_rep (unsigned char *ebml_frag, kr_text_t *text) {
   
   uint32_t ebml_id;
@@ -451,7 +486,7 @@ int kr_compositor_response_get_string_from_sprite (unsigned char *ebml_frag, cha
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", sprite.controls.rotation);
   pos += sprintf (*string + pos, "Tickrate: %d\n", sprite.controls.tickrate);
   
-  return pos; 
+  return pos;
 }
 
 int kr_compositor_response_get_string_from_text (unsigned char *ebml_frag, char **string) {
@@ -476,24 +511,28 @@ int kr_compositor_response_get_string_from_text (unsigned char *ebml_frag, char 
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", text.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", text.controls.rotation);
  
-  return pos; 
+  return pos;
 }
 
 int kr_compositor_response_get_string_from_vector (unsigned char *ebml_frag, char **string) {
 
   int pos;
-  //kr_sprite_t *kr_vector;
+  kr_vector_t vector;
 
   pos = 0;
-  //kr_vector = NULL;
-/*
-  kr_ebml_to_vector_rep (ebml_frag, &kr_vector);
-  pos += sprintf (*string + pos, "Filename: %s\n", kr_sprite->filename);
-  pos += kr_compositor_response_get_string_from_subunit_controls (&kr_sprite->controls, *string + pos);
+  //memset (&vector, 0, sizeof(kr_vector_t));
 
-  kr_compositor_vector_rep_destroy (kr_vector);
-*/
-  return pos; 
+  kr_ebml_to_vector_rep (ebml_frag, &vector);
+  pos += sprintf (*string + pos, "Vector: %s\n", krad_vector_type_to_string (vector.type));
+  pos += sprintf (*string + pos, "X: %d\n", vector.controls.x);
+  pos += sprintf (*string + pos, "Y: %d\n", vector.controls.y);
+  pos += sprintf (*string + pos, "Z: %d\n", vector.controls.z);
+  pos += sprintf (*string + pos, "Y Scale: %4.2f\n", vector.controls.yscale);
+  pos += sprintf (*string + pos, "X Scale: %4.2f\n", vector.controls.xscale);
+  pos += sprintf (*string + pos, "Opacity: %4.2f\n", vector.controls.opacity);
+  pos += sprintf (*string + pos, "Rotation: %4.2f\n", vector.controls.rotation);
+  
+  return pos;
 }
 
 int kr_compositor_response_get_string_from_videoport (unsigned char *ebml_frag, char **string) {

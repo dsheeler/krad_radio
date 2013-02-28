@@ -98,7 +98,7 @@ struct krad_text_rep_St {
 
 struct krad_vector_rep_St {
   
-  krad_vector_type_t krad_vector_type;
+  krad_vector_type_t type;
   
   float red;
   float green;
@@ -146,6 +146,7 @@ struct krad_compositor_rep_St {
 void krad_compositor_videoport_rep_to_ebml (kr_port_t *port, krad_ebml_t *ebml);
 void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml);
 void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
+void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *vector, krad_ebml_t *ebml);
 
 char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 krad_vector_type_t krad_string_to_vector_type (char *string);
