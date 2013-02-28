@@ -50,12 +50,14 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
   cJSON *part2;
   cJSON *part3;
   cJSON *part4;
-  
+  cJSON *part5;
+
   part = NULL;
   part2 = NULL;
   part3 = NULL;
   part4 = NULL;
-  
+  part5 = NULL;
+
   cmd = cJSON_Parse (value);
   
   if (!cmd) {
@@ -106,6 +108,36 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
                                        floatval, 0, EASEINOUTSINE);
         }
       }
+      
+      if ((part != NULL) && (strcmp(part->valuestring, "control_eq_effect") == 0)) {
+        part = cJSON_GetObjectItem (cmd, "portgroup_name");
+        part2 = cJSON_GetObjectItem (cmd, "effect_name");
+        part3 = cJSON_GetObjectItem (cmd, "effect_num");
+        part4 = cJSON_GetObjectItem (cmd, "control_name");
+        part5 = cJSON_GetObjectItem (cmd, "value");
+        if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL) && (part5 != NULL)) {
+          floatval = part5->valuedouble;
+          if (part2->valuestring[0] == 'e') {
+            sub_id = 0;
+          } else {
+            if (part2->valuestring[0] == 'l') {
+              sub_id = 1;
+            } else {
+              if (part2->valuestring[0] == 'h') {
+                sub_id = 2;
+              } else {
+                if (part2->valuestring[0] == 'a') {
+                  sub_id = 3;
+                }
+              }
+            }
+          }
+          kr_mixer_set_effect_control (kr_ws_client->kr_client, part->valuestring, sub_id, part3->valueint,
+                                       part4->valuestring,
+                                       floatval, 0, EASEINOUTSINE);
+        }
+      }
+      
       if ((part != NULL) && (strcmp(part->valuestring, "push_dtmf") == 0)) {
         part = cJSON_GetObjectItem (cmd, "dtmf");
         if (part != NULL) {
@@ -182,6 +214,9 @@ void krad_websocket_add_portgroup ( kr_ws_client_t *kr_ws_client, kr_mixer_portg
 
   int i;
   cJSON *msg;
+  cJSON *eq;
+  cJSON *eqbands;
+  cJSON *eqband;
 
   //for the moment will ignore these
   if ((portgroup->direction == OUTPUT) && (portgroup->output_type == DIRECT)) {
@@ -209,12 +244,16 @@ void krad_websocket_add_portgroup ( kr_ws_client_t *kr_ws_client, kr_mixer_portg
 
   if (portgroup->direction == INPUT) {
   
+    eq = cJSON_CreateObject();
+    eqbands = cJSON_CreateArray();
+    cJSON_AddItemToObject(eq, "bands", eqbands);
+    cJSON_AddItemToObject(msg, "eq", eq);
     for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-    //  pos += sprintf (*string + pos, "     %2d:\t %6.2f \t %6.0f \t %0.2f\n",
-    //                  i, 
-    //                  portgroup->eq.band[i].db,
-    //                  portgroup->eq.band[i].hz,
-    //                  portgroup->eq.band[i].bandwidth);
+      eqband = cJSON_CreateObject();
+      cJSON_AddNumberToObject (eqband, "hz", portgroup->eq.band[i].hz);
+      cJSON_AddNumberToObject (eqband, "db", portgroup->eq.band[i].db);
+      cJSON_AddNumberToObject (eqband, "bw", portgroup->eq.band[i].bandwidth);
+      cJSON_AddItemToArray(eqbands, eqband);
     }
     
     cJSON_AddNumberToObject (msg, "lowpass_hz", portgroup->lowpass.hz);
@@ -252,6 +291,7 @@ void krad_websocket_set_portgroup_eff ( kr_ws_client_t *kr_ws_client, kr_address
   cJSON_AddStringToObject (msg, "cmd", "effect_control");
   cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
   cJSON_AddStringToObject (msg, "effect_name", effect_type_to_string (address->sub_id + 1));
+  cJSON_AddNumberToObject (msg, "effect_num", address->sub_id2);
   cJSON_AddStringToObject (msg, "control_name", effect_control_to_string(address->control.effect_control));
   cJSON_AddNumberToObject (msg, "value", value);
 }

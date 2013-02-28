@@ -43,7 +43,7 @@ static int cJSON_strcasecmp(const char *s1,const char *s2)
 	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
 }
 
-#define CJSON_MEMSIZE 4096 * 8
+#define CJSON_MEMSIZE 4096 * 32
 
 static char cjson_mem[CJSON_MEMSIZE];
 static size_t cjson_mempos;
@@ -51,11 +51,12 @@ static size_t cjson_mempos;
 static void *cjson_malloc (size_t sz) {
 
   char *ptr;
-  
+  //static int count = 0;
   ptr = &cjson_mem[cjson_mempos];
   cjson_mempos += sz;
-  
+  //printke ("hrm %d %u %u", count++, cjson_mempos, sz);
   if (cjson_mempos > CJSON_MEMSIZE) {
+    printke ("hrm CJSON frak %u %u", cjson_mempos, sz);
     exit(3);
   }
   
