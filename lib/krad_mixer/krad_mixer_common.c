@@ -9,6 +9,8 @@ void krad_mixer_portgroup_rep_to_ebml (kr_portgroup_t *portgroup_rep, krad_ebml_
 
   krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_rep->sysname);
   krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->channels);
+  krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->direction);
+  krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->output_type);  
   if (portgroup_rep->io_type == 0) {
     krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Jack");
   } else {
@@ -80,6 +82,32 @@ char *krad_mixer_channel_number_to_string (int channel) {
     default:
       return "Unknown";
   }
+}
+
+
+char *portgroup_output_type_to_string (krad_mixer_output_t output_type) {
+  switch (output_type) {
+   case NOTOUTPUT:
+      return "Notoutput";
+    case DIRECT:
+      return "Direct";
+    case AUX:
+      return "Aux";
+  }
+  return "Unknown";
+}
+
+
+char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction) {
+  switch (direction) {
+   case OUTPUT:
+      return "Output";
+    case INPUT:
+      return "Input";
+    case MIX:
+      return "Bus";
+  }
+  return "Unknown";
 }
 
 char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_control) {

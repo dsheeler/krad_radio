@@ -506,8 +506,7 @@ static void portgroup_set_volume (krad_mixer_portgroup_t *portgroup, float value
   for (c = 0; c < portgroup->channels; c++) {
     portgroup->volume[c] = value;
     if (portgroup->direction == MIX) {
-      portgroup->volume_actual[0] = volume_temp;
-      break;
+      portgroup->volume_actual[c] = volume_temp;
     } else {
       portgroup->new_volume_actual[c] = volume_temp;
     }
@@ -853,7 +852,7 @@ krad_mixer_portgroup_t *krad_mixer_portgroup_create (krad_mixer_t *krad_mixer, c
     }
     portgroup->map[c] = c;
     portgroup->mapped_samples[c] = &portgroup->samples[c];
-    if ((direction == INPUT) || (output_type == AUX)) {
+    if ((portgroup->direction != OUTPUT) || (portgroup->output_type == AUX)) {
       portgroup->volume[c] = volume;
     } else {
       portgroup->volume[c] = 100.0f;

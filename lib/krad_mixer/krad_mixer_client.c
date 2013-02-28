@@ -502,6 +502,12 @@ int kr_ebml_to_mixer_portgroup_rep (unsigned char *ebml_frag, kr_mixer_portgroup
   portgroup_rep->channels = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  portgroup_rep->direction = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
+  portgroup_rep->output_type = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+
+  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, string);
 
   if (strncmp (string, "Jack", 4) == 0) {
@@ -659,19 +665,32 @@ int kr_mixer_response_get_string_from_portgroup (unsigned char *ebml_frag, uint6
   
   kr_ebml_to_mixer_portgroup_rep (ebml_frag, &portgroup_rep);
  
-  if ((portgroup_rep.channels == 1) || ((portgroup_rep.channels == 2) &&
-       (portgroup_rep.volume[0] == portgroup_rep.volume[1]))) {
- 
-    pos += sprintf (*string + pos, "Volume: %6.2f%% ",
-                    portgroup_rep.volume[0]); 
+  if ((portgroup_rep.direction == OUTPUT) && (portgroup_rep.output_type == DIRECT)) {
+    pos += sprintf (*string + pos, "%d Channel ", portgroup_rep.channels);
   } else {
-    for (c = 0; c < portgroup_rep.channels; c++) {
-      pos += sprintf (*string + pos, "Chn %d Vol: %6.2f%% ",
-                      c,
-                      portgroup_rep.volume[c]);
+
+    if ((portgroup_rep.channels == 1) || ((portgroup_rep.channels == 2) &&
+         (portgroup_rep.volume[0] == portgroup_rep.volume[1]))) {
+   
+      pos += sprintf (*string + pos, "Volume: %6.2f%% ",
+                      portgroup_rep.volume[0]); 
+    } else {
+      for (c = 0; c < portgroup_rep.channels; c++) {
+        pos += sprintf (*string + pos, "Chn %d Vol: %6.2f%% ",
+                        c,
+                        portgroup_rep.volume[c]);
+      }
     }
   }
-  
+    
+  if (portgroup_rep.direction == OUTPUT) {
+    pos += sprintf (*string + pos, "%s ",
+                   portgroup_output_type_to_string (portgroup_rep.output_type));
+  }
+
+  pos += sprintf (*string + pos, "%-7s",
+                  portgroup_direction_to_string (portgroup_rep.direction));
+
   if (portgroup_rep.channels == 1) {
     pos += sprintf (*string + pos, "%-8s (Mono)",
                     portgroup_rep.sysname);
@@ -691,43 +710,46 @@ int kr_mixer_response_get_string_from_portgroup (unsigned char *ebml_frag, uint6
     pos += sprintf (*string + pos, "\n*Crossfade: %6.2f",
                     portgroup_rep.fade);
   }
+
+  if (portgroup_rep.direction == INPUT) {
   
-  if (portgroup_rep.has_xmms2 == 1) {
-    pos += sprintf (*string + pos, " [XMMS2] (%s)", portgroup_rep.xmms2_ipc_path);
+    if (portgroup_rep.has_xmms2 == 1) {
+      pos += sprintf (*string + pos, " [XMMS2] (%s)", portgroup_rep.xmms2_ipc_path);
+    }
+
+    pos += sprintf (*string + pos, "\n");
+
+    pos += sprintf (*string + pos, " EQ Band \t %6s \t %6s \t %2s\n", "Db", "Hz", "BW");
+    
+    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+      pos += sprintf (*string + pos, "     %2d:\t %6.2f \t %6.0f \t %0.2f\n",
+                      i, 
+                      portgroup_rep.eq.band[i].db,
+                      portgroup_rep.eq.band[i].hz,
+                      portgroup_rep.eq.band[i].bandwidth);
+    }
+    
+
+    //if (krad_mixer_portgroup_rep->lowpass.hz != ) {
+      pos += sprintf (*string + pos, "  Lowpass     Hz %8.2f      BW %5.2f\n", 
+                      portgroup_rep.lowpass.hz,
+                      portgroup_rep.lowpass.bandwidth);  
+    //}
+
+    //if (krad_mixer_portgroup_rep->highpass.hz != ) {
+      pos += sprintf (*string + pos, " Highpass     Hz %8.2f      BW %5.2f\n", 
+                      portgroup_rep.highpass.hz,
+                      portgroup_rep.highpass.bandwidth);
+    //}
+    
+    //if (krad_mixer_portgroup_rep->analog.drive != ) {
+      pos += sprintf (*string + pos, "   Analog  Drive    %5.2f   Blend %5.2f\n", 
+                      portgroup_rep.analog.drive,
+                      portgroup_rep.analog.blend);  
+    //}
+
+    pos += sprintf (*string + pos, "\n");
   }
-
-  pos += sprintf (*string + pos, "\n");
-
-  pos += sprintf (*string + pos, " EQ Band \t %6s \t %6s \t %2s\n", "Db", "Hz", "BW");
-  
-  for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-    pos += sprintf (*string + pos, "     %2d:\t %6.2f \t %6.0f \t %0.2f\n",
-                    i, 
-                    portgroup_rep.eq.band[i].db,
-                    portgroup_rep.eq.band[i].hz,
-                    portgroup_rep.eq.band[i].bandwidth);
-  }
-  
-
-  //if (krad_mixer_portgroup_rep->lowpass.hz != ) {
-    pos += sprintf (*string + pos, "  Lowpass     Hz %8.2f      BW %5.2f\n", 
-                    portgroup_rep.lowpass.hz,
-                    portgroup_rep.lowpass.bandwidth);  
-  //}
-
-  //if (krad_mixer_portgroup_rep->highpass.hz != ) {
-    pos += sprintf (*string + pos, " Highpass     Hz %8.2f      BW %5.2f\n", 
-                    portgroup_rep.highpass.hz,
-                    portgroup_rep.highpass.bandwidth);
-  //}
-  
-  //if (krad_mixer_portgroup_rep->analog.drive != ) {
-    pos += sprintf (*string + pos, "   Analog  Drive    %5.2f   Blend %5.2f\n", 
-                    portgroup_rep.analog.drive,
-                    portgroup_rep.analog.blend);  
-  //}
-
-  pos += sprintf (*string + pos, "\n");
 
   return pos; 
 }

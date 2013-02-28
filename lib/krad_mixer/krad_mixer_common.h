@@ -72,6 +72,8 @@ struct krad_mixer_portgroup_rep_St {
   char sysname[64];
   channels_t channels;
   int io_type;
+  krad_mixer_portgroup_direction_t direction;
+  krad_mixer_output_t output_type;
   
   char mixbus[64];
   char crossfade_group[64];
@@ -114,7 +116,8 @@ struct krad_effects_rep_St {
 char *krad_mixer_channel_number_to_string (int channel);
 char *effect_control_to_string (kr_mixer_effect_control_t effect_control);
 char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_control);
-
+char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction);
+char *portgroup_output_type_to_string (krad_mixer_output_t output_type);
 void krad_mixer_portgroup_rep_to_ebml (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, krad_ebml_t *krad_ebml);
 
 #endif

@@ -7,9 +7,15 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
   
   strcpy (portgroup_rep->sysname, portgroup->sysname);
   portgroup_rep->channels = portgroup->channels;
+  portgroup_rep->direction = portgroup->direction;
+  portgroup_rep->output_type = portgroup->output_type;
   portgroup_rep->io_type = portgroup->io_type;
   
-  strncpy (portgroup_rep->mixbus, portgroup->mixbus->sysname, sizeof(portgroup_rep->mixbus));
+  if (portgroup->mixbus != NULL) {
+    strncpy (portgroup_rep->mixbus, portgroup->mixbus->sysname, sizeof(portgroup_rep->mixbus));
+  } else {
+    portgroup_rep->mixbus[0] = '\0';
+  }
   
   for (i = 0; i < KRAD_MIXER_MAX_CHANNELS; i++) {
     portgroup_rep->volume[i] = portgroup->volume[i];
@@ -34,24 +40,42 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
   kr_pass_t *highpass;
   kr_analog_t *analog;
   
-  eq = (kr_eq_t *)portgroup->effects->effect[0].effect[0];
-  lowpass = (kr_lowpass_t *)portgroup->effects->effect[1].effect[0];
-  highpass = (kr_highpass_t *)portgroup->effects->effect[2].effect[0];
-  analog = (kr_analog_t *)portgroup->effects->effect[3].effect[0];
+  if (portgroup->direction == INPUT) {
+    eq = (kr_eq_t *)portgroup->effects->effect[0].effect[0];
+    lowpass = (kr_lowpass_t *)portgroup->effects->effect[1].effect[0];
+    highpass = (kr_highpass_t *)portgroup->effects->effect[2].effect[0];
+    analog = (kr_analog_t *)portgroup->effects->effect[3].effect[0];
 
-  for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-    portgroup_rep->eq.band[i].db = eq->band[i].db;
-    portgroup_rep->eq.band[i].bandwidth = eq->band[i].bandwidth;
-    portgroup_rep->eq.band[i].hz = eq->band[i].hz;
+    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+      portgroup_rep->eq.band[i].db = eq->band[i].db;
+      portgroup_rep->eq.band[i].bandwidth = eq->band[i].bandwidth;
+      portgroup_rep->eq.band[i].hz = eq->band[i].hz;
+    }
+    
+    portgroup_rep->lowpass.hz = lowpass->hz;
+    portgroup_rep->lowpass.bandwidth = lowpass->bandwidth;
+    portgroup_rep->highpass.hz = highpass->hz;
+    portgroup_rep->highpass.bandwidth = highpass->bandwidth;
+    
+    portgroup_rep->analog.drive = analog->drive;
+    portgroup_rep->analog.blend = analog->blend;
+  
+  } else {
+
+    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+      portgroup_rep->eq.band[i].db = 0.0f;
+      portgroup_rep->eq.band[i].bandwidth = 0.0f;
+      portgroup_rep->eq.band[i].hz = 0.0f;
+    }
+    
+    portgroup_rep->lowpass.hz = 0.0f;
+    portgroup_rep->lowpass.bandwidth = 0.0f;
+    portgroup_rep->highpass.hz = 0.0f;
+    portgroup_rep->highpass.bandwidth = 0.0f;
+    
+    portgroup_rep->analog.drive = 0.0f;
+    portgroup_rep->analog.blend = 0.0f;
   }
-  
-  portgroup_rep->lowpass.hz = lowpass->hz;
-  portgroup_rep->lowpass.bandwidth = lowpass->bandwidth;
-  portgroup_rep->highpass.hz = highpass->hz;
-  portgroup_rep->highpass.bandwidth = highpass->bandwidth;
-  
-  portgroup_rep->analog.drive = analog->drive;
-  portgroup_rep->analog.blend = analog->blend;
   
   if ((portgroup->crossfade_group != NULL) && (portgroup->crossfade_group->portgroup[0] == portgroup)) {
     portgroup_rep->fade = portgroup->crossfade_group->fade;
@@ -196,7 +220,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
     case EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS:
       for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
         portgroup = krad_mixer->portgroup[p];
-        if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2)) && (portgroup->direction == INPUT)) {
+        if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2))) {
           krad_mixer_portgroup_to_rep (portgroup, &portgroup_rep);
           krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
                                                                  &portgroup->address,
@@ -255,7 +279,7 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, portgroupname, ebml_data_size);
       portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
-      if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2)) && (portgroup->direction == INPUT)) {
+      if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2))) {
         krad_ipc_server_response_start_with_address_and_type ( krad_ipc,
                                                                &portgroup->address,
                                                                EBML_ID_KRAD_SUBUNIT_INFO,
