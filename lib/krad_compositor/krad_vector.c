@@ -52,6 +52,7 @@ void krad_vector_reset (krad_vector_t *vector) {
 }
 
 void krad_vector_set_type (krad_vector_t *vector, char *type) {
+
   vector->type = krad_string_to_vector_type (type);
   
   switch ( vector->type ) {
@@ -66,10 +67,10 @@ void krad_vector_set_type (krad_vector_t *vector, char *type) {
     case ARROW:
     case CLOCK:
     case SHADOW:
-
       vector->subunit.width = 96;
       vector->subunit.height = 96;
-
+    case NOTHING:
+      break;
   }
 }
 
@@ -731,10 +732,7 @@ static void krad_vector_render_shadow (cairo_t *cr, int x, int y, int w, int h, 
 
   pattern = cairo_pattern_create_mesh ();
 
-  cairo_set_source_rgba (cr, r, g, b, a);
-  cairo_paint (cr);
-
-  patch_rect (pattern, x - w /2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0, radius, 0, 0, 0, a);
+  patch_rect (pattern, x - w /2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0, radius, r, g, b, a);
 
   cairo_set_source (cr, pattern);
   cairo_paint (cr);
