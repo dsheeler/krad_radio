@@ -18,6 +18,7 @@ typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 #include "krad_radio.h"
 #include "krad_compositor_subunit.h"
 #include "krad_compositor_port.h"
+#include "krad_text.h"
 #include "krad_compositor_interface.h"
 
 #define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
@@ -106,6 +107,7 @@ struct krad_compositor_St {
   struct timespec start_time;
   kr_address_t address;
   
+  FT_Library ft_library;
   
   int had_a_subunit;
   
@@ -113,7 +115,8 @@ struct krad_compositor_St {
 
 void krad_compositor_subunit_create (krad_compositor_t *compositor,
                                      kr_compositor_subunit_t type,
-                                     char *option);
+                                     char *option,
+                                     char *option2);
 int krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address);
 void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_control_t *uc);
 

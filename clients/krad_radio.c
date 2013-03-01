@@ -557,19 +557,22 @@ int main (int argc, char *argv[]) {
   
   if ((strlen(argv[2]) == 9) && (strncmp(argv[2], "addsprite", 9) == 0)) {
     if (argc == 4) {
-      kr_compositor_subunit_create (client, KR_SPRITE, argv[3]);
+      kr_compositor_subunit_create (client, KR_SPRITE, argv[3], NULL);
     }
   }
   
   if ((strlen(argv[2]) == 7) && (strncmp(argv[2], "addtext", 7) == 0)) {
     if (argc == 4) {
-      kr_compositor_subunit_create (client, KR_TEXT, argv[3]);
+      kr_compositor_subunit_create (client, KR_TEXT, argv[3], NULL);
+    }
+    if (argc == 5) {
+      kr_compositor_subunit_create (client, KR_TEXT, argv[3], argv[4]);
     }
   }
   
   if ((strlen(argv[2]) > 5) && (strncmp(argv[2], "addvec", 6) == 0)) {
     if (argc == 4) {
-      kr_compositor_subunit_create (client, KR_VECTOR, argv[3]);
+      kr_compositor_subunit_create (client, KR_VECTOR, argv[3], NULL);
     }
   }
 

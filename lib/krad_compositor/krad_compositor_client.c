@@ -610,7 +610,8 @@ int kr_compositor_response_to_string (kr_response_t *kr_response, char **string)
 
 int kr_compositor_subunit_create (kr_client_t *client,
                                   kr_compositor_subunit_t type,
-                                  char *option) {
+                                  char *option,
+                                  char *option2) {
   uint64_t command;
   uint64_t subunit;
   
@@ -629,11 +630,16 @@ int kr_compositor_subunit_create (kr_client_t *client,
       return 0;
   }
 
+  if (option2 == NULL) {
+    option2 = "";
+  }
+
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
   krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT, &subunit);
 
   krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, type);
   krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, option);
+  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, option2);
 
   krad_ebml_finish_element (client->krad_ebml, subunit);
   krad_ebml_finish_element (client->krad_ebml, command);

@@ -1,5 +1,7 @@
 #include "krad_text.h"
 
+static void krad_text_set_font (krad_text_t *krad_text, char *font);
+
 void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
   
   int s;
@@ -13,7 +15,7 @@ void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
   free (krad_text);
 }
 
-krad_text_t *krad_text_create_arr (int count) {
+krad_text_t *krad_text_create_arr (FT_Library *ft_library, int count) {
 
   int s;
   krad_text_t *krad_text;
@@ -25,6 +27,7 @@ krad_text_t *krad_text_create_arr (int count) {
   }
   
   for (s = 0; s < count; s++) {
+    krad_text[s].ft_library = ft_library;
     krad_text[s].subunit.address.path.unit = KR_COMPOSITOR;
     krad_text[s].subunit.address.path.subunit.compositor_subunit = KR_TEXT;
     krad_text[s].subunit.address.id.number = s;
@@ -35,17 +38,49 @@ krad_text_t *krad_text_create_arr (int count) {
 }
 
 void krad_text_reset (krad_text_t *krad_text) {
+
+  if (krad_text->cairo_ft_face != NULL) {
+    cairo_font_face_destroy (krad_text->cairo_ft_face);
+    krad_text->cairo_ft_face = NULL;
+    if (FT_Done_Face (krad_text->ft_face) != 0) {
+      printke ("Hrm I guess we didn't need to free that font face.");
+    }
+  }
+
   strcpy (krad_text->font, KRAD_TEXT_DEFAULT_FONT);
   krad_compositor_subunit_reset (&krad_text->subunit);
 }
 
-void krad_text_set_text (krad_text_t *krad_text, char *text) {
+void krad_text_set_text (krad_text_t *krad_text, char *text, char *font) {
   strcpy (krad_text->text_actual, text);
-  krad_text->subunit.xscale = 32.0f;
+  krad_text->subunit.xscale = 42.0f;
+  krad_text_set_font (krad_text, font);
 }
 
-void krad_text_set_font (krad_text_t *krad_text, char *font) {
-  strcpy (krad_text->font, font);
+static void krad_text_set_font (krad_text_t *krad_text, char *font) {
+
+  static const cairo_user_data_key_t key;
+  int len;
+  int status;
+  len = strlen (KRAD_TEXT_DEFAULT_FONT);
+
+  if ((strlen(krad_text->font) == len) &&
+      (strncmp(krad_text->font, KRAD_TEXT_DEFAULT_FONT, len) == 0)) {
+    strcpy (krad_text->font, font);
+    if (FT_New_Face (*krad_text->ft_library, krad_text->font, 0, &krad_text->ft_face) == 0) {
+      FT_Set_Char_Size (krad_text->ft_face, 0, 50.0, 100, 100 );
+      krad_text->cairo_ft_face = cairo_ft_font_face_create_for_ft_face (krad_text->ft_face, 0);
+      // something is wacky about this destroy func and calling FT_DONE_FACE above
+      // but it doesn't crash :/
+      status = cairo_font_face_set_user_data (krad_text->cairo_ft_face, &key,
+                                              krad_text->ft_face, (cairo_destroy_func_t) FT_Done_Face);
+      if (status) {
+         cairo_font_face_destroy (krad_text->cairo_ft_face);
+         krad_text->cairo_ft_face = NULL;
+         FT_Done_Face (krad_text->ft_face);
+      }
+    }
+  }
 }
 
 /*
@@ -87,7 +122,11 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
     cairo_translate (cr, krad_text->subunit.x * -1, krad_text->subunit.y * -1);
   }  
 
-  cairo_select_font_face (cr, krad_text->font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+  if (krad_text->cairo_ft_face != NULL) {
+    cairo_set_font_face (cr, krad_text->cairo_ft_face);
+  } else {
+    cairo_select_font_face (cr, krad_text->font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);  
+  }
   cairo_set_font_size (cr, krad_text->subunit.xscale);
   cairo_set_source_rgba (cr,
                          krad_text->subunit.red,
@@ -97,6 +136,7 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
   
   cairo_move_to (cr, krad_text->subunit.x, krad_text->subunit.y);
   cairo_show_text (cr, krad_text->text_actual);
+  //cairo_show_glyphs (cr, cairo_glyphs, glyph_count);
 }
 
 void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {

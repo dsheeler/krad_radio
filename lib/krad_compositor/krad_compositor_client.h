@@ -25,7 +25,8 @@ int kr_compositor_response_to_string (kr_response_t *kr_response, char **string)
 void kr_compositor_subunit_list (kr_client_t *client);
 int kr_compositor_subunit_create (kr_client_t *client,
                                   kr_compositor_subunit_t type,
-                                  char *option);
+                                  char *option,
+                                  char *option2);
 void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address);
 
 void kr_compositor_info (kr_client_t *client);
