@@ -98,7 +98,7 @@ int krad_compositor_wayland_display_render_callback (void *pointer, uint32_t tim
   
   updated = 0;
   
-  krad_compositor_v4l2_out_render_callback (&krad_compositor_wayland_display->v4l2out, time);
+  //krad_compositor_v4l2_out_render_callback (&krad_compositor_wayland_display->v4l2out, time);
 
   krad_frame = krad_compositor_port_pull_frame (krad_compositor_wayland_display->krad_compositor_port);
 
@@ -145,7 +145,7 @@ static void *krad_compositor_display_thread (void *arg) {
   krad_compositor_wayland_display->krad_compositor_port = krad_compositor_port_create (krad_compositor, "WLOut", OUTPUT,
                                              krad_compositor_wayland_display->w,
                                              krad_compositor_wayland_display->h);
-
+  /*
   //tempv4l2out
   krad_compositor_wayland_display->v4l2out.device = "/dev/video2";
   krad_compositor_get_resolution (krad_compositor,
@@ -193,7 +193,7 @@ static void *krad_compositor_display_thread (void *arg) {
   
   
   //endtempv4l2out
-
+  */
   //krad_wayland->render_test_pattern = 1;
 
   krad_wayland_set_frame_callback (krad_compositor_wayland_display->krad_wayland,
@@ -215,12 +215,13 @@ static void *krad_compositor_display_thread (void *arg) {
     krad_wayland_iterate (krad_compositor_wayland_display->krad_wayland);
   }
 
-
+  /*
   //tempv4l2out
   krad_compositor_port_destroy (krad_compositor, krad_compositor_wayland_display->v4l2out.krad_compositor_port);
   close (krad_compositor_wayland_display->v4l2out.fd);
   free ( krad_compositor_wayland_display->v4l2out.buffer);
   //endtempv4l2out
+  */
 
   krad_wayland_close_window (krad_compositor_wayland_display->krad_wayland);
 
