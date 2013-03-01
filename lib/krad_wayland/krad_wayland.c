@@ -333,6 +333,10 @@ static void krad_wayland_destroy_display (krad_wayland_t *krad_wayland) {
 		wl_compositor_destroy (krad_wayland->display->compositor);
 	}
 	
+	if (krad_wayland->display->seat) {
+	  wl_seat_destroy (krad_wayland->display->seat);
+	}
+
 	wl_registry_destroy (krad_wayland->display->registry);
 
 	wl_display_flush (krad_wayland->display->display);
