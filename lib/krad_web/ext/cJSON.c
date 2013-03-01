@@ -56,8 +56,8 @@ static void *cjson_malloc (size_t sz) {
   cjson_mempos += sz;
   //printke ("hrm %d %u %u", count++, cjson_mempos, sz);
   if (cjson_mempos > CJSON_MEMSIZE) {
-    printke ("hrm CJSON frak %u %u", cjson_mempos, sz);
-    exit(3);
+    //printke ("hrm CJSON frak %u %u", cjson_mempos, sz);
+    exit(6);
   }
   
   return ptr;
