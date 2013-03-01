@@ -1139,16 +1139,6 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
   krad_compositor_port->frame_ring = 
   krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * sizeof(krad_frame_t *) );
 
-  if (krad_compositor_port->local == 0) {
-    krad_compositor_port->frame_ring = 
-    krad_ringbuffer_create ( DEFAULT_COMPOSITOR_BUFFER_FRAMES * sizeof(krad_frame_t *) );
-    if (krad_compositor_port->frame_ring == NULL) {
-      failfast ("oh dearring im out of mem");
-    }
-  } else {
-    krad_compositor_port->frame_ring = NULL;
-  }
-
   krad_compositor->active_ports++;
   if (krad_compositor_port->direction == INPUT) {
     krad_compositor->active_input_ports++;
@@ -1375,8 +1365,9 @@ void krad_compositor_set_dir (krad_compositor_t *krad_compositor, char *dir) {
   if (krad_compositor->dir != NULL) {
     free (krad_compositor->dir);
   }
-
-  krad_compositor->dir = strdup (dir);
+  if (dir != NULL) {
+    krad_compositor->dir = strdup (dir);
+  }
 }
 
 void krad_compositor_get_frame_rate (krad_compositor_t *krad_compositor,
@@ -1852,7 +1843,7 @@ void krad_compositor_destroy (krad_compositor_t *compositor) {
   krad_vector_destroy_arr (compositor->vector, KC_MAX_VECTORS);
   
   FT_Done_FreeType (compositor->ft_library);
-  
+  krad_compositor_set_dir (compositor, NULL);
   free (compositor);
 
   printk ("Krad Compositor: Destroy Complete");
