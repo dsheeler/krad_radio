@@ -113,9 +113,9 @@ static krad_radio_t *krad_radio_create (char *sysname) {
   }
   
   krad_radio->krad_compositor = krad_compositor_create (DEFAULT_COMPOSITOR_WIDTH,
-                              DEFAULT_COMPOSITOR_HEIGHT,
-                              DEFAULT_COMPOSITOR_FPS_NUMERATOR,
-                              DEFAULT_COMPOSITOR_FPS_DENOMINATOR);
+                                                        DEFAULT_COMPOSITOR_HEIGHT,
+                                                        DEFAULT_COMPOSITOR_FPS_NUMERATOR,
+                                                        DEFAULT_COMPOSITOR_FPS_DENOMINATOR);
   
   if (krad_radio->krad_compositor == NULL) {
     krad_radio_shutdown (krad_radio);
@@ -228,7 +228,7 @@ void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) 
 
 static void krad_radio_start (krad_radio_t *krad_radio) {
 
-	struct timespec start_sync;
+  struct timespec start_sync;
 
   krad_system_monitor_cpu_on ();
     

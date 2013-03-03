@@ -52,6 +52,9 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
   cJSON *part4;
   cJSON *part5;
 
+  sub_id = 0;
+  floatval = 0;
+
   part = NULL;
   part2 = NULL;
   part3 = NULL;

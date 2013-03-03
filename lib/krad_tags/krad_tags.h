@@ -14,26 +14,24 @@ typedef struct krad_tag_St krad_tag_t;
 typedef struct krad_tags_St krad_tags_t;
 
 struct krad_tag_St {
-	char *name;
-	char *value;
+  char *name;
+  char *value;
 };
 
 struct krad_tags_St {
-	krad_tag_t *tags;
-	char *item;
-	pthread_rwlock_t krad_tags_rwlock;
-	
-	void *callback_pointer;
-	void (*set_tag_callback)( void *, char *, char *, char *, int);
-	
+  krad_tag_t *tags;
+  char *item;
+  pthread_rwlock_t krad_tags_rwlock;
+  
+  void *callback_pointer;
+  void (*set_tag_callback)( void *, char *, char *, char *, int);
 };
-
 
 void krad_tags_destroy (krad_tags_t *krad_tags);
 krad_tags_t *krad_tags_create ();
 
 void krad_tags_set_set_tag_callback (krad_tags_t *krad_tags, void *calllback_pointer, 
-									 void (*set_tag_callback)( void *, char *, char *, char *, int));
+                   void (*set_tag_callback)( void *, char *, char *, char *, int));
 
 char *krad_tags_get_tag (krad_tags_t *krad_tags, char *name);
 void krad_tags_set_tag (krad_tags_t *krad_tags, char *name, char *value);
