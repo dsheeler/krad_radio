@@ -129,7 +129,7 @@ static krad_stream_t *krad_stream_open (char *host, int port, char *mount, char 
   struct addrinfo *res;
 
   krad_stream = NULL;
-  res = NULL;  
+  res = NULL;
   http_string_pos = 0;
 
   krad_stream = calloc (1, sizeof(krad_stream_t));

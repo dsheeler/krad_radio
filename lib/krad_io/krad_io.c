@@ -209,6 +209,7 @@ int krad_io_stream_open (krad_io_t *krad_io) {
   struct addrinfo hints;
   struct addrinfo *res;
 
+  res = NULL;
   http_string_pos = 0;
 
   printkd ("Krad io: Connecting to %s:%d", krad_io->host, krad_io->port);
