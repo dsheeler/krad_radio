@@ -1,7 +1,7 @@
 #include "krad_system.h"
 
-int krad_system_initialized;
-krad_system_t krad_system;
+static int krad_system_initialized;
+static krad_system_t krad_system;
 
 int krad_control_init (krad_control_t *krad_control) {
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, krad_control->sockets)) {
@@ -135,27 +135,26 @@ void krad_system_log_on (char *filename) {
     krad_system_log_off ();
   }
 
-  pthread_mutex_lock (&krad_system.log_lock);
+  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
   krad_system.log_fd = open (filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (krad_system.log_fd > 0) {
     dprintf (krad_system.log_fd, "Log %d started\n", krad_system.lognum);
   } else {
     failfast ("frak");
   }
-  pthread_mutex_unlock (&krad_system.log_lock);
+  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
 }
 
 void krad_system_log_off () {
 
-  pthread_mutex_lock (&krad_system.log_lock);
+  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
   if (krad_system.log_fd > 0) {
     dprintf (krad_system.log_fd, "Log %d ended\n", krad_system.lognum++);
     fsync (krad_system.log_fd);
     close (krad_system.log_fd);
     krad_system.log_fd = 0;
   }
-  pthread_mutex_unlock (&krad_system.log_lock);
-
+  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
 }
 
 void *krad_system_monitor_cpu_thread (void *arg) {
@@ -265,6 +264,14 @@ char *krad_system_info () {
   return krad_system.info_string;
 }
 
+char *krad_system_cpu_type () {
+  return krad_system.unix_info.machine;
+}
+
+char *krad_system_os_type () {
+  return krad_system.unix_info.sysname;
+}
+
 void krad_system_info_collect () {
   
   krad_system.info_string_len = 0;
@@ -312,19 +319,17 @@ void krad_system_daemon_wait () {
   }
 }
 
-
-//FIXME these prints need locks or single/reader/writer buffers/handles
 void failfast (char* format, ...) {
 
   va_list args;
   if (krad_system.log_fd > 0) {
-    pthread_mutex_lock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     dprintf (krad_system.log_fd, "\n***ERROR! FAILURE!\n");
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    pthread_mutex_unlock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
     krad_system_log_off ();
   }
   exit (1);
@@ -335,13 +340,13 @@ void printke (char* format, ...) {
   va_list args;
 
   if (krad_system.log_fd > 0) {
-    pthread_mutex_lock (&krad_system.log_lock);    
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     dprintf (krad_system.log_fd, "***ERROR!: ");
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    pthread_mutex_unlock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
   }
 }
 
@@ -350,12 +355,12 @@ void printkd (char* format, ...) {
   va_list args;
 
   if (krad_system.log_fd > 0) {
-    pthread_mutex_lock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    pthread_mutex_unlock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
   }
 }
 
@@ -364,12 +369,12 @@ void printk (char* format, ...) {
   va_list args;
 
   if (krad_system.log_fd > 0) {
-    pthread_mutex_lock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    pthread_mutex_unlock (&krad_system.log_lock);
+    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
   }
 }
 
@@ -378,10 +383,10 @@ void krad_system_init () {
 
   if (krad_system_initialized != 31337) {
     krad_system_initialized = 31337;
+    krad_system.log_in_use = 0;
     krad_system.kcm.interval = KRAD_CPU_MONITOR_INTERVAL;
-    pthread_mutex_init (&krad_system.log_lock, NULL);
     krad_system_info_collect ();
-      srand (time(NULL));
+    srand (time(NULL));
   }
 }
 

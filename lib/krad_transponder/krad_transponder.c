@@ -1,6 +1,126 @@
 #include "krad_transponder.h"
 
+#ifdef KRAD_USE_WAYLAND
+
+int wayland_display_unit_render_callback (void *pointer, uint32_t time) {
+
+  krad_link_t *krad_link = (krad_link_t *)pointer;
+
+  int ret;
+  char buffer[1];
+  int updated;
+  krad_frame_t *krad_frame;
+  
+  updated = 0;
+  
+  krad_frame = krad_compositor_port_pull_frame (krad_link->krad_compositor_port2);
+
+  if (krad_frame != NULL) {
+  
+    //FIXME do this first etc
+    ret = read (krad_link->krad_compositor_port2->socketpair[1], buffer, 1);
+    if (ret != 1) {
+      if (ret == 0) {
+        printk ("Krad OTransponder: port read got EOF");
+        return updated;
+      }
+      printk ("Krad OTransponder: port read unexpected read return value %d", ret);
+    }
+
+    memcpy (krad_link->wl_buffer,
+            krad_frame->pixels,
+            krad_link->composite_width * krad_link->composite_height * 4);
+
+    krad_framepool_unref_frame (krad_frame);
+    updated = 1;
+  }
+  return updated;
+}
+
+void wayland_display_unit_create (void *arg) {
+
+  krad_link_t *krad_link = (krad_link_t *)arg;
+
+  krad_system_set_thread_name ("kr_wl_dsp");
+  
+  printk ("Wayland display thread begins");
+  
+  krad_link->krad_wayland = krad_wayland_create ();
+
+  krad_link->krad_compositor_port2 = krad_compositor_port_create (krad_link->krad_radio->krad_compositor, "WLOut", OUTPUT,
+                                                                  krad_link->composite_width,
+                                                                  krad_link->composite_height);
+  //krad_link->krad_wayland->render_test_pattern = 1;
+
+  krad_wayland_set_frame_callback (krad_link->krad_wayland,
+                   wayland_display_unit_render_callback,
+                   krad_link);
+
+  krad_wayland_prepare_window (krad_link->krad_wayland,
+                 krad_link->composite_width,
+                 krad_link->composite_height,
+                 &krad_link->wl_buffer);
+
+  printk ("Wayland display prepared");
+
+  krad_wayland_open_window (krad_link->krad_wayland);
+
+  printk("Wayland display running");
+}
+
+int wayland_display_unit_process (void *arg) {
+
+  krad_link_t *krad_link = (krad_link_t *)arg;
+  
+  krad_wayland_iterate (krad_link->krad_wayland);
+  
+  return 0;
+}
+
+void wayland_display_unit_destroy (void *arg) {
+
+  krad_link_t *krad_link = (krad_link_t *)arg;
+  
+  krad_wayland_close_window (krad_link->krad_wayland);
+  krad_wayland_destroy (krad_link->krad_wayland);
+  krad_compositor_port_destroy (krad_link->krad_radio->krad_compositor,
+                                krad_link->krad_compositor_port2);
+
+  printk ("Wayland display thread exited");
+}
+
+#endif
+
 #ifndef __MACH__
+/*
+void v4l2_loopout_unit_create (void *arg) {
+
+  krad_link_t *krad_link = (krad_link_t *)arg;
+
+  krad_system_set_thread_name ("kr_v4l2_lo");
+  
+  printk ("V4L2 Loop Output thread begins");
+  
+
+}
+
+int v4l2_loopout_unit_process (void *arg) {
+
+  krad_link_t *krad_link = (krad_link_t *)arg;
+  
+  return 0;
+}
+
+void v4l2_loopout_unit_destroy (void *arg) {
+
+  krad_link_t *krad_link = (krad_link_t *)arg;
+  
+
+
+  printk ("V4L2 Loop Output thread exited");
+  
+}
+*/
 
 void v4l2_capture_unit_create (void *arg) {
   //krad_system_set_thread_name ("kr_cap_v4l2");
@@ -64,40 +184,41 @@ int v4l2_capture_unit_process (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
 
-  void *captured_frame = NULL;
+  void *captured_frame;
   krad_frame_t *krad_frame;
+  
+  captured_frame = NULL;
+  krad_frame = NULL;
 
   captured_frame = krad_v4l2_read (krad_link->krad_v4l2);    
 
-  krad_frame = krad_framepool_getframe (krad_link->krad_framepool);
-
-  if (krad_link->video_passthru == 1) {
-    memcpy (krad_frame->pixels, captured_frame, krad_link->krad_v4l2->encoded_size);
-    krad_frame->encoded_size = krad_link->krad_v4l2->encoded_size;
-    krad_compositor_port_push_frame (krad_link->krad_compositor_port, krad_frame);
-  } else {
-    if (krad_link->video_codec == MJPEG) {
-      krad_v4l2_mjpeg_to_rgb (krad_link->krad_v4l2, (unsigned char *)krad_frame->pixels,
-                             captured_frame, krad_link->krad_v4l2->encoded_size);      
-      krad_compositor_port_push_rgba_frame (krad_link->krad_compositor_port, krad_frame);
-    } else {
-      krad_frame->format = PIX_FMT_YUYV422;
-      krad_frame->yuv_pixels[0] = captured_frame;
-      krad_frame->yuv_pixels[1] = NULL;
-      krad_frame->yuv_pixels[2] = NULL;
-      krad_frame->yuv_strides[0] = krad_link->capture_width + (krad_link->capture_width/2) * 2;
-      krad_frame->yuv_strides[1] = 0;
-      krad_frame->yuv_strides[2] = 0;
-      krad_frame->yuv_strides[3] = 0;
-      krad_compositor_port_push_yuv_frame (krad_link->krad_compositor_port, krad_frame);
+  if (captured_frame != NULL) {
+    krad_frame = krad_framepool_getframe (krad_link->krad_framepool);
+    if (krad_frame != NULL) {
+      if (krad_link->video_passthru == 1) {
+        memcpy (krad_frame->pixels, captured_frame, krad_link->krad_v4l2->encoded_size);
+        krad_frame->encoded_size = krad_link->krad_v4l2->encoded_size;
+        krad_compositor_port_push_frame (krad_link->krad_compositor_port, krad_frame);
+      } else {
+        if (krad_link->video_codec == MJPEG) {
+          krad_v4l2_mjpeg_to_rgb (krad_link->krad_v4l2, (unsigned char *)krad_frame->pixels,
+                                 captured_frame, krad_link->krad_v4l2->encoded_size);      
+          krad_compositor_port_push_rgba_frame (krad_link->krad_compositor_port, krad_frame);
+        } else {
+          krad_frame->format = PIX_FMT_YUYV422;
+          krad_frame->yuv_pixels[0] = captured_frame;
+          krad_frame->yuv_pixels[1] = NULL;
+          krad_frame->yuv_pixels[2] = NULL;
+          krad_frame->yuv_strides[0] = krad_link->capture_width + (krad_link->capture_width/2) * 2;
+          krad_frame->yuv_strides[1] = 0;
+          krad_frame->yuv_strides[2] = 0;
+          krad_frame->yuv_strides[3] = 0;
+          krad_compositor_port_push_yuv_frame (krad_link->krad_compositor_port, krad_frame);
+        }
+      }
+      krad_framepool_unref_frame (krad_frame);
     }
-  }
-
-  krad_v4l2_frame_done (krad_link->krad_v4l2);
-  krad_framepool_unref_frame (krad_frame);
-
-  if (krad_link->video_passthru == 1) {
-    //FIXME
+    krad_v4l2_frame_done (krad_link->krad_v4l2);
   }
 
   return 0;
@@ -1633,7 +1754,11 @@ void krad_link_destroy (krad_link_t *krad_link) {
   printk ("Link shutting down");
 
   if (krad_link->operation_mode == CAPTURE) {
-    krad_Xtransponder_subunit_remove (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap_graph_id);  
+    krad_Xtransponder_subunit_remove (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap_graph_id);
+    
+    if (krad_link->cap2_graph_id != 0) {
+      krad_Xtransponder_subunit_remove (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap2_graph_id);
+    }
   }
 
   if ((krad_link->operation_mode == TRANSMIT) || (krad_link->operation_mode == RECORD)) {
@@ -1758,6 +1883,22 @@ void krad_link_start (krad_link_t *krad_link) {
       memset (watch, 0, sizeof(krad_transponder_watch_t));
       krad_link->cap_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap_graph_id);
     }
+    
+#ifdef KRAD_USE_WAYLAND
+    //LOL FIXME
+    if (krad_link->video_source == V4L2) {
+      wayland_display_unit_create ((void *)krad_link);
+      watch->fd = krad_link->krad_wayland->display_fd;
+      watch->callback_pointer = (void *)krad_link;
+      watch->readable_callback = wayland_display_unit_process;
+      watch->destroy_callback = wayland_display_unit_destroy;
+      krad_link->cap2_graph_id = krad_Xtransponder_add_capture (krad_link->krad_transponder->krad_Xtransponder, watch);
+      memset (watch, 0, sizeof(krad_transponder_watch_t));
+      krad_link->cap2_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap2_graph_id);      
+    }
+    
+#endif
+    
 #ifdef KR_LINUX
     if (krad_link->video_source == V4L2) {
       v4l2_capture_unit_create ((void *)krad_link);

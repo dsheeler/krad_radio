@@ -367,7 +367,7 @@ static void krad_wayland_create_display (krad_wayland_t *krad_wayland) {
   krad_wayland->display->registry = wl_display_get_registry (krad_wayland->display->display);
   wl_registry_add_listener (krad_wayland->display->registry, &krad_wayland->display->registry_listener, krad_wayland);
 	wl_display_roundtrip (krad_wayland->display->display);
-	wl_display_get_fd (krad_wayland->display->display);
+	krad_wayland->display_fd = wl_display_get_fd (krad_wayland->display->display);
 }
 
 static void krad_wayland_destroy_window (krad_wayland_t *krad_wayland) {
@@ -516,12 +516,15 @@ int krad_wayland_open_window (krad_wayland_t *krad_wayland) {
 
 	krad_wayland_frame_listener (krad_wayland, NULL, 0);
 
+	wl_display_roundtrip (krad_wayland->display->display);
+
 	return 0;
 }
 
 void krad_wayland_iterate (krad_wayland_t *krad_wayland) {
 	//wl_display_iterate (krad_wayland->display->display, krad_wayland->display->mask);
 	wl_display_dispatch (krad_wayland->display->display);
+		wl_display_roundtrip (krad_wayland->display->display);
 }
 
 void krad_wayland_close_window (krad_wayland_t *krad_wayland) {

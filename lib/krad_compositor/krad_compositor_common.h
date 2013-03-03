@@ -139,7 +139,6 @@ struct krad_compositor_rep_St {
 
   uint64_t frames;
   
-  char snapshot_filename[256];
   char background_filename[256];
 };
 

@@ -13,7 +13,6 @@
 
 typedef struct krad_compositor_port_St krad_compositor_port_t;
 typedef struct krad_compositor_St krad_compositor_t;
-typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 
 #include "krad_radio.h"
 #include "krad_compositor_subunit.h"
@@ -32,28 +31,6 @@ typedef struct krad_compositor_snapshot_St krad_compositor_snapshot_t;
 #define GREY 0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255 * 1.0
 #define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.255 / 0.255   * 1.0
 
-typedef enum {
-  SYNTHETIC = 13999,
-  WAYLAND,
-} krad_display_api_t;
-
-typedef enum {
-  SNAPJPEG = 20000,  
-  SNAPPNG,
-} krad_snapshot_fmt_t;
-
-struct krad_compositor_snapshot_St {
-
-  int jpeg;
-  krad_frame_t *krad_frame;
-  char filename[512];
-
-  int width;
-  int height;
-
-  krad_compositor_t *krad_compositor;
-};
-
 struct krad_compositor_St {
 
   cairo_t *cr;
@@ -70,7 +47,6 @@ struct krad_compositor_St {
   uint64_t timecode;
 
   int frame_byte_size;
-  char *dir;
   
   krad_sprite_t *sprite;
   int active_sprites;
@@ -90,15 +66,6 @@ struct krad_compositor_St {
 
   krad_sprite_t *background;
 
-  int snapshot;
-  int snapshot_jpeg;  
-  pthread_t snapshot_thread;
-  char last_snapshot_name[512];
-
-  int display_open;
-  pthread_t display_thread;
-
-  krad_display_api_t pusher;
   krad_ticker_t *krad_ticker;
   int ticker_running;
   int ticker_period;
@@ -128,11 +95,6 @@ void krad_compositor_start_ticker (krad_compositor_t *krad_compositor);
 void krad_compositor_start_ticker_at (krad_compositor_t *krad_compositor, struct timespec start_time);
 void krad_compositor_stop_ticker (krad_compositor_t *krad_compositor);
 
-krad_display_api_t krad_compositor_get_pusher (krad_compositor_t *krad_compositor);
-int krad_compositor_has_pusher (krad_compositor_t *krad_compositor);
-void krad_compositor_set_pusher (krad_compositor_t *krad_compositor, krad_display_api_t pusher);
-void krad_compositor_unset_pusher (krad_compositor_t *krad_compositor);
-
 void krad_compositor_port_destroy (krad_compositor_t *krad_compositor, krad_compositor_port_t *krad_compositor_port);
 krad_compositor_port_t *krad_compositor_port_create (krad_compositor_t *krad_compositor, char *sysname, int direction,
                                                      int width, int height);
@@ -158,11 +120,6 @@ krad_frame_t *krad_compositor_port_pull_yuv_frame (krad_compositor_port_t *krad_
 void krad_compositor_get_frame_rate (krad_compositor_t *krad_compositor,
                                      int *fps_numerator, int *fps_denominator);
 void krad_compositor_get_resolution (krad_compositor_t *compositor, int *width, int *height);
-
-void krad_compositor_get_last_snapshot_name (krad_compositor_t *krad_compositor, char *filename);
-void krad_compositor_take_snapshot (krad_compositor_t *krad_compositor, krad_frame_t *krad_frame, krad_snapshot_fmt_t format);
-void krad_compositor_set_dir (krad_compositor_t *krad_compositor, char *dir);
-
 void krad_compositor_close_display (krad_compositor_t *krad_compositor);
 void krad_compositor_open_display (krad_compositor_t *krad_compositor);
 

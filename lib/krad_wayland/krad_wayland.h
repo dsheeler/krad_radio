@@ -66,6 +66,8 @@ struct krad_wayland_St {
 
 	krad_wayland_window_t *window;
 	krad_wayland_display_t *display;
+	
+	int display_fd;
 
 	int frame_size;
 	struct wl_buffer *buffer[KRAD_WAYLAND_BUFFER_COUNT];

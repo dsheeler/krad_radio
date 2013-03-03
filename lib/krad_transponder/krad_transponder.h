@@ -51,6 +51,8 @@ struct krad_link_St {
 	krad_mixer_portgroup_t *krad_mixer_portgroup;
 	krad_compositor_port_t *krad_compositor_port;
 
+	krad_compositor_port_t *krad_compositor_port2;
+
 	krad_decklink_t *krad_decklink;
 	krad_x11_t *krad_x11;
 	krad_vpx_encoder_t *krad_vpx_encoder;
@@ -141,6 +143,7 @@ struct krad_link_St {
 	krad_Xtransponder_subunit_t *aud_subunit;
 	krad_Xtransponder_subunit_t *vud_subunit;
 	krad_Xtransponder_subunit_t *cap_subunit;
+	krad_Xtransponder_subunit_t *cap2_subunit;
 	krad_Xtransponder_subunit_t *demux_subunit;
 	krad_Xtransponder_subunit_t *mux_subunit;
 
@@ -165,6 +168,7 @@ struct krad_link_St {
   int au_graph_id;
   int vu_graph_id;
   int cap_graph_id;
+  int cap2_graph_id;
   int demux_graph_id;
   int mux_graph_id;
   
@@ -185,7 +189,10 @@ struct krad_link_St {
   int muxer_seen_passthu_keyframe;
   int muxer_initial_passthu_frames_skipped;
 
-  
+#ifdef KRAD_USE_WAYLAND
+  krad_wayland_t *krad_wayland;
+  void *wl_buffer;
+#endif
 };
 
 

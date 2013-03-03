@@ -288,8 +288,7 @@ int main (int argc, char *argv[]) {
       kr_set_tag (client, argv[3], argv[4], argv[5]);
     }
   }
-  
-  
+
   if (((strlen(argv[2]) == 6) && (strncmp(argv[2], "remote", 6) == 0)) || 
       ((strlen(argv[2]) == 7) && (strncmp(argv[2], "remotes", 7) == 0))) {
     kr_remote_list (client);

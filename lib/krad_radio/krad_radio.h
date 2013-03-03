@@ -68,15 +68,15 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_vector.h"
 #include "krad_text.h"
 #include "krad_perspective.h"
+#ifdef KRAD_USE_WAYLAND
+#include "krad_wayland.h"
+#endif
 #include "krad_compositor.h"
 #include "krad_transponder_common.h"
 #include "krad_transponder_graph.h"
 #include "krad_transponder.h"
 #include "krad_receiver.h"
 
-#ifdef KRAD_USE_WAYLAND
-#include "krad_wayland.h"
-#endif
 
 extern krad_system_t krad_system;
 

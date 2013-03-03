@@ -200,10 +200,6 @@ void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t *kr_co
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, kr_compositor_rep->background_filename);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, kr_compositor_rep->snapshot_filename);
-
 }
 
 void kr_ebml_to_comp_controls (unsigned char *ebml_frag, kr_comp_controls_t *controls) {
@@ -444,12 +440,6 @@ int kr_compositor_response_get_string_from_compositor (unsigned char *ebml_frag,
   } else {
     pos += sprintf (*string + pos, "Background: Unset\n");
   }
-  if (strlen(kr_compositor.snapshot_filename)) {
-    pos += sprintf (*string + pos, "Last Snapshot: %s", kr_compositor.snapshot_filename);
-  } else {
-    pos += sprintf (*string + pos, "Last Snapshot: None");
-  }
-
   return pos; 
 }
 

@@ -224,18 +224,10 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       } else {
         krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, "");
       }
-      krad_compositor_get_last_snapshot_name (krad_compositor, string);
-      krad_ipc_server_respond_string ( krad_ipc, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, string);
       krad_ipc_server_response_finish ( krad_ipc, info_loc);
       krad_ipc_server_payload_finish ( krad_ipc, payload_loc );
       krad_ipc_server_response_finish ( krad_ipc, response );
       return 1;
-    case EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT:
-      krad_compositor->snapshot++;
-      break;
-    case EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT_JPEG:
-      krad_compositor->snapshot_jpeg++;
-      break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       nums[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
@@ -255,12 +247,6 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
       krad_compositor_set_background (krad_compositor, string);
       break;      
-    case EBML_ID_KRAD_COMPOSITOR_CMD_CLOSE_DISPLAY:
-      krad_compositor_close_display (krad_compositor);    
-      break;
-    case EBML_ID_KRAD_COMPOSITOR_CMD_OPEN_DISPLAY:
-      krad_compositor_open_display (krad_compositor);
-      break;    
     case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
       for (p = 0; p < KC_MAX_PORTS; p++) {
         if (krad_compositor->port[p].local == 1) {

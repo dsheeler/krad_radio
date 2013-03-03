@@ -55,7 +55,7 @@ typedef struct krad_ebml_St krad_ebml_t;
 #define EBML_DATA_SIZE_UNKNOWN 0x01FFFFFFFFFFFFFFLLU
 #define EBML_DATA_SIZE_UNKNOWN_LENGTH 8
 
-#define EBML_ID_VOID			   0xEC
+#define EBML_ID_VOID         0xEC
 
 #define EBML_ID_EBMLVERSION        0x4286
 #define EBML_ID_EBMLREADVERSION    0x42F7
@@ -64,69 +64,69 @@ typedef struct krad_ebml_St krad_ebml_t;
 #define EBML_ID_DOCTYPE            0x4282
 #define EBML_ID_DOCTYPEVERSION     0x4287
 #define EBML_ID_DOCTYPEREADVERSION 0x4285
-#define EBML_ID_HEADER			   0x1A45DFA3
+#define EBML_ID_HEADER         0x1A45DFA3
 
-#define EBML_ID_SEEKHEAD		   0x114D9B74
-#define EBML_ID_SEEK 			   0x4DBB
-#define EBML_ID_SEEK_ID 		   0x53AB
-#define EBML_ID_SEEK_POSITION	   0x53AC
+#define EBML_ID_SEEKHEAD       0x114D9B74
+#define EBML_ID_SEEK          0x4DBB
+#define EBML_ID_SEEK_ID        0x53AB
+#define EBML_ID_SEEK_POSITION     0x53AC
 
 
 
-#define EBML_ID_CLUSTER					0x1F43B675
-#define EBML_ID_TRACK_UID				0x73C5
-#define EBML_ID_TRACK_TYPE				0x83
-#define EBML_ID_LANGUAGE				0x22b59C
-#define EBML_ID_SEGMENT					0x18538067
-#define EBML_ID_SEGMENT_TITLE			0x7BA9
-#define EBML_ID_SEGMENT_INFO			0x1549A966
-#define EBML_ID_SEGMENT_TRACKS			0x1654AE6B
-#define EBML_ID_TRACK					0xAE
-#define EBML_ID_CODECDATA				0x63A2
-#define EBML_ID_CLUSTER_TIMECODE		0xE7
-#define EBML_ID_SIMPLEBLOCK				0xA3
-#define EBML_ID_BLOCKGROUP				0xA0
-#define EBML_ID_DOCTYPE					0x4282
-#define EBML_ID_MUXINGAPP 				0x4D80
-#define EBML_ID_WRITINGAPP 				0x5741
+#define EBML_ID_CLUSTER          0x1F43B675
+#define EBML_ID_TRACK_UID        0x73C5
+#define EBML_ID_TRACK_TYPE        0x83
+#define EBML_ID_LANGUAGE        0x22b59C
+#define EBML_ID_SEGMENT          0x18538067
+#define EBML_ID_SEGMENT_TITLE      0x7BA9
+#define EBML_ID_SEGMENT_INFO      0x1549A966
+#define EBML_ID_SEGMENT_TRACKS      0x1654AE6B
+#define EBML_ID_TRACK          0xAE
+#define EBML_ID_CODECDATA        0x63A2
+#define EBML_ID_CLUSTER_TIMECODE    0xE7
+#define EBML_ID_SIMPLEBLOCK        0xA3
+#define EBML_ID_BLOCKGROUP        0xA0
+#define EBML_ID_DOCTYPE          0x4282
+#define EBML_ID_MUXINGAPP         0x4D80
+#define EBML_ID_WRITINGAPP         0x5741
 
-#define EBML_ID_CODECID					0x86
+#define EBML_ID_CODECID          0x86
 
-#define EBML_ID_TRACKTYPE				0x83
-#define EBML_ID_TRACKNUMBER				0xD7
-#define EBML_ID_VIDEOWIDTH				0xB0
-#define EBML_ID_VIDEOHEIGHT				0xBA
+#define EBML_ID_TRACKTYPE        0x83
+#define EBML_ID_TRACKNUMBER        0xD7
+#define EBML_ID_VIDEOWIDTH        0xB0
+#define EBML_ID_VIDEOHEIGHT        0xBA
 
-#define EBML_ID_VIDEOSETTINGS			0xE0
-#define EBML_ID_AUDIOSETTINGS			0xE1
+#define EBML_ID_VIDEOSETTINGS      0xE0
+#define EBML_ID_AUDIOSETTINGS      0xE1
 
-#define EBML_ID_AUDIOCHANNELS			0x9F
-#define EBML_ID_AUDIOSAMPLERATE			0xB5
-#define EBML_ID_AUDIOOUTPUTSAMPLERATE	0x78B5
-#define EBML_ID_AUDIOBITDEPTH			0x6264
+#define EBML_ID_AUDIOCHANNELS      0x9F
+#define EBML_ID_AUDIOSAMPLERATE      0xB5
+#define EBML_ID_AUDIOOUTPUTSAMPLERATE  0x78B5
+#define EBML_ID_AUDIOBITDEPTH      0x6264
 
-#define EBML_ID_3D						0x53B8
+#define EBML_ID_3D            0x53B8
 
-#define EBML_ID_TIMECODESCALE			0x2AD7B1
-#define EBML_ID_DURATION				0x4489
-#define EBML_ID_DEFAULTDURATION			0x23E383
+#define EBML_ID_TIMECODESCALE      0x2AD7B1
+#define EBML_ID_DURATION        0x4489
+#define EBML_ID_DEFAULTDURATION      0x23E383
 
-#define EBML_ID_TAGS					0x1254C367
-#define EBML_ID_TAG						0x7373
-#define EBML_ID_TAG_TARGETS				0x63C0
-#define EBML_ID_TAG_TARGETTYPEVALUE		0x68CA
-#define EBML_ID_TAG_TARGETTYPE			0x63CA
-#define EBML_ID_TAG_SIMPLE				0x67C8
-#define EBML_ID_TAG_NAME				0x45A3
-#define EBML_ID_TAG_STRING				0x4487
-#define EBML_ID_TAG_BINARY				0x4485
+#define EBML_ID_TAGS          0x1254C367
+#define EBML_ID_TAG            0x7373
+#define EBML_ID_TAG_TARGETS        0x63C0
+#define EBML_ID_TAG_TARGETTYPEVALUE    0x68CA
+#define EBML_ID_TAG_TARGETTYPE      0x63CA
+#define EBML_ID_TAG_SIMPLE        0x67C8
+#define EBML_ID_TAG_NAME        0x45A3
+#define EBML_ID_TAG_STRING        0x4487
+#define EBML_ID_TAG_BINARY        0x4485
 
-#define EBML_ID_CUES					0x1C53BB6B
-#define EBML_ID_CUEPOINT 				0xBB
-#define EBML_ID_CUETIME					0xB3
-#define EBML_ID_CUETRACKPOSITIONS		0xB7
-#define EBML_ID_CUETRACK				0xF7
-#define EBML_ID_CUECLUSTERPOSITION		0xF1
+#define EBML_ID_CUES          0x1C53BB6B
+#define EBML_ID_CUEPOINT         0xBB
+#define EBML_ID_CUETIME          0xB3
+#define EBML_ID_CUETRACKPOSITIONS    0xB7
+#define EBML_ID_CUETRACK        0xF7
+#define EBML_ID_CUECLUSTERPOSITION    0xF1
 
 #define KRAD_EBML_MAX_TRACKS 10
 
@@ -135,10 +135,10 @@ typedef struct krad_ebml_St krad_ebml_t;
 typedef struct kradx_base64_St kradx_base64_t;
 
 struct kradx_base64_St {
-	int len;
-	int chunk;
-	char *out;
-	char *result;	
+  int len;
+  int chunk;
+  char *out;
+  char *result;  
 };
 
 typedef struct krad_ebml_track_St krad_ebml_track_t;
@@ -190,92 +190,92 @@ struct ebml_header {
 
 
 typedef enum {
-	KRAD_EBML_IO_READONLY,
-	KRAD_EBML_IO_WRITEONLY,
-	KRAD_EBML_IO_READWRITE,
+  KRAD_EBML_IO_READONLY,
+  KRAD_EBML_IO_WRITEONLY,
+  KRAD_EBML_IO_READWRITE,
 } krad_ebml_io_mode_t;
 
 struct krad_ebml_cluster_St {
 
-	uint64_t position;
-	uint64_t timecode;
-	uint32_t size;
+  uint64_t position;
+  uint64_t timecode;
+  uint32_t size;
 
 };
 
 struct krad_ebml_track_St {
 
-	krad_codec_t codec;
-	
-	int channels;
-	int sample_rate;
-	int bit_depth;
-	
-	int width;
-	int height;
-	
-	
-	unsigned char *codec_data;
-	int codec_data_size;
-	
-	unsigned char *header[3];
-	int header_len[3];
-	int headers;
-	int changed;
+  krad_codec_t codec;
+  
+  int channels;
+  int sample_rate;
+  int bit_depth;
+  
+  int width;
+  int height;
+  
+  
+  unsigned char *codec_data;
+  int codec_data_size;
+  
+  unsigned char *header[3];
+  int header_len[3];
+  int headers;
+  int changed;
 };
 
 struct krad_ebml_io_St {
 
-	int seekable;
-	krad_ebml_io_mode_t mode;
-	char *uri;
-	int (* write)(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
-	int (* read)(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
-	int64_t (* seek)(krad_ebml_io_t *krad_ebml_io, int64_t offset, int whence);
-	int64_t (* tell)(krad_ebml_io_t *krad_ebml_io);
-	int32_t (* open)(krad_ebml_io_t *krad_ebml_io);
-	int32_t (* close)(krad_ebml_io_t *krad_ebml_io);
-	
-	int ptr;
-	char *host;
-	char *mount;
-	char *password;
-	int port;
-	int sd;
-	
-	int firstwritedone;
-	
-	krad_transmission_t *krad_transmission;
-	
-	unsigned char *buffer_io_buffer;
-	int buffer_io_read_pos;
-	int buffer_io_read_len;	
+  int seekable;
+  krad_ebml_io_mode_t mode;
+  char *uri;
+  int (* write)(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
+  int (* read)(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t length);
+  int64_t (* seek)(krad_ebml_io_t *krad_ebml_io, int64_t offset, int whence);
+  int64_t (* tell)(krad_ebml_io_t *krad_ebml_io);
+  int32_t (* open)(krad_ebml_io_t *krad_ebml_io);
+  int32_t (* close)(krad_ebml_io_t *krad_ebml_io);
+  
+  int ptr;
+  char *host;
+  char *mount;
+  char *password;
+  int port;
+  int sd;
+  
+  int firstwritedone;
+  
+  krad_transmission_t *krad_transmission;
+  
+  unsigned char *buffer_io_buffer;
+  int buffer_io_read_pos;
+  int buffer_io_read_len;  
 
-	unsigned char *write_buffer;
-	uint64_t write_buffer_pos;
+  unsigned char *write_buffer;
+  uint64_t write_buffer_pos;
 
 };
 
 struct krad_ebml_St {
-	
-	struct ebml_header *header;
-	
-	int record_cluster_info;
-	krad_ebml_io_t io_adapter;
+  
+  struct ebml_header *header;
+  
+  int record_cluster_info;
+  krad_ebml_io_t io_adapter;
 
-	uint64_t io_position;
+  uint64_t io_position;
 
-	int ebml_level;
-	uint32_t cluster_count;
-	int cluster_recording_space;
-	int current_cluster;
-	krad_ebml_cluster_t *clusters;
-	uint64_t current_cluster_timecode;
-	short last_block_timecode;
-	uint32_t block_count;
-	uint32_t largest_cluster;
-	uint32_t smallest_cluster;
-	
+  int ebml_level;
+  uint32_t cluster_count;
+  int cluster_recording_space;
+  int current_cluster;
+  krad_ebml_cluster_t *clusters;
+  uint64_t current_cluster_timecode;
+  short last_block_timecode;
+  uint32_t block_count;
+  uint32_t largest_cluster;
+  uint32_t smallest_cluster;
+  
   uint64_t first_cluster_pos;
   uint64_t first_cluster_pos_from_seekhead;  
   uint64_t cues_pos;
@@ -284,62 +284,62 @@ struct krad_ebml_St {
   uint64_t cues_file_end_range;  
   uint64_t segment_pos;
   uint64_t segment_offset_pos;  
-	
-	int track_count;
-	int current_track;
-	krad_ebml_track_t *tracks;
-	
-	int header_read;
-	
+  
+  int track_count;
+  int current_track;
+  krad_ebml_track_t *tracks;
+  
+  int header_read;
+  
   char bsbuffer[256];
-	int stream;
+  int stream;
 
-	krad_transmission_t *krad_transmission;
+  krad_transmission_t *krad_transmission;
 
-	uint64_t current_timecode;
-	
-	int width;
-	int height;
-	
-	
-	int read_laced_frames;
-	uint64_t frame_sizes[16];
-	int current_laced_frame;
-	
-	//writing
-	uint64_t segment;
-	uint64_t segment_size;
-	uint64_t void_space;
-	uint64_t segment_info_position;
-	uint64_t tracks_info_position;
-	uint64_t cluster_start_position;
-	uint64_t cues_position;	
-	float segment_duration;
-	uint64_t segment_timecode;
-	uint64_t tracks_info;
-	uint64_t cluster;	
-	int fps_numerator;
-	int fps_denominator;
-	uint64_t total_video_frames;
-	uint64_t cluster_timecode;
-	
-	uint64_t total_audio_frames;
-	double audio_sample_rate;
-	int audio_channels;
-	int audio_frames_since_cluster;
-	
-	int new_tags;
-	char tags[512];
-	int tags_position;
-	
-	int tracks_size;
-	int tracks_pos;
-	
-	//fwd kludge	
-	int read_copy;
-	unsigned char *read_copy_buffer;
-	uint64_t read_copy_pos;
-	
+  uint64_t current_timecode;
+  
+  int width;
+  int height;
+  
+  
+  int read_laced_frames;
+  uint64_t frame_sizes[16];
+  int current_laced_frame;
+  
+  //writing
+  uint64_t segment;
+  uint64_t segment_size;
+  uint64_t void_space;
+  uint64_t segment_info_position;
+  uint64_t tracks_info_position;
+  uint64_t cluster_start_position;
+  uint64_t cues_position;  
+  float segment_duration;
+  uint64_t segment_timecode;
+  uint64_t tracks_info;
+  uint64_t cluster;  
+  int fps_numerator;
+  int fps_denominator;
+  uint64_t total_video_frames;
+  uint64_t cluster_timecode;
+  
+  uint64_t total_audio_frames;
+  double audio_sample_rate;
+  int audio_channels;
+  int audio_frames_since_cluster;
+  
+  int new_tags;
+  char tags[512];
+  int tags_position;
+  
+  int tracks_size;
+  int tracks_pos;
+  
+  //fwd kludge  
+  int read_copy;
+  unsigned char *read_copy_buffer;
+  uint64_t read_copy_pos;
+  
 };
 
 /* writing functions */

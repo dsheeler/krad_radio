@@ -52,14 +52,10 @@ class KradStation
 		Kernel.srand
     if (ARGV[0] == "restart")
       #if (ARGV[1] == "smooth")
-        self.cmd("m/Music 0 20")
-        self.cmd("m/Music1 0 20")
-        self.cmd("m/Music2 0 20")
-        self.cmd("m/Video 0 20")
-        sleep 0.075
+        #self.cmd("m/MasterBUS 0 50")
+        #sleep 0.075
       #end
       self.cmd("destroy")
-      sleep 0.01
     end
     if launch == "Yes"
 		  self.launch_daemon
@@ -214,13 +210,14 @@ class KradStation
 
 	def cmd(action)
 		thecmd = "krad_radio #{@name} #{action}"
-		puts "command: #{thecmd}"
+		#puts "command: #{thecmd}"
 		ret = `#{thecmd}`.chomp
 		#sleep 0.05
 		#puts ret
 		if $CHILD_STATUS.to_i != 0
 		  puts "ruh oh!"
 		end
+		#puts Time.now.strftime("%L")
 		return ret
 	end
 

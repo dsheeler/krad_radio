@@ -274,10 +274,6 @@ void krad_radio_set_dir ( krad_radio_t *krad_radio, char *dir ) {
     return;
   }
 
-  if (krad_radio->krad_compositor != NULL) {
-    krad_compositor_set_dir (krad_radio->krad_compositor, dir);
-  }
-
   sprintf (krad_radio->log.filename, "%s/%s_%"PRIu64".log", dir, krad_radio->sysname, ktime ());
   krad_system_log_on (krad_radio->log.filename);
   printk (APPVERSION);
