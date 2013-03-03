@@ -6,6 +6,7 @@ programs = """
 krad_radio.c
 krad_radio_simple.c
 kr_api_demo.c
+khaos_monkey.c
 """.split()
 
 programs2 = """
