@@ -1,12 +1,16 @@
 #include "kr_client.h"
 
-#define MAX_MONKEYS 4
+#define MAX_MONKEYS_ON_THE_LAMB 5
+#define MAX_MONKEY_LIFE 666
+#define INCIDENTS 100
 
 typedef struct khaos_monkey_St khaos_monkey_t;
 
 struct khaos_monkey_St {
+  char station_sysname[128];
   kr_client_t *client;
   int lifetime;
+  uint32_t number;
 	pthread_t on_the_lamb_thread;
 };
 
@@ -143,18 +147,55 @@ void rage (kr_client_t *client) {
   accept_some_deliveries (client);
 }
 
-void *monkey_around (void *arg) {
+void summon_monkey (khaos_monkey_t *monkey) {
+
+  char monkey_name[256];
+  int len;
+  int i;
+  
+  len = rand() % 255;
+  
+  monkey->lifetime = rand() % MAX_MONKEY_LIFE;
+  
+  for (i = 0; i < len; i++) {
+    monkey_name[i] = rand();
+  }
+  monkey_name[i] = '\0';
+
+  monkey->client = kr_client_create (monkey_name);
+
+  if (monkey->client == NULL) {
+    fprintf (stderr, "Could create client\n");
+    pthread_exit (NULL);
+  }
+
+  if (!kr_connect (monkey->client, monkey->station_sysname)) {
+    fprintf (stderr, "Could not connect to %s krad radio daemon\n", monkey->station_sysname);
+    kr_client_destroy (&monkey->client);
+    pthread_exit (NULL);
+  }
+
+  if (rand() % 2) {
+    printf ("Monkey %u: I will break your radio %d times!\n",
+            monkey->number, monkey->lifetime);
+  } else {
+    printf ("Monkey %u: I AM ON THE LAMB! I will live for %d rages!\n",
+            monkey->number, monkey->lifetime);
+  }
+}
+
+void *on_the_lamb (void *arg) {
 
   khaos_monkey_t *monkey = (khaos_monkey_t *)arg;
 
+  summon_monkey (monkey);
+
   int b;
   int ret;
-  uint64_t max;
   unsigned int timeout_ms;
   
   ret = 0;
   b = 0;
-  max = rand() % 800;
   timeout_ms = 3000;
   
   kr_subscribe_all (monkey->client);
@@ -168,7 +209,7 @@ void *monkey_around (void *arg) {
   //printf ("Waiting for up to %"PRIu64" deliveries for up to %ums each\n",
   //        max, timeout_ms);
   
-  for (b = 0; b < max; b++) {
+  for (b = 0; b < monkey->lifetime; b++) {
     ret = kr_wait (monkey->client, timeout_ms);
     if (ret > 0) {
       get_delivery (monkey->client);
@@ -190,58 +231,48 @@ void *monkey_around (void *arg) {
 
 khaos_monkey_t *monkey_on_the_lamb (char *sysname) {
 
+  static uint32_t monkey_number = 0;
   khaos_monkey_t *monkey;
-  
   monkey = calloc (1, sizeof(khaos_monkey_t));
-
-  monkey->client = kr_client_create ("khoas kokonut");
-
-  if (monkey->client == NULL) {
-    fprintf (stderr, "Could create client\n");
-    exit (1);
-  }
-
-  if (!kr_connect (monkey->client, sysname)) {
-    fprintf (stderr, "Could not connect to %s krad radio daemon\n", sysname);
-    kr_client_destroy (&monkey->client);
-    exit (1);
-  }
-
-  printf ("Connected to %s!\n", sysname);
-
-  printf ("Now getting into the monkey business\n");
-
-	pthread_create (&monkey->on_the_lamb_thread, NULL, monkey_around, (void *)monkey);
+  monkey->number = monkey_number++;
+  strncpy ( monkey->station_sysname, sysname, sizeof (monkey->station_sysname));
+	pthread_create (&monkey->on_the_lamb_thread, NULL, on_the_lamb, (void *)monkey);
 	
 	return monkey;
 }
 
 void catch_monkey (khaos_monkey_t *monkey) {
   pthread_join (monkey->on_the_lamb_thread, NULL);
-  free (monkey);   
+  free (monkey);
 }
 
 void uncage_monkeys (char *sysname) {
 
   int m;
   int lamb;
-  khaos_monkey_t *monkeys[MAX_MONKEYS];
+  khaos_monkey_t *monkeys[MAX_MONKEYS_ON_THE_LAMB];
   
-  lamb = rand() % MAX_MONKEYS;
-    
+  srand (time(NULL));  
+  lamb = 2 + rand() % (MAX_MONKEYS_ON_THE_LAMB - 2);
+
+  printf ("Uncaging %d monkeys\n", lamb);
+
   for (m = 0; m < lamb; m++) {
     monkeys[m] = monkey_on_the_lamb (sysname);
   }
   
   for (m = 0; m < lamb; m++) {
     catch_monkey (monkeys[m]);
+    printf ("Caught monkey %d!\n", m);
   }
 }
 
 int main (int argc, char *argv[]) {
 
+  int incidents;
   char *sysname;
 
+  incidents = INCIDENTS;
   sysname = NULL;
 
   if (argc < 2) {
@@ -260,9 +291,12 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  printf ("Warning! This is a Chaos Monkey!\n");
+  while (incidents--) {
+    printf ("There has been an incident... #[%d] of %d\n",
+            INCIDENTS - incidents, INCIDENTS);
 
-  uncage_monkeys (sysname);
-  
+    uncage_monkeys (sysname);
+  }
+
   return 0;
 }
