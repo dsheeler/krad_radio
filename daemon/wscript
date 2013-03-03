@@ -134,7 +134,7 @@ includedirs = """
 shlibs = ["jack", "cairo", "xmms2-client", "samplerate",
           "theora", "theoraenc", "theoradec",
           "vorbis", "vorbisenc", "opus", "flac",
-          "vpx", "libswscale", "libavutil"]
+          "vpx", "libswscale", "libavutil", 'freetype2']
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']

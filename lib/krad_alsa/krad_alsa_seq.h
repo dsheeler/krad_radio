@@ -31,6 +31,9 @@
 #include "krad_radio_client.h"
 #endif
 
+#ifndef KRAD_ALSA_SEQ_H
+#define KRAD_ALSA_SEQ_H
+
 typedef struct krad_alsa_seq_St krad_alsa_seq_t;
 
 struct krad_alsa_seq_St {
@@ -64,3 +67,5 @@ int krad_alsa_seq_run (krad_alsa_seq_t *krad_alsa_seq, char *name);
 
 void krad_alsa_seq_destroy (krad_alsa_seq_t *krad_alsa_seq);
 krad_alsa_seq_t *krad_alsa_seq_create ();
+
+#endif

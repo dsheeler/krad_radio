@@ -115,11 +115,11 @@ depsources5 = """
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 shlibs = ["opus"]
 
-shlibs2 = ["cairo", "pangocairo", "gtk+-3.0"]
+shlibs2 = ["cairo", "gtk+-3.0"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
-syslibs2 = ['rt']
+syslibs2 = ['rt', 'pthread']
 
 def check_system(systm):
 

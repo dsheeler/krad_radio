@@ -24,6 +24,9 @@
 #include "uvch264.h"
 #include "krad_system.h"
 
+#ifndef KRAD_V4L2_H
+#define KRAD_V4L2_H
+
 #define DEFAULT_V4L2_DEVICE "/dev/video0"
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
@@ -97,3 +100,5 @@ void krad_v4l2_init_mmap (krad_v4l2_t *krad_v4l2);
 
 void errno_exit (const char *s);
 int xioctl (int fd, int request, void *arg);
+
+#endif
