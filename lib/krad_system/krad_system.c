@@ -332,7 +332,7 @@ void failfast (char* format, ...) {
     while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
     krad_system_log_off ();
   }
-  exit (1);
+  exit (133);
 }
 
 void printke (char* format, ...) {

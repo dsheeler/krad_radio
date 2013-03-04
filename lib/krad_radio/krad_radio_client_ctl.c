@@ -262,7 +262,7 @@ void krad_radio_launch (char *sysname) {
   pid = fork();
 
   if (pid < 0) {
-    exit (1);
+    exit (3);
   }
 
   if (pid > 0) {
@@ -275,7 +275,7 @@ void krad_radio_launch (char *sysname) {
   pid = fork();
 
   if (pid < 0) {
-    exit (1);
+    exit (4);
   }
 
   if (pid > 0) {
@@ -284,15 +284,15 @@ void krad_radio_launch (char *sysname) {
   
   refp = freopen ("/dev/null", "r", stdin);
   if (refp == NULL) {
-    exit(1);
+    exit(5);
   }  
   refp = freopen ("/dev/null", "w", stdout);
   if (refp == NULL) {
-    exit(1);
+    exit(6);
   }  
   refp = freopen ("/dev/null", "w", stderr);  
   if (refp == NULL) {
-    exit(1);
+    exit(7);
   }  
 
   execlp ("krad_radio_daemon", "krad_radio_daemon", sysname, (char *)NULL);

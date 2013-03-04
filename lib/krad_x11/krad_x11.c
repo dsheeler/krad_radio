@@ -98,7 +98,7 @@ void krad_x11_enable_capture(krad_x11_t *krad_x11, int width, int height) {
 	
 	krad_x11->img = xcb_image_create_native(krad_x11->connection, width, height, XCB_IMAGE_FORMAT_Z_PIXMAP, krad_x11->screen_bit_depth, 0, ~0, 0);
 	if (!krad_x11->img) {
-		exit(1);
+		exit(15);
 	}
 	
 	krad_x11->shminfo.shmid = shmget(IPC_PRIVATE, krad_x11->img->stride * krad_x11->img->height, (IPC_CREAT | 0666));

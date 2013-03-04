@@ -1369,7 +1369,7 @@ int krad_ebml_read_element (krad_ebml_t *krad_ebml, uint32_t *ebml_id_ptr, uint6
 
   if (ebml_id_length > 4) {
     failfast ("Krad EBML failure: EBML ID > 4!");
-    exit (1);
+    exit (43);
   }
 
   //printk("id length is %u\n", ebml_id_length);

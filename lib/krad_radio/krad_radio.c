@@ -168,7 +168,7 @@ void krad_radio_daemon (char *sysname) {
   pid = fork();
 
   if (pid < 0) {
-    exit (1);
+    exit (12);
   }
 
   if (pid > 0) {
