@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 typedef struct kr_ebml2_St kr_ebml2_t;
 
 struct kr_ebml2_St {
   unsigned char *buf;
-  unsigned char buffer[1024];
+  unsigned char buffer[8192];
   size_t pos;
 };
 
