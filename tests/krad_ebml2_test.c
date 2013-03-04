@@ -50,14 +50,10 @@ void kr_print_ebml (unsigned char *buffer, int len) {
   printf ("\nEnd Raw EBML\n");
 }
 
-void test_kr_ebml2 () {
+void test_kr_ebml2 (kr_ebml2_t *ebml) {
 
-  kr_ebml2_t *ebml;
   unsigned char *my_element;
   
-  
-  ebml = kr_ebml2_create ();
-
   kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER);
   kr_ebml2_pack_element (ebml, EBML_ID_TRACK_UID);
   kr_ebml2_pack_element (ebml, EBML_ID_TRACK);
@@ -78,8 +74,6 @@ void test_kr_ebml2 () {
 
   //kr_print_ebml (ebml->buffer, ebml->pos);
 
-  kr_ebml2_destroy (&ebml);
-
 }
 
 int main (int argc, char *argv[]) {
@@ -88,10 +82,16 @@ int main (int argc, char *argv[]) {
   
   count = 0;
 
-  while (count < 100000000) {
-    test_kr_ebml2 ();
+  kr_ebml2_t *ebml;
+  ebml = kr_ebml2_create ();
+
+  while (count < 1000000000) {
+    test_kr_ebml2 (ebml);
     count++;
+    ebml->pos = 0;
   }
+  
+  kr_ebml2_destroy (&ebml);
 
   return 0;
 }

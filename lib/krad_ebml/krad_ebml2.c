@@ -305,8 +305,9 @@ void kr_ebml2_pack_double ( kr_ebml2_t *ebml, uint32_t element, double number) {
 
 kr_ebml2_t *kr_ebml2_create () {
   kr_ebml2_t *ebml;
-  ebml = calloc (1, sizeof(kr_ebml2_t));
+  ebml = malloc (sizeof(kr_ebml2_t));
   ebml->buf = ebml->buffer;
+  ebml->pos = 0;
   return ebml; 
 }
 
