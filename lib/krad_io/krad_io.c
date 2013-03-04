@@ -328,7 +328,7 @@ void krad_io_destroy (krad_io_t *krad_io) {
 }
 
 krad_io_t *krad_io_create () {
-  krad_io_t *krad_io = calloc(1, sizeof(krad_io_t));
+  krad_io_t *krad_io = calloc (1, sizeof(krad_io_t));
   return krad_io;
 }
 

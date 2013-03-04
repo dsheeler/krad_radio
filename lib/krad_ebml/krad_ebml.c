@@ -2400,6 +2400,7 @@ int krad_ebml_streamio_write(krad_ebml_io_t *krad_ebml_io, void *buffer, size_t 
     ret = send (krad_ebml_io->sd, buf + bytes, length - bytes, 0);
 
     if (ret <= 0) {
+      printke ("Krad EBML stream io write: Send errno: %d %s", errno, strerror(errno));
       failfast ("Krad EBML stream io write: Got Disconnected from server. ret %d bytes %d len %zu", ret, bytes, length);
     } else {
       bytes += ret;
