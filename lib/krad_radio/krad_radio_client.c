@@ -1688,13 +1688,28 @@ int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_contr
   return 0;
 }
 
+void kr_print_ebml (unsigned char *buffer, int len) {
+
+  int i;
+  
+  i = 0;
+
+  printf ("Raw EBML: \n");
+  for (i = 0; i < len; i++) {
+    printf ("%02X", buffer[i]);
+  }
+  printf ("\nEnd Raw EBML\n");
+}
+
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
 
-  uint64_t command;
-  uint64_t set_control;
+  kr_ebml2_t *ebmlx;
+      
+  unsigned char *my_command;
+  unsigned char *my_set_control;
 
-  command = 0;
-  set_control = 0;
+  my_command = NULL;
+  my_set_control = NULL;
   
   kr_unit_control_data_type_from_address (&uc->address, &uc->data_type);
 
@@ -1718,28 +1733,31 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
       break;
     case KR_COMPOSITOR:
 
-      krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-      krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT, &set_control);
-      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, uc->address.path.subunit.compositor_subunit);
-      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, uc->address.id.number);
-      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->address.control.compositor_control);
+      ebmlx = kr_ebml2_create ();
+
+      kr_ebml2_start_element (ebmlx, EBML_ID_KRAD_COMPOSITOR_CMD, &my_command);
+      kr_ebml2_start_element (ebmlx, EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT, &my_set_control);
+      kr_ebml2_pack_int32 (ebmlx, EBML_ID_KRAD_RADIO_SUBUNIT, uc->address.path.subunit.compositor_subunit);
+      kr_ebml2_pack_int32 (ebmlx, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, uc->address.id.number);
+      kr_ebml2_pack_int32 (ebmlx, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->address.control.compositor_control);
       if (uc->data_type == KR_FLOAT) {
-        krad_ebml_write_float (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.real);
+        kr_ebml2_pack_float (ebmlx, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.real);
       }
       if (uc->data_type == KR_INT32) {
-        krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.integer);
+        kr_ebml2_pack_int32 (ebmlx, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.integer);
       }
       if (uc->data_type == KR_STRING) {
-        krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.string);
+        kr_ebml2_pack_string (ebmlx, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.string);
       }
-      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->duration);
-      krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_SUBUNIT_CONTROL, 666);
-      krad_ebml_finish_element (client->krad_ebml, set_control);
-      krad_ebml_finish_element (client->krad_ebml, command);
-        
-      krad_ebml_write_sync (client->krad_ebml);
-      
-      
+      kr_ebml2_pack_int32 (ebmlx, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->duration);
+      kr_ebml2_pack_int32 (ebmlx, EBML_ID_KRAD_SUBUNIT_CONTROL, 666);
+      kr_ebml2_finish_element (ebmlx, my_set_control);
+      kr_ebml2_finish_element (ebmlx, my_command);
+
+      kr_print_ebml (ebmlx->buffer, ebmlx->pos);
+      send (client->krad_ebml->io_adapter.sd, ebmlx->buffer, ebmlx->pos, 0);
+      kr_ebml2_destroy (&ebmlx);
+
       break;
     case KR_STATION:
       break;
