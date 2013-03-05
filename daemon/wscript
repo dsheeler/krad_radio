@@ -79,6 +79,7 @@ depsources = """
 ../lib/krad_udp/krad_udp.c
 ../lib/krad_ebml/krad_ebml.c
 ../lib/krad_ebml/krad_ebml2.c
+../lib/krad_ebml/krad_ebml2w.c
 ../lib/krad_decklink/krad_decklink.c
 ../lib/krad_decklink/krad_decklink_capture.cpp
 ../lib/krad_vhs/ext/imagezero/libiz.cpp

@@ -267,8 +267,10 @@ void uncage_monkeys (char *sysname) {
   }
 }
 
-int main (int argc, char *argv[]) {
+#include "krad_ebml2w.h"
 
+int main (int argc, char *argv[]) {
+/*
   int incidents;
   char *sysname;
 
@@ -297,6 +299,67 @@ int main (int argc, char *argv[]) {
 
     uncage_monkeys (sysname);
   }
+*/
+
+  int fd;
+  int ret;
+  int err;
+  int clusters;
+  kr_ebml2_t *ebml;
+
+  uint32_t element;
+  uint64_t data_size;
+
+  clusters = 0;
+  element = 0;
+  data_size = 0;
+
+  fd = 0;
+
+  if (argc < 2) {
+    fprintf (stderr, "Specify a file!\n");
+    return 1;
+  }
+
+  fd = open ( argv[1], O_RDONLY );
+  if (fd < 0) {
+    return 1;
+  }
+  
+  ebml = kr_ebml2_create ();
+  ret = read (fd, ebml->buf, KRAD_EBML2_BUF_SZ);
+  if (ret < 0) {
+    close (fd);
+    kr_ebml2_destroy (&ebml);
+    return 1;
+  }
+
+  printf ("read %d bytes\n", ret);
+
+  err = kr_ebml2_unpack_id (ebml, &element, &data_size);
+  if (!err) {
+    while (ebml->pos < ret) {
+    
+      err = kr_ebml2_unpack_id (ebml, &element, &data_size);
+      if (err == -1) {
+        printf ("parsing error!\n");
+        break;
+      }
+      if (element != EBML_ID_SEGMENT) {
+        kr_ebml2_advance (ebml, data_size);
+      }
+      if (element == EBML_ID_CLUSTER) {
+        clusters++;
+      }
+    }
+  }
+  
+  if (clusters > 0) {
+    printf ("Found %d clusters!\n", clusters);
+  }
+  
+  kr_ebml2_destroy (&ebml);
+
 
   return 0;
 }

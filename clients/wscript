@@ -29,6 +29,7 @@ krad_radio_web.c
 libsources = """
 ../lib/krad_ebml/krad_ebml.c
 ../lib/krad_ebml/krad_ebml2.c
+../lib/krad_ebml/krad_ebml2w.c
 ../lib/krad_system/krad_system.c
 ../lib/krad_ipc/krad_ipc_client.c
 ../lib/krad_radio/krad_radio_client.c

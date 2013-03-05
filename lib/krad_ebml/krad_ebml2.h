@@ -7,17 +7,28 @@
 #ifndef KRAD_EBML2_H
 #define KRAD_EBML2_H
 
+#include "krad_ebml2_ids.h"
+
+#define KRAD_EBML2_BUF_SZ 1024 * 1024 * 1024
+
 typedef struct kr_ebml2_St kr_ebml2_t;
 
 struct kr_ebml2_St {
   unsigned char *buf;
-  unsigned char buffer[8192];
+  unsigned char buffer[KRAD_EBML2_BUF_SZ];
   size_t pos;
 };
 
-
-void kr_print_ebml (unsigned char *buffer, int len);
 inline void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
+inline void rmemcpy1 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy2 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy3 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy4 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy5 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy6 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy7 (unsigned char *dst, unsigned char *src);
+inline void rmemcpy8 (unsigned char *dst, unsigned char *src);
+
 int kr_ebml2_destroy (kr_ebml2_t **ebml);
 kr_ebml2_t *kr_ebml2_create ();
 

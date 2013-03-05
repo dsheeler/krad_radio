@@ -42,16 +42,14 @@ typedef enum {
 struct krad_io2_St {
   int fd;
   krad_io2_mode_t mode;
-
-
   unsigned char wr_buf[KRAD_IO2_WR_BUF_SZ];
   size_t wr_buf_pos;
 };
 
 krad_io2_t *krad_io2_create ();
-int krad_io2_destroy (krad_io2_t **io2);
-int krad_io2_want_out (krad_io_t *krad_io);
-int krad_io2_pack (krad_io_t *krad_io, void *buffer, size_t length);
-int krad_io2_write (krad_io_t *krad_io);
+int krad_io2_destroy (kr_io2_t **io);
+int krad_io2_want_out (krad_io_t *io);
+int krad_io2_pack (krad_io_t *io, void *buffer, size_t length);
+int krad_io2_write (krad_io_t *io);
 
 #endif

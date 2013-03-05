@@ -126,9 +126,6 @@ inline void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element) {
   }
 }
 
-#define EBML_DATA_SIZE_UNKNOWN 0x01FFFFFFFFFFFFFFLLU
-#define EBML_DATA_SIZE_UNKNOWN_LENGTH 8
-
 void kr_ebml2_pack_data_size_unknown (kr_ebml2_t *ebml) {
   uint64_t data_size;
   data_size = EBML_DATA_SIZE_UNKNOWN;
