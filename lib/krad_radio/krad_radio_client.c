@@ -133,8 +133,16 @@ void kr_subscribe_all (kr_client_t *client) {
 }
 
 void kr_broadcast_subscribe (kr_client_t *client, uint32_t broadcast_id) {
+
+  uint64_t radio_command;
+
+  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
+  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, broadcast_id);
+  krad_ebml_finish_element (client->krad_ebml, radio_command);
+    
+  krad_ebml_write_sync (client->krad_ebml);
+
   client->subscriber = 1;
-  krad_ipc_broadcast_subscribe (client->krad_ipc_client, broadcast_id);
 }
 
 void kr_shm_destroy (kr_shm_t *kr_shm) {

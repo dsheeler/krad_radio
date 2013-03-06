@@ -159,7 +159,6 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
       printke ("Krad IPC Client: socket get flag fail");
       return 0;
     }
-  
   }
   
   /*
@@ -190,27 +189,6 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
   }  
   
   return client->sd;
-}
-
-void krad_ipc_broadcast_subscribe (krad_ipc_client_t *client, uint32_t broadcast_id) {
-
-  uint64_t radio_command;
-
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, broadcast_id);
-  krad_ebml_finish_element (client->krad_ebml, radio_command);
-    
-  krad_ebml_write_sync (client->krad_ebml);
-
-}
-
-void krad_ipc_client_handle (krad_ipc_client_t *client) {
-  client->handler ( client, client->ptr );
-}
-
-void krad_ipc_set_handler_callback (krad_ipc_client_t *client, int handler (krad_ipc_client_t *, void *), void *ptr) {
-  client->handler = handler;
-  client->ptr = ptr;
 }
 
 int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd) {

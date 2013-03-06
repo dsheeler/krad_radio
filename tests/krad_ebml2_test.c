@@ -54,6 +54,9 @@ void test_kr_ebml2 (kr_ebml2_t *ebml) {
 
   unsigned char *my_element;
   
+  
+  kr_ebml2_pack_header (ebml, "testy", 2, 2);
+  
   kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER);
   kr_ebml2_pack_element (ebml, EBML_ID_TRACK_UID);
   kr_ebml2_pack_element (ebml, EBML_ID_TRACK);

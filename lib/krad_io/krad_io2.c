@@ -4,7 +4,7 @@
 kr_io2_t *kr_io2_create () {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
-  io->buf = ebml->buffer;
+  io->buf = io->buffer;
   io->pos = 0;
   return io; 
 }

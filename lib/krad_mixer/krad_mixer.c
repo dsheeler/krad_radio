@@ -607,7 +607,10 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
     portgroup = krad_mixer->portgroup[p];
     if ((portgroup != NULL) && (portgroup->active == 2) && (portgroup->direction == INPUT)) {
       portgroup_apply_volume (portgroup, nframes);
-      portgroup_apply_effects (portgroup, nframes);
+      //experiment
+      if (portgroup->volume_actual[0] != 0.0f) {
+        portgroup_apply_effects (portgroup, nframes);
+      }
       krad_mixer_portgroup_compute_meters (portgroup, nframes);
     }
   }

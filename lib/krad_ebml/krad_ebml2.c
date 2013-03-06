@@ -243,7 +243,6 @@ void kr_ebml2_finish_element (kr_ebml2_t *ebml, unsigned char *element_position)
   uint64_t element_data_size;
 
   element_data_size = ebml->buf - element_position - EBML_DATA_SIZE_UNKNOWN_LENGTH;
-  //printf ("data size is %"PRIu64"\n", element_data_size);
   kr_ebml2_pack_data_size_update ( ebml, element_position, element_data_size);
 }
 
@@ -270,7 +269,19 @@ void kr_ebml2_pack_int8 ( kr_ebml2_t *ebml, uint32_t element, int8_t number) {
   kr_ebml2_revpack1 ( ebml, &number );
 }
 
+void kr_ebml2_pack_uint8 ( kr_ebml2_t *ebml, uint32_t element, uint8_t number) {
+  kr_ebml2_pack_element ( ebml, element );
+  kr_ebml2_pack_data_size ( ebml, 1 );
+  kr_ebml2_revpack1 ( ebml, &number );
+}
+
 void kr_ebml2_pack_int16 ( kr_ebml2_t *ebml, uint32_t element, int16_t number) {
+  kr_ebml2_pack_element ( ebml, element );
+  kr_ebml2_pack_data_size ( ebml, 2 );
+  kr_ebml2_revpack2 ( ebml, &number );
+}
+
+void kr_ebml2_pack_uint16 ( kr_ebml2_t *ebml, uint32_t element, uint16_t number) {
   kr_ebml2_pack_element ( ebml, element );
   kr_ebml2_pack_data_size ( ebml, 2 );
   kr_ebml2_revpack2 ( ebml, &number );
@@ -282,10 +293,22 @@ void kr_ebml2_pack_int32 ( kr_ebml2_t *ebml, uint32_t element, int32_t number) {
   kr_ebml2_revpack4 ( ebml, &number );
 }
 
-void kr_ebml2_pack_int64 ( kr_ebml2_t * kr_ebml2, uint32_t element, int64_t number) {
-  kr_ebml2_pack_element ( kr_ebml2, element);
-  kr_ebml2_pack_data_size ( kr_ebml2, 8);
-  kr_ebml2_revpack8 ( kr_ebml2, &number );
+void kr_ebml2_pack_uint32 ( kr_ebml2_t *ebml, uint32_t element, uint32_t number) {
+  kr_ebml2_pack_element ( ebml, element );
+  kr_ebml2_pack_data_size ( ebml, 4 );
+  kr_ebml2_revpack4 ( ebml, &number );
+}
+
+void kr_ebml2_pack_int64 ( kr_ebml2_t *ebml, uint32_t element, int64_t number) {
+  kr_ebml2_pack_element ( ebml, element);
+  kr_ebml2_pack_data_size ( ebml, 8);
+  kr_ebml2_revpack8 ( ebml, &number );
+}
+
+void kr_ebml2_pack_uint64 ( kr_ebml2_t *ebml, uint32_t element, uint64_t number) {
+  kr_ebml2_pack_element ( ebml, element);
+  kr_ebml2_pack_data_size ( ebml, 8);
+  kr_ebml2_revpack8 ( ebml, &number );
 }
 
 void kr_ebml2_pack_float ( kr_ebml2_t *ebml, uint32_t element, float number) {
@@ -298,6 +321,24 @@ void kr_ebml2_pack_double ( kr_ebml2_t *ebml, uint32_t element, double number) {
   kr_ebml2_pack_element ( ebml, element );
   kr_ebml2_pack_data_size ( ebml, 8 );
   kr_ebml2_revpack8 ( ebml, &number );
+}
+
+void kr_ebml2_pack_header ( kr_ebml2_t *ebml, char *doctype, uint32_t version, uint32_t read_version) {
+
+  unsigned char *header;
+
+  kr_ebml2_start_element (ebml, EBML_ID_HEADER, &header);
+  
+  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLVERSION, 1);  
+  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLREADVERSION, 1);
+  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLMAXIDLENGTH, 4);
+  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLMAXSIZELENGTH, 8);
+  
+  kr_ebml2_pack_string (ebml, EBML_ID_DOCTYPE, doctype);
+  kr_ebml2_pack_uint8 (ebml, EBML_ID_DOCTYPEVERSION, version);
+  kr_ebml2_pack_uint8 (ebml, EBML_ID_DOCTYPEREADVERSION, read_version);
+
+  kr_ebml2_finish_element (ebml, header);
 }
 
 kr_ebml2_t *kr_ebml2_create () {

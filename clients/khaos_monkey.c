@@ -269,6 +269,75 @@ void uncage_monkeys (char *sysname) {
 
 #include "krad_ebml2w.h"
 
+void kr_print_ebml (unsigned char *buffer, int len) {
+
+  int i;
+  
+  i = 0;
+
+  printf ("Raw EBML: \n");
+  for (i = 0; i < len; i++) {
+    printf ("%02X", buffer[i]);
+  }
+  printf ("\nEnd Raw EBML\n");
+}
+
+int test_kr_ebml2 (char *filename) {
+
+  kr_ebml2_t *ebml;
+  //unsigned char *my_element;
+  int fd;
+  int ret;
+
+  fd = 0;
+
+  if (!filename) {
+    fprintf (stderr, "Specify a file!\n");
+    return 1;
+  }
+
+  fd = open ( filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
+  if (fd < 0) {
+    fprintf (stderr, "Cant open %s!\n", filename);  
+    return 1;
+  }
+  
+  ebml = kr_ebml2_create ();
+  
+  kr_ebml2_pack_header (ebml, "testy", 2, 2);
+  /*
+  kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER);
+  kr_ebml2_pack_element (ebml, EBML_ID_TRACK_UID);
+  kr_ebml2_pack_element (ebml, EBML_ID_TRACK);
+  
+  kr_ebml2_start_element (ebml, EBML_ID_TAGS, &my_element);
+  
+  kr_ebml2_pack_element (ebml, EBML_ID_CODECDATA);
+  kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER_TIMECODE);
+  kr_ebml2_pack_element (ebml, EBML_ID_SEGMENT_INFO);
+  kr_ebml2_pack_element (ebml, EBML_ID_MUXINGAPP);
+
+
+  kr_ebml2_pack_int32 (ebml, EBML_ID_TAG, 666);
+  kr_ebml2_pack_int64 (ebml, EBML_ID_TAG_SIMPLE, 44444444444444);
+  kr_ebml2_pack_string (ebml, EBML_ID_TAG_STRING, "When I was a young girl!");
+
+  kr_ebml2_finish_element (ebml, my_element);
+  */
+  ret = write (fd, ebml->buffer, ebml->pos);
+  close (fd);
+
+  kr_print_ebml (ebml->buffer, ebml->pos);
+  kr_ebml2_destroy (&ebml);
+
+  if (ret < 0) {
+    fprintf (stderr, "Write failed!\n");
+    return 1;
+  }
+  
+  return 0;
+}
+
 int main (int argc, char *argv[]) {
 /*
   int incidents;
@@ -300,7 +369,7 @@ int main (int argc, char *argv[]) {
     uncage_monkeys (sysname);
   }
 */
-
+/*
   int fd;
   int ret;
   int err;
@@ -359,7 +428,9 @@ int main (int argc, char *argv[]) {
   }
   
   kr_ebml2_destroy (&ebml);
+*/
+
+  return test_kr_ebml2 (argv[1]);
 
 
-  return 0;
 }
