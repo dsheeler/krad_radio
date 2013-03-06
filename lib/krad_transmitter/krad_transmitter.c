@@ -1,5 +1,7 @@
 #include "krad_transmitter.h"
 
+//FIXME writev duh
+
 int krad_transmitter_transmission_transmit_header (krad_transmission_t *krad_transmission,
 											krad_transmission_receiver_t *krad_transmission_receiver) {
 
