@@ -56,8 +56,11 @@ handshake_0405(struct libwebsocket_context *context, struct libwebsocket *wsi)
 		goto bail;
 	}
 
-	n = snprintf((char *)context->service_buffer,
-			sizeof(context->service_buffer),
+	/*
+	 * since key length is restricted above (currently 128), cannot
+	 * overflow
+	 */
+	n = sprintf((char *)context->service_buffer,
 				"%s258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
 				lws_hdr_simple_ptr(wsi, WSI_TOKEN_KEY));
 
@@ -72,8 +75,7 @@ handshake_0405(struct libwebsocket_context *context, struct libwebsocket *wsi)
 	}
 
 	/* allocate the per-connection user memory (if any) */
-	if (wsi->protocol->per_session_data_size &&
-					  !libwebsocket_ensure_user_space(wsi))
+	if (libwebsocket_ensure_user_space(wsi))
 		goto bail;
 
 	/* create the response packet */
@@ -239,7 +241,7 @@ handshake_0405(struct libwebsocket_context *context, struct libwebsocket *wsi)
 	#endif
 		n = libwebsocket_write(wsi, (unsigned char *)response,
 						  p - response, LWS_WRITE_HTTP);
-		if (n < 0) {
+		if (n != (p - response)) {
 			lwsl_debug("handshake_0405: ERROR writing to socket\n");
 			goto bail;
 		}

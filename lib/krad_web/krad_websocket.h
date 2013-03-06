@@ -34,6 +34,7 @@ struct kr_ws_client_St {
   kr_client_t *kr_client;
   cJSON *msgs;
   unsigned char *buffer;
+  char *msgz;  
   char *msgstext;
   int msgstextlen;
   int kr_client_info;

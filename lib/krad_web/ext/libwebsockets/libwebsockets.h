@@ -52,7 +52,7 @@ typedef int ssize_t;
 #endif
 #endif
 
-#else
+#else // NOT WIN32
 #include <poll.h>
 #include <unistd.h>
 #endif
@@ -81,7 +81,7 @@ enum lws_log_levels {
 	LLL_COUNT = 10 /* set to count of valid flags */
 };
 
-extern void _lws_log(int filter, const char *format, ...);
+LWS_EXTERN void _lws_log(int filter, const char *format, ...);
 
 /* notice, warn and log are always compiled in */
 #define lwsl_notice(...) _lws_log(LLL_NOTICE, __VA_ARGS__)
@@ -101,7 +101,7 @@ extern void _lws_log(int filter, const char *format, ...);
 #define lwsl_ext(...)  _lws_log(LLL_EXT, __VA_ARGS__)
 #define lwsl_client(...) _lws_log(LLL_CLIENT, __VA_ARGS__)
 #define lwsl_latency(...) _lws_log(LLL_LATENCY, __VA_ARGS__)
-extern void lwsl_hexdump(void *buf, size_t len);
+LWS_EXTERN void lwsl_hexdump(void *buf, size_t len);
 
 #else /* no debug */
 
@@ -134,6 +134,7 @@ enum libwebsocket_callback_reasons {
 	LWS_CALLBACK_SERVER_WRITEABLE,
 	LWS_CALLBACK_HTTP,
 	LWS_CALLBACK_HTTP_FILE_COMPLETION,
+	LWS_CALLBACK_HTTP_WRITEABLE,
 	LWS_CALLBACK_FILTER_NETWORK_CONNECTION,
 	LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION,
 	LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS,
@@ -436,6 +437,9 @@ struct libwebsocket_extension;
  *				total number of client connections allowed set
  *				by MAX_CLIENTS.
  *
+ *	LWS_CALLBACK_HTTP_WRITEABLE: you can write more down the http protocol
+ *		link now.
+ *
  *	LWS_CALLBACK_HTTP_FILE_COMPLETION: a file requested to be send down
  *				http link has completed.
  *
@@ -452,7 +456,7 @@ struct libwebsocket_extension;
  *	LWS_CALLBACK_FILTER_NETWORK_CONNECTION: called when a client connects to
  *		the server at network level; the connection is accepted but then
  *		passed to this callback to decide whether to hang up immediately
- *		or not, based on the client IP.  @user contains the connection
+ *		or not, based on the client IP.  @in contains the connection
  *		socket's descriptor.  Return non-zero to terminate
  *		the connection before sending or receiving anything.
  *		Because this happens immediately after the network connection
@@ -564,24 +568,24 @@ struct libwebsocket_extension;
  *		poll array interface code in the callback for protocol 0, the
  *		first protocol you support, usually the HTTP protocol in the
  *		serving case.  This callback happens when a socket needs to be
- *		added to the polling loop: @user contains the fd, and
+ *		added to the polling loop: @in contains the fd, and
  *		@len is the events bitmap (like, POLLIN).  If you are using the
  *		internal polling loop (the "service" callback), you can just
  *		ignore these callbacks.
  *
  *	LWS_CALLBACK_DEL_POLL_FD: This callback happens when a socket descriptor
- *		needs to be removed from an external polling array.  @user is
+ *		needs to be removed from an external polling array.  @in is
  *		the socket desricptor.  If you are using the internal polling
  *		loop, you can just ignore it.
  *
  *	LWS_CALLBACK_SET_MODE_POLL_FD: This callback happens when libwebsockets
- *		wants to modify the events for the socket descriptor in @user.
+ *		wants to modify the events for the socket descriptor in @in.
  *		The handler should OR @len on to the events member of the pollfd
  *		struct for this socket descriptor.  If you are using the
  *		internal polling loop, you can just ignore it.
  *
  *	LWS_CALLBACK_CLEAR_MODE_POLL_FD: This callback occurs when libwebsockets
- *		wants to modify the events for the socket descriptor in @user.
+ *		wants to modify the events for the socket descriptor in @in.
  *		The handler should AND ~@len on to the events member of the
  *		pollfd struct for this socket descriptor.  If you are using the
  *		internal polling loop, you can just ignore it.
@@ -740,7 +744,7 @@ struct libwebsocket_extension {
  * @port:	Port to listen on... you can use 0 to suppress listening on
  *		any port, that's what you want if you are not running a
  *		websocket server at all but just using it as a client
- * @interface:  NULL to bind the listen socket to all interfaces, or the
+ * @iface:	NULL to bind the listen socket to all interfaces, or the
  *		interface name, eg, "eth2"
  * @protocols:	Array of structures listing supported protocols and a protocol-
  *		specific callback for each one.  The list is ended with an
@@ -755,6 +759,9 @@ struct libwebsocket_extension {
  * @ssl_private_key_filepath: filepath to private key if wanting SSL mode,
  *			else ignored
  * @ssl_ca_filepath: CA certificate filepath or NULL
+ * @ssl_cipher_list:	List of valid ciphers to use (eg,
+ * 			"RC4-MD5:RC4-SHA:AES128-SHA:AES256-SHA:HIGH:!DSS:!aNULL"
+ * 			or you can leave it as NULL to get "DEFAULT"
  * @gid:	group id to change to after setting listen socket, or -1.
  * @uid:	user id to change to after setting listen socket, or -1.
  * @options:	0, or LWS_SERVER_OPTION_DEFEAT_CLIENT_MASK
@@ -771,12 +778,13 @@ struct libwebsocket_extension {
 
 struct lws_context_creation_info {
 	int port;
-	const char *interface;
+	const char *iface;
 	struct libwebsocket_protocols *protocols;
 	struct libwebsocket_extension *extensions;
 	const char *ssl_cert_filepath;
 	const char *ssl_private_key_filepath;
 	const char *ssl_ca_filepath;
+	const char *ssl_cipher_list;
 	int gid;
 	int uid;
 	unsigned int options;
@@ -876,9 +884,6 @@ libwebsocket_is_final_fragment(struct libwebsocket *wsi);
 LWS_EXTERN unsigned char
 libwebsocket_get_reserved_bits(struct libwebsocket *wsi);
 
-LWS_EXTERN void *
-libwebsocket_ensure_user_space(struct libwebsocket *wsi);
-
 LWS_EXTERN int
 libwebsocket_rx_flow_control(struct libwebsocket *wsi, int enable);
 
@@ -917,13 +922,6 @@ libwebsockets_get_peer_addresses(struct libwebsocket_context *context,
 		struct libwebsocket *wsi, int fd, char *name, int name_len,
 					char *rip, int rip_len);
 
-LWS_EXTERN void
-libwebsockets_hangup_on_client(struct libwebsocket_context *context, int fd);
-
-LWS_EXTERN void
-libwebsocket_close_and_free_session(struct libwebsocket_context *context,
-			       struct libwebsocket *wsi, enum lws_close_status);
-
 LWS_EXTERN int
 libwebsockets_get_random(struct libwebsocket_context *context,
 							    void *buf, int len);
@@ -951,10 +949,10 @@ lws_get_library_version(void);
 
 /* access to headers... only valid while headers valid */
 
-extern int
+LWS_EXTERN int
 lws_hdr_total_length(struct libwebsocket *wsi, enum lws_token_indexes h);
 
-extern int
+LWS_EXTERN int
 lws_hdr_copy(struct libwebsocket *wsi, char *dest, int len,
 						enum lws_token_indexes h);
 
@@ -969,7 +967,7 @@ libwebsocket_read(struct libwebsocket_context *context,
 					       unsigned char *buf, size_t len);
 
 #ifndef LWS_NO_EXTENSIONS
-LWS_EXTERN struct libwebsocket_extension libwebsocket_internal_extensions[];
+LWS_EXTERN struct libwebsocket_extension *libwebsocket_get_internal_extensions();
 #endif
 
 #ifdef __cplusplus

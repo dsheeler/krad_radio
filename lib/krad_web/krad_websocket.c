@@ -475,27 +475,29 @@ static int callback_http (struct libwebsocket_context *this,
   n = 0;
   krad_websocket = krad_websocket_glob;
 
+  //printk ("got callback hgtp!");
+
   switch (reason) {
     case LWS_CALLBACK_ADD_POLL_FD:
       krad_websocket->fdof[krad_websocket->count_pollfds] = MYSTERY;
-      krad_websocket->pollfds[krad_websocket->count_pollfds].fd = (int)(long)user;
+      krad_websocket->pollfds[krad_websocket->count_pollfds].fd = (int)(long)in;
       krad_websocket->pollfds[krad_websocket->count_pollfds].events = (int)len;
       krad_websocket->pollfds[krad_websocket->count_pollfds++].revents = 0;
       break;
     case LWS_CALLBACK_DEL_POLL_FD:
-      n = (int)(long)user;
+      n = (int)(long)in;
       del_poll_fd (n);
       break;
     case LWS_CALLBACK_SET_MODE_POLL_FD:
       for (n = 0; n < krad_websocket->count_pollfds; n++) {
-        if (krad_websocket->pollfds[n].fd == (int)(long)user) {
+        if (krad_websocket->pollfds[n].fd == (int)(long)in) {
           krad_websocket->pollfds[n].events |= (int)(long)len;
         }
       }
       break;
     case LWS_CALLBACK_CLEAR_MODE_POLL_FD:
       for (n = 0; n < krad_websocket->count_pollfds; n++) {
-        if (krad_websocket->pollfds[n].fd == (int)(long)user) {
+        if (krad_websocket->pollfds[n].fd == (int)(long)in) {
           krad_websocket->pollfds[n].events &= ~(int)(long)len;
         }
       }
@@ -563,7 +565,8 @@ static int callback_kr_client (struct libwebsocket_context *this,
       if (kr_ws_client->kr_client_info == 1) {
         //memcpy (p, kr_ws_client->msgstext, kr_ws_client->msgstextlen + 1);
         //ret = libwebsocket_write (wsi, p, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
-        ret = libwebsocket_write (wsi, (unsigned char *)kr_ws_client->msgstext, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
+        //ret = libwebsocket_write (wsi, (unsigned char *)kr_ws_client->msgstext, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
+        ret = libwebsocket_write (wsi, (unsigned char *)kr_ws_client->msgz, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
         if (ret < 0) {
           printke ("krad_ipc ERROR writing to socket");
           return 1;
@@ -656,16 +659,33 @@ static void *krad_websocket_server_run (void *arg) {
                   
                   krad_delivery_handler (kr_ws_client);
                   
-                  while (kr_wait (kr_ws_client->kr_client, 0)) {
-                    krad_delivery_handler (kr_ws_client);
+                  //while (kr_wait (kr_ws_client->kr_client, 0)) {
+                  //  krad_delivery_handler (kr_ws_client);
+                  //}
+                  if (cJSON_GetArraySize(kr_ws_client->msgs) > 0) {
+                    kr_ws_client->msgz = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
+                    if (kr_ws_client->msgstextlen > 0) {
+                      kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING + kr_ws_client->msgstextlen - 1] = ',';
+                      kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING] + kr_ws_client->msgstextlen;
+                      strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs) + 1);
+                    } else {
+                      kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
+                      strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs));
+                    }
+
+                    //printk(kr_ws_client->msgstext);
+                    //if (kr_ws_client->msgstextlen > 0) {
+                    //  printk("oh shit!");
+                    //}
+                    
+                    kr_ws_client->msgstextlen += strlen (kr_ws_client->msgstext);
+                    
                   }
-                  
-                  kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
-                  strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs));
-                  kr_ws_client->msgstextlen = strlen (kr_ws_client->msgstext);
                   cjson_memreset ();
-                  kr_ws_client->kr_client_info = 1;
-                  libwebsocket_callback_on_writable (kr_ws_client->context, kr_ws_client->wsi);
+                  if (kr_ws_client->msgstextlen > 0) {
+                    kr_ws_client->kr_client_info = 1;
+                    libwebsocket_callback_on_writable (kr_ws_client->context, kr_ws_client->wsi);
+                  }
                   break;
                 case KRAD_CONTROLLER:
                 case MYSTERY:
@@ -730,8 +750,10 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
 
   lws_create.port = krad_websocket->port;
   lws_create.protocols = protocols;
-  lws_create.extensions = libwebsocket_internal_extensions;
-  lws_create.interface = "";
+  //lws_create.extensions = libwebsocket_internal_extensions;
+  lws_create.extensions = NULL;
+  //lws_create.extensions = libwebsocket_get_internal_extensions();
+  //lws_create.interface = "";
   lws_create.gid = -1;
   lws_create.uid = -1;
 

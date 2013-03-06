@@ -1,23 +1,35 @@
-`rm /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/*`
-`cp /home/oneman/kode/libwebsockets/lib/base64-decode.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/base64-decode.c`
-`cp /home/oneman/kode/libwebsockets/lib/extension.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension.c`
-`cp /home/oneman/kode/libwebsockets/lib/extension-deflate-stream.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension-deflate-stream.c`
-`cp /home/oneman/kode/libwebsockets/lib/extension-deflate-stream.h /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension-deflate-stream.h`
-`cp /home/oneman/kode/libwebsockets/lib/extension-deflate-frame.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension-deflate-frame.c`
-`cp /home/oneman/kode/libwebsockets/lib/extension-deflate-frame.h /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension-deflate-frame.h`
-`cp /home/oneman/kode/libwebsockets/lib/handshake.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/handshake.c`
-`cp /home/oneman/kode/libwebsockets/lib/libwebsockets.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/libwebsockets.c`
-`cp /home/oneman/kode/libwebsockets/lib/libwebsockets.h /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/libwebsockets.h`
-`cp /home/oneman/kode/libwebsockets/lib/parsers.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/parsers.c`
-`cp /home/oneman/kode/libwebsockets/lib/private-libwebsockets.h /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/private-libwebsockets.h`
-`cp /home/oneman/kode/libwebsockets/lib/output.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/output.c`
-`cp /home/oneman/kode/libwebsockets/lib/server.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/server.c`
-`cp /home/oneman/kode/libwebsockets/lib/server-handshake.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/server-handshake.c`
-`cp /home/oneman/kode/libwebsockets/lib/sha-1.c /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/sha-1.c`
-`cp /home/oneman/kode/libwebsockets/config.h /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/config.h`
-`touch  /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/extension-x-google-mux.h`
+#!/usr/bin/env ruby
+
+kr_nom_nom = "/home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets"
+lws_tree = "/home/oneman/kode/libwebsockets/lib"
+
+`rm #{kr_nom_nom}/*`
+`cp #{lws_tree}/base64-decode.c #{kr_nom_nom}/base64-decode.c`
+`cp #{lws_tree}/extension.c #{kr_nom_nom}/extension.c`
+`cp #{lws_tree}/extension-deflate-stream.c #{kr_nom_nom}/extension-deflate-stream.c`
+`cp #{lws_tree}/extension-deflate-stream.h #{kr_nom_nom}/extension-deflate-stream.h`
+`cp #{lws_tree}/extension-deflate-frame.c #{kr_nom_nom}/extension-deflate-frame.c`
+`cp #{lws_tree}/extension-deflate-frame.h #{kr_nom_nom}/extension-deflate-frame.h`
+`cp #{lws_tree}/handshake.c #{kr_nom_nom}/handshake.c`
+`cp #{lws_tree}/libwebsockets.c #{kr_nom_nom}/libwebsockets.c`
+`cp #{lws_tree}/libwebsockets.h #{kr_nom_nom}/libwebsockets.h`
+`cp #{lws_tree}/parsers.c #{kr_nom_nom}/parsers.c`
+`cp #{lws_tree}/private-libwebsockets.h #{kr_nom_nom}/private-libwebsockets.h`
+`cp #{lws_tree}/output.c #{kr_nom_nom}/output.c`
+`cp #{lws_tree}/server.c #{kr_nom_nom}/server.c`
+`cp #{lws_tree}/server-handshake.c #{kr_nom_nom}/server-handshake.c`
+`cp #{lws_tree}/sha-1.c #{kr_nom_nom}/sha-1.c`
+`cp /home/oneman/kode/libwebsockets/config.h #{kr_nom_nom}/config.h`
+`touch  #{kr_nom_nom}/extension-x-google-mux.h`
 
 Dir.chdir("/home/oneman/kode/libwebsockets")
-version = `git rev-parse HEAD`
+version = `git rev-parse HEAD`.chomp
 Dir.chdir("/home/oneman/kode/krad_radio")
-`echo #{version} > /home/oneman/kode/krad_radio/lib/krad_web/ext/libwebsockets/VERSION`
+
+`echo #{version} > #{kr_nom_nom}/VERSION`
+
+`echo "#define LWS_LIBRARY_VERSION PACKAGE_VERSION" >> #{kr_nom_nom}/config.h`
+`echo "#define LWS_NO_CLIENT" >> #{kr_nom_nom}/config.h`
+`echo "#define LWS_NO_DAEMONIZE" >> #{kr_nom_nom}/config.h`
+`echo "#define assert(ignore)((void) 0)" >> #{kr_nom_nom}/config.h`
+

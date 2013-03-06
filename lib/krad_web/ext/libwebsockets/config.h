@@ -86,7 +86,7 @@
 #define PACKAGE_NAME "libwebsockets"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libwebsockets 1.1"
+#define PACKAGE_STRING "libwebsockets 1.2"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libwebsockets"
@@ -95,18 +95,13 @@
 #define PACKAGE_URL "http://libwebsockets.org"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.1"
+#define PACKAGE_VERSION "1.2"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.1"
-
-#define LWS_LIBRARY_VERSION PACKAGE_VERSION
-#define LWS_NO_CLIENT
-#define LWS_NO_DAEMONIZE
-#define NDEBUG
+#define VERSION "1.2"
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
@@ -122,3 +117,7 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
+#define LWS_LIBRARY_VERSION PACKAGE_VERSION
+#define LWS_NO_CLIENT
+#define LWS_NO_DAEMONIZE
+#define assert(ignore)((void) 0)

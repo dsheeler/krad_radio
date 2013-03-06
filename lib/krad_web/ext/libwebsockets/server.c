@@ -46,7 +46,7 @@ libwebsockets_decode_ssl_error(void)
 
 	while ((err = ERR_get_error()) != 0) {
 		ERR_error_string_n(err, buf, sizeof(buf));
-		lwsl_err("*** %s\n", buf);
+		lwsl_err("*** %lu %s\n", err, buf);
 	}
 }
 #endif
@@ -100,8 +100,8 @@ libwebsocket_create_new_server_wsi(struct libwebsocket_context *context)
 	/* intialize the instance struct */
 
 	new_wsi->state = WSI_STATE_HTTP;
-	new_wsi->u.hdr.name_buffer_pos = 0;
 	new_wsi->mode = LWS_CONNMODE_HTTP_SERVING;
+	new_wsi->hdr_parsing_completed = 0;
 
 	if (lws_allocate_header_table(new_wsi)) {
 		free(new_wsi);
@@ -167,7 +167,10 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 				return 0;
 			}
 			if (!len) {
-				lwsl_info("lws_server_sktt_srv: read 0 len\n");
+				lwsl_info("lws_server_skt_srv: read 0 len\n");
+				/* lwsl_info("   state=%d\n", wsi->state); */
+				if (!wsi->hdr_parsing_completed)
+					free(wsi->u.hdr.ah);
 				libwebsocket_close_and_free_session(
 				       context, wsi, LWS_CLOSE_STATUS_NOSTATUS);
 				return 0;
@@ -188,8 +191,19 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 		/* one shot */
 		pollfd->events &= ~POLLOUT;
 
-		if (wsi->state != WSI_STATE_HTTP_ISSUING_FILE)
+		if (wsi->state != WSI_STATE_HTTP_ISSUING_FILE) {
+			n = user_callback_handle_rxflow(
+					wsi->protocol->callback,
+					wsi->protocol->owning_server,
+					wsi, LWS_CALLBACK_HTTP_WRITEABLE,
+					wsi->user_space,
+					NULL,
+					0);
+			if (n < 0)
+				libwebsocket_close_and_free_session(
+				       context, wsi, LWS_CLOSE_STATUS_NOSTATUS);
 			break;
+		}
 
 		/* nonzero for completion or error */
 		if (libwebsockets_serve_http_file_fragment(context, wsi))
@@ -232,7 +246,7 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 
 		if ((context->protocols[0].callback)(context, wsi,
 				LWS_CALLBACK_FILTER_NETWORK_CONNECTION,
-					   (void *)(long)accept_fd, NULL, 0)) {
+					   NULL, (void *)(long)accept_fd, 0)) {
 			lwsl_debug("Callback denied network connection\n");
 			compatible_close(accept_fd);
 			break;
@@ -314,7 +328,7 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 		/* external POLL support via protocol 0 */
 		context->protocols[0].callback(context, wsi,
 			LWS_CALLBACK_CLEAR_MODE_POLL_FD,
-			(void *)(long)wsi->sock, NULL, POLLOUT);
+			wsi->user_space, (void *)(long)wsi->sock, POLLOUT);
 
 		lws_latency_pre(context, wsi);
 		n = SSL_accept(wsi->ssl);
@@ -333,7 +347,8 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 				/* external POLL support via protocol 0 */
 				context->protocols[0].callback(context, wsi,
 					LWS_CALLBACK_SET_MODE_POLL_FD,
-					(void *)(long)wsi->sock, NULL, POLLIN);
+					wsi->user_space,
+					(void *)(long)wsi->sock, POLLIN);
 				lwsl_info("SSL_ERROR_WANT_READ\n");
 				break;
 			}
@@ -344,7 +359,8 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 				/* external POLL support via protocol 0 */
 				context->protocols[0].callback(context, wsi,
 					LWS_CALLBACK_SET_MODE_POLL_FD,
-					(void *)(long)wsi->sock, NULL, POLLOUT);
+					wsi->user_space,
+					(void *)(long)wsi->sock, POLLOUT);
 				break;
 			}
 			lwsl_debug("SSL_accept failed skt %u: %s\n",
@@ -361,9 +377,7 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 
 		wsi->mode = LWS_CONNMODE_HTTP_SERVING;
 
-		lwsl_debug(
-			"accepted new SSL conn  port %u on fd=%d SSL ver %s\n",
-			ntohs(cli_addr.sin_port), SSL_get_version(wsi->ssl));
+		lwsl_debug("accepted new SSL conn\n");
 		break;
 #endif
 
@@ -372,3 +386,4 @@ int lws_server_socket_service(struct libwebsocket_context *context,
 	}
 	return 0;
 }
+

@@ -468,15 +468,6 @@ int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 	case WSI_TOKEN_NAME_PART:
 		lwsl_parser("WSI_TOKEN_NAME_PART '%c'\n", c);
 
-		if (wsi->u.hdr.name_buffer_pos ==
-					   sizeof(wsi->u.hdr.name_buffer) - 1) {
-			/* name bigger than we can handle, skip until next */
-			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
-			break;
-		}
-		wsi->u.hdr.name_buffer[wsi->u.hdr.name_buffer_pos++] = c;
-		wsi->u.hdr.name_buffer[wsi->u.hdr.name_buffer_pos] = '\0';
-
 		wsi->u.hdr.lextable_pos =
 				lextable_decode(wsi->u.hdr.lextable_pos, c);
 
@@ -490,14 +481,13 @@ int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 				wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
 				break;
 			}
-			/* hm it's an unknown http method in fact */
-			if (c == ' ') {
-				lwsl_info("Unknown method %s\n",
-							wsi->u.hdr.name_buffer);
-				/* treat it as GET */
-				wsi->u.hdr.parser_state = WSI_TOKEN_GET_URI;
-				goto start_fragment;
-			}
+			/*
+			 * hm it's an unknown http method in fact,
+			 * treat as dangerous
+			 */
+
+			lwsl_info("Unknown method - dropping\n");
+			return -1;
 		}
 		if (lextable[wsi->u.hdr.lextable_pos + 1] == 0) {
 
@@ -505,7 +495,13 @@ int libwebsocket_parse(struct libwebsocket *wsi, unsigned char c)
 
 			n = lextable[wsi->u.hdr.lextable_pos] & 0x7f;
 
-			lwsl_parser("known hdr '%s'\n", wsi->u.hdr.name_buffer);
+			lwsl_parser("known hdr %d\n", n);
+
+			if (n == WSI_TOKEN_GET_URI &&
+				wsi->u.hdr.ah->frag_index[WSI_TOKEN_GET_URI]) {
+				lwsl_warn("Duplicated GET\n");
+				return -1;
+			}
 
 			/*
 			 * WSORIGIN is protocol equiv to ORIGIN,
@@ -575,7 +571,6 @@ start_fragment:
 			wsi->u.hdr.lextable_pos = 0;
 		} else
 			wsi->u.hdr.parser_state = WSI_TOKEN_SKIPPING;
-		wsi->u.hdr.name_buffer_pos = 0;
 		break;
 		/* we're done, ignore anything else */
 	case WSI_PARSING_COMPLETE:
@@ -598,6 +593,7 @@ set_parsing_complete:
 		lwsl_parser("v%02d hdrs completed\n", wsi->ietf_spec_revision);
 	}
 	wsi->u.hdr.parser_state = WSI_PARSING_COMPLETE;
+	wsi->hdr_parsing_completed = 1;
 
 	return 0;
 }
@@ -710,26 +706,10 @@ libwebsocket_rx_sm(struct libwebsocket *wsi, unsigned char c)
 	case LWS_RXPS_04_FRAME_HDR_1:
 handle_first:
 
-		/*
-		 * 04 spec defines the opcode like this: (1, 2, and 3 are
-		 * "control frame" opcodes which may not be fragmented or
-		 * have size larger than 126)
-		 *
-		 *       frame-opcode           =
-		 *	       %x0 ; continuation frame
-		 *		/ %x1 ; connection close
-		 *		/ %x2 ; ping
-		 *		/ %x3 ; pong
-		 *		/ %x4 ; text frame
-		 *		/ %x5 ; binary frame
-		 *		/ %x6-F ; reserved
-		 *
-		 *		FIN (b7)
-		 */
-
 		wsi->u.ws.opcode = c & 0xf;
 		wsi->u.ws.rsv = c & 0x70;
 		wsi->u.ws.final = !!((c >> 7) & 1);
+
 		switch (wsi->u.ws.opcode) {
 		case LWS_WS_OPCODE_07__TEXT_FRAME:
 		case LWS_WS_OPCODE_07__BINARY_FRAME:
@@ -874,6 +854,8 @@ handle_first:
 		wsi->lws_rx_parse_state =
 					LWS_RXPS_PAYLOAD_UNTIL_LENGTH_EXHAUSTED;
 		wsi->u.ws.frame_mask_index = 0;
+		if (wsi->u.ws.rx_packet_length == 0)
+			goto spill;
 		break;
 
 
@@ -892,12 +874,27 @@ handle_first:
 					    (wsi->u.ws.frame_mask_index++) & 3];
 
 		if (--wsi->u.ws.rx_packet_length == 0) {
+			/* spill because we have the whole frame */
 			wsi->lws_rx_parse_state = LWS_RXPS_NEW;
 			goto spill;
 		}
-		if (wsi->u.ws.rx_user_buffer_head !=
-					wsi->protocol->rx_buffer_size)
+
+		/*
+		 * if there's no protocol max frame size given, we are
+		 * supposed to default to LWS_MAX_SOCKET_IO_BUF
+		 */
+
+		if (!wsi->protocol->rx_buffer_size &&
+			 		wsi->u.ws.rx_user_buffer_head !=
+			 				  LWS_MAX_SOCKET_IO_BUF)
 			break;
+		else
+			if (wsi->protocol->rx_buffer_size &&
+					wsi->u.ws.rx_user_buffer_head !=
+						  wsi->protocol->rx_buffer_size)
+			break;
+
+		/* spill because we filled our rx buffer */
 spill:
 		/*
 		 * is this frame a control packet we should take care of at this
@@ -924,7 +921,7 @@ spill:
 					LWS_SEND_BUFFER_PRE_PADDING],
 					wsi->u.ws.rx_user_buffer_head,
 							       LWS_WRITE_CLOSE);
-			if (n)
+			if (n < 0)
 				lwsl_info("write of close ack failed %d\n", n);
 			wsi->state = WSI_STATE_RETURNED_CLOSE_ALREADY;
 			/* close the connection */
@@ -940,6 +937,8 @@ spill:
 			n = libwebsocket_write(wsi, (unsigned char *)
 			&wsi->u.ws.rx_user_buffer[LWS_SEND_BUFFER_PRE_PADDING],
 				 wsi->u.ws.rx_user_buffer_head, LWS_WRITE_PONG);
+			if (n < 0)
+				return -1;
 			/* ... then just drop it */
 			wsi->u.ws.rx_user_buffer_head = 0;
 			return 0;
