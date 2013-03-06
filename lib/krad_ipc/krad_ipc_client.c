@@ -4,9 +4,6 @@ static int krad_ipc_client_init (krad_ipc_client_t *client);
 
 void krad_ipc_disconnect (krad_ipc_client_t *client) {
   if (client != NULL) {
-    if (client->buffer != NULL) {
-      free (client->buffer);
-    }
     if (client->sd != 0) {
       close (client->sd);
     }
@@ -23,11 +20,6 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname) {
   
   if (client == NULL) {
     failfast ("Krad IPC Client mem alloc fail");
-    return NULL;
-  }
-  
-  if ((client->buffer = calloc (1, KRAD_IPC_BUFFER_SIZE)) == NULL) {
-    failfast ("Krad IPC Client buffer alloc fail");
     return NULL;
   }
   
@@ -174,7 +166,6 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
  
   krad_ebml_read_ebml_header (client->krad_ebml, client->krad_ebml->header);
   krad_ebml_check_ebml_header (client->krad_ebml->header);
-
   
   if (krad_ebml_check_doctype_header (client->krad_ebml->header, KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION)) {
     //printf("Matched %s Version: %d Read Version: %d\n", KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
