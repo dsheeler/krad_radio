@@ -502,7 +502,71 @@ static int callback_http (struct libwebsocket_context *this,
         }
       }
       break;
+    case LWS_CALLBACK_ESTABLISHED:
+      printk (" on http LWS_CALLBACK_ESTABLISHED");
+      break;
+    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+      printk (" on http LWS_CALLBACK_CLIENT_CONNECTION_ERROR");
+      break;
+    case LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH:
+      printk (" on http LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH");
+      break;
+    case LWS_CALLBACK_CLIENT_ESTABLISHED:
+      printk (" on http LWS_CALLBACK_CLIENT_ESTABLISHED");
+      break;
+    case LWS_CALLBACK_CLOSED:
+      printk (" on http LWS_CALLBACK_CLOSE");
+      break;
+    case LWS_CALLBACK_RECEIVE:
+      printk (" on http LWS_CALLBACK_RECEIVE");
+      break;
+    case LWS_CALLBACK_CLIENT_RECEIVE:
+      printk (" on http LWS_CALLBACK_CLIENT_RECEIVE");
+      break;
+    case LWS_CALLBACK_CLIENT_WRITEABLE:
+      printk (" on http LWS_CALLBACK_CLIENT_WRITEABLE");
+      break;
+    case LWS_CALLBACK_HTTP:
+      printk (" on http LWS_CALLBACK_HTTP");
+      break;
+    case LWS_CALLBACK_HTTP_FILE_COMPLETION:
+      printk (" on http LWS_CALLBACK_HTTP_FILE_COMPLETION");
+      break;
+    case LWS_CALLBACK_HTTP_WRITEABLE:
+      printk (" on http LWS_CALLBACK_HTTP_WRITEABLE");
+      break;
+    case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
+      printk (" on http LWS_CALLBACK_FILTER_NETWORK_CONNECTION");
+      break;
+    case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+      printk (" on http LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION");
+      break;
+    case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS:
+      printk (" on http LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS");
+      break;
+    case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS:
+      printk (" on http LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS");
+      break;
+    case LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION:
+      printk (" on http LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION");
+      break;
+    case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
+      printk (" on http LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER");
+      break;
+    case LWS_CALLBACK_CONFIRM_EXTENSION_OKAY:
+      printk (" on http LWS_CALLBACK_CONFIRM_EXTENSION_OKAY");
+      break;
+    case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
+      printk (" on http LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED");
+      break;
+    case LWS_CALLBACK_PROTOCOL_INIT:
+      printk (" on http LWS_CALLBACK_PROTOCOL_INIT");
+      break;
+    case LWS_CALLBACK_PROTOCOL_DESTROY:
+      printk (" on http LWS_CALLBACK_PROTOCOL_DESTROY");
+      break;
     default:
+      printke ("callback_http for unknown case! %d on fd %d", (int)(long)in, reason);
       break;
   }
   return 0;
@@ -526,7 +590,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_ws_client->context = this;
       kr_ws_client->wsi = wsi;
       kr_ws_client->krad_websocket = krad_websocket;
-      kr_ws_client->buffer = malloc (4096 * 8);
+      kr_ws_client->buffer = malloc (KR_WS_BUFSIZE);
       kr_ws_client->kr_client = kr_client_create ("websocket client");
       
       if (kr_ws_client->kr_client == NULL) {
@@ -539,7 +603,8 @@ static int callback_kr_client (struct libwebsocket_context *this,
       }
 
       kr_ws_client->kr_client_info = 0;
-      kr_ws_client->hello_sent = 0;      
+      kr_ws_client->hello_sent = 0;
+      kr_ws_client->destroy = 0;
       kr_mixer_info (kr_ws_client->kr_client);
       //kr_compositor_info (kr_ws_client->kr_client);
       kr_mixer_portgroup_list (kr_ws_client->kr_client);
@@ -551,7 +616,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       break;
 
     case LWS_CALLBACK_CLOSED:
-
+      //printk (" on kr client  LWS_CALLBACK_CLOSED");
       del_poll_fd (kr_client_get_fd (kr_ws_client->kr_client));
       kr_client_destroy (&kr_ws_client->kr_client);
       kr_ws_client->hello_sent = 0;
@@ -561,6 +626,11 @@ static int callback_kr_client (struct libwebsocket_context *this,
       break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
+    
+      if (kr_ws_client->destroy == 1) {
+        //printk ("got a writable callback for a connection with a buffer to damn full so we should get closed callback next.");
+        return -1;
+      }
 
       if (kr_ws_client->kr_client_info == 1) {
         //memcpy (p, kr_ws_client->msgstext, kr_ws_client->msgstextlen + 1);
@@ -576,11 +646,84 @@ static int callback_kr_client (struct libwebsocket_context *this,
         //free (kr_ws_client->msgstext);
       }
       break;
-
     case LWS_CALLBACK_RECEIVE:
+      if (kr_ws_client->destroy == 1) {
+        //printk ("got a RECEIVE callback for a connection with a buffer to damn full so we should get closed callback next.");
+        return -1;
+      }
       json_to_cmd (kr_ws_client, in, len);
       break;
+    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_CONNECTION_ERROR");
+      break;
+    case LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH");
+      break;
+    case LWS_CALLBACK_CLIENT_ESTABLISHED:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_ESTABLISHED");
+      break;
+    case LWS_CALLBACK_CLIENT_RECEIVE:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_RECEIVE");
+      break;
+    case LWS_CALLBACK_CLIENT_RECEIVE_PONG:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_RECEIVE_PONG");
+      break;
+    case LWS_CALLBACK_CLIENT_WRITEABLE:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_WRITEABLE");
+      break;
+    case LWS_CALLBACK_HTTP:
+      printk (" on kr client  LWS_CALLBACK_HTTP");
+      break;
+    case LWS_CALLBACK_HTTP_FILE_COMPLETION:
+      printk (" on kr client  LWS_CALLBACK_HTTP_FILE_COMPLETION");
+      break;
+    case LWS_CALLBACK_HTTP_WRITEABLE:
+      printk (" on kr client  LWS_CALLBACK_HTTP_WRITEABLE");
+      break;
+    case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
+      printk (" on kr client  LWS_CALLBACK_FILTER_NETWORK_CONNECTION");
+      break;
+    case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+      printk (" on kr client  LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION");
+      break;
+    case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS:
+      printk (" on kr client  LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS");
+      break;
+    case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS:
+      printk (" on kr client  LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS");
+      break;
+    case LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION:
+      printk (" on kr client  LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION");
+      break;
+    case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER");
+      break;
+    case LWS_CALLBACK_CONFIRM_EXTENSION_OKAY:
+      printk (" on kr client  LWS_CALLBACK_CONFIRM_EXTENSION_OKAY");
+      break;
+    case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
+      printk (" on kr client  LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED");
+      break;
+    case LWS_CALLBACK_PROTOCOL_INIT:
+      printk (" on kr client  LWS_CALLBACK_PROTOCOL_INIT");
+      break;
+    case LWS_CALLBACK_PROTOCOL_DESTROY:
+      printk (" on kr client  LWS_CALLBACK_PROTOCOL_DESTROY");
+      break;
+    case LWS_CALLBACK_ADD_POLL_FD:
+      printk (" on kr client  LWS_CALLBACK_ADD_POLL_FD");
+      break;
+    case LWS_CALLBACK_DEL_POLL_FD:
+      printk (" on kr client  LWS_CALLBACK_DEL_POLL_FD");
+      break;
+    case LWS_CALLBACK_SET_MODE_POLL_FD:
+      printk (" on kr client  LWS_CALLBACK_SET_MODE_POLL_FD");
+      break;
+    case LWS_CALLBACK_CLEAR_MODE_POLL_FD:
+      printk (" on kr client  LWS_CALLBACK_CLEAR_MODE_POLL_FD");
+      break;
     default:
+      printke ("callback_kr_client for unknown reason! %d", reason);
       break;
   }
 
@@ -592,6 +735,7 @@ static void *krad_websocket_server_run (void *arg) {
   krad_websocket_t *krad_websocket = (krad_websocket_t *)arg;
   int n;
   kr_ws_client_t *kr_ws_client;
+  char *str;
   
   krad_system_set_thread_name ("kr_websocket");
 
@@ -662,15 +806,22 @@ static void *krad_websocket_server_run (void *arg) {
                   //while (kr_wait (kr_ws_client->kr_client, 0)) {
                   //  krad_delivery_handler (kr_ws_client);
                   //}
-                  if (cJSON_GetArraySize(kr_ws_client->msgs) > 0) {
+                  if ((cJSON_GetArraySize(kr_ws_client->msgs) > 0) && (kr_ws_client->destroy == 0)) {
                     kr_ws_client->msgz = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
                     if (kr_ws_client->msgstextlen > 0) {
                       kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING + kr_ws_client->msgstextlen - 1] = ',';
                       kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING] + kr_ws_client->msgstextlen;
-                      strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs) + 1);
+                      str = cJSON_Print (kr_ws_client->msgs) + 1;
+                      if (strlen(str) + kr_ws_client->msgstextlen >= KR_WS_BUFSIZE - 1024) {
+                        printke ("the buffer is too damn full!");
+                        kr_ws_client->destroy = 1;
+                      } else {
+                        strcpy (kr_ws_client->msgstext, str);
+                      }
                     } else {
                       kr_ws_client->msgstext = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
-                      strcpy (kr_ws_client->msgstext, cJSON_Print (kr_ws_client->msgs));
+                      str = cJSON_Print (kr_ws_client->msgs);
+                      strcpy (kr_ws_client->msgstext, str);
                     }
 
                     //printk(kr_ws_client->msgstext);
@@ -684,6 +835,8 @@ static void *krad_websocket_server_run (void *arg) {
                   cjson_memreset ();
                   if (kr_ws_client->msgstextlen > 0) {
                     kr_ws_client->kr_client_info = 1;
+                  }
+                  if ((kr_ws_client->kr_client_info == 1) || (kr_ws_client->destroy == 1)) {
                     libwebsocket_callback_on_writable (kr_ws_client->context, kr_ws_client->wsi);
                   }
                   break;

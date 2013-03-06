@@ -13,6 +13,8 @@
 
 #define KRAD_WEBSOCKET_MAX_POLL_FDS 200
 
+#define KR_WS_BUFSIZE 4096 * 8
+
 enum fdclass {
   MYSTERY = 0,
   KRAD_IPC = 1,
@@ -39,6 +41,7 @@ struct kr_ws_client_St {
   int msgstextlen;
   int kr_client_info;
   int hello_sent;
+  int destroy;
   struct libwebsocket_context *context;
   struct libwebsocket *wsi;
 };
