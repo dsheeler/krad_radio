@@ -6,7 +6,7 @@ int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster,
   size_t size;
   unsigned char *buffer;
   krad_broadcast_msg_t *broadcast_msg;
-  
+
   size = 256;
   buffer = malloc (size);
 
@@ -15,7 +15,7 @@ int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster,
 
   //krad_ebml = krad_ebml_open_buffer (KRAD_EBML_IO_WRITEONLY);
   krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);  
-  
+
   krad_radio_address_to_ebml (krad_ebml, &message_loc, address);
   krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_RADIO_UNIT_DESTROYED);
   krad_ebml_finish_element (krad_ebml, message_loc);
@@ -177,7 +177,6 @@ void krad_radio_send_shipment_terminator (krad_ipc_server_t *kr_ipc) {
                                                          &response);
   krad_ipc_server_response_finish ( kr_ipc, response );
 }
-
 
 void krad_radio_remote_rep_to_ebml (kr_remote_t *remote, krad_ebml_t *ebml) {
 

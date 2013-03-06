@@ -17,6 +17,7 @@ struct kr_ebml2_St {
   size_t pos;
   size_t len;
   unsigned char *buf;
+  unsigned char *bufstart;
   //unsigned char buffer[KRAD_EBML2_BUF_SZ];
 };
 

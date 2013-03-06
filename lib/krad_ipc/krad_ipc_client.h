@@ -53,7 +53,7 @@ struct krad_ipc_client_St {
 	struct utsname unixname;
 
 	krad_ebml_t *krad_ebml;
-	
+
 	kr_ebml2_t *ebml2;
 	kr_io2_t *io;
 };

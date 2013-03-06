@@ -1,6 +1,6 @@
 #include "krad_io2.h"
 
-    // kr_io2_mode_t mode ?
+// kr_io2_mode_t mode ?
 kr_io2_t *kr_io2_create () {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
@@ -8,8 +8,8 @@ kr_io2_t *kr_io2_create () {
   io->buf = io->buffer;
   io->pos = 0;
   io->len = 0;
-  io->space = kr_io2_BUF_SZ;
-  io->size = kr_io2_BUF_SZ;
+  io->space = KR_IO2_BUF_SZ;
+  io->size = KR_IO2_BUF_SZ;
   return io; 
 }
 
@@ -51,9 +51,28 @@ inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
 int kr_io2_write (kr_io2_t *io) {
 
   int ret;
-  
+
   ret = write (io->fd, &io->buffer, io->len);
+
   return ret;
 }
 
+int kr_io2_flush (kr_io2_t *io) {
+
+  int ret;
+  int len;
+  
+  len = io->len;
+  
+  ret = write (io->fd, &io->buffer, io->len);
+  if (ret != len) {
+    return -1;
+  }
+
+  io->buf = io->buffer;
+  io->pos = 0;
+  io->len = 0;
+
+  return 0;
+}
 

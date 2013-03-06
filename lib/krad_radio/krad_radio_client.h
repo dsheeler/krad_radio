@@ -252,6 +252,9 @@ int kr_client_local (kr_client_t *client);
 
 int kr_client_get_fd (kr_client_t *client);
 
+
+int kr_client_sync (kr_client_t *client);
+
 /**
  * @brief subscribe to broadcast messages of a specific type on one station
  * @param kr_client handle of the IPC-connection to the station

@@ -26,10 +26,10 @@
 
 #include "krad_system.h"
 
-#ifndef kr_io2_H
-#define kr_io2_H
+#ifndef KR_IO2_H
+#define KR_IO2_H
 
-#define kr_io2_BUF_SZ 8192
+#define KR_IO2_BUF_SZ 8192
 
 typedef struct kr_io2_St kr_io2_t;
 
@@ -47,7 +47,7 @@ struct kr_io2_St {
   size_t space; // space remaining in buffer
   size_t size;  // total size of buffer
   unsigned char *buf;
-  unsigned char buffer[kr_io2_BUF_SZ];
+  unsigned char buffer[KR_IO2_BUF_SZ];
 };
 
 kr_io2_t *kr_io2_create ();
@@ -57,5 +57,6 @@ int kr_io2_want_out (kr_io2_t *io);
 inline void kr_io2_advance (kr_io2_t *io, size_t bytes);
 inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len);
 int kr_io2_write (kr_io2_t *io);
+int kr_io2_flush (kr_io2_t *io);
 
 #endif

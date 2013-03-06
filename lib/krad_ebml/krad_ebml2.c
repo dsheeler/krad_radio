@@ -346,6 +346,7 @@ int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, unsigned char *buffer, size_t len) {
     return -1;
   }
   ebml->buf = buffer;
+  ebml->bufstart = buffer;
   ebml->pos = 0;
   ebml->len = len;
   return 0;
@@ -356,6 +357,7 @@ kr_ebml2_t *kr_ebml2_create () {
   ebml = malloc (sizeof(kr_ebml2_t));
   //ebml->buf = ebml->buffer;
   ebml->buf = NULL;
+  ebml->bufstart = NULL;
   ebml->pos = 0;
   return ebml; 
 }
