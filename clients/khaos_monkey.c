@@ -306,21 +306,21 @@ int test_kr_ebml2 (char *filename) {
   
   kr_ebml2_pack_header (ebml, "testy", 2, 2);
   /*
-  kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER);
-  kr_ebml2_pack_element (ebml, EBML_ID_TRACK_UID);
-  kr_ebml2_pack_element (ebml, EBML_ID_TRACK);
+  kr_ebml2_pack_element (ebml, EID_CLUSTER);
+  kr_ebml2_pack_element (ebml, EID_TRACK_UID);
+  kr_ebml2_pack_element (ebml, EID_TRACK);
   
-  kr_ebml2_start_element (ebml, EBML_ID_TAGS, &my_element);
+  kr_ebml2_start_element (ebml, EID_TAGS, &my_element);
   
-  kr_ebml2_pack_element (ebml, EBML_ID_CODECDATA);
-  kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER_TIMECODE);
-  kr_ebml2_pack_element (ebml, EBML_ID_SEGMENT_INFO);
-  kr_ebml2_pack_element (ebml, EBML_ID_MUXINGAPP);
+  kr_ebml2_pack_element (ebml, EID_CODECDATA);
+  kr_ebml2_pack_element (ebml, EID_CLUSTER_TIMECODE);
+  kr_ebml2_pack_element (ebml, EID_SEGMENT_INFO);
+  kr_ebml2_pack_element (ebml, EID_MUXINGAPP);
 
 
-  kr_ebml2_pack_int32 (ebml, EBML_ID_TAG, 666);
-  kr_ebml2_pack_int64 (ebml, EBML_ID_TAG_SIMPLE, 44444444444444);
-  kr_ebml2_pack_string (ebml, EBML_ID_TAG_STRING, "When I was a young girl!");
+  kr_ebml2_pack_int32 (ebml, EID_TAG, 666);
+  kr_ebml2_pack_int64 (ebml, EID_TAG_SIMPLE, 44444444444444);
+  kr_ebml2_pack_string (ebml, EID_TAG_STRING, "When I was a young girl!");
 
   kr_ebml2_finish_element (ebml, my_element);
   */
@@ -369,7 +369,7 @@ int main (int argc, char *argv[]) {
     uncage_monkeys (sysname);
   }
 */
-/*
+
   int fd;
   int ret;
   int err;
@@ -404,7 +404,20 @@ int main (int argc, char *argv[]) {
   }
 
   printf ("read %d bytes\n", ret);
-
+  
+  char doctype[32];
+  uint32_t version;
+  uint32_t read_version;
+  
+  err = kr_ebml2_unpack_header (ebml, doctype, sizeof (doctype), &version, &read_version);
+  
+  if (err < 0) {
+    fprintf (stderr, "error reading ebml header\n");
+  } else {
+    printf ("Got ebml doctype: %s\n", doctype);
+  }
+  
+/*
   err = kr_ebml2_unpack_id (ebml, &element, &data_size);
   if (!err) {
     while (ebml->pos < ret) {
@@ -414,10 +427,10 @@ int main (int argc, char *argv[]) {
         printf ("parsing error!\n");
         break;
       }
-      if (element != EBML_ID_SEGMENT) {
+      if (element != EID_SEGMENT) {
         kr_ebml2_advance (ebml, data_size);
       }
-      if (element == EBML_ID_CLUSTER) {
+      if (element == EID_CLUSTER) {
         clusters++;
       }
     }
@@ -426,11 +439,12 @@ int main (int argc, char *argv[]) {
   if (clusters > 0) {
     printf ("Found %d clusters!\n", clusters);
   }
-  
+  */
   kr_ebml2_destroy (&ebml);
-*/
 
-  return test_kr_ebml2 (argv[1]);
 
+  //return test_kr_ebml2 (argv[1]);
+
+  return 0;
 
 }

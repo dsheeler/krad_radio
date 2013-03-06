@@ -327,16 +327,16 @@ void kr_ebml2_pack_header ( kr_ebml2_t *ebml, char *doctype, uint32_t version, u
 
   unsigned char *header;
 
-  kr_ebml2_start_element (ebml, EBML_ID_HEADER, &header);
+  kr_ebml2_start_element (ebml, EID_HEADER, &header);
   
-  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLVERSION, 1);  
-  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLREADVERSION, 1);
-  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLMAXIDLENGTH, 4);
-  kr_ebml2_pack_uint8 (ebml, EBML_ID_EBMLMAXSIZELENGTH, 8);
+  kr_ebml2_pack_uint8 (ebml, EID_VERSION, 1);  
+  kr_ebml2_pack_uint8 (ebml, EID_READVERSION, 1);
+  kr_ebml2_pack_uint8 (ebml, EID_MAXIDLENGTH, 4);
+  kr_ebml2_pack_uint8 (ebml, EID_MAXSIZELENGTH, 8);
   
-  kr_ebml2_pack_string (ebml, EBML_ID_DOCTYPE, doctype);
-  kr_ebml2_pack_uint8 (ebml, EBML_ID_DOCTYPEVERSION, version);
-  kr_ebml2_pack_uint8 (ebml, EBML_ID_DOCTYPEREADVERSION, read_version);
+  kr_ebml2_pack_string (ebml, EID_DOCTYPE, doctype);
+  kr_ebml2_pack_uint8 (ebml, EID_DOCTYPEVERSION, version);
+  kr_ebml2_pack_uint8 (ebml, EID_DOCTYPEREADVERSION, read_version);
 
   kr_ebml2_finish_element (ebml, header);
 }
