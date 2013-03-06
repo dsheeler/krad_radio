@@ -26,30 +26,36 @@
 
 #include "krad_system.h"
 
-#ifndef KRAD_IO2_H
-#define KRAD_IO2_H
+#ifndef kr_io2_H
+#define kr_io2_H
 
-#define KRAD_IO2_WR_BUF_SZ 8192
+#define kr_io2_BUF_SZ 8192
 
-typedef struct krad_io2_St krad_io2_t;
+typedef struct kr_io2_St kr_io2_t;
 
 typedef enum {
-  //KRAD_IO2_READONLY,
-  KRAD_IO2_WRITEONLY,
+  //kr_io2_READONLY,
+  kr_io2_WRITEONLY,
   //krad_EBML_IO_READWRITE,
-} krad_io2_mode_t;
+} kr_io2_mode_t;
 
-struct krad_io2_St {
+struct kr_io2_St {
   int fd;
-  krad_io2_mode_t mode;
-  unsigned char wr_buf[KRAD_IO2_WR_BUF_SZ];
-  size_t wr_buf_pos;
+  kr_io2_mode_t mode;
+  size_t pos;   // position in buffer
+  size_t len;   // length of data in buffer
+  size_t space; // space remaining in buffer
+  size_t size;  // total size of buffer
+  unsigned char *buf;
+  unsigned char buffer[kr_io2_BUF_SZ];
 };
 
-krad_io2_t *krad_io2_create ();
-int krad_io2_destroy (kr_io2_t **io);
-int krad_io2_want_out (krad_io_t *io);
-int krad_io2_pack (krad_io_t *io, void *buffer, size_t length);
-int krad_io2_write (krad_io_t *io);
+kr_io2_t *kr_io2_create ();
+int kr_io2_destroy (kr_io2_t **io);
+int kr_io2_set_fd (kr_io2_t *io, int fd);
+int kr_io2_want_out (kr_io2_t *io);
+inline void kr_io2_advance (kr_io2_t *io, size_t bytes);
+inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len);
+int kr_io2_write (kr_io2_t *io);
 
 #endif

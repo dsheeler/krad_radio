@@ -33,7 +33,7 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname) {
   
   krad_system_init ();
   
-  uname(&client->unixname);
+  uname (&client->unixname);
 
   if (krad_valid_host_and_port (sysname)) {
     krad_get_host_and_port (sysname, client->host, &client->tcp_port);
@@ -68,11 +68,15 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
 
   int rc;
   char port_string[6];
+  struct sockaddr_un unix_saddr;
   struct in6_addr serveraddr;
   struct addrinfo hints;
   struct addrinfo *res;
 
   res = NULL;
+
+  //FIXME make connect nonblocking  
+  
 
   if (client->tcp_port != 0) {
 
@@ -104,7 +108,7 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
        return 0;
     }
     
-    client->sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    client->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
     if (client->sd < 0) {
       printf ("Krad IPC Client: Socket Error");
       if (res != NULL) {
@@ -114,7 +118,7 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
       return 0;
     }
 
-    rc = connect(client->sd, res->ai_addr, res->ai_addrlen);
+    rc = connect (client->sd, res->ai_addr, res->ai_addrlen);
     if (rc < 0) {
       printf ("Krad IPC Client: Remote Connect Error\n");
       if (res != NULL) {
@@ -137,50 +141,40 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
       return 0;
     }
 
-    client->saddr.sun_family = AF_UNIX;
-    snprintf (client->saddr.sun_path, sizeof(client->saddr.sun_path), "%s", client->ipc_path);
-
+    memset(&unix_saddr, 0x00, sizeof(unix_saddr));
+    unix_saddr.sun_family = AF_UNIX;
+    snprintf (unix_saddr.sun_path, sizeof(unix_saddr.sun_path), "%s", client->ipc_path);
     if (client->on_linux) {
-      client->saddr.sun_path[0] = '\0';
+      unix_saddr.sun_path[0] = '\0';
     }
 
-    if (connect (client->sd, (struct sockaddr *) &client->saddr, sizeof (client->saddr)) == -1) {
+    if (connect (client->sd, (struct sockaddr *) &unix_saddr, sizeof (unix_saddr)) == -1) {
       close (client->sd);
       client->sd = 0;
       printke ("Krad IPC Client: Can't connect to socket %s", client->ipc_path);
       return 0;
     }
-
-    client->flags = fcntl (client->sd, F_GETFL, 0);
-
-    if (client->flags == -1) {
-      close (client->sd);
-      client->sd = 0;
-      printke ("Krad IPC Client: socket get flag fail");
-      return 0;
-    }
   }
-  
-  /*
-    client->flags |= O_NONBLOCK;
-
-    client->flags = fcntl (client->sd, F_SETFL, client->flags);
-    if (client->flags == -1) {
-      close (client->sd);
-      client->sd = 0;
-      printke ("Krad IPC Client: socket set flag fail\n");
-      return 0;
-    }
-  */
 
   client->krad_ebml = krad_ebml_open_active_socket (client->sd, KRAD_EBML_IO_READWRITE);
 
-  krad_ebml_header_advanced (client->krad_ebml, KRAD_IPC_CLIENT_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
-  krad_ebml_write_sync (client->krad_ebml);
+  client->io = kr_io2_create ();
+  client->ebml2 = kr_ebml2_create ();
   
+  kr_io2_set_fd ( client->io, client->sd );
+  kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
+
+  kr_ebml2_pack_header (client->ebml2, KRAD_IPC_CLIENT_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
+  kr_io2_advance (client->io, client->ebml2->pos);
+
+  kr_io2_write (client->io);
+
+  kr_io2_destroy (&client->io);
+  kr_ebml2_destroy (&client->ebml2);
+ 
   krad_ebml_read_ebml_header (client->krad_ebml, client->krad_ebml->header);
   krad_ebml_check_ebml_header (client->krad_ebml->header);
-  //krad_ebml_print_ebml_header (client->krad_ebml->header);
+
   
   if (krad_ebml_check_doctype_header (client->krad_ebml->header, KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION)) {
     //printf("Matched %s Version: %d Read Version: %d\n", KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);

@@ -143,25 +143,30 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   
   printf ("Unpacking ID at position: %zu\n", ebml->pos);
   printf(" ");
-  byte = ebml->buffer[ebml->pos];
+  //byte = ebml->buffer[ebml->pos];
+  byte = *ebml->buf;
 
   if (byte & EBML_LENGTH_1) {
-    rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 1);
+    //rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 1);
+    rmemcpy ( &ebml_id, ebml->buf, 1);
     kr_ebml2_advance (ebml, 1);
     printf ("ID Length: %u\n ", 1);
   } else {
     if (byte & EBML_LENGTH_2) {
-      rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 2);
+      //rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 2);
+      rmemcpy ( &ebml_id, ebml->buf, 2);
       kr_ebml2_advance (ebml, 2);
       printf ("ID Length: %u\n ", 2);
     } else {
       if (byte & EBML_LENGTH_3) {
-        rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 3);
+        //rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 3);
+        rmemcpy ( &ebml_id, ebml->buf, 3);
         kr_ebml2_advance (ebml, 3);
         printf ("ID Length: %u\n ", 3);
       } else {
         if (byte & EBML_LENGTH_4) {
-          rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 4);
+          //rmemcpy ( &ebml_id, &ebml->buffer[ebml->pos], 4);
+          rmemcpy ( &ebml_id, ebml->buf, 4);
           kr_ebml2_advance (ebml, 4);
           printf ("ID Length: %u\n ", 4);
         } else {
@@ -177,7 +182,8 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   kr_ebml2_print_id (ebml_id);
   printf(" ");
   
-  byte = ebml->buffer[ebml->pos];
+  //byte = ebml->buffer[ebml->pos];
+  byte = *ebml->buf;
   ebml_data_size_length = kr_ebml2_length ( byte );
   printf("Data size length: %u\n", ebml_data_size_length);
   printf(" ");

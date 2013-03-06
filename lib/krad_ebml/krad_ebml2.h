@@ -14,9 +14,10 @@
 typedef struct kr_ebml2_St kr_ebml2_t;
 
 struct kr_ebml2_St {
-  unsigned char *buf;
-  unsigned char buffer[KRAD_EBML2_BUF_SZ];
   size_t pos;
+  size_t len;
+  unsigned char *buf;
+  //unsigned char buffer[KRAD_EBML2_BUF_SZ];
 };
 
 inline void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
@@ -31,6 +32,8 @@ inline void rmemcpy8 (unsigned char *dst, unsigned char *src);
 
 int kr_ebml2_destroy (kr_ebml2_t **ebml);
 kr_ebml2_t *kr_ebml2_create ();
+
+int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, unsigned char *buffer, size_t len);
 
 inline void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element);
 void kr_ebml2_start_element (kr_ebml2_t *ebml, uint32_t element, unsigned char **position);

@@ -27,7 +27,8 @@
 #include "krad_system.h"
 #include "krad_ebml.h"
 
-
+#include "krad_ebml2.h"
+#include "krad_io2.h"
 
 #define KRAD_IPC_BUFFER_SIZE 16384
 #ifndef KRAD_IPC_CLIENT
@@ -43,8 +44,6 @@ typedef struct krad_ipc_client_St krad_ipc_client_t;
 
 struct krad_ipc_client_St {
 	char sysname[64];
-	int flags;
-	struct sockaddr_un saddr;
 	int sd;
 	int tcp_port;
 	char host[256];
@@ -55,6 +54,9 @@ struct krad_ipc_client_St {
 	struct utsname unixname;
 	char *buffer;
 	krad_ebml_t *krad_ebml;
+	
+	kr_ebml2_t *ebml2;
+	kr_io2_t *io;
 };
 
 krad_ipc_client_t *krad_ipc_connect (char *sysname);

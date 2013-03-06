@@ -62,7 +62,7 @@ inline void rmemcpy8 (unsigned char *dst, unsigned char *src) {
 
 inline void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes) {
   ebml->pos += bytes;
-  ebml->buf = ebml->buffer + ebml->pos;
+  ebml->buf += bytes;
 }
 
 inline void kr_ebml2_pack (kr_ebml2_t *ebml, void *buffer, size_t len) {
@@ -227,7 +227,7 @@ inline void kr_ebml2_pack_data_size ( kr_ebml2_t *ebml, uint64_t data_size ) {
   }
 }
 
-void kr_ebml2_pack_data_size_update (kr_ebml2_t *ebml,  unsigned char *element_position, uint64_t data_size) {
+void kr_ebml2_pack_data_size_update (kr_ebml2_t *ebml, unsigned char *element_position, uint64_t data_size) {
   data_size |= (0x000000000000080LLU << ((EBML_DATA_SIZE_UNKNOWN_LENGTH - 1) * 7));
   rmemcpy8 (element_position, (unsigned char *)&data_size);
 }
@@ -341,10 +341,21 @@ void kr_ebml2_pack_header ( kr_ebml2_t *ebml, char *doctype, uint32_t version, u
   kr_ebml2_finish_element (ebml, header);
 }
 
+int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, unsigned char *buffer, size_t len) {
+  if ((buffer == NULL) || (len < 1)) {
+    return -1;
+  }
+  ebml->buf = buffer;
+  ebml->pos = 0;
+  ebml->len = len;
+  return 0;
+}
+
 kr_ebml2_t *kr_ebml2_create () {
   kr_ebml2_t *ebml;
   ebml = malloc (sizeof(kr_ebml2_t));
-  ebml->buf = ebml->buffer;
+  //ebml->buf = ebml->buffer;
+  ebml->buf = NULL;
   ebml->pos = 0;
   return ebml; 
 }

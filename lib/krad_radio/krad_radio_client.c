@@ -1712,6 +1712,7 @@ void kr_print_ebml (unsigned char *buffer, int len) {
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
 
   kr_ebml2_t *ebmlx;
+  kr_io2_t *io;
       
   unsigned char *my_command;
   unsigned char *my_set_control;
@@ -1741,7 +1742,10 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
       break;
     case KR_COMPOSITOR:
 
+      io = kr_io2_create ();
       ebmlx = kr_ebml2_create ();
+
+      kr_ebml2_set_buffer ( ebmlx, io->buf, io->space );
 
       kr_ebml2_start_element (ebmlx, EBML_ID_KRAD_COMPOSITOR_CMD, &my_command);
       kr_ebml2_start_element (ebmlx, EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT, &my_set_control);
@@ -1762,9 +1766,10 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
       kr_ebml2_finish_element (ebmlx, my_set_control);
       kr_ebml2_finish_element (ebmlx, my_command);
 
-      kr_print_ebml (ebmlx->buffer, ebmlx->pos);
-      send (client->krad_ebml->io_adapter.sd, ebmlx->buffer, ebmlx->pos, 0);
+      kr_print_ebml (ebmlx->buf, ebmlx->pos);
+      send (client->krad_ebml->io_adapter.sd, ebmlx->buf, ebmlx->pos, 0);
       kr_ebml2_destroy (&ebmlx);
+      kr_io2_destroy (&io);
 
       break;
     case KR_STATION:
