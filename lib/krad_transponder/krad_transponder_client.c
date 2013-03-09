@@ -295,7 +295,6 @@ void kr_transponder_transmit (kr_client_t *client, krad_link_av_mode_t av_mode,
 
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
-
     
   if (client->autosync == 1) {
     kr_client_sync (client);

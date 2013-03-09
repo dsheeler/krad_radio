@@ -20,143 +20,138 @@ struct kr_videoport_St {
 
 int kr_compositor_background (kr_client_t *client, char *filename) {
 
-  uint64_t command;
-  uint64_t background;
-  
-  command = 0;
-  background = 0;
+  unsigned char *command;
+  unsigned char *background;
 
   if ((filename == NULL) || (!(strlen(filename)))) {
     return 0;
   }
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND, &background);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND, &background);
 
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, filename);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FILENAME, filename);
 
-  krad_ebml_finish_element (client->krad_ebml, background);
-  krad_ebml_finish_element (client->krad_ebml, command);
+  kr_ebml2_finish_element (client->ebml2, background);
+  kr_ebml2_finish_element (client->ebml2, command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 
   return 1;
 }
 
 void kr_compositor_close_display (kr_client_t *client) {
 
-  uint64_t command;
-  uint64_t display;
-  
-  command = 0;
-  display = 0;
+  unsigned char *command;
+  unsigned char *display;
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_CLOSE_DISPLAY, &display);
-  krad_ebml_finish_element (client->krad_ebml, display);
-  krad_ebml_finish_element (client->krad_ebml, command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_CLOSE_DISPLAY, &display);
+  kr_ebml2_finish_element (client->ebml2, display);
+  kr_ebml2_finish_element (client->ebml2, command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_open_display (kr_client_t *client, int width, int height) {
 
-  uint64_t compositor_command;
-  uint64_t display;
+  unsigned char *compositor_command;
+  unsigned char *display;
   
-  compositor_command = 0;
-
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_OPEN_DISPLAY, &display);
-
-  krad_ebml_finish_element (client->krad_ebml, display);
-  krad_ebml_finish_element (client->krad_ebml, compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_OPEN_DISPLAY, &display);
+  kr_ebml2_finish_element (client->ebml2, display);
+  kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_snapshot (kr_client_t *client) {
 
-  uint64_t command;
-  uint64_t snap_command;
-  command = 0;
-  snap_command = 0;
+  unsigned char *command;
+  unsigned char *snap_command;
   
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT, &snap_command);
-  krad_ebml_finish_element (client->krad_ebml, snap_command);
-
-  krad_ebml_finish_element (client->krad_ebml, command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT, &snap_command);
+  kr_ebml2_finish_element (client->ebml2, snap_command);
+  kr_ebml2_finish_element (client->ebml2, command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_snapshot_jpeg (kr_client_t *client) {
 
-  uint64_t command;
-  uint64_t snap_command;
+  unsigned char *command;
+  unsigned char *snap_command;
   
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT_JPEG, &snap_command);
-  krad_ebml_finish_element (client->krad_ebml, snap_command);
-  krad_ebml_finish_element (client->krad_ebml, command);
-  krad_ebml_write_sync (client->krad_ebml);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT_JPEG, &snap_command);
+  kr_ebml2_finish_element (client->ebml2, snap_command);
+  kr_ebml2_finish_element (client->ebml2, command);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denominator) {
 
-  uint64_t compositor_command;
-  uint64_t set_frame_rate;
+  unsigned char *compositor_command;
+  unsigned char *set_frame_rate;
   
-  compositor_command = 0;
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE, &set_frame_rate);
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE, &set_frame_rate);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR, numerator);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR, denominator);
 
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR, numerator);
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR, denominator);
-
-  krad_ebml_finish_element (client->krad_ebml, set_frame_rate);
-  krad_ebml_finish_element (client->krad_ebml, compositor_command);
+  kr_ebml2_finish_element (client->ebml2, set_frame_rate);
+  kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_set_resolution (kr_client_t *client, int width, int height) {
 
-  uint64_t compositor_command;
-  uint64_t set_resolution;
+  unsigned char *compositor_command;
+  unsigned char *set_resolution;
   
-  compositor_command = 0;
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_RESOLUTION, &set_resolution);
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_SET_RESOLUTION, &set_resolution);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_WIDTH, width);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_HEIGHT, height);
 
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_WIDTH, width);
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_HEIGHT, height);
-
-  krad_ebml_finish_element (client->krad_ebml, set_resolution);
-  krad_ebml_finish_element (client->krad_ebml, compositor_command);
+  kr_ebml2_finish_element (client->ebml2, set_resolution);
+  kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_info (kr_client_t *client) {
 
-  uint64_t command;
-  uint64_t info_command;
-
-  command = 0;
-  info_command = 0;
+  unsigned char *command;
+  unsigned char *info_command;
   
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_INFO, &info_command);
+  kr_ebml2_finish_element (client->ebml2, info_command);
+  kr_ebml2_finish_element (client->ebml2, command);
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_INFO, &info_command);
-  krad_ebml_finish_element (client->krad_ebml, info_command);
-
-  krad_ebml_finish_element (client->krad_ebml, command);
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t *kr_compositor_rep) {
@@ -326,7 +321,6 @@ void kr_ebml_to_sprite_rep (unsigned char *ebml_frag, kr_sprite_t *sprite) {
   
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   sprite->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
 }
 
 void kr_ebml_to_vector_rep (unsigned char *ebml_frag, kr_vector_t *vector) {
@@ -336,7 +330,6 @@ void kr_ebml_to_vector_rep (unsigned char *ebml_frag, kr_vector_t *vector) {
   int item_pos;
 
   item_pos = 0;
-  
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   vector->type = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
@@ -367,7 +360,6 @@ void kr_ebml_to_vector_rep (unsigned char *ebml_frag, kr_vector_t *vector) {
   
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
   vector->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
 }
 
 void kr_ebml_to_text_rep (unsigned char *ebml_frag, kr_text_t *text) {
@@ -602,8 +594,8 @@ int kr_compositor_subunit_create (kr_client_t *client,
                                   kr_compositor_subunit_t type,
                                   char *option,
                                   char *option2) {
-  uint64_t command;
-  uint64_t subunit;
+  unsigned char *command;
+  unsigned char *subunit;
   
   command = 0;
   subunit = 0;
@@ -624,85 +616,83 @@ int kr_compositor_subunit_create (kr_client_t *client,
     option2 = "";
   }
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT, &subunit);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT, &subunit);
 
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, type);
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, option);
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, option2);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, type);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, option);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, option2);
 
-  krad_ebml_finish_element (client->krad_ebml, subunit);
-  krad_ebml_finish_element (client->krad_ebml, command);
+  kr_ebml2_finish_element (client->ebml2, subunit);
+  kr_ebml2_finish_element (client->ebml2, command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
   
   return 1;
 }
 
 void kr_compositor_subunit_list (kr_client_t *client) {
 
-  uint64_t command;
-  uint64_t list;
+  unsigned char *command;
+  unsigned char *list;
   
-  command = 0;
-  list = 0;
-  
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS, &list);
-  krad_ebml_finish_element (client->krad_ebml, list);
-  krad_ebml_finish_element (client->krad_ebml, command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS, &list);
+  kr_ebml2_finish_element (client->ebml2, list);
+  kr_ebml2_finish_element (client->ebml2, command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address) {
 
-  uint64_t command;
-  uint64_t destroy;
+  unsigned char *command;
+  unsigned char *destroy;
   
-  command = 0;
-  destroy = 0;
-  
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT, &destroy);
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
-  krad_ebml_write_int32 (client->krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
-  krad_ebml_finish_element (client->krad_ebml, destroy);
-  krad_ebml_finish_element (client->krad_ebml, command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT, &destroy);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
+  kr_ebml2_finish_element (client->ebml2, destroy);
+  kr_ebml2_finish_element (client->ebml2, command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_videoport_destroy_cmd (kr_client_t *client) {
 
-  uint64_t compositor_command;
-  uint64_t destroy_videoport;
+  unsigned char *compositor_command;
+  unsigned char *destroy_videoport;
   
-  compositor_command = 0;
-
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY, &destroy_videoport);
-
-  krad_ebml_finish_element (client->krad_ebml, destroy_videoport);
-  krad_ebml_finish_element (client->krad_ebml, compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY, &destroy_videoport);
+  kr_ebml2_finish_element (client->ebml2, destroy_videoport);
+  kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_videoport_create_cmd (kr_client_t *client) {
 
-  uint64_t compositor_command;
-  uint64_t create_videoport;
+  unsigned char *compositor_command;
+  unsigned char *create_videoport;
   
-  compositor_command = 0;
-
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE, &create_videoport);
-
-  krad_ebml_finish_element (client->krad_ebml, create_videoport);
-  krad_ebml_finish_element (client->krad_ebml, compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE, &create_videoport);
+  kr_ebml2_finish_element (client->ebml2, create_videoport);
+  kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void *, void *), void *pointer) {
