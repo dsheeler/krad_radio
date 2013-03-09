@@ -408,7 +408,7 @@ void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgr
 }
 
 
-void kr_mixer_update_portgroup (kr_client_t *client, char *portgroupname, uint64_t update_command, char *string) {
+void kr_mixer_set_portgroup_crossfade_group (kr_client_t *client, char *portgroupname, char *crossfade_group) {
 
   unsigned char *command;
   unsigned char *update;
@@ -417,8 +417,7 @@ void kr_mixer_update_portgroup (kr_client_t *client, char *portgroupname, uint64
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_UPDATE_PORTGROUP, &update);
 
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
-  kr_ebml2_pack_string (client->ebml2, update_command, string);
-  
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, crossfade_group);
   
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);

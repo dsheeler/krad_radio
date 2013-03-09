@@ -34,7 +34,7 @@ void kr_mixer_portgroup_xmms2_cmd (kr_client_t *client, char *portgroupname, cha
 void kr_mixer_set_sample_rate (kr_client_t *client, int sample_rate);
 void kr_mixer_plug_portgroup (kr_client_t *client, char *name, char *remote_name);
 void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_name);
-void kr_mixer_update_portgroup (kr_client_t *client, char *portgroupname, uint64_t update_command, char *string);
+void kr_mixer_set_portgroup_crossfade_group (kr_client_t *client, char *portgroupname, char *crossfade_group);
 void kr_mixer_update_portgroup_map_channel (kr_client_t *client, char *portgroupname, int in_channel, int out_channel);
 void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgroupname, int in_channel, int out_channel);
 void kr_mixer_push_tone (kr_client_t *client, char *tone);

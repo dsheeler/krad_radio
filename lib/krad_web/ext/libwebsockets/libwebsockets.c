@@ -19,6 +19,8 @@
  *  MA  02110-1301  USA
  */
 
+#include "krad_system.h"
+
 #include "private-libwebsockets.h"
 
 #ifdef WIN32
