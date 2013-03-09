@@ -1233,19 +1233,6 @@ void kr_osc_disable (kr_client_t *client) {
   }
 }
 
-void kr_read_tag_inner ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value ) {
-
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
-  krad_ebml_read_string (client->krad_ebml, *tag_item, ebml_data_size);
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  krad_ebml_read_string (client->krad_ebml, *tag_name, ebml_data_size);
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  krad_ebml_read_string (client->krad_ebml, *tag_value, ebml_data_size);
-}
-
 int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_name, char **tag_value ) {
 
   uint32_t ebml_id;
@@ -1266,26 +1253,6 @@ int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_nam
   item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, *tag_value);
   
   return item_pos;
-}
-
-int kr_read_tag ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value ) {
-
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int bytes_read;
-
-  bytes_read = 0;
-
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
-  bytes_read += ebml_data_size + 9;
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);
-  krad_ebml_read_string (client->krad_ebml, *tag_item, ebml_data_size);
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  krad_ebml_read_string (client->krad_ebml, *tag_name, ebml_data_size);
-  krad_ebml_read_element (client->krad_ebml, &ebml_id, &ebml_data_size);  
-  krad_ebml_read_string (client->krad_ebml, *tag_value, ebml_data_size);
-
-  return bytes_read;
 }
 
 void kr_tags (kr_client_t *client, char *item) {

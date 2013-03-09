@@ -482,19 +482,6 @@ void kr_osc_disable (kr_client_t *client);
  
 int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_name, char **tag_value );
  
-void kr_read_tag_inner ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value );
-
-/**
- * @todo oneman document this! kripton has no clue here!
- * @brief kr_read_tag
- * @param client
- * @param tag_item
- * @param tag_name
- * @param tag_value
- * @return 
- */
-int kr_read_tag ( kr_client_t *client, char **tag_item, char **tag_name, char **tag_value );
-
 /**
  * @brief prints out a list of all tags in a group
  * @param client handle of the IPC-connection to the station
