@@ -4,8 +4,9 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len);
 static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate);
 static int krad_delivery_handler (kr_ws_client_t *kr_ws_client);
 static void *krad_websocket_server_run (void *arg);
-static void add_poll_fd (int fd, short events, int fd_is, kr_ws_client_t *kr_ws_client, void *bspointer);
-static void del_poll_fd (int fd);
+static void add_poll_fd (krad_websocket_t *krad_websocket, int fd, short events, int fd_is,
+                         kr_ws_client_t *kr_ws_client, void *bspointer);
+static void del_poll_fd (krad_websocket_t *krad_websocket, int fd);
 
 static int callback_http (struct libwebsocket_context *this,
                           struct libwebsocket *wsi,
@@ -34,10 +35,6 @@ struct libwebsocket_protocols protocols[] = {
     NULL, NULL, 0    /* End of list */
   }
 };
-
-/* blame libwebsockets */
-krad_websocket_t *krad_websocket_glob;
-
 
 /* interpret JSON to speak Krad API */
 
@@ -431,9 +428,9 @@ static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
 
 /****  Poll Functions  ****/
 
-static void add_poll_fd (int fd, short events, int fd_is, kr_ws_client_t *kr_ws_client, void *bspointer) {
+static void add_poll_fd (krad_websocket_t *krad_websocket, int fd, short events, int fd_is,
+                         kr_ws_client_t *kr_ws_client, void *bspointer) {
 
-  krad_websocket_t *krad_websocket = krad_websocket_glob;
   krad_websocket->fdof[krad_websocket->count_pollfds] = fd_is;
   if (fd_is == KRAD_IPC) {
     krad_websocket->sessions[krad_websocket->count_pollfds] = kr_ws_client;
@@ -443,9 +440,8 @@ static void add_poll_fd (int fd, short events, int fd_is, kr_ws_client_t *kr_ws_
   krad_websocket->pollfds[krad_websocket->count_pollfds++].revents = 0;
 }
 
-static void del_poll_fd (int fd) {
+static void del_poll_fd (krad_websocket_t *krad_websocket, int fd) {
 
-  krad_websocket_t *krad_websocket = krad_websocket_glob;
   int n;
   krad_websocket->count_pollfds--;
 
@@ -473,9 +469,7 @@ static int callback_http (struct libwebsocket_context *this,
   krad_websocket_t *krad_websocket;
 
   n = 0;
-  krad_websocket = krad_websocket_glob;
-
-  //printk ("got callback hgtp!");
+  krad_websocket = libwebsocket_context_user (this);
 
   switch (reason) {
     case LWS_CALLBACK_ADD_POLL_FD:
@@ -486,7 +480,7 @@ static int callback_http (struct libwebsocket_context *this,
       break;
     case LWS_CALLBACK_DEL_POLL_FD:
       n = (int)(long)in;
-      del_poll_fd (n);
+      del_poll_fd (krad_websocket, n);
       break;
     case LWS_CALLBACK_SET_MODE_POLL_FD:
       for (n = 0; n < krad_websocket->count_pollfds; n++) {
@@ -579,9 +573,11 @@ static int callback_kr_client (struct libwebsocket_context *this,
                                void *user, void *in, size_t len) {
 
   int ret;
-  krad_websocket_t *krad_websocket = krad_websocket_glob;
-  kr_ws_client_t *kr_ws_client = user;
-  //unsigned char *p = &krad_websocket->buffer[LWS_SEND_BUFFER_PRE_PADDING];
+  krad_websocket_t *krad_websocket;
+  kr_ws_client_t *kr_ws_client;
+  
+  krad_websocket = libwebsocket_context_user (this);
+  kr_ws_client = user;
   
   switch (reason) {
 
@@ -612,12 +608,12 @@ static int callback_kr_client (struct libwebsocket_context *this,
       //kr_transponder_list (kr_ws_client->kr_client);
       //kr_tags (kr_ws_client->kr_client, NULL);
       kr_subscribe_all (kr_ws_client->kr_client);
-      add_poll_fd (kr_client_get_fd (kr_ws_client->kr_client), POLLIN, KRAD_IPC, kr_ws_client, NULL);
+      add_poll_fd (krad_websocket, kr_client_get_fd (kr_ws_client->kr_client), POLLIN, KRAD_IPC, kr_ws_client, NULL);
       break;
 
     case LWS_CALLBACK_CLOSED:
       //printk (" on kr client  LWS_CALLBACK_CLOSED");
-      del_poll_fd (kr_client_get_fd (kr_ws_client->kr_client));
+      del_poll_fd (krad_websocket, kr_client_get_fd (kr_ws_client->kr_client));
       kr_client_destroy (&kr_ws_client->kr_client);
       kr_ws_client->hello_sent = 0;
       free (kr_ws_client->buffer);
@@ -877,7 +873,6 @@ void krad_websocket_server_destroy (krad_websocket_t *krad_websocket) {
     //free (krad_websocket->buffer);
     libwebsocket_context_destroy (krad_websocket->context);
     free (krad_websocket);
-    krad_websocket_glob = NULL;
     printk ("Krad Websocket shutdown complete");
   }
 }
@@ -887,9 +882,6 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
   krad_websocket_t *krad_websocket = calloc (1, sizeof (krad_websocket_t));
   struct lws_context_creation_info lws_create;
   
-  memset (&lws_create, 0, sizeof(struct lws_context_creation_info));
-  
-  krad_websocket_glob = krad_websocket;
   krad_websocket->shutdown = KRAD_WEBSOCKET_STARTING;
   krad_websocket->port = port;
   strcpy (krad_websocket->sysname, sysname);
@@ -899,14 +891,14 @@ krad_websocket_t *krad_websocket_server_create (char *sysname, int port) {
     return NULL;
   }
 
-  add_poll_fd (krad_controller_get_client_fd (&krad_websocket->krad_control), POLLIN, KRAD_CONTROLLER, NULL, NULL);
+  add_poll_fd (krad_websocket, krad_controller_get_client_fd (&krad_websocket->krad_control),
+               POLLIN, KRAD_CONTROLLER, NULL, NULL);
 
+  memset (&lws_create, 0, sizeof(struct lws_context_creation_info));
+  lws_create.user = krad_websocket;
   lws_create.port = krad_websocket->port;
   lws_create.protocols = protocols;
-  //lws_create.extensions = libwebsocket_internal_extensions;
   lws_create.extensions = NULL;
-  //lws_create.extensions = libwebsocket_get_internal_extensions();
-  //lws_create.interface = "";
   lws_create.gid = -1;
   lws_create.uid = -1;
 
