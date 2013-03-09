@@ -89,7 +89,7 @@ void krad_compositor_render_no_input (krad_compositor_t *compositor) {
 void krad_compositor_clear_frame (krad_compositor_t *compositor) {
   cairo_save (compositor->cr);
   cairo_set_source_rgba (compositor->cr, BGCOLOR_CLR);
-  cairo_set_operator (compositor->cr, CAIRO_OPERATOR_SOURCE);  
+  cairo_set_operator (compositor->cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint (compositor->cr);
   cairo_restore (compositor->cr);
 }

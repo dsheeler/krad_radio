@@ -208,7 +208,6 @@ kr_shm_t *kr_shm_create (kr_client_t *client) {
   }
 
   return kr_shm;
-
 }
 
 int kr_send_fd (kr_client_t *client, int fd) {
@@ -1242,72 +1241,78 @@ int kr_read_tag ( kr_client_t *client, char **tag_item, char **tag_name, char **
 
 void kr_tags (kr_client_t *client, char *item) {
 
-  uint64_t radio_command;
-  uint64_t get_tags;
+  unsigned char *radio_command;
+  unsigned char *get_tags;
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_LIST_TAGS, &get_tags);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_LIST_TAGS, &get_tags);  
 
   if (item == NULL) {
     item = "station";
   }
 
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_ITEM, item);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_ITEM, item);
 
-  krad_ebml_finish_element (client->krad_ebml, get_tags);
-  krad_ebml_finish_element (client->krad_ebml, radio_command);
+  kr_ebml2_finish_element (client->ebml2, get_tags);
+  kr_ebml2_finish_element (client->ebml2, radio_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_tag (kr_client_t *client, char *item, char *tag_name) {
 
-  uint64_t radio_command;
-  uint64_t get_tag;
-  uint64_t tag;
+  unsigned char *radio_command;
+  unsigned char *get_tag;
+  unsigned char *tag;
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_GET_TAG, &get_tag);  
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG, &tag);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_GET_TAG, &get_tag);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_TAG, &tag);  
 
   if (item == NULL) {
     item = "station";
   }
 
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_ITEM, item);
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_NAME, tag_name);
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_VALUE, "");  
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_ITEM, item);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_NAME, tag_name);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_VALUE, "");  
 
-  krad_ebml_finish_element (client->krad_ebml, tag);
-  krad_ebml_finish_element (client->krad_ebml, get_tag);
-  krad_ebml_finish_element (client->krad_ebml, radio_command);
+  kr_ebml2_finish_element (client->ebml2, tag);
+  kr_ebml2_finish_element (client->ebml2, get_tag);
+  kr_ebml2_finish_element (client->ebml2, radio_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_set_tag (kr_client_t *client, char *item, char *tag_name, char *tag_value) {
 
-  uint64_t radio_command;
-  uint64_t set_tag;
-  uint64_t tag;
+  unsigned char *radio_command;
+  unsigned char *set_tag;
+  unsigned char *tag;
 
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_CMD_SET_TAG, &set_tag);  
-  krad_ebml_start_element (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG, &tag);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_SET_TAG, &set_tag);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_TAG, &tag);  
 
   if (item == NULL) {
     item = "station";
   }
 
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_ITEM, item);
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_NAME, tag_name);
-  krad_ebml_write_string (client->krad_ebml, EBML_ID_KRAD_RADIO_TAG_VALUE, tag_value);  
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_ITEM, item);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_NAME, tag_name);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_TAG_VALUE, tag_value);  
 
-  krad_ebml_finish_element (client->krad_ebml, tag);
-  krad_ebml_finish_element (client->krad_ebml, set_tag);
-  krad_ebml_finish_element (client->krad_ebml, radio_command);
+  kr_ebml2_finish_element (client->ebml2, tag);
+  kr_ebml2_finish_element (client->ebml2, set_tag);
+  kr_ebml2_finish_element (client->ebml2, radio_command);
     
-  krad_ebml_write_sync (client->krad_ebml);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
 }
 
 void kr_address_debug_print (kr_address_t *addr) {
