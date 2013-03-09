@@ -778,6 +778,54 @@ int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, k
   return 0;
 }
 
+int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml, unsigned char **element_loc, kr_address_t *address) {
+
+  switch (address->path.unit) {
+    case KR_MIXER:
+      kr_ebml2_start_element (ebml, EBML_ID_KRAD_MIXER_MSG, element_loc);
+      kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.mixer_subunit);
+      if (address->path.subunit.mixer_subunit != KR_UNIT) {
+        kr_ebml2_pack_string (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NAME, address->id.name);
+        if (address->path.subunit.mixer_subunit == KR_EFFECT) {
+          kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->sub_id);
+          kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->sub_id2);
+          kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_CONTROL, address->control.effect_control);
+        }
+        if (address->path.subunit.mixer_subunit == KR_PORTGROUP) {
+          kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_CONTROL, address->control.portgroup_control);
+        }
+      }
+      return 1;
+    case KR_COMPOSITOR:
+      kr_ebml2_start_element (ebml, EBML_ID_KRAD_COMPOSITOR_MSG, element_loc);
+      kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+      if (address->path.subunit.compositor_subunit != KR_UNIT) {
+        kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+      }
+      return 1;
+    case KR_TRANSPONDER:
+      kr_ebml2_start_element (ebml, EBML_ID_KRAD_TRANSPONDER_MSG, element_loc);
+      kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.transponder_subunit);
+      if (address->path.subunit.transponder_subunit != KR_UNIT) {
+        //if (address->path.subunit.transponder_subunit == KR_ADAPTER) {
+          kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        //}
+      }
+      return 1;
+    case KR_STATION:
+      kr_ebml2_start_element (ebml, EBML_ID_KRAD_RADIO_MSG, element_loc);
+      kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.station_subunit);
+      if (address->path.subunit.station_subunit != KR_UNIT) {
+        if (address->path.subunit.station_subunit == KR_REMOTE) {
+          kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        }
+      }
+      return 1;
+  }
+  
+  return 0;
+}
+
 inline int krad_read_message_notice_from_ebml (krad_ebml_t *ebml, uint32_t *message_notice) {
 
   uint32_t ebml_id;

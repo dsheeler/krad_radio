@@ -167,7 +167,7 @@ uint64_t krad_ipc_server_read_number (krad_ipc_server_t *krad_ipc_server, uint64
 
 
 int krad_broadcast_msg_destroy (krad_broadcast_msg_t **broadcast_msg);
-krad_broadcast_msg_t *krad_broadcast_msg_create (unsigned char *buffer, uint32_t size);
+krad_broadcast_msg_t *krad_broadcast_msg_create (krad_ipc_broadcaster_t *broadcaster, unsigned char *buffer, uint32_t size);
 
 int krad_ipc_server_broadcaster_broadcast ( krad_ipc_broadcaster_t *broadcaster, krad_broadcast_msg_t **broadcast_msg );
 

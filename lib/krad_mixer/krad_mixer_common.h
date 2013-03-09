@@ -16,6 +16,7 @@ typedef struct krad_mixer_portgroup_rep_St krad_mixer_portgroup_rep_t;
 
 #include "krad_sfx_common.h"
 #include "krad_ebml.h"
+#include "krad_ebml2.h"
 #include "krad_radio_ipc.h"
 
 typedef enum {
@@ -120,5 +121,5 @@ char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_contro
 char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction);
 char *portgroup_output_type_to_string (krad_mixer_output_t output_type);
 void krad_mixer_portgroup_rep_to_ebml (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, krad_ebml_t *krad_ebml);
-
+void krad_mixer_portgroup_rep_to_ebml2 (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, kr_ebml2_t *ebml);
 #endif

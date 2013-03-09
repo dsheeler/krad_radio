@@ -95,7 +95,6 @@ static krad_ipc_server_t *krad_ipc_server_init (char *appname, char *sysname) {
   }
 */  
   return krad_ipc_server;
-
 }
 
 static int krad_ipc_server_tcp_socket_create_and_bind (char *interface, int port) {
@@ -239,6 +238,7 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *in
   
   return d;  
 }
+
 #ifdef KR_LINUX
 int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server, char *adapter, int port) {
 
@@ -281,7 +281,6 @@ int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server
   freeifaddrs (ifaddr);
 
   return ifs;
-
 }
 #endif
 
@@ -343,7 +342,6 @@ int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server, char *int
   }
 
   return 0;
-
 }
 
 static krad_ipc_server_client_t *krad_ipc_server_accept_client (krad_ipc_server_t *krad_ipc_server, int sd) {
@@ -423,7 +421,6 @@ static void krad_ipc_disconnect_client (krad_ipc_server_client_t *client) {
 
   krad_ipc_server_update_pollfds (client->krad_ipc_server);
   //printk ("Krad IPC Server: Client Disconnected");
-
 }
 
 static void krad_ipc_server_update_pollfds (krad_ipc_server_t *krad_ipc_server) {
@@ -478,7 +475,6 @@ static void krad_ipc_server_update_pollfds (krad_ipc_server_t *krad_ipc_server) 
   krad_ipc_server->socket_count = s;
 
   //printk ("Krad IPC Server: sockets rejiggerd!\n");  
-
 }
 
 int krad_ipc_server_read_command (krad_ipc_server_t *krad_ipc_server, uint32_t *ebml_id_ptr, uint64_t *ebml_data_size_ptr) {
@@ -555,7 +551,6 @@ void krad_ipc_server_response_start_with_address_and_type ( krad_ipc_server_t *k
                                                             
   krad_radio_address_to_ebml (krad_ipc_server->current_client->krad_ebml2, response, address);
   krad_ipc_server_write_message_type ( krad_ipc_server, message_type );
-        
 }
 
 void krad_ipc_server_response_start ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint64_t *response) {
@@ -584,7 +579,6 @@ void krad_ipc_server_response_add_tag ( krad_ipc_server_t *krad_ipc_server, char
   krad_ebml_write_string (krad_ipc_server->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_TAG_VALUE, tag_value);  
   //krad_ebml_write_string (krad_ipc_server->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_TAG_SOURCE, "");
   krad_ebml_finish_element (krad_ipc_server->current_client->krad_ebml2, tag);
-
 }
 
 void krad_ipc_server_respond_number ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, int32_t number) {
@@ -672,7 +666,7 @@ int krad_broadcast_msg_destroy (krad_broadcast_msg_t **broadcast_msg) {
   return -1;
 }
 
-krad_broadcast_msg_t *krad_broadcast_msg_create (unsigned char *buffer, uint32_t size) {
+krad_broadcast_msg_t *krad_broadcast_msg_create (krad_ipc_broadcaster_t *broadcaster, unsigned char *buffer, uint32_t size) {
   
   krad_broadcast_msg_t *broadcast_msg;
   
@@ -689,8 +683,6 @@ krad_broadcast_msg_t *krad_broadcast_msg_create (unsigned char *buffer, uint32_t
   return broadcast_msg;
 }
 
-
-
 int krad_ipc_server_broadcaster_broadcast ( krad_ipc_broadcaster_t *broadcaster, krad_broadcast_msg_t **broadcast_msg ) {
 
   struct pollfd pollfds[1];
@@ -705,7 +697,6 @@ int krad_ipc_server_broadcaster_broadcast ( krad_ipc_broadcaster_t *broadcaster,
     return -1;
   }
 
-
   pollfds[0].fd = broadcaster->sockets[0];
   pollfds[0].events = POLLOUT;
   if (poll (pollfds, 1, timeout) == 1) {
@@ -718,7 +709,6 @@ int krad_ipc_server_broadcaster_broadcast ( krad_ipc_broadcaster_t *broadcaster,
   }
 
   return 0;
-
 }
 
 int krad_ipc_server_current_client_is_subscriber (krad_ipc_server_t *ipc) {
@@ -783,13 +773,12 @@ int handle_broadcast (krad_ipc_broadcaster_t *broadcaster) {
     }
   }
   
-  //printk ("Krad IPC Server: Broadcasted to %d", b);  
+  //printk ("Krad IPC Server: Broadcasted to %d", b);
   
   krad_broadcast_msg_destroy (&broadcast_msg);
   
   return b;
 }
-
 
 static void *krad_ipc_server_run_thread (void *arg) {
 
@@ -940,7 +929,6 @@ static void *krad_ipc_server_run_thread (void *arg) {
   krad_controller_client_close (&krad_ipc_server->krad_control);
 
   return NULL;
-
 }
 
 void krad_ipc_server_disable (krad_ipc_server_t *krad_ipc_server) {
@@ -960,8 +948,7 @@ void krad_ipc_server_disable (krad_ipc_server_t *krad_ipc_server) {
     }
   }
   
-  printk ("Krad IPC Server: Disable Complete");    
-
+  printk ("Krad IPC Server: Disable Complete");
 }
 
 void krad_ipc_server_destroy (krad_ipc_server_t *ipc_server) {
@@ -990,7 +977,6 @@ void krad_ipc_server_destroy (krad_ipc_server_t *ipc_server) {
   free (ipc_server);
   
   printk ("Krad IPC Server: Destroy Completed");
-  
 }
 
 void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server) {
@@ -998,8 +984,9 @@ void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server) {
   pthread_create (&krad_ipc_server->server_thread, NULL, krad_ipc_server_run_thread, (void *)krad_ipc_server);
 }
 
-krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname, int handler (void *, int *, void *), void *pointer) {
-
+krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname,
+                                           int handler (void *, int *, void *),
+                                           void *pointer) {
 
   krad_ipc_server_t *krad_ipc_server;
   
@@ -1012,7 +999,6 @@ krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname, int han
   krad_ipc_server->handler = handler;
   krad_ipc_server->pointer = pointer;
 
-  return krad_ipc_server;  
-
+  return krad_ipc_server;
 }
 

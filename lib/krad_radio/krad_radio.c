@@ -189,36 +189,26 @@ void krad_radio_daemon (char *sysname) {
 
 void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) {
 
-  size_t size;
-  unsigned char *buffer;
+  unsigned char buffer[128];
   krad_broadcast_msg_t *broadcast_msg;
-  krad_ebml_t *krad_ebml;
+  kr_ebml2_t ebml;
   kr_address_t address;
-  uint64_t message_loc;
-  uint64_t payload_loc;
-  
-  size = 64;
-  buffer = malloc (size);
+  unsigned char *message_loc;
+  unsigned char *payload_loc;
 
   address.path.unit = KR_STATION;
   address.path.subunit.station_subunit = KR_CPU;
 
-  krad_ebml = krad_ebml_open_buffer_nk (KRAD_EBML_IO_WRITEONLY);
+  kr_ebml2_set_buffer ( &ebml, buffer, 128);
 
-  krad_radio_address_to_ebml (krad_ebml, &message_loc, &address);
-  krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
-  krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
-  krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, usage);
-  krad_ebml_finish_element (krad_ebml, payload_loc);
-  krad_ebml_finish_element (krad_ebml, message_loc);
-  
-  size = krad_ebml->io_adapter.write_buffer_pos;
-  memcpy (buffer, krad_ebml->io_adapter.write_buffer, size);
-  krad_ebml_destroy_nk (krad_ebml);
+  krad_radio_address_to_ebml2 (&ebml, &message_loc, &address);
+  kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+  kr_ebml2_start_element (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
+  kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, usage);
+  kr_ebml2_finish_element (&ebml, payload_loc);
+  kr_ebml2_finish_element (&ebml, message_loc);
 
-  broadcast_msg = krad_broadcast_msg_create (buffer, size);
-
-  free (buffer);
+  broadcast_msg = krad_broadcast_msg_create (krad_radio->system_broadcaster, buffer, ebml.pos);
 
   if (broadcast_msg != NULL) {
     krad_ipc_server_broadcaster_broadcast ( krad_radio->system_broadcaster, &broadcast_msg );

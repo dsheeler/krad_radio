@@ -15,6 +15,4 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
 int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address);
 int krad_radio_handler ( void *output, int *output_len, void *ptr );
 
-void krad_radio_remote_rep_to_ebml (kr_remote_t *remote, krad_ebml_t *ebml);
-
 #endif
