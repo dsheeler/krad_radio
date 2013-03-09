@@ -157,7 +157,6 @@ static krad_radio_t *krad_radio_create (char *sysname) {
   //                (void (*)(void *, char *, char *, char *, int))krad_ipc_server_broadcast_tag);
 
   return krad_radio;
-
 }
 
 void krad_radio_daemon (char *sysname) {

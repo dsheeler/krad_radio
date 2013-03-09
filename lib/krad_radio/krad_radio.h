@@ -78,7 +78,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_transponder.h"
 #include "krad_receiver.h"
 
-
 extern krad_system_t krad_system;
 
 struct krad_remote_control_St {

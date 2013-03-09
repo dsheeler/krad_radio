@@ -407,27 +407,27 @@ void krad_system_daemonize () {
 
   refp = freopen("/dev/null", "r", stdin);
   if (refp == NULL) {
-    exit(1);
+    exit (EXIT_FAILURE);
   }
   refp = freopen("/dev/null", "w", stdout);
   if (refp == NULL) {
-    exit(1);
+    exit (EXIT_FAILURE);
   }
   refp = freopen("/dev/null", "w", stderr);
   if (refp == NULL) {
-    exit(1);
+    exit (EXIT_FAILURE);
   }
 
-  umask(0);
+  umask (0);
  
   sid = setsid();
   
   if (sid < 0) {
-    exit(EXIT_FAILURE);
+    exit (EXIT_FAILURE);
   }
 
   if ((chdir("/")) < 0) {
-    exit(EXIT_FAILURE);
+    exit (EXIT_FAILURE);
   }
   
   sigemptyset (&krad_system.signal_mask);

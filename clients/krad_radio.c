@@ -791,7 +791,6 @@ int main (int argc, char *argv[]) {
       kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], argv[5],
                      atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), argv[9]);          
     }                                
-
   }
 
   if (strncmp(argv[2], "play", 4) == 0) {
