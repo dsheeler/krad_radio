@@ -649,7 +649,8 @@ static int kr_ebml_to_radio_rep (unsigned char *ebml_frag, kr_radio_t *radio_rep
   radio_rep->uptime = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
 
   item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  radio_rep->cpu_usage = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  radio_rep->cpu_usage = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos,
+                                                              ebml_data_size, &item_pos);
 
   return 1;
 }
@@ -1725,9 +1726,12 @@ int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_contr
       *data_type = KR_FLOAT;
       return 1;
     case KR_COMPOSITOR:
-      if ((address->control.compositor_control == KR_X) || (address->control.compositor_control == KR_Y) ||
-          (address->control.compositor_control == KR_Z) || (address->control.compositor_control == KR_WIDTH) ||
-          (address->control.compositor_control == KR_HEIGHT) || (address->control.compositor_control == KR_TICKRATE)) {
+      if ((address->control.compositor_control == KR_X) ||
+          (address->control.compositor_control == KR_Y) ||
+          (address->control.compositor_control == KR_Z) ||
+          (address->control.compositor_control == KR_WIDTH) ||
+          (address->control.compositor_control == KR_HEIGHT) ||
+          (address->control.compositor_control == KR_TICKRATE)) {
           *data_type = KR_INT32;
       } else {
         *data_type = KR_FLOAT;
@@ -1774,7 +1778,6 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
           }
           break;
         case KR_EFFECT:
-          //printf( "eff id %d c %s val %f\n", uc->address.sub_id, effect_control_to_string(uc->address.control.effect_control), uc->value.real);
           kr_mixer_set_effect_control (client, uc->address.id.name, uc->address.sub_id, uc->address.sub_id2,
                                        effect_control_to_string(uc->address.control.effect_control),
                                        uc->value.real, uc->duration, EASEINOUTSINE);
@@ -1785,9 +1788,15 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
 
       kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &my_command);
       kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT, &my_set_control);
-      kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, uc->address.path.subunit.compositor_subunit);
-      kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, uc->address.id.number);
-      kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->address.control.compositor_control);
+      kr_ebml2_pack_int32 (client->ebml2,
+                           EBML_ID_KRAD_RADIO_SUBUNIT,
+                           uc->address.path.subunit.compositor_subunit);
+      kr_ebml2_pack_int32 (client->ebml2,
+                           EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER,
+                           uc->address.id.number);
+      kr_ebml2_pack_int32 (client->ebml2,
+                           EBML_ID_KRAD_SUBUNIT_CONTROL,
+                           uc->address.control.compositor_control);
       if (uc->data_type == KR_FLOAT) {
         kr_ebml2_pack_float (client->ebml2, EBML_ID_KRAD_SUBUNIT_CONTROL, uc->value.real);
       }
