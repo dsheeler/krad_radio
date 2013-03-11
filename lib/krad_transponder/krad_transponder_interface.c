@@ -639,7 +639,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 			krad_Xtransponder_list ( krad_transponder->krad_Xtransponder );
 			
 			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_MSG, &response);
-			krad_ipc_server_response_list_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_LINK_LIST, &element);	
+
 			
 			for (k = 0; k < KRAD_TRANSPONDER_MAX_LINKS; k++) {
 				if (krad_transponder->krad_link[k] != NULL) {
@@ -648,7 +648,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 				}
 			}
 			
-			krad_ipc_server_response_list_finish ( krad_ipc, element );
+
 			krad_ipc_server_response_finish ( krad_ipc, response );	
 						
 			break;
