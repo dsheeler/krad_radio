@@ -80,10 +80,10 @@ struct krad_compositor_St {
   
 };
 
-void krad_compositor_subunit_create (krad_compositor_t *compositor,
-                                     kr_compositor_subunit_t type,
-                                     char *option,
-                                     char *option2);
+int krad_compositor_subunit_create (krad_compositor_t *compositor,
+                                    kr_compositor_subunit_t type,
+                                    char *option,
+                                    char *option2);
 int krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address);
 void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_control_t *uc);
 

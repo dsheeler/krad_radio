@@ -5,6 +5,50 @@ void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml)
 void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
 void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *vector, krad_ebml_t *ebml);
 
+void krad_compositor_videoport_rep_to_ebml2 (kr_port_t *port, kr_ebml2_t *ebml) {
+
+  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, port->sysname);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->direction);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->controls.x);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.y);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.z);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->source_width);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->source_height);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_x);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_y);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_width);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_height);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.width);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.height);  
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, port->controls.opacity);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, port->controls.rotation);
+}
+
+void krad_compositor_text_rep_to_ebml2 (krad_text_rep_t *text, kr_ebml2_t *ebml) {
+
+  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, text->text);
+  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_FONT, text->font);
+  
+  kr_ebml2_pack_float (ebml,
+                         EBML_ID_KRAD_COMPOSITOR_RED,
+                         text->red);
+  kr_ebml2_pack_float (ebml,
+                         EBML_ID_KRAD_COMPOSITOR_GREEN,
+                         text->green);
+  kr_ebml2_pack_float (ebml,
+                         EBML_ID_KRAD_COMPOSITOR_BLUE,
+                         text->blue);
+
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, text->controls.x);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.y);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.z);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.width);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.height);  
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, text->controls.xscale);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, text->controls.opacity);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, text->controls.rotation);
+}
+
 void krad_compositor_videoport_rep_to_ebml (kr_port_t *port, krad_ebml_t *ebml) {
 
   krad_ebml_write_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, port->sysname);
@@ -61,6 +105,18 @@ void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t 
   krad_ebml_write_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, sprite->controls.rotation);
 }
 
+void krad_compositor_sprite_rep_to_ebml2 (krad_sprite_rep_t *sprite, kr_ebml2_t *ebml) {
+  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, sprite->filename);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, sprite->controls.x);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.y);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.z);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_TICKRATE, sprite->controls.tickrate);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, sprite->controls.xscale);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, sprite->controls.yscale);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, sprite->controls.opacity);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, sprite->controls.rotation);
+}
+
 void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *vector, krad_ebml_t *ebml) {
   krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->type);
   krad_ebml_write_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.width);
@@ -72,6 +128,19 @@ void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *vector, krad_ebml_t 
   krad_ebml_write_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, vector->controls.yscale);
   krad_ebml_write_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, vector->controls.opacity);
   krad_ebml_write_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, vector->controls.rotation);
+}
+
+void krad_compositor_vector_rep_to_ebml2 (krad_vector_rep_t *vector, kr_ebml2_t *ebml) {
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->type);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.width);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.height);  
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->controls.x);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.y);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.z);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, vector->controls.xscale);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, vector->controls.yscale);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, vector->controls.opacity);
+  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, vector->controls.rotation);
 }
 
 int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videoport_rep) {
@@ -107,6 +176,31 @@ int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videopo
    
   return 1;
 }
+
+void krad_compositor_sprite_to_ebml2 ( kr_ebml2_t *ebml, krad_sprite_t *sprite ) {
+  krad_sprite_rep_t sprite_rep;
+  krad_sprite_to_rep (sprite, &sprite_rep);
+  krad_compositor_sprite_rep_to_ebml2 (&sprite_rep, ebml);
+}
+
+void krad_compositor_text_to_ebml2 ( kr_ebml2_t *ebml, krad_text_t *text ) {
+  krad_text_rep_t text_rep;
+  krad_text_to_rep (text, &text_rep);
+  krad_compositor_text_rep_to_ebml2 (&text_rep, ebml);
+}
+
+void krad_compositor_vector_to_ebml2 ( kr_ebml2_t *ebml, krad_vector_t *vector ) {
+  krad_vector_rep_t vector_rep;
+  krad_vector_to_rep (vector, &vector_rep);
+  krad_compositor_vector_rep_to_ebml2 (&vector_rep, ebml);
+}
+
+void krad_compositor_videoport_to_ebml2 ( kr_ebml2_t *ebml, krad_compositor_port_t *videoport ) {
+  kr_port_t videoport_rep;
+  krad_videoport_to_rep (videoport, &videoport_rep);
+  krad_compositor_videoport_rep_to_ebml2 (&videoport_rep, ebml);
+}
+
 
 void krad_compositor_sprite_to_ebml ( krad_ipc_server_t *krad_ipc, krad_sprite_t *sprite ) {
   krad_sprite_rep_t sprite_rep;
@@ -211,10 +305,24 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string2, ebml_data_size);
-      krad_compositor_subunit_create (krad_compositor, type, string, string2);
-      
-      //krad_radio_broadcast_subunit_created ( krad_ipc->ipc_broadcaster, &portgroup->address, (void *)portgroup);
-      
+      s = krad_compositor_subunit_create (krad_compositor, type, string, string2);
+      if (s > -1) {
+        if (type == KR_SPRITE) {
+          krad_radio_broadcast_subunit_created ( krad_ipc->ipc_broadcaster,
+                                                 &krad_compositor->sprite[s].subunit.address,
+                                                 (void *)&krad_compositor->sprite[s]);        
+        }
+        if (type == KR_TEXT) {
+          krad_radio_broadcast_subunit_created ( krad_ipc->ipc_broadcaster,
+                                                 &krad_compositor->text[s].subunit.address,
+                                                 (void *)&krad_compositor->text[s]);        
+        }
+        if (type == KR_VECTOR) {
+          krad_radio_broadcast_subunit_created ( krad_ipc->ipc_broadcaster,
+                                                 &krad_compositor->vector[s].subunit.address,
+                                                 (void *)&krad_compositor->vector[s]);        
+        }
+      }
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS:
       for (s = 0; s < KC_MAX_SPRITES; s++) {

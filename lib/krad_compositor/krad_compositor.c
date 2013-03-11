@@ -1249,7 +1249,7 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
   }
 }
 
-void krad_compositor_subunit_create (krad_compositor_t *compositor,
+int krad_compositor_subunit_create (krad_compositor_t *compositor,
                                      kr_compositor_subunit_t type,
                                      char *option,
                                      char *option2) {
@@ -1273,21 +1273,22 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
           if (krad_sprite_open_file (&compositor->sprite[i], option)) {
             compositor->sprite[i].subunit.active = 1;
             compositor->active_sprites++;
+            return i;
           }
           break;
         }
       }
-      return;
+      return -1;
     case KR_TEXT:
       for (i = 0; i < KC_MAX_TEXTS; i++) {
         if (compositor->text[i].subunit.active == 0) {
           krad_text_set_text (&compositor->text[i], option, option2);
           compositor->text[i].subunit.active = 1;
           compositor->active_texts++;
-          break;
+          return i;
         }
       }
-      return;
+      return -1;
     case KR_VECTOR:
       for (i = 0; i < KC_MAX_VECTORS; i++) {
         if (compositor->vector[i].subunit.active == 0) {
@@ -1295,14 +1296,17 @@ void krad_compositor_subunit_create (krad_compositor_t *compositor,
             krad_vector_set_type (&compositor->vector[i], option);
             compositor->vector[i].subunit.active = 1;
             compositor->active_vectors++;
+            return i;
           }
           break;
         }
       }
-      return;
+      return -1;
     case KR_VIDEOPORT:
-      return;
+      return -1;
   }
+  
+  return -1;
 }
 
 int krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address) {

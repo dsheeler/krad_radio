@@ -191,6 +191,7 @@ typedef union {
   kr_mixer_t mixer;
   kr_mixer_portgroup_t portgroup;
   kr_compositor_t compositor;
+  kr_sprite_t sprite;
   kr_radio_t radio;
 } kr_rep_actual_t;
 
