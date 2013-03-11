@@ -6,10 +6,10 @@ programs = """
 krad_radio.c
 krad_radio_simple.c
 kr_api_demo.c
-khaos_monkey.c
 """.split()
 
 programs2 = """
+khaos_monkey.c
 krad_radio_osc.c
 """.split()
 
@@ -27,7 +27,6 @@ krad_radio_web.c
 """.split()
 
 libsources = """
-../lib/krad_ebml/krad_ebml.c
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c
 ../lib/krad_io/krad_io2.c
@@ -43,12 +42,6 @@ libsources = """
 ../lib/krad_compositor/krad_compositor_common.c
 ../lib/krad_transponder/krad_transponder_common.c
 """.split()
-
-# FIXME we should not be having krad_transmitter and krad_ring in the below
-# but right now ebml and mkv/webm muxing is mangled together
-
-libsources = libsources + ["../lib/krad_transmitter/krad_transmitter.c"]
-libsources = libsources + ["../lib/krad_ring/krad_ring.c"]
 
 depsources2 = """
 ../lib/krad_osc/krad_osc.c
@@ -123,7 +116,9 @@ shlibs2 = ["cairo", "gtk+-3.0"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
-syslibs2 = ['rt', 'pthread']
+
+syslibs2 = ['pthread']
+plibs = ['rt', 'pthread']
 
 def check_system(systm):
 
@@ -207,7 +202,7 @@ def build(bld):
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
-      uselib = shlibs + stlibs + syslibs)
+      uselib = shlibs + stlibs + syslibs + plibs)
 
   for p in programs5:
     bld(features = 'c cprogram', 
@@ -215,7 +210,7 @@ def build(bld):
     includes = includedirs, 
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
-    uselib = shlibs + stlibs + syslibs)
+    uselib = shlibs + stlibs + syslibs + plibs)
       
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:

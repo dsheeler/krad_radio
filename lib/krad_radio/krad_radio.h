@@ -32,7 +32,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_ticker.h"
 #include "krad_tags.h"
 #include "krad_container.h"
-#include "krad_ebml.h"
 #include "krad_ebml2.h"
 #include "krad_ipc_server.h"
 #include "krad_radio_ipc.h"

@@ -4,7 +4,7 @@
 #define KRAD_COMPOSITOR_SUBUNIT_DEFAULT_TICKRATE 4
 
 #include "krad_radio_ipc.h"
-#include "krad_ebml.h"
+#include "krad_system.h"
 
 typedef enum {
   KR_VIDEOPORT = 1,
@@ -141,11 +141,6 @@ struct krad_compositor_rep_St {
   
   char background_filename[256];
 };
-
-void krad_compositor_videoport_rep_to_ebml (kr_port_t *port, krad_ebml_t *ebml);
-void krad_compositor_text_rep_to_ebml (krad_text_rep_t *text, krad_ebml_t *ebml);
-void krad_compositor_sprite_rep_to_ebml (krad_sprite_rep_t *sprite, krad_ebml_t *ebml);
-void krad_compositor_vector_rep_to_ebml (krad_vector_rep_t *vector, krad_ebml_t *ebml);
 
 char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 krad_vector_type_t krad_string_to_vector_type (char *string);

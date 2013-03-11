@@ -59,4 +59,7 @@ inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len);
 int kr_io2_write (kr_io2_t *io);
 int kr_io2_flush (kr_io2_t *io);
 
+
+int kr_io2_read (kr_io2_t *io);
+
 #endif

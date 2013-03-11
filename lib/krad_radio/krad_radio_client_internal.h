@@ -1,13 +1,12 @@
 //#ifndef KRAD_CLIENT_INTERNAL_H
 //#define KRAD_CLIENT_INTERNAL_H
 
-#include "krad_ebml.h"
 #include "krad_ipc_client.h"
 #include "krad_radio_client.h"
 
 struct kr_client_St {
   krad_ipc_client_t *krad_ipc_client;
-  krad_ebml_t *krad_ebml;
+
 
   kr_ebml2_t *ebml2;
   kr_io2_t *io;
@@ -18,6 +17,15 @@ struct kr_client_St {
 
   int subscriber;
   int last_delivery_was_final;
+  
+  
+  
+  
+  kr_ebml2_t *ebml_in;
+  kr_io2_t *io_in;
+  
+  
+  
 };
 
 struct kr_shm_St {
@@ -28,7 +36,7 @@ struct kr_shm_St {
 
 typedef int (*rep_to_string_t)( unsigned char *, uint64_t, char ** );
 
-krad_ebml_t *kr_client_get_ebml (kr_client_t *kr_client);
+
 int kr_send_fd (kr_client_t *client, int fd);
 
 

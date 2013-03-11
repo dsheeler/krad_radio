@@ -76,3 +76,19 @@ int kr_io2_flush (kr_io2_t *io) {
   return 0;
 }
 
+
+
+int kr_io2_read (kr_io2_t *io) {
+
+  int ret;
+
+  ret = read (io->fd, io->buf, io->space);
+
+  if (ret > 0) {
+      kr_io2_advance (io, ret);
+  }
+
+
+  return ret;
+}
+

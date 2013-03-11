@@ -56,7 +56,7 @@ void get_delivery (kr_client_t *client) {
   real = 0.0f;
   string = NULL;
   crate = NULL;
-  printf ("*** Delivery Start: \n");
+  printf ("\n*** Delivery Start: \n");
 
   kr_delivery_get (client, &crate);
 
@@ -97,7 +97,7 @@ void get_delivery (kr_client_t *client) {
     }
 
     kr_crate_recycle (&crate);
-    printf ("*** Delivery End\n\n\n");
+    printf ("*** Delivery End\n\n");
   }
 }
 

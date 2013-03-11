@@ -446,16 +446,15 @@ void krad_system_set_thread_name (char *name) {
   }
 }
 
-uint64_t ktime() {
+uint64_t krad_unixtime () {
 
   uint64_t seconds;
-  struct timespec ts;
+  struct timeval tv;
 
-  clock_gettime (CLOCK_REALTIME, &ts);
-  seconds = ts.tv_sec;
+  gettimeofday (&tv, NULL);
+  seconds = tv.tv_sec;
   
   return seconds;
-
 }
 
 int dir_exists (char *dir) {

@@ -7,15 +7,6 @@ void krad_ipc_disconnect (krad_ipc_client_t *client) {
     if (client->sd != 0) {
       close (client->sd);
     }
-    if (client->io != NULL) {
-      kr_io2_destroy (&client->io);
-    }
-    if (client->ebml2 != NULL) {
-      kr_ebml2_destroy (&client->ebml2);
-    }
-    if (client->krad_ebml != NULL) {
-      krad_ebml_destroy (client->krad_ebml);
-    }
     free(client);
   }
 }
@@ -152,34 +143,6 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
       printke ("Krad IPC Client: Can't connect to socket %s", client->ipc_path);
       return 0;
     }
-  }
-
-  client->krad_ebml = krad_ebml_open_active_socket (client->sd, KRAD_EBML_IO_READWRITE);
-
-  client->io = kr_io2_create ();
-  client->ebml2 = kr_ebml2_create ();
-
-  kr_io2_set_fd ( client->io, client->sd );
-  kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
-
-  kr_ebml2_pack_header (client->ebml2, KRAD_IPC_CLIENT_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
-  kr_io2_advance (client->io, client->ebml2->pos);
-
-  if (kr_io2_flush (client->io)) {
-    close (client->sd);
-    client->sd = 0;
-    printke ("Krad IPC Client: io2_flush fail");
-    return 0;
-  }
-  kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
-
-  krad_ebml_read_ebml_header (client->krad_ebml, client->krad_ebml->header);
-  krad_ebml_check_ebml_header (client->krad_ebml->header);
-
-  if (krad_ebml_check_doctype_header (client->krad_ebml->header, KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION)) {
-    //printf("Matched %s Version: %d Read Version: %d\n", KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
-  } else {
-    printke ("Did Not Match %s Version: %d Read Version: %d", KRAD_IPC_SERVER_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
   }
 
   return client->sd;

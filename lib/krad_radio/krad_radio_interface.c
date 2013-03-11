@@ -161,6 +161,54 @@ void krad_radio_send_shipment_terminator (krad_ipc_server_t *kr_ipc) {
   krad_ipc_server_response_finish ( kr_ipc, response );
 }
 
+int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, kr_address_t *address) {
+
+  switch (address->path.unit) {
+    case KR_MIXER:
+      krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_MIXER_MSG, element_loc);
+      krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.mixer_subunit);
+      if (address->path.subunit.mixer_subunit != KR_UNIT) {
+        krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NAME, address->id.name);
+        if (address->path.subunit.mixer_subunit == KR_EFFECT) {
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->sub_id);
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->sub_id2);
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_CONTROL, address->control.effect_control);
+        }
+        if (address->path.subunit.mixer_subunit == KR_PORTGROUP) {
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_CONTROL, address->control.portgroup_control);
+        }
+      }
+      return 1;
+    case KR_COMPOSITOR:
+      krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_COMPOSITOR_MSG, element_loc);
+      krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+      if (address->path.subunit.compositor_subunit != KR_UNIT) {
+        krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+      }
+      return 1;
+    case KR_TRANSPONDER:
+      krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_TRANSPONDER_MSG, element_loc);
+      krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.transponder_subunit);
+      if (address->path.subunit.transponder_subunit != KR_UNIT) {
+        //if (address->path.subunit.transponder_subunit == KR_ADAPTER) {
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        //}
+      }
+      return 1;
+    case KR_STATION:
+      krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_RADIO_MSG, element_loc);
+      krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.station_subunit);
+      if (address->path.subunit.station_subunit != KR_UNIT) {
+        if (address->path.subunit.station_subunit == KR_REMOTE) {
+          krad_ebml_write_int32 (krad_ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        }
+      }
+      return 1;
+  }
+  
+  return 0;
+}
+
 int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 
 	krad_radio_t *krad_radio = (krad_radio_t *)ptr;
@@ -172,7 +220,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 	uint32_t ebml_id;	
 	uint32_t command;
 	uint64_t ebml_data_size;
-	uint64_t element;
 	uint64_t response;
   uint64_t payload_loc;
   kr_address_t address;
@@ -190,7 +237,6 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 	command = 0;
 	ebml_id = 0;
 	ebml_data_size = 0;
-	element = 0;
 	response = 0;
 	ret = 0;
 
@@ -305,10 +351,10 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
                                                                  EBML_ID_KRAD_SUBUNIT_INFO,
                                                                  &response);
           krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
-	        krad_ebml_start_element (kr_ipc->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &element);
+	        //krad_ebml_start_element (kr_ipc->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &element);
 			    krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, kr_ipc->tcp_interface[i]);
 			    krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_PORT, kr_ipc->tcp_port[i]);
-	        krad_ebml_finish_element (kr_ipc->current_client->krad_ebml2, element);
+	        //krad_ebml_finish_element (kr_ipc->current_client->krad_ebml2, element);
           krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
           krad_ipc_server_response_finish ( kr_ipc, response );
         }

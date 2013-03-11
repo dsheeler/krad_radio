@@ -263,7 +263,7 @@ void krad_radio_set_dir ( krad_radio_t *krad_radio, char *dir ) {
     return;
   }
 
-  sprintf (krad_radio->log.filename, "%s/%s_%"PRIu64".log", dir, krad_radio->sysname, ktime ());
+  sprintf (krad_radio->log.filename, "%s/%s_%"PRIu64".log", dir, krad_radio->sysname, krad_unixtime ());
   krad_system_log_on (krad_radio->log.filename);
   printk (APPVERSION);
   printk ("Station: %s", krad_radio->sysname);
@@ -271,6 +271,6 @@ void krad_radio_set_dir ( krad_radio_t *krad_radio, char *dir ) {
     printk ("Krad Radio took %"PRIu64"ms to startup",
             krad_timer_duration_ms (krad_radio->log.startup_timer));
   }
-  printk ("Current Unix Time: %"PRIu64"", ktime ());
+  printk ("Current Unix Time: %"PRIu64"", krad_unixtime ());
 }
 

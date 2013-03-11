@@ -15,7 +15,6 @@ typedef struct krad_mixer_portgroup_rep_St krad_mixer_portgroup_rep_t;
 #define KRAD_MIXER_RMS_WINDOW_SIZE_MS 125
 
 #include "krad_sfx_common.h"
-#include "krad_ebml.h"
 #include "krad_ebml2.h"
 #include "krad_radio_ipc.h"
 
@@ -94,7 +93,7 @@ struct krad_mixer_portgroup_rep_St {
   kr_highpass_rep_t highpass;
   kr_analog_rep_t analog;
 
-  int has_xmms2;
+  uint32_t has_xmms2;
   char xmms2_ipc_path[128];
 
 };
@@ -120,6 +119,6 @@ char *effect_control_to_string (kr_mixer_effect_control_t effect_control);
 char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_control);
 char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction);
 char *portgroup_output_type_to_string (krad_mixer_output_t output_type);
-void krad_mixer_portgroup_rep_to_ebml (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, krad_ebml_t *krad_ebml);
+
 void krad_mixer_portgroup_rep_to_ebml2 (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, kr_ebml2_t *ebml);
 #endif

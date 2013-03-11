@@ -200,6 +200,7 @@ struct kr_crate_St {
   kr_address_t address;
   kr_rep_ptr_t inside;
   kr_rep_actual_t rep;
+  kr_ebml2_t payload_ebml;
   uint32_t contains;
   uint32_t notice;
   unsigned char *buffer;
@@ -215,7 +216,6 @@ uint32_t kr_response_get_event (kr_response_t *response);
 int kr_string_to_address (char *string, kr_address_t *addr);
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc);
 void kr_unit_destroy (kr_client_t *client, kr_address_t *address);
-int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, kr_address_t *address);
 int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml2, unsigned char **element_loc, kr_address_t *address);
 
 kr_client_t *kr_client_create (char *client_name);
@@ -275,29 +275,27 @@ void kr_subscribe_all (kr_client_t *client);
  */
  
 int kr_poll (kr_client_t *client, uint32_t timeout_ms);
-int kr_ebml_to_remote_status_rep (unsigned char *ebml_frag, kr_remote_t *remote);
+
 void kr_response_free (kr_response_t **kr_response);
-int kr_response_to_string (kr_response_t *kr_response, char **string);
-int kr_response_to_int (kr_response_t *response, int *number);
-int kr_response_to_float (kr_response_t *response, float *number);
+int kr_crate_to_string (kr_crate_t *crate, char **string);
+int kr_crate_to_int (kr_crate_t *crate, int *number);
+int kr_crate_to_float (kr_crate_t *crate, float *number);
 char *kr_response_alloc_string (int length);
 void kr_response_free_string (char **string);
-int kr_response_get_string (unsigned char *ebml_frag, uint64_t ebml_data_size, char **string);
 int kr_response_to_rep (kr_crate_t *crate);
 void kr_response_address (kr_response_t *response, kr_address_t **address);
 void kr_address_debug_print (kr_address_t *addr);
-int krad_read_address_from_ebml (krad_ebml_t *ebml, kr_address_t *address);
+int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address);
 inline int krad_message_notice_has_payload (uint32_t type);
-inline int krad_read_message_type_from_ebml (krad_ebml_t *ebml, uint32_t *message_type);
 uint32_t kr_response_size (kr_response_t *kr_response);
 void kr_client_response_wait_print (kr_client_t *client);
-int kr_response_read_into_string (unsigned char *ebml_frag, uint64_t ebml_data_size, char *string);
+
 
 /**
  * @brief get a response
  * @param kr_client handle of the IPC-connection to the station
  */
-void kr_client_response_get (kr_client_t *client, kr_response_t **kr_response);
+void kr_delivery_get (kr_client_t *client, kr_crate_t **crate);
 
 int kr_crate_loaded (kr_crate_t *crate);
 int kr_crate_has_int (kr_crate_t *crate);
@@ -306,21 +304,20 @@ int kr_crate_has_float (kr_crate_t *crate);
 #define kr_crate_contains_int kr_crate_has_int
 #define kr_crate_contains_integer kr_crate_has_int
 #define kr_delivery_accept_and_report kr_client_response_wait_print
-#define kr_delivery_get kr_client_response_get
 #define kr_delivery_wait kr_poll
 #define kr_wait kr_poll
 #define kr_crate_address_get kr_response_address
 #define kr_address_get kr_response_address
-#define kr_crate_to_string kr_response_to_string
-#define kr_uncrate_string kr_response_to_string
-#define kr_uncrate_to_string kr_response_to_string
+#define kr_uncrate_string kr_crate_to_string
+#define kr_uncrate_to_string kr_crate_to_string
 
 #define kr_crate_notice kr_response_get_event
 
-#define kr_uncrate_int kr_response_to_int
-#define kr_uncrate_float kr_response_to_float
+#define kr_uncrate_int kr_crate_to_int
 #define kr_uncrate_rep kr_response_to_rep
 #define kr_uncrate kr_response_to_rep
+
+#define kr_uncrate_float kr_crate_to_float
 
 #define kr_string_release kr_response_free_string
 #define kr_string_recycle kr_response_free_string
@@ -480,8 +477,7 @@ void kr_osc_disable (kr_client_t *client);
  * @param tag_value
  */
  
-int kr_read_tag_frag ( unsigned char *ebml_frag, char **tag_item, char **tag_name, char **tag_value );
- 
+
 /**
  * @brief prints out a list of all tags in a group
  * @param client handle of the IPC-connection to the station

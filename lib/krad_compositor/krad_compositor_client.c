@@ -2,6 +2,9 @@
 #include "krad_radio_client_internal.h"
 #include "krad_compositor_common.h"
 
+static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *kr_compositor_rep);
+static int kr_compositor_crate_get_string_from_subunit (kr_crate_t *crate, char **string);
+
 typedef struct kr_videoport_St kr_videoport_t;
 
 struct kr_videoport_St {
@@ -154,273 +157,109 @@ void kr_compositor_info (kr_client_t *client) {
   }
 }
 
-void kr_ebml_to_compositor_rep (unsigned char *ebml_frag, kr_compositor_t *kr_compositor_rep) {
+static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *kr_compositor_rep) {
 
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->height);
 
-  item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->fps_numerator);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->fps_denominator);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->fps_numerator = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->fps_denominator = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->sprites);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->texts);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->vectors);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->inputs);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->outputs);
+  kr_ebml2_unpack_element_uint64 (ebml, NULL, &kr_compositor_rep->frames);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->sprites = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->texts = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->vectors = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->inputs = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->outputs = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  kr_compositor_rep->frames = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, kr_compositor_rep->background_filename);
+  kr_ebml2_unpack_element_string (ebml, NULL, kr_compositor_rep->background_filename,
+                                  sizeof(kr_compositor_rep->background_filename));
 }
 
-void kr_ebml_to_comp_controls (unsigned char *ebml_frag, kr_comp_controls_t *controls) {
-
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
-
-  item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->number = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->tickrate = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
- 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->yscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  controls->rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
+  kr_ebml2_unpack_element_string (ebml, NULL, port->sysname, sizeof(port->sysname));
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->direction );
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.z);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->source_width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->source_height);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_height);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.height);
+  kr_ebml2_unpack_element_float (ebml, NULL, &port->controls.opacity);
+  kr_ebml2_unpack_element_float (ebml, NULL, &port->controls.rotation);
 }
 
-void kr_ebml_to_videoport_rep (unsigned char *ebml_frag, kr_port_t *port) {
+static void kr_ebml_to_sprite_rep (kr_ebml2_t *ebml, kr_sprite_t *sprite) {
 
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
+  kr_ebml2_unpack_element_string (ebml, NULL, sprite->filename, sizeof(sprite->filename));
 
-  item_pos = 0;
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, port->sysname);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->direction = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.z);
   
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  port->source_width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.tickrate);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->source_height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->crop_x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.xscale);
+  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.yscale);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->crop_y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->crop_width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->crop_height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  port->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.opacity);
+  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.rotation);
 }
 
-void kr_ebml_to_sprite_rep (unsigned char *ebml_frag, kr_sprite_t *sprite) {
+static void kr_ebml_to_vector_rep (kr_ebml2_t *ebml, kr_vector_t *vector) {
 
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->type);
 
-  item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, sprite->filename);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.height);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.z);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.tickrate = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.xscale);
+  kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.yscale);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
- 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.yscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  sprite->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.opacity);
+  kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.rotation);
 }
 
-void kr_ebml_to_vector_rep (unsigned char *ebml_frag, kr_vector_t *vector) {
-
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
-
-  item_pos = 0;
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->type = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+static void kr_ebml_to_text_rep (kr_ebml2_t *ebml, kr_text_t *text) {
   
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
- 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.yscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  vector->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_string (ebml, NULL, text->text, sizeof(text->text));
+  kr_ebml2_unpack_element_string (ebml, NULL, text->font, sizeof(text->font));
+
+  kr_ebml2_unpack_element_float (ebml, NULL, &text->red);
+  kr_ebml2_unpack_element_float (ebml, NULL, &text->green);
+  kr_ebml2_unpack_element_float (ebml, NULL, &text->blue);
+
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.z);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.height);      
+
+  kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.xscale);
+  kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.opacity);
+  kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.rotation);
 }
 
-void kr_ebml_to_text_rep (unsigned char *ebml_frag, kr_text_t *text) {
-  
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
-
-  item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, text->text);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, text->font);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->red = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->green = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->blue = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.x = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.y = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.z = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.width = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.height = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.xscale = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.opacity = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  text->controls.rotation = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-}
-
-int kr_compositor_response_get_string_from_compositor (unsigned char *ebml_frag, char **string) {
+int kr_compositor_crate_to_string_from_compositor (kr_crate_t *crate, char **string) {
 
   int pos;
   kr_compositor_t kr_compositor;
 
   pos = 0;
-  //kr_compositor = NULL;
 
-  kr_ebml_to_compositor_rep (ebml_frag, &kr_compositor);
+  kr_ebml_to_compositor_rep (&crate->payload_ebml, &kr_compositor);
   pos += sprintf (*string + pos, "Resolution: %ux%u\n", kr_compositor.width, kr_compositor.height);
-  pos += sprintf (*string + pos, "Frame Rate: %u / %u\n", kr_compositor.fps_numerator, kr_compositor.fps_denominator);
+  pos += sprintf (*string + pos, "Frame Rate: %u / %u\n",
+                  kr_compositor.fps_numerator, kr_compositor.fps_denominator);
   pos += sprintf (*string + pos, "Sprites: %u\n", kr_compositor.sprites);
   pos += sprintf (*string + pos, "Vectors: %u\n", kr_compositor.vectors);
   pos += sprintf (*string + pos, "Texts: %u\n", kr_compositor.texts);
@@ -435,35 +274,14 @@ int kr_compositor_response_get_string_from_compositor (unsigned char *ebml_frag,
   return pos; 
 }
 
-int kr_compositor_response_get_string_from_subunit_controls (kr_comp_controls_t *controls, char *string) {
-
-  int pos;
-
-  pos = 0;
-
-  pos += sprintf (string + pos, "X: %d\n", controls->x);
-  pos += sprintf (string + pos, "Y: %d\n", controls->y);
-  pos += sprintf (string + pos, "Z: %d\n", controls->z);
-
-  pos += sprintf (string + pos, "Y Scale: %f\n", controls->yscale);
-  pos += sprintf (string + pos, "X Scale: %f\n", controls->xscale);
-
-  pos += sprintf (string + pos, "Opacity: %f\n", controls->opacity);
-  pos += sprintf (string + pos, "Rotation: %f\n", controls->rotation);
-  pos += sprintf (string + pos, "Tickrate: %d\n", controls->tickrate);
-  
-  return pos;
-}
-
-int kr_compositor_response_get_string_from_sprite (unsigned char *ebml_frag, char **string) {
+int kr_compositor_crate_to_string_from_sprite (kr_crate_t *crate, char **string) {
 
   int pos;
   kr_sprite_t sprite;
 
   pos = 0;
-  //memset (&sprite, 0, sizeof(kr_sprite_t));
 
-  kr_ebml_to_sprite_rep (ebml_frag, &sprite);
+  kr_ebml_to_sprite_rep (&crate->payload_ebml, &sprite);
   pos += sprintf (*string + pos, "Sprite: %s\n", sprite.filename);
   pos += sprintf (*string + pos, "X: %d\n", sprite.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", sprite.controls.y);
@@ -477,15 +295,14 @@ int kr_compositor_response_get_string_from_sprite (unsigned char *ebml_frag, cha
   return pos;
 }
 
-int kr_compositor_response_get_string_from_text (unsigned char *ebml_frag, char **string) {
+int kr_compositor_crate_to_string_from_text (kr_crate_t *crate, char **string) {
 
   int pos;
   kr_text_t text;
 
   pos = 0;
-  //memset (&text, 0, sizeof(kr_text_t));
 
-  kr_ebml_to_text_rep (ebml_frag, &text);
+  kr_ebml_to_text_rep (&crate->payload_ebml, &text);
   pos += sprintf (*string + pos, "Text: %s\n", text.text);
   pos += sprintf (*string + pos, "Font: %s\n", text.font);
   pos += sprintf (*string + pos, "Red: %4.2f Green: %4.2f Blue: %4.2f\n",
@@ -502,15 +319,14 @@ int kr_compositor_response_get_string_from_text (unsigned char *ebml_frag, char 
   return pos;
 }
 
-int kr_compositor_response_get_string_from_vector (unsigned char *ebml_frag, char **string) {
+int kr_compositor_crate_to_string_from_vector (kr_crate_t *crate, char **string) {
 
   int pos;
   kr_vector_t vector;
 
   pos = 0;
-  //memset (&vector, 0, sizeof(kr_vector_t));
 
-  kr_ebml_to_vector_rep (ebml_frag, &vector);
+  kr_ebml_to_vector_rep (&crate->payload_ebml, &vector);
   pos += sprintf (*string + pos, "Vector: %s\n", krad_vector_type_to_string (vector.type));
   pos += sprintf (*string + pos, "Width: %d\n", vector.controls.width);
   pos += sprintf (*string + pos, "Height: %d\n", vector.controls.height);  
@@ -525,14 +341,14 @@ int kr_compositor_response_get_string_from_vector (unsigned char *ebml_frag, cha
   return pos;
 }
 
-int kr_compositor_response_get_string_from_videoport (unsigned char *ebml_frag, char **string) {
+int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **string) {
 
   int pos;
   kr_port_t port;
 
   pos = 0;
 
-  kr_ebml_to_videoport_rep (ebml_frag, &port);
+  kr_ebml_to_videoport_rep (&crate->payload_ebml, &port);
   
   if (port.direction == OUTPUT) {
     pos += sprintf (*string + pos, "Video Output Port: %s\n", port.sysname);
@@ -558,34 +374,44 @@ int kr_compositor_response_get_string_from_videoport (unsigned char *ebml_frag, 
   return pos; 
 }
 
-int kr_compositor_response_get_string_from_subunit (kr_response_t *kr_response, unsigned char *ebml_frag, char **string) {
+static int kr_compositor_crate_get_string_from_subunit (kr_crate_t *crate, char **string) {
 
-  switch ( kr_response->address.path.subunit.compositor_subunit ) {
+  switch ( crate->address.path.subunit.compositor_subunit ) {
     case KR_SPRITE:
-      return kr_compositor_response_get_string_from_sprite (ebml_frag, string);
+      return kr_compositor_crate_to_string_from_sprite (crate, string);
     case KR_TEXT:
-      return kr_compositor_response_get_string_from_text (ebml_frag, string);
+      return kr_compositor_crate_to_string_from_text (crate, string);
     case KR_VECTOR:
-      return kr_compositor_response_get_string_from_vector (ebml_frag, string);
+      return kr_compositor_crate_to_string_from_vector (crate, string);
     case KR_VIDEOPORT:
-      return kr_compositor_response_get_string_from_videoport (ebml_frag, string);
+      return kr_compositor_crate_to_string_from_videoport (crate, string);
   }
   
   return 0; 
 }
 
-int kr_compositor_response_to_string (kr_response_t *kr_response, char **string) {
+int kr_compositor_crate_to_rep (kr_crate_t *crate) {
+  if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_UNIT) && 
+      (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
+    crate->contains = KR_COMPOSITOR;
+    kr_ebml_to_compositor_rep (&crate->payload_ebml, &crate->rep.compositor);
+    return 1;
+  }
+  return 0;
+}
 
-  switch ( kr_response->notice ) {
+int kr_compositor_crate_to_string (kr_crate_t *crate, char **string) {
+
+  switch ( crate->notice ) {
     case EBML_ID_KRAD_UNIT_INFO:
-      *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_compositor_response_get_string_from_compositor (kr_response->buffer, string);
+      *string = kr_response_alloc_string (crate->size * 4);
+      return kr_compositor_crate_to_string_from_compositor (crate, string);
     case EBML_ID_KRAD_SUBUNIT_INFO:
-      *string = kr_response_alloc_string (kr_response->size * 6);
-      return kr_compositor_response_get_string_from_subunit (kr_response, kr_response->buffer, string);
+      *string = kr_response_alloc_string (crate->size * 6);
+      return kr_compositor_crate_get_string_from_subunit (crate, string);
     case EBML_ID_KRAD_SUBUNIT_CREATED:
-      *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_compositor_response_get_string_from_subunit (kr_response, kr_response->buffer, string);
+      *string = kr_response_alloc_string (crate->size * 4);
+      return kr_compositor_crate_get_string_from_subunit (crate, string);
   }
   return 0;
 }
@@ -671,7 +497,9 @@ void kr_videoport_destroy_cmd (kr_client_t *client) {
   unsigned char *destroy_videoport;
   
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY, &destroy_videoport);
+  kr_ebml2_start_element (client->ebml2,
+                          EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY,
+                          &destroy_videoport);
   kr_ebml2_finish_element (client->ebml2, destroy_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
@@ -686,7 +514,9 @@ void kr_videoport_create_cmd (kr_client_t *client) {
   unsigned char *create_videoport;
   
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE, &create_videoport);
+  kr_ebml2_start_element (client->ebml2,
+                          EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE,
+                          &create_videoport);
   kr_ebml2_finish_element (client->ebml2, create_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
@@ -713,14 +543,14 @@ void *kr_videoport_process_thread (void *arg) {
     // wait for socket to have a byte
     ret = read (kr_videoport->sd, buf, 1);
     if (ret != 1) {
-      printke ("krad compositor client: unexpected read return value %d in kr_videoport_process_thread", ret);
+      printke ("compositor client: unexpected read return value %d in kr_videoport_process_thread", ret);
     }
     kr_videoport->callback (kr_videoport->kr_shm->buffer, kr_videoport->pointer);
 
     // write a byte to socket
     ret = write (kr_videoport->sd, buf, 1);
     if (ret != 1) {
-      printke ("krad compositor client: unexpected write return value %d in kr_videoport_process_thread", ret);
+      printke ("compositor client: unexpected write return value %d in kr_videoport_process_thread", ret);
     }
 
   }

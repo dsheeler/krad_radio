@@ -2,6 +2,14 @@
 #include "krad_radio_client_internal.h"
 #include "krad_mixer_common.h"
 
+static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **string);
+static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char **string);
+static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string);
+
+static void kr_ebml_to_mixer_rep (kr_ebml2_t *ebml, kr_mixer_t *mixer_rep);
+static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_t *portgroup_rep);
+
+
 typedef struct kr_audioport_St kr_audioport_t;
 
 struct kr_audioport_St {
@@ -509,32 +517,17 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
   }
 }
 
-int kr_ebml_to_mixer_portgroup_rep (unsigned char *ebml_frag, kr_mixer_portgroup_t *portgroup_rep) {
+static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_t *portgroup_rep) {
 
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
   int i;
   char string[256];
-  int item_pos;
 
-  item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
+  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->sysname, sizeof(portgroup_rep->sysname));
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->channels);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->direction);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->output_type);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, portgroup_rep->sysname);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->channels = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->direction = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->output_type = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, string);
+  kr_ebml2_unpack_element_string (ebml, NULL, string, sizeof(string));
 
   if (strncmp (string, "Jack", 4) == 0) {
     portgroup_rep->io_type = 0;
@@ -543,134 +536,84 @@ int kr_ebml_to_mixer_portgroup_rep (unsigned char *ebml_frag, kr_mixer_portgroup
   }
   
   for (i = 0; i < portgroup_rep->channels; i++) {
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-    portgroup_rep->volume[i] = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+    kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->volume[i]);
   }
   
   for (i = 0; i < portgroup_rep->channels; i++) {
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-    portgroup_rep->peak[i] = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+    kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->peak[i]);
   }
   
   for (i = 0; i < portgroup_rep->channels; i++) {
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-    portgroup_rep->rms[i] = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+    kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->rms[i]);
   }
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, portgroup_rep->mixbus);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, portgroup_rep->crossfade_group);  
+  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->mixbus, sizeof(portgroup_rep->mixbus));
+  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->crossfade_group, sizeof(portgroup_rep->crossfade_group));
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->fade);
 
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  portgroup_rep->fade = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->has_xmms2);
   
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  portgroup_rep->has_xmms2 = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
   if (portgroup_rep->has_xmms2 == 1) {
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-    item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, portgroup_rep->xmms2_ipc_path);  
+    kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->xmms2_ipc_path, sizeof(portgroup_rep->xmms2_ipc_path));
   }
   
-  /*
-  for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-    krad_mixer_portgroup_rep->eq.band[i].db = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-    krad_mixer_portgroup_rep->eq.band[i].bandwidth = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-    item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-    krad_mixer_portgroup_rep->eq.band[i].hz = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  }
-  */
+  kr_ebml2_unpack_element_data (ebml, NULL, &portgroup_rep->eq, sizeof (portgroup_rep->eq));
   
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);
-  item_pos += krad_ebml_read_data_from_frag (ebml_frag + item_pos, &portgroup_rep->eq, ebml_data_size);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.hz);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.bandwidth);
   
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->lowpass.hz = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->lowpass.bandwidth = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.hz);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.bandwidth);
   
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->highpass.hz = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->highpass.bandwidth = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->analog.drive = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  portgroup_rep->analog.blend = krad_ebml_read_float_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.drive);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.blend);
 
   return 1;
 }
 
-void kr_ebml_to_mixer_rep (unsigned char *ebml_frag, kr_mixer_t *mixer_rep) {
-
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;
-  int item_pos;
-
-  item_pos = 0;
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  mixer_rep->sample_rate = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  mixer_rep->inputs = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  mixer_rep->outputs = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  mixer_rep->buses = krad_ebml_read_number_from_frag_add (ebml_frag + item_pos, ebml_data_size, &item_pos);
-  
-  item_pos += krad_ebml_read_element_from_frag (ebml_frag + item_pos, &ebml_id, &ebml_data_size);  
-  item_pos += krad_ebml_read_string_from_frag (ebml_frag + item_pos, ebml_data_size, mixer_rep->time_source);
-
+static void kr_ebml_to_mixer_rep (kr_ebml2_t *ebml, kr_mixer_t *mixer_rep) {
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->sample_rate);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->inputs);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->outputs);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->buses);
+  kr_ebml2_unpack_element_string (ebml, NULL, mixer_rep->time_source, sizeof(mixer_rep->time_source));
 }
 
-int kr_mixer_response_get_string_from_subunit_control (kr_address_t *address, unsigned char *ebml_frag, uint64_t item_size, char **string) {
+static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string) {
 
-  int pos;
-  uint32_t ebml_id;
-  uint64_t ebml_data_size;  
-  int ebml_pos;
-  float value;
-  
-  ebml_pos = 0;
-  pos = 0;
+  int len;
+  float real;
 
-  ebml_pos += krad_ebml_read_element_from_frag (ebml_frag + ebml_pos, &ebml_id, &ebml_data_size);
+  len = 0;
 
-  if (address->path.subunit.mixer_subunit == KR_PORTGROUP) {
-    if ((address->control.portgroup_control == KR_VOLUME) || (address->control.portgroup_control == KR_CROSSFADE) ||
-         (address->control.portgroup_control == KR_PEAK)) {
-      value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
-      pos += sprintf (*string + pos, "%5.2f", value);
+  if (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP) {
+    if ((crate->addr->control.portgroup_control == KR_VOLUME) || (crate->addr->control.portgroup_control == KR_CROSSFADE) ||
+         (crate->addr->control.portgroup_control == KR_PEAK)) {
+      kr_ebml2_unpack_element_float (&crate->payload_ebml, NULL, &real);
+      len += sprintf (*string + len, "%5.2f", real);
     }
-    if ((address->control.portgroup_control == KR_CROSSFADE_GROUP) || (address->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
-      pos += krad_ebml_read_string_from_frag (ebml_frag + ebml_pos, ebml_data_size, *string + pos);
+    if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) || (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+      kr_ebml2_unpack_element_string (&crate->payload_ebml, NULL, *string + len, 32);
+      len += strlen (*string + len);
     }
-  }
-
-  if (address->path.subunit.mixer_subunit == KR_EFFECT) {
-    value = krad_ebml_read_float_from_frag_add (ebml_frag + ebml_pos, ebml_data_size, &ebml_pos);
-    pos += sprintf (*string + pos, "%5.2f", value);
+  } else {
+    if (crate->addr->path.subunit.mixer_subunit == KR_EFFECT) {
+      kr_ebml2_unpack_element_float (&crate->payload_ebml, NULL, &real);
+      len += sprintf (*string + len, "%5.2f", real);
+    }
   }
     
-  return pos; 
+  return len; 
 }
 
-int kr_mixer_response_get_string_from_mixer (unsigned char *ebml_frag, uint64_t item_size, char **string) {
+static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **string) {
 
   int pos;
   kr_mixer_t kr_mixer;
 
   pos = 0;
 
-  kr_ebml_to_mixer_rep (ebml_frag, &kr_mixer);
+  kr_ebml_to_mixer_rep (&crate->payload_ebml, &kr_mixer);
   pos += sprintf (*string + pos, "Sample Rate: %u\n", kr_mixer.sample_rate);
   pos += sprintf (*string + pos, "Inputs: %u\n", kr_mixer.inputs);
   pos += sprintf (*string + pos, "Outputs: %u\n", kr_mixer.outputs);
@@ -680,7 +623,7 @@ int kr_mixer_response_get_string_from_mixer (unsigned char *ebml_frag, uint64_t 
   return pos; 
 }
 
-int kr_mixer_response_get_string_from_portgroup (unsigned char *ebml_frag, uint64_t item_size, char **string) {
+static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char **string) {
 
   int pos;
   int c;
@@ -689,7 +632,7 @@ int kr_mixer_response_get_string_from_portgroup (unsigned char *ebml_frag, uint6
 
   pos = 0;
   
-  kr_ebml_to_mixer_portgroup_rep (ebml_frag, &portgroup_rep);
+  kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &portgroup_rep);
  
   if ((portgroup_rep.direction == OUTPUT) && (portgroup_rep.output_type == DIRECT)) {
     pos += sprintf (*string + pos, "%d Channel ", portgroup_rep.channels);
@@ -780,23 +723,49 @@ int kr_mixer_response_get_string_from_portgroup (unsigned char *ebml_frag, uint6
   return pos; 
 }
 
-int kr_mixer_response_to_string (kr_response_t *kr_response, char **string) {
+int kr_mixer_crate_to_string (kr_crate_t *crate, char **string) {
 
-  switch ( kr_response->notice ) {
+  switch ( crate->notice ) {
     case EBML_ID_KRAD_SUBUNIT_CONTROL:
-      *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_mixer_response_get_string_from_subunit_control (&kr_response->address, kr_response->buffer, kr_response->size, string);
+      *string = kr_response_alloc_string (crate->size * 4);
+      return kr_mixer_response_get_string_from_subunit_control (crate, string);
     case EBML_ID_KRAD_UNIT_INFO:
-      *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_mixer_response_get_string_from_mixer (kr_response->buffer, kr_response->size, string);
+      *string = kr_response_alloc_string (crate->size * 4);
+      return kr_mixer_response_get_string_from_mixer (crate, string);
     case EBML_ID_KRAD_SUBUNIT_INFO:
-      *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_mixer_response_get_string_from_portgroup (kr_response->buffer, kr_response->size, string);
+      *string = kr_response_alloc_string (crate->size * 4);
+      return kr_mixer_response_get_string_from_portgroup (crate, string);
     case EBML_ID_KRAD_SUBUNIT_CREATED:
-      *string = kr_response_alloc_string (kr_response->size * 4);
-      return kr_mixer_response_get_string_from_portgroup (kr_response->buffer, kr_response->size, string);
+      *string = kr_response_alloc_string (crate->size * 4);
+      return kr_mixer_response_get_string_from_portgroup (crate, string);
   }
   
+  return 0;
+}
+
+
+int kr_mixer_crate_to_rep (kr_crate_t *crate) {
+
+  if ((crate->address.path.subunit.mixer_subunit != KR_PORTGROUP) && 
+      (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
+    crate->contains = KR_MIXER;
+    kr_ebml_to_mixer_rep (&crate->payload_ebml, &crate->rep.mixer);
+    return 1;
+  }
+  switch ( crate->address.path.subunit.mixer_subunit ) {
+    case KR_EFFECT:
+
+      break;
+    case KR_PORTGROUP:
+      if ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || ((crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
+        crate->contains = KR_PORTGROUP;
+        kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &crate->rep.portgroup);
+        return 1;
+      }
+      break;
+    default:
+      break;
+  }
   return 0;
 }
 

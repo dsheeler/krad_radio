@@ -6,6 +6,7 @@
 #include <math.h>
 #include <inttypes.h>
 #include <time.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -143,7 +144,7 @@ char *krad_system_info();
 uint64_t krad_system_daemon_uptime ();
 void krad_system_info_collect ();
 
-uint64_t ktime();
+uint64_t krad_unixtime ();
 void failfast (char* format, ...);
 void printke (char* format, ...);
 void printkd (char* format, ...);

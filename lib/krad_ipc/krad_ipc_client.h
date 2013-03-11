@@ -25,7 +25,6 @@
 #include "krad_radio_version.h"
 #include "krad_radio_ipc.h"
 #include "krad_system.h"
-#include "krad_ebml.h"
 
 #include "krad_ebml2.h"
 #include "krad_io2.h"
@@ -51,11 +50,6 @@ struct krad_ipc_client_St {
 	int on_linux;
 	struct stat info;
 	struct utsname unixname;
-
-	krad_ebml_t *krad_ebml;
-
-	kr_ebml2_t *ebml2;
-	kr_io2_t *io;
 };
 
 krad_ipc_client_t *krad_ipc_connect (char *sysname);

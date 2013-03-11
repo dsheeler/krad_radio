@@ -1,8 +1,9 @@
 #ifndef KRAD_RADIO_COMMON_H
 #define KRAD_RADIO_COMMON_H
 
-#include "krad_ebml.h"
+#include "krad_radio_version.h"
 #include "krad_ebml2.h"
+#include "krad_ebml2w.h"
 #include "krad_io2.h"
 #include "krad_radio_ipc.h"
 
@@ -19,7 +20,7 @@ struct krad_radio_rep_St {
 };
 
 struct kr_remote_St {
-  int port;
+  uint16_t port;
   char interface[128];
 };
 

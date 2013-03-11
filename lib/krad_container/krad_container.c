@@ -1,6 +1,4 @@
-#define KRAD_RADIO
 #include "krad_container.h"
-#include "krad_ebml.h"
 
 krad_container_type_t krad_link_select_container (char *string) {
 
