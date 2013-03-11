@@ -350,6 +350,7 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
   header_items = 7;
 
   ret = kr_ebml2_unpack_id (ebml, &element, &header_size);
+  header_size += ebml->pos;
 
   if ((ret < 0) || (element != EID_HEADER)) {
     fprintf (stderr, "EBML Header ID Not found\n");
@@ -399,10 +400,10 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
       case EID_DOCTYPEVERSION:
         //kr_ebml2_advance (ebml, size);
         kr_ebml2_unpack_uint32 (ebml, version, size);
-        printf ("Found DOCTYPEVERSION\n");
+        //printf ("Found DOCTYPEVERSION\n");
         break;
       case EID_DOCTYPEREADVERSION:
-        printf ("Found DOCTYPEREADVERSION\n");
+        //printf ("Found DOCTYPEREADVERSION\n");
         kr_ebml2_unpack_uint32 (ebml, read_version, size);
         //kr_ebml2_advance (ebml, size);
         break;

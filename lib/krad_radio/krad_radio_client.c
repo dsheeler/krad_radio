@@ -17,11 +17,11 @@ static int kr_radio_response_to_int (kr_crate_t *crate, int *integer);
 static int kr_ebml_to_remote_status_rep (kr_ebml2_t *ebml, kr_remote_t *remote);
 static int kr_ebml_to_tag_rep (kr_ebml2_t *ebml, kr_tag_t *tag);
 
-void frak_print_raw_ebml (char *buffer, int len) {
+void frak_print_raw_ebml (unsigned char *buffer, int len) {
 
   int i;
 
-  printf ("\nRaw EBML: \n");
+  printf ("\nRaw EBML: %d\n", len);
   for (i = 0; i < len; i++) {
     printf ("%02X", buffer[i]);
   }
@@ -102,9 +102,9 @@ int kr_check_connection (kr_client_t *client) {
   kr_poll (client, 25);
   kr_io2_read (client->io_in);
   kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
-    printf ("len %zu\n", client->io_in->len);
+  //printf ("len %zu\n", client->io_in->len);
 
-  frak_print_raw_ebml (client->io_in->rd_buf, client->io_in->len);
+  //frak_print_raw_ebml (client->io_in->rd_buf, client->io_in->len);
 
   ret = kr_ebml2_unpack_header (client->ebml_in, doctype, sizeof(doctype),
                                 &version, &read_version);
@@ -120,7 +120,7 @@ int kr_check_connection (kr_client_t *client) {
     printf ("frakr %d\n", ret);
   }
   
-    printf ("frdsdakr %zu\n", client->ebml_in->pos);
+
   kr_io2_pulled (client->io_in, client->io_in->len);  
   //kr_io2_pulled (client->io_in, client->ebml_in->pos);
   
@@ -319,6 +319,7 @@ int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
   struct pollfd pollfds[1];
 
   if (client->have_more == 1) {
+    client->have_more = 0;
     return 1;
   }
 
@@ -835,65 +836,101 @@ uint32_t kr_response_get_event (kr_response_t *response) {
   return response->notice;
 }
 
+int kr_have_full_crate (kr_ebml2_t *ebml) {
+
+  int ret;
+  uint32_t id;
+  uint64_t size;  
+
+  if (ebml->len < 8) {
+    return 0;
+  }
+
+  ret = kr_ebml2_unpack_id (ebml, &id, &size);
+
+  if ((ret == 0) && (size > 0)) {
+  
+  printf ("\nthe story is:  %u %u %u\n", size, ebml->len, ebml->pos);
+  
+    if (size <= (ebml->len - ebml->pos)) {
+      return 1;
+    }
+  }
+  
+  return 0;
+}
+
+
 void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
 
   kr_response_t *response;
 
   uint32_t ebml_id;
   uint64_t ebml_data_size;
+  int have_crate;
 
+  have_crate = 0;
   ebml_id = 0;
   ebml_data_size = 0;
 
-  response = kr_response_alloc ();
-  *kr_crate = response;
-
-  response->inside.actual = &response->rep.actual;
-
-  printf ("KR Client Response get start\n");
+  //printf ("KR Client Response get start\n");
   kr_io2_read (client->io_in);
   kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
-  krad_read_address_from_ebml (client->ebml_in, &response->address);
+  have_crate = kr_have_full_crate (client->ebml_in);
 
-  kr_ebml2_unpack_element_uint32 (client->ebml_in, NULL, &response->notice);
-
-  response->addr = &response->address;
-  
-  if (!client->subscriber) {
-    if (response->notice == EBML_ID_KRAD_SHIPMENT_TERMINATOR) {
-      client->last_delivery_was_final = 1;
-    } else {
-      client->last_delivery_was_final = 0;
-    }
-  }
-
-  //kr_address_debug_print (&response->address);
-  //kr_message_notice_debug_print (response->notice);
-
-  if (krad_message_notice_has_payload (response->notice)) {
-    kr_ebml2_unpack_id (client->ebml_in, &ebml_id, &ebml_data_size);
-    if (ebml_data_size > 0) {
-      //printf ("KR Client Response payload size: %"PRIu64"\n", ebml_data_size);
-      response->size = ebml_data_size;
-      response->buffer = malloc (2048);
-      kr_ebml2_unpack_data (client->ebml_in, response->buffer, ebml_data_size);
-    }
-  }
-  
-  kr_io2_pulled (client->io_in, client->ebml_in->pos);
   kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
-  if (client->io_in->len > 0) {
-    client->have_more = 1;
-  } else {
-    client->have_more = 0;
-  }
-  
-  if (kr_uncrate_int (response, &response->integer)) {
-    response->has_int = 1;
-  }
-  if (kr_uncrate_float (response, &response->real)) {
-    response->has_float = 1;
+
+  if (have_crate) {
+
+    response = kr_response_alloc ();
+    *kr_crate = response;
+
+    response->inside.actual = &response->rep.actual;
+
+
+    krad_read_address_from_ebml (client->ebml_in, &response->address);
+
+    kr_ebml2_unpack_element_uint32 (client->ebml_in, NULL, &response->notice);
+
+    response->addr = &response->address;
+    
+    if (!client->subscriber) {
+      if (response->notice == EBML_ID_KRAD_SHIPMENT_TERMINATOR) {
+        client->last_delivery_was_final = 1;
+      } else {
+        client->last_delivery_was_final = 0;
+      }
+    }
+
+    //kr_address_debug_print (&response->address);
+    //kr_message_notice_debug_print (response->notice);
+
+    if (krad_message_notice_has_payload (response->notice)) {
+      kr_ebml2_unpack_id (client->ebml_in, &ebml_id, &ebml_data_size);
+      if (ebml_data_size > 0) {
+        //printf ("KR Client Response payload size: %"PRIu64"\n", ebml_data_size);
+        response->size = ebml_data_size;
+        response->buffer = malloc (2048);
+        kr_ebml2_unpack_data (client->ebml_in, response->buffer, ebml_data_size);
+      }
+    }
+    
+    kr_io2_pulled (client->io_in, client->ebml_in->pos);
+    kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
+    if (client->io_in->len > 0) {
+      client->have_more = 1;
+    } else {
+      client->have_more = 0;
+    }
+
+    if (kr_uncrate_int (response, &response->integer)) {
+      response->has_int = 1;
+    }
+    if (kr_uncrate_float (response, &response->real)) {
+      response->has_float = 1;
+    }
+
   }
 
   //kr_response_payload_print_raw_ebml (response);

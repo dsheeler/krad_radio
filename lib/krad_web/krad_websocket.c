@@ -799,9 +799,9 @@ static void *krad_websocket_server_run (void *arg) {
                   
                   krad_delivery_handler (kr_ws_client);
                   
-                  //while (kr_wait (kr_ws_client->kr_client, 0)) {
-                  //  krad_delivery_handler (kr_ws_client);
-                  //}
+                  while (kr_wait (kr_ws_client->kr_client, 0)) {
+                    krad_delivery_handler (kr_ws_client);
+                  }
                   if ((cJSON_GetArraySize(kr_ws_client->msgs) > 0) && (kr_ws_client->destroy == 0)) {
                     kr_ws_client->msgz = (char *)&kr_ws_client->buffer[LWS_SEND_BUFFER_PRE_PADDING];
                     if (kr_ws_client->msgstextlen > 0) {
