@@ -38,9 +38,7 @@ int kr_compositor_background (kr_client_t *client, char *filename) {
   kr_ebml2_finish_element (client->ebml2, background);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 
   return 1;
 }
@@ -55,9 +53,7 @@ void kr_compositor_close_display (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, display);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_open_display (kr_client_t *client, int width, int height) {
@@ -70,9 +66,7 @@ void kr_compositor_open_display (kr_client_t *client, int width, int height) {
   kr_ebml2_finish_element (client->ebml2, display);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_snapshot (kr_client_t *client) {
@@ -85,9 +79,7 @@ void kr_compositor_snapshot (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, snap_command);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_snapshot_jpeg (kr_client_t *client) {
@@ -99,9 +91,7 @@ void kr_compositor_snapshot_jpeg (kr_client_t *client) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT_JPEG, &snap_command);
   kr_ebml2_finish_element (client->ebml2, snap_command);
   kr_ebml2_finish_element (client->ebml2, command);
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denominator) {
@@ -118,9 +108,7 @@ void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denom
   kr_ebml2_finish_element (client->ebml2, set_frame_rate);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_set_resolution (kr_client_t *client, int width, int height) {
@@ -137,9 +125,7 @@ void kr_compositor_set_resolution (kr_client_t *client, int width, int height) {
   kr_ebml2_finish_element (client->ebml2, set_resolution);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_info (kr_client_t *client) {
@@ -152,9 +138,7 @@ void kr_compositor_info (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, info_command);
   kr_ebml2_finish_element (client->ebml2, command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *kr_compositor_rep) {
@@ -452,9 +436,7 @@ int kr_compositor_subunit_create (kr_client_t *client,
   kr_ebml2_finish_element (client->ebml2, subunit);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
   
   return 1;
 }
@@ -469,9 +451,7 @@ void kr_compositor_subunit_list (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, list);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address) {
@@ -486,9 +466,7 @@ void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address) 
   kr_ebml2_finish_element (client->ebml2, destroy);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_videoport_destroy_cmd (kr_client_t *client) {
@@ -503,9 +481,7 @@ void kr_videoport_destroy_cmd (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, destroy_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_videoport_create_cmd (kr_client_t *client) {
@@ -520,9 +496,7 @@ void kr_videoport_create_cmd (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, create_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void *, void *), void *pointer) {

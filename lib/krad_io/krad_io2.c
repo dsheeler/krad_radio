@@ -1,14 +1,13 @@
 #include "krad_io2.h"
 
+static int kr_io2_restart (kr_io2_t *io);
+
 // kr_io2_mode_t mode ?
 kr_io2_t *kr_io2_create () {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
   io->fd = -1;
-  io->buf = io->buffer;
-  io->pos = 0;
-  io->len = 0;
-  io->space = KR_IO2_BUF_SZ;
+  kr_io2_restart (io);
   io->size = KR_IO2_BUF_SZ;
   return io; 
 }
@@ -40,7 +39,7 @@ inline void kr_io2_advance (kr_io2_t *io, size_t bytes) {
   io->pos += bytes;
   io->len += bytes;
   io->space -= bytes;
-  io->buf = io->buffer + io->pos;
+  io->buf += io->pos;
 }
 
 inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
@@ -57,6 +56,14 @@ int kr_io2_write (kr_io2_t *io) {
   return ret;
 }
 
+static int kr_io2_restart (kr_io2_t *io) {
+  io->buf = io->buffer;
+  io->rd_buf = io->buffer;
+  io->pos = 0;
+  io->len = 0;
+  io->space = KR_IO2_BUF_SZ;
+}
+
 int kr_io2_flush (kr_io2_t *io) {
 
   int ret;
@@ -69,14 +76,20 @@ int kr_io2_flush (kr_io2_t *io) {
     return -1;
   }
 
-  io->buf = io->buffer;
-  io->pos = 0;
-  io->len = 0;
+  kr_io2_restart (io);
 
   return 0;
 }
 
-
+inline void kr_io2_pulled (kr_io2_t *io, size_t bytes) {
+  io->len -= bytes;
+  io->rd_buf += bytes;
+  
+  if (io->len == 0) {
+    kr_io2_restart (io);
+  }
+  
+}
 
 int kr_io2_read (kr_io2_t *io) {
 

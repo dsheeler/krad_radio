@@ -1,6 +1,6 @@
 #include "krad_ipc_client.h"
 
-static int krad_ipc_client_init (krad_ipc_client_t *client);
+static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms);
 
 void krad_ipc_disconnect (krad_ipc_client_t *client) {
   if (client != NULL) {
@@ -11,7 +11,7 @@ void krad_ipc_disconnect (krad_ipc_client_t *client) {
   }
 }
 
-krad_ipc_client_t *krad_ipc_connect (char *sysname) {
+krad_ipc_client_t *krad_ipc_connect (char *sysname, int timeout_ms) {
   
   krad_ipc_client_t *client = calloc (1, sizeof (krad_ipc_client_t));
   
@@ -44,7 +44,7 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname) {
     }
   }
   
-  if (krad_ipc_client_init (client) == 0) {
+  if (krad_ipc_client_init (client, timeout_ms) == 0) {
     printke ("Krad IPC Client: Failed to init!");
     krad_ipc_disconnect (client);
     return NULL;
@@ -53,7 +53,7 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname) {
   return client;
 }
 
-static int krad_ipc_client_init (krad_ipc_client_t *client) {
+static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
 
   int rc;
   char port_string[6];
@@ -144,6 +144,8 @@ static int krad_ipc_client_init (krad_ipc_client_t *client) {
       return 0;
     }
   }
+  
+  krad_system_set_socket_nonblocking (client->sd);
 
   return client->sd;
 }

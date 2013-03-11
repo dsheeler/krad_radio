@@ -226,9 +226,9 @@ kr_client_t *kr_client_create (char *client_name);
  * @return connection handle or NULL on error
  */
 int kr_connect (kr_client_t *client, char *sysname);
+int kr_connect_full (kr_client_t *client, char *sysname, int timeout_ms);
 
-
-int kr_connect_remote (kr_client_t *client, char *host, int port);
+int kr_connect_remote (kr_client_t *client, char *host, int port, int timeout_ms);
 
 
 int kr_connected (kr_client_t *client);
@@ -254,6 +254,8 @@ int kr_client_get_fd (kr_client_t *client);
 
 
 int kr_client_sync (kr_client_t *client);
+int kr_client_push (kr_client_t *client);
+int kr_client_want_out (kr_client_t *client);
 
 /**
  * @brief subscribe to broadcast messages of a specific type on one station

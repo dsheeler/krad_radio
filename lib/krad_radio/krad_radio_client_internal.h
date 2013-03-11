@@ -24,7 +24,8 @@ struct kr_client_St {
   kr_ebml2_t *ebml_in;
   kr_io2_t *io_in;
   
-  
+  int readable;
+  int have_more;
   
 };
 

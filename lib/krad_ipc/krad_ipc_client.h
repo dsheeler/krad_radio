@@ -52,7 +52,7 @@ struct krad_ipc_client_St {
 	struct utsname unixname;
 };
 
-krad_ipc_client_t *krad_ipc_connect (char *sysname);
+krad_ipc_client_t *krad_ipc_connect (char *sysname, int timeout_ms);
 void krad_ipc_disconnect (krad_ipc_client_t *client);
 int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd);
 

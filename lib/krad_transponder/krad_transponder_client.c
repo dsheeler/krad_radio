@@ -17,9 +17,7 @@ void kr_transponder_receiver_enable (kr_client_t *client, int port) {
   kr_ebml2_finish_element (client->ebml2, enable_linker);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_receiver_disable (kr_client_t *client) {
@@ -32,9 +30,7 @@ void kr_transponder_receiver_disable (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, disable_linker);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_transmitter_enable (kr_client_t *client, int port) {
@@ -50,9 +46,7 @@ void kr_transponder_transmitter_enable (kr_client_t *client, int port) {
   kr_ebml2_finish_element (client->ebml2, enable_transmitter);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_transmitter_disable (kr_client_t *client) {
@@ -65,9 +59,7 @@ void kr_transponder_transmitter_disable (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, disable_transmitter);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_capture (kr_client_t *client, krad_link_video_source_t video_source, char *device,
@@ -105,9 +97,7 @@ void kr_transponder_capture (kr_client_t *client, krad_link_video_source_t video
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_play_remote (kr_client_t *client, char *host, int port, char *mount) {
@@ -131,9 +121,7 @@ void kr_transponder_play_remote (kr_client_t *client, char *host, int port, char
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_play (kr_client_t *client, char *path) {
@@ -154,9 +142,7 @@ void kr_transponder_play (kr_client_t *client, char *path) {
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_transmit (kr_client_t *client, krad_link_av_mode_t av_mode,
@@ -298,9 +284,7 @@ void kr_transponder_transmit (kr_client_t *client, krad_link_av_mode_t av_mode,
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_record (kr_client_t *client, krad_link_av_mode_t av_mode, char *filename, char *codecs,
@@ -430,9 +414,7 @@ void kr_transponder_record (kr_client_t *client, krad_link_av_mode_t av_mode, ch
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_adapters (kr_client_t *client) {
@@ -446,9 +428,7 @@ void kr_transponder_adapters (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, adapters);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_list (kr_client_t *client) {
@@ -461,9 +441,7 @@ void kr_transponder_list (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, list_links);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_destroy (kr_client_t *client, int number) {
@@ -479,9 +457,7 @@ void kr_transponder_destroy (kr_client_t *client, int number) {
   kr_ebml2_finish_element (client->ebml2, destroy_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_update (kr_client_t *client, int number, uint32_t ebml_id, int newval) {
@@ -498,9 +474,7 @@ void kr_transponder_update (kr_client_t *client, int number, uint32_t ebml_id, i
   kr_ebml2_finish_element (client->ebml2, update_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_transponder_update_str (kr_client_t *client, int number, uint32_t ebml_id, char *newval) {
@@ -517,9 +491,7 @@ void kr_transponder_update_str (kr_client_t *client, int number, uint32_t ebml_i
   kr_ebml2_finish_element (client->ebml2, update_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 int krad_link_rep_to_string (krad_link_rep_t *krad_link, char *text) {

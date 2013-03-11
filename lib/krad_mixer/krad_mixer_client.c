@@ -41,9 +41,7 @@ void kr_mixer_portgroup_list (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, get_portgroups);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_audioport_destroy_cmd (kr_client_t *client) {
@@ -57,9 +55,7 @@ void kr_audioport_destroy_cmd (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, destroy_audioport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_audioport_create_cmd (kr_client_t *client, krad_mixer_portgroup_direction_t direction) {
@@ -79,9 +75,7 @@ void kr_audioport_create_cmd (kr_client_t *client, krad_mixer_portgroup_directio
   kr_ebml2_finish_element (client->ebml2, create_audioport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 
@@ -222,9 +216,7 @@ void kr_mixer_portgroup_xmms2_cmd (kr_client_t *client, char *portgroupname, cha
   kr_ebml2_finish_element (client->ebml2, bind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, char *ipc_path) {
@@ -239,9 +231,7 @@ void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, ch
   kr_ebml2_finish_element (client->ebml2, bind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname) {
@@ -255,9 +245,7 @@ void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname) 
   kr_ebml2_finish_element (client->ebml2, unbind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_set_sample_rate (kr_client_t *client, int sample_rate) {
@@ -273,9 +261,7 @@ void kr_mixer_set_sample_rate (kr_client_t *client, int sample_rate) {
   kr_ebml2_finish_element (client->ebml2, set_sample_rate);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_info (kr_client_t *client) {
@@ -288,9 +274,7 @@ void kr_mixer_info (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, get_info);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_plug_portgroup (kr_client_t *client, char *name, char *remote_name) {
@@ -306,9 +290,7 @@ void kr_mixer_plug_portgroup (kr_client_t *client, char *name, char *remote_name
   kr_ebml2_finish_element (client->ebml2, plug);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_name) {
@@ -324,9 +306,7 @@ void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_na
   kr_ebml2_finish_element (client->ebml2, unplug);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction, int channels) {
@@ -343,9 +323,7 @@ void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction
   kr_ebml2_finish_element (client->ebml2, create);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 
@@ -362,9 +340,7 @@ void kr_mixer_push_tone (kr_client_t *client, char *tone) {
   kr_ebml2_finish_element (client->ebml2, push);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_update_portgroup_map_channel (kr_client_t *client, char *portgroupname, int in_channel, int out_channel) {
@@ -386,9 +362,7 @@ void kr_mixer_update_portgroup_map_channel (kr_client_t *client, char *portgroup
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgroupname, int in_channel, int out_channel) {
@@ -410,9 +384,7 @@ void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgr
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 
@@ -430,9 +402,7 @@ void kr_mixer_set_portgroup_crossfade_group (kr_client_t *client, char *portgrou
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname) {
@@ -448,9 +418,7 @@ void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname) {
   kr_ebml2_finish_element (client->ebml2, info);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_remove_portgroup (kr_client_t *client, char *name) {
@@ -466,9 +434,7 @@ void kr_mixer_remove_portgroup (kr_client_t *client, char *name) {
   kr_ebml2_finish_element (client->ebml2, destroy);
   kr_ebml2_finish_element (client->ebml2, command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
@@ -491,9 +457,7 @@ void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *control_name, float control_value, int duration) {
@@ -512,9 +476,7 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_t *portgroup_rep) {

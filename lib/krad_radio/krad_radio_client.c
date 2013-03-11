@@ -17,11 +17,32 @@ static int kr_radio_response_to_int (kr_crate_t *crate, int *integer);
 static int kr_ebml_to_remote_status_rep (kr_ebml2_t *ebml, kr_remote_t *remote);
 static int kr_ebml_to_tag_rep (kr_ebml2_t *ebml, kr_tag_t *tag);
 
+void frak_print_raw_ebml (char *buffer, int len) {
+
+  int i;
+
+  printf ("\nRaw EBML: \n");
+  for (i = 0; i < len; i++) {
+    printf ("%02X", buffer[i]);
+  }
+  printf ("\nEnd EBML\n");
+}
+
 int kr_client_sync (kr_client_t *client) {
-  kr_io2_advance (client->io, client->ebml2->pos);
   kr_io2_flush (client->io);
   kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
   return 0;
+}
+
+int kr_client_push (kr_client_t *client) {
+  kr_io2_advance (client->io, client->ebml2->pos);
+  if (client->autosync == 1) {
+    kr_client_sync (client);
+  }
+}
+
+int kr_client_want_out (kr_client_t *client) {
+  return kr_io2_want_out (client->io);
 }
 
 static int kr_remote_port_valid (int port);
@@ -47,7 +68,7 @@ kr_client_t *kr_client_create (char *client_name) {
   return client;
 }
 
-int kr_connect_remote (kr_client_t *client, char *host, int port) {
+int kr_connect_remote (kr_client_t *client, char *host, int port, int timeout_ms) {
   
   char url[532];
   int len;
@@ -62,7 +83,7 @@ int kr_connect_remote (kr_client_t *client, char *host, int port) {
 
   snprintf (url, sizeof(url), "%s:%d", host, port);
 
-  return kr_connect (client, url);
+  return kr_connect_full (client, url, timeout_ms);
 }
 
 
@@ -74,27 +95,45 @@ int kr_check_connection (kr_client_t *client) {
   uint32_t read_version;
 
   kr_ebml2_pack_header (client->ebml2, KRAD_IPC_CLIENT_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
+  kr_client_push (client);
   kr_client_sync (client);
 
-  usleep (10000);
+
+  kr_poll (client, 25);
   kr_io2_read (client->io_in);
-  //kr_ebml2_set_buffer ( client->ebml_in, client->io_in->buf, client->io_in->len );
+  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
+    printf ("len %zu\n", client->io_in->len);
+
+  frak_print_raw_ebml (client->io_in->rd_buf, client->io_in->len);
 
   ret = kr_ebml2_unpack_header (client->ebml_in, doctype, sizeof(doctype),
                                 &version, &read_version);
-
-  if ((version == KRAD_IPC_DOCTYPE_VERSION) && (read_version == KRAD_IPC_DOCTYPE_READ_VERSION) &&
-      (strlen(KRAD_IPC_CLIENT_DOCTYPE) == strlen(doctype)) &&
-      (strncmp(doctype, KRAD_IPC_CLIENT_DOCTYPE, strlen(KRAD_IPC_CLIENT_DOCTYPE)) == 0)) {
-  
+  if (ret == 0) {
+    if ((version == KRAD_IPC_DOCTYPE_VERSION) && (read_version == KRAD_IPC_DOCTYPE_READ_VERSION) &&
+        (strlen(KRAD_IPC_SERVER_DOCTYPE) == strlen(doctype)) &&
+        (strncmp(doctype, KRAD_IPC_SERVER_DOCTYPE, strlen(KRAD_IPC_SERVER_DOCTYPE)) == 0)) {
+    
+    } else {
+      printf ("frak %u %u %s \n", version, read_version, doctype);
+    }
+  } else {
+    printf ("frakr %d\n", ret);
   }
   
-  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->buf, client->io_in->len );
+    printf ("frdsdakr %zu\n", client->ebml_in->pos);
+  kr_io2_pulled (client->io_in, client->io_in->len);  
+  //kr_io2_pulled (client->io_in, client->ebml_in->pos);
+  
+  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
   return 0;
 }
 
 int kr_connect (kr_client_t *client, char *sysname) {
+  return kr_connect_full (client, sysname, 3000);
+}
+
+int kr_connect_full (kr_client_t *client, char *sysname, int timeout_ms) {
 
   if (client == NULL) {
     return 0;
@@ -102,7 +141,7 @@ int kr_connect (kr_client_t *client, char *sysname) {
   if (kr_connected (client)) {
     kr_disconnect (client);
   }
-  client->krad_ipc_client = krad_ipc_connect (sysname);
+  client->krad_ipc_client = krad_ipc_connect (sysname, timeout_ms);
   if (client->krad_ipc_client != NULL) {
 
 
@@ -139,6 +178,7 @@ int kr_disconnect (kr_client_t *client) {
     if (kr_connected (client)) {
       krad_ipc_disconnect (client->krad_ipc_client);
       client->krad_ipc_client = NULL;
+      client->readable = 0;
       
       if (client->io_in != NULL) {
         kr_io2_destroy (&client->io_in);
@@ -204,9 +244,7 @@ void kr_broadcast_subscribe (kr_client_t *client, uint32_t broadcast_id) {
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, broadcast_id);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 
   client->subscriber = 1;
 }
@@ -277,12 +315,25 @@ char *kr_response_alloc_string (int length) {
 
 int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
 
+  int ret;
   struct pollfd pollfds[1];
+
+  if (client->have_more == 1) {
+    return 1;
+  }
 
   pollfds[0].fd = client->krad_ipc_client->sd;
   pollfds[0].events = POLLIN;
 
-  return poll (pollfds, 1, timeout_ms);
+  ret = poll (pollfds, 1, timeout_ms);
+
+  if (pollfds[0].revents & POLLIN) {
+    client->readable = 1;
+  } else {
+    client->readable = 0;
+  }
+
+  return ret;
 }
 
 int kr_delivery_final (kr_client_t *client) {
@@ -799,10 +850,9 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
 
   response->inside.actual = &response->rep.actual;
 
-  //printf ("KR Client Response get start\n");
-  usleep (20000);
+  printf ("KR Client Response get start\n");
   kr_io2_read (client->io_in);
-  //kr_ebml2_set_buffer ( client->ebml_in, client->io_in->buf, client->io_in->len );
+  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
   krad_read_address_from_ebml (client->ebml_in, &response->address);
 
@@ -829,6 +879,14 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
       response->buffer = malloc (2048);
       kr_ebml2_unpack_data (client->ebml_in, response->buffer, ebml_data_size);
     }
+  }
+  
+  kr_io2_pulled (client->io_in, client->ebml_in->pos);
+  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
+  if (client->io_in->len > 0) {
+    client->have_more = 1;
+  } else {
+    client->have_more = 0;
   }
   
   if (kr_uncrate_int (response, &response->integer)) {
@@ -897,9 +955,7 @@ void kr_set_dir (kr_client_t *client, char *dir) {
   kr_ebml2_finish_element (client->ebml2, setdir);
   kr_ebml2_finish_element (client->ebml2, command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_system_info (kr_client_t *client) {
@@ -912,9 +968,7 @@ void kr_system_info (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, info_command);
   kr_ebml2_finish_element (client->ebml2, command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 static int kr_remote_port_valid (int port) {
@@ -934,9 +988,7 @@ void kr_remote_list (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, remote_status_command);
   kr_ebml2_finish_element (client->ebml2, command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 int kr_remote_on (kr_client_t *client, char *interface, int port) {
@@ -958,9 +1010,7 @@ int kr_remote_on (kr_client_t *client, char *interface, int port) {
   kr_ebml2_finish_element (client->ebml2, enable_remote);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
   return 1;
 }
 
@@ -984,9 +1034,7 @@ int kr_remote_off (kr_client_t *client, char *interface, int port) {
   kr_ebml2_finish_element (client->ebml2, disable_remote);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
   return 1;
 }
 
@@ -1007,9 +1055,7 @@ void kr_web_enable (kr_client_t *client, int http_port, int websocket_port,
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_web_disable (kr_client_t *client) {
@@ -1022,9 +1068,7 @@ void kr_web_disable (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, weboff);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_osc_enable (kr_client_t *client, int port) {
@@ -1038,9 +1082,7 @@ void kr_osc_enable (kr_client_t *client, int port) {
   kr_ebml2_finish_element (client->ebml2, enable_osc);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_osc_disable (kr_client_t *client) {
@@ -1053,9 +1095,7 @@ void kr_osc_disable (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, disable_osc);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_tags (kr_client_t *client, char *item) {
@@ -1075,9 +1115,7 @@ void kr_tags (kr_client_t *client, char *item) {
   kr_ebml2_finish_element (client->ebml2, get_tags);
   kr_ebml2_finish_element (client->ebml2, radio_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_tag (kr_client_t *client, char *item, char *tag_name) {
@@ -1102,9 +1140,7 @@ void kr_tag (kr_client_t *client, char *item, char *tag_name) {
   kr_ebml2_finish_element (client->ebml2, get_tag);
   kr_ebml2_finish_element (client->ebml2, radio_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_set_tag (kr_client_t *client, char *item, char *tag_name, char *tag_value) {
@@ -1129,9 +1165,7 @@ void kr_set_tag (kr_client_t *client, char *item, char *tag_name, char *tag_valu
   kr_ebml2_finish_element (client->ebml2, set_tag);
   kr_ebml2_finish_element (client->ebml2, radio_command);
     
-  if (client->autosync == 1) {
-    kr_client_sync (client);
-  }
+  kr_client_push (client);
 }
 
 void kr_address_debug_print (kr_address_t *addr) {
