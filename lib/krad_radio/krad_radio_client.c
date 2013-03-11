@@ -319,7 +319,7 @@ int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
   struct pollfd pollfds[1];
 
   if (client->have_more == 1) {
-    client->have_more = 0;
+    //client->have_more = 0;
     return 1;
   }
 
@@ -850,7 +850,7 @@ int kr_have_full_crate (kr_ebml2_t *ebml) {
 
   if ((ret == 0) && (size > 0)) {
   
-  printf ("\nthe story is:  %u %u %u\n", size, ebml->len, ebml->pos);
+  //printf ("\nthe story is:  %u %u %u\n", size, ebml->len, ebml->pos);
   
     if (size <= (ebml->len - ebml->pos)) {
       return 1;
@@ -873,8 +873,11 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
   ebml_id = 0;
   ebml_data_size = 0;
 
-  //printf ("KR Client Response get start\n");
-  kr_io2_read (client->io_in);
+  if (client->have_more == 1) {
+    client->have_more = 0;
+  } else {
+    kr_io2_read (client->io_in);
+  }
   kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
   have_crate = kr_have_full_crate (client->ebml_in);
@@ -915,6 +918,13 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
         kr_ebml2_unpack_data (client->ebml_in, response->buffer, ebml_data_size);
       }
     }
+
+    if (kr_uncrate_int (response, &response->integer)) {
+      response->has_int = 1;
+    }
+    if (kr_uncrate_float (response, &response->real)) {
+      response->has_float = 1;
+    }
     
     kr_io2_pulled (client->io_in, client->ebml_in->pos);
     kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
@@ -923,17 +933,7 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
     } else {
       client->have_more = 0;
     }
-
-    if (kr_uncrate_int (response, &response->integer)) {
-      response->has_int = 1;
-    }
-    if (kr_uncrate_float (response, &response->real)) {
-      response->has_float = 1;
-    }
-
   }
-
-  //kr_response_payload_print_raw_ebml (response);
 }
 
 int kr_crate_has_float (kr_crate_t *crate) {
