@@ -40,6 +40,7 @@ struct libwebsocket_protocols protocols[] = {
 
 static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
   
+  kr_unit_control_t uc;
   int sub_id;
   float floatval;
   cJSON *cmd;
@@ -146,25 +147,40 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
       }
     }
     
-    /*
     if ((part != NULL) && (strcmp(part->valuestring, "kradcompositor") == 0)) {
-      part = cJSON_GetObjectItem (cmd, "cmd");    
+      part = cJSON_GetObjectItem (cmd, "cmd");
       if ((part != NULL) && (strcmp(part->valuestring, "jsnap") == 0)) {
         kr_compositor_snapshot_jpeg (kr_ws_client->kr_client);
       }  
       if ((part != NULL) && (strcmp(part->valuestring, "snap") == 0)) {
         kr_compositor_snapshot (kr_ws_client->kr_client);
       }
-      if ((part != NULL) && (strcmp(part->valuestring, "setsprite") == 0)) {
-      
-        part2 = cJSON_GetObjectItem (cmd, "x");
-        part3 = cJSON_GetObjectItem (cmd, "y");
-      
-        //kr_compositor_set_sprite (kr_ws_client->kr_client, 0, part2->valueint, part3->valueint,  0, 4,
-        //                          1.0f, 1.0f, 0.0f);
+      if ((part != NULL) && (strcmp(part->valuestring, "update_sprite") == 0)) {
+        part = cJSON_GetObjectItem (cmd, "sprite_num");
+        part2 = cJSON_GetObjectItem (cmd, "control_name");
+        part3 = cJSON_GetObjectItem (cmd, "value");
+        if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {
+            //floatval = part3->valuedouble;
+            //kr_mixer_set_control (kr_ws_client->kr_client, part->valuestring, part2->valuestring, floatval, 0);
+            //printk ("ahha sprite to %d mofuker", part3->valueint);
+            memset (&uc, 0, sizeof(uc));
+            
+            uc.address.path.unit = KR_COMPOSITOR;
+            uc.address.path.subunit.compositor_subunit = KR_SPRITE;
+            uc.address.id.number = atoi(part->valuestring);
+            uc.address.control.compositor_control = krad_string_to_compositor_control (part2->valuestring);
+            if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
+                (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
+              uc.value.real = part3->valuedouble;
+            } else {
+              uc.value.integer = part3->valueint;
+            }
+            
+            kr_unit_control_set (kr_ws_client->kr_client, &uc);
+            
+        }
       }
     }
-    */
    
     if ((part != NULL) && (strcmp(part->valuestring, "kradradio") == 0)) {
       part = cJSON_GetObjectItem (cmd, "cmd");    
@@ -356,8 +372,22 @@ void krad_websocket_add_sprite ( kr_ws_client_t *kr_ws_client, kr_sprite_t *spri
 
   int i;
   cJSON *msg;
+  char spritenumstr[32];
+  
+  sprintf (spritenumstr, "%d", kr_ws_client->sprite_num);
 
-  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+  cJSON_AddStringToObject (msg, "com", "kradcompositor");
+  
+  cJSON_AddStringToObject (msg, "cmd", "add_sprite");
+  cJSON_AddStringToObject (msg, "sprite_num", spritenumstr);
+  cJSON_AddNumberToObject (msg, "x", sprite->controls.x);
+  cJSON_AddNumberToObject (msg, "y", sprite->controls.y);
+  cJSON_AddNumberToObject (msg, "r", sprite->controls.rotation);
+  cJSON_AddNumberToObject (msg, "o", sprite->controls.opacity);
+
+  kr_ws_client->sprite_num++;
   
 }
 

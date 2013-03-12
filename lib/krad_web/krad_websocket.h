@@ -42,6 +42,7 @@ struct kr_ws_client_St {
   int kr_client_info;
   int hello_sent;
   int destroy;
+  int sprite_num;
   struct libwebsocket_context *context;
   struct libwebsocket *wsi;
 };
