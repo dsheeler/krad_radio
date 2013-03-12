@@ -352,6 +352,42 @@ void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer)
   cJSON_AddNumberToObject (msg, "sample_rate", mixer->sample_rate);
 }
 
+void krad_websocket_add_sprite ( kr_ws_client_t *kr_ws_client, kr_sprite_t *sprite) {
+
+  int i;
+  cJSON *msg;
+
+  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+}
+
+void krad_websocket_add_vector ( kr_ws_client_t *kr_ws_client, kr_vector_t *vector) {
+
+  int i;
+  cJSON *msg;
+
+  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+}
+
+void krad_websocket_add_text ( kr_ws_client_t *kr_ws_client, kr_text_t *text) {
+
+  int i;
+  cJSON *msg;
+
+  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+}
+
+void krad_websocket_add_videoport ( kr_ws_client_t *kr_ws_client, kr_port_t *videoport) {
+
+  int i;
+  cJSON *msg;
+
+  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+}
+
 /* Krad API Handler */
 
 static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
@@ -361,6 +397,18 @@ static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
       return;
     case KR_PORTGROUP:
       krad_websocket_add_portgroup (kr_ws_client, crate->inside.portgroup);
+      return;
+    case KR_SPRITE:
+      krad_websocket_add_sprite (kr_ws_client, crate->inside.sprite);
+      return;
+    case KR_VECTOR:
+      krad_websocket_add_vector (kr_ws_client, crate->inside.vector);
+      return;
+    case KR_TEXT:
+      krad_websocket_add_text (kr_ws_client, crate->inside.text);
+      return;
+    case KR_VIDEOPORT:
+      krad_websocket_add_videoport (kr_ws_client, crate->inside.videoport);
       return;
   }
 }
@@ -604,6 +652,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_mixer_info (kr_ws_client->kr_client);
       //kr_compositor_info (kr_ws_client->kr_client);
       kr_mixer_portgroup_list (kr_ws_client->kr_client);
+      kr_compositor_subunit_list (kr_ws_client->kr_client);
       //kr_transponder_decklink_list (kr_ws_client->kr_client);
       //kr_transponder_list (kr_ws_client->kr_client);
       //kr_tags (kr_ws_client->kr_client, NULL);

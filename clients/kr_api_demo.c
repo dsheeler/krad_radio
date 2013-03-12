@@ -26,6 +26,30 @@ void my_compositor_print (kr_compositor_t *compositor) {
 					 ((float)compositor->fps_numerator / (float)compositor->fps_denominator));
 }
 
+void my_sprite_print (kr_sprite_t *sprite) {
+
+  printf ("Sprite stuf: %d %f\n",
+					 sprite->controls.width, sprite->controls.rotation);
+}
+
+void my_text_print (kr_text_t *text) {
+
+  printf ("text stuf: %d %f\n",
+					 text->controls.width, text->controls.rotation);
+}
+
+void my_vector_print (kr_vector_t *vector) {
+
+  printf ("vector stuf: %d %f\n",
+					 vector->controls.width, vector->controls.rotation);
+}
+
+void my_videoport_print (kr_port_t *videoport) {
+
+  printf ("videoport stuf: %d %f\n",
+					 videoport->controls.width, videoport->controls.rotation);
+}
+
 void my_mixer_print (kr_mixer_t *mixer) {
 
   printf ("Mixer Sample Rate: %d\n",
@@ -40,6 +64,18 @@ void my_print (kr_crate_t *crate) {
   if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_UNIT)) {
     my_compositor_print (crate->inside.compositor);
   }
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_SPRITE)) {
+    my_sprite_print (crate->inside.sprite);
+  }
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_TEXT)) {
+    my_text_print (crate->inside.text);
+  } 
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VECTOR)) {
+    my_vector_print (crate->inside.vector);
+  } 
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VIDEOPORT)) {
+    my_videoport_print (crate->inside.videoport);
+  } 
   if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     my_portgroup_print (crate->inside.portgroup);
   }
@@ -159,6 +195,9 @@ void one_shot_demo (kr_client_t *client) {
   accept_some_deliveries (client);
 
   kr_mixer_portgroups (client);
+  accept_some_deliveries (client);
+  
+  kr_compositor_subunit_list (client);
   accept_some_deliveries (client);
 }
 

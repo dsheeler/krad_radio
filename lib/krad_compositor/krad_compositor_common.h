@@ -7,7 +7,7 @@
 #include "krad_system.h"
 
 typedef enum {
-  KR_VIDEOPORT = 1,
+  KR_VIDEOPORT = 31,
   KR_SPRITE,
   KR_TEXT,
   KR_VECTOR,
