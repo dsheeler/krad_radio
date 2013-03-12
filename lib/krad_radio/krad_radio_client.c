@@ -1701,7 +1701,7 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
       kr_ebml2_finish_element (client->ebml2, my_command);
 
       if (client->autosync == 1) {
-        kr_client_sync (client);
+        kr_client_push (client);
       }
 
       break;

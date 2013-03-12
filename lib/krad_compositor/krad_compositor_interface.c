@@ -284,6 +284,16 @@ int krad_compositor_handler ( krad_compositor_t *krad_compositor, krad_ipc_serve
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       numbers[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       krad_compositor_subunit_update (krad_compositor, &unit_control);
+
+      if (unit_control.data_type == KR_FLOAT) {
+        krad_radio_broadcast_subunit_update ( krad_ipc->ipc_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
+                                              unit_control.data_type, (void *)&unit_control.value.real, krad_ipc->current_client );
+      }
+      if (unit_control.data_type == KR_INT32) {
+        krad_radio_broadcast_subunit_update ( krad_ipc->ipc_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
+                                              unit_control.data_type, (void *)&unit_control.value.integer, krad_ipc->current_client );
+      }
+      
       break;  
     case EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT:
       address.path.unit = KR_COMPOSITOR;
