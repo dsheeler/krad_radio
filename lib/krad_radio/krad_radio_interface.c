@@ -221,7 +221,7 @@ int krad_radio_address_to_ebml (krad_ebml_t *krad_ebml, uint64_t *element_loc, k
   return 0;
 }
 
-int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
+int krad_radio_handler ( void *ptr ) {
 
 	krad_radio_t *krad_radio = (krad_radio_t *)ptr;
 	krad_ipc_server_t *kr_ipc;
@@ -274,7 +274,7 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
 			ret = krad_transponder_handler ( krad_radio->krad_transponder, kr_ipc );
       break;
 		case EBML_ID_KRAD_RADIO_CMD:
-			return krad_radio_handler ( output, output_len, ptr );
+			return krad_radio_handler ( ptr );
 		case EBML_ID_KRAD_RADIO_CMD_LIST_TAGS:
 			//printk ("LIST_TAGS");
 			krad_ebml_read_element ( kr_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
@@ -363,10 +363,8 @@ int krad_radio_handler ( void *output, int *output_len, void *ptr ) {
                                                                  EBML_ID_KRAD_SUBUNIT_INFO,
                                                                  &response);
           krad_ipc_server_payload_start ( kr_ipc, &payload_loc);
-	        //krad_ebml_start_element (kr_ipc->current_client->krad_ebml2, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &element);
 			    krad_ipc_server_respond_string ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, kr_ipc->tcp_interface[i]);
 			    krad_ipc_server_respond_number ( kr_ipc, EBML_ID_KRAD_RADIO_REMOTE_PORT, kr_ipc->tcp_port[i]);
-	        //krad_ebml_finish_element (kr_ipc->current_client->krad_ebml2, element);
           krad_ipc_server_payload_finish ( kr_ipc, payload_loc );
           krad_ipc_server_response_finish ( kr_ipc, response );
         }

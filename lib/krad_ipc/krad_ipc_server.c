@@ -79,21 +79,6 @@ static krad_ipc_server_t *krad_ipc_server_init (char *appname, char *sysname) {
 
   listen (krad_ipc_server->sd, SOMAXCONN);
 
-  krad_ipc_server->flags = fcntl (krad_ipc_server->sd, F_GETFL, 0);
-
-  if (krad_ipc_server->flags == -1) {
-    krad_ipc_server_destroy (krad_ipc_server);
-    return NULL;
-  }
-/*
-  krad_ipc_server->flags |= O_NONBLOCK;
-
-  krad_ipc_server->flags = fcntl (krad_ipc_server->sd, F_SETFL, krad_ipc_server->flags);
-  if (krad_ipc_server->flags == -1) {
-    krad_ipc_server_destroy (krad_ipc_server);
-    return NULL;
-  }
-*/  
   return krad_ipc_server;
 }
 
@@ -175,7 +160,7 @@ int krad_ipc_server_recvfd (krad_ipc_server_client_t *client) {
   sockets[0].fd = client->sd;
   sockets[0].events = POLLIN;
 
-  ret = poll (sockets, 1, KRAD_IPC_SERVER_TIMEOUT_MS);
+  ret = poll (sockets, 1, 100);
 
   if (ret > 0) {
 
@@ -351,7 +336,6 @@ static krad_ipc_server_client_t *krad_ipc_server_accept_client (krad_ipc_server_
   int i;
   struct sockaddr_un sin;
   socklen_t sin_len;
-  int flags;
     
   while (client == NULL) {
     for(i = 0; i < KRAD_IPC_SERVER_MAX_CLIENTS; i++) {
@@ -370,22 +354,6 @@ static krad_ipc_server_client_t *krad_ipc_server_accept_client (krad_ipc_server_
   client->sd = accept (sd, (struct sockaddr *)&sin, &sin_len);
 
   if (client->sd > 0) {
-
-    flags = fcntl (client->sd, F_GETFL, 0);
-
-    if (flags == -1) {
-      close (client->sd);
-      return NULL;
-    }
-/*
-    flags |= O_NONBLOCK;
-
-    flags = fcntl (client->sd, F_SETFL, flags);
-    if (flags == -1) {
-      close (client->sd);
-      return NULL;
-    }
-*/
     client->active = 1;
     client->krad_ebml = krad_ebml_open_buffer_nk2 (KRAD_EBML_IO_READONLY);
     krad_ipc_server_update_pollfds (client->krad_ipc_server);
@@ -411,12 +379,12 @@ static void krad_ipc_disconnect_client (krad_ipc_server_client_t *client) {
     krad_ebml_destroy (client->krad_ebml2);
     client->krad_ebml2 = NULL;
   }
-  client->input_buffer_pos = 0;
-  client->output_buffer_pos = 0;
+
+  client->sd = 0;
   client->broadcasts = 0;
   client->confirmed = 0;
+  client->input_buffer_pos = 0;
   memset (client->input_buffer, 0, sizeof(client->input_buffer));
-  memset (client->output_buffer, 0, sizeof(client->output_buffer));
   client->active = 0;
 
   krad_ipc_server_update_pollfds (client->krad_ipc_server);
@@ -882,8 +850,7 @@ static void *krad_ipc_server_run_thread (void *arg) {
               
                 while (krad_ebml_io_buffer_read_space (&client->krad_ebml->io_adapter)) {
                   client->krad_ipc_server->current_client = client; /* single thread has a few perks */
-                  client->krad_ipc_server->handler (client->output_buffer, &client->command_response_len, client->krad_ipc_server->pointer);
-                  //printk ("Krad IPC Server: CMD Response %d %d bytes\n", resp, client->command_response_len);
+                  client->krad_ipc_server->handler (client->krad_ipc_server->pointer);
                   krad_ebml_write_sync (krad_ipc_server->current_client->krad_ebml2);
                 }
               }
@@ -977,7 +944,7 @@ void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server) {
 }
 
 krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname,
-                                           int handler (void *, int *, void *),
+                                           int handler (void *),
                                            void *pointer) {
 
   krad_ipc_server_t *krad_ipc_server;
