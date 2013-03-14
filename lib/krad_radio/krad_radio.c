@@ -136,7 +136,11 @@ static krad_radio_t *krad_radio_create (char *sysname) {
     return NULL;
   }  
   
-  krad_radio->remote.krad_ipc = krad_ipc_server_create ( "krad_radio", sysname, krad_radio_handler, krad_radio );
+  krad_radio->remote.krad_ipc = krad_ipc_server_create ( "krad_radio", sysname,
+                                                         krad_radio_client_create,
+                                                         krad_radio_client_destroy,
+                                                         krad_radio_client_handler,
+                                                         krad_radio );
   
   if (krad_radio->remote.krad_ipc == NULL) {
     krad_radio_shutdown (krad_radio);
@@ -181,7 +185,12 @@ void krad_radio_daemon (char *sysname) {
   krad_radio = krad_radio_create (sysname);
 
   if (krad_radio != NULL) {
+
     krad_radio_start ( krad_radio );
+  
+    //FIXME
+    krad_radio_set_dir ( krad_radio, "/home/oneman/bongo" );
+  
     krad_radio_wait ( krad_radio );
     krad_radio_shutdown ( krad_radio );
   }

@@ -4,7 +4,7 @@ static inline void rmemcpy (void *dst, void *src, int len);
 static inline int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len);
 static inline int kr_ebml2_runpack (kr_ebml2_t *ebml, void *buffer, size_t len);
 static inline uint32_t kr_ebml2_length (unsigned char byte);
-static void kr_ebml2_print_id (uint32_t id);
+//static void kr_ebml2_print_id (uint32_t id);
 
 static inline void rmemcpy (void *dst, void *src, int len) {
 
@@ -72,6 +72,7 @@ static inline uint32_t kr_ebml2_length (unsigned char byte) {
   return 0;
 }
 
+/*
 static void kr_ebml2_print_id (uint32_t id) {
 
   unsigned char *bytes;
@@ -99,6 +100,7 @@ static void kr_ebml2_print_id (uint32_t id) {
     }
   }
 }
+*/
 
 /* Pub Funcs */
 
@@ -146,7 +148,7 @@ inline int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *da
 
   *element = ebml_id;
 
-  kr_ebml2_print_id (ebml_id);
+  //kr_ebml2_print_id (ebml_id);
   //printf(" ");
   
   //byte = ebml->buffer[ebml->pos];
@@ -213,7 +215,19 @@ inline int kr_ebml2_unpack_string (kr_ebml2_t *ebml, char *string, size_t len) {
   return 0;  
 }
 
+inline int kr_ebml2_unpack_int8 (kr_ebml2_t *ebml, int8_t *integer, size_t len) {
+  *integer = 0;
+  kr_ebml2_runpack (ebml, integer, len);
+  return 0;
+}
+
 inline int kr_ebml2_unpack_uint8 (kr_ebml2_t *ebml, uint8_t *integer, size_t len) {
+  *integer = 0;
+  kr_ebml2_runpack (ebml, integer, len);
+  return 0;
+}
+
+inline int kr_ebml2_unpack_int16 (kr_ebml2_t *ebml, int16_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
@@ -225,7 +239,19 @@ inline int kr_ebml2_unpack_uint16 (kr_ebml2_t *ebml, uint16_t *integer, size_t l
   return 0;
 }
 
+inline int kr_ebml2_unpack_int32 (kr_ebml2_t *ebml, int32_t *integer, size_t len) {
+  *integer = 0;
+  kr_ebml2_runpack (ebml, integer, len);
+  return 0;
+}
+
 inline int kr_ebml2_unpack_uint32 (kr_ebml2_t *ebml, uint32_t *integer, size_t len) {
+  *integer = 0;
+  kr_ebml2_runpack (ebml, integer, len);
+  return 0;
+}
+
+inline int kr_ebml2_unpack_int64 (kr_ebml2_t *ebml, int64_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
@@ -271,6 +297,17 @@ inline int kr_ebml2_unpack_element_string (kr_ebml2_t *ebml, uint32_t *id, char 
   return 0;  
 }
 
+inline int kr_ebml2_unpack_element_int8 (kr_ebml2_t *ebml, uint32_t *id, int8_t *integer) {
+
+  uint32_t element_id;
+  uint64_t size;
+
+  kr_ebml2_unpack_id (ebml, &element_id, &size);
+  //fixme check id and maxlen
+  kr_ebml2_unpack_int8 (ebml, integer, size);
+  return 0;  
+}
+
 inline int kr_ebml2_unpack_element_uint8 (kr_ebml2_t *ebml, uint32_t *id, uint8_t *integer) {
 
   uint32_t element_id;
@@ -279,6 +316,17 @@ inline int kr_ebml2_unpack_element_uint8 (kr_ebml2_t *ebml, uint32_t *id, uint8_
   kr_ebml2_unpack_id (ebml, &element_id, &size);
   //fixme check id and maxlen
   kr_ebml2_unpack_uint8 (ebml, integer, size);
+  return 0;  
+}
+
+inline int kr_ebml2_unpack_element_int16 (kr_ebml2_t *ebml, uint32_t *id, int16_t *integer) {
+
+  uint32_t element_id;
+  uint64_t size;
+
+  kr_ebml2_unpack_id (ebml, &element_id, &size);
+  //fixme check id and maxlen
+  kr_ebml2_unpack_int16 (ebml, integer, size);
   return 0;  
 }
 
@@ -293,6 +341,17 @@ inline int kr_ebml2_unpack_element_uint16 (kr_ebml2_t *ebml, uint32_t *id, uint1
   return 0;  
 }
 
+inline int kr_ebml2_unpack_element_int32 (kr_ebml2_t *ebml, uint32_t *id, int32_t *integer) {
+
+  uint32_t element_id;
+  uint64_t size;
+
+  kr_ebml2_unpack_id (ebml, &element_id, &size);
+  //fixme check id and maxlen
+  kr_ebml2_unpack_int32 (ebml, integer, size);
+  return 0;  
+}
+
 inline int kr_ebml2_unpack_element_uint32 (kr_ebml2_t *ebml, uint32_t *id, uint32_t *integer) {
 
   uint32_t element_id;
@@ -301,6 +360,17 @@ inline int kr_ebml2_unpack_element_uint32 (kr_ebml2_t *ebml, uint32_t *id, uint3
   kr_ebml2_unpack_id (ebml, &element_id, &size);
   //fixme check id and maxlen
   kr_ebml2_unpack_uint32 (ebml, integer, size);
+  return 0;  
+}
+
+inline int kr_ebml2_unpack_element_int64 (kr_ebml2_t *ebml, uint32_t *id, int64_t *integer) {
+
+  uint32_t element_id;
+  uint64_t size;
+
+  kr_ebml2_unpack_id (ebml, &element_id, &size);
+  //fixme check id and maxlen
+  kr_ebml2_unpack_int64 (ebml, integer, size);
   return 0;  
 }
 
@@ -350,10 +420,16 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
   header_items = 7;
 
   ret = kr_ebml2_unpack_id (ebml, &element, &header_size);
-  header_size += ebml->pos;
 
   if ((ret < 0) || (element != EID_HEADER)) {
     fprintf (stderr, "EBML Header ID Not found\n");
+    return -1;
+  }
+
+  header_size += ebml->pos;
+
+  if (ebml->len < header_size) {
+    fprintf (stderr, "Not Enough bytes in header..\n");
     return -1;
   }
 
@@ -414,7 +490,7 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
     header_items--;
   }
 
-  return 0;
+  return ebml->pos;
 }
 
 inline int kr_ebml2_at_end (kr_ebml2_t *ebml) {

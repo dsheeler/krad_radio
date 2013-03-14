@@ -39,6 +39,7 @@ int kr_client_push (kr_client_t *client) {
   if (client->autosync == 1) {
     kr_client_sync (client);
   }
+  return 0;  
 }
 
 int kr_client_want_out (kr_client_t *client) {
@@ -108,23 +109,21 @@ int kr_check_connection (kr_client_t *client) {
 
   ret = kr_ebml2_unpack_header (client->ebml_in, doctype, sizeof(doctype),
                                 &version, &read_version);
-  if (ret == 0) {
+  if (ret > 0) {
     if ((version == KRAD_IPC_DOCTYPE_VERSION) && (read_version == KRAD_IPC_DOCTYPE_READ_VERSION) &&
         (strlen(KRAD_IPC_SERVER_DOCTYPE) == strlen(doctype)) &&
         (strncmp(doctype, KRAD_IPC_SERVER_DOCTYPE, strlen(KRAD_IPC_SERVER_DOCTYPE)) == 0)) {
-    
+
+        kr_io2_pulled (client->io_in, client->io_in->len);  
+        kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
+        return ret;
+            
     } else {
       printf ("frak %u %u %s \n", version, read_version, doctype);
     }
   } else {
     printf ("frakr %d\n", ret);
   }
-  
-
-  kr_io2_pulled (client->io_in, client->io_in->len);  
-  //kr_io2_pulled (client->io_in, client->ebml_in->pos);
-  
-  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
   return 0;
 }
@@ -157,10 +156,11 @@ int kr_connect_full (kr_client_t *client, char *sysname, int timeout_ms) {
     kr_io2_set_fd ( client->io_in, client->krad_ipc_client->sd );
     kr_ebml2_set_buffer ( client->ebml_in, client->io_in->buf, client->io_in->space );
 
-    kr_check_connection (client);
-    
-    
-    return 1;
+    if (kr_check_connection (client) > 0) {
+      return 1;
+    } else {
+      kr_disconnect (client);
+    }
   }
 
   return 0;
@@ -179,6 +179,13 @@ int kr_disconnect (kr_client_t *client) {
       krad_ipc_disconnect (client->krad_ipc_client);
       client->krad_ipc_client = NULL;
       client->readable = 0;
+
+      if (client->io != NULL) {
+        kr_io2_destroy (&client->io);
+      }
+      if (client->ebml2 != NULL) {
+        kr_ebml2_destroy (&client->ebml2);
+      }
       
       if (client->io_in != NULL) {
         kr_io2_destroy (&client->io_in);
@@ -186,8 +193,6 @@ int kr_disconnect (kr_client_t *client) {
       if (client->ebml_in != NULL) {
         kr_ebml2_destroy (&client->ebml_in);
       }
-      
-      
       return 1;
     }
     return -2;
@@ -720,7 +725,7 @@ int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml, unsigned char **element_loc, 
 int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address) {
 
   uint32_t id;
-  uint64_t size;
+  size_t size;
 
   id = 0;
   size = 0;
@@ -1075,7 +1080,7 @@ int kr_remote_off (kr_client_t *client, char *interface, int port) {
   return 1;
 }
 
-void kr_web_enable (kr_client_t *client, int http_port, int websocket_port,
+void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_port,
                     char *headcode, char *header, char *footer) {
 
   unsigned char *radio_command;
@@ -1083,8 +1088,8 @@ void kr_web_enable (kr_client_t *client, int http_port, int websocket_port,
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_WEB_ENABLE, &webon);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_HTTP_PORT, http_port);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_WEBSOCKET_PORT, websocket_port);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_HTTP_PORT, http_port);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_WEBSOCKET_PORT, websocket_port);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_HEADCODE, headcode);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_HEADER, header);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_FOOTER, footer);

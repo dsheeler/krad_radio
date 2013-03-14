@@ -1,7 +1,7 @@
 #include "krad_transponder_interface.h"
 
 void krad_transponder_ebml_to_link ( krad_ipc_server_t *krad_ipc_server, krad_link_t *krad_link ) {
-
+/*
 	uint32_t ebml_id;
 	uint64_t ebml_data_size;
 
@@ -446,12 +446,14 @@ void krad_transponder_ebml_to_link ( krad_ipc_server_t *krad_ipc_server, krad_li
 		krad_link->transport_mode = FILESYSTEM;
 
 	}
+	
+*/	
 }
 
 
 
 void krad_transponder_link_to_ebml ( krad_ipc_server_client_t *client, krad_link_t *krad_link) {
-
+/*
 	uint64_t link;
 
 	krad_ebml_start_element (client->krad_ebml2, EBML_ID_KRAD_TRANSPONDER_LINK, &link);	
@@ -601,11 +603,11 @@ void krad_transponder_link_to_ebml ( krad_ipc_server_client_t *client, krad_link
 	}
 	
 	krad_ebml_finish_element (client->krad_ebml2, link);
-
+*/
 }
 
 int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_server_t *krad_ipc ) {
-
+/*
 	krad_link_t *krad_link;
 
 	uint32_t ebml_id;
@@ -628,7 +630,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 	string[0] = '\0';
 	bigint = 0;
 	k = 0;
-	
+
 	krad_ipc_server_read_command ( krad_ipc, &command, &ebml_data_size);
 
 	switch ( command ) {
@@ -665,7 +667,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 					krad_transponder_ebml_to_link ( krad_ipc, krad_link );
 					krad_link_start (krad_link);
 				
-				  /*
+				  *//*
 					if ((krad_link->operation_mode == TRANSMIT) || (krad_link->operation_mode == RECORD)) {
 						if (krad_link_wait_codec_init (krad_link) == 0) {
 							krad_transponder_broadcast_link_created ( krad_ipc, krad_link );
@@ -673,7 +675,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 					} else {
 						krad_transponder_broadcast_link_created ( krad_ipc, krad_link );
 					}
-          */
+          *//*
 					break;
 				}
 			}
@@ -687,13 +689,13 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 				krad_link_destroy (krad_transponder->krad_link[k]);
 				krad_transponder->krad_link[k] = NULL;
 			}
-			/*
+			*//*
 			krad_ipc_server_simple_number_broadcast ( krad_ipc,
 													  EBML_ID_KRAD_TRANSPONDER_MSG,
 													  EBML_ID_KRAD_TRANSPONDER_LINK_DESTROYED,
 													  EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER,
 											 		  k);			
-			*/
+			*//*
 			break;
 		case EBML_ID_KRAD_TRANSPONDER_CMD_UPDATE_LINK:
 			//printk ("krad transponder handler! UPDATE_LINK");
@@ -712,7 +714,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 
 					if (krad_transponder->krad_link[k]->audio_codec == OPUS) {
 
-						/*
+						*//*
 						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_APPLICATION) {
 							krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
 							if (strncmp(string, "OPUS_APPLICATION_VOIP", 21) == 0) {
@@ -725,7 +727,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 								krad_opus_set_application (krad_transponder->krad_link[k]->krad_opus, OPUS_APPLICATION_RESTRICTED_LOWDELAY);
 							}
 						}
-						*/
+						*//*
 						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_SIGNAL) {
 							krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
 
@@ -817,7 +819,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 							}
 						}
 					}
-          /*
+          *//*
 					if ((ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_BANDWIDTH) || (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_SIGNAL)) {
 
 						krad_ipc_server_advanced_string_broadcast ( krad_ipc,
@@ -837,7 +839,7 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 														 		  ebml_id,
 														 		  bigint);
 					}
-					*/
+					*//*
 				}
 			}
 			
@@ -937,6 +939,6 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 			break;			
 
 	}
-
+*/
 	return 0;
 }

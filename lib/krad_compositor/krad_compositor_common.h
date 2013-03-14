@@ -65,12 +65,12 @@ struct kr_compositor_subunit_controls_St {
 
   int x;
   int y;
-  int z;
+  uint32_t z;
 
   int tickrate;
   
-  int width;
-  int height;
+  uint32_t width;
+  uint32_t height;
 
   float xscale;
   float yscale;
@@ -112,14 +112,14 @@ struct krad_port_rep_St {
   char sysname[128];
   int direction;
   
-  int source_width;
-  int source_height;
+  uint32_t source_width;
+  uint32_t source_height;
   
-  int crop_x;
-  int crop_y;
+  uint32_t crop_x;
+  uint32_t crop_y;
   
-  int crop_width;
-  int crop_height;
+  uint32_t crop_width;
+  uint32_t crop_height;
   
   kr_comp_controls_t controls;
 };

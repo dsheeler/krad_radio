@@ -25,9 +25,9 @@
 
 #include "krad_radio_version.h"
 #include "krad_system.h"
-#include "krad_ebml.h"
+#include "krad_ring.h"
+#include "krad_io2.h"
 #include "krad_radio_ipc.h"
-
 
 #include "krad_radio_client.h"
 
@@ -51,7 +51,6 @@ enum krad_ipc_shutdown {
   KRAD_IPC_RUNNING,
   KRAD_IPC_DO_SHUTDOWN,
   KRAD_IPC_SHUTINGDOWN,
-
 };
 
 typedef struct krad_ipc_server_St krad_ipc_server_t;
@@ -89,7 +88,9 @@ struct krad_ipc_server_St {
   krad_ipc_server_client_t *clients;
   krad_ipc_server_client_t *current_client;
 
-  int (*handler)(void *);
+  void *(*client_create)(void *);
+  void (*client_destroy)(void *);
+  int (*client_handler)(kr_io2_t *in, kr_io2_t *out, void *);
   void *pointer;
 
   pthread_t server_thread;
@@ -107,37 +108,15 @@ struct krad_ipc_server_St {
 };
 
 struct krad_ipc_server_client_St {
-  krad_ipc_server_t *krad_ipc_server;
   int sd;
-
-  int active;
-  int confirmed;
-  int broadcasts;  
-
-  krad_ebml_t *krad_ebml;
-  krad_ebml_t *krad_ebml2;
-
-  char input_buffer[4096 * 2];
-  int input_buffer_pos;
+  void *ptr;
+  int broadcasts;
+  
+  kr_io2_t *in;
+  kr_io2_t *out;
 };
 
-void krad_ipc_server_response_start_with_address_and_type ( krad_ipc_server_t *krad_ipc_server,
-                                                            kr_address_t *address,
-                                                            uint32_t message_type,
-                                                            uint64_t *response);
-void krad_ipc_server_write_message_type (krad_ipc_server_t *krad_ipc_server, uint32_t message_type);
 
-void krad_ipc_server_payload_start ( krad_ipc_server_t *krad_ipc_server, uint64_t *payload);
-void krad_ipc_server_payload_finish ( krad_ipc_server_t *krad_ipc_server, uint64_t payload);
-void krad_ipc_server_response_start ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, uint64_t *response);
-void krad_ipc_server_response_finish ( krad_ipc_server_t *krad_ipc_server, uint64_t response);
-
-void krad_ipc_server_respond_string ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, char *string);
-void krad_ipc_server_response_add_tag ( krad_ipc_server_t *krad_ipc_server, char *tag_item, char *tag_name, char *tag_value);
-void krad_ipc_server_read_tag ( krad_ipc_server_t *krad_ipc_server, char **tag_item, char **tag_name, char **tag_value );
-void krad_ipc_server_respond_number ( krad_ipc_server_t *krad_ipc_server, uint32_t ebml_id, int32_t number);
-int krad_ipc_server_read_command (krad_ipc_server_t *krad_ipc_server, uint32_t *ebml_id_ptr, uint64_t *ebml_data_size_ptr);
-uint64_t krad_ipc_server_read_number (krad_ipc_server_t *krad_ipc_server, uint64_t data_size);
 
 void krad_ipc_server_add_client_to_broadcast ( krad_ipc_server_t *krad_ipc_server, uint32_t broadcast_ebml_id );
 int krad_broadcast_msg_destroy (krad_broadcast_msg_t **broadcast_msg);
@@ -155,7 +134,11 @@ int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server, char *int
 void krad_ipc_server_disable (krad_ipc_server_t *krad_ipc_server);
 void krad_ipc_server_destroy (krad_ipc_server_t *ipc_server);
 void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server);
-krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname, int handler (void *), void *pointer);
+krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname,
+                                           void *client_create (void *),
+                                           void client_destroy (void *),
+                                           int client_handler (kr_io2_t *in, kr_io2_t *out, void *),
+                                           void *pointer);
 
 #endif
 

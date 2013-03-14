@@ -370,7 +370,6 @@ void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer)
 
 void krad_websocket_add_sprite ( kr_ws_client_t *kr_ws_client, kr_sprite_t *sprite) {
 
-  int i;
   cJSON *msg;
   char spritenumstr[32];
   
@@ -391,31 +390,34 @@ void krad_websocket_add_sprite ( kr_ws_client_t *kr_ws_client, kr_sprite_t *spri
   
 }
 
-void krad_websocket_add_vector ( kr_ws_client_t *kr_ws_client, kr_vector_t *vector) {
+void krad_websocket_add_vector ( kr_ws_client_t *kr_ws_client, kr_vector_t *vector ) {
 
+  /*
   int i;
   cJSON *msg;
 
-  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  
+  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  */
 }
 
-void krad_websocket_add_text ( kr_ws_client_t *kr_ws_client, kr_text_t *text) {
+void krad_websocket_add_text ( kr_ws_client_t *kr_ws_client, kr_text_t *text ) {
 
+  /*
   int i;
   cJSON *msg;
 
   //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  
+  */  
 }
 
-void krad_websocket_add_videoport ( kr_ws_client_t *kr_ws_client, kr_port_t *videoport) {
+void krad_websocket_add_videoport ( kr_ws_client_t *kr_ws_client, kr_port_t *videoport ) {
 
+  /*
   int i;
   cJSON *msg;
 
   //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  
+  */  
 }
 
 /* Krad API Handler */

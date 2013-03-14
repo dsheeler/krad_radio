@@ -55,12 +55,13 @@ kr_io2_t *kr_io2_create ();
 int kr_io2_destroy (kr_io2_t **io);
 int kr_io2_set_fd (kr_io2_t *io, int fd);
 int kr_io2_want_out (kr_io2_t *io);
+int kr_io2_has_in (kr_io2_t *io);
 inline void kr_io2_advance (kr_io2_t *io, size_t bytes);
 inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len);
-int kr_io2_write (kr_io2_t *io);
+size_t kr_io2_write (kr_io2_t *io);
 int kr_io2_flush (kr_io2_t *io);
 
 inline void kr_io2_pulled (kr_io2_t *io, size_t bytes);
-int kr_io2_read (kr_io2_t *io);
+size_t kr_io2_read (kr_io2_t *io);
 
 #endif

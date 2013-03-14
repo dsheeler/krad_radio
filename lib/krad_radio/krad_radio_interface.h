@@ -13,6 +13,17 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
 int krad_radio_broadcast_subunit_control (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address_in, int control, float value, void *client);
 int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address_in, int control, int type, void *value, void *client);
 int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address);
-int krad_radio_handler ( void *ptr );
+
+
+typedef struct krad_radio_client_St krad_radio_client_t;
+
+struct krad_radio_client_St {
+  krad_radio_t *krad_radio;
+  int valid;
+};
+
+void *krad_radio_client_create (void *ptr);
+void krad_radio_client_destroy (void *ptr);
+int krad_radio_client_handler (kr_io2_t *in, kr_io2_t *out, void *ptr);
 
 #endif

@@ -4,7 +4,6 @@
 typedef struct krad_container_St krad_container_t;
 
 #include "krad_ogg.h"
-#include "krad_ebml.h"
 #include "krad_transmitter.h"
 
 typedef enum {
@@ -16,7 +15,7 @@ typedef enum {
 struct krad_container_St {
   krad_container_type_t container_type;
   krad_ogg_t *krad_ogg;
-  krad_ebml_t *krad_ebml;
+//  krad_ebml_t *krad_ebml;
   krad_io_t *krad_io;
   krad_transmission_t *krad_transmission;  
 };

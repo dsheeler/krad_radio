@@ -35,6 +35,13 @@ int kr_io2_want_out (kr_io2_t *io) {
   return 0;
 }
 
+int kr_io2_has_in (kr_io2_t *io) {
+  if (io->len > 0) {
+    return 1;
+  }
+  return 0;
+}
+
 inline void kr_io2_advance (kr_io2_t *io, size_t bytes) {
   io->pos += bytes;
   io->len += bytes;
@@ -47,13 +54,8 @@ inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
   kr_io2_advance (io, len);
 }
 
-int kr_io2_write (kr_io2_t *io) {
-
-  int ret;
-
-  ret = write (io->fd, &io->buffer, io->len);
-
-  return ret;
+size_t kr_io2_write (kr_io2_t *io) {
+  return write (io->fd, &io->buffer, io->len);
 }
 
 static int kr_io2_restart (kr_io2_t *io) {
@@ -62,6 +64,7 @@ static int kr_io2_restart (kr_io2_t *io) {
   io->pos = 0;
   io->len = 0;
   io->space = KR_IO2_BUF_SZ;
+  return 0;
 }
 
 int kr_io2_flush (kr_io2_t *io) {
@@ -71,9 +74,10 @@ int kr_io2_flush (kr_io2_t *io) {
   
   len = io->len;
   
-  ret = write (io->fd, &io->buffer, io->len);
+  ret = kr_io2_write (io);
   if (ret != len) {
-    return -1;
+    //return -1;
+    exit (77);
   }
 
   kr_io2_restart (io);
@@ -88,20 +92,16 @@ inline void kr_io2_pulled (kr_io2_t *io, size_t bytes) {
   if (io->len == 0) {
     kr_io2_restart (io);
   }
-  
 }
 
-int kr_io2_read (kr_io2_t *io) {
+size_t kr_io2_read (kr_io2_t *io) {
 
-  int ret;
+  size_t ret;
 
   ret = read (io->fd, io->buf, io->space);
-
   if (ret > 0) {
-      kr_io2_advance (io, ret);
+    kr_io2_advance (io, ret);
   }
-
-
   return ret;
 }
 

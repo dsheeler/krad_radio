@@ -1,5 +1,5 @@
 #include "krad_mixer_interface.h"
-
+ /* 
 static void krad_mixer_portgroup_rep_to_ebml (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, krad_ebml_t *krad_ebml);
 
 static void krad_mixer_portgroup_rep_to_ebml (kr_portgroup_t *portgroup_rep, krad_ebml_t *krad_ebml) {
@@ -38,14 +38,14 @@ static void krad_mixer_portgroup_rep_to_ebml (kr_portgroup_t *portgroup_rep, kra
     krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, portgroup_rep->xmms2_ipc_path);
   }
 
- /* 
+ *//* 
   for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
     krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].db);
     krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].bandwidth);
     krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].hz);
     // ("NOW hz is %f %f\n", krad_mixer_portgroup_rep->eq.band[i].hz); 
   }
-  */
+  *//*
 
   krad_ebml_write_data (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, &portgroup_rep->eq, sizeof(kr_eq_rep_t));
   
@@ -60,6 +60,7 @@ static void krad_mixer_portgroup_rep_to_ebml (kr_portgroup_t *portgroup_rep, kra
   
   //krad_ebml_finish_element (krad_ebml, portgroup);  
 }
+*/
 
 void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
                                   kr_portgroup_t *portgroup_rep) {
@@ -150,7 +151,7 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
 }
 
 int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc ) {
-
+/*
   uint32_t command;
   uint32_t ebml_id;
   uint64_t payload_loc;
@@ -467,5 +468,6 @@ int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc )
       }
       break;
   }
+  */
   return 0;
 }

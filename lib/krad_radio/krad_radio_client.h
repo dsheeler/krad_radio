@@ -134,7 +134,7 @@ typedef enum {
 
 typedef union {
   void *ptr;
-  uint64_t zero;
+  uint32_t zero;
   kr_mixer_subunit_t mixer_subunit;
   kr_compositor_subunit_t compositor_subunit;
   kr_transponder_subunit_t transponder_subunit;
@@ -154,7 +154,7 @@ struct kr_unit_path_St {
 };
 
 typedef union {
-  int number;
+  uint32_t number;
   char name[64];
 } kr_unit_id_t;
 
@@ -162,8 +162,8 @@ struct kr_address_St {
   kr_unit_path_t path;
   kr_unit_control_name_t control;
   kr_unit_id_t id;
-  int sub_id;
-  int sub_id2;
+  uint32_t sub_id;
+  uint32_t sub_id2;
 };
 
 struct kr_unit_control_St {
@@ -449,7 +449,8 @@ int kr_remote_off (kr_client_t *client, char *interface, int port);
  * @param header override the header delivered to HTTP-clients
  * @param footer override the footer delivered to HTTP-clients
  */
-void kr_web_enable (kr_client_t *client, int http_port, int websocket_port, char *headcode, char *header, char *footer);
+void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_port,
+                    char *headcode, char *header, char *footer);
 
 /**
  * @brief Disable the previously enabled web UI remote control

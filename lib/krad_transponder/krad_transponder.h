@@ -69,7 +69,7 @@ struct krad_link_St {
 	krad_flac_t *krad_flac;
 	krad_opus_t *krad_opus;
 //	krad_ogg_t *krad_ogg;
-	krad_ebml_t *krad_ebml;
+//	krad_ebml_t *krad_ebml;
 	krad_container_t *krad_container;
 	krad_v4l2_t *krad_v4l2;
 	

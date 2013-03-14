@@ -958,7 +958,7 @@ void muxer_unit_create (void *arg) {
     }                                  
   } else {
     printk ("Outputing to file: %s", krad_link->output);
-    krad_link->krad_container = krad_container_open_file (krad_link->output, KRAD_EBML_IO_WRITEONLY);
+    //krad_link->krad_container = krad_container_open_file (krad_link->output, KRAD_EBML_IO_WRITEONLY);
   }
   
   //FIXME needed?
@@ -971,9 +971,9 @@ void muxer_unit_create (void *arg) {
   if (krad_link->krad_container->container_type == EBML) {
     if (((krad_link->audio_codec == VORBIS) || (krad_link->audio_codec == NOCODEC)) && 
       ((krad_link->video_codec == VP8) || (krad_link->video_codec == NOCODEC))) {
-      krad_ebml_header (krad_link->krad_container->krad_ebml, "webm", APPVERSION);
+      //krad_ebml_header (krad_link->krad_container->krad_ebml, "webm", APPVERSION);
     } else {
-      krad_ebml_header (krad_link->krad_container->krad_ebml, "matroska", APPVERSION);
+      //krad_ebml_header (krad_link->krad_container->krad_ebml, "matroska", APPVERSION);
     }
   }
   

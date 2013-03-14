@@ -162,9 +162,9 @@ static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *kr_com
 
 static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
   kr_ebml2_unpack_element_string (ebml, NULL, port->sysname, sizeof(port->sysname));
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->direction );
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.y);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->direction );
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.x);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.z);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->source_width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->source_height);
@@ -182,11 +182,11 @@ static void kr_ebml_to_sprite_rep (kr_ebml2_t *ebml, kr_sprite_t *sprite) {
 
   kr_ebml2_unpack_element_string (ebml, NULL, sprite->filename, sizeof(sprite->filename));
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.y);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.x);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.z);
   
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.tickrate);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.tickrate);
 
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.xscale);
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.yscale);
@@ -202,8 +202,8 @@ static void kr_ebml_to_vector_rep (kr_ebml2_t *ebml, kr_vector_t *vector) {
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.height);
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.y);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &vector->controls.x);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &vector->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.z);
 
   kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.xscale);
@@ -222,8 +222,8 @@ static void kr_ebml_to_text_rep (kr_ebml2_t *ebml, kr_text_t *text) {
   kr_ebml2_unpack_element_float (ebml, NULL, &text->green);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->blue);
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.y);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &text->controls.x);
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &text->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.z);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.height);      

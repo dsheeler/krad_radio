@@ -67,7 +67,6 @@ depsources = """
 ../lib/krad_ogg/krad_ogg.c
 ../lib/krad_x11/krad_x11.c
 ../lib/krad_udp/krad_udp.c
-../lib/krad_ebml/krad_ebml.c
 ../lib/krad_decklink/krad_decklink.c
 ../lib/krad_decklink/krad_decklink_capture.cpp
 ../lib/krad_vhs/ext/imagezero/libiz.cpp
