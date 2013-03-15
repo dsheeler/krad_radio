@@ -294,7 +294,7 @@ int main (int argc, char *argv[]) {
     kr_remote_list (client);
     kr_delivery_accept_and_report (client);
   }
-    
+
   if ((strncmp(argv[2], "remoteon", 8) == 0) || (strncmp(argv[2], "remote_on", 9) == 0)) {
     ret = 0;
     if (argc == 4) {

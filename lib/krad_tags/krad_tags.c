@@ -73,6 +73,8 @@ void krad_tags_set_tag_internal (krad_tags_t *krad_tags, char *name, char *value
 
 void krad_tags_set_tag_opt (krad_tags_t *krad_tags, char *name, char *value, int internal) {
 
+  //printk ("set tag %s %s", name, value);
+
   int t;
 
   if ((name == NULL) || (strlen(name) == 0)) {

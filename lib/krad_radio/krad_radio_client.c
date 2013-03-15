@@ -440,11 +440,13 @@ int kr_radio_response_get_string_from_cpu (kr_crate_t *crate, char **string) {
 int kr_radio_response_get_string_from_tags (kr_crate_t *crate, char **string) {
 
   int len;
+  uint32_t element;
+  uint64_t size;
   kr_tag_t tag;
 
   len = 0;
   
-  while (kr_ebml2_at_end(&crate->payload_ebml)) {
+  while (kr_ebml2_unpack_id (&crate->payload_ebml, &element, &size) == 0) {
     if (len > 0) {
       len += sprintf (*string + len, "\n");  
     }
