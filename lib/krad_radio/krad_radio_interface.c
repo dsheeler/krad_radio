@@ -567,23 +567,18 @@ int krad_radio_client_handler ( kr_io2_t *in, kr_io2_t *out, void *ptr ) {
   //FIXME dont forget to loop here incase we get mroe than 1 command
 
   while (1) {
-
     command = full_command (in);
     if (command == 0) {
       return 0;
     }  
-
     printk ("we have a full command la de da its %zu bytes", in->len);
-
     if (command == EBML_ID_KRAD_RADIO_CMD) {
       ret = krad_radio_client_command (in, out, client);
       if (ret != 0) {
         return -1;
       }
     }
-
   }
-
 
 /*
 	case EBML_ID_KRAD_MIXER_CMD:

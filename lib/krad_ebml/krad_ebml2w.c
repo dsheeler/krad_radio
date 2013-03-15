@@ -197,7 +197,7 @@ inline int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *da
     //printf("Data size is %"PRIu64"\n", ebml_data_size);  
   } else {
     *data_size = 0;
-    //printf ("Data size is Unknown!\n");
+    printf ("Data size is Unknown!\n");
   }
 
   return 0;

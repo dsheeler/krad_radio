@@ -29,7 +29,7 @@ int kr_io2_set_fd (kr_io2_t *io, int fd) {
 }
 
 int kr_io2_want_out (kr_io2_t *io) {
-  if (io->pos > 0) {
+  if (io->len > 0) {
     return 1;
   }
   return 0;
@@ -43,10 +43,11 @@ int kr_io2_has_in (kr_io2_t *io) {
 }
 
 inline void kr_io2_advance (kr_io2_t *io, size_t bytes) {
-  io->pos += bytes;
+  //io->pos += bytes;
   io->len += bytes;
   io->space -= bytes;
-  io->buf += io->pos;
+  //io->buf += io->pos;
+  io->buf += bytes;
 }
 
 inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
@@ -61,7 +62,7 @@ size_t kr_io2_write (kr_io2_t *io) {
 static int kr_io2_restart (kr_io2_t *io) {
   io->buf = io->buffer;
   io->rd_buf = io->buffer;
-  io->pos = 0;
+  //io->pos = 0;
   io->len = 0;
   io->space = KR_IO2_BUF_SZ;
   return 0;

@@ -42,7 +42,7 @@ typedef enum {
 struct kr_io2_St {
   int fd;
   kr_io2_mode_t mode;
-  size_t pos;   // position in buffer
+  //size_t pos;   // position in buffer
   size_t len;   // length of data in buffer
   size_t space; // space remaining in buffer
   size_t size;  // total size of buffer

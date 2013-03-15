@@ -323,10 +323,10 @@ int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
   int ret;
   struct pollfd pollfds[1];
 
-  if (client->have_more == 1) {
-    //client->have_more = 0;
-    return 1;
-  }
+  //if (client->have_more == 1) {
+  //  //client->have_more = 0;
+  //  return 1;
+  //}
 
   pollfds[0].fd = client->krad_ipc_client->sd;
   pollfds[0].events = POLLIN;
@@ -350,13 +350,6 @@ void kr_delivery_final_reset (kr_client_t *client) {
   client->last_delivery_was_final = 0;
 }
 
-int kr_delivery_wait_until_final (kr_client_t *client, uint32_t timeout_ms) {
-  if (kr_delivery_final (client)) {
-    kr_delivery_final_reset (client);
-    return 0;
-  }
-  return kr_poll (client, timeout_ms);
-}
 
 int kr_radio_uptime_to_string (uint64_t uptime, char *string) {
 
@@ -845,32 +838,38 @@ uint32_t kr_response_get_event (kr_response_t *response) {
   return response->notice;
 }
 
-int kr_have_full_crate (kr_ebml2_t *ebml) {
+int kr_have_full_crate (kr_io2_t *in) {
 
+  kr_ebml2_t ebml;
+  uint32_t element;
+  uint64_t size;
   int ret;
-  uint32_t id;
-  uint64_t size;  
 
-  if (ebml->len < 8) {
+  if (!(kr_io2_has_in (in))) {
     return 0;
   }
 
-  ret = kr_ebml2_unpack_id (ebml, &id, &size);
+  kr_ebml2_set_buffer ( &ebml, in->rd_buf, in->len );
+  
+  ret = kr_ebml2_unpack_id (&ebml, &element, &size);
 
-  if ((ret == 0) && (size > 0)) {
-  
-  //printf ("\nthe story is:  %u %u %u\n", size, ebml->len, ebml->pos);
-  
-    if (size <= (ebml->len - ebml->pos)) {
-      return 1;
-    }
+  if (ret < 0) {
+    printf ("full_command EBML ID Not found");
+    return 0;
+  }
+
+  size += ebml.pos;
+
+  if (in->len < size) {
+    printf ("full_command Not Enough bytes..");
+    return 0;
   }
   
-  return 0;
+  return size;
 }
 
 
-void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
+int kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
 
   kr_response_t *response;
 
@@ -882,24 +881,16 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
   ebml_id = 0;
   ebml_data_size = 0;
 
-  if (client->have_more == 1) {
-    client->have_more = 0;
-  } else {
-    kr_io2_read (client->io_in);
-  }
-  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
-
-  have_crate = kr_have_full_crate (client->ebml_in);
-
-  kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
+  have_crate = kr_have_full_crate (client->io_in);
 
   if (have_crate) {
+
+    kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
     response = kr_response_alloc ();
     *kr_crate = response;
 
     response->inside.actual = &response->rep.actual;
-
 
     krad_read_address_from_ebml (client->ebml_in, &response->address);
 
@@ -935,14 +926,10 @@ void kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
       response->has_float = 1;
     }
     
-    kr_io2_pulled (client->io_in, client->ebml_in->pos);
-    kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
-    if (client->io_in->len > 0) {
-      client->have_more = 1;
-    } else {
-      client->have_more = 0;
-    }
+    kr_io2_pulled (client->io_in, have_crate);
+
   }
+  return have_crate;
 }
 
 int kr_crate_has_float (kr_crate_t *crate) {
@@ -958,36 +945,78 @@ void kr_client_response_wait (kr_client_t *client, kr_response_t **kr_response) 
   kr_delivery_get (client, kr_response);
 }
 
+void kr_delivery_recv (kr_client_t *client) {
+  kr_io2_read (client->io_in);
+}
+
 void kr_client_response_wait_print (kr_client_t *client) {
 
-  kr_response_t *response;
+  kr_crate_t *crate;
   char *string;
   int wait_time_ms;
   int length;
-  int got_a_response;
+  int got_all_delivery;
 
-  got_a_response = 0;
+  got_all_delivery = 0;
   string = NULL;
-  response = NULL;  
+  crate = NULL;  
   wait_time_ms = 250;
 
-  while (kr_delivery_wait_until_final (client, wait_time_ms)) {
-  //if (kr_poll (client, wait_time_ms)) {
-    kr_delivery_get (client, &response);
-    if (response != NULL) {
-      got_a_response = 1;
-      length = kr_crate_to_string (response, &string);
+  while (1) {
+    kr_delivery_get (client, &crate);
+    if (crate == NULL) {
+      if (kr_poll (client, wait_time_ms)) {
+        kr_delivery_recv (client);
+      } else {
+        break;
+      }
+    } else {
+      length = kr_uncrate_string (crate, &string);
       if (length > 0) {
         printf ("%s\n", string);
-        kr_response_free_string (&string);
+        kr_string_recycle (&string);
       }
-      kr_response_free (&response);
+      kr_crate_recycle (&crate);
+      if (kr_delivery_final (client)) {
+        kr_delivery_final_reset (client);
+        got_all_delivery = 1;
+        break;
+      }
     }
   }
 
-  if (got_a_response == 0) {
+  if (got_all_delivery == 0) {
     printf ("No response after waiting %dms\n", wait_time_ms);
   }
+}
+
+int kr_delivery_get_until_final (kr_client_t *client, kr_crate_t **crate, uint32_t timeout_ms) {
+
+  kr_crate_t *lcrate;
+  
+  lcrate = NULL;
+
+  while (1) {
+    kr_delivery_get (client, &lcrate);
+    if (lcrate == NULL) {
+      if (kr_poll (client, timeout_ms)) {
+        kr_delivery_recv (client);
+      } else {
+        break;
+      }
+    } else {
+      if (kr_delivery_final (client)) {
+        kr_delivery_final_reset (client);
+        return 0;
+      }
+      *crate = lcrate;
+      return 1;
+    }
+  }
+
+  printf ("No response after waiting %dms\n", timeout_ms);
+
+  return 0;
 }
 
 void kr_set_dir (kr_client_t *client, char *dir) {

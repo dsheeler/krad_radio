@@ -40,6 +40,30 @@ void my_compositor_print (kr_compositor_t *compositor) {
 					 ((float)compositor->fps_numerator / (float)compositor->fps_denominator));
 }
 
+void my_sprite_print (kr_sprite_t *sprite) {
+
+  printf ("Sprite stuf: %d %f\n",
+					 sprite->controls.width, sprite->controls.rotation);
+}
+
+void my_text_print (kr_text_t *text) {
+
+  printf ("text stuf: %d %f\n",
+					 text->controls.width, text->controls.rotation);
+}
+
+void my_vector_print (kr_vector_t *vector) {
+
+  printf ("vector stuf: %d %f\n",
+					 vector->controls.width, vector->controls.rotation);
+}
+
+void my_videoport_print (kr_port_t *videoport) {
+
+  printf ("videoport stuf: %d %f\n",
+					 videoport->controls.width, videoport->controls.rotation);
+}
+
 void my_mixer_print (kr_mixer_t *mixer) {
 
   printf ("Mixer Sample Rate: %d\n",
@@ -54,14 +78,25 @@ void my_print (kr_crate_t *crate) {
   if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_UNIT)) {
     my_compositor_print (crate->inside.compositor);
   }
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_SPRITE)) {
+    my_sprite_print (crate->inside.sprite);
+  }
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_TEXT)) {
+    my_text_print (crate->inside.text);
+  } 
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VECTOR)) {
+    my_vector_print (crate->inside.vector);
+  } 
+  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VIDEOPORT)) {
+    my_videoport_print (crate->inside.videoport);
+  } 
   if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     my_portgroup_print (crate->inside.portgroup);
   }
 }
 
-void get_delivery (kr_client_t *client) {
+void handle_crate (kr_crate_t *crate) {
 
-  kr_crate_t *crate;
   char *string;
   int integer;
   float real;
@@ -70,61 +105,99 @@ void get_delivery (kr_client_t *client) {
   real = 0.0f;
   string = NULL;
   crate = NULL;
-  //printf ("*** Delivery Start: \n");
+  printf ("\n*** Delivery Start: \n");
 
+  kr_address_debug_print (crate->addr); 
+
+  /* Crate sometimes can be converted
+     to a integer, float or string */
+  
+  if (kr_uncrate_string (crate, &string)) {
+    printf ("String: \n%s\n", string);
+    kr_string_recycle (&string);
+  }
+  
+  if (kr_uncrate_int (crate, &integer)) {
+    printf ("Int: %d\n", integer);
+    /* or but check first always! */
+    // if (kr_crate_has_int (crate)) {
+    //   crate->integer;
+    // }
+  }
+  
+  if (kr_uncrate_float (crate, &real)) {
+    printf ("Float: %f\n", real);
+    /* or but check first always! */
+    // if (kr_crate_has_float (crate)) {
+    //   crate->real;
+    // }
+  }
+  
+  //crate->notice  << a type/reason/event    
+  
+  /* Crate has a rep struct */
+  
+  if (kr_crate_loaded (crate)) {
+    my_print (crate);
+  }
+
+  kr_crate_recycle (&crate);
+  printf ("*** Delivery End\n\n");
+}
+
+void get_delivery (kr_client_t *client) {
+
+  kr_crate_t *crate;
+
+  kr_delivery_recv (client);
   kr_delivery_get (client, &crate);
 
   if (crate != NULL) {
+    handle_crate (crate);
+  }
+}
 
-    //kr_address_debug_print (crate->addr); 
+void take_deliveries_long_time (kr_client_t *client) {
 
-    /* Crate sometimes can be converted
-       to a integer, float or string */
-    
-    if (kr_uncrate_string (crate, &string)) {
-      //printf ("String: \n%s\n", string);
-      kr_string_recycle (&string);
-    }
-    
-    if (kr_uncrate_int (crate, &integer)) {
-      //printf ("Int: %d\n", integer);
-      /* or but check first always! */
-      // if (kr_crate_has_int (crate)) {
-      //   crate->integer;
-      // }
-    }
-    
-    if (kr_uncrate_float (crate, &real)) {
-      //printf ("Float: %f\n", real);
-      /* or but check first always! */
-      // if (kr_crate_has_float (crate)) {
-      //   crate->real;
-      // }
-    }
-    
-    //crate->notice  << a type/reason/event    
-    
-    /* Crate has a rep struct */
-    
-    if (kr_crate_loaded (crate)) {
-      //my_print (crate);
-    }
+  int b;
+  int ret;
+  uint64_t max;
+  unsigned int timeout_ms;
+  
+  ret = 0;
+  b = 0;
+  max = 10000;
+  timeout_ms = 3000;
+  
 
-    kr_crate_recycle (&crate);
-    //printf ("*** Delivery End\n\n\n");
+  kr_subscribe_all (client);
+  
+  printf ("Waiting for up to %"PRIu64" deliveries for up to %ums each\n",
+          max, timeout_ms);
+  
+  for (b = 0; b < max; b++) {
+    ret = kr_wait (client, timeout_ms);
+    if (ret > 0) {
+      get_delivery (client);
+    } else {
+      printf (".");
+      fflush (stdout);
+    }
   }
 }
 
 void accept_some_deliveries (kr_client_t *client) {
 
   int wait_ms;
-  
-  wait_ms = 250;
+  kr_crate_t *crate;
 
-  while (kr_delivery_wait_until_final (client, wait_ms)) {
-    get_delivery (client);
+  wait_ms = 750;
+
+  while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
+    handle_crate (crate);
   }
 }
+
 
 void rage (kr_client_t *client) {
 

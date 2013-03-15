@@ -81,9 +81,8 @@ void my_print (kr_crate_t *crate) {
   }
 }
 
-void get_delivery (kr_client_t *client) {
+void handle_crate (kr_crate_t *crate) {
 
-  kr_crate_t *crate;
   char *string;
   int integer;
   float real;
@@ -91,49 +90,55 @@ void get_delivery (kr_client_t *client) {
   integer = 0;
   real = 0.0f;
   string = NULL;
-  crate = NULL;
   printf ("\n*** Delivery Start: \n");
 
+  //kr_address_debug_print (crate->addr); 
+
+  /* Crate sometimes can be converted
+     to a integer, float or string */
+  
+  if (kr_uncrate_string (crate, &string)) {
+    printf ("String: \n%s\n", string);
+    kr_string_recycle (&string);
+  }
+  
+  if (kr_uncrate_int (crate, &integer)) {
+    printf ("Int: %d\n", integer);
+    /* or but check first always! */
+    // if (kr_crate_has_int (crate)) {
+    //   crate->integer;
+    // }
+  }
+  
+  if (kr_uncrate_float (crate, &real)) {
+    printf ("Float: %f\n", real);
+    /* or but check first always! */
+    // if (kr_crate_has_float (crate)) {
+    //   crate->real;
+    // }
+  }
+  
+  //crate->notice  << a type/reason/event    
+  
+  /* Crate has a rep struct */
+  
+  if (kr_crate_loaded (crate)) {
+    my_print (crate);
+  }
+
+  kr_crate_recycle (&crate);
+  printf ("*** Delivery End\n\n");
+}
+
+void get_delivery (kr_client_t *client) {
+
+  kr_crate_t *crate;
+
+  kr_delivery_recv (client);
   kr_delivery_get (client, &crate);
 
   if (crate != NULL) {
-
-    kr_address_debug_print (crate->addr); 
-
-    /* Crate sometimes can be converted
-       to a integer, float or string */
-    
-    if (kr_uncrate_string (crate, &string)) {
-      printf ("String: \n%s\n", string);
-      kr_string_recycle (&string);
-    }
-    
-    if (kr_uncrate_int (crate, &integer)) {
-      printf ("Int: %d\n", integer);
-      /* or but check first always! */
-      // if (kr_crate_has_int (crate)) {
-      //   crate->integer;
-      // }
-    }
-    
-    if (kr_uncrate_float (crate, &real)) {
-      printf ("Float: %f\n", real);
-      /* or but check first always! */
-      // if (kr_crate_has_float (crate)) {
-      //   crate->real;
-      // }
-    }
-    
-    //crate->notice  << a type/reason/event    
-    
-    /* Crate has a rep struct */
-    
-    if (kr_crate_loaded (crate)) {
-      my_print (crate);
-    }
-
-    kr_crate_recycle (&crate);
-    printf ("*** Delivery End\n\n");
+    handle_crate (crate);
   }
 }
 
@@ -169,11 +174,15 @@ void take_deliveries_long_time (kr_client_t *client) {
 void accept_some_deliveries (kr_client_t *client) {
 
   int wait_ms;
-  
+  kr_crate_t *crate;
+
+  crate = NULL;
   wait_ms = 750;
 
-  while (kr_delivery_wait_until_final (client, wait_ms)) {
-    get_delivery (client);
+  while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
+    if (crate != NULL) {
+      handle_crate (crate);
+    }
   }
 }
 
@@ -185,9 +194,9 @@ void one_shot_demo (kr_client_t *client) {
   kr_system_info (client);
   accept_some_deliveries (client);
 
-//kr_remote_list (client);
-//  accept_some_deliveries (client);
-/*
+  kr_remote_list (client);
+  accept_some_deliveries (client);
+
   kr_compositor_info (client);
   accept_some_deliveries (client);
   
@@ -199,7 +208,7 @@ void one_shot_demo (kr_client_t *client) {
   
   kr_compositor_subunit_list (client);
   accept_some_deliveries (client);
-*/
+
 }
 
 void one_shot_demo2 (kr_client_t *client) {
@@ -233,12 +242,73 @@ void one_shot_demo2 (kr_client_t *client) {
   kr_system_info (client);
   accept_some_deliveries (client);
   accept_some_deliveries (client);
-
+  kr_system_info (client);
   kr_system_info (client);
   kr_system_info (client);
   accept_some_deliveries (client);
   accept_some_deliveries (client);
+  accept_some_deliveries (client);
 
+}
+
+void one_shot_demo3 (kr_client_t *client) {
+
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+  
+  printf ("1\n");
+  
+  kr_tags (client, NULL);
+  kr_tags (client, NULL);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+  
+  printf ("2\n");
+  
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+
+  printf ("3\n");
+
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+
+  printf ("4\n");
+
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+  
+  printf ("5\n");
+  
+  kr_system_info (client);
+  kr_system_info (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+
+  printf ("6\n");
+
+  kr_system_info (client);
+  kr_system_info (client);
+  kr_system_info (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);
+  
+  printf ("7\n");
+  
+  kr_tags (client, NULL);
+  kr_tags (client, NULL);
+  kr_client_response_wait_print (client);
+  kr_client_response_wait_print (client);  
+  
 }
 
 int main (int argc, char *argv[]) {
@@ -286,6 +356,9 @@ int main (int argc, char *argv[]) {
   //usleep (500000);
   printf ("Running the one two shot demo\n");
   one_shot_demo2 (client);
+  
+  printf ("Running the one three shot demo\n");
+  one_shot_demo3 (client);
   
   //printf ("Now getting into the business\n");
   //take_deliveries_long_time (client);

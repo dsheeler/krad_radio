@@ -21,8 +21,7 @@ int get_logname (kr_client_t *client, char *logname, int max) {
   wait_ms = 250;
   ret = 0;
 
-  while (kr_delivery_wait_until_final (client, wait_ms)) {
-    kr_delivery_get (client, &crate);
+  while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
     if (crate != NULL) {
       if (kr_crate_loaded (crate)) {
         if ((crate->addr->path.unit == KR_STATION) && (crate->addr->path.subunit.zero == KR_STATION_UNIT)) {
@@ -30,6 +29,7 @@ int get_logname (kr_client_t *client, char *logname, int max) {
           if (ret > 0) {
             if (ret < max) {
               strncpy (logname, crate->inside.radio->logname, max);
+              printf ("log %s\n", logname);
             } else {
               ret = 0;
             }

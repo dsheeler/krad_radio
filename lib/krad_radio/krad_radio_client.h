@@ -228,6 +228,8 @@ int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml2, unsigned char **element_loc,
 
 kr_client_t *kr_client_create (char *client_name);
 
+void kr_delivery_recv (kr_client_t *client);
+
 /**
  * @brief connect to a krad radio daemon identified by sysname
  * @param sysname of local station or ip:port remote station
@@ -305,7 +307,7 @@ void kr_client_response_wait_print (kr_client_t *client);
  * @brief get a response
  * @param kr_client handle of the IPC-connection to the station
  */
-void kr_delivery_get (kr_client_t *client, kr_crate_t **crate);
+int kr_delivery_get (kr_client_t *client, kr_crate_t **crate);
 
 int kr_crate_loaded (kr_crate_t *crate);
 int kr_crate_has_int (kr_crate_t *crate);
@@ -342,7 +344,7 @@ int kr_crate_has_float (kr_crate_t *crate);
 #define kr_mixer_portgroups kr_mixer_portgroup_list
 #define kr_compositor_subunits kr_compositor_subunit_list
 
-int kr_delivery_wait_until_final (kr_client_t *client, uint32_t timeout_ms);
+int kr_delivery_get_until_final (kr_client_t *client, kr_crate_t **crate, uint32_t timeout_ms);
 int kr_delivery_final (kr_client_t *client);
 
 /**
