@@ -411,6 +411,7 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
 			if (strncmp("station", string1, 7) == 0) {
 				tag_val = krad_tags_get_tag (krad_radio->krad_tags, string2);
 			} else {
+			  tag_val = "";
 				//krad_tags = krad_radio_find_tags_for_item ( krad_radio, tag_item );
 				//if (krad_tags != NULL) {
 				//	tag_value = krad_tags_get_tag ( krad_tags, tag_name );
@@ -539,7 +540,8 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
   //if (ret && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   //}
-  
+
+  kr_io2_pulled (in, ebml_in.pos);
   kr_io2_advance (out, ebml_out.pos);
 
   return 0;
@@ -564,19 +566,24 @@ int krad_radio_client_handler ( kr_io2_t *in, kr_io2_t *out, void *ptr ) {
 
   //FIXME dont forget to loop here incase we get mroe than 1 command
 
-  command = full_command (in);
-  if (command == 0) {
-    return 0;
-  }  
+  while (1) {
 
-  //printk ("we have a full command la de da its %zu bytes", in->len);
+    command = full_command (in);
+    if (command == 0) {
+      return 0;
+    }  
 
-  if (command == EBML_ID_KRAD_RADIO_CMD) {
-    ret = krad_radio_client_command (in, out, client);
-    if (ret != 0) {
-      return -1;
+    printk ("we have a full command la de da its %zu bytes", in->len);
+
+    if (command == EBML_ID_KRAD_RADIO_CMD) {
+      ret = krad_radio_client_command (in, out, client);
+      if (ret != 0) {
+        return -1;
+      }
     }
+
   }
+
 
 /*
 	case EBML_ID_KRAD_MIXER_CMD:

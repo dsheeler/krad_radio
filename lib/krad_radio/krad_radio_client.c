@@ -446,10 +446,12 @@ int kr_radio_response_get_string_from_tags (kr_crate_t *crate, char **string) {
 
   len = 0;
   
-  while (kr_ebml2_unpack_id (&crate->payload_ebml, &element, &size) == 0) {
+  //while (kr_ebml2_unpack_id (&crate->payload_ebml, &element, &size) == 0) {
+  while (crate->payload_ebml.pos < crate->size) {
     if (len > 0) {
       len += sprintf (*string + len, "\n");  
     }
+    kr_ebml2_unpack_id (&crate->payload_ebml, &element, &size);
     kr_ebml_to_tag_rep (&crate->payload_ebml, &tag);
     len += sprintf (*string + len, "%s tag: %s - %s", tag.unit, tag.name, tag.value);
   }

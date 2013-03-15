@@ -674,7 +674,7 @@ static void *krad_ipc_server_run_thread (void *arg) {
               } else {
                 if (kr_io2_want_out (client->out)) {
                   krad_ipc_server->sockets[s].events |= POLLOUT;
-                }              
+                }
               }
             } else {
               if (read_ret == 0) {

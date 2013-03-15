@@ -170,7 +170,7 @@ void accept_some_deliveries (kr_client_t *client) {
 
   int wait_ms;
   
-  wait_ms = 250;
+  wait_ms = 750;
 
   while (kr_delivery_wait_until_final (client, wait_ms)) {
     get_delivery (client);
@@ -180,14 +180,14 @@ void accept_some_deliveries (kr_client_t *client) {
 void one_shot_demo (kr_client_t *client) {
 
   kr_tags (client, NULL);    
-  kr_delivery_accept_and_report (client);
+  accept_some_deliveries (client);
 
   kr_system_info (client);
   accept_some_deliveries (client);
 
-  kr_remote_list (client);
-  accept_some_deliveries (client);
-
+//kr_remote_list (client);
+//  accept_some_deliveries (client);
+/*
   kr_compositor_info (client);
   accept_some_deliveries (client);
   
@@ -199,6 +199,46 @@ void one_shot_demo (kr_client_t *client) {
   
   kr_compositor_subunit_list (client);
   accept_some_deliveries (client);
+*/
+}
+
+void one_shot_demo2 (kr_client_t *client) {
+
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+  
+  kr_tags (client, NULL);
+  kr_tags (client, NULL);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+  
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+
+  kr_tags (client, NULL);
+  kr_system_info (client);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+  
+  kr_system_info (client);
+  kr_system_info (client);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+
+  kr_system_info (client);
+  kr_system_info (client);
+  accept_some_deliveries (client);
+  accept_some_deliveries (client);
+
 }
 
 int main (int argc, char *argv[]) {
@@ -241,10 +281,14 @@ int main (int argc, char *argv[]) {
   printf ("Connected to %s!\n", sysname);
 
   printf ("Running the one shot demo\n");
-  one_shot_demo (client);
+  //one_shot_demo (client);
   
-  printf ("Now getting into the business\n");
-  take_deliveries_long_time (client);
+  //usleep (500000);
+  printf ("Running the one two shot demo\n");
+  one_shot_demo2 (client);
+  
+  //printf ("Now getting into the business\n");
+  //take_deliveries_long_time (client);
 
   printf ("Disconnecting from %s..\n", sysname);
   kr_disconnect (client);
