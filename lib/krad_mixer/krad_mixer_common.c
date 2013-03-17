@@ -2,7 +2,6 @@
 
 void krad_mixer_portgroup_rep_to_ebml2 (kr_portgroup_t *portgroup_rep, kr_ebml2_t *ebml) {
 
-  unsigned char *portgroup;
   int i;
 
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_rep->sysname);

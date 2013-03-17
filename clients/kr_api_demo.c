@@ -134,9 +134,18 @@ void get_delivery (kr_client_t *client) {
   kr_crate_t *crate;
   crate = NULL;
   kr_delivery_recv (client);
+  /*
   kr_delivery_get (client, &crate);
 
   if (crate != NULL) {
+    handle_crate (crate);
+    kr_crate_recycle (&crate);
+  }
+  */
+  
+  while ((kr_delivery_get (client, &crate) > 0) &&
+         (crate != NULL)) {
+  
     handle_crate (crate);
     kr_crate_recycle (&crate);
   }
@@ -167,6 +176,7 @@ void take_deliveries_long_time (kr_client_t *client) {
       return;
     }
     if (ret > 0) {
+      printf ("count %d!\n", b);
       get_delivery (client);
     } else {
       printf (".");

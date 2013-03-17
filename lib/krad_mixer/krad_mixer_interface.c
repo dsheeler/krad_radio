@@ -99,9 +99,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   char controlname[16];  
   void *ptr;
   float floatval;
-
   int direction;
-  int number;
   int p;
   int sd1;
   int sd2;
@@ -116,37 +114,17 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   uint32_t element;
   uint64_t size;
   int ret;
-  unsigned char *tag;
-  char *tag_name;
-  char *tag_val;
   char string[512];
-  char string1[512];
-  char string2[512];
-  char string3[512];      
   uint32_t numbers[10];
-  kr_remote_t remote;
   krad_ipc_server_t *kr_ipc;
-  int i;
-  krad_tags_t *krad_tags;
 
-  krad_tags = NULL;
   ptr = NULL;
-  i = 0;
-  string1[0] = '\0';
-  string2[0] = '\0';
-  string3[0] = '\0';
-
   krad_radio = client->krad_radio;
   krad_mixer = krad_radio->krad_mixer;
   kr_ipc = krad_radio->remote.krad_ipc;
-
   sd1 = 0;
   sd2 = 0;
-
-  number = 0;
   direction = 0;
-
-
   portgroupname[0] = '\0';
   portgroupname2[0] = '\0';
   controlname[0] = '\0';

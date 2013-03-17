@@ -899,8 +899,10 @@ int kr_have_full_crate (kr_io2_t *in) {
   size += ebml.pos;
 
   if (in->len < size) {
-    printf ("full_command Not Enough bytes..");
+    //printf ("full_command Not Enough bytes.. have %zu need %zu\n", in->len, size);
     return 0;
+  } else {
+    //printf ("Got command have %zu need %zu\n", in->len, size);
   }
   
   return size;
