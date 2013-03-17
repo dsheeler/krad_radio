@@ -316,13 +316,13 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
   }
 
   kr_ebml2_set_buffer ( &ebml_in, in->rd_buf, in->len );
-  
+
   ret = kr_ebml2_unpack_id (&ebml_in, &command, &size);
   if ((ret < 0) || (command != EBML_ID_KRAD_RADIO_CMD)) {
     printke ("krad_radio_client_command invalid EBML ID Not found");
     return 0;
   }
-  
+
   ret = kr_ebml2_unpack_id (&ebml_in, &command, &size);
   if (ret < 0) {
     printke ("krad_radio_client_command EBML ID Not found");
@@ -526,20 +526,18 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
 				krad_radio_set_dir ( krad_radio, string );
 			}
 			break;
-		/*
 		case EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE:
-			numbers[0] = krad_ebml_read_number ( kr_ipc->current_client->krad_ebml, ebml_data_size);
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);		
 			krad_ipc_server_add_client_to_broadcast ( kr_ipc, numbers[0] );
 			break;
 		default:
 			printke ("Krad Radio Command Unknown! %u", command);
 			return -1;
-			*/
 	}
 
-  //if (ret && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
+  if ((ebml_out.pos > 0) && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
-  //}
+  }
 
   kr_io2_pulled (in, ebml_in.pos);
   kr_io2_advance (out, ebml_out.pos);

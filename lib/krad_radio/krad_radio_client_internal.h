@@ -27,6 +27,9 @@ struct kr_client_St {
   int readable;
   int have_more;
   
+  
+  kr_crate_t *re_crate;
+  
 };
 
 struct kr_shm_St {

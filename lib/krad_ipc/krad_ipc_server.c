@@ -667,6 +667,7 @@ static void *krad_ipc_server_run_thread (void *arg) {
             read_ret = kr_io2_read (client->in);
             if (read_ret > 0) {
               //printk ("Krad IPC Server %d: Got %d bytes\n", s, read_ret);
+              krad_ipc_server->current_client = client;
               hret = krad_ipc_server->client_handler (client->in, client->out, client->ptr);
               if (hret != 0) {
                 krad_ipc_disconnect_client (krad_ipc_server, client);

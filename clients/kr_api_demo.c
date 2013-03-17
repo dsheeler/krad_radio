@@ -126,19 +126,19 @@ void handle_crate (kr_crate_t *crate) {
     my_print (crate);
   }
 
-  kr_crate_recycle (&crate);
   printf ("*** Delivery End\n\n");
 }
 
 void get_delivery (kr_client_t *client) {
 
   kr_crate_t *crate;
-
+  crate = NULL;
   kr_delivery_recv (client);
   kr_delivery_get (client, &crate);
 
   if (crate != NULL) {
     handle_crate (crate);
+    kr_crate_recycle (&crate);
   }
 }
 
@@ -182,6 +182,7 @@ void accept_some_deliveries (kr_client_t *client) {
   while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
     if (crate != NULL) {
       handle_crate (crate);
+      kr_crate_recycle (&crate);
     }
   }
 }

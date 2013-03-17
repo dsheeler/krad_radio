@@ -670,12 +670,12 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_ws_client->kr_client = kr_client_create ("websocket client");
       
       if (kr_ws_client->kr_client == NULL) {
-        break;
+        return -1;
       }
       
       if (!kr_connect (kr_ws_client->kr_client, kr_ws_client->krad_websocket->sysname)) {
         kr_client_destroy (&kr_ws_client->kr_client);
-        break;
+        return -1;
       }
 
       kr_ws_client->kr_client_info = 0;

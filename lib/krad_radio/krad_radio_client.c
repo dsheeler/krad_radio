@@ -16,6 +16,7 @@ static void kr_crate_payload_ebml_reset (kr_crate_t *crate);
 static int kr_radio_response_to_int (kr_crate_t *crate, int *integer);
 static int kr_ebml_to_remote_status_rep (kr_ebml2_t *ebml, kr_remote_t *remote);
 static int kr_ebml_to_tag_rep (kr_ebml2_t *ebml, kr_tag_t *tag);
+static void kr_crate_destroy (kr_crate_t **crate);
 
 void frak_print_raw_ebml (unsigned char *buffer, int len) {
 
@@ -205,6 +206,9 @@ int kr_client_destroy (kr_client_t **client) {
     if (kr_connected (*client)) {
       kr_disconnect (*client);
     }
+    if ((*client)->re_crate != NULL) {
+      kr_crate_destroy (&(*client)->re_crate);
+    }
     if ((*client)->name != NULL) {
       free ((*client)->name);
       (*client)->name = NULL;
@@ -241,12 +245,12 @@ void kr_subscribe_all (kr_client_t *client) {
   kr_subscribe (client, EBML_ID_KRAD_RADIO_GLOBAL_BROADCAST);
 }
 
-void kr_broadcast_subscribe (kr_client_t *client, uint32_t broadcast_id) {
+void kr_subscribe (kr_client_t *client, uint32_t broadcast_id) {
 
   unsigned char *radio_command;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, broadcast_id);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, broadcast_id);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
   kr_client_push (client);
@@ -658,17 +662,57 @@ uint32_t kr_response_size (kr_response_t *kr_response) {
   return kr_response->size;
 }
 
-void kr_response_free (kr_response_t **kr_response) {
-  if (*kr_response != NULL) {
-    if ((*kr_response)->buffer != NULL) {
-      free ((*kr_response)->buffer);
+static void kr_crate_destroy (kr_crate_t **crate) {
+  if (*crate != NULL) {
+    if ((*crate)->buffer != NULL) {
+      free ((*crate)->buffer);
     }
-    free ((*kr_response));
+    free ((*crate));
+    *crate = NULL;
   }
 }
 
-kr_response_t *kr_response_alloc () {
-  return calloc (1, sizeof(kr_response_t));
+void kr_crate_reset (kr_crate_t *crate) {
+
+  kr_client_t *client;
+  unsigned char *buffer;
+  
+  client = NULL;
+  buffer = NULL;
+
+  if (crate != NULL) {
+    client = crate->client;
+    if (crate->buffer != NULL) {
+      buffer = crate->buffer;
+    }
+    memset (crate, 0, sizeof(kr_crate_t));
+    crate->client = client;
+    if (buffer != NULL) {
+      crate->buffer = buffer;
+    }
+  }
+}
+
+void kr_crate_recycle (kr_crate_t **crate) {
+  if (*crate != NULL) {
+    if ((*crate)->client->re_crate == NULL) {
+      kr_crate_reset (*crate);
+      (*crate)->client->re_crate = *crate;
+      *crate = NULL;
+    } else {
+      kr_crate_destroy (crate);
+    }
+  }
+}
+
+kr_crate_t *kr_crate_create (kr_client_t *client) {
+
+  kr_crate_t *crate;
+  
+  crate = calloc (1, sizeof(kr_crate_t));
+  crate->client = client;
+  
+  return crate;
 }
 
 int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml, unsigned char **element_loc, kr_address_t *address) {
@@ -887,7 +931,12 @@ int kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
 
     kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
 
-    response = kr_response_alloc ();
+    if (client->re_crate != NULL) {
+      response = client->re_crate;
+      client->re_crate = NULL;
+    } else {
+      response = kr_crate_create (client);
+    }
     *kr_crate = response;
 
     response->inside.actual = &response->rep.actual;
@@ -914,7 +963,9 @@ int kr_delivery_get (kr_client_t *client, kr_crate_t **kr_crate) {
       if (ebml_data_size > 0) {
         //printf ("KR Client Response payload size: %"PRIu64"\n", ebml_data_size);
         response->size = ebml_data_size;
-        response->buffer = malloc (2048);
+        if (response->buffer == NULL) {
+          response->buffer = malloc (2048);
+        }
         kr_ebml2_unpack_data (client->ebml_in, response->buffer, ebml_data_size);
       }
     }

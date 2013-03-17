@@ -203,7 +203,7 @@ typedef union {
 } kr_rep_actual_t;
 
 struct kr_crate_St {
-  kr_client_t *kr_client;
+  kr_client_t *client;
   kr_address_t *addr;
   kr_address_t address;
   kr_rep_ptr_t inside;
@@ -273,7 +273,7 @@ int kr_client_want_out (kr_client_t *client);
  * @param broadcast_id type of the broadcast messages
  * @see kr_poll
  */
-void kr_broadcast_subscribe (kr_client_t *client, uint32_t broadcast_id);
+void kr_subscribe (kr_client_t *client, uint32_t broadcast_id);
 
 void kr_subscribe_all (kr_client_t *client);
 
@@ -288,7 +288,7 @@ void kr_subscribe_all (kr_client_t *client);
  
 int kr_poll (kr_client_t *client, uint32_t timeout_ms);
 
-void kr_response_free (kr_response_t **kr_response);
+void kr_crate_recycle (kr_crate_t **crate);
 int kr_crate_to_string (kr_crate_t *crate, char **string);
 int kr_crate_to_int (kr_crate_t *crate, int *number);
 int kr_crate_to_float (kr_crate_t *crate, float *number);
@@ -335,10 +335,10 @@ int kr_crate_has_float (kr_crate_t *crate);
 #define kr_string_recycle kr_response_free_string
 #define kr_string_goodbye kr_response_free_string
 
-#define kr_crate_recycle kr_response_free
-#define kr_crate_go_away kr_response_free
 
-#define kr_subscribe kr_broadcast_subscribe
+
+
+
 
 #define kr_mixer_portgroups_list kr_mixer_portgroup_list
 #define kr_mixer_portgroups kr_mixer_portgroup_list
