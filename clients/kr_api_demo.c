@@ -201,11 +201,11 @@ void one_shot_demo (kr_client_t *client) {
   kr_system_info (client);
   accept_some_deliveries (client);
 
-  kr_remote_list (client);
-  accept_some_deliveries (client);
+  //kr_remote_list (client);
+  //accept_some_deliveries (client);
 
-  kr_compositor_info (client);
-  accept_some_deliveries (client);
+  //kr_compositor_info (client);
+  //accept_some_deliveries (client);
   
   kr_mixer_info (client);
   accept_some_deliveries (client);
@@ -213,8 +213,8 @@ void one_shot_demo (kr_client_t *client) {
   kr_mixer_portgroups (client);
   accept_some_deliveries (client);
   
-  kr_compositor_subunit_list (client);
-  accept_some_deliveries (client);
+  //kr_compositor_subunit_list (client);
+  //accept_some_deliveries (client);
 
 }
 
@@ -358,7 +358,7 @@ int main (int argc, char *argv[]) {
   printf ("Connected to %s!\n", sysname);
 
   printf ("Running the one shot demo\n");
-  //one_shot_demo (client);
+  one_shot_demo (client);
   
   //usleep (500000);
   printf ("Running the one two shot demo\n");
