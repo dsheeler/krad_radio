@@ -170,7 +170,7 @@ struct kr_unit_control_St {
   kr_address_t address;
   kr_unit_control_data_t data_type;
   kr_unit_control_value_t value;
-  int duration;
+  uint32_t duration;
 };
 
 typedef union {

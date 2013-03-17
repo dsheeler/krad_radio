@@ -201,16 +201,13 @@ void accept_some_deliveries (kr_client_t *client) {
 
 void rage (kr_client_t *client) {
 
-  //kr_tags (client, NULL);    
-  //kr_delivery_accept_and_report (client);
+  kr_tags (client, NULL);    
+  accept_some_deliveries (client);
 
   kr_system_info (client);
   accept_some_deliveries (client);
 
   //kr_remote_list (client);
-  //accept_some_deliveries (client);
-
-  //kr_compositor_info (client);
   //accept_some_deliveries (client);
   
   kr_mixer_info (client);
@@ -218,6 +215,13 @@ void rage (kr_client_t *client) {
 
   kr_mixer_portgroups (client);
   accept_some_deliveries (client);
+
+  kr_compositor_info (client);
+  accept_some_deliveries (client);
+  
+  kr_compositor_subunit_list (client);
+  accept_some_deliveries (client);
+
 }
 
 void summon_monkey (khaos_monkey_t *monkey) {

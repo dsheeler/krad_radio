@@ -606,35 +606,75 @@ void krad_transponder_link_to_ebml ( krad_ipc_server_client_t *client, krad_link
 */
 }
 
-int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_server_t *krad_ipc ) {
-/*
+int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
+
 	krad_link_t *krad_link;
-
-	uint32_t ebml_id;
-
-	uint32_t command;
-	uint64_t ebml_data_size;
-  kr_address_t address;
-	uint64_t element;
-	uint64_t response;
-	uint64_t payload_loc;
-	char string[256];	
 	
 	uint64_t bigint;
-	//int regint;
 	uint8_t tinyint;
 	int k;
 	int devices;
-	//float floatval;
 	
+  kr_unit_control_t unit_control;
+  char controlname[16];  
+  void *ptr;
+  float floatval;
+  int direction;
+  int p;
+  //int sd1;
+  //int sd2;
+  krad_radio_t *krad_radio;
+  krad_compositor_t *krad_compositor;
+  kr_address_t address;
+  unsigned char *response;
+  unsigned char *payload;
+  kr_ebml2_t ebml_in;
+  kr_ebml2_t ebml_out;
+  uint32_t command;
+  uint32_t element;
+  uint64_t size;
+  int ret;
+  char string[512];
+  uint32_t numbers[10];
+  krad_ipc_server_t *kr_ipc;
+
 	string[0] = '\0';
 	bigint = 0;
 	k = 0;
 
-	krad_ipc_server_read_command ( krad_ipc, &command, &ebml_data_size);
+
+  ptr = NULL;
+  krad_radio = client->krad_radio;
+  krad_compositor = krad_radio->krad_compositor;
+  kr_ipc = krad_radio->remote.krad_ipc;
+  //sd1 = 0;
+  //sd2 = 0;
+
+  controlname[0] = '\0';
+  string[0] = '\0';
+
+  if (!(kr_io2_has_in (in))) {
+    return 0;
+  }
+
+  kr_ebml2_set_buffer ( &ebml_in, in->rd_buf, in->len );
+
+  ret = kr_ebml2_unpack_id (&ebml_in, &command, &size);
+  if ((ret < 0) || (command != EBML_ID_KRAD_TRANSPONDER_CMD)) {
+    printke ("krad_mixer_command invalid EBML ID Not found");
+    return 0;
+  }
+
+  ret = kr_ebml2_unpack_id (&ebml_in, &command, &size);
+  if (ret < 0) {
+    printke ("krad_mixer_command EBML ID Not found");
+    return 0;
+  }
+
+  kr_ebml2_set_buffer ( &ebml_out, out->buf, out->space );
 
 	switch ( command ) {
-
+/*
 		case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_LINKS:
 			//printk ("krad transponder handler! LIST_LINKS");
 			
@@ -937,8 +977,17 @@ int krad_transponder_handler ( krad_transponder_t *krad_transponder, krad_ipc_se
 			krad_transmitter_stop_listening (krad_transponder->krad_transmitter);
 		
 			break;			
+    */
+    default:
+      return -1;    
+  }
+  
+  if ((ebml_out.pos > 0) && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
+    krad_radio_pack_shipment_terminator (&ebml_out);
+  }
 
-	}
-*/
-	return 0;
+  kr_io2_pulled (in, ebml_in.pos);
+  kr_io2_advance (out, ebml_out.pos);
+  
+  return 0;
 }

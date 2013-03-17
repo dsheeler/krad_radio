@@ -575,10 +575,10 @@ int krad_radio_client_handler ( kr_io2_t *in, kr_io2_t *out, void *ptr ) {
         ret = krad_mixer_command (in, out, client);
         break;			
 		  case EBML_ID_KRAD_COMPOSITOR_CMD:
-			  //ret = krad_compositor_handler ( krad_radio->krad_compositor, kr_ipc );		
+			  ret = krad_compositor_command (in, out, client);
         break;				
 		  case EBML_ID_KRAD_TRANSPONDER_CMD:
-			  //ret = krad_transponder_handler ( krad_radio->krad_transponder, kr_ipc );
+			  ret = krad_transponder_command (in, out, client);
         break;
 		  case EBML_ID_KRAD_RADIO_CMD:
         ret = krad_radio_client_command (in, out, client);

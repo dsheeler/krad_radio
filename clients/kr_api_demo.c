@@ -204,17 +204,17 @@ void one_shot_demo (kr_client_t *client) {
   //kr_remote_list (client);
   //accept_some_deliveries (client);
 
-  //kr_compositor_info (client);
-  //accept_some_deliveries (client);
-  
   kr_mixer_info (client);
   accept_some_deliveries (client);
 
   kr_mixer_portgroups (client);
   accept_some_deliveries (client);
+
+  kr_compositor_info (client);
+  accept_some_deliveries (client);
   
-  //kr_compositor_subunit_list (client);
-  //accept_some_deliveries (client);
+  kr_compositor_subunit_list (client);
+  accept_some_deliveries (client);
 
 }
 
