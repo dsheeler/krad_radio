@@ -43,7 +43,7 @@ void kr_mixer_remove_portgroup (kr_client_t *client, char *portgroupname);
 void kr_mixer_portgroup_list (kr_client_t *client);
 void kr_mixer_info (kr_client_t *client);
 void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname);
-void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *control_name, float control_value, int duration);
+void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *control_name, float control_value, uint32_t duration);
 void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
                                   int control_id, char *control_name, float control_value, int duration,
                                   krad_ease_t ease);

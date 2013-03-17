@@ -5,8 +5,6 @@ void krad_mixer_portgroup_rep_to_ebml2 (kr_portgroup_t *portgroup_rep, kr_ebml2_
   unsigned char *portgroup;
   int i;
 
-  kr_ebml2_start_element (ebml, EBML_ID_KRAD_MIXER_PORTGROUP, &portgroup);
-
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_rep->sysname);
   kr_ebml2_pack_int8 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->channels);
   kr_ebml2_pack_int8 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->direction);
@@ -55,8 +53,6 @@ void krad_mixer_portgroup_rep_to_ebml2 (kr_portgroup_t *portgroup_rep, kr_ebml2_
 
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->analog.drive);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->analog.blend);
-  
-  kr_ebml2_finish_element (ebml, portgroup);
 }
 
 char *krad_mixer_channel_number_to_string (int channel) {
