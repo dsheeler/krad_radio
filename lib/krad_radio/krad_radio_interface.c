@@ -473,7 +473,7 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
             break;
           }
         }
-        //krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster, &address, (void *)&remote);
+        krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster, &address, (void *)&remote);
 			}
 			break;
 		case EBML_ID_KRAD_RADIO_CMD_REMOTE_DISABLE:
@@ -562,35 +562,35 @@ int krad_radio_client_handler ( kr_io2_t *in, kr_io2_t *out, void *ptr ) {
     }
   }
 
-  //FIXME dont forget to loop here incase we get mroe than 1 command
-
   while (1) {
     command = full_command (in);
     if (command == 0) {
       return 0;
     }  
-    printk ("we have a full command la de da its %zu bytes", in->len);
-    if (command == EBML_ID_KRAD_RADIO_CMD) {
-      ret = krad_radio_client_command (in, out, client);
-      if (ret != 0) {
-        return -1;
-      }
+
+    //printk ("we have a full command la de da its %zu bytes", in->len);
+    
+    switch (command) {
+      case EBML_ID_KRAD_MIXER_CMD:
+        ret = krad_mixer_command (in, out, client);
+        break;			
+		  case EBML_ID_KRAD_COMPOSITOR_CMD:
+			  //ret = krad_compositor_handler ( krad_radio->krad_compositor, kr_ipc );		
+        break;				
+		  case EBML_ID_KRAD_TRANSPONDER_CMD:
+			  //ret = krad_transponder_handler ( krad_radio->krad_transponder, kr_ipc );
+        break;
+		  case EBML_ID_KRAD_RADIO_CMD:
+        ret = krad_radio_client_command (in, out, client);
+        break;
+      default:
+        ret = -1;
+        break;
+    }
+    if (ret != 0) {
+      return -1;
     }
   }
-
-/*
-	case EBML_ID_KRAD_MIXER_CMD:
-			ret = krad_mixer_handler ( krad_radio->krad_mixer, kr_ipc );
-      break;			
-		case EBML_ID_KRAD_COMPOSITOR_CMD:
-			ret = krad_compositor_handler ( krad_radio->krad_compositor, kr_ipc );		
-      break;				
-		case EBML_ID_KRAD_TRANSPONDER_CMD:
-			ret = krad_transponder_handler ( krad_radio->krad_transponder, kr_ipc );
-      break;
-		case EBML_ID_KRAD_RADIO_CMD:
-			return krad_radio_client_handler ( ptr );
-*/
 
   return 0;	
 }

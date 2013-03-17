@@ -111,7 +111,7 @@ struct krad_ipc_server_client_St {
   int sd;
   void *ptr;
   int broadcasts;
-  
+  struct pollfd *pollptr;
   kr_io2_t *in;
   kr_io2_t *out;
 };

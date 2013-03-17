@@ -130,7 +130,7 @@ void handle_crate (kr_crate_t *crate) {
 }
 
 void get_delivery (kr_client_t *client) {
-
+  printf ("*** get_delivery\n\n");
   kr_crate_t *crate;
   crate = NULL;
   kr_delivery_recv (client);
@@ -161,7 +161,11 @@ void take_deliveries_long_time (kr_client_t *client) {
           max, timeout_ms);
   
   for (b = 0; b < max; b++) {
-    ret = kr_wait (client, timeout_ms);
+    ret = kr_poll (client, timeout_ms);
+    if (ret < 0) {
+      printf ("We got disconnected!\n");
+      return;
+    }
     if (ret > 0) {
       get_delivery (client);
     } else {
@@ -360,9 +364,9 @@ int main (int argc, char *argv[]) {
   
   printf ("Running the one three shot demo\n");
   one_shot_demo3 (client);
-  
-  //printf ("Now getting into the business\n");
-  //take_deliveries_long_time (client);
+  usleep (100000);
+  printf ("Now getting into the business\n");
+  take_deliveries_long_time (client);
 
   printf ("Disconnecting from %s..\n", sysname);
   kr_disconnect (client);

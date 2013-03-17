@@ -417,6 +417,7 @@ static void krad_ipc_server_update_pollfds (krad_ipc_server_t *krad_ipc_server) 
       krad_ipc_server->sockets[s].fd = krad_ipc_server->clients[c].sd;
       krad_ipc_server->sockets[s].events |= POLLIN;
       krad_ipc_server->sockets_clients[s] = &krad_ipc_server->clients[c];
+      krad_ipc_server->clients[c].pollptr = &krad_ipc_server->sockets[s];
       s++;
     }
   }
@@ -599,12 +600,14 @@ int handle_broadcast (krad_ipc_broadcaster_t *broadcaster) {
   //if (broadcast_msg->skip_client != NULL) {
   //  printk ("Goint to skip a client!!\n");
   //}
-
+  
   for (c = 0; c < KRAD_IPC_SERVER_MAX_CLIENTS; c++) {
     if (broadcaster->ipc_server->clients[c].broadcasts == 1) {
       if (&broadcaster->ipc_server->clients[c] != broadcast_msg->skip_client) {
-        //krad_ebml_write (broadcaster->ipc_server->clients[c].krad_ebml2, broadcast_msg->buffer, broadcast_msg->size);
-        //krad_ebml_write_sync (broadcaster->ipc_server->clients[c].krad_ebml2);
+        kr_io2_pack (broadcaster->ipc_server->clients[c].out, broadcast_msg->buffer, broadcast_msg->size);
+        if (kr_io2_want_out (broadcaster->ipc_server->clients[c].out)) {
+          broadcaster->ipc_server->clients[c].pollptr->events |= POLLOUT;
+        }
         b++;
       }
     }

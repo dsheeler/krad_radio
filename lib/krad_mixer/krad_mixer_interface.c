@@ -1,66 +1,4 @@
 #include "krad_mixer_interface.h"
- /* 
-static void krad_mixer_portgroup_rep_to_ebml (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, krad_ebml_t *krad_ebml);
-
-static void krad_mixer_portgroup_rep_to_ebml (kr_portgroup_t *portgroup_rep, krad_ebml_t *krad_ebml) {
-
-  //uint64_t portgroup;
-  int i;
-
-  //krad_ebml_start_element (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP, &portgroup);
-
-  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_rep->sysname);
-  krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->channels);
-  krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->direction);
-  krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->output_type);  
-  if (portgroup_rep->io_type == 0) {
-    krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Jack");
-  } else {
-    krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Internal");
-  }
-  for (i = 0; i < portgroup_rep->channels; i++) {
-    krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, portgroup_rep->volume[i]);      
-  }
-  for (i = 0; i < portgroup_rep->channels; i++) {
-    krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, portgroup_rep->peak[i]);
-  }
-  for (i = 0; i < portgroup_rep->channels; i++) {
-    krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, portgroup_rep->rms[i]);      
-  }
- 
-  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_MIXBUS, portgroup_rep->mixbus);      
-
-  krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, portgroup_rep->crossfade_group);
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE, portgroup_rep->fade);  
-  
-  krad_ebml_write_int8 (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, portgroup_rep->has_xmms2);
-  if (portgroup_rep->has_xmms2 == 1) {
-    krad_ebml_write_string (krad_ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, portgroup_rep->xmms2_ipc_path);
-  }
-
- *//* 
-  for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-    krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].db);
-    krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].bandwidth);
-    krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].hz);
-    // ("NOW hz is %f %f\n", krad_mixer_portgroup_rep->eq.band[i].hz); 
-  }
-  *//*
-
-  krad_ebml_write_data (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, &portgroup_rep->eq, sizeof(kr_eq_rep_t));
-  
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->lowpass.hz);
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->lowpass.bandwidth);
-
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->highpass.hz);
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->highpass.bandwidth);
-
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->analog.drive);
-  krad_ebml_write_float (krad_ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->analog.blend);
-  
-  //krad_ebml_finish_element (krad_ebml, portgroup);  
-}
-*/
 
 void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
                                   kr_portgroup_t *portgroup_rep) {
@@ -150,7 +88,7 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
   }
 }
 
-int krad_mixer_handler ( krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc ) {
+int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 /*
   uint32_t command;
   uint32_t ebml_id;

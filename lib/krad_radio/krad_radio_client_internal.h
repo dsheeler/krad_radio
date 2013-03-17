@@ -6,30 +6,15 @@
 
 struct kr_client_St {
   krad_ipc_client_t *krad_ipc_client;
-
-
-  kr_ebml2_t *ebml2;
-  kr_io2_t *io;
-  
-  int autosync;
-
   char *name;
-
+  int autosync;
   int subscriber;
   int last_delivery_was_final;
-  
-  
-  
-  
+  kr_crate_t *re_crate;
+  kr_ebml2_t *ebml2;
+  kr_io2_t *io;
   kr_ebml2_t *ebml_in;
   kr_io2_t *io_in;
-  
-  int readable;
-  int have_more;
-  
-  
-  kr_crate_t *re_crate;
-  
 };
 
 struct kr_shm_St {

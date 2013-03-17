@@ -185,12 +185,7 @@ void krad_radio_daemon (char *sysname) {
   krad_radio = krad_radio_create (sysname);
 
   if (krad_radio != NULL) {
-
     krad_radio_start ( krad_radio );
-  
-    //FIXME
-    krad_radio_set_dir ( krad_radio, "/home/oneman/bongo" );
-  
     krad_radio_wait ( krad_radio );
     krad_radio_shutdown ( krad_radio );
   }

@@ -179,8 +179,6 @@ int kr_disconnect (kr_client_t *client) {
     if (kr_connected (client)) {
       krad_ipc_disconnect (client->krad_ipc_client);
       client->krad_ipc_client = NULL;
-      client->readable = 0;
-
       if (client->io != NULL) {
         kr_io2_destroy (&client->io);
       }
@@ -248,9 +246,12 @@ void kr_subscribe_all (kr_client_t *client) {
 void kr_subscribe (kr_client_t *client, uint32_t broadcast_id) {
 
   unsigned char *radio_command;
+  unsigned char *subscribe;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, &subscribe);  
   kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_CMD_BROADCAST_SUBSCRIBE, broadcast_id);
+  kr_ebml2_finish_element (client->ebml2, subscribe);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
   kr_client_push (client);
@@ -327,20 +328,13 @@ int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
   int ret;
   struct pollfd pollfds[1];
 
-  //if (client->have_more == 1) {
-  //  //client->have_more = 0;
-  //  return 1;
-  //}
-
   pollfds[0].fd = client->krad_ipc_client->sd;
   pollfds[0].events = POLLIN;
 
   ret = poll (pollfds, 1, timeout_ms);
 
-  if (pollfds[0].revents & POLLIN) {
-    client->readable = 1;
-  } else {
-    client->readable = 0;
+  if (pollfds[0].revents & POLLHUP) {
+    ret = -1;
   }
 
   return ret;
