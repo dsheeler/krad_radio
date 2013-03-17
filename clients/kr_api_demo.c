@@ -235,16 +235,6 @@ void one_shot_demo2 (kr_client_t *client) {
   accept_some_deliveries (client);
   accept_some_deliveries (client);
 
-  kr_tags (client, NULL);
-  kr_system_info (client);
-  accept_some_deliveries (client);
-  accept_some_deliveries (client);
-
-  kr_tags (client, NULL);
-  kr_system_info (client);
-  accept_some_deliveries (client);
-  accept_some_deliveries (client);
-  
   kr_system_info (client);
   kr_system_info (client);
   accept_some_deliveries (client);
@@ -265,8 +255,7 @@ void one_shot_demo3 (kr_client_t *client) {
   kr_client_response_wait_print (client);
   kr_client_response_wait_print (client);
   
-  printf ("1\n");
-  
+ 
   kr_tags (client, NULL);
   kr_tags (client, NULL);
   kr_client_response_wait_print (client);
