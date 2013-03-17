@@ -104,10 +104,9 @@ void handle_crate (kr_crate_t *crate) {
   integer = 0;
   real = 0.0f;
   string = NULL;
-  crate = NULL;
   printf ("\n*** Delivery Start: \n");
 
-  kr_address_debug_print (crate->addr); 
+  //kr_address_debug_print (crate->addr); 
 
   /* Crate sometimes can be converted
      to a integer, float or string */
@@ -141,19 +140,20 @@ void handle_crate (kr_crate_t *crate) {
     my_print (crate);
   }
 
-  kr_crate_recycle (&crate);
   printf ("*** Delivery End\n\n");
 }
 
 void get_delivery (kr_client_t *client) {
-
+  printf ("*** get_delivery\n\n");
   kr_crate_t *crate;
-
+  crate = NULL;
   kr_delivery_recv (client);
-  kr_delivery_get (client, &crate);
-
-  if (crate != NULL) {
+  
+  while ((kr_delivery_get (client, &crate) > 0) &&
+         (crate != NULL)) {
+  
     handle_crate (crate);
+    kr_crate_recycle (&crate);
   }
 }
 

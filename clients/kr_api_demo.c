@@ -134,14 +134,6 @@ void get_delivery (kr_client_t *client) {
   kr_crate_t *crate;
   crate = NULL;
   kr_delivery_recv (client);
-  /*
-  kr_delivery_get (client, &crate);
-
-  if (crate != NULL) {
-    handle_crate (crate);
-    kr_crate_recycle (&crate);
-  }
-  */
   
   while ((kr_delivery_get (client, &crate) > 0) &&
          (crate != NULL)) {
