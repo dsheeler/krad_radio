@@ -1,28 +1,28 @@
 #include "krad_ebml2.h"
 
-inline void rmemcpy1 (unsigned char *dst, unsigned char *src) {
+void rmemcpy1 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[0];
 }
 
-inline void rmemcpy2 (unsigned char *dst, unsigned char *src) {
+void rmemcpy2 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[1];
   dst[1] = src[0];
 }
 
-inline void rmemcpy3 (unsigned char *dst, unsigned char *src) {
+void rmemcpy3 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[2];
   dst[1] = src[1];
   dst[2] = src[0];
 }
 
-inline void rmemcpy4 (unsigned char *dst, unsigned char *src) {
+void rmemcpy4 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[3];
   dst[1] = src[2];
   dst[2] = src[1];
   dst[3] = src[0];
 }
 
-inline void rmemcpy5 (unsigned char *dst, unsigned char *src) {
+void rmemcpy5 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[4];
   dst[1] = src[3];
   dst[2] = src[2];
@@ -30,7 +30,7 @@ inline void rmemcpy5 (unsigned char *dst, unsigned char *src) {
   dst[4] = src[0];
 }
 
-inline void rmemcpy6 (unsigned char *dst, unsigned char *src) {
+void rmemcpy6 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[5];
   dst[1] = src[4];
   dst[2] = src[3];
@@ -39,7 +39,7 @@ inline void rmemcpy6 (unsigned char *dst, unsigned char *src) {
   dst[5] = src[0];
 }
 
-inline void rmemcpy7 (unsigned char *dst, unsigned char *src) {
+void rmemcpy7 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[6];
   dst[1] = src[5];
   dst[2] = src[4];
@@ -49,7 +49,7 @@ inline void rmemcpy7 (unsigned char *dst, unsigned char *src) {
   dst[6] = src[0];
 }
 
-inline void rmemcpy8 (unsigned char *dst, unsigned char *src) {
+void rmemcpy8 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[7];
   dst[1] = src[6];
   dst[2] = src[5];
@@ -60,57 +60,57 @@ inline void rmemcpy8 (unsigned char *dst, unsigned char *src) {
   dst[7] = src[0];
 }
 
-inline void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes) {
+void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes) {
   ebml->pos += bytes;
   ebml->buf += bytes;
 }
 
-inline void kr_ebml2_pack (kr_ebml2_t *ebml, void *buffer, size_t len) {
+void kr_ebml2_pack (kr_ebml2_t *ebml, void *buffer, size_t len) {
   memcpy (ebml->buf, buffer, len);
   kr_ebml2_advance (ebml, len);
 }
 
-inline void kr_ebml2_revpack1 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack1 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy1 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 1);
 }
 
-inline void kr_ebml2_revpack2 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack2 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy2 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 2);
 }
 
-inline void kr_ebml2_revpack3 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack3 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy3 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 3);
 }
 
-inline void kr_ebml2_revpack4 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack4 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy4 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 4);
 }
 
-inline void kr_ebml2_revpack5 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack5 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy5 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 5);
 }
 
-inline void kr_ebml2_revpack6 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack6 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy6 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 6);
 }
 
-inline void kr_ebml2_revpack7 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack7 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy7 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 7);
 }
 
-inline void kr_ebml2_revpack8 (kr_ebml2_t *ebml, void *buffer) {
+void kr_ebml2_revpack8 (kr_ebml2_t *ebml, void *buffer) {
   rmemcpy8 (ebml->buf, buffer);
   kr_ebml2_advance (ebml, 8);
 }
 
-inline void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element) {
+void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element) {
   if (element < 0x00000100) {
     kr_ebml2_revpack1 (ebml, (unsigned char *)&element);
   } else {
@@ -197,7 +197,7 @@ void kr_ebml2_pack_big_data_size ( kr_ebml2_t *ebml, uint64_t data_size ) {
   }
 }
 
-inline void kr_ebml2_pack_data_size ( kr_ebml2_t *ebml, uint64_t data_size ) {
+void kr_ebml2_pack_data_size ( kr_ebml2_t *ebml, uint64_t data_size ) {
 
   uint32_t data_size_length;
   uint64_t data_size_length_mask;

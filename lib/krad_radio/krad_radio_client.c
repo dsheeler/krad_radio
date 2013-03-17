@@ -828,7 +828,7 @@ int kr_crate_loaded (kr_crate_t *crate) {
   return 0;
 }
 
-inline int krad_message_notice_has_payload (uint32_t notice) {
+int krad_message_notice_has_payload (uint32_t notice) {
 
   if (notice == EBML_ID_KRAD_SHIPMENT_TERMINATOR) {
     return 0;
@@ -1581,7 +1581,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
         if ((tokens[2][0] == 'f') || (tokens[2][0] == 'c')) {
           control->portgroup_control = KR_CROSSFADE;
         } else {
-          if ((tokens[2][0] == 'v')) {
+          if (tokens[2][0] == 'v') {
             control->portgroup_control = KR_VOLUME;
           } else {
             printf ("Invalid Mixer Portgroup Control\n");

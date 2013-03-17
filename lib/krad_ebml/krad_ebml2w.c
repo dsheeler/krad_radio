@@ -1,12 +1,12 @@
 #include "krad_ebml2w.h"
 
-static inline void rmemcpy (void *dst, void *src, int len);
-static inline int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len);
-static inline int kr_ebml2_runpack (kr_ebml2_t *ebml, void *buffer, size_t len);
-static inline uint32_t kr_ebml2_length (unsigned char byte);
+static void rmemcpy (void *dst, void *src, int len);
+static int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len);
+static int kr_ebml2_runpack (kr_ebml2_t *ebml, void *buffer, size_t len);
+static uint32_t kr_ebml2_length (unsigned char byte);
 //static void kr_ebml2_print_id (uint32_t id);
 
-static inline void rmemcpy (void *dst, void *src, int len) {
+static void rmemcpy (void *dst, void *src, int len) {
 
   unsigned char *a_dst;
   unsigned char *a_src;
@@ -22,20 +22,20 @@ static inline void rmemcpy (void *dst, void *src, int len) {
   }
 }
 
-static inline int kr_ebml2_runpack (kr_ebml2_t *ebml, void *buffer, size_t len) {
+static int kr_ebml2_runpack (kr_ebml2_t *ebml, void *buffer, size_t len) {
   // len should be <= 8
   rmemcpy (buffer, ebml->buf, len);
   kr_ebml2_advance (ebml, len);
   return 0;
 }
 
-static inline int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len) {
+static int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len) {
   memcpy (buffer, ebml->buf, len);
   kr_ebml2_advance (ebml, len);
   return 0;
 }
 
-static inline uint32_t kr_ebml2_length (unsigned char byte) {
+static uint32_t kr_ebml2_length (unsigned char byte) {
 
   if (byte & EBML_LENGTH_1) {
     return 1;
@@ -104,7 +104,7 @@ static void kr_ebml2_print_id (uint32_t id) {
 
 /* Pub Funcs */
 
-inline int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size) {
+int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size) {
 
   uint32_t ebml_id;
   uint32_t ebml_data_size_length;
@@ -203,79 +203,79 @@ inline int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *da
   return 0;
 }
 
-inline int kr_ebml2_unpack_data (kr_ebml2_t *ebml, void *data, size_t len) {
+int kr_ebml2_unpack_data (kr_ebml2_t *ebml, void *data, size_t len) {
   kr_ebml2_unpack (ebml, data, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_string (kr_ebml2_t *ebml, char *string, size_t len) {
+int kr_ebml2_unpack_string (kr_ebml2_t *ebml, char *string, size_t len) {
   memcpy (string, ebml->buf, len);
   kr_ebml2_advance (ebml, len);
   string[len] = '\0';
   return 0;  
 }
 
-inline int kr_ebml2_unpack_int8 (kr_ebml2_t *ebml, int8_t *integer, size_t len) {
+int kr_ebml2_unpack_int8 (kr_ebml2_t *ebml, int8_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_uint8 (kr_ebml2_t *ebml, uint8_t *integer, size_t len) {
+int kr_ebml2_unpack_uint8 (kr_ebml2_t *ebml, uint8_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_int16 (kr_ebml2_t *ebml, int16_t *integer, size_t len) {
+int kr_ebml2_unpack_int16 (kr_ebml2_t *ebml, int16_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_uint16 (kr_ebml2_t *ebml, uint16_t *integer, size_t len) {
+int kr_ebml2_unpack_uint16 (kr_ebml2_t *ebml, uint16_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_int32 (kr_ebml2_t *ebml, int32_t *integer, size_t len) {
+int kr_ebml2_unpack_int32 (kr_ebml2_t *ebml, int32_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_uint32 (kr_ebml2_t *ebml, uint32_t *integer, size_t len) {
+int kr_ebml2_unpack_uint32 (kr_ebml2_t *ebml, uint32_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_int64 (kr_ebml2_t *ebml, int64_t *integer, size_t len) {
+int kr_ebml2_unpack_int64 (kr_ebml2_t *ebml, int64_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_uint64 (kr_ebml2_t *ebml, uint64_t *integer, size_t len) {
+int kr_ebml2_unpack_uint64 (kr_ebml2_t *ebml, uint64_t *integer, size_t len) {
   *integer = 0;
   kr_ebml2_runpack (ebml, integer, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_float (kr_ebml2_t *ebml, float *real, size_t len) {
+int kr_ebml2_unpack_float (kr_ebml2_t *ebml, float *real, size_t len) {
   *real = 0;
   kr_ebml2_runpack (ebml, real, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_double (kr_ebml2_t *ebml, double *real, size_t len) {
+int kr_ebml2_unpack_double (kr_ebml2_t *ebml, double *real, size_t len) {
   *real = 0;
   kr_ebml2_runpack (ebml, real, len);
   return 0;
 }
 
-inline int kr_ebml2_unpack_element_data (kr_ebml2_t *ebml, uint32_t *id, void *data, size_t maxlen) {
+int kr_ebml2_unpack_element_data (kr_ebml2_t *ebml, uint32_t *id, void *data, size_t maxlen) {
 
   uint32_t element_id;
   uint64_t size;
@@ -286,7 +286,7 @@ inline int kr_ebml2_unpack_element_data (kr_ebml2_t *ebml, uint32_t *id, void *d
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_string (kr_ebml2_t *ebml, uint32_t *id, char *string, size_t maxlen) {
+int kr_ebml2_unpack_element_string (kr_ebml2_t *ebml, uint32_t *id, char *string, size_t maxlen) {
 
   uint32_t element_id;
   uint64_t size;
@@ -297,7 +297,7 @@ inline int kr_ebml2_unpack_element_string (kr_ebml2_t *ebml, uint32_t *id, char 
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_int8 (kr_ebml2_t *ebml, uint32_t *id, int8_t *integer) {
+int kr_ebml2_unpack_element_int8 (kr_ebml2_t *ebml, uint32_t *id, int8_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -308,7 +308,7 @@ inline int kr_ebml2_unpack_element_int8 (kr_ebml2_t *ebml, uint32_t *id, int8_t 
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_uint8 (kr_ebml2_t *ebml, uint32_t *id, uint8_t *integer) {
+int kr_ebml2_unpack_element_uint8 (kr_ebml2_t *ebml, uint32_t *id, uint8_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -319,7 +319,7 @@ inline int kr_ebml2_unpack_element_uint8 (kr_ebml2_t *ebml, uint32_t *id, uint8_
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_int16 (kr_ebml2_t *ebml, uint32_t *id, int16_t *integer) {
+int kr_ebml2_unpack_element_int16 (kr_ebml2_t *ebml, uint32_t *id, int16_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -330,7 +330,7 @@ inline int kr_ebml2_unpack_element_int16 (kr_ebml2_t *ebml, uint32_t *id, int16_
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_uint16 (kr_ebml2_t *ebml, uint32_t *id, uint16_t *integer) {
+int kr_ebml2_unpack_element_uint16 (kr_ebml2_t *ebml, uint32_t *id, uint16_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -341,7 +341,7 @@ inline int kr_ebml2_unpack_element_uint16 (kr_ebml2_t *ebml, uint32_t *id, uint1
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_int32 (kr_ebml2_t *ebml, uint32_t *id, int32_t *integer) {
+int kr_ebml2_unpack_element_int32 (kr_ebml2_t *ebml, uint32_t *id, int32_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -352,7 +352,7 @@ inline int kr_ebml2_unpack_element_int32 (kr_ebml2_t *ebml, uint32_t *id, int32_
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_uint32 (kr_ebml2_t *ebml, uint32_t *id, uint32_t *integer) {
+int kr_ebml2_unpack_element_uint32 (kr_ebml2_t *ebml, uint32_t *id, uint32_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -363,7 +363,7 @@ inline int kr_ebml2_unpack_element_uint32 (kr_ebml2_t *ebml, uint32_t *id, uint3
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_int64 (kr_ebml2_t *ebml, uint32_t *id, int64_t *integer) {
+int kr_ebml2_unpack_element_int64 (kr_ebml2_t *ebml, uint32_t *id, int64_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -374,7 +374,7 @@ inline int kr_ebml2_unpack_element_int64 (kr_ebml2_t *ebml, uint32_t *id, int64_
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_uint64 (kr_ebml2_t *ebml, uint32_t *id, uint64_t *integer) {
+int kr_ebml2_unpack_element_uint64 (kr_ebml2_t *ebml, uint32_t *id, uint64_t *integer) {
 
   uint32_t element_id;
   uint64_t size;
@@ -385,7 +385,7 @@ inline int kr_ebml2_unpack_element_uint64 (kr_ebml2_t *ebml, uint32_t *id, uint6
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_float (kr_ebml2_t *ebml, uint32_t *id, float *real) {
+int kr_ebml2_unpack_element_float (kr_ebml2_t *ebml, uint32_t *id, float *real) {
 
   uint32_t element_id;
   uint64_t size;
@@ -396,7 +396,7 @@ inline int kr_ebml2_unpack_element_float (kr_ebml2_t *ebml, uint32_t *id, float 
   return 0;  
 }
 
-inline int kr_ebml2_unpack_element_double (kr_ebml2_t *ebml, uint32_t *id, double *real) {
+int kr_ebml2_unpack_element_double (kr_ebml2_t *ebml, uint32_t *id, double *real) {
 
   uint32_t element_id;
   uint64_t size;
@@ -493,7 +493,7 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
   return ebml->pos;
 }
 
-inline int kr_ebml2_at_end (kr_ebml2_t *ebml) {
+int kr_ebml2_at_end (kr_ebml2_t *ebml) {
   return ebml->pos == ebml->len;
 }
 

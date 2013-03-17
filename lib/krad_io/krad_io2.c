@@ -42,7 +42,7 @@ int kr_io2_has_in (kr_io2_t *io) {
   return 0;
 }
 
-inline void kr_io2_advance (kr_io2_t *io, size_t bytes) {
+void kr_io2_advance (kr_io2_t *io, size_t bytes) {
   //io->pos += bytes;
   io->len += bytes;
   io->space -= bytes;
@@ -50,7 +50,7 @@ inline void kr_io2_advance (kr_io2_t *io, size_t bytes) {
   io->buf += bytes;
 }
 
-inline void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
+void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
   memcpy (io->buf, buffer, len);
   kr_io2_advance (io, len);
 }
@@ -86,7 +86,7 @@ int kr_io2_flush (kr_io2_t *io) {
   return 0;
 }
 
-inline void kr_io2_pulled (kr_io2_t *io, size_t bytes) {
+void kr_io2_pulled (kr_io2_t *io, size_t bytes) {
   io->len -= bytes;
   io->rd_buf += bytes;
   

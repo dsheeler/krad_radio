@@ -11,13 +11,13 @@ static inline struct timespec nsec_to_ts (uint64_t nsecs) {
 	return ts;
 }
 
-inline struct timespec timespec_add_ns (struct timespec ts, uint64_t ns) {
+struct timespec timespec_add_ns (struct timespec ts, uint64_t ns) {
 	uint64_t nsecs = ts_to_nsec(ts);
 	nsecs += ns;
 	return nsec_to_ts (nsecs);
 }
 
-inline struct timespec timespec_add_ms (struct timespec ts, uint64_t ms) {
+struct timespec timespec_add_ms (struct timespec ts, uint64_t ms) {
 	return timespec_add_ns (ts, ms * 1000000);
 }
 

@@ -21,22 +21,22 @@ struct kr_ebml2_St {
   //unsigned char buffer[KRAD_EBML2_BUF_SZ];
 };
 
-inline void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
-inline void rmemcpy1 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy2 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy3 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy4 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy5 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy6 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy7 (unsigned char *dst, unsigned char *src);
-inline void rmemcpy8 (unsigned char *dst, unsigned char *src);
+void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
+void rmemcpy1 (unsigned char *dst, unsigned char *src);
+void rmemcpy2 (unsigned char *dst, unsigned char *src);
+void rmemcpy3 (unsigned char *dst, unsigned char *src);
+void rmemcpy4 (unsigned char *dst, unsigned char *src);
+void rmemcpy5 (unsigned char *dst, unsigned char *src);
+void rmemcpy6 (unsigned char *dst, unsigned char *src);
+void rmemcpy7 (unsigned char *dst, unsigned char *src);
+void rmemcpy8 (unsigned char *dst, unsigned char *src);
 
 int kr_ebml2_destroy (kr_ebml2_t **ebml);
 kr_ebml2_t *kr_ebml2_create ();
 
 int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, unsigned char *buffer, size_t len);
 
-inline void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element);
+void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element);
 void kr_ebml2_start_element (kr_ebml2_t *ebml, uint32_t element, unsigned char **position);
 void kr_ebml2_finish_element (kr_ebml2_t *ebml, unsigned char *element_position);
 void kr_ebml2_pack_data ( kr_ebml2_t *ebml, uint32_t element, void *data, uint64_t length);

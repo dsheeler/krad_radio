@@ -18,8 +18,8 @@ struct krad_ticker_St {
 };
 
 
-inline struct timespec timespec_add_ms (struct timespec ts, uint64_t ms);
-inline struct timespec timespec_add_ns (struct timespec ts, uint64_t ns);
+struct timespec timespec_add_ms (struct timespec ts, uint64_t ms);
+struct timespec timespec_add_ns (struct timespec ts, uint64_t ns);
 
 void krad_ticker_destroy (krad_ticker_t *krad_ticker);
 krad_ticker_t *krad_ticker_create (int numerator, int denominator);

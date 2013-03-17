@@ -298,7 +298,7 @@ int kr_response_to_rep (kr_crate_t *crate);
 void kr_response_address (kr_response_t *response, kr_address_t **address);
 void kr_address_debug_print (kr_address_t *addr);
 int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address);
-inline int krad_message_notice_has_payload (uint32_t type);
+int krad_message_notice_has_payload (uint32_t type);
 uint32_t kr_response_size (kr_response_t *kr_response);
 void kr_client_response_wait_print (kr_client_t *client);
 
