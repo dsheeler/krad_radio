@@ -254,7 +254,7 @@ krad_tags_t *krad_radio_find_tags_for_item ( krad_radio_t *krad_radio, char *ite
   if (portgroup != NULL) {
     return portgroup->krad_tags;
   } else {
-    return krad_transponder_get_tags_for_link (krad_radio->krad_transponder, item);
+    //return krad_transponder_get_tags_for_link (krad_radio->krad_transponder, item);
   }
 
   return NULL;

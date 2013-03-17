@@ -353,7 +353,7 @@ void krad_websocket_update_portgroup ( kr_ws_client_t *kr_ws_client, kr_address_
   cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
   cJSON_AddStringToObject (msg, "value", value);
   
-  //kr_tags (kr_ws_client->kr_client, portname);
+  //kr_tags (kr_ws_client->kr_client, address->id.name);
 }
 
 void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer) {
