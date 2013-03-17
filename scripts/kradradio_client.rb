@@ -212,7 +212,7 @@ class KradStation
 		thecmd = "krad_radio #{@name} #{action}"
 		#puts "command: #{thecmd}"
 		ret = `#{thecmd}`.chomp
-		sleep 0.05
+		#sleep 0.05
 		#puts ret
 		if $CHILD_STATUS.to_i != 0
 		  puts "ruh oh!"
