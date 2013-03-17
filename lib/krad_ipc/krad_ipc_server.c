@@ -416,8 +416,10 @@ static void krad_ipc_server_update_pollfds (krad_ipc_server_t *krad_ipc_server) 
     if (krad_ipc_server->clients[c].sd > 0) {
       krad_ipc_server->sockets[s].fd = krad_ipc_server->clients[c].sd;
       krad_ipc_server->sockets[s].events |= POLLIN;
+      if (kr_io2_want_out (krad_ipc_server->clients[c].out)) {
+        krad_ipc_server->sockets[s].events |= POLLOUT;
+      }
       krad_ipc_server->sockets_clients[s] = &krad_ipc_server->clients[c];
-      krad_ipc_server->clients[c].pollptr = &krad_ipc_server->sockets[s];
       s++;
     }
   }
@@ -443,6 +445,9 @@ static krad_ipc_broadcaster_t *krad_ipc_server_broadcaster_create ( krad_ipc_ser
     free (broadcaster);
     return NULL;
   }
+  
+  krad_system_set_socket_nonblocking (broadcaster->sockets[0]);
+  krad_system_set_socket_nonblocking (broadcaster->sockets[1]);  
 
   broadcaster->msg_ring = krad_ringbuffer_create ( 200 * sizeof(krad_broadcast_msg_t *) );
 
@@ -523,27 +528,24 @@ krad_broadcast_msg_t *krad_broadcast_msg_create (krad_ipc_broadcaster_t *broadca
 
 int krad_ipc_server_broadcaster_broadcast ( krad_ipc_broadcaster_t *broadcaster, krad_broadcast_msg_t **broadcast_msg ) {
 
-  struct pollfd pollfds[1];
   int ret;
-  int timeout;
   
-  timeout = 2;
-
+  if (krad_ringbuffer_write_space (broadcaster->msg_ring) < sizeof(krad_broadcast_msg_t *)) {
+    printke ("ahh fraking out of bradcast space");
+    return -1;
+  }
+  
   ret = krad_ringbuffer_write ( broadcaster->msg_ring, (char *)broadcast_msg, sizeof(krad_broadcast_msg_t *) );
   if (ret != sizeof(krad_broadcast_msg_t *)) {
     printke ("Krad IPC Server: invalid broadcast msg write len %d... broadcast ringbuffer full", ret);
     return -1;
   }
 
-  pollfds[0].fd = broadcaster->sockets[0];
-  pollfds[0].events = POLLOUT;
-  if (poll (pollfds, 1, timeout) == 1) {
-    ret = write (broadcaster->sockets[0], "0", 1);
-    if (ret == 1) {
-      return 1;
-    } else {
-      printke ("Krad IPC Server: some error broadcasting: %d", ret);
-    }
+  ret = write (broadcaster->sockets[0], "0", 1);
+  if (ret == 1) {
+    return 1;
+  } else {
+    printke ("Krad IPC Server: some error broadcasting: %d", ret);
   }
 
   return 0;
@@ -576,47 +578,50 @@ void krad_ipc_server_add_client_to_broadcast ( krad_ipc_server_t *krad_ipc_serve
 
 int handle_broadcast (krad_ipc_broadcaster_t *broadcaster) {
   
+  int item;
+  int items;
   int b;
   int c;
   int ret;
-  char buf[1];
+  char buf[32];
   krad_broadcast_msg_t *broadcast_msg;
   
   b = 0;
 
-  ret = read (broadcaster->sockets[1], buf, 1);
+  items = read (broadcaster->sockets[1], buf, 32);
 
-  if (ret != 1) {
+  if (items < 1) {
     printke ("Error handling broadcast");
     return -1;
   }
 
-  ret = krad_ringbuffer_read ( broadcaster->msg_ring, (char *)&broadcast_msg, sizeof(krad_broadcast_msg_t *) );
-  if (ret != sizeof(krad_broadcast_msg_t *)) {
-    printke ("Krad IPC Server: invalid broadcast msg read len %d", ret);
-    return -1;
-  }
-  
-  //if (broadcast_msg->skip_client != NULL) {
-  //  printk ("Goint to skip a client!!\n");
-  //}
-  
-  for (c = 0; c < KRAD_IPC_SERVER_MAX_CLIENTS; c++) {
-    if (broadcaster->ipc_server->clients[c].broadcasts == 1) {
-      if (&broadcaster->ipc_server->clients[c] != broadcast_msg->skip_client) {
-        kr_io2_pack (broadcaster->ipc_server->clients[c].out, broadcast_msg->buffer, broadcast_msg->size);
-        if (kr_io2_want_out (broadcaster->ipc_server->clients[c].out)) {
-          broadcaster->ipc_server->clients[c].pollptr->events |= POLLOUT;
+  for (item = 0; item < items; item++) {
+    ret = krad_ringbuffer_read ( broadcaster->msg_ring, (char *)&broadcast_msg, sizeof(krad_broadcast_msg_t *) );
+    if (ret != sizeof(krad_broadcast_msg_t *)) {
+      printke ("Krad IPC Server: invalid broadcast msg read len %d", ret);
+      return -1;
+    }
+    
+    //if (broadcast_msg->skip_client != NULL) {
+    //  printk ("Goint to skip a client!!\n");
+    //}
+    
+    for (c = 0; c < KRAD_IPC_SERVER_MAX_CLIENTS; c++) {
+      if (broadcaster->ipc_server->clients[c].broadcasts == 1) {
+        if (&broadcaster->ipc_server->clients[c] != broadcast_msg->skip_client) {
+          //FIXME prevent overpacking overflow
+          kr_io2_pack (broadcaster->ipc_server->clients[c].out, broadcast_msg->buffer, broadcast_msg->size);
+          b++;
         }
-        b++;
       }
     }
+    
+    //printk ("Krad IPC Server: Broadcasted to %d", b);
+    
+    krad_broadcast_msg_destroy (&broadcast_msg);
   }
-  
-  //printk ("Krad IPC Server: Broadcasted to %d", b);
-  
-  krad_broadcast_msg_destroy (&broadcast_msg);
-  return b;
+
+  return items;
 }
 
 static void *krad_ipc_server_run_thread (void *arg) {

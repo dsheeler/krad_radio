@@ -485,21 +485,21 @@ static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
         }
         
         kr_crate_recycle (&crate);
-        return 0;
+        continue;
     }
 
     if ((kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) &&
         (crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
         krad_websocket_remove_portgroup (kr_ws_client, crate->addr);
         kr_crate_recycle (&crate);
-        return 0;
+        continue;
     }
 
     if (kr_crate_loaded (crate)) {
       crate_to_json (kr_ws_client, crate);
+      kr_crate_recycle (&crate);
+      continue;
     }
-    
-    kr_crate_recycle (&crate);
   }
   
   return 0;
