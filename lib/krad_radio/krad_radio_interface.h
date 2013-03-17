@@ -22,6 +22,8 @@ struct krad_radio_client_St {
   int valid;
 };
 
+void krad_radio_pack_shipment_terminator (kr_ebml2_t *ebml);
+
 void *krad_radio_client_create (void *ptr);
 void krad_radio_client_destroy (void *ptr);
 int krad_radio_client_handler (kr_io2_t *in, kr_io2_t *out, void *ptr);

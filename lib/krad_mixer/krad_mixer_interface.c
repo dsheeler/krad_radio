@@ -101,8 +101,8 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   float floatval;
   int direction;
   int p;
-  int sd1;
-  int sd2;
+  //int sd1;
+  //int sd2;
   krad_radio_t *krad_radio;
   krad_mixer_t *krad_mixer;  
   kr_address_t address;
@@ -122,8 +122,8 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   krad_radio = client->krad_radio;
   krad_mixer = krad_radio->krad_mixer;
   kr_ipc = krad_radio->remote.krad_ipc;
-  sd1 = 0;
-  sd2 = 0;
+  //sd1 = 0;
+  //sd2 = 0;
   direction = 0;
   portgroupname[0] = '\0';
   portgroupname2[0] = '\0';
