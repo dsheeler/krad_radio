@@ -560,7 +560,7 @@ int krad_decklink_cpp_detect_devices () {
 }
 
 
-void krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
+int krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
 
   IDeckLinkIterator *deckLinkIterator;
   IDeckLink *deckLink;
@@ -572,14 +572,17 @@ void krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
 #ifdef FRAK_MACOSX
   CFStringRef device_name_temp;
 #endif
+  int ret;
+
   device_name_temp = NULL;
   device_count = 0;
+  ret = 0;
   
   deckLinkIterator = CreateDeckLinkIteratorInstance();
   
   if (deckLinkIterator == NULL) {
     printke ("krad_decklink_detect_devices: The DeckLink drivers may not be installed.");
-    return;
+    return ret;
   }
   
   while (deckLinkIterator->Next(&deckLink) == S_OK) {
@@ -588,14 +591,16 @@ void krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
 #ifdef KR_LINUX
       result = deckLink->GetModelName((const char **) &device_name_temp);
       if (result == S_OK) {
-        strcpy(device_name, device_name_temp);
-        free(device_name_temp);
+        strcpy (device_name, device_name_temp);
+        free (device_name_temp);
+        ret = 1;
 #endif
 #ifdef FRAK_MACOSX
       result = deckLink->GetModelName(&device_name_temp);
       if (result == S_OK) {
         CFStringGetCString(device_name_temp, device_name, 64, kCFStringEncodingMacRoman);
         CFRelease(device_name_temp);
+        ret = 1;
 #endif
 
        } else {
@@ -603,7 +608,7 @@ void krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
        }
         deckLink->Release();
         deckLinkIterator->Release();
-        return;
+        return ret;
        }
 
       device_count++;
@@ -612,7 +617,7 @@ void krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
     
     deckLinkIterator->Release();
     sprintf(device_name, "Could not get a device name for device %d", device_num);
-    return;
+    return ret;
   }
 }
 
