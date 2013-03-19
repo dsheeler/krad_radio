@@ -101,8 +101,6 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   float floatval;
   int direction;
   int p;
-  //int sd1;
-  //int sd2;
   krad_radio_t *krad_radio;
   krad_mixer_t *krad_mixer;  
   kr_address_t address;
@@ -122,8 +120,6 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   krad_radio = client->krad_radio;
   krad_mixer = krad_radio->krad_mixer;
   kr_ipc = krad_radio->remote.krad_ipc;
-  //sd1 = 0;
-  //sd2 = 0;
   direction = 0;
   portgroupname[0] = '\0';
   portgroupname2[0] = '\0';
@@ -322,31 +318,6 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
         }
       }
       break;
-    /*      
-    case EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_DESTROY:
-      for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
-        portgroup = krad_mixer->portgroup[p];
-        if (portgroup->io_type == KLOCALSHM) {
-          krad_mixer_portgroup_destroy (krad_mixer, portgroup);
-        }
-      }
-      break;
-    case EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_CREATE:
-      sd1 = 0;
-      sd2 = 0;
-      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);  
-      krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-      if (strncmp(string, "output", 6) == 0) {
-        direction = OUTPUT;
-      } else {
-        direction = INPUT;
-      }
-      sd1 = krad_ipc_server_recvfd (krad_ipc->current_client);
-      sd2 = krad_ipc_server_recvfd (krad_ipc->current_client);
-      printk ("AUDIOPORT_CREATE Got FD's %d and %d\n", sd1, sd2);
-      krad_mixer_local_portgroup_create (krad_mixer, "localport", direction, sd1, sd2);
-      break;
-    */
     case EBML_ID_KRAD_MIXER_CMD_GET_INFO:
       numbers[0] = 0;
       numbers[1] = 0;

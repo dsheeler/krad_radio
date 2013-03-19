@@ -1,7 +1,6 @@
 #include "krad_compositor_interface.h"
 
 void krad_compositor_videoport_rep_to_ebml2 (kr_port_t *port, kr_ebml2_t *ebml) {
-
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, port->sysname);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->direction);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->controls.x);
@@ -23,17 +22,15 @@ void krad_compositor_text_rep_to_ebml2 (krad_text_rep_t *text, kr_ebml2_t *ebml)
 
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, text->text);
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_FONT, text->font);
-  
   kr_ebml2_pack_float (ebml,
-                         EBML_ID_KRAD_COMPOSITOR_RED,
-                         text->red);
+                       EBML_ID_KRAD_COMPOSITOR_RED,
+                       text->red);
   kr_ebml2_pack_float (ebml,
-                         EBML_ID_KRAD_COMPOSITOR_GREEN,
-                         text->green);
+                       EBML_ID_KRAD_COMPOSITOR_GREEN,
+                       text->green);
   kr_ebml2_pack_float (ebml,
-                         EBML_ID_KRAD_COMPOSITOR_BLUE,
-                         text->blue);
-
+                       EBML_ID_KRAD_COMPOSITOR_BLUE,
+                       text->blue);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, text->controls.x);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.y);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.z);
@@ -76,27 +73,18 @@ int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videopo
   }
 
   strncpy (videoport_rep->sysname, videoport->sysname, sizeof(videoport_rep->sysname));
-
   videoport_rep->direction = videoport->direction;
-
   videoport_rep->controls.x = videoport->subunit.x;
   videoport_rep->controls.y = videoport->subunit.y;
   videoport_rep->controls.z = videoport->subunit.z;
- 
   videoport_rep->source_width = videoport->source_width;
   videoport_rep->source_height = videoport->source_height;
-  
   videoport_rep->crop_x = videoport->crop_x;
   videoport_rep->crop_y = videoport->crop_y;
-  
   videoport_rep->crop_width = videoport->crop_width;
   videoport_rep->crop_height = videoport->crop_height;
- 
- 
-  
   videoport_rep->controls.width = videoport->subunit.width;
   videoport_rep->controls.height = videoport->subunit.height;
-    
   videoport_rep->controls.rotation = videoport->subunit.rotation;
   videoport_rep->controls.opacity = videoport->subunit.opacity;
    
@@ -130,12 +118,8 @@ void krad_compositor_videoport_to_ebml2 ( kr_ebml2_t *ebml, krad_compositor_port
 int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
   kr_unit_control_t unit_control;
-  //char controlname[16];  
-  //void *ptr;
   int s;
   int type;
-  //int sd1;
-  //int sd2;
   krad_radio_t *krad_radio;
   krad_compositor_t *krad_compositor;
   kr_address_t address;
@@ -152,14 +136,10 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   uint32_t numbers[10];
   krad_ipc_server_t *kr_ipc;
 
-  //ptr = NULL;
   krad_radio = client->krad_radio;
   krad_compositor = krad_radio->krad_compositor;
   kr_ipc = krad_radio->remote.krad_ipc;
-  //sd1 = 0;
-  //sd2 = 0;
   s = 0;
-  //controlname[0] = '\0';
   string[0] = '\0';
   string2[0] = '\0';
 
@@ -334,6 +314,10 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
       break;
+    case EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND:
+      kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
+      krad_compositor_set_background (krad_compositor, string);
+      break;
     /*
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE:
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
@@ -348,26 +332,6 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
       nums[3] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
       printke ("Krad Compositor: FIXME Set resolution - %d x %d", nums[2], nums[3]);
-      break;
-    */
-    case EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND:
-      kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
-      krad_compositor_set_background (krad_compositor, string);
-      break;      
-    /*
-    case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
-      for (p = 0; p < KC_MAX_PORTS; p++) {
-        if (krad_compositor->port[p].local == 1) {
-          krad_compositor_port_destroy (krad_compositor, &krad_compositor->port[p]);
-          break;
-        }
-      }
-      break;
-    case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE:
-      sd1 = krad_ipc_server_recvfd (krad_ipc->current_client);
-      sd2 = krad_ipc_server_recvfd (krad_ipc->current_client);
-      printk ("VIDEOPORT_CREATE Got FD's %d and %d\n", sd1, sd2);
-      krad_compositor_local_port_create (krad_compositor, "localport", INPUT, sd1, sd2);
       break;
     */
     default:

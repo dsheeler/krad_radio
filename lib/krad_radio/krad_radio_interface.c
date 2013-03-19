@@ -333,7 +333,6 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
 
   switch ( command ) {
     case EBML_ID_KRAD_RADIO_CMD_GET_SYSTEM_INFO:
-      //printk ("command info");
       address.path.unit = KR_STATION;
       address.path.subunit.station_subunit = KR_STATION_UNIT;
 
@@ -351,7 +350,6 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
       kr_ebml2_finish_element (&ebml_out, response);
       break;
     case EBML_ID_KRAD_RADIO_CMD_LIST_TAGS:
-      //printk ("command list tags");
       kr_ebml2_unpack_element_string (&ebml_in, &element, string1, sizeof(string1));
       if (strncmp("station", string1, 7) == 0) {
         krad_tags = krad_radio->krad_tags;
@@ -373,8 +371,6 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
           kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_ITEM, string1);
           kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_NAME, tag_name);
           kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_VALUE, tag_val);
-          //kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_SOURCE, "");
-          //printk ("command get tags %s %s %s", tag_name, string1, tag_val);
           kr_ebml2_finish_element (&ebml_out, tag);
         }
         kr_ebml2_finish_element (&ebml_out, payload);
@@ -384,11 +380,10 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
       }
       break;
     case EBML_ID_KRAD_RADIO_CMD_SET_TAG:
-      //printk ("command set tag");
       ret = kr_ebml2_unpack_id (&ebml_in, &element, &size);
       kr_ebml2_unpack_element_string (&ebml_in, &element, string1, sizeof(string1));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
-      kr_ebml2_unpack_element_string (&ebml_in, &element, string3, sizeof(string1));
+      kr_ebml2_unpack_element_string (&ebml_in, &element, string3, sizeof(string3));
       if (strncmp("station", string1, 7) == 0) {
         krad_tags_set_tag ( krad_radio->krad_tags, string2, string3);
       } else {
@@ -403,7 +398,6 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
       //krad_ipc_server_broadcast_tag ( kr_ipc, tag_item, tag_name, tag_value);
       break;
     case EBML_ID_KRAD_RADIO_CMD_GET_TAG:
-      //printk ("command get tag");
       ret = kr_ebml2_unpack_id (&ebml_in, &element, &size);
       kr_ebml2_unpack_element_string (&ebml_in, &element, string1, sizeof(string1));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
@@ -412,13 +406,13 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
         tag_val = krad_tags_get_tag (krad_radio->krad_tags, string2);
       } else {
         tag_val = "";
-        //krad_tags = krad_radio_find_tags_for_item ( krad_radio, tag_item );
-        //if (krad_tags != NULL) {
-        //  tag_value = krad_tags_get_tag ( krad_tags, tag_name );
-        //  //printk ("Got Tag %s on %s - %s", tag_name, tag_item, tag_value);
-        //} else {
-        //  printke ("Could not find %s", tag_item);
-        //}
+        krad_tags = krad_radio_find_tags_for_item ( krad_radio, string1 );
+        if (krad_tags != NULL) {
+          tag_val = krad_tags_get_tag ( krad_tags, string2 );
+          printk ("Got Tag %s on %s - %s", string2, string1, tag_val);
+        } else {
+          printke ("Could not find %s", string1);
+        }
       }
       if (strlen(tag_val)) {
         address.path.unit = KR_STATION;
@@ -432,8 +426,6 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
         kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_ITEM, string1);
         kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_NAME, string2);
         kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_VALUE, tag_val);
-        //kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_TAG_SOURCE, "");
-        //printk ("command get tag %s %s %s", tag_val, string1, string2);
         kr_ebml2_finish_element (&ebml_out, tag);
         kr_ebml2_finish_element (&ebml_out, payload);
         kr_ebml2_finish_element (&ebml_out, response);
@@ -548,12 +540,10 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
 int krad_radio_client_handler ( kr_io2_t *in, kr_io2_t *out, void *ptr ) {
 
   krad_radio_client_t *client;
-  //krad_radio_t *krad_radio;
   int ret;
   uint32_t command;
 
   client = (krad_radio_client_t *)ptr;
-  //krad_radio = client->krad_radio;
 
   if (!client->valid) {
     ret = validate_client (in, out, client);
