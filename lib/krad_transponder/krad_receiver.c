@@ -229,11 +229,15 @@ void krad_receiver_stop_listening (krad_receiver_t *krad_receiver) {
 }
 
 
-int krad_receiver_listen_on (krad_receiver_t *krad_receiver, int port) {
+int krad_receiver_listen_on (krad_receiver_t *krad_receiver, uint16_t port) {
 
 	if (krad_receiver->listening == 1) {
 		krad_receiver_stop_listening (krad_receiver);
 	}
+
+  if (port == 0) {
+    return -1;
+  }
 
 	krad_receiver->port = port;
 	krad_receiver->listening = 1;

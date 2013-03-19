@@ -849,7 +849,7 @@ void krad_transmitter_stop_listening (krad_transmitter_t *krad_transmitter) {
 	}
 }
 
-int krad_transmitter_listen_on (krad_transmitter_t *krad_transmitter, int port) {
+int krad_transmitter_listen_on (krad_transmitter_t *krad_transmitter, uint16_t port) {
 
 	int ret;
 	int r;
@@ -862,6 +862,10 @@ int krad_transmitter_listen_on (krad_transmitter_t *krad_transmitter, int port) 
 	if (krad_transmitter->listening == 1) {
 		krad_transmitter_stop_listening (krad_transmitter);
 	}
+	
+  if (port == 0) {
+    return -1;
+  }
 
 	krad_transmitter->port = port;
 	krad_transmitter->listening = 1;

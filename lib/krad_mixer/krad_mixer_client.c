@@ -576,6 +576,7 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
   pos = 0;
 
   kr_ebml_to_mixer_rep (&crate->payload_ebml, &kr_mixer);
+  pos += sprintf (*string + pos, "Mixer Status:\n");  
   pos += sprintf (*string + pos, "Sample Rate: %u\n", kr_mixer.sample_rate);
   pos += sprintf (*string + pos, "Inputs: %u\n", kr_mixer.inputs);
   pos += sprintf (*string + pos, "Outputs: %u\n", kr_mixer.outputs);

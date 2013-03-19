@@ -241,6 +241,7 @@ int kr_compositor_crate_to_string_from_compositor (kr_crate_t *crate, char **str
   pos = 0;
 
   kr_ebml_to_compositor_rep (&crate->payload_ebml, &kr_compositor);
+  pos += sprintf (*string + pos, "Compositor Status:\n");  
   pos += sprintf (*string + pos, "Resolution: %ux%u\n", kr_compositor.width, kr_compositor.height);
   pos += sprintf (*string + pos, "Frame Rate: %u / %u\n",
                   kr_compositor.fps_numerator, kr_compositor.fps_denominator);
@@ -251,9 +252,9 @@ int kr_compositor_crate_to_string_from_compositor (kr_crate_t *crate, char **str
   pos += sprintf (*string + pos, "Outputs: %u\n", kr_compositor.outputs);
   pos += sprintf (*string + pos, "Frames: %"PRIu64"\n", kr_compositor.frames);
   if (strlen(kr_compositor.background_filename)) {
-    pos += sprintf (*string + pos, "Background: %s\n", kr_compositor.background_filename);
+    pos += sprintf (*string + pos, "Background: %s", kr_compositor.background_filename);
   } else {
-    pos += sprintf (*string + pos, "Background: Unset\n");
+    pos += sprintf (*string + pos, "Background: Unset");
   }
   return pos; 
 }

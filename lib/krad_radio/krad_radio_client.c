@@ -47,8 +47,6 @@ int kr_client_want_out (kr_client_t *client) {
   return kr_io2_want_out (client->io);
 }
 
-static int kr_remote_port_valid (int port);
-
 kr_client_t *kr_client_create (char *client_name) {
 
   kr_client_t *client;
@@ -1093,13 +1091,6 @@ void kr_system_info (kr_client_t *client) {
   kr_client_push (client);
 }
 
-static int kr_remote_port_valid (int port) {
-  if ((port >= 0) && (port <= 65535)) {
-    return 1;
-  }
-  return 0;
-}
-
 void kr_remote_list (kr_client_t *client) {
 
   unsigned char *command;
@@ -1118,7 +1109,7 @@ int kr_remote_on (kr_client_t *client, char *interface, int port) {
   unsigned char *radio_command;
   unsigned char *enable_remote;
 
-  if (!kr_remote_port_valid (port)) {
+  if (!kr_sys_port_valid (port)) {
     return -1;
   }
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
@@ -1141,7 +1132,7 @@ int kr_remote_off (kr_client_t *client, char *interface, int port) {
   unsigned char *radio_command;
   unsigned char *disable_remote;
 
-  if (!kr_remote_port_valid (port)) {
+  if (!kr_sys_port_valid (port)) {
     return -1;
   }
 

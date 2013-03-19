@@ -2,24 +2,13 @@
 
 int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
-	krad_link_t *krad_link;
-	
-	uint64_t bigint;
-	uint8_t tinyint;
 	int k;
 	int devices;
-	
-  kr_unit_control_t unit_control;
-  char controlname[16];  
-  void *ptr;
-  float floatval;
-  int direction;
-  int p;
-  //int sd1;
-  //int sd2;
   krad_radio_t *krad_radio;
-  krad_compositor_t *krad_compositor;
+  krad_transponder_t *krad_transponder;
+  kr_transponder_t transponder_rep;
   kr_address_t address;
+  krad_ipc_server_t *kr_ipc;
   unsigned char *response;
   unsigned char *payload;
   kr_ebml2_t ebml_in;
@@ -29,23 +18,14 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   uint64_t size;
   int ret;
   char string[512];
-  uint32_t numbers[10];
-  krad_ipc_server_t *kr_ipc;
-
+  uint16_t port;
+  
 	string[0] = '\0';
-	bigint = 0;
 	k = 0;
-
-
-  ptr = NULL;
+  port = 0;
   krad_radio = client->krad_radio;
-  krad_compositor = krad_radio->krad_compositor;
+  krad_transponder = krad_radio->krad_transponder;
   kr_ipc = krad_radio->remote.krad_ipc;
-  //sd1 = 0;
-  //sd2 = 0;
-
-  controlname[0] = '\0';
-  string[0] = '\0';
 
   if (!(kr_io2_has_in (in))) {
     return 0;
@@ -68,6 +48,24 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   kr_ebml2_set_buffer ( &ebml_out, out->buf, out->space );
 
 	switch ( command ) {
+	
+		case EBML_ID_KRAD_TRANSPONDER_CMD_GET_INFO:
+
+      memset (&transponder_rep, 0, sizeof (kr_transponder_t));
+      transponder_rep.receiver_port = krad_transponder->krad_receiver->port;
+      transponder_rep.transmitter_port = krad_transponder->krad_transmitter->port;
+
+      krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_transponder->address);
+      kr_ebml2_pack_uint32 ( &ebml_out,
+                             EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+                             EBML_ID_KRAD_UNIT_INFO);
+      kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+      kr_ebml2_pack_uint16 (&ebml_out, EBML_ID_KRAD_RADIO_TCP_PORT, transponder_rep.receiver_port);
+      kr_ebml2_pack_uint16 (&ebml_out, EBML_ID_KRAD_RADIO_TCP_PORT, transponder_rep.transmitter_port);      
+      kr_ebml2_finish_element (&ebml_out, payload);
+      kr_ebml2_finish_element (&ebml_out, response);
+
+		  break;
 /*
 		case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_LINKS:
 			//printk ("krad transponder handler! LIST_LINKS");
@@ -316,52 +314,24 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         }
       }
       break;
-/*
 		case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_ENABLE:
-		
-			krad_ebml_read_element ( krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_RADIO_TCP_PORT) {
-				printke ("hrm wtf6");
-			}
-		
-			bigint = krad_ebml_read_number ( krad_ipc->current_client->krad_ebml, ebml_data_size);
-		
-			krad_receiver_listen_on (krad_transponder->krad_receiver, bigint);
-		
+      kr_ebml2_unpack_element_uint16 (&ebml_in, &element, &port);
+			krad_receiver_listen_on (krad_transponder->krad_receiver, port);
 			break;
-
 		case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_DISABLE:
-		
 			krad_receiver_stop_listening (krad_transponder->krad_receiver);
-		
 			break;
-			
-			
 		case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_ENABLE:
-		
-			krad_ebml_read_element ( krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-			if (ebml_id != EBML_ID_KRAD_RADIO_TCP_PORT) {
-				printke ("hrm wtf6");
-			}
-		
-			bigint = krad_ebml_read_number ( krad_ipc->current_client->krad_ebml, ebml_data_size);
-		
-			krad_transmitter_listen_on (krad_transponder->krad_transmitter, bigint);
-		
+      kr_ebml2_unpack_element_uint16 (&ebml_in, &element, &port);
+			krad_transmitter_listen_on (krad_transponder->krad_transmitter, port);
 			break;
-
 		case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_DISABLE:
-		
 			krad_transmitter_stop_listening (krad_transponder->krad_transmitter);
-		
 			break;			
-    */
     default:
       return -1;    
   }
-  
+
   if ((ebml_out.pos > 0) && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   }

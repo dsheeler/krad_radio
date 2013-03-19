@@ -213,19 +213,23 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if ((strncmp(argv[2], "info", 4) == 0) || (strncmp(argv[2], "sys", 3) == 0)) {
+  if ((strlen(argv[2]) == 4) && (strncmp(argv[2], "info", 4) == 0)) {
     kr_system_info (client);
+    kr_delivery_accept_and_report (client);
+    printf ("\n");
+    kr_mixer_info (client);
+    kr_delivery_accept_and_report (client);
+    printf ("\n");
+    kr_compositor_info (client);
+    kr_delivery_accept_and_report (client);
+    printf ("\n");
+    kr_transponder_info (client);
     kr_delivery_accept_and_report (client);
   }
 
-  if (strncmp(argv[2], "cpu", 4) == 0) {
-    //FIXME
-    //kr_delivery_accept_and_report (client);
-  }
-
-  if (strncmp(argv[2], "uptime", 6) == 0) {
-    //FIXME
-    //kr_delivery_accept_and_report (client);
+  if ((strlen(argv[2]) == 7) && (strncmp(argv[2], "sysinfo", 7) == 0)) {
+    kr_system_info (client);
+    kr_delivery_accept_and_report (client);
   }
   
   if (strncmp(argv[2], "setdir", 6) == 0) {
@@ -586,12 +590,6 @@ int main (int argc, char *argv[]) {
       kr_compositor_snapshot_jpeg (client);
     }
   }
-  
-  if (strncmp(argv[2], "lastsnap", 8) == 0) {
-    //FIXME
-    //kr_compositor_info (client);
-    //kr_delivery_accept_and_report (client);        
-  }
 
   if ((strncmp(argv[2], "comp", 4) == 0) ||
       ((strncmp(argv[2], "c", 1) == 0) && (strlen(argv[2]) == 1))) {
@@ -641,6 +639,11 @@ int main (int argc, char *argv[]) {
   }
 
   /* Krad Transponder Commands */      
+
+  if ((strlen(argv[2]) == 4) && (strncmp(argv[2], "xpdr", 4) == 0)) {
+    kr_transponder_info (client);
+    kr_delivery_accept_and_report (client);
+  }
 
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {

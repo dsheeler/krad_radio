@@ -2054,6 +2054,9 @@ krad_transponder_t *krad_transponder_create (krad_radio_t *krad_radio) {
   
   krad_transponder = calloc (1, sizeof(krad_transponder_t));
 
+  krad_transponder->address.path.unit = KR_TRANSPONDER;
+  krad_transponder->address.path.subunit.mixer_subunit = KR_UNIT;
+
   krad_transponder->krad_radio = krad_radio;
   krad_transponder->krad_receiver = krad_receiver_create (krad_transponder);  
   krad_transponder->krad_transmitter = krad_transmitter_create ();

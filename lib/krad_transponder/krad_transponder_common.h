@@ -1,11 +1,13 @@
-#ifndef KRAD_LINK_COMMON_H
-#define KRAD_LINK_COMMON_H
+#ifndef KRAD_TRANSPONDER_COMMON_H
+#define KRAD_TRANSPONDER_COMMON_H
 
 #include <string.h>
 #include <opus_defines.h>
-
+#include "krad_ebml2.h"
 #include "krad_codec_header.h"
 
+typedef struct krad_transponder_rep_St krad_transponder_rep_t;
+typedef struct krad_transponder_rep_St kr_transponder_t;
 typedef struct krad_link_rep_St krad_link_rep_t;
 
 typedef enum {
@@ -38,6 +40,10 @@ typedef enum {
 	NOVIDEO,
 } krad_link_video_source_t;
 
+struct krad_transponder_rep_St {
+  uint16_t receiver_port;
+  uint16_t transmitter_port;  
+};
 
 int krad_opus_string_to_bandwidth (char *string);
 int krad_opus_string_to_signal (char *string);

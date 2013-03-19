@@ -143,7 +143,7 @@ char *krad_system_os_type ();
 char *krad_system_info();
 uint64_t krad_system_daemon_uptime ();
 void krad_system_info_collect ();
-
+int kr_sys_port_valid (int port);
 uint64_t krad_unixtime ();
 void failfast (char* format, ...);
 void printke (char* format, ...);

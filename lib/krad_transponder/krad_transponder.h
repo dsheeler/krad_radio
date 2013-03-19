@@ -29,6 +29,7 @@ typedef struct krad_transponder_St krad_transponder_t;
 #define HELP -1337
 
 struct krad_transponder_St {
+  kr_address_t address;
 	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_LINKS];
 	krad_radio_t *krad_radio;
 	krad_receiver_t *krad_receiver;	

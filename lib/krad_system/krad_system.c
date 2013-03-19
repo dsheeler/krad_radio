@@ -258,9 +258,7 @@ void krad_system_set_monitor_cpu_callback (void *callback_pointer,
   kcm->cpu_monitor_callback = cpu_monitor_callback;               
 }
 
-
 char *krad_system_info () {
-
   return krad_system.info_string;
 }
 
@@ -446,6 +444,13 @@ void krad_system_set_thread_name (char *name) {
   }
 }
 
+int kr_sys_port_valid (int port) {
+  if ((port >= 0) && (port <= 65535)) {
+    return 1;
+  }
+  return 0;
+}
+
 uint64_t krad_unixtime () {
 
   uint64_t seconds;
@@ -583,7 +588,7 @@ int krad_valid_host_and_port (char *string) {
     memset (host, '\0', 128);
     memcpy (host, string, strlen(string) - strlen(strrchr(string, ':')));
     //if (((port >= 0) && (port <= 65535)) && (strlen(host) > 3)) {
-    if (((port >= 0) && (port <= 65535)) && (1)) {
+    if (kr_sys_port_valid (port)) {
       //printk ("Got host %s and port %d\n", host, port);
       return 1;
     } else {

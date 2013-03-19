@@ -38,7 +38,7 @@ struct krad_receiver_client_St {
 };
 
 void krad_receiver_stop_listening (krad_receiver_t *krad_receiver);
-int krad_receiver_listen_on (krad_receiver_t *krad_receiver, int port);
+int krad_receiver_listen_on (krad_receiver_t *krad_receiver, uint16_t port);
 
 void krad_receiver_destroy (krad_receiver_t *krad_receiver);
 krad_receiver_t *krad_receiver_create (krad_transponder_t *krad_transponder);

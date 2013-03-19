@@ -23,14 +23,14 @@
 
 int kr_transponder_crate_to_string (kr_crate_t *crate, char **string);
 
+void kr_transponder_info (kr_client_t *client);
 void kr_transponder_adapters (kr_client_t *client);
 
 /** Transponder **/
 
+int kr_transponder_transmitter_enable (kr_client_t *client, int port);
 void kr_transponder_transmitter_disable (kr_client_t *client);
-void kr_transponder_transmitter_enable (kr_client_t *client, int port);
-
-void kr_transponder_receiver_enable (kr_client_t *client, int port);
+int kr_transponder_receiver_enable (kr_client_t *client, int port);
 void kr_transponder_receiver_disable (kr_client_t *client);
 
 void kr_transponder_play (kr_client_t *client, char *path);
