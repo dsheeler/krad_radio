@@ -120,6 +120,7 @@ krad_frame_t *krad_compositor_port_pull_yuv_frame (krad_compositor_port_t *krad_
 void krad_compositor_get_frame_rate (krad_compositor_t *krad_compositor,
                                      int *fps_numerator, int *fps_denominator);
 void krad_compositor_get_resolution (krad_compositor_t *compositor, int *width, int *height);
+void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, uint32_t width, uint32_t height);
 void krad_compositor_close_display (krad_compositor_t *krad_compositor);
 void krad_compositor_open_display (krad_compositor_t *krad_compositor);
 

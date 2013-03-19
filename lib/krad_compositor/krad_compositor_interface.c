@@ -321,22 +321,16 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
       krad_compositor_set_background (krad_compositor, string);
       break;
-    /*
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE:
-      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      nums[0] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      nums[1] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      printke ("Krad Compositor: FIXME Set frame rate - %d / %d", nums[0], nums[1]);
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[1]);
+      printke ("Krad Compositor: FIXME Set frame rate - %d / %d", numbers[0], numbers[1]);
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_RESOLUTION:
-      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      nums[2] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      nums[3] = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-      printke ("Krad Compositor: FIXME Set resolution - %d x %d", nums[2], nums[3]);
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[1]);
+      krad_compositor_set_resolution (krad_compositor, numbers[0], numbers[1]);
       break;
-    */
     default:
       return -1;    
   }

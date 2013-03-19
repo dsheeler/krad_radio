@@ -111,21 +111,27 @@ void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denom
   kr_client_push (client);
 }
 
-void kr_compositor_set_resolution (kr_client_t *client, int width, int height) {
+int kr_compositor_set_resolution (kr_client_t *client, uint32_t width, uint32_t height) {
 
   unsigned char *compositor_command;
   unsigned char *set_resolution;
   
+  if ((width == 0) || (height == 0) || (width > 8192) || (height > 8192)) {
+    return -1;
+  }
+  
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_RESOLUTION, &set_resolution);
 
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_WIDTH, width);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_HEIGHT, height);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_WIDTH, width);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_HEIGHT, height);
 
   kr_ebml2_finish_element (client->ebml2, set_resolution);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
   kr_client_push (client);
+
+  return 0;
 }
 
 void kr_compositor_info (kr_client_t *client) {

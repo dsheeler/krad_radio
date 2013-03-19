@@ -1819,8 +1819,8 @@ krad_link_t *krad_link_prepare (int linknum) {
   krad_link->capture_width = 0;
   krad_link->capture_height = 0;
   krad_link->vp8_bitrate = DEFAULT_VPX_BITRATE;
-  strncpy(krad_link->device, DEFAULT_V4L2_DEVICE, sizeof(krad_link->device));
-  sprintf(krad_link->output, "%s/Videos/krad_link_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
+  strncpy (krad_link->device, DEFAULT_V4L2_DEVICE, sizeof(krad_link->device));
+  sprintf (krad_link->output, "%s/Videos/krad_link_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
   krad_link->port = 0;
   krad_link->operation_mode = CAPTURE;
   krad_link->video_codec = KRAD_LINK_DEFAULT_VIDEO_CODEC;

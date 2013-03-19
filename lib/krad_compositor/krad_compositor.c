@@ -9,7 +9,6 @@ static void krad_compositor_alloc_framepool (krad_compositor_t *compositor);
 static void krad_compositor_prepare_subunits (krad_compositor_t *compositor);
 static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor);
 static void *krad_compositor_ticker_thread (void *arg);
-static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height);
 static void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
                                             int fps_numerator, int fps_denominator);
 
@@ -1356,11 +1355,12 @@ int krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t
   return 0;  
 }
 
-static void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, int width, int height) {
-
-  krad_compositor->width = width;
-  krad_compositor->height = height;
-  krad_compositor->frame_byte_size = krad_compositor->width * krad_compositor->height * 4;
+void krad_compositor_set_resolution (krad_compositor_t *krad_compositor, uint32_t width, uint32_t height) {
+  if (krad_compositor->had_a_subunit == 0) {
+    krad_compositor->width = width;
+    krad_compositor->height = height;
+    krad_compositor->frame_byte_size = krad_compositor->width * krad_compositor->height * 4;
+  }
 }
 
 static void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
