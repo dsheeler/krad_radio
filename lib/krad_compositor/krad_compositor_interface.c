@@ -91,6 +91,34 @@ int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videopo
   return 1;
 }
 
+void krad_compositor_to_ebml ( kr_ebml2_t *ebml, krad_compositor_t *krad_compositor ) {
+
+  char *name;
+
+  name = "";
+
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_WIDTH, krad_compositor->width);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_HEIGHT, krad_compositor->height);  
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR,
+                                   krad_compositor->fps_numerator);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR,
+                                   krad_compositor->fps_denominator);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_COUNT,
+                                   krad_compositor->active_sprites);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT_COUNT,
+                                   krad_compositor->active_texts);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_VECTOR_COUNT,
+                                   krad_compositor->active_vectors);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
+                                   krad_compositor->active_input_ports);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
+                                   krad_compositor->active_output_ports);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
+                                   krad_compositor->frames);
+  krad_compositor_get_background_name (krad_compositor, &name);
+  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, name);
+}
+
 void krad_compositor_sprite_to_ebml2 ( kr_ebml2_t *ebml, krad_sprite_t *sprite ) {
   krad_sprite_rep_t sprite_rep;
   krad_sprite_to_rep (sprite, &sprite_rep);
@@ -285,32 +313,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-    
-
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_WIDTH, krad_compositor->width);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_HEIGHT, krad_compositor->height);  
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR,
-                                       krad_compositor->fps_numerator);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR,
-                                       krad_compositor->fps_denominator);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_SPRITE_COUNT,
-                                       krad_compositor->active_sprites);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_TEXT_COUNT,
-                                       krad_compositor->active_texts);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_VECTOR_COUNT,
-                                       krad_compositor->active_vectors);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
-                                       krad_compositor->active_input_ports);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
-                                       krad_compositor->active_output_ports);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_COMPOSITOR_PORT_COUNT,
-                                       krad_compositor->frames);
-      if (krad_compositor_get_background_name (krad_compositor, string)) {
-        kr_ebml2_pack_string (&ebml_out, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, string);
-      } else {
-        kr_ebml2_pack_string (&ebml_out, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, "");
-      }
-      
+      krad_compositor_to_ebml (&ebml_out, krad_compositor);
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
       break;
@@ -337,14 +340,14 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
     default:
       return -1;    
   }
-  
+
   if ((ebml_out.pos > 0) && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   }
 
   kr_io2_pulled (in, ebml_in.pos);
   kr_io2_advance (out, ebml_out.pos);
-  
+
   return 0;
 }
 

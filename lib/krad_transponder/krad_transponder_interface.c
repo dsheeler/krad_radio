@@ -1,12 +1,28 @@
 #include "krad_transponder_interface.h"
 
+void krad_transponder_to_rep ( krad_transponder_t *krad_transponder, kr_transponder_t *transponder_rep ) {
+  transponder_rep->receiver_port = krad_transponder->krad_receiver->port;
+  transponder_rep->transmitter_port = krad_transponder->krad_transmitter->port;
+}
+
+void krad_transponder_rep_to_ebml ( kr_ebml2_t *ebml, kr_transponder_t *transponder_rep ) {
+  kr_ebml2_pack_uint16 (ebml, EBML_ID_KRAD_RADIO_TCP_PORT, transponder_rep->receiver_port);
+  kr_ebml2_pack_uint16 (ebml, EBML_ID_KRAD_RADIO_TCP_PORT, transponder_rep->transmitter_port);
+}
+
+void krad_transponder_to_ebml ( kr_ebml2_t *ebml, krad_transponder_t *krad_transponder ) {
+  kr_transponder_t transponder_rep;
+  memset (&transponder_rep, 0, sizeof (kr_transponder_t));
+  krad_transponder_to_rep (krad_transponder, &transponder_rep);
+  krad_transponder_rep_to_ebml (ebml, &transponder_rep);
+}
+
 int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
 	int k;
 	int devices;
   krad_radio_t *krad_radio;
   krad_transponder_t *krad_transponder;
-  kr_transponder_t transponder_rep;
   kr_address_t address;
   krad_ipc_server_t *kr_ipc;
   unsigned char *response;
@@ -50,21 +66,14 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
 	switch ( command ) {
 	
 		case EBML_ID_KRAD_TRANSPONDER_CMD_GET_INFO:
-
-      memset (&transponder_rep, 0, sizeof (kr_transponder_t));
-      transponder_rep.receiver_port = krad_transponder->krad_receiver->port;
-      transponder_rep.transmitter_port = krad_transponder->krad_transmitter->port;
-
       krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_transponder->address);
       kr_ebml2_pack_uint32 ( &ebml_out,
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-      kr_ebml2_pack_uint16 (&ebml_out, EBML_ID_KRAD_RADIO_TCP_PORT, transponder_rep.receiver_port);
-      kr_ebml2_pack_uint16 (&ebml_out, EBML_ID_KRAD_RADIO_TCP_PORT, transponder_rep.transmitter_port);      
+      krad_transponder_to_ebml (&ebml_out, krad_transponder);
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
-
 		  break;
 /*
 		case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_LINKS:

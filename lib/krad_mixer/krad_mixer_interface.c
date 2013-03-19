@@ -88,6 +88,53 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
   }
 }
 
+void krad_mixer_to_rep ( krad_mixer_t *krad_mixer, kr_mixer_t *mixer_rep ) {
+
+  krad_mixer_portgroup_t *portgroup;
+  int p;
+
+  p = 0;
+  portgroup = NULL;
+
+  for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+    portgroup = krad_mixer->portgroup[p];
+    if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2))) {
+      if (portgroup->direction == INPUT) {
+        mixer_rep->inputs++;
+      }
+      if (portgroup->direction == OUTPUT) {
+        mixer_rep->outputs++;
+      }
+      if (portgroup->direction == MIX) {
+        mixer_rep->buses++;
+      }
+    }
+  }
+  
+  mixer_rep->sample_rate = krad_mixer_get_sample_rate (krad_mixer);
+  
+  if (krad_mixer->pusher == JACK) {
+    strncpy (mixer_rep->time_source, "Jack", sizeof(mixer_rep->time_source));
+  } else {
+    strncpy (mixer_rep->time_source, "Internal Chronometer", sizeof(mixer_rep->time_source));  
+  }  
+}
+
+void krad_mixer_rep_to_ebml ( kr_ebml2_t *ebml, kr_mixer_t *mixer_rep ) {
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mixer_rep->sample_rate);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mixer_rep->inputs);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mixer_rep->outputs);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mixer_rep->buses);
+  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_TIME_SOURCE, mixer_rep->time_source);
+}
+
+void krad_mixer_to_ebml ( kr_ebml2_t *ebml, krad_mixer_t *krad_mixer ) {
+  kr_mixer_t mixer_rep;
+  memset (&mixer_rep, 0, sizeof (kr_mixer_t));
+  krad_mixer_to_rep (krad_mixer, &mixer_rep);
+  krad_mixer_rep_to_ebml (ebml, &mixer_rep);
+}
+
 int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
   krad_mixer_portgroup_t *portgroup;
@@ -319,38 +366,12 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_GET_INFO:
-      numbers[0] = 0;
-      numbers[1] = 0;
-      numbers[2] = 0;
-      for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
-        portgroup = krad_mixer->portgroup[p];
-        if ((portgroup != NULL) && ((portgroup->active == 1) || (portgroup->active == 2))) {
-          if (portgroup->direction == INPUT) {
-            numbers[0]++;
-          }
-          if (portgroup->direction == OUTPUT) {
-            numbers[1]++;
-          }
-          if (portgroup->direction == MIX) {
-            numbers[2]++;
-          }
-        }
-      }
       krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_mixer->address);
       kr_ebml2_pack_uint32 ( &ebml_out,
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_MIXER_SAMPLE_RATE,
-                            krad_mixer_get_sample_rate (krad_mixer));
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, numbers[0]);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, numbers[1]);
-      kr_ebml2_pack_uint32 (&ebml_out, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, numbers[2]);
-      if (krad_mixer->pusher == JACK) {
-        kr_ebml2_pack_string (&ebml_out, EBML_ID_KRAD_MIXER_TIME_SOURCE, "Jack");
-      } else {
-        kr_ebml2_pack_string (&ebml_out, EBML_ID_KRAD_MIXER_TIME_SOURCE, "Internal Chronometer");
-      }
+      krad_mixer_to_ebml (&ebml_out, krad_mixer);
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
       break;

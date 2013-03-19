@@ -277,6 +277,13 @@ uint32_t full_command (kr_io2_t *in) {
   return element;
 }
 
+void krad_radio_to_ebml ( kr_ebml2_t *ebml, krad_radio_t *krad_radio ) {
+  kr_ebml2_pack_string ( ebml, EBML_ID_KRAD_RADIO_SYSTEM_INFO, krad_system_info());
+  kr_ebml2_pack_string ( ebml, EBML_ID_KRAD_RADIO_LOGNAME, krad_radio->log.filename);
+  kr_ebml2_pack_uint64 ( ebml, EBML_ID_KRAD_RADIO_UPTIME, krad_system_daemon_uptime());
+  kr_ebml2_pack_uint32 ( ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, krad_system_get_cpu_usage());
+}
+
 int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
   krad_radio_t *krad_radio;
@@ -342,10 +349,7 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
                              EBML_ID_KRAD_UNIT_INFO);
 
       kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-      kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_SYSTEM_INFO, krad_system_info());
-      kr_ebml2_pack_string ( &ebml_out, EBML_ID_KRAD_RADIO_LOGNAME, krad_radio->log.filename);
-      kr_ebml2_pack_uint64 ( &ebml_out, EBML_ID_KRAD_RADIO_UPTIME, krad_system_daemon_uptime());
-      kr_ebml2_pack_uint32 ( &ebml_out, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, krad_system_get_cpu_usage());
+      krad_radio_to_ebml (&ebml_out, krad_radio);
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
       break;
