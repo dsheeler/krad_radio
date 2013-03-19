@@ -635,6 +635,7 @@ static void krad_vector_render_clock (cairo_t *cr, int x, int y, int width, int 
   cairo_fill(cr) ;
 }
 
+/*
 static void
 patch_arc (cairo_pattern_t *pattern,
      double x, double y,
@@ -724,16 +725,16 @@ patch_rect (cairo_pattern_t *pattern,
     patch_line (pattern, x1, y1, x0, y1, radius, r, g, b, a);
     patch_line (pattern, x0, y1, x0, y0, radius, r, g, b, a);
 }
-
+*/
 static void krad_vector_render_shadow (cairo_t *cr, int x, int y, int w, int h, float r, float g, float b, float a) {
 
-  cairo_pattern_t *pattern;
-  float radius = 60;
+  //cairo_pattern_t *pattern;
+  //float radius = 60;
 
-  pattern = cairo_pattern_create_mesh ();
+  //pattern = cairo_pattern_create_mesh ();
 
-  patch_rect (pattern, x - w /2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0, radius, r, g, b, a);
+  //patch_rect (pattern, x - w /2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0, radius, r, g, b, a);
 
-  cairo_set_source (cr, pattern);
-  cairo_paint (cr);
+  //cairo_set_source (cr, pattern);
+  //cairo_paint (cr);
 }
