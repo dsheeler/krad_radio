@@ -1,4 +1,4 @@
-#define VERSION_NUMBER 18
+#define VERSION_NUMBER 20
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
