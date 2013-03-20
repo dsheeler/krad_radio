@@ -19,7 +19,7 @@ void krad_transponder_to_ebml ( kr_ebml2_t *ebml, krad_transponder_t *krad_trans
 
 int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
-	int k;
+	int i;
 	int devices;
   krad_radio_t *krad_radio;
   krad_transponder_t *krad_transponder;
@@ -37,7 +37,6 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   uint16_t port;
   
 	string[0] = '\0';
-	k = 0;
   port = 0;
   krad_radio = client->krad_radio;
   krad_transponder = krad_radio->krad_transponder;
@@ -75,217 +74,28 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
 		  break;
-/*
-		case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_LINKS:
-			//printk ("krad transponder handler! LIST_LINKS");
-			
-			krad_Xtransponder_list ( krad_transponder->krad_Xtransponder );
-			
-			krad_ipc_server_response_start ( krad_ipc, EBML_ID_KRAD_TRANSPONDER_MSG, &response);
-
-			
-			for (k = 0; k < KRAD_TRANSPONDER_MAX_LINKS; k++) {
-				if (krad_transponder->krad_link[k] != NULL) {
-					printk ("Link %d Active: %s", k, krad_transponder->krad_link[k]->mount);
-					krad_transponder_link_to_ebml ( krad_ipc->current_client, krad_transponder->krad_link[k]);
-				}
-			}
-			
-
-			krad_ipc_server_response_finish ( krad_ipc, response );	
-						
-			break;
-			
-		case EBML_ID_KRAD_TRANSPONDER_CMD_CREATE_LINK:
-			for (k = 0; k < KRAD_TRANSPONDER_MAX_LINKS; k++) {
-				if (krad_transponder->krad_link[k] == NULL) {
-
-					krad_transponder->krad_link[k] = krad_link_prepare (k);
-					krad_link = krad_transponder->krad_link[k];
-					krad_link->link_num = k;
+		case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST:
+		  break;
+		case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY:
+		  break;
+		case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE:
+		  break;
+		case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE:
+		  /*
+			for (i = 0; i < KRAD_TRANSPONDER_MAX_LINKS; i++) {
+				if (krad_transponder->krad_link[i] == NULL) {
+					krad_transponder->krad_link[i] = krad_link_prepare (i);
+					krad_link = krad_transponder->krad_link[i];
+					krad_link->link_num = i;
 					krad_link->krad_radio = krad_transponder->krad_radio;
 					krad_link->krad_transponder = krad_transponder;
-					krad_transponder_ebml_to_link ( krad_ipc, krad_link );
+					//krad_transponder_ebml_to_link ( krad_ipc, krad_link );
 					krad_link_start (krad_link);
-				
-				  *//*
-					if ((krad_link->operation_mode == TRANSMIT) || (krad_link->operation_mode == RECORD)) {
-						if (krad_link_wait_codec_init (krad_link) == 0) {
-							krad_transponder_broadcast_link_created ( krad_ipc, krad_link );
-						}
-					} else {
-						krad_transponder_broadcast_link_created ( krad_ipc, krad_link );
-					}
-          *//*
 					break;
 				}
 			}
+			*/
 			break;
-		case EBML_ID_KRAD_TRANSPONDER_CMD_DESTROY_LINK:
-			tinyint = krad_ipc_server_read_number (krad_ipc, ebml_data_size);
-			k = tinyint;
-			//printk ("krad transponder handler! DESTROY_LINK: %d %u", k, tinyint);
-			
-			if (krad_transponder->krad_link[k] != NULL) {
-				krad_link_destroy (krad_transponder->krad_link[k]);
-				krad_transponder->krad_link[k] = NULL;
-			}
-			*//*
-			krad_ipc_server_simple_number_broadcast ( krad_ipc,
-													  EBML_ID_KRAD_TRANSPONDER_MSG,
-													  EBML_ID_KRAD_TRANSPONDER_LINK_DESTROYED,
-													  EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER,
-											 		  k);			
-			*//*
-			break;
-		case EBML_ID_KRAD_TRANSPONDER_CMD_UPDATE_LINK:
-			//printk ("krad transponder handler! UPDATE_LINK");
-
-			krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-			
-			if (ebml_id == EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER) {
-			
-				tinyint = krad_ipc_server_read_number (krad_ipc, ebml_data_size);
-				k = tinyint;
-				//printk ("krad transponder handler! UPDATE_LINK: %d %u", k, tinyint);
-			
-				if (krad_transponder->krad_link[k] != NULL) {
-
-					krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);	
-
-					if (krad_transponder->krad_link[k]->audio_codec == OPUS) {
-
-						*//*
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_APPLICATION) {
-							krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-							if (strncmp(string, "OPUS_APPLICATION_VOIP", 21) == 0) {
-								krad_opus_set_application (krad_transponder->krad_link[k]->krad_opus, OPUS_APPLICATION_VOIP);
-							}
-							if (strncmp(string, "OPUS_APPLICATION_AUDIO", 22) == 0) {
-								krad_opus_set_application (krad_transponder->krad_link[k]->krad_opus, OPUS_APPLICATION_AUDIO);
-							}
-							if (strncmp(string, "OPUS_APPLICATION_RESTRICTED_LOWDELAY", 36) == 0) {
-								krad_opus_set_application (krad_transponder->krad_link[k]->krad_opus, OPUS_APPLICATION_RESTRICTED_LOWDELAY);
-							}
-						}
-						*//*
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_SIGNAL) {
-							krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-
-							krad_opus_set_signal (krad_transponder->krad_link[k]->krad_opus, 
-													krad_opus_string_to_signal(string));
-						}
-						
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_BANDWIDTH) {
-							
-							krad_ebml_read_string (krad_ipc->current_client->krad_ebml, string, ebml_data_size);
-							
-							krad_opus_set_bandwidth (krad_transponder->krad_link[k]->krad_opus, 
-													krad_opus_string_to_bandwidth(string));
-						}						
-
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_BITRATE) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if ((bigint >= 500) && (bigint <= 512000)) {
-								krad_opus_set_bitrate (krad_transponder->krad_link[k]->krad_opus, bigint);
-							}
-						}
-						
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_COMPLEXITY) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if ((bigint >= 0) && (bigint <= 10)) {
-								krad_opus_set_complexity (krad_transponder->krad_link[k]->krad_opus, bigint);
-							}
-						}						
-				
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_FRAME_SIZE) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-							if ((bigint == 120) || (bigint == 240) || (bigint == 480) || (bigint == 960) || (bigint == 1920) || (bigint == 2880)) {
-								krad_opus_set_frame_size (krad_transponder->krad_link[k]->krad_opus, bigint);
-							}
-						}
-						
-						//FIXME verify ogg container
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_OGG_MAX_PACKETS_PER_PAGE) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-							if ((bigint > 0) && (bigint < 200)) {					
-								krad_ogg_set_max_packets_per_page (krad_transponder->krad_link[k]->krad_container->krad_ogg, bigint);
-							}
-						}
-					}
-					
-					if (krad_transponder->krad_link[k]->video_codec == THEORA) {
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_THEORA_QUALITY) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-							krad_theora_encoder_quality_set (krad_transponder->krad_link[k]->krad_theora_encoder, bigint);
-						}
-					}				
-					
-					if (krad_transponder->krad_link[k]->video_codec == VP8) {
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_VP8_BITRATE) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if (bigint > 0) {
-								krad_vpx_encoder_bitrate_set (krad_transponder->krad_link[k]->krad_vpx_encoder, bigint);
-							}
-						}
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_VP8_MIN_QUANTIZER) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if (bigint > 0) {
-								krad_vpx_encoder_min_quantizer_set (krad_transponder->krad_link[k]->krad_vpx_encoder, bigint);
-							}
-						}
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_VP8_MAX_QUANTIZER) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if (bigint > 0) {
-								krad_vpx_encoder_max_quantizer_set (krad_transponder->krad_link[k]->krad_vpx_encoder, bigint);
-							}
-						}
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_VP8_DEADLINE) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if (bigint > 0) {
-								krad_vpx_encoder_deadline_set (krad_transponder->krad_link[k]->krad_vpx_encoder, bigint);
-							}
-						}												
-						if (ebml_id == EBML_ID_KRAD_LINK_LINK_VP8_FORCE_KEYFRAME) {
-							bigint = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
-					
-							if (bigint > 0) {
-								krad_vpx_encoder_want_keyframe (krad_transponder->krad_link[k]->krad_vpx_encoder);
-							}
-						}
-					}
-          *//*
-					if ((ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_BANDWIDTH) || (ebml_id == EBML_ID_KRAD_LINK_LINK_OPUS_SIGNAL)) {
-
-						krad_ipc_server_advanced_string_broadcast ( krad_ipc,
-																  EBML_ID_KRAD_TRANSPONDER_MSG,
-																  EBML_ID_KRAD_TRANSPONDER_LINK_UPDATED,
-																  EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER,
-														 		  k,
-														 		  ebml_id,
-														 		  string);
-
-					} else {
-						krad_ipc_server_advanced_number_broadcast ( krad_ipc,
-																  EBML_ID_KRAD_TRANSPONDER_MSG,
-																  EBML_ID_KRAD_TRANSPONDER_LINK_UPDATED,
-																  EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER,
-														 		  k,
-														 		  ebml_id,
-														 		  bigint);
-					}
-					*//*
-				}
-			}
-			
-			break;
-*/
     case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_ADAPTERS:
 
 			address.path.unit = KR_TRANSPONDER;
@@ -293,9 +103,9 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
 #ifdef KR_LINUX
 			devices = krad_v4l2_detect_devices ();
 
-			for (k = 0; k < devices; k++) {
-				if (krad_v4l2_get_device_filename (k, string) > 0) {
-          address.id.number = k;
+			for (i = 0; i < devices; i++) {
+				if (krad_v4l2_get_device_filename (i, string) > 0) {
+          address.id.number = i;
           krad_radio_address_to_ebml2 (&ebml_out, &response, &address);
           kr_ebml2_pack_uint32 ( &ebml_out,
                                  EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
@@ -309,9 +119,9 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
 #endif
 			devices = krad_decklink_detect_devices();
 
-			for (k = 0; k < devices; k++) {
-				if (krad_decklink_get_device_name (k, string) > 0) {
-          address.id.number = k;
+			for (i = 0; i < devices; i++) {
+				if (krad_decklink_get_device_name (i, string) > 0) {
+          address.id.number = i;
           krad_radio_address_to_ebml2 (&ebml_out, &response, &address);
           kr_ebml2_pack_uint32 ( &ebml_out,
                                  EBML_ID_KRAD_RADIO_MESSAGE_TYPE,

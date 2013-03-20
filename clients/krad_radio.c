@@ -90,13 +90,11 @@ int main (int argc, char *argv[]) {
   kr_client_t *client;
   char *sysname;
   int ret;
-  int val;
   kr_unit_control_t uc;
 
   sysname = NULL;
   client = NULL;
   ret = 0;
-  val = 0;
 
   if ((argc == 1) || (argc == 2)) {
     if (argc == 2) {
@@ -185,21 +183,16 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "ls", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      //FIXME
-      //kr_transponder_list (client);
-      //kr_delivery_accept_and_report (client);
 
-      kr_remote_list (client);
+      kr_mixer_portgroup_list (client);
       kr_delivery_accept_and_report (client);
-
-      kr_transponder_adapters (client);
-      kr_delivery_accept_and_report (client);
-      
+     
       kr_compositor_subunit_list (client);
       kr_delivery_accept_and_report (client);
 
-      kr_mixer_portgroup_list (client);
-      kr_delivery_accept_and_report (client);          
+      //FIXME
+      //kr_transponder_subunit_list (client);
+      //kr_delivery_accept_and_report (client);
     }
   }
 
@@ -608,7 +601,7 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      //kr_transponder_list (client);
+      //kr_transponder_subunit_list (client);
       //kr_delivery_accept_and_report (client);
     }
   }
@@ -635,184 +628,9 @@ int main (int argc, char *argv[]) {
     if (argc == 3) {
       kr_transponder_transmitter_disable (client);
     }
-  }    
-
-  if ((strncmp(argv[2], "link", 4) == 0) || (strncmp(argv[2], "transmit", 8) == 0)) {
-    if (argc == 7) {
-      if (strncmp(argv[2], "transmitav", 10) == 0) {
-        kr_transponder_transmit (client, AUDIO_AND_VIDEO, argv[3], atoi(argv[4]), argv[5], argv[6], NULL, 0, 0, 0, "");
-      } else {
-        kr_transponder_transmit (client, AUDIO_ONLY, argv[3], atoi(argv[4]), argv[5], argv[6], NULL, 0, 0, 0, "");
-      }
-    }
-    if (argc == 8) {
-      kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], NULL,
-                       0, 0, 0, "");
-    }
-
-    if (argc == 9) {
-      kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                       0, 0, 0, "");
-    }
-
-    if (argc == 10) {
-      kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                       atoi(argv[9]), 0, 0, "");
-    }
-
-    if (argc == 11) {
-      kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                               atoi(argv[9]), atoi(argv[10]), 0, "");
-    }
-
-    if (argc == 12) {
-      kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                               atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), "");
-    }
-
-    if (argc == 13) {
-      kr_transponder_transmit (client, krad_link_string_to_av_mode (argv[3]), argv[4], atoi(argv[5]), argv[6], argv[7], argv[8],
-                               atoi(argv[9]), atoi(argv[10]), atoi(argv[11]), argv[12]);
-    }
-  }
-
-  if (strncmp(argv[2], "capture", 7) == 0) {
-
-    if (krad_link_string_to_video_source (argv[3]) == DECKLINK) {
-      val = AUDIO_AND_VIDEO;
-    } else {
-      val = VIDEO_ONLY;
-    }
-
-    if (argc == 4) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), "",
-                      0, 0, 0, 0, val, "", "");
-    }
-    if (argc == 5) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), argv[4],
-                      0, 0, 0, 0, val, "", "");
-    }
-    if (argc == 7) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), argv[4],
-                      atoi(argv[5]), atoi(argv[6]), 0, 0, val, "", "");
-    }
-    if (argc == 9) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), argv[4],
-                      atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), val, "", "");
-    }
-    if (argc == 10) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), argv[4],
-                      atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
-                      krad_link_string_to_av_mode (argv[9]), "", "");
-    }
-    if (argc == 11) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), argv[4],
-                      atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
-                      krad_link_string_to_av_mode (argv[9]), argv[10], "");
-    }
-    if (argc == 12) {
-      kr_transponder_capture (client, krad_link_string_to_video_source (argv[3]), argv[4],
-                      atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
-                      krad_link_string_to_av_mode (argv[9]), argv[10], argv[11]);
-    }
-    usleep (100000);
-  }
-
-  if (strncmp(argv[2], "record", 6) == 0) {
-    if (argc == 4) {
-      if (strncmp(argv[2], "recordav", 8) == 0) {
-        kr_transponder_record (client, AUDIO_AND_VIDEO, argv[3], NULL, 0, 0, 0, "");
-      } else {
-        kr_transponder_record (client, AUDIO_ONLY, argv[3], NULL, 0, 0, 0, "");
-      }
-    }
-    if (argc == 5) {
-      kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], NULL,
-                     0, 0, 0, "");
-    }
-
-    if (argc == 6) {
-      kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], argv[5],
-                     0, 0, 0, "");
-    }
-
-    if (argc == 7) {
-      kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], argv[5],
-                     atoi(argv[6]), 0, 0, "");
-    }
-
-    if (argc == 8) {
-      kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], argv[5],
-                     atoi(argv[6]), atoi(argv[7]), 0, "");
-    }
-
-    if (argc == 9) {
-      kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], argv[5],
-                     atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), "");
-    }
-
-    if (argc == 10) {
-      kr_transponder_record (client, krad_link_string_to_av_mode (argv[3]), argv[4], argv[5],
-                     atoi(argv[6]), atoi(argv[7]), atoi(argv[8]), argv[9]);          
-    }                                
-  }
-
-  if (strncmp(argv[2], "play", 4) == 0) {
-    if (argc == 4) {
-      kr_transponder_play (client, argv[3]);
-    }
-    if (argc == 6) {
-      kr_transponder_play_remote (client, argv[3], atoi(argv[4]), argv[5] );
-    }
-  }
-
-  if (strncmp(argv[2], "update", 2) == 0) {
-
-    if (argc == 5) {
-      if (strcmp(argv[4], "vp8_keyframe") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_VP8_FORCE_KEYFRAME, 1);
-      }
-    }
-
-    if (argc == 6) {
-      if (strcmp(argv[4], "vp8_bitrate") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_VP8_BITRATE, atoi(argv[5]));
-      }
-      if (strcmp(argv[4], "vp8_min_quantizer") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_VP8_MIN_QUANTIZER, atoi(argv[5]));
-      }
-      if (strcmp(argv[4], "vp8_max_quantizer") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_VP8_MAX_QUANTIZER, atoi(argv[5]));
-      }
-      if (strcmp(argv[4], "vp8_deadline") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_VP8_DEADLINE, atoi(argv[5]));
-      }
-      if (strcmp(argv[4], "theora_quality") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_THEORA_QUALITY, atoi(argv[5]));
-      }                                      
-      if (strcmp(argv[4], "opus_bitrate") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_OPUS_BITRATE, atoi(argv[5]));
-      }        
-      if (strcmp(argv[4], "opus_bandwidth") == 0) {
-        kr_transponder_update_str (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_OPUS_BANDWIDTH, argv[5]);
-      }
-      if (strcmp(argv[4], "opus_signal") == 0) {
-        kr_transponder_update_str (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_OPUS_SIGNAL, argv[5]);
-      }
-      if (strcmp(argv[4], "opus_complexity") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_OPUS_COMPLEXITY, atoi(argv[5]));
-      }
-      if (strcmp(argv[4], "opus_framesize") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_OPUS_FRAME_SIZE, atoi(argv[5]));
-      }                    
-      if (strcmp(argv[4], "ogg_maxpackets") == 0) {
-        kr_transponder_update (client, atoi(argv[3]), EBML_ID_KRAD_LINK_LINK_OGG_MAX_PACKETS_PER_PAGE, atoi(argv[5]));
-      }
-    }
   }
 
   kr_client_destroy (&client);
 
   return 0;
-
 }

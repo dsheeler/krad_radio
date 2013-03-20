@@ -26,7 +26,6 @@ typedef struct krad_transponder_St krad_transponder_t;
 #define KRAD_LINK_DEFAULT_VIDEO_CODEC VP8
 #define KRAD_LINK_DEFAULT_AUDIO_CODEC VORBIS
 #define KRAD_TRANSPONDER_MAX_LINKS 32
-#define HELP -1337
 
 struct krad_transponder_St {
   kr_address_t address;

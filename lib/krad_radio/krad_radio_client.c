@@ -1680,7 +1680,7 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
     kr_mixer_remove_portgroup (client, address->id.name);
   }
   if (address->path.unit == KR_TRANSPONDER) {
-    kr_transponder_destroy (client, address->id.number);
+    kr_transponder_subunit_destroy (client, address->id.number);
   }
 }
 
