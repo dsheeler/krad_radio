@@ -37,12 +37,12 @@ typedef enum {
 struct krad_transponder_watch_St {
 
   int idle_callback_interval;
-	int (*readable_callback)(void *);
-	void (*destroy_callback)(void *);
-	krad_codec_header_t *(*encoder_header_callback)(void *);	
-	void *callback_pointer;
+  int (*readable_callback)(void *);
+  void (*destroy_callback)(void *);
+  krad_codec_header_t *(*encoder_header_callback)(void *);  
+  void *callback_pointer;
   int fd;
-	
+  
 };
 
 struct krad_Xtransponder_control_msg_St {
@@ -60,10 +60,10 @@ struct krad_slice_St {
   int frames;
   int keyframe;
   uint64_t timecode;  
-	int refs;
-	int final;
-	int header;
-	krad_codec_t codec;
+  int refs;
+  int final;
+  int header;
+  krad_codec_t codec;
 };
 
 struct krad_Xtransponder_input_port_St {
@@ -95,8 +95,8 @@ struct krad_Xtransponder_subunit_St {
 };
 
 struct krad_Xtransponder_St {
-	krad_Xtransponder_subunit_t **subunits;
-	krad_radio_t *krad_radio;
+  krad_Xtransponder_subunit_t **subunits;
+  krad_radio_t *krad_radio;
 };
 
 

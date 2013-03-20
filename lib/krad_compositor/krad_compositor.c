@@ -256,14 +256,7 @@ static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor) 
 }
 
 static void krad_compositor_finish (krad_compositor_t *compositor) {
-/*
-  if (compositor->snapshot > 0) {
-    krad_compositor_take_snapshot (compositor, compositor->frame, SNAPPNG);
-  }
-  if (compositor->snapshot_jpeg > 0) {
-    krad_compositor_take_snapshot (compositor, compositor->frame, SNAPJPEG);
-  }  
-*/
+
   krad_framepool_unref_frame (compositor->frame);
 
   if (compositor->cr != NULL) {
@@ -862,12 +855,10 @@ static void krad_compositor_port_destroy_actual (krad_compositor_t *krad_composi
 }
 
 static void krad_compositor_free_framepool (krad_compositor_t *compositor) {
-
   if (compositor->framepool != NULL) {
-    krad_framepool_destroy ( compositor->framepool );
-    compositor->framepool = NULL;
+    krad_framepool_destroy ( &compositor->framepool );
+    printk ("Krad Compositor: Freed Framepool");
   }
-  printk ("Krad Compositor: Free'd Resources");
 }
 
 static void krad_compositor_alloc_framepool (krad_compositor_t *compositor) {

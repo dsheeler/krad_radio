@@ -486,15 +486,6 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (strncmp(argv[2], "setmix", 6) == 0) {
-    if (argc == 6) {
-      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), 0);
-    }
-    if (argc == 7) {
-      kr_mixer_set_control (client, argv[3], argv[4], atof(argv[5]), atoi(argv[6]));
-    }
-  }
-
   if (((argc == 5) || (argc == 6)) &&
       (((strlen(argv[2]) == 1) && (strncmp(argv[2], "s", 1) == 0)) ||
        ((strlen(argv[2]) == 3) && (strncmp(argv[2], "set", 3) == 0)))) {
@@ -579,18 +570,6 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (strncmp(argv[2], "snap", 4) == 0) {
-    if (argc == 3) {
-      kr_compositor_snapshot (client);
-    }
-  }
-
-  if (strncmp(argv[2], "jsnap", 5) == 0) {
-    if (argc == 3) {
-      kr_compositor_snapshot_jpeg (client);
-    }
-  }
-
   if ((strncmp(argv[2], "comp", 4) == 0) ||
       ((strncmp(argv[2], "c", 1) == 0) && (strlen(argv[2]) == 1))) {
     if (argc == 3) {
@@ -619,24 +598,6 @@ int main (int argc, char *argv[]) {
       kr_compositor_background (client, argv[3]);
     }
   }      
-
-  if (strncmp(argv[2], "display", 7) == 0) {
-    if (argc == 3) {
-      kr_compositor_open_display (client, 0, 0);
-    }
-    if (argc == 4) {
-      kr_compositor_open_display (client, 1, 1);
-    }          
-    if (argc == 5) {
-      kr_compositor_open_display (client, atoi(argv[3]), atoi(argv[4]));
-    }        
-  }
-
-  if (strncmp(argv[2], "closedisplay", 12) == 0) {
-    if (argc == 3) {
-      kr_compositor_close_display (client);
-    }
-  }
 
   /* Krad Transponder Commands */      
 

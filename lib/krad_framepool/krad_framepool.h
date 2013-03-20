@@ -55,7 +55,7 @@ krad_frame_t *krad_framepool_getframe (krad_framepool_t *krad_framepool);
 void krad_framepool_ref_frame (krad_frame_t *krad_frame);
 void krad_framepool_unref_frame (krad_frame_t *krad_frame);
 
-void krad_framepool_destroy (krad_framepool_t *krad_framepool);
+void krad_framepool_destroy (krad_framepool_t **krad_framepool);
 krad_framepool_t *krad_framepool_create (int width, int height, int count);
 krad_framepool_t *krad_framepool_create_for_upscale (int width, int height, int count, int upscale_width, int upscale_height);
 krad_framepool_t *krad_framepool_create_for_passthru (int size, int count);

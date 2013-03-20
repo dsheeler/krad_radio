@@ -1794,8 +1794,7 @@ void krad_link_destroy (krad_link_t *krad_link) {
   }
   
   if (krad_link->krad_framepool != NULL) {
-    krad_framepool_destroy (krad_link->krad_framepool);
-    krad_link->krad_framepool = NULL;
+    krad_framepool_destroy (&krad_link->krad_framepool);
   }
 
   krad_tags_destroy (krad_link->krad_tags);  
