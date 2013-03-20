@@ -605,6 +605,12 @@ int main (int argc, char *argv[]) {
       //kr_delivery_accept_and_report (client);
     }
   }
+  
+  if (strncmp(argv[2], "oggtest", 7) == 0) {
+    if (argc == 4) {
+      kr_transponder_subunit_create (client, argv[3]);
+    }
+  }
 
   if (strncmp(argv[2], "receiver_on", 11) == 0) {
     if (argc == 4) {

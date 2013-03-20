@@ -958,7 +958,7 @@ void muxer_unit_create (void *arg) {
     }                                  
   } else {
     printk ("Outputing to file: %s", krad_link->output);
-    //krad_link->krad_container = krad_container_open_file (krad_link->output, KRAD_EBML_IO_WRITEONLY);
+    krad_link->krad_container = krad_container_open_file (krad_link->output, KRAD_IO_WRITEONLY);
   }
   
   //FIXME needed?
