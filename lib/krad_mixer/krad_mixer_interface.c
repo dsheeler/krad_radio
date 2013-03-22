@@ -288,9 +288,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       portgroup = krad_mixer_portgroup_create (krad_mixer, portgroupname, direction, output_type, numbers[0],
                   0.0f, krad_mixer->master_mix, KRAD_AUDIO, NULL, JACK);
       if (portgroup != NULL) {
-        if (portgroup->direction == INPUT) {
-          krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster, &portgroup->address, (void *)portgroup);
-        }
+        krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster, &portgroup->address, (void *)portgroup);
         krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);
       } else {
         printke ("Krad Mixer: Failed to create portgroup: %s", portgroupname);
