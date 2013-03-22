@@ -170,20 +170,17 @@ void kr_transponder_subunit_update_str (kr_client_t *client, int number, uint32_
   kr_client_push (client);
 }
 
-void kr_transponder_subunit_create (kr_client_t *client, char *path) {
+void kr_transponder_subunit_create (kr_client_t *client, char *mode, char *option) {
 
   unsigned char *linker_command;
   unsigned char *create_link;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE, &create_link);
-/*
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_OPERATION_MODE, krad_link_operation_mode_to_string (PLAYBACK));
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_TRANSPORT_MODE, "filesystem");
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_FILENAME, path);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_OPERATION_MODE, mode);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_FILENAME, option);
 
-*/
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
     

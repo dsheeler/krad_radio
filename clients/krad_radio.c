@@ -606,9 +606,21 @@ int main (int argc, char *argv[]) {
     }
   }
   
-  if (strncmp(argv[2], "oggtest", 7) == 0) {
+  if (strncmp(argv[2], "record", 7) == 0) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, argv[3]);
+      kr_transponder_subunit_create (client, "record", argv[3]);
+    }
+  }
+  
+  if (strncmp(argv[2], "capture", 7) == 0) {
+    if (argc == 4) {
+      kr_transponder_subunit_create (client, "capture", argv[3]);
+    }
+  }
+
+  if (strncmp(argv[2], "display", 7) == 0) {
+    if (argc == 3) {
+      kr_transponder_subunit_create (client, "display", "");
     }
   }
 

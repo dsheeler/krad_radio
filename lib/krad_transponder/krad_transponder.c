@@ -1862,6 +1862,19 @@ void krad_link_start (krad_link_t *krad_link) {
     krad_link->encoding_width = krad_link->composite_width;
     krad_link->encoding_height = krad_link->composite_height;
   }
+  
+  if (krad_link->operation_mode == DISPLAY) {
+#ifdef KRAD_USE_WAYLAND
+    wayland_display_unit_create ((void *)krad_link);
+    watch->fd = krad_link->krad_wayland->display_fd;
+    watch->callback_pointer = (void *)krad_link;
+    watch->readable_callback = wayland_display_unit_process;
+    watch->destroy_callback = wayland_display_unit_destroy;
+    krad_link->cap2_graph_id = krad_Xtransponder_add_capture (krad_link->krad_transponder->krad_Xtransponder, watch);
+    memset (watch, 0, sizeof(krad_transponder_watch_t));
+    krad_link->cap2_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap2_graph_id);      
+#endif
+  }
 
   if (krad_link->operation_mode == CAPTURE) {
 
@@ -1882,22 +1895,7 @@ void krad_link_start (krad_link_t *krad_link) {
       memset (watch, 0, sizeof(krad_transponder_watch_t));
       krad_link->cap_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap_graph_id);
     }
-    
-#ifdef KRAD_USE_WAYLAND
-    //LOL FIXME
-    if (krad_link->video_source == V4L2) {
-      wayland_display_unit_create ((void *)krad_link);
-      watch->fd = krad_link->krad_wayland->display_fd;
-      watch->callback_pointer = (void *)krad_link;
-      watch->readable_callback = wayland_display_unit_process;
-      watch->destroy_callback = wayland_display_unit_destroy;
-      krad_link->cap2_graph_id = krad_Xtransponder_add_capture (krad_link->krad_transponder->krad_Xtransponder, watch);
-      memset (watch, 0, sizeof(krad_transponder_watch_t));
-      krad_link->cap2_subunit = krad_Xtransponder_get_subunit (krad_link->krad_transponder->krad_Xtransponder, krad_link->cap2_graph_id);      
-    }
-    
-#endif
-    
+
 #ifdef KR_LINUX
     if (krad_link->video_source == V4L2) {
       v4l2_capture_unit_create ((void *)krad_link);

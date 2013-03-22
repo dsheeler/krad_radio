@@ -216,6 +216,8 @@ char *krad_link_operation_mode_to_string (krad_link_operation_mode_t operation_m
 			return "transmit";
 		case PLAYBACK:
 			return "playback";
+		case DISPLAY:
+			return "display";
 		case FAILURE:
 			return "failure";
 		default:
@@ -225,28 +227,31 @@ char *krad_link_operation_mode_to_string (krad_link_operation_mode_t operation_m
 
 krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string) {
 
-	if (strcmp(string, "capture") == 0) {
+	if ((strlen(string) == 7) && (strncmp(string, "capture", 7) == 0)) {
 		return CAPTURE;
 	}
+	
+	if ((strlen(string) == 7) && (strncmp(string, "display", 7) == 0)) {
+		return DISPLAY;
+	}
 
-	if (strcmp(string, "receive") == 0) {
+	if ((strlen(string) == 7) && (strncmp(string, "receive", 7) == 0)) {
 		return RECEIVE;
 	}
 
-	if (strcmp(string, "record") == 0) {
+	if ((strlen(string) == 6) && (strncmp(string, "record", 6) == 0)) {
 		return RECORD;
 	}
 
-	if (strcmp(string, "transmit") == 0) {
+	if ((strlen(string) == 8) && (strncmp(string, "transmit", 8) == 0)) {
 		return TRANSMIT;
 	}
 
-	if (strcmp(string, "playback") == 0) {
+	if ((strlen(string) == 8) && (strncmp(string, "playback", 8) == 0)) {
 		return PLAYBACK;
 	}
 
 	return FAILURE;
-
 }
 
 krad_link_video_source_t krad_link_string_to_video_source (char *string) {

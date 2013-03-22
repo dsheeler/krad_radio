@@ -38,7 +38,7 @@ void kr_transponder_subunit_destroy (kr_client_t *client, int number);
 void kr_transponder_subunit_update (kr_client_t *client, int number, uint32_t ebml_id, int newval);
 void kr_transponder_subunit_update_str (kr_client_t *client, int number, uint32_t ebml_id, char *newval);
 
-void kr_transponder_subunit_create (kr_client_t *client, char *path);
+void kr_transponder_subunit_create (kr_client_t *client, char *mode, char *option);
 
 
 /**@}*/

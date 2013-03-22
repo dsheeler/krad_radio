@@ -34,9 +34,11 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   uint64_t size;
   int ret;
   char string[512];
+  char string2[512];  
   uint16_t port;
   
   string[0] = '\0';
+  string2[0] = '\0';  
   port = 0;
   krad_radio = client->krad_radio;
   krad_transponder = krad_radio->krad_transponder;
@@ -81,6 +83,10 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE:
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE:
+    
+      kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
+      kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
+    
       for (i = 0; i < KRAD_TRANSPONDER_MAX_LINKS; i++) {
         if (krad_transponder->krad_link[i] == NULL) {
           krad_transponder->krad_link[i] = krad_link_prepare (i);
@@ -88,12 +94,30 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
           krad_transponder->krad_link[i]->krad_radio = krad_transponder->krad_radio;
           krad_transponder->krad_link[i]->krad_transponder = krad_transponder;
 
-          krad_transponder->krad_link[i]->operation_mode = RECORD;
-          krad_transponder->krad_link[i]->av_mode = AUDIO_ONLY;
-          krad_transponder->krad_link[i]->transport_mode = FILESYSTEM;
-          sprintf (krad_transponder->krad_link[i]->output,
-                   "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
-
+          if (krad_link_string_to_operation_mode(string) == RECORD) {
+            krad_transponder->krad_link[i]->operation_mode = RECORD;
+            krad_transponder->krad_link[i]->av_mode = AUDIO_ONLY;
+            krad_transponder->krad_link[i]->transport_mode = FILESYSTEM;
+            sprintf (krad_transponder->krad_link[i]->output,
+                     "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
+          }
+          
+          if (krad_link_string_to_operation_mode(string) == DISPLAY) {
+            krad_transponder->krad_link[i]->operation_mode = DISPLAY;
+            krad_transponder->krad_link[i]->av_mode = VIDEO_ONLY;
+          }
+          
+          if (krad_link_string_to_operation_mode(string) == CAPTURE) {
+            krad_transponder->krad_link[i]->operation_mode = CAPTURE;
+            krad_transponder->krad_link[i]->av_mode = VIDEO_ONLY;
+            
+            krad_transponder->krad_link[i]->video_source = krad_link_string_to_video_source (string2);
+            if (krad_transponder->krad_link[i]->video_source == NOVIDEO) {
+              free (krad_transponder->krad_link[i]);
+              krad_transponder->krad_link[i] = NULL;
+              break;
+            }
+          }
           krad_link_start (krad_transponder->krad_link[i]);
           break;
         }

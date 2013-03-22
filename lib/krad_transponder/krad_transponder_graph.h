@@ -27,6 +27,7 @@ typedef enum {
   DECODER,
   ENCODER,
   XCAPTURE,
+  //XDISPLAY,
   //OUTPUT,
   //STREAMIN
   //FILEIN
