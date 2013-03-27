@@ -191,7 +191,7 @@ int main (int argc, char *argv[]) {
       kr_delivery_accept_and_report (client);
 
       //FIXME
-      //kr_transponder_subunit_list (client);
+      kr_transponder_subunit_list (client);
       //kr_delivery_accept_and_report (client);
     }
   }
@@ -601,7 +601,7 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      //kr_transponder_subunit_list (client);
+      kr_transponder_subunit_list (client);
       //kr_delivery_accept_and_report (client);
     }
   }
@@ -609,6 +609,18 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "record", 7) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "record", argv[3]);
+    }
+  }
+  
+  if (strncmp(argv[2], "encode", 6) == 0) {
+    if (argc == 4) {
+      kr_transponder_subunit_create (client, "encode", argv[3]);
+    }
+  }
+  
+  if (strncmp(argv[2], "mux", 3) == 0) {
+    if (argc == 4) {
+      kr_transponder_subunit_create (client, "mux", argv[3]);
     }
   }
   

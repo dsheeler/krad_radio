@@ -34,9 +34,9 @@ int kr_transponder_receiver_enable (kr_client_t *client, int port);
 void kr_transponder_receiver_disable (kr_client_t *client);
 
 void kr_transponder_subunit_list (kr_client_t *client);
-void kr_transponder_subunit_destroy (kr_client_t *client, int number);
-void kr_transponder_subunit_update (kr_client_t *client, int number, uint32_t ebml_id, int newval);
-void kr_transponder_subunit_update_str (kr_client_t *client, int number, uint32_t ebml_id, char *newval);
+void kr_transponder_subunit_destroy (kr_client_t *client, uint32_t number);
+void kr_transponder_subunit_update (kr_client_t *client, uint32_t number, uint32_t ebml_id, int newval);
+void kr_transponder_subunit_update_str (kr_client_t *client, uint32_t number, uint32_t ebml_id, char *newval);
 
 void kr_transponder_subunit_create (kr_client_t *client, char *mode, char *option);
 

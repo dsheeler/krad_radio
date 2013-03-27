@@ -1642,11 +1642,11 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
       break;
     case KR_COMPOSITOR:
       if ((subunit->compositor_subunit > 0) && (t == 2)) {
-          addr->id.number = atoi(tokens[1]);
+          addr->id.number = atoi (tokens[1]);
           return 1;
       }
       if ((subunit->compositor_subunit > 0) && (t == 3)) {
-          addr->id.number = atoi(tokens[1]);
+          addr->id.number = atoi (tokens[1]);
           addr->control.compositor_control = krad_string_to_compositor_control (tokens[2]);
           return 1;
       }
@@ -1654,6 +1654,10 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
       return -1;
       break;
     case KR_TRANSPONDER:
+      if (t == 2) {
+        addr->id.number = atoi (tokens[1]);
+        return 1;
+      }
       printf ("Invalid TRANSPONDER Control\n");
       return -1;
       break;

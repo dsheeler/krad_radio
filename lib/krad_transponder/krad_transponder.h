@@ -81,6 +81,8 @@ struct krad_link_St {
 	krad_codec_t last_audio_codec;
 	krad_codec_t last_video_codec;
 	
+	krad_codec_t codec;
+	
 	krad_link_transport_mode_t transport_mode;
 	
 	int krad_compositor_port_fd;
@@ -138,14 +140,7 @@ struct krad_link_St {
 
 	int channels;
 	
-	krad_Xtransponder_subunit_t *au_subunit;
-	krad_Xtransponder_subunit_t *vu_subunit;
-	krad_Xtransponder_subunit_t *aud_subunit;
-	krad_Xtransponder_subunit_t *vud_subunit;
-	krad_Xtransponder_subunit_t *cap_subunit;
-	krad_Xtransponder_subunit_t *cap2_subunit;
-	krad_Xtransponder_subunit_t *demux_subunit;
-	krad_Xtransponder_subunit_t *mux_subunit;
+	krad_Xtransponder_subunit_t *subunit;
 
 	krad_mixer_portgroup_t *mixer_portgroup;
 	int au_framecnt;
@@ -162,15 +157,7 @@ struct krad_link_St {
 
 	krad_resample_ring_t *krad_resample_ring[KRAD_MIXER_MAX_CHANNELS];
 
-  int aud_graph_id;
-  int vud_graph_id;
-
-  int au_graph_id;
-  int vu_graph_id;
-  int cap_graph_id;
-  int cap2_graph_id;
-  int demux_graph_id;
-  int mux_graph_id;
+  int graph_id;
   
   
 	unsigned char *demux_buffer;

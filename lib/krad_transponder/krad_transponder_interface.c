@@ -20,6 +20,7 @@ void krad_transponder_to_ebml ( kr_ebml2_t *ebml, krad_transponder_t *krad_trans
 int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
   int i;
+  uint32_t num;
   int devices;
   krad_radio_t *krad_radio;
   krad_transponder_t *krad_transponder;
@@ -36,7 +37,9 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   char string[512];
   char string2[512];  
   uint16_t port;
+  krad_link_t *link;
   
+  link = NULL;  
   string[0] = '\0';
   string2[0] = '\0';  
   port = 0;
@@ -77,8 +80,15 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       kr_ebml2_finish_element (&ebml_out, response);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST:
+      krad_Xtransponder_list (krad_transponder->krad_Xtransponder);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY:
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &num);
+      if (krad_transponder->krad_link[num] != NULL) {
+        krad_link_destroy (krad_transponder->krad_link[num]);
+        krad_transponder->krad_link[num] = NULL;
+        break;
+      }
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE:
       break;
@@ -87,41 +97,70 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
     
+      if (krad_link_string_to_operation_mode(string) == FAILURE) {
+        break;
+      }
+
       for (i = 0; i < KRAD_TRANSPONDER_MAX_LINKS; i++) {
         if (krad_transponder->krad_link[i] == NULL) {
           krad_transponder->krad_link[i] = krad_link_prepare (i);
-          krad_transponder->krad_link[i]->link_num = i;
-          krad_transponder->krad_link[i]->krad_radio = krad_transponder->krad_radio;
-          krad_transponder->krad_link[i]->krad_transponder = krad_transponder;
-
-          if (krad_link_string_to_operation_mode(string) == RECORD) {
-            krad_transponder->krad_link[i]->operation_mode = RECORD;
-            krad_transponder->krad_link[i]->av_mode = AUDIO_ONLY;
-            krad_transponder->krad_link[i]->transport_mode = FILESYSTEM;
-            sprintf (krad_transponder->krad_link[i]->output,
-                     "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
-          }
-          
-          if (krad_link_string_to_operation_mode(string) == DISPLAY) {
-            krad_transponder->krad_link[i]->operation_mode = DISPLAY;
-            krad_transponder->krad_link[i]->av_mode = VIDEO_ONLY;
-          }
-          
-          if (krad_link_string_to_operation_mode(string) == CAPTURE) {
-            krad_transponder->krad_link[i]->operation_mode = CAPTURE;
-            krad_transponder->krad_link[i]->av_mode = VIDEO_ONLY;
-            
-            krad_transponder->krad_link[i]->video_source = krad_link_string_to_video_source (string2);
-            if (krad_transponder->krad_link[i]->video_source == NOVIDEO) {
-              free (krad_transponder->krad_link[i]);
-              krad_transponder->krad_link[i] = NULL;
-              break;
-            }
-          }
-          krad_link_start (krad_transponder->krad_link[i]);
+          link = krad_transponder->krad_link[i];
+          link->link_num = i;
+          link->krad_radio = krad_transponder->krad_radio;
+          link->krad_transponder = krad_transponder;
+          link->operation_mode = krad_link_string_to_operation_mode (string);
           break;
         }
       }
+      
+      if (link == NULL) {
+        break;
+      }
+
+      /*
+      if (krad_link_string_to_operation_mode(string) == RECORD) {
+        krad_transponder->krad_link[i]->operation_mode = RECORD;
+        krad_transponder->krad_link[i]->av_mode = AUDIO_ONLY;
+        krad_transponder->krad_link[i]->transport_mode = FILESYSTEM;
+        sprintf (krad_transponder->krad_link[i]->output,
+                 "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
+      }
+      */
+
+      if (link->operation_mode == ENCODE) {
+        if (string2[0] == 'v') {
+          link->av_mode = VIDEO_ONLY;
+          link->codec = THEORA;
+        } else {
+          link->av_mode = AUDIO_ONLY;
+          if (string2[1] == 'o') {
+            link->codec = OPUS;
+          } else {
+            if (string2[1] == 'f') {
+             link->codec = FLAC;
+            } else {
+             link->codec = VORBIS;
+            }
+          }      
+        }
+      }
+
+      if (link->operation_mode == DISPLAY) {
+        link->av_mode = VIDEO_ONLY;
+      }
+
+      if (link->operation_mode == CAPTURE) {
+        link->av_mode = VIDEO_ONLY;
+        link->video_source = krad_link_string_to_video_source (string2);
+        if (link->video_source == NOVIDEO) {
+          free (link);
+          krad_transponder->krad_link[i] = NULL;
+          break;
+        }
+      }
+
+      krad_link_start (link);
+
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_ADAPTERS:
 

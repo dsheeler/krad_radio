@@ -28,90 +28,87 @@ typedef struct krad_theora_decoder_St krad_theora_decoder_t;
 
 struct krad_theora_encoder_St {
 
-	int width;
-	int height;
-	int quality;
-	
+  int width;
+  int height;
+  int quality;
+  
   int color_depth;
-	
-	int update_config;	
-	
-	int frames;
+  
+  int update_config;  
+  
+  int frames;
 
-	int finish;
+  int finish;
 
-	th_enc_ctx *encoder;
-	
-	unsigned char *header[10];
-	int header_len[10];
-	int header_count;
+  th_enc_ctx *encoder;
+  
+  unsigned char *header[10];
+  int header_len[10];
+  int header_count;
 
-	unsigned char *header_combined;
-	int header_combined_size;
-	int header_combined_pos;
-	int demented;
-	
-	krad_codec_header_t krad_codec_header;	
-	
-	th_info	info;
-	th_comment comment;
-	ogg_packet packet;
-	th_ycbcr_buffer ycbcr;
-	
-	int speed;
-	unsigned int keyframe_distance;
-	
-	int keyframe_shift;
-	
+  unsigned char *header_combined;
+  int header_combined_size;
+  int header_combined_pos;
+  int demented;
+  
+  krad_codec_header_t krad_codec_header;  
+  
+  th_info  info;
+  th_comment comment;
+  ogg_packet packet;
+  th_ycbcr_buffer ycbcr;
+  
+  int speed;
+  unsigned int keyframe_distance;
+  
+  int keyframe_shift;
 };
 
 struct krad_theora_decoder_St {
 
-	int width;
-	int height;
+  int width;
+  int height;
 
   int color_depth;
 
-    int flags;
-	int frames;
-	int quality;
-    int dec_flags;
+  int flags;
+  int frames;
+  int quality;
+  int dec_flags;
 
-	int offset_y;
-	int offset_x;
+  int offset_y;
+  int offset_x;
 
-	th_info	info;
-	th_comment comment;
-	th_setup_info *setup_info;
-	th_dec_ctx *decoder;
-	th_ycbcr_buffer ycbcr;
-	ogg_packet packet;
-	ogg_int64_t granulepos;
-	
-    uint8_t *buf;
-	unsigned char compressed_video_buffer[800000];
+  th_info  info;
+  th_comment comment;
+  th_setup_info *setup_info;
+  th_dec_ctx *decoder;
+  th_ycbcr_buffer ycbcr;
+  ogg_packet packet;
+  ogg_int64_t granulepos;
+  
+  uint8_t *buf;
+  unsigned char compressed_video_buffer[800000];
 
-	unsigned char *frame_data;
-
+  unsigned char *frame_data;
 };
 
 /* encoder */
 
 int krad_theora_encoder_quality_get (krad_theora_encoder_t *krad_theora);
 void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora, int quality);
-
+int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char **packet, int *keyframe);
 krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
-												   int fps_numerator, int fps_denominator, int color_depth, int quality);
-
-void krad_theora_encoder_destroy(krad_theora_encoder_t *krad_theora);
-int krad_theora_encoder_write(krad_theora_encoder_t *krad_theora, unsigned char **packet, int *keyframe);
+                                                   int fps_numerator, int fps_denominator,
+                                                   int color_depth, int quality);
+void krad_theora_encoder_destroy (krad_theora_encoder_t *krad_theora);
 
 /* decoder */
 
-void krad_theora_decoder_timecode(krad_theora_decoder_t *krad_theora, uint64_t *timecode);
-krad_theora_decoder_t *krad_theora_decoder_create();
-void krad_theora_decoder_destroy(krad_theora_decoder_t *krad_theora);
-void krad_theora_decoder_write(krad_theora_decoder_t *krad_theora);
-void krad_theora_decoder_decode(krad_theora_decoder_t *krad_theora, void *buffer, int len);
+void krad_theora_decoder_timecode (krad_theora_decoder_t *krad_theora, uint64_t *timecode);
+void krad_theora_decoder_write (krad_theora_decoder_t *krad_theora);
+void krad_theora_decoder_decode (krad_theora_decoder_t *krad_theora, void *buffer, int len);
+krad_theora_decoder_t *krad_theora_decoder_create ();
+void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora);
 
 #endif

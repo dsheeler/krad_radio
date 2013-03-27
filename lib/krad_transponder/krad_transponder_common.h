@@ -18,9 +18,13 @@ typedef enum {
 
 typedef enum {
 	CAPTURE = 200,
-	RECEIVE,
+	//RECEIVE,
 	TRANSMIT,
-	PLAYBACK,
+	//PLAYBACK,
+  //DEMUX,
+  MUX,
+  //DECODE,
+  ENCODE,
 	RECORD,
 	DISPLAY,
 	FAILURE,

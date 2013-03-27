@@ -208,16 +208,20 @@ char *krad_link_operation_mode_to_string (krad_link_operation_mode_t operation_m
 	switch (operation_mode) {
 		case CAPTURE:
 			return "capture";
-		case RECEIVE:
-			return "receive";
+		//case RECEIVE:
+		//	return "receive";
 		case RECORD:
 			return "record";
 		case TRANSMIT:
 			return "transmit";
-		case PLAYBACK:
-			return "playback";
+		//case PLAYBACK:
+		//	return "playback";
 		case DISPLAY:
 			return "display";
+		case MUX:
+			return "mux";
+		case ENCODE:
+			return "encode";
 		case FAILURE:
 			return "failure";
 		default:
@@ -235,9 +239,9 @@ krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string) {
 		return DISPLAY;
 	}
 
-	if ((strlen(string) == 7) && (strncmp(string, "receive", 7) == 0)) {
-		return RECEIVE;
-	}
+	//if ((strlen(string) == 7) && (strncmp(string, "receive", 7) == 0)) {
+	//	return RECEIVE;
+	//}
 
 	if ((strlen(string) == 6) && (strncmp(string, "record", 6) == 0)) {
 		return RECORD;
@@ -247,8 +251,12 @@ krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string) {
 		return TRANSMIT;
 	}
 
-	if ((strlen(string) == 8) && (strncmp(string, "playback", 8) == 0)) {
-		return PLAYBACK;
+	if ((strlen(string) == 3) && (strncmp(string, "mux", 3) == 0)) {
+		return MUX;
+	}
+	
+	if ((strlen(string) == 6) && (strncmp(string, "encode", 6) == 0)) {
+		return ENCODE;
 	}
 
 	return FAILURE;

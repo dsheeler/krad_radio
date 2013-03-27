@@ -120,23 +120,23 @@ void kr_transponder_subunit_list (kr_client_t *client) {
   kr_client_push (client);
 }
 
-void kr_transponder_subunit_destroy (kr_client_t *client, int number) {
+void kr_transponder_subunit_destroy (kr_client_t *client, uint32_t number) {
 
   unsigned char *linker_command;
   unsigned char *destroy_link;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY, &destroy_link);
-/*
-  kr_ebml2_pack_int8 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
-*/
+
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
+
   kr_ebml2_finish_element (client->ebml2, destroy_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
 
   kr_client_push (client);
 }
 
-void kr_transponder_subunit_update (kr_client_t *client, int number, uint32_t ebml_id, int newval) {
+void kr_transponder_subunit_update (kr_client_t *client, uint32_t number, uint32_t ebml_id, int newval) {
 
   unsigned char *linker_command;
   unsigned char *update_link;
@@ -153,7 +153,7 @@ void kr_transponder_subunit_update (kr_client_t *client, int number, uint32_t eb
   kr_client_push (client);
 }
 
-void kr_transponder_subunit_update_str (kr_client_t *client, int number, uint32_t ebml_id, char *newval) {
+void kr_transponder_subunit_update_str (kr_client_t *client, uint32_t number, uint32_t ebml_id, char *newval) {
 
   unsigned char *linker_command;
   unsigned char *update_link;

@@ -27,7 +27,14 @@ void krad_receiver_promote_client (krad_receiver_client_t *client) {
 			strcpy (krad_link->content_type, client->content_type);
 			strcpy (krad_link->host, "ListenSD");
 			krad_link->port = client->sd;
-			krad_link->operation_mode = PLAYBACK;
+
+			//FIXME
+						//FIXME
+									//FIXME
+									
+			//krad_link->operation_mode = DEMUX;
+
+			//FIXME
 			krad_link->transport_mode = TCP;
 			//FIXME default
 			krad_link->av_mode = AUDIO_AND_VIDEO;
