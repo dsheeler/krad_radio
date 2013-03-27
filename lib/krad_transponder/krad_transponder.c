@@ -1838,6 +1838,10 @@ void krad_link_start (krad_link_t *link) {
   memset (&watch, 0, sizeof(krad_transponder_watch_t));
   watch.callback_pointer = link;
   
+  krad_compositor_get_resolution (link->krad_radio->krad_compositor,
+                                  &link->composite_width,
+                                  &link->composite_height);
+  
   switch ( link->operation_mode ) {
     case ENCODE:
       if (link->av_mode == AUDIO_ONLY) {
