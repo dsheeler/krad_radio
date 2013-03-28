@@ -117,15 +117,12 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         break;
       }
 
-      /*
-      if (krad_link_string_to_operation_mode(string) == RECORD) {
-        krad_transponder->krad_link[i]->operation_mode = RECORD;
-        krad_transponder->krad_link[i]->av_mode = AUDIO_ONLY;
-        krad_transponder->krad_link[i]->transport_mode = FILESYSTEM;
-        sprintf (krad_transponder->krad_link[i]->output,
+      if (link->operation_mode == MUX) {
+        link->transport_mode = FILESYSTEM;
+        sprintf (link->input, "%s", string2);
+        sprintf (link->output,
                  "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
       }
-      */
 
       if (link->operation_mode == ENCODE) {
         if (string2[0] == 'v') {

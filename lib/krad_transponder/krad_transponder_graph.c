@@ -263,6 +263,7 @@ void krad_Xtransponder_subunit_disconnect_ports_actual (krad_Xtransponder_subuni
       krad_slice_t *krad_slice;
       krad_slice = krad_slice_create ();
       krad_slice->final = 1;
+      krad_slice->origin = krad_Xtransponder_subunit;
       krad_Xtransponder_port_write (input_port, &krad_slice);
       
       close (input_port->socketpair[0]);
@@ -718,6 +719,9 @@ int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransp
   b = 0;
   
   port = 0;
+  
+  (*krad_slice)->origin = krad_Xtransponder_subunit;
+  
   
   if ((krad_Xtransponder_subunit->type == DEMUXER) &&
       (((*krad_slice)->codec == FLAC) || ((*krad_slice)->codec == OPUS) || ((*krad_slice)->codec == VORBIS))) {

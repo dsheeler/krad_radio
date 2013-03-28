@@ -49,25 +49,6 @@ struct krad_transponder_rep_St {
   uint16_t transmitter_port;  
 };
 
-int krad_opus_string_to_bandwidth (char *string);
-int krad_opus_string_to_signal (char *string);
-char *krad_opus_bandwidth_to_string (int bandwidth);
-char *krad_opus_signal_to_string (int signal);
-
-char *krad_link_transport_mode_to_string (krad_link_transport_mode_t transport_mode);
-char *krad_link_video_source_to_string (krad_link_video_source_t video_source);
-krad_link_transport_mode_t krad_link_string_to_transport_mode (char *string);
-krad_link_video_source_t krad_link_string_to_video_source (char *string);
-char *krad_link_operation_mode_to_string (krad_link_operation_mode_t operation_mode);
-krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string);
-char *krad_link_av_mode_to_string (krad_link_av_mode_t av_mode);
-krad_link_av_mode_t krad_link_string_to_av_mode (char *string);
-char *krad_codec_to_string (krad_codec_t codec);
-krad_codec_t krad_string_to_codec (char *string);
-krad_codec_t krad_string_to_audio_codec (char *string);
-krad_codec_t krad_string_to_video_codec (char *string);
-krad_codec_t krad_string_to_codec_full (char *string, krad_link_av_mode_t av_mode);
-
 struct krad_link_rep_St {
 
 	int link_num;
@@ -117,5 +98,26 @@ struct krad_link_rep_St {
 	int vp8_max_quantizer;
 };
 
+int krad_opus_string_to_bandwidth (char *string);
+int krad_opus_string_to_signal (char *string);
+char *krad_opus_bandwidth_to_string (int bandwidth);
+char *krad_opus_signal_to_string (int signal);
+
+char *krad_link_transport_mode_to_string (krad_link_transport_mode_t transport_mode);
+char *krad_link_video_source_to_string (krad_link_video_source_t video_source);
+krad_link_transport_mode_t krad_link_string_to_transport_mode (char *string);
+krad_link_video_source_t krad_link_string_to_video_source (char *string);
+char *krad_link_operation_mode_to_string (krad_link_operation_mode_t operation_mode);
+krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string);
+char *krad_link_av_mode_to_string (krad_link_av_mode_t av_mode);
+krad_link_av_mode_t krad_link_string_to_av_mode (char *string);
+char *krad_codec_to_string (krad_codec_t codec);
+krad_codec_t krad_string_to_codec (char *string);
+krad_codec_t krad_string_to_audio_codec (char *string);
+krad_codec_t krad_string_to_video_codec (char *string);
+krad_codec_t krad_string_to_codec_full (char *string, krad_link_av_mode_t av_mode);
+
+int krad_codec_is_video (krad_codec_t codec);
+int krad_codec_is_audio (krad_codec_t codec);
 
 #endif

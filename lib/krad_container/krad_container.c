@@ -238,24 +238,29 @@ void krad_container_destroy (krad_container_t *krad_container) {
 }  
 
 
-int krad_container_add_video_track_with_private_data (krad_container_t *krad_container, krad_codec_t codec,
-                            int fps_numerator, int fps_denominator, int width, int height,
-                            krad_codec_header_t *krad_codec_header) {
+int krad_container_add_video_track_with_private_data (krad_container_t *krad_container,
+                                                      krad_codec_header_t *krad_codec_header,
+                                                      int fps_numerator, int fps_denominator,
+                                                      int width, int height) {
       
   if (krad_container->container_type == RAW) {
     if (krad_container->krad_transmission != NULL) {
-      krad_transmitter_transmission_add_header (krad_container->krad_transmission, krad_codec_header->header_combined, krad_codec_header->header_combined_size);
+      krad_transmitter_transmission_add_header (krad_container->krad_transmission,
+                                                krad_codec_header->header_combined,
+                                                krad_codec_header->header_combined_size);
     } else {
-      krad_io_write (krad_container->krad_io, krad_codec_header->header_combined, krad_codec_header->header_combined_size);
+      krad_io_write (krad_container->krad_io,
+                     krad_codec_header->header_combined,
+                     krad_codec_header->header_combined_size);
       krad_io_write_sync (krad_container->krad_io);
     }
     return 1;
   }
                   
   if (krad_container->container_type == OGG) {
-    return krad_ogg_add_video_track_with_private_data (krad_container->krad_ogg, codec, fps_numerator, fps_denominator,
-                     width, height, krad_codec_header->header, krad_codec_header->header_size,
-                     krad_codec_header->header_count);
+    return krad_ogg_add_video_track_with_private_data (krad_container->krad_ogg, krad_codec_header->codec,
+                     fps_numerator, fps_denominator, width, height, krad_codec_header->header,
+                     krad_codec_header->header_size, krad_codec_header->header_count);
   } else {
     return -1; //krad_ebml_add_video_track_with_private_data (krad_container->krad_ebml, codec, fps_numerator, 
                //               fps_denominator, width, height,

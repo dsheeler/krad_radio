@@ -467,20 +467,6 @@ void video_encoding_unit_create (void *arg) {
 
   krad_link->color_depth = PIX_FMT_YUV420P;
 
-  if ((krad_link->encoding_fps_numerator == 0) || (krad_link->encoding_fps_denominator == 0)) {
-    krad_compositor_get_frame_rate (krad_link->krad_radio->krad_compositor,
-                                    &krad_link->encoding_fps_numerator,
-                                    &krad_link->encoding_fps_denominator);
-  }
-
-  if ((krad_link->encoding_width == 0) || (krad_link->encoding_height == 0)) {
-    krad_compositor_get_resolution (krad_link->krad_radio->krad_compositor,
-                                    &krad_link->encoding_width,
-                                    &krad_link->encoding_height);
-    
-  }
-
-
   /* CODEC SETUP */
 
   if (krad_link->codec == VP8) {
@@ -952,25 +938,9 @@ void muxer_unit_create (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
 
-  krad_system_set_thread_name ("kr_stream_out");
+  //krad_system_set_thread_name ("kr_stream_out");
   
-  int packet_size;
-  krad_codec_header_t *krad_codec_header;
-  
-  krad_codec_header = NULL;
-  packet_size = 0;
-  
-  krad_link->muxer_audio_frames_per_video_frame = 0;
-
   printk ("Output/Muxing thread starting");
-  
-  if ((krad_link->av_mode == AUDIO_ONLY) || (krad_link->av_mode == AUDIO_AND_VIDEO)) {
-    krad_link->muxer_audio_frames_per_video_frame = krad_link->krad_radio->krad_mixer->sample_rate;
-    krad_link->muxer_audio_frames_per_video_frame = krad_link->muxer_audio_frames_per_video_frame / krad_link->encoding_fps_numerator;
-    krad_link->muxer_audio_frames_per_video_frame = krad_link->muxer_audio_frames_per_video_frame * krad_link->encoding_fps_denominator;
-  }
-
-  printk ("audio frames per video frame %f", krad_link->muxer_audio_frames_per_video_frame);
 
   if (krad_link->host[0] != '\0') {
   
@@ -996,170 +966,107 @@ void muxer_unit_create (void *arg) {
     printk ("Outputing to file: %s", krad_link->output);
     krad_link->krad_container = krad_container_open_file (krad_link->output, KRAD_IO_WRITEONLY);
   }
-  
-  //FIXME needed?
-  if (krad_link->av_mode != VIDEO_ONLY) {
-    while ( krad_link->audio_encoder_ready != 1) {
-      usleep(10000);
-    }
-  }
-  
-  if (krad_link->krad_container->container_type == EBML) {
-    if (((krad_link->audio_codec == VORBIS) || (krad_link->audio_codec == NOCODEC)) && 
-      ((krad_link->video_codec == VP8) || (krad_link->video_codec == NOCODEC))) {
-      //krad_ebml_header (krad_link->krad_container->krad_ebml, "webm", APPVERSION);
-    } else {
-      //krad_ebml_header (krad_link->krad_container->krad_ebml, "matroska", APPVERSION);
-    }
-  }
-  
-  if ((krad_link->av_mode == VIDEO_ONLY) || (krad_link->av_mode == AUDIO_AND_VIDEO)) {
-    if (krad_link->video_passthru == 1) {
-    
-      if (krad_link->video_codec == MJPEG) {
-        krad_link->muxer_seen_passthu_keyframe = 1;
-      }
-    
-      //FIXME
-    }
-    
-    if (krad_link->video_codec == Y4M) {
-      krad_link->muxer_packet = malloc (1024);
-      packet_size = krad_y4m_generate_header (krad_link->muxer_packet, krad_link->encoding_width, krad_link->encoding_height,
-                                              krad_link->encoding_fps_numerator, krad_link->encoding_fps_denominator, PIX_FMT_YUV420P);    
 
-      krad_codec_header_t *krad_codec_header = calloc (1, sizeof(krad_codec_header_t));
-      
-      krad_codec_header->header_count = 1;
-      krad_codec_header->header_combined = krad_link->muxer_packet;
-      krad_codec_header->header_combined_size = packet_size;
-      krad_codec_header->header[0] = krad_link->muxer_packet;
-      krad_codec_header->header_size[0] = packet_size;
-
-      krad_link->video_track = 
-      krad_container_add_video_track_with_private_data (krad_link->krad_container, 
-                                  krad_link->video_codec,
-                                   krad_link->encoding_fps_numerator,
-                                krad_link->encoding_fps_denominator,
-                                krad_link->encoding_width,
-                                krad_link->encoding_height,
-                                krad_codec_header);
-                                
-                                
-      free (krad_codec_header);
-      free (krad_link->muxer_packet);
-    }
-    
-    
-    if ((krad_link->video_codec == VP8) || (krad_link->video_codec == MJPEG) || (krad_link->video_codec == KVHS) || (krad_link->video_codec == H264)) {
-    
-      krad_link->video_track = krad_container_add_video_track (krad_link->krad_container,
-                                   krad_link->video_codec,
-                                   krad_link->encoding_fps_numerator,
-                                   krad_link->encoding_fps_denominator,
-                                   krad_link->encoding_width,
-                                   krad_link->encoding_height);
-    }
-    
-    
-    if (krad_link->video_codec == THEORA) {
-    
-      if (krad_link->subunit != NULL) {
-        krad_codec_header = krad_Xtransponder_get_header (krad_link->subunit);
-      }
-
-      if ((krad_link->subunit == NULL) || (krad_codec_header == NULL)) {
-        failfast ("ohh jez");
-      }
-    
-      krad_link->video_track = 
-      krad_container_add_video_track_with_private_data (krad_link->krad_container, 
-                                krad_link->video_codec,
-                                krad_link->encoding_fps_numerator,
-                                krad_link->encoding_fps_denominator,
-                                krad_link->encoding_width,
-                                krad_link->encoding_height,
-                                krad_codec_header);
-    
-      krad_codec_header = NULL;
-    
-    }
-  }
-  
-  if (krad_link->av_mode != VIDEO_ONLY) {
-  
-    if (krad_link->subunit != NULL) {
-      krad_codec_header = krad_Xtransponder_get_header (krad_link->subunit);
-    }
-
-    if ((krad_link->subunit == NULL) || (krad_codec_header == NULL)) {
-      failfast ("ohh jez2");
-    }  
-  
-    switch (krad_link->audio_codec) {
-      case VORBIS:
-        krad_link->audio_track = krad_container_add_audio_track (krad_link->krad_container,
-                                     krad_link->audio_codec,
-                                     krad_link->krad_radio->krad_mixer->sample_rate,
-                                     krad_link->channels, 
-                                     krad_codec_header);
-        break;
-      case FLAC:
-        krad_link->audio_track = krad_container_add_audio_track (krad_link->krad_container,
-                                     krad_link->audio_codec,
-                                     krad_link->krad_radio->krad_mixer->sample_rate,
-                                     krad_link->channels,
-                                     krad_codec_header);
-        break;
-      case OPUS:
-        krad_link->audio_track = krad_container_add_audio_track (krad_link->krad_container,
-                                     krad_link->audio_codec,
-                                     krad_link->krad_radio->krad_mixer->sample_rate,
-                                     krad_link->channels, 
-                                     krad_codec_header);
-        break;
-      default:
-        failfast ("Unknown audio codec");
-    }
-    krad_codec_header = NULL;
-  }
-  
-  printk ("Output/Muxing thread waiting..");
-
+  printk ("Muxing setup.");
 }
 
+static int connect_muxer_to_encoders (krad_link_t *link) {
+
+  char *pch;
+  char *save;
+  int t;
+  int conns;
+  krad_codec_header_t *codec_header;
+  int track_num;
+
+  codec_header = NULL;
+  conns = 0;
+	krad_Xtransponder_subunit_t *subunit;
+  t = 0;
+  save = NULL;
+
+  pch = strtok_r (link->input, "/, ", &save);
+  while (pch != NULL) {
+    t = atoi (pch);
+    subunit = krad_Xtransponder_get_subunit (link->krad_transponder->krad_Xtransponder, t);
+    printke ("its %d--", t);
+    if (subunit != NULL) {
+      krad_Xtransponder_subunit_connect (link->subunit, subunit);
+      conns++;
+      codec_header = krad_Xtransponder_get_header (subunit);
+      if (krad_codec_is_video(codec_header->codec)) {
+        if (codec_header->codec == THEORA) {
+          track_num = krad_container_add_video_track_with_private_data (link->krad_container,
+                                                                        codec_header,
+                                                                        link->encoding_fps_numerator,
+                                                                        link->encoding_fps_denominator,
+                                                                        link->encoding_width,
+                                                                        link->encoding_height);
+        } else {
+          track_num = krad_container_add_video_track (link->krad_container,
+                                                      codec_header->codec,
+                                                      link->encoding_fps_numerator,
+                                                      link->encoding_fps_denominator,
+                                                      link->encoding_width,
+                                                      link->encoding_height);
+        }
+      } else {
+        if (krad_codec_is_audio(codec_header->codec)) {
+          track_num = krad_container_add_audio_track (link->krad_container,
+                                                      codec_header->codec,
+                                                      link->krad_radio->krad_mixer->sample_rate,
+                                                      link->channels, 
+                                                      codec_header);
+        }
+      }
+      link->track_sources[track_num] = subunit;
+                                                          
+    }
+    pch = strtok_r (NULL, "/ ", &save);
+  }
+  
+  return conns;
+}
 
 int muxer_unit_process (void *arg) {
 
-  krad_link_t *krad_link = (krad_link_t *)arg;
+  krad_link_t *link = (krad_link_t *)arg;
 
   krad_slice_t *krad_slice;
   krad_slice = NULL;
-
-  krad_slice = krad_Xtransponder_get_slice (krad_link->subunit);
+  int t;
+  
+  krad_slice = krad_Xtransponder_get_slice (link->subunit);
 
   if (krad_slice == NULL) {
     return 1;
   }
 
-  if (krad_link->video_codec == krad_slice->codec) {
-    krad_container_add_video (krad_link->krad_container, 
-                  krad_link->video_track,
-                  krad_slice->data,
-                  krad_slice->size,
-                  krad_slice->keyframe);
-    krad_link->muxer_video_frames_muxed++;
+  for (t = 0; t < 10; t++) {
+    if (link->track_sources[t] == krad_slice->origin) {
+      break;
+    }
+  }
+  if (t == 10) {
+    return 1;
   }
   
-  if (krad_link->audio_codec == krad_slice->codec) {
-    krad_container_add_audio (krad_link->krad_container,
-                  krad_link->audio_track,
-                  krad_slice->data,
-                  krad_slice->size,
-                  krad_slice->frames);
-    krad_link->muxer_audio_frames_muxed += krad_slice->frames;
+  
+  if (krad_codec_is_video(krad_slice->codec)) {
+    krad_container_add_video (link->krad_container, 
+                              t,
+                              krad_slice->data,
+                              krad_slice->size,
+                              krad_slice->keyframe);
+  } else {
+    if (krad_codec_is_audio(krad_slice->codec)) {
+      krad_container_add_audio (link->krad_container,
+                                t,
+                                krad_slice->data,
+                                krad_slice->size,
+                                krad_slice->frames);
+    }
   }
-
   krad_slice_unref (krad_slice);
   
   return 0;
@@ -1170,10 +1077,6 @@ void muxer_unit_destroy (void *arg) {
   krad_link_t *krad_link = (krad_link_t *)arg;
 
   krad_container_destroy (krad_link->krad_container);
-  
-  if (krad_link->video_passthru == 1) {
-    krad_compositor_port_destroy (krad_link->krad_radio->krad_compositor, krad_link->krad_compositor_port);
-  }
 
   if (krad_link->muxer_krad_transmission != NULL) {
     krad_transmitter_transmission_destroy (krad_link->muxer_krad_transmission);
@@ -1838,11 +1741,29 @@ void krad_link_start (krad_link_t *link) {
   memset (&watch, 0, sizeof(krad_transponder_watch_t));
   watch.callback_pointer = link;
   
+  if ((link->encoding_fps_numerator == 0) || (link->encoding_fps_denominator == 0)) {
+    krad_compositor_get_frame_rate (link->krad_radio->krad_compositor,
+                                    &link->encoding_fps_numerator,
+                                    &link->encoding_fps_denominator);
+  }
+
+  if ((link->encoding_width == 0) || (link->encoding_height == 0)) {
+    krad_compositor_get_resolution (link->krad_radio->krad_compositor,
+                                    &link->encoding_width,
+                                    &link->encoding_height);
+  }
+  
   krad_compositor_get_resolution (link->krad_radio->krad_compositor,
                                   &link->composite_width,
                                   &link->composite_height);
-  
+
   switch ( link->operation_mode ) {
+    case MUX:
+      muxer_unit_create (link);
+      watch.readable_callback = muxer_unit_process;
+      watch.destroy_callback = muxer_unit_destroy;
+      link->graph_id = krad_Xtransponder_add_muxer (link->krad_transponder->krad_Xtransponder, &watch);
+      break;
     case ENCODE:
       if (link->av_mode == AUDIO_ONLY) {
         audio_encoding_unit_create (link);
@@ -1901,6 +1822,9 @@ void krad_link_start (krad_link_t *link) {
   
   link->subunit = krad_Xtransponder_get_subunit (link->krad_transponder->krad_Xtransponder, link->graph_id);
   
+  if (link->operation_mode == MUX) {
+    connect_muxer_to_encoders (link);
+  }
 }
 
 krad_link_t *krad_transponder_get_link_from_sysname (krad_transponder_t *krad_transponder, char *sysname) {

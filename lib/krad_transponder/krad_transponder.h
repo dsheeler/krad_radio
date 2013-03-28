@@ -140,6 +140,8 @@ struct krad_link_St {
 
 	int channels;
 	
+	krad_Xtransponder_subunit_t *track_sources[10];
+
 	krad_Xtransponder_subunit_t *subunit;
 
 	krad_mixer_portgroup_t *mixer_portgroup;

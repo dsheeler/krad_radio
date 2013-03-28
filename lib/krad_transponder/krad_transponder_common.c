@@ -104,6 +104,46 @@ char *krad_codec_to_string (krad_codec_t codec) {
 	}
 }
 
+int krad_codec_is_audio (krad_codec_t codec) {
+
+	switch (codec) {
+		case VORBIS:
+	    return 1;
+		case FLAC:
+	    return 1;
+		case OPUS:
+	    return 1;
+    default:
+	    return 0;
+	}
+
+	return 0;
+}
+
+int krad_codec_is_video (krad_codec_t codec) {
+
+	switch (codec) {
+		case VP8:
+	    return 1;
+		case THEORA:
+	    return 1;
+		case Y4M:
+	    return 1;
+		case MJPEG:
+	    return 1;
+		case KVHS:
+	    return 1;
+		case DAALA:
+	    return 1;
+		case H264:
+	    return 1;
+    default:
+	    return 0;
+	}
+
+	return 0;
+}
+
 krad_codec_t krad_string_to_codec (char *string) {
 	return krad_string_to_codec_full (string, AUDIO_AND_VIDEO);
 }

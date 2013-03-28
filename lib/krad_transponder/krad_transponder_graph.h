@@ -65,6 +65,7 @@ struct krad_slice_St {
   int final;
   int header;
   krad_codec_t codec;
+  krad_Xtransponder_subunit_t *origin;
 };
 
 struct krad_Xtransponder_input_port_St {
