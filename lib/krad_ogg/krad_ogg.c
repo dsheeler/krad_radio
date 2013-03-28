@@ -672,6 +672,15 @@ void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
     krad_ogg_output_aux_headers (krad_ogg);
   }
   
+  if (krad_ogg->tracks[track].seen_keyframe != 1) {
+    if (keyframe == 1) {
+      krad_ogg->tracks[track].seen_keyframe = 1;
+      krad_ogg->last_out_track = -1;
+    } else {
+      return;
+    }
+  }
+  
   packet.packet = buffer;
   packet.bytes = buffer_size;
   packet.b_o_s = 0;
@@ -689,16 +698,15 @@ void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
     packet.e_o_s = 1;
   }  
   
-  krad_ogg->tracks[track].frames += 1;
-  
   if (keyframe == 1) {
-    packet.granulepos = krad_ogg->tracks[track].frames << krad_ogg->tracks[track].keyframe_shift;
+    packet.granulepos = (krad_ogg->tracks[track].frames + 1) << krad_ogg->tracks[track].keyframe_shift;
   } else {
-  
-    packet.granulepos = ((krad_ogg->tracks[track].frames - krad_ogg->tracks[track].frames_since_keyframe) << 
+    packet.granulepos = (((krad_ogg->tracks[track].frames + 1) - krad_ogg->tracks[track].frames_since_keyframe) << 
                 krad_ogg->tracks[track].keyframe_shift) + krad_ogg->tracks[track].frames_since_keyframe;
   }
-  
+
+  krad_ogg->tracks[track].frames += 1;
+  /*
   if (keyframe != 0) {
     
     // flush the stream before we put in the packet w/ keyframe or e_o_s
@@ -724,7 +732,7 @@ void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
       krad_ogg->tracks[track].packets_on_current_page = 0;
   
     }
-  }  
+  }  */
   
   packet.packetno = krad_ogg->tracks[track].packet_num;
   ogg_stream_packetin (&krad_ogg->tracks[track].stream_state, &packet);
@@ -732,38 +740,14 @@ void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
   krad_ogg->tracks[track].packet_num++;  
   krad_ogg->tracks[track].packets_on_current_page++;
   
-  if ((krad_ogg->tracks[track].packets_on_current_page < krad_ogg->tracks[track].max_packets_per_page) && 
-    (keyframe == 0)) {
-  
-    while (ogg_stream_pageout (&krad_ogg->tracks[track].stream_state, &page) != 0) {
-    
-      if (krad_ogg->krad_io) {
+  //if ((krad_ogg->tracks[track].packets_on_current_page < krad_ogg->tracks[track].max_packets_per_page) && 
+  //  (keyframe == 0)) {
+  if (((krad_ogg->tracks[track].packets_on_current_page > krad_ogg->tracks[track].max_packets_per_page) || (keyframe != 0)) && ((krad_ogg->last_out_track != track) && (krad_ogg->last_out <= krad_ogg->tracks[0].frames * 1600))) {
 
-        krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
-        krad_io_write (krad_ogg->krad_io, page.body, page.body_len);
-        krad_io_write_sync (krad_ogg->krad_io);
-      }
-      
-      if (krad_ogg->krad_transmission) {
-      
-        //if (keyframe == 1) {
-        //  krad_transmitter_transmission_sync_point (krad_ogg->krad_transmission);
-        //}      
-      
-        krad_transmitter_transmission_add_data (krad_ogg->krad_transmission, page.header, page.header_len);
-        krad_transmitter_transmission_add_data (krad_ogg->krad_transmission, page.body, page.body_len);
-      
-      }
-
-      //printk ("created page sized %lu", page.header_len + page.body_len);
-
-      krad_ogg->tracks[track].packets_on_current_page = 0;
-    }
-  
-  } else {
   
     while (ogg_stream_flush (&krad_ogg->tracks[track].stream_state, &page) != 0) {
-    
+        krad_ogg->last_out_track = track;
+                krad_ogg->last_out = krad_ogg->tracks[0].frames * 1600;
       if (krad_ogg->krad_io) {
 
         krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
@@ -800,11 +784,15 @@ void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
     krad_ogg_output_aux_headers (krad_ogg);
   }
   
+  if (krad_ogg->tracks[0].seen_keyframe != 1) {
+    return;
+  }
+  
   packet.packet = buffer;
   packet.bytes = buffer_size;
   packet.b_o_s = 0;
   packet.e_o_s = 0;
-  packet.granulepos = krad_ogg->tracks[track].last_granulepos + frames;
+  packet.granulepos = krad_ogg->tracks[track].last_granulepos;
   packet.packetno = krad_ogg->tracks[track].packet_num;
   ogg_stream_packetin (&krad_ogg->tracks[track].stream_state, &packet);
 
@@ -813,38 +801,13 @@ void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
   
   krad_ogg->tracks[track].packets_on_current_page++;
   
-  if (krad_ogg->tracks[track].packets_on_current_page < krad_ogg->tracks[track].max_packets_per_page) {
+  if ((krad_ogg->tracks[track].packets_on_current_page > krad_ogg->tracks[track].max_packets_per_page) && (krad_ogg->last_out_track != track) && (krad_ogg->tracks[track].last_granulepos - frames >= krad_ogg->last_out)) {
   
-    while (ogg_stream_pageout (&krad_ogg->tracks[track].stream_state, &page) != 0) {
-    
-      if (krad_ogg->krad_io) {
 
-        krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
-        krad_io_write (krad_ogg->krad_io, page.body, page.body_len);
-        krad_io_write_sync (krad_ogg->krad_io);
-      }
-      
-      if (krad_ogg->krad_transmission) {    
-      
-        if (krad_ogg->track_count == 1) {
-          krad_transmitter_transmission_add_data_sync (krad_ogg->krad_transmission, page.header, page.header_len);
-        } else {
-          krad_transmitter_transmission_add_data (krad_ogg->krad_transmission, page.header, page.header_len);
-        }    
-
-        krad_transmitter_transmission_add_data (krad_ogg->krad_transmission, page.body, page.body_len);
-      
-      }
-    
-      //printk ("created page sized %lu", page.header_len + page.body_len);
-
-      krad_ogg->tracks[track].packets_on_current_page = 0;
-    }
-  
-  } else {
   
     while (ogg_stream_flush (&krad_ogg->tracks[track].stream_state, &page) != 0) {
-    
+    krad_ogg->last_out_track = track;
+                    krad_ogg->last_out = krad_ogg->tracks[track].last_granulepos - frames;
       if (krad_ogg->krad_io) {
 
         krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
