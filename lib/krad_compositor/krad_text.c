@@ -114,13 +114,7 @@ void krad_text_expand (krad_text_t *krad_text, cairo_t *cr, int width) {
 
 void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
 
-  if (krad_text->subunit.rotation != 0.0f) {
-    cairo_translate (cr, krad_text->subunit.x, krad_text->subunit.y);  
-    cairo_translate (cr, krad_text->subunit.width / 2, krad_text->subunit.height / 2);
-    cairo_rotate (cr, krad_text->subunit.rotation * (M_PI/180.0));
-    cairo_translate (cr, krad_text->subunit.width / -2, krad_text->subunit.height / -2);    
-    cairo_translate (cr, krad_text->subunit.x * -1, krad_text->subunit.y * -1);
-  }  
+  cairo_text_extents_t extents;
 
   if (krad_text->cairo_ft_face != NULL) {
     cairo_set_font_face (cr, krad_text->cairo_ft_face);
@@ -133,10 +127,16 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
                          krad_text->subunit.green,
                          krad_text->subunit.blue,
                          krad_text->subunit.opacity);
-  
-  cairo_move_to (cr, krad_text->subunit.x, krad_text->subunit.y);
+  cairo_text_extents (cr, krad_text->text_actual, &extents);
+  krad_text->subunit.width = extents.width;
+  krad_text->subunit.height = extents.height;  
+  if (krad_text->subunit.rotation != 0.0f) {
+    cairo_translate (cr, krad_text->subunit.x, krad_text->subunit.y);  
+    cairo_translate (cr, krad_text->subunit.width / 2, krad_text->subunit.xscale / 2);
+    cairo_rotate (cr, krad_text->subunit.rotation * (M_PI/180.0));
+    cairo_translate (cr, krad_text->subunit.width / -2, krad_text->subunit.xscale / 4);    
+  }
   cairo_show_text (cr, krad_text->text_actual);
-  //cairo_show_glyphs (cr, cairo_glyphs, glyph_count);
 }
 
 void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
