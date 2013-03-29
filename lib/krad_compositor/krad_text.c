@@ -130,8 +130,8 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
   cairo_text_extents (cr, krad_text->text_actual, &extents);
   krad_text->subunit.width = extents.width;
   krad_text->subunit.height = extents.height;  
+  cairo_translate (cr, krad_text->subunit.x, krad_text->subunit.y);
   if (krad_text->subunit.rotation != 0.0f) {
-    cairo_translate (cr, krad_text->subunit.x, krad_text->subunit.y);  
     cairo_translate (cr, krad_text->subunit.width / 2, krad_text->subunit.xscale / 2);
     cairo_rotate (cr, krad_text->subunit.rotation * (M_PI/180.0));
     cairo_translate (cr, krad_text->subunit.width / -2, krad_text->subunit.xscale / 4);    
