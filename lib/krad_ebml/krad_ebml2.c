@@ -1,5 +1,15 @@
 #include "krad_ebml2.h"
 
+void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
+void rmemcpy1 (unsigned char *dst, unsigned char *src);
+void rmemcpy2 (unsigned char *dst, unsigned char *src);
+void rmemcpy3 (unsigned char *dst, unsigned char *src);
+void rmemcpy4 (unsigned char *dst, unsigned char *src);
+void rmemcpy5 (unsigned char *dst, unsigned char *src);
+void rmemcpy6 (unsigned char *dst, unsigned char *src);
+void rmemcpy7 (unsigned char *dst, unsigned char *src);
+void rmemcpy8 (unsigned char *dst, unsigned char *src);
+
 void rmemcpy1 (unsigned char *dst, unsigned char *src) {
   dst[0] = src[0];
 }

@@ -9,8 +9,6 @@
 
 #include "krad_ebml2_ids.h"
 
-#define KRAD_EBML2_BUF_SZ 1024 * 1024 * 1024
-
 typedef struct kr_ebml2_St kr_ebml2_t;
 
 struct kr_ebml2_St {
@@ -18,23 +16,17 @@ struct kr_ebml2_St {
   size_t len;
   unsigned char *buf;
   unsigned char *bufstart;
-  //unsigned char buffer[KRAD_EBML2_BUF_SZ];
 };
-
-void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
-void rmemcpy1 (unsigned char *dst, unsigned char *src);
-void rmemcpy2 (unsigned char *dst, unsigned char *src);
-void rmemcpy3 (unsigned char *dst, unsigned char *src);
-void rmemcpy4 (unsigned char *dst, unsigned char *src);
-void rmemcpy5 (unsigned char *dst, unsigned char *src);
-void rmemcpy6 (unsigned char *dst, unsigned char *src);
-void rmemcpy7 (unsigned char *dst, unsigned char *src);
-void rmemcpy8 (unsigned char *dst, unsigned char *src);
 
 int kr_ebml2_destroy (kr_ebml2_t **ebml);
 kr_ebml2_t *kr_ebml2_create ();
 
+void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
 int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, unsigned char *buffer, size_t len);
+
+void kr_ebml2_pack (kr_ebml2_t *ebml, void *buffer, size_t len);
+void kr_ebml2_revpack2 (kr_ebml2_t *ebml, void *buffer);
+void kr_ebml2_revpack4 (kr_ebml2_t *ebml, void *buffer);
 
 void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element);
 void kr_ebml2_start_element (kr_ebml2_t *ebml, uint32_t element, unsigned char **position);
