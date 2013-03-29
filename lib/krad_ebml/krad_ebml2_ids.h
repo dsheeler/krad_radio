@@ -7,22 +7,18 @@
 #define EBML_LENGTH_7 0x02 // 00000010
 #define EBML_LENGTH_8 0x01 // 00000001
 
-#define EBML_DATA_SIZE_UNKNOWN     0x01FFFFFFFFFFFFFFLLU
+#define EBML_DATA_SIZE_UNKNOWN          0x01FFFFFFFFFFFFFFLLU
 #define EBML_DATA_SIZE_UNKNOWN_UNPACKED 0x00FFFFFFFFFFFFFFLLU
-#define EBML_DATA_SIZE_UNKNOWN_LENGTH 8
+#define EBML_DATA_SIZE_UNKNOWN_LENGTH   8
 
-#define EID_HEADER             0x1A45DFA3
-#define EID_VERSION            0x4286
-#define EID_READVERSION        0x42F7
-#define EID_MAXIDLENGTH        0x42F2
-#define EID_MAXSIZELENGTH      0x42F3
-#define EID_DOCTYPE            0x4282
-#define EID_DOCTYPEVERSION     0x4287
-#define EID_DOCTYPEREADVERSION 0x4285
+#define EID_HEADER                      0x1A45DFA3
+#define EID_VERSION                     0x4286
+#define EID_READVERSION                 0x42F7
+#define EID_MAXIDLENGTH                 0x42F2
+#define EID_MAXSIZELENGTH               0x42F3
+#define EID_DOCTYPE                     0x4282
+#define EID_DOCTYPEVERSION              0x4287
+#define EID_DOCTYPEREADVERSION          0x4285
 
 #define EID_VOID               0xEC
 #define EID_CRC32              0xBF
-
-// TEMP not ebml
-#define EBML_ID_SEGMENT 0x18538067
-#define EBML_ID_CLUSTER 0x1F43B675

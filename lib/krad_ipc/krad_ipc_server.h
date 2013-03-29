@@ -115,8 +115,6 @@ struct krad_ipc_server_client_St {
   kr_io2_t *out;
 };
 
-
-
 void krad_ipc_server_add_client_to_broadcast ( krad_ipc_server_t *krad_ipc_server, uint32_t broadcast_ebml_id );
 int krad_broadcast_msg_destroy (krad_broadcast_msg_t **broadcast_msg);
 krad_broadcast_msg_t *krad_broadcast_msg_create (krad_ipc_broadcaster_t *broadcaster, unsigned char *buffer, uint32_t size);

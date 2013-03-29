@@ -1,5 +1,6 @@
 #include "krad_mkv.h"
 
+static char *kr_codec_id_to_mkv_codec_id (krad_codec_t codec);
 static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode);
 
 kr_mkv_t *kr_mkv_create () {
@@ -19,7 +20,7 @@ int kr_mkv_destroy (kr_mkv_t **mkv) {
   return -1;
 }
 
-char *kr_codec_id_to_mkv_codec_id (krad_codec_t codec) {
+static char *kr_codec_id_to_mkv_codec_id (krad_codec_t codec) {
   switch (codec) {
     case VORBIS:
       return "A_VORBIS";
@@ -30,13 +31,13 @@ char *kr_codec_id_to_mkv_codec_id (krad_codec_t codec) {
     case VP8:
       return "V_VP8";
     case KVHS:
-      return "V_KVHS";	
+      return "V_KVHS";  
     case THEORA:
       return "V_THEORA";
     case MJPEG:
       return "V_MJPEG";
     case H264:
-      return "V_MPEG4/ISO/AVC";	
+      return "V_MPEG4/ISO/AVC";  
     default:
       return "No Codec";
   }
@@ -186,7 +187,8 @@ int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id) {
   return t;
 }
 
-void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer, int buffer_len, int keyframe) {
+void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
+                       int buffer_len, int keyframe) {
 
   kr_mkv_track_t *track;
   uint32_t block_length;
@@ -236,7 +238,8 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer, int 
   kr_ebml2_pack (mkv->e, buffer, buffer_len);
 }
 
-void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer, int buffer_len, int frames) {
+void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
+                       int buffer_len, int frames) {
 
   kr_mkv_track_t *track;
   int64_t timecode;
