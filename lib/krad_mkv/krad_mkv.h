@@ -10,6 +10,7 @@
 #define KRAD_MKV_H
 
 #define KRAD_MKV_VERSION "Krad MKV Version 6"
+#define KR_MKV_MAX_TRACKS 10
 
 typedef struct kr_mkv_St kr_mkv_t;
 typedef struct kr_mkv_track_St kr_mkv_track_t;
@@ -50,11 +51,15 @@ struct kr_mkv_St {
 int kr_mkv_destroy (kr_mkv_t **mkv);
 kr_mkv_t *kr_mkv_create ();
 
-int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv, krad_codec_t codec,
-                                              int fps_numerator, int fps_denominator,
+void kr_mkv_start_segment (kr_mkv_t *mkv, char *title);
+
+int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
+                                              krad_codec_t codec,
+                                              int fps_numerator,
+                                              int fps_denominator,
                                               int width, int height,
-                                              unsigned char *private_data,
-                                              int private_data_size);
+                                              unsigned char *priv_data,
+                                              int priv_data_size);
                                               
 int kr_mkv_add_video_track (kr_mkv_t *mkv, krad_codec_t codec,
                             int fps_numerator, int fps_denominator,
@@ -62,8 +67,8 @@ int kr_mkv_add_video_track (kr_mkv_t *mkv, krad_codec_t codec,
 
 int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
                             int sample_rate, int channels,
-                            unsigned char *private_data,
-                            int private_data_size);
+                            unsigned char *priv_data,
+                            int priv_data_size);
 
 int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id);
 
