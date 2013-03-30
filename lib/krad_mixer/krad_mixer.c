@@ -785,6 +785,15 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
 
 }
 
+
+static krad_audio_portgroup_direction_t kr_mixer_dir_to_kr_audio_dir (krad_mixer_portgroup_direction_t dir) {
+
+  if (dir == INPUT) {
+    return KINPUT;
+  }  
+  return KOUTPUT;
+}
+
 krad_mixer_portgroup_t *krad_mixer_portgroup_create (krad_mixer_t *krad_mixer, char *sysname, int direction,
                            krad_mixer_output_t output_type, int channels, float volume,
                            krad_mixer_mixbus_t *mixbus, krad_mixer_portgroup_io_t io_type, 
@@ -885,7 +894,7 @@ krad_mixer_portgroup_t *krad_mixer_portgroup_create (krad_mixer_t *krad_mixer, c
       break;
     case KRAD_AUDIO:
       portgroup->io_ptr = krad_audio_portgroup_create (krad_mixer->krad_audio, portgroup->sysname, 
-                               portgroup->direction, portgroup->channels, api);
+                               kr_mixer_dir_to_kr_audio_dir(portgroup->direction), portgroup->channels, api);
       break;
     case KRAD_LINK:
       portgroup->io_ptr = io_ptr;

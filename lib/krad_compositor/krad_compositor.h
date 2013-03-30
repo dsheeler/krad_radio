@@ -25,6 +25,7 @@ typedef struct krad_compositor_St krad_compositor_t;
 #define KC_MAX_SPRITES 32
 #define KC_MAX_TEXTS 32
 #define KC_MAX_VECTORS 32
+#define KC_MAX_ANY MAX(KC_MAX_PORTS, MAX(KC_MAX_SPRITES, MAX(KC_MAX_TEXTS, KC_MAX_VECTORS)))
 #define KC_MAX_SUBUNITS KC_MAX_PORTS * KC_MAX_SPRITES * KC_MAX_TEXTS * KC_MAX_VECTORS
 
 #define RED 0.244 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0

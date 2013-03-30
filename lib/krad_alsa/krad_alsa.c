@@ -243,7 +243,7 @@ void async_rw_callback(snd_async_handler_t *ahandler) {
 
 void async_rw(krad_alsa_t *krad_alsa)
 {
-
+/*
     snd_async_handler_t *ahandler;//async handler
     int error;
 
@@ -306,7 +306,7 @@ void async_rw(krad_alsa_t *krad_alsa)
 		printf("#########krad audio %s\n", krad_alsa->device_name);	
 
 	}
-	
+	*/
 }
 
 /*******************************************************************************/

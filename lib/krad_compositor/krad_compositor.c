@@ -971,7 +971,7 @@ void krad_compositor_get_resolution (krad_compositor_t *krad_compositor, int *wi
 void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_control_t *uc) {
 
 
-  if ((compositor == NULL) || (uc == NULL) || (uc->address.id.number < 0)) {
+  if ((compositor == NULL) || (uc == NULL) || (uc->address.id.number >= KC_MAX_ANY)) {
     return;
   }
 
@@ -1301,7 +1301,7 @@ int krad_compositor_subunit_create (krad_compositor_t *compositor,
 
 int krad_compositor_subunit_destroy (krad_compositor_t *compositor, kr_address_t *address) {
 
-  if ((compositor == NULL) || (address == NULL) || (address->id.number < 0)) {
+  if ((compositor == NULL) || (address == NULL) || (address->id.number >= KC_MAX_ANY)) {
     return 0;
   }
 

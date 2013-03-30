@@ -482,7 +482,7 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
           break;
         }
         address.path.unit = KR_STATION;
-        address.path.subunit.mixer_subunit = KR_REMOTE;
+        address.path.subunit.station_subunit = KR_REMOTE;
         address.id.number = i;
         krad_radio_broadcast_subunit_destroyed (kr_ipc->ipc_broadcaster, &address);
       }
