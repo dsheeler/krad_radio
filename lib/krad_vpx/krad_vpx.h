@@ -50,7 +50,8 @@ struct krad_vpx_encoder_St {
   const vpx_codec_cx_pkt_t *pkt;
 
   int flags;
-  unsigned int frames;
+  uint64_t bytes;
+  unsigned long frames;
   unsigned int frames_since_keyframe;  
   unsigned long deadline;
   

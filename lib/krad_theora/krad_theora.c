@@ -253,6 +253,10 @@ int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char
   //  exit(1);
   //}
   
+  krad_theora->frames++;
+  
+  krad_theora->bytes += krad_theora->packet.bytes;
+  
   return krad_theora->packet.bytes;
 }
 

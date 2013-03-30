@@ -21,6 +21,15 @@ typedef enum {
 #define KRAD_CODEC_T 1
 #endif
 
+typedef enum {
+  MKV = 100,
+  OGG,
+  TOGG,
+  RAW,
+} krad_container_type_t;
+
+typedef krad_container_type_t kr_container_type_t;
+
 typedef struct krad_codec_header_St krad_codec_header_t;
 
 struct krad_codec_header_St {

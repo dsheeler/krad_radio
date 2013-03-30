@@ -477,11 +477,11 @@ void video_encoding_unit_create (void *arg) {
                                                          krad_link->encoding_fps_denominator,                                 
                                                          krad_link->vp8_bitrate);
 
-    //if (krad_link->operation_mode == TRANSMIT) {
+    //if (krad_link->type == TRANSMIT) {
     //  krad_link->krad_vpx_encoder->cfg.kf_max_dist = 90;
     //}
 
-    //if (krad_link->operation_mode == RECORD) {
+    //if (krad_link->type == RECORD) {
     //  krad_link->krad_vpx_encoder->cfg.rc_min_quantizer = 5;
     //  krad_link->krad_vpx_encoder->cfg.rc_max_quantizer = 35;          
     //}
@@ -1653,7 +1653,7 @@ void krad_link_audio_samples_callback (int frames, void *userdata, float **sampl
   int wrote;
   
   /*
-  if ((krad_link->operation_mode == RECEIVE) || (krad_link->operation_mode == PLAYBACK)) {
+  if ((krad_link->type == RECEIVE) || (krad_link->type == PLAYBACK)) {
     if (((krad_link->av_mode == AUDIO_ONLY) || (1)) && 
        (krad_ringbuffer_read_space (krad_link->audio_output_ringbuffer[0]) >= frames * 4) && 
        (krad_ringbuffer_read_space (krad_link->audio_output_ringbuffer[1]) >= frames * 4)) {
@@ -1666,7 +1666,7 @@ void krad_link_audio_samples_callback (int frames, void *userdata, float **sampl
   }
   */
 
-  if (link->operation_mode == ENCODE) {
+  if (link->type == ENCODE) {
     for (c = 0; c < link->channels; c++ ) {
       if (krad_ringbuffer_write_space (link->audio_input_ringbuffer[c]) < frames * 4) {
         return;
@@ -1683,7 +1683,7 @@ void krad_link_audio_samples_callback (int frames, void *userdata, float **sampl
     }
   }
   /*
-  if (krad_link->operation_mode == CAPTURE) {
+  if (krad_link->type == CAPTURE) {
 
     krad_ringbuffer_read (krad_link->audio_capture_ringbuffer[0], (char *)samples[0], frames * 4);
     krad_ringbuffer_read (krad_link->audio_capture_ringbuffer[1], (char *)samples[1], frames * 4);
@@ -1757,7 +1757,7 @@ void krad_link_start (krad_link_t *link) {
                                   &link->composite_width,
                                   &link->composite_height);
 
-  switch ( link->operation_mode ) {
+  switch ( link->type ) {
     case MUX:
       muxer_unit_create (link);
       watch.readable_callback = muxer_unit_process;
@@ -1822,7 +1822,7 @@ void krad_link_start (krad_link_t *link) {
   
   link->subunit = krad_Xtransponder_get_subunit (link->krad_transponder->krad_Xtransponder, link->graph_id);
   
-  if (link->operation_mode == MUX) {
+  if (link->type == MUX) {
     connect_muxer_to_encoders (link);
   }
 }

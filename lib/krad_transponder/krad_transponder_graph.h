@@ -130,7 +130,9 @@ int krad_Xtransponder_set_header (krad_Xtransponder_subunit_t *krad_Xtransponder
 krad_slice_t *krad_Xtransponder_get_slice (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit);
 int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit, krad_slice_t **krad_slice);
 
-void krad_Xtransponder_list (krad_Xtransponder_t *krad_Xtransponder);
+int krad_Xtransponder_count (krad_Xtransponder_t *krad_Xtransponder);
+int krad_Xtransponder_get_info (krad_Xtransponder_t *krad_Xtransponder, int num, char *string);
+void *krad_Xtransponder_get_link (krad_Xtransponder_t *krad_Xtransponder, int num);
 
 int krad_Xtransponder_add_capture (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);
 int krad_Xtransponder_add_muxer (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);

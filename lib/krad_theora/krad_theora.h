@@ -36,7 +36,8 @@ struct krad_theora_encoder_St {
   
   int update_config;  
   
-  int frames;
+  uint64_t frames;
+  uint64_t bytes;
 
   int finish;
 

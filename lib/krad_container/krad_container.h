@@ -7,12 +7,6 @@ typedef struct krad_container_St krad_container_t;
 #include "krad_ogg.h"
 #include "krad_transmitter.h"
 
-typedef enum {
-  MKV = 100,
-  OGG,
-  RAW,
-} krad_container_type_t;
-
 struct krad_container_St {
   krad_container_type_t container_type;
   krad_ogg_t *krad_ogg;

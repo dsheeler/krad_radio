@@ -73,7 +73,7 @@ struct krad_link_St {
 	krad_container_t *krad_container;
 	krad_v4l2_t *krad_v4l2;
 	
-	krad_link_operation_mode_t operation_mode;
+	kr_txpdr_su_type_t type;
 	krad_link_video_source_t video_source;
 	krad_codec_t audio_codec;
 	krad_codec_t video_codec;
@@ -161,8 +161,7 @@ struct krad_link_St {
 
   int graph_id;
   
-  
-	unsigned char *demux_buffer;
+  unsigned char *demux_buffer;
 	unsigned char *demux_header_buffer;
 	int demux_video_packets;
 	int demux_audio_packets;
@@ -183,7 +182,6 @@ struct krad_link_St {
   void *wl_buffer;
 #endif
 };
-
 
 krad_link_t *krad_transponder_get_link_from_sysname (krad_transponder_t *krad_transponder, char *sysname);
 krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *krad_transponder, char *sysname);

@@ -229,6 +229,100 @@ static int kr_transponder_crate_get_string_from_transponder (kr_crate_t *crate, 
   return len; 
 }
 
+static void kr_ebml_to_transponder_subunit_rep (kr_ebml2_t *ebml, kr_transponder_subunit_t *tr) {
+  kr_ebml2_unpack_element_int32 (ebml, NULL, (int32_t *)&tr->type);
+  kr_ebml2_unpack_element_data (ebml, NULL, &tr->actual, sizeof(tr->actual));  
+}
+
+
+static int kr_transponder_get_string_from_muxer (kr_muxer_t *muxer, char *string, int maxlen) {
+
+  int len;
+  
+  len = 0;
+
+  len += sprintf (string + len, "Container: %s\n", kr_container_type_to_string (muxer->type));
+  return len;
+}
+
+static int kr_transponder_get_string_from_encoder (kr_encoder_t *encoder, char *string, int maxlen) {
+
+  int len;
+  
+  len = 0;
+
+  len += sprintf (string + len, "%s Encoder ", krad_codec_to_string (encoder->codec));
+  
+    
+  if (krad_codec_is_audio (encoder->codec)) {
+    len += sprintf (string + len, "%d Channels %dhz",
+                    encoder->av.audio.channels,
+                    encoder->av.audio.sample_rate);
+    if (encoder->codec == FLAC) {
+      len += sprintf (string + len, " Bit Depth: %d", encoder->av.audio.codec.flac.bit_depth);
+    }
+    if (encoder->codec == VORBIS) {
+      len += sprintf (string + len, " Quality: %3.1f", encoder->av.audio.codec.vorbis.quality);
+    }
+    if (encoder->codec == OPUS) {
+      if ((encoder->av.audio.codec.opus.bitrate % 1000) == 0) {
+        len += sprintf (string + len, " %dKB/s", encoder->av.audio.codec.opus.bitrate / 1000);
+      } else {
+        len += sprintf (string + len, " %d", encoder->av.audio.codec.opus.bitrate);      
+      }
+      len += sprintf (string + len, " %s Signal", krad_opus_signal_to_nice_string(encoder->av.audio.codec.opus.signal));
+      len += sprintf (string + len, " Complexity: %d", encoder->av.audio.codec.opus.complexity);
+      len += sprintf (string + len, " Frame Size: %d", encoder->av.audio.codec.opus.frame_size);
+      len += sprintf (string + len, " Bandwidth: %s", krad_opus_bandwidth_to_nice_string(encoder->av.audio.codec.opus.bandwidth));
+    }
+  }
+
+  if (krad_codec_is_video (encoder->codec)) {
+    len += sprintf (string + len, "%dx%d %d/%d",
+                    encoder->av.video.width,
+                    encoder->av.video.height,
+                    encoder->av.video.fps_numerator,
+                    encoder->av.video.fps_denominator);
+    if (encoder->codec == THEORA) {
+      len += sprintf (string + len, " %s", kr_color_depth_to_string (encoder->av.video.color_depth));
+      len += sprintf (string + len, " Quality: %d Speed: %d", encoder->av.video.codec.theora.quality, encoder->av.video.codec.theora.speed);
+      if (encoder->av.video.codec.theora.kf_distance != 0) {
+        len += sprintf (string + len, " Forced KF Distance: %d", encoder->av.video.codec.theora.kf_distance);
+      }      
+    }
+    if (encoder->codec == VP8) {
+      len += sprintf (string + len, " Bitrate: %uKB/s Deadline: %"PRIu64"", encoder->av.video.codec.vpx.bitrate / 8, encoder->av.video.codec.vpx.deadline);
+    }
+    len += sprintf (string + len, " %"PRIu64" Frames %"PRIu64" KB", encoder->av.video.frames, encoder->av.video.bytes / 1000);
+  }
+  
+  return len;
+}
+
+static int kr_transponder_crate_get_string_from_subunit (kr_crate_t *crate, char **string, int maxlen) {
+
+  kr_transponder_subunit_t transponder_subunit;
+  int len;
+
+  len = 0;
+
+  kr_ebml_to_transponder_subunit_rep (&crate->payload_ebml, &transponder_subunit);
+
+  switch (transponder_subunit.type) {
+    case ENCODE:
+      len += kr_transponder_get_string_from_encoder (&transponder_subunit.actual.encoder, *string + len, maxlen - len);
+      break;
+    case MUX:
+      len += kr_transponder_get_string_from_muxer (&transponder_subunit.actual.muxer, *string + len, maxlen - len);
+      break;
+    default:
+      len += sprintf (*string + len, "%s\n", kr_txpdr_su_type_to_string (transponder_subunit.type));
+      break;
+  }
+
+  return len;
+}
+
 int kr_transponder_crate_to_string (kr_crate_t *crate, char **string) {
 
   if (crate->notice == EBML_ID_KRAD_UNIT_INFO) {
@@ -241,19 +335,16 @@ int kr_transponder_crate_to_string (kr_crate_t *crate, char **string) {
       *string = kr_response_alloc_string (crate->size * 8);
       return kr_transponder_crate_get_string_from_adapter (crate, string, crate->size * 8);
     case KR_TRANSMITTER:
-      break;
     case KR_RECEIVER:
-      break;
+    case KR_DISPLAY:
+    case KR_CAPTURE:
     case KR_DEMUXER:
-      break;  
     case KR_MUXER:
-      break;
     case KR_ENCODER:
-      break;
     case KR_DECODER:
-      break;
+      *string = kr_response_alloc_string (crate->size * 16);
+      return kr_transponder_crate_get_string_from_subunit (crate, string, crate->size * 16);
   }
   
-  return 0;  
+  return 0;
 }
-

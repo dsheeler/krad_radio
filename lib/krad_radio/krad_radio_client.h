@@ -98,12 +98,14 @@ typedef enum {
 typedef enum {
   KR_TRANSMITTER = 1,
   KR_RECEIVER,
+  KR_ADAPTER,
+  KR_CAPTURE,
+  KR_DISPLAY,
   KR_DEMUXER,
   KR_MUXER,
   KR_ENCODER,
   KR_DECODER,
-  KR_ADAPTER,
-} kr_transponder_subunit_t;
+} kr_transponder_subunit_type_t;
 
 typedef enum {
   KR_STATION_UNIT = 1,
@@ -137,7 +139,7 @@ typedef union {
   uint32_t zero;
   kr_mixer_subunit_t mixer_subunit;
   kr_compositor_subunit_t compositor_subunit;
-  kr_transponder_subunit_t transponder_subunit;
+  kr_transponder_subunit_type_t transponder_subunit;
   kr_station_subunit_t station_subunit;
 } kr_subunit_t;
 

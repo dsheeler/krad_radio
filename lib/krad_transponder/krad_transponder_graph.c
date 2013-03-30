@@ -799,7 +799,6 @@ void krad_Xtransponder_subunit_connect2 (krad_Xtransponder_subunit_t *krad_Xtran
                                   krad_Xtransponder_subunit,
                                   from_krad_Xtransponder_subunit->outputs[0],
                                   krad_Xtransponder_subunit->inputs[1]);
-                                    
 }
 
 void krad_Xtransponder_subunit_connect3 (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
@@ -809,33 +808,52 @@ void krad_Xtransponder_subunit_connect3 (krad_Xtransponder_subunit_t *krad_Xtran
                                   krad_Xtransponder_subunit,
                                   from_krad_Xtransponder_subunit->outputs[1],
                                   krad_Xtransponder_subunit->inputs[0]);
-                                    
 }
-
 
 int krad_Xtransponder_add_muxer (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch) {
   return krad_Xtransponder_subunit_add (krad_Xtransponder, MUXER, watch);
 }
 
-void krad_Xtransponder_list (krad_Xtransponder_t *krad_Xtransponder) {
+int krad_Xtransponder_count (krad_Xtransponder_t *krad_Xtransponder) {
   
   int m;
-
-  printk ("Krad Transponder: Listing Subunits");
+  int c;
+  
+  c = 0;
 
   for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
     if (krad_Xtransponder->subunits[m] != NULL) {
-      printk ("Krad Transponder: Subunit %d - %s",
-              m,
-              transponder_subunit_type_to_string(krad_Xtransponder->subunits[m]->type));      
+      c++;
     }
   }
+  return c;
+}
+
+int krad_Xtransponder_get_info (krad_Xtransponder_t *krad_Xtransponder, int num, char *string) {
+  
+  if (krad_Xtransponder->subunits[num] != NULL) {
+    sprintf (string, "Krad Transponder: Subunit %d - %s",
+             num,
+             transponder_subunit_type_to_string(krad_Xtransponder->subunits[num]->type));      
+    return 1;
+  }
+
+  return -1;
+}
+
+void *krad_Xtransponder_get_link (krad_Xtransponder_t *krad_Xtransponder, int num) {
+  
+  if (krad_Xtransponder->subunits[num] != NULL) {
+    return krad_Xtransponder->subunits[num]->watch->callback_pointer;
+  }
+
+  return NULL;
 }
 
 void krad_Xtransponder_destroy (krad_Xtransponder_t **krad_Xtransponder) {
 
   int m;
-  
+
   if (*krad_Xtransponder != NULL) {
 
     printk ("Krad Transponder: Destroying");
@@ -857,9 +875,9 @@ void krad_Xtransponder_destroy (krad_Xtransponder_t **krad_Xtransponder) {
 krad_Xtransponder_t *krad_Xtransponder_create (krad_radio_t *krad_radio) {
 
   krad_Xtransponder_t *krad_Xtransponder;
-  
+
   printk ("Krad Transponder: Creating");
-  
+
   krad_Xtransponder = calloc(1, sizeof(krad_Xtransponder_t));
   krad_Xtransponder->krad_radio = krad_radio;
   krad_Xtransponder->subunits = calloc(KRAD_TRANSPONDER_SUBUNITS, sizeof(krad_Xtransponder_subunit_t *));
@@ -868,4 +886,3 @@ krad_Xtransponder_t *krad_Xtransponder_create (krad_radio_t *krad_radio) {
 
   return krad_Xtransponder;
 }
-

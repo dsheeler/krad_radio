@@ -22,6 +22,26 @@ char *krad_opus_bandwidth_to_string (int bandwidth) {
 	}		
 }
 
+char *krad_opus_bandwidth_to_nice_string (int bandwidth) {
+
+	switch ( bandwidth ) {
+		case OPUS_AUTO:
+			return "Auto";
+		case OPUS_BANDWIDTH_NARROWBAND:
+			return "Narrowband";
+		case OPUS_BANDWIDTH_MEDIUMBAND:
+			return "Mediumband";
+		case OPUS_BANDWIDTH_WIDEBAND:
+			return "Wideband";			
+		case OPUS_BANDWIDTH_SUPERWIDEBAND:
+			return "Super Wideband";
+		case OPUS_BANDWIDTH_FULLBAND:
+			return "Fullband";
+		default:
+			return "Unknown";
+	}		
+}
+
 char *krad_opus_signal_to_string (int signal) {
 
 	switch ( signal ) {
@@ -33,6 +53,20 @@ char *krad_opus_signal_to_string (int signal) {
 			return "OPUS_SIGNAL_MUSIC";
 		default:
 			return "OPUS_AUTO";
+	}		
+}
+
+char *krad_opus_signal_to_nice_string (int signal) {
+
+	switch ( signal ) {
+		case OPUS_AUTO:
+			return "Auto";
+		case OPUS_SIGNAL_VOICE:
+			return "Voice";
+		case OPUS_SIGNAL_MUSIC:
+			return "Music";
+		default:
+			return "Unknown";
 	}		
 }
 
@@ -101,6 +135,20 @@ char *krad_codec_to_string (krad_codec_t codec) {
 			return "H264";						
 		default:
 			return "No Codec";
+	}
+}
+
+char *kr_color_depth_to_string (int depth) {
+
+	switch (depth) {
+		case 420:
+			return "4:2:0";
+		case 422:
+			return "4:2:2";
+		case 444:
+			return "4:4:4";
+		default:
+			return "???";
 	}
 }
 
@@ -243,33 +291,33 @@ char *krad_link_av_mode_to_string (krad_link_av_mode_t av_mode) {
 	}
 }
 
-char *krad_link_operation_mode_to_string (krad_link_operation_mode_t operation_mode) {
+char *kr_txpdr_su_type_to_string (kr_txpdr_su_type_t type) {
 
-	switch (operation_mode) {
+	switch (type) {
 		case CAPTURE:
-			return "capture";
+			return "Capture";
 		//case RECEIVE:
 		//	return "receive";
 		case RECORD:
-			return "record";
-		case TRANSMIT:
-			return "transmit";
+			return "Record";
+		//case TRANSMIT:
+		//	return "transmit";
 		//case PLAYBACK:
 		//	return "playback";
 		case DISPLAY:
-			return "display";
+			return "Display";
 		case MUX:
-			return "mux";
+			return "Muxer";
 		case ENCODE:
-			return "encode";
+			return "Encoder";
 		case FAILURE:
-			return "failure";
+			return "Failure";
 		default:
 			return "Unknown";
 	}
 }
 
-krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string) {
+kr_txpdr_su_type_t krad_link_string_to_type (char *string) {
 
 	if ((strlen(string) == 7) && (strncmp(string, "capture", 7) == 0)) {
 		return CAPTURE;
@@ -287,9 +335,9 @@ krad_link_operation_mode_t krad_link_string_to_operation_mode (char *string) {
 		return RECORD;
 	}
 
-	if ((strlen(string) == 8) && (strncmp(string, "transmit", 8) == 0)) {
-		return TRANSMIT;
-	}
+	//if ((strlen(string) == 8) && (strncmp(string, "transmit", 8) == 0)) {
+	//	return TRANSMIT;
+	//}
 
 	if ((strlen(string) == 3) && (strncmp(string, "mux", 3) == 0)) {
 		return MUX;
@@ -331,6 +379,22 @@ char *krad_link_video_source_to_string (krad_link_video_source_t video_source) {
 			return "X11";
 		case NOVIDEO:
 			return "novideo";
+		default:
+			return "Unknown";
+	}
+}
+
+char *kr_container_type_to_string (kr_container_type_t type) {
+
+	switch (type) {
+		case MKV:
+			return "MKV";
+		case OGG:
+			return "Ogg";
+		case TOGG:
+			return "transOgg";
+		case RAW:
+			return "Raw";
 		default:
 			return "Unknown";
 	}

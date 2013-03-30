@@ -246,6 +246,9 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet,
       #ifdef BENCHMARK
       krad_vpx_benchmark_finish(kradvpx);
       #endif
+      
+      kradvpx->bytes += kradvpx->pkt->data.frame.sz;
+      
       return kradvpx->pkt->data.frame.sz;
     }
   }

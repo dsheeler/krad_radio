@@ -386,7 +386,8 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       return -1;    
   }
   
-  if ((ebml_out.pos > 0) && (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
+  if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS)) &&
+       (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   }
 

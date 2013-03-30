@@ -186,13 +186,12 @@ int main (int argc, char *argv[]) {
 
       kr_mixer_portgroup_list (client);
       kr_delivery_accept_and_report (client);
-     
+
       kr_compositor_subunit_list (client);
       kr_delivery_accept_and_report (client);
 
-      //FIXME
       kr_transponder_subunit_list (client);
-      //kr_delivery_accept_and_report (client);
+      kr_delivery_accept_and_report (client);
     }
   }
 
@@ -602,10 +601,10 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
       kr_transponder_subunit_list (client);
-      //kr_delivery_accept_and_report (client);
+      kr_delivery_accept_and_report (client);
     }
   }
-  
+
   if (strncmp(argv[2], "record", 7) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "record", argv[3]);
