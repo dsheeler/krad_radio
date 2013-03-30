@@ -8,7 +8,7 @@ void krad_receiver_promote_client (krad_receiver_client_t *client) {
 
 	krad_transponder = client->krad_receiver->krad_transponder;
 
-	for (k = 0; k < KRAD_TRANSPONDER_MAX_LINKS; k++) {
+	for (k = 0; k < KRAD_TRANSPONDER_MAX_SUBUNITS; k++) {
 		if (krad_transponder->krad_link[k] == NULL) {
 
 			krad_transponder->krad_link[k] = krad_link_prepare (k);

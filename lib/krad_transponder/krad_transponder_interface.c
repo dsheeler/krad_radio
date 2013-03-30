@@ -72,11 +72,15 @@ void kr_vpx_encoder_to_rep (krad_vpx_encoder_t *encoder, kr_vpx_encoder_t *rep) 
   rep->deadline = encoder->deadline;
 }
 
-void krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int num, kr_transponder_subunit_t *tr ) {
+int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int num, kr_transponder_subunit_t *tr ) {
 
   krad_link_t *link;
 
   link = krad_Xtransponder_get_link (krad_transponder->krad_Xtransponder, num);
+
+  if (link == NULL) {
+    return 0;
+  }
 
   memset (tr, 0, sizeof(kr_transponder_subunit_t));
 
@@ -127,7 +131,25 @@ void krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int
 	      tr->actual.encoder.av.video.bytes = link->krad_vpx_encoder->bytes;
 	      tr->actual.encoder.av.video.frames = link->krad_vpx_encoder->frames;
 	    }
+	    if (link->codec == KVHS) {
+	      tr->actual.encoder.av.video.bytes = link->krad_vhs->bytes;
+	      tr->actual.encoder.av.video.frames = link->krad_vhs->frames;
+	    }
     }
+  }
+  
+  if (tr->type == RAWIN) {
+    //videoport in
+    //audioport in
+    //decklink
+    //x11
+    //v4l2
+  }
+  
+  if (tr->type == RAWOUT) {
+    //videoport out
+    //audioport out
+    //wayland display
   }
   
   if (tr->type == MUX) {
@@ -145,6 +167,7 @@ void krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int
       
     }
   }
+  return 1;
 }
 
 void krad_transponder_subunit_rep_to_ebml ( kr_ebml2_t *ebml, kr_transponder_subunit_t *tr ) {
@@ -157,17 +180,17 @@ void krad_transponder_subunit_address ( kr_transponder_subunit_t *tr, int num, k
   address->id.number = num;
 
   switch (tr->type) {
-    case CAPTURE:
-      address->path.subunit.transponder_subunit = KR_CAPTURE;
+    case RAWIN:
+      address->path.subunit.transponder_subunit = KR_RAWIN;
+      break;
+    case RAWOUT:
+      address->path.subunit.transponder_subunit = KR_RAWOUT;
       break;
     case MUX:
       address->path.subunit.transponder_subunit = KR_MUXER;
       break;
     case ENCODE:
       address->path.subunit.transponder_subunit = KR_ENCODER;
-      break;
-    case DISPLAY:
-      address->path.subunit.transponder_subunit = KR_DISPLAY;
       break;
     default:
       address->path.subunit.transponder_subunit = 0;
@@ -239,8 +262,10 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST:
       num = krad_Xtransponder_count (krad_transponder->krad_Xtransponder);
-      for (i = 0; i < num; i++) {
-        krad_transponder_subunit_to_rep ( krad_transponder, i, &transponder_subunit_rep );
+      for (i = 0; i < KRAD_TRANSPONDER_MAX_SUBUNITS; i++) {
+        if (!krad_transponder_subunit_to_rep ( krad_transponder, i, &transponder_subunit_rep )) {
+          continue;
+        }
         krad_transponder_subunit_address ( &transponder_subunit_rep, i, &address );
         krad_radio_address_to_ebml2 (&ebml_out, &response, &address);
         kr_ebml2_pack_uint32 ( &ebml_out,
@@ -267,18 +292,18 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
     
-      if (krad_link_string_to_type(string) == FAILURE) {
+      if (kr_txpdr_string_to_subunit_type(string) == FAILURE) {
         break;
       }
 
-      for (i = 0; i < KRAD_TRANSPONDER_MAX_LINKS; i++) {
+      for (i = 0; i < KRAD_TRANSPONDER_MAX_SUBUNITS; i++) {
         if (krad_transponder->krad_link[i] == NULL) {
           krad_transponder->krad_link[i] = krad_link_prepare (i);
           link = krad_transponder->krad_link[i];
           link->link_num = i;
           link->krad_radio = krad_transponder->krad_radio;
           link->krad_transponder = krad_transponder;
-          link->type = krad_link_string_to_type (string);
+          link->type = kr_txpdr_string_to_subunit_type (string);
           break;
         }
       }
@@ -321,11 +346,11 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         }
       }
 
-      if (link->type == DISPLAY) {
+      if (link->type == RAWOUT) {
         link->av_mode = VIDEO_ONLY;
       }
 
-      if (link->type == CAPTURE) {
+      if (link->type == RAWIN) {
         link->av_mode = VIDEO_ONLY;
         link->video_source = krad_link_string_to_video_source (string2);
         if (link->video_source == NOVIDEO) {

@@ -486,7 +486,33 @@ int dir_exists (char *dir) {
       return 0;
     }
   }
+  return 0;
+}
 
+int file_exists (char *file) {
+
+  int err;
+  struct stat s;
+
+  err = stat (file, &s);
+
+  if (err == -1) {
+    if(ENOENT == errno) {
+      // does not exist
+      return 0;
+    } else {
+      // another error
+      return 0;
+    }
+  } else {
+    if ((S_ISREG(s.st_mode)) || (S_ISLNK(s.st_mode))) {
+      // it's a file
+      return 1;
+    } else {
+      // exists but is no dir
+      return 0;
+    }
+  }
   return 0;
 }
 

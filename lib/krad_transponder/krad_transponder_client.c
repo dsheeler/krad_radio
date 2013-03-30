@@ -293,7 +293,12 @@ static int kr_transponder_get_string_from_encoder (kr_encoder_t *encoder, char *
     if (encoder->codec == VP8) {
       len += sprintf (string + len, " Bitrate: %uKB/s Deadline: %"PRIu64"", encoder->av.video.codec.vpx.bitrate / 8, encoder->av.video.codec.vpx.deadline);
     }
-    len += sprintf (string + len, " %"PRIu64" Frames %"PRIu64" KB", encoder->av.video.frames, encoder->av.video.bytes / 1000);
+    len += sprintf (string + len, " %"PRIu64" Frames", encoder->av.video.frames);
+    if (encoder->av.video.bytes < 1000000000) {
+      len += sprintf (string + len, " %"PRIu64" KB", encoder->av.video.bytes / 1000);
+    } else {
+      len += sprintf (string + len, " %"PRIu64" MB", encoder->av.video.bytes / 1000000);
+    }
   }
   
   return len;
@@ -316,7 +321,7 @@ static int kr_transponder_crate_get_string_from_subunit (kr_crate_t *crate, char
       len += kr_transponder_get_string_from_muxer (&transponder_subunit.actual.muxer, *string + len, maxlen - len);
       break;
     default:
-      len += sprintf (*string + len, "%s\n", kr_txpdr_su_type_to_string (transponder_subunit.type));
+      len += sprintf (*string + len, "%s\n", kr_txpdr_subunit_type_to_string (transponder_subunit.type));
       break;
   }
 
@@ -336,8 +341,8 @@ int kr_transponder_crate_to_string (kr_crate_t *crate, char **string) {
       return kr_transponder_crate_get_string_from_adapter (crate, string, crate->size * 8);
     case KR_TRANSMITTER:
     case KR_RECEIVER:
-    case KR_DISPLAY:
-    case KR_CAPTURE:
+    case KR_RAWIN:
+    case KR_RAWOUT:
     case KR_DEMUXER:
     case KR_MUXER:
     case KR_ENCODER:

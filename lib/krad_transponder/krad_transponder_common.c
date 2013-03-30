@@ -291,21 +291,13 @@ char *krad_link_av_mode_to_string (krad_link_av_mode_t av_mode) {
 	}
 }
 
-char *kr_txpdr_su_type_to_string (kr_txpdr_su_type_t type) {
+char *kr_txpdr_subunit_type_to_string (kr_txpdr_su_type_t type) {
 
 	switch (type) {
-		case CAPTURE:
-			return "Capture";
-		//case RECEIVE:
-		//	return "receive";
-		case RECORD:
-			return "Record";
-		//case TRANSMIT:
-		//	return "transmit";
-		//case PLAYBACK:
-		//	return "playback";
-		case DISPLAY:
-			return "Display";
+		case RAWIN:
+			return "RAW In";
+		case RAWOUT:
+			return "RAW Out";
 		case MUX:
 			return "Muxer";
 		case ENCODE:
@@ -317,33 +309,26 @@ char *kr_txpdr_su_type_to_string (kr_txpdr_su_type_t type) {
 	}
 }
 
-kr_txpdr_su_type_t krad_link_string_to_type (char *string) {
+kr_txpdr_su_type_t kr_txpdr_string_to_subunit_type (char *string) {
 
-	if ((strlen(string) == 7) && (strncmp(string, "capture", 7) == 0)) {
-		return CAPTURE;
+	if (((strlen(string) == 6) && (strncmp(string, "RAW In", 6) == 0)) ||
+	     ((strlen(string) == 5) && (strncmp(string, "rawin", 5) == 0))) {
+		return RAWIN;
 	}
 	
-	if ((strlen(string) == 7) && (strncmp(string, "display", 7) == 0)) {
-		return DISPLAY;
+	if (((strlen(string) == 7) && (strncmp(string, "RAW Out", 7) == 0)) ||
+	     ((strlen(string) == 6) && (strncmp(string, "rawout", 6) == 0))) {
+		return RAWOUT;
 	}
 
-	//if ((strlen(string) == 7) && (strncmp(string, "receive", 7) == 0)) {
-	//	return RECEIVE;
-	//}
-
-	if ((strlen(string) == 6) && (strncmp(string, "record", 6) == 0)) {
-		return RECORD;
-	}
-
-	//if ((strlen(string) == 8) && (strncmp(string, "transmit", 8) == 0)) {
-	//	return TRANSMIT;
-	//}
-
-	if ((strlen(string) == 3) && (strncmp(string, "mux", 3) == 0)) {
+	if (((strlen(string) == 3) && (strncmp(string, "mux", 3) == 0)) ||
+      ((strlen(string) == 5) && (strncmp(string, "muxer", 3) == 0))) {
 		return MUX;
 	}
 	
-	if ((strlen(string) == 6) && (strncmp(string, "encode", 6) == 0)) {
+	if (((strlen(string) == 3) && (strncmp(string, "enc", 3) == 0)) ||
+      ((strlen(string) == 6) && (strncmp(string, "encode", 6) == 0)) ||
+      ((strlen(string) == 7) && (strncmp(string, "encoder", 7) == 0))) {
 		return ENCODE;
 	}
 

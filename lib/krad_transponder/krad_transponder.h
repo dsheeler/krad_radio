@@ -25,11 +25,11 @@ typedef struct krad_transponder_St krad_transponder_t;
 #define KRAD_LINK_DEFAULT_UDP_PORT 42666
 #define KRAD_LINK_DEFAULT_VIDEO_CODEC VP8
 #define KRAD_LINK_DEFAULT_AUDIO_CODEC VORBIS
-#define KRAD_TRANSPONDER_MAX_LINKS 32
+#define KRAD_TRANSPONDER_MAX_SUBUNITS 32
 
 struct krad_transponder_St {
   kr_address_t address;
-	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_LINKS];
+	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_SUBUNITS];
 	krad_radio_t *krad_radio;
 	krad_receiver_t *krad_receiver;	
 	krad_transmitter_t *krad_transmitter;	

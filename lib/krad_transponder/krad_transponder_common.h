@@ -46,6 +46,14 @@ typedef struct kr_ogg_demuxer_St kr_ogg_demuxer_t;
 typedef struct kr_mkv_demuxer_St kr_mkv_demuxer_t;
 typedef struct kr_transogg_demuxer_St kr_transogg_demuxer_t;
 
+typedef struct kr_stat_St kr_stat_t;
+
+struct kr_stat_St {
+  uint64_t time_last;
+  uint64_t time_total;
+  uint64_t started_on;
+};
+
 typedef enum {
 	AUDIO_ONLY = 150,
 	VIDEO_ONLY,
@@ -53,16 +61,15 @@ typedef enum {
 } krad_link_av_mode_t;
 
 typedef enum {
-	CAPTURE = 200,
 	//RECEIVE,
 	//TRANSMIT,
 	//PLAYBACK,
   //DEMUX,
-  MUX,
   //DECODE,
+  MUX,
   ENCODE,
-	RECORD,
-	DISPLAY,
+	RAWIN,
+	RAWOUT,
 	FAILURE,
 } kr_txpdr_su_type_t;
 
@@ -196,7 +203,7 @@ typedef union {
 
 struct kr_encoder_St {
 	krad_codec_t codec;
-	kr_av_encoder_t av;	
+	kr_av_encoder_t av;
 };
 
 typedef union {
@@ -274,8 +281,7 @@ typedef union {
 
 struct krad_transponder_subunit_rep_St {
   kr_txpdr_su_type_t type;
-  uint64_t started_on;
-  uint64_t cpu_time;
+  kr_stat_t stats;
   kr_transponder_subunit_actual_t actual;
 };
 
@@ -291,8 +297,8 @@ char *krad_link_transport_mode_to_string (krad_link_transport_mode_t transport_m
 char *krad_link_video_source_to_string (krad_link_video_source_t video_source);
 krad_link_transport_mode_t krad_link_string_to_transport_mode (char *string);
 krad_link_video_source_t krad_link_string_to_video_source (char *string);
-char *kr_txpdr_su_type_to_string (kr_txpdr_su_type_t type);
-kr_txpdr_su_type_t krad_link_string_to_type (char *string);
+char *kr_txpdr_subunit_type_to_string (kr_txpdr_su_type_t type);
+kr_txpdr_su_type_t kr_txpdr_string_to_subunit_type (char *string);
 char *krad_link_av_mode_to_string (krad_link_av_mode_t av_mode);
 krad_link_av_mode_t krad_link_string_to_av_mode (char *string);
 char *krad_codec_to_string (krad_codec_t codec);

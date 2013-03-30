@@ -1383,11 +1383,11 @@ void kr_address_debug_print (kr_address_t *addr) {
         case KR_RECEIVER:
           printf ("Receiver");
           break;
-        case KR_DISPLAY:
-          printf ("Display");
+        case KR_RAWIN:
+          printf ("RAW In");
           break;
-        case KR_CAPTURE:
-          printf ("Capture");
+        case KR_RAWOUT:
+          printf ("RAW Out");
           break;
         case KR_DEMUXER:
           printf ("Demuxer");

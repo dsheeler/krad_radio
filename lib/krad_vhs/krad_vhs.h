@@ -41,6 +41,9 @@ struct krad_vhs_St {
   int width;
   int height;
   
+  uint64_t frames;
+  uint64_t bytes;
+  
 	struct SwsContext *converter;	
 
   unsigned char *buffer;

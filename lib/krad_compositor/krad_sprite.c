@@ -305,6 +305,10 @@ int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
   if ( filename == NULL ) {
     return 0;
   }
+  
+  if (!file_exists(filename)) {
+    return 0;
+  }
 
   if (strstr (filename, "_frames_") != NULL) {
     krad_sprite->frames = atoi (strstr (filename, "_frames_") + 8);

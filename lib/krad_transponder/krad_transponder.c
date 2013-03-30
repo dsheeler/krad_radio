@@ -601,22 +601,6 @@ int video_encoding_unit_process (void *arg) {
     /* ENCODE FRAME */
 
     if (krad_link->codec == VP8) {
-
-    if (krad_vpx_encoder_deadline_get(krad_link->krad_vpx_encoder) > 1) {  
-      if (krad_compositor_port_frames_avail (krad_link->krad_compositor_port) > 25) {
-        krad_vpx_encoder_deadline_set (krad_link->krad_vpx_encoder, 1);
-        printk ("Alert! Reduced VP8 deadline due to frames avail > 25");
-      }
-    }
-    
-    if (krad_vpx_encoder_deadline_get(krad_link->krad_vpx_encoder) == 1) {
-      if (krad_compositor_port_frames_avail(krad_link->krad_compositor_port) < 1) {
-        krad_vpx_encoder_deadline_set (krad_link->krad_vpx_encoder,
-        ((((1000 / (krad_link->encoding_fps_numerator / krad_link->encoding_fps_denominator)) / 3) * 2) * 1000));
-          printk ("Alert! Increased VP8 deadline");
-      }        
-    }      
-    
       packet_size = krad_vpx_encoder_write (krad_link->krad_vpx_encoder,
                                             (unsigned char **)&video_packet,
                                             &keyframe);
@@ -669,9 +653,8 @@ int video_encoding_unit_process (void *arg) {
     }
     krad_framepool_unref_frame (krad_frame);
   }
-  
+
   return 0;
-  
 }
   
 void video_encoding_unit_destroy (void *arg) {
@@ -979,6 +962,7 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
   krad_codec_header_t *codec_header;
   int track_num;
 
+  track_num = 0;
   codec_header = NULL;
   conns = 0;
 	krad_Xtransponder_subunit_t *subunit;
@@ -1780,7 +1764,7 @@ void krad_link_start (krad_link_t *link) {
       }
       link->graph_id = krad_Xtransponder_add_encoder (link->krad_transponder->krad_Xtransponder, &watch);
       break;  
-    case DISPLAY:
+    case RAWOUT:
 #ifdef KRAD_USE_WAYLAND
       wayland_display_unit_create (link);
       watch.fd = link->krad_wayland->display_fd;
@@ -1789,8 +1773,7 @@ void krad_link_start (krad_link_t *link) {
       link->graph_id = krad_Xtransponder_add_capture (link->krad_transponder->krad_Xtransponder, &watch);      
 #endif
       break;
-
-    case CAPTURE:
+    case RAWIN:
       switch ( link->video_source ) {
         case NOVIDEO:
           return;
@@ -1832,7 +1815,7 @@ krad_link_t *krad_transponder_get_link_from_sysname (krad_transponder_t *krad_tr
   int i;
   krad_link_t *krad_link;
 
-  for (i = 0; i < KRAD_TRANSPONDER_MAX_LINKS; i++) {
+  for (i = 0; i < KRAD_TRANSPONDER_MAX_SUBUNITS; i++) {
     krad_link = krad_transponder->krad_link[i];
     if (krad_link != NULL) {
       if (strcmp(sysname, krad_link->sysname) == 0) {
@@ -1882,7 +1865,7 @@ void krad_transponder_destroy (krad_transponder_t *krad_transponder) {
   
   printk ("Krad Transponder: Destroy Started");
 
-  for (l = 0; l < KRAD_TRANSPONDER_MAX_LINKS; l++) {
+  for (l = 0; l < KRAD_TRANSPONDER_MAX_SUBUNITS; l++) {
     if (krad_transponder->krad_link[l] != NULL) {
       krad_link_destroy (krad_transponder->krad_link[l]);
       krad_transponder->krad_link[l] = NULL;

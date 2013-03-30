@@ -156,6 +156,7 @@ void krad_system_init ();
 void krad_system_set_thread_name (char *name);
 int krad_system_set_socket_nonblocking (int sd);
 int dir_exists (char *dir);
+int file_exists (char *file);
 int krad_valid_sysname (char *sysname);
 int krad_valid_host_and_port (char *string);
 void krad_get_host_and_port (char *string, char *host, int *port);

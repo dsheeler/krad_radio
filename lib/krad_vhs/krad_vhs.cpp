@@ -81,6 +81,9 @@ int krad_vhs_encode (krad_vhs_t *krad_vhs, unsigned char *pixels) {
           
   encoded_size = encode_iz (krad_vhs, krad_vhs->buffer, krad_vhs->enc_buffer);
   
+  krad_vhs->frames++;
+  krad_vhs->bytes += encoded_size;
+  
   return encoded_size;
 
 }
