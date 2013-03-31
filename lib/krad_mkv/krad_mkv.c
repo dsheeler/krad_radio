@@ -279,6 +279,8 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
   kr_ebml2_pack (mkv->e, &flags, 1);
   kr_ebml2_pack (mkv->e, buffer, buffer_len);
+    
+  kr_mkv_sync (mkv);
 }
 
 void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
@@ -334,6 +336,8 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
   kr_ebml2_pack (mkv->e, &flags, 1);
   kr_ebml2_pack (mkv->e, buffer, buffer_len);
+  
+  kr_mkv_sync (mkv);
 }
 
 
