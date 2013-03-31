@@ -978,33 +978,35 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
       krad_Xtransponder_subunit_connect (link->subunit, subunit);
       conns++;
       codec_header = krad_Xtransponder_get_header (subunit);
-      if (krad_codec_is_video(codec_header->codec)) {
-        if (codec_header->codec == THEORA) {
-          track_num = krad_container_add_video_track_with_private_data (link->krad_container,
-                                                                        codec_header,
-                                                                        link->encoding_fps_numerator,
-                                                                        link->encoding_fps_denominator,
-                                                                        link->encoding_width,
-                                                                        link->encoding_height);
-        } else {
-          track_num = krad_container_add_video_track (link->krad_container,
-                                                      codec_header->codec,
-                                                      link->encoding_fps_numerator,
-                                                      link->encoding_fps_denominator,
-                                                      link->encoding_width,
-                                                      link->encoding_height);
-        }
+      if (codec_header == NULL) {
+        //FIXME this isn't exactly solid evidence
+        track_num = krad_container_add_video_track (link->krad_container,
+                                              VP8,
+                                              link->encoding_fps_numerator,
+                                              link->encoding_fps_denominator,
+                                              link->encoding_width,
+                                              link->encoding_height);
       } else {
-        if (krad_codec_is_audio(codec_header->codec)) {
-          track_num = krad_container_add_audio_track (link->krad_container,
-                                                      codec_header->codec,
-                                                      link->krad_radio->krad_mixer->sample_rate,
-                                                      link->channels, 
-                                                      codec_header);
+        if (krad_codec_is_video(codec_header->codec)) {
+          if (codec_header->codec == THEORA) {
+            track_num = krad_container_add_video_track_with_private_data (link->krad_container,
+                                                                          codec_header,
+                                                                          link->encoding_fps_numerator,
+                                                                          link->encoding_fps_denominator,
+                                                                          link->encoding_width,
+                                                                          link->encoding_height);
+          }
+        } else {
+          if (krad_codec_is_audio(codec_header->codec)) {
+            track_num = krad_container_add_audio_track (link->krad_container,
+                                                        codec_header->codec,
+                                                        link->krad_radio->krad_mixer->sample_rate,
+                                                        2, 
+                                                        codec_header);
+          }
         }
       }
       link->track_sources[track_num] = subunit;
-                                                          
     }
     pch = strtok_r (NULL, "/ ", &save);
   }

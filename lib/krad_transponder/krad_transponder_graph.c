@@ -614,7 +614,8 @@ krad_Xtransponder_subunit_t *krad_Xtransponder_subunit_create (krad_Xtransponder
     memcpy (krad_Xtransponder_subunit->watch, watch, sizeof(krad_transponder_watch_t));        
   }
   
-  if (krad_Xtransponder_subunit->type == ENCODER) {
+  if ((krad_Xtransponder_subunit->type == ENCODER) &&
+      (krad_Xtransponder_subunit->watch->encoder_header_callback != NULL)) {
     krad_Xtransponder_set_header (krad_Xtransponder_subunit,
           krad_Xtransponder_subunit->watch->encoder_header_callback (krad_Xtransponder_subunit->watch->callback_pointer));
   }

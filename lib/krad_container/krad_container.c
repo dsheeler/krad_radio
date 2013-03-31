@@ -185,7 +185,8 @@ krad_container_t *krad_container_open_file (char *filename, krad_io_mode_t mode)
   
   if (krad_container->container_type == MKV) {
     if (mode == KRAD_IO_WRITEONLY) {
-      //krad_container->mkv = kr_mkv_open_file (filename, KRAD_IO_WRITEONLY);
+      krad_container->mkv = kr_mkv_create_file (filename);
+      kr_mkv_start_segment (krad_container->mkv, "A Krad Radio Test");
     }
 
     if (mode == KRAD_IO_READONLY) {

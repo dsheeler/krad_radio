@@ -2,14 +2,18 @@
 
 static int kr_io2_restart (kr_io2_t *io);
 
-// kr_io2_mode_t mode ?
-kr_io2_t *kr_io2_create () {
+kr_io2_t *kr_io2_create_size (size_t size) {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
+  io->size = size;
+  io->buffer = malloc (io->size);  
   io->fd = -1;
   kr_io2_restart (io);
-  io->size = KR_IO2_BUF_SZ;
   return io; 
+}
+
+kr_io2_t *kr_io2_create () {
+  return kr_io2_create_size (KR_IO2_BUF_SZ); 
 }
 
 int kr_io2_destroy (kr_io2_t **io) {
@@ -56,7 +60,7 @@ void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
 }
 
 size_t kr_io2_write (kr_io2_t *io) {
-  return write (io->fd, &io->buffer, io->len);
+  return write (io->fd, io->buffer, io->len);
 }
 
 static int kr_io2_restart (kr_io2_t *io) {
@@ -64,7 +68,7 @@ static int kr_io2_restart (kr_io2_t *io) {
   io->rd_buf = io->buffer;
   //io->pos = 0;
   io->len = 0;
-  io->space = KR_IO2_BUF_SZ;
+  io->space = io->size;
   return 0;
 }
 

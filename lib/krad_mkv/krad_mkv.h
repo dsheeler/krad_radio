@@ -3,6 +3,7 @@
 
 #include "krad_mkv_ids.h"
 #include "krad_ebml2.h"
+#include "krad_io2.h"
 #include "krad_codec_header.h"
 #include "krad_radio_version.h"
 
@@ -33,23 +34,28 @@ struct kr_mkv_St {
 
   int track_count;
   int current_track;
-  
+
   unsigned char *segment;
   unsigned char *tracks_info;
 
   unsigned char *cluster;
   uint64_t cluster_timecode;
-    
+
   float segment_duration;
   uint64_t segment_size;
   uint64_t segment_timecode;
 
   kr_ebml2_t ebml;
   kr_ebml2_t *e;
+  
+  int fd;
+  kr_io2_t *io;
 };
 
 int kr_mkv_destroy (kr_mkv_t **mkv);
 kr_mkv_t *kr_mkv_create ();
+
+kr_mkv_t *kr_mkv_create_file (char *filename);
 
 void kr_mkv_start_segment (kr_mkv_t *mkv, char *title);
 
@@ -60,13 +66,13 @@ int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
                                               int width, int height,
                                               unsigned char *priv_data,
                                               int priv_data_size);
-                                              
+
 int kr_mkv_add_video_track (kr_mkv_t *mkv, krad_codec_t codec,
                             int fps_numerator, int fps_denominator,
                             int width, int height);
 
 int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
-                            int sample_rate, int channels,
+                            uint32_t sample_rate, uint8_t channels,
                             unsigned char *priv_data,
                             int priv_data_size);
 

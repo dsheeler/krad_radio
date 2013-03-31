@@ -48,10 +48,11 @@ struct kr_io2_St {
   size_t size;  // total size of buffer
   unsigned char *buf;
   unsigned char *rd_buf;
-  unsigned char buffer[KR_IO2_BUF_SZ];
+  unsigned char *buffer;
 };
 
 kr_io2_t *kr_io2_create ();
+kr_io2_t *kr_io2_create_size (size_t size);
 int kr_io2_destroy (kr_io2_t **io);
 int kr_io2_set_fd (kr_io2_t *io, int fd);
 int kr_io2_want_out (kr_io2_t *io);
