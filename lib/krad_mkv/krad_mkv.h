@@ -4,6 +4,7 @@
 #include "krad_mkv_ids.h"
 #include "krad_ebml2.h"
 #include "krad_io2.h"
+#include "krad_stream.h"
 #include "krad_codec_header.h"
 #include "krad_radio_version.h"
 
@@ -72,6 +73,7 @@ kr_mkv_t *kr_mkv_create ();
 kr_mkv_t *kr_mkv_create_bufsize (size_t size);
 
 kr_mkv_t *kr_mkv_create_file (char *filename);
+kr_mkv_t *kr_mkv_stream (char *host, int port, char *mount, char *password);
 
 void kr_mkv_start_segment (kr_mkv_t *mkv, char *title);
 

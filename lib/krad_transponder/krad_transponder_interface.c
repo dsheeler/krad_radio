@@ -323,14 +323,23 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       }
 
       if (link->type == MUX) {
-        link->transport_mode = FILESYSTEM;
+
         sprintf (link->input, "%s", string2);
-        if (strstr(string2, "ogg") != NULL) {
-          sprintf (link->output,
-                   "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
+        
+        //if (strstr(string2, "stream") != NULL) {
+        if (1) {
+          strcpy (link->host, "europa.kradradio.com");
+          link->port = 8080;
+          strcpy (link->mount, "/krad_radio_streaming.webm");
+          strcpy (link->password, "firefox");
         } else {
-          sprintf (link->output,
-                   "%s/kr_test_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
+          if (strstr(string2, "ogg") != NULL) {
+            sprintf (link->output,
+                     "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
+          } else {
+            sprintf (link->output,
+                     "%s/kr_test_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
+          }
         }
       }
 

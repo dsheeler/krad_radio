@@ -360,6 +360,31 @@ kr_mkv_t *kr_mkv_create_file (char *filename) {
   mkv->fd = fd;  
   kr_io2_set_fd (mkv->io, mkv->fd);
 
+  kr_mkv_start_segment (mkv, "A Krad Radio File");
+
+  return mkv;
+}
+
+kr_mkv_t *kr_mkv_stream (char *host, int port, char *mount, char *password) {
+  
+  kr_mkv_t *mkv;
+  int fd;
+  
+  fd = kr_stream (host, port, mount, password);
+      printk ("it is %s %d %s %s", host, port, mount, password);
+  printk ("and the fd is %d", fd);
+  
+  if (fd < 0) {
+    return NULL;
+  }
+  
+  mkv = kr_mkv_create ();
+  kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
+  mkv->fd = fd;  
+  kr_io2_set_fd (mkv->io, mkv->fd);
+
+  kr_mkv_start_segment (mkv, "A Krad Radio Stream");
+
   return mkv;
 }
 
