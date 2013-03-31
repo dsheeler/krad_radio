@@ -4,6 +4,7 @@ static int kr_mkv_check_ebml_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_segment_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_tracks (kr_mkv_t *mkv);
+static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t len);
 static char *mkv_identify (uint32_t element_id);
 
 static int kr_mkv_check_ebml_header (kr_mkv_t *mkv) {
@@ -83,37 +84,51 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv) {
   uint32_t id;
   uint64_t size;
 
-  ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
-  if (ret < 0) {
-    printke ("Read error...");
-    return -1;
+  while (1) {
+    ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
+    if (ret < 0) {
+      printke ("Read error...");
+      return -1;
+    }
+    if ((id == MKV_CLUSTER) || (id == EID_VOID) ||
+        (id == EID_CRC32) || (id == MKV_TAGS) || (id == MKV_CUES) ||
+        (id == MKV_ATTACHMENTS) || (id == MKV_CHAPTERS)) {
+      printk ("Done with tracks");
+      return 0;
+    }
+    if (id != MKV_TRACK) {
+      printke ("No Track :/");
+      return -1;
+    }
+    printk ("Got Track!");
+    ret = kr_mkv_parse_track (mkv, size);
+    if (ret < 0) {
+      printke ("Track parse error...");
+      return -1;
+    }
   }
-  if (id != MKV_SEGMENT) {
-    printke ("No Segment :/");
-    return -1;
-  }
-  
-  printk ("Got Segment");
+  return 0;
+}
+
+static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t len) {
+
+  int ret;
+  uint32_t id;
+  uint64_t size;
+
+  printke ("Got track %d", ++mkv->track_count);
+
+  kr_ebml2_advance (mkv->e, len);
+  return 0;
 
   while (1) {
-  
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
     if (ret < 0) {
       printke ("Read error..");
       return -1;
     }
-    if (id != MKV_TRACKS) {
-      printk ("Skipping %s size %"PRIu64"",
-              mkv_identify (id), size);
-      kr_ebml2_advance (mkv->e, size);
-      continue;
-    } else {
-      printk ("Got Tracks!");
-      break;
-    }  
+    
   }
-
-  return 0;
 }
 
 static int kr_mkv_parse_header (kr_mkv_t *mkv) {
@@ -167,8 +182,6 @@ kr_mkv_t *kr_mkv_open_file (char *filename) {
   return mkv;
 }
 
-
-
 static char *mkv_identify (uint32_t element_id) {
 
   switch (element_id) {
@@ -213,8 +226,7 @@ static char *mkv_identify (uint32_t element_id) {
     case MKV_3D:
       return "3D Mode";
     default:
-      //printf("%x", element_id);
-      return "";
+      return "Unknown";
   }
 }
 
@@ -259,3 +271,4 @@ int kr_mkv_track_changed (kr_mkv_t *kr_mkv, int track) {
   }
   return 0;
 }
+
