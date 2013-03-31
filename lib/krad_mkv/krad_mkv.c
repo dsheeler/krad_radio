@@ -363,13 +363,17 @@ kr_mkv_t *kr_mkv_create_file (char *filename) {
   return mkv;
 }
 
-kr_mkv_t *kr_mkv_create () {
+kr_mkv_t *kr_mkv_create_bufsize (size_t size) {
   kr_mkv_t *mkv;
   mkv = calloc (1, sizeof(kr_mkv_t));
   mkv->tracks = calloc (KR_MKV_MAX_TRACKS, sizeof(kr_mkv_track_t));
-  mkv->io = kr_io2_create_size (2000000);
+  mkv->io = kr_io2_create_size (size);
   mkv->e = &mkv->ebml;
   return mkv;
+}
+
+kr_mkv_t *kr_mkv_create () {
+  return kr_mkv_create_bufsize (2000000);
 }
 
 int kr_mkv_destroy (kr_mkv_t **mkv) {

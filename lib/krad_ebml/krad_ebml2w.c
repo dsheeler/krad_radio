@@ -421,15 +421,20 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
 
   ret = kr_ebml2_unpack_id (ebml, &element, &header_size);
 
-  if ((ret < 0) || (element != EID_HEADER)) {
-    fprintf (stderr, "EBML Header ID Not found\n");
+  if (ret < 0) {
+    printke ("EBML Header Read Error: %d", ret);
+    return -1;
+  }
+
+  if (element != EID_HEADER) {
+    printke ("EBML Header ID Not found");
     return -1;
   }
 
   header_size += ebml->pos;
 
   if (ebml->len < header_size) {
-    fprintf (stderr, "Not Enough bytes in header..\n");
+    printke ("Not Enough bytes in header..");
     return -1;
   }
 
@@ -438,7 +443,7 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
     ret = kr_ebml2_unpack_id (ebml, &element, &size);
     
     if (ret < 0) {
-      fprintf (stderr, "EBML Header Read Error\n");
+      printke ("EBML Header Read Error: %d", ret);
       return -1;
     }
     
@@ -448,7 +453,7 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
           if ((size + 1) <= doctype_maxlen) {
             kr_ebml2_unpack_string (ebml, doctype, size);
           } else {
-            fprintf (stderr, "Doctype Length Excedes max\n");
+            printke ("Doctype Length Excedes max");
             return -1;
           }
         } else {
@@ -456,35 +461,31 @@ int kr_ebml2_unpack_header (kr_ebml2_t *ebml,
         }
         break;
       case EID_VERSION:
-        //kr_ebml2_unpack_uint32 (ebml, version, size);
         kr_ebml2_advance (ebml, size);
-        //printf ("Found VERSION\n");
+        //printk ("Found VERSION");
         break;
       case EID_READVERSION:
-        //kr_ebml2_unpack_uint32 (ebml, read_version, size);
         kr_ebml2_advance (ebml, size);
-        //printf ("Found READVERSION\n");
+        //printk ("Found READVERSION");
         break;
       case EID_MAXIDLENGTH:
         kr_ebml2_advance (ebml, size);
-        //printf ("Found MAXIDLENGTH\n");
+        //printk ("Found MAXIDLENGTH");
         break;
       case EID_MAXSIZELENGTH:
         kr_ebml2_advance (ebml, size);
-        //printf ("Found MAXSIZELENGTH\n");
+        //printk ("Found MAXSIZELENGTH");
         break;
       case EID_DOCTYPEVERSION:
-        //kr_ebml2_advance (ebml, size);
         kr_ebml2_unpack_uint32 (ebml, version, size);
-        //printf ("Found DOCTYPEVERSION\n");
+        //printk ("Found DOCTYPEVERSION");
         break;
       case EID_DOCTYPEREADVERSION:
-        //printf ("Found DOCTYPEREADVERSION\n");
+        //printk ("Found DOCTYPEREADVERSION");
         kr_ebml2_unpack_uint32 (ebml, read_version, size);
-        //kr_ebml2_advance (ebml, size);
         break;
       default:
-        fprintf (stderr, "Unknown Element found in EBML Header\n");
+        printke ("Unknown Element found in EBML Header");
         return -1;
     }
     header_items--;

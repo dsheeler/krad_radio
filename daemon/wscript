@@ -16,6 +16,7 @@ depsources = """
 ../lib/krad_y4m/krad_y4m.c
 ../lib/krad_xmms2/krad_xmms2.c
 ../lib/krad_mkv/krad_mkv.c
+../lib/krad_mkv/krad_mkv_demux.c
 ../lib/krad_compositor/krad_compositor_subunit.c
 ../lib/krad_compositor/krad_compositor_interface.c
 ../lib/krad_compositor/krad_vector.c

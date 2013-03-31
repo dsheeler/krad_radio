@@ -54,6 +54,7 @@ struct kr_mkv_St {
 
 int kr_mkv_destroy (kr_mkv_t **mkv);
 kr_mkv_t *kr_mkv_create ();
+kr_mkv_t *kr_mkv_create_bufsize (size_t size);
 
 kr_mkv_t *kr_mkv_create_file (char *filename);
 

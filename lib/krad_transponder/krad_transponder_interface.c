@@ -312,6 +312,11 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         break;
       }
 
+      if (link->type == DEMUX) {
+        link->transport_mode = FILESYSTEM;
+        sprintf (link->input, "%s", string2);
+      }
+
       if (link->type == MUX) {
         link->transport_mode = FILESYSTEM;
         sprintf (link->input, "%s", string2);

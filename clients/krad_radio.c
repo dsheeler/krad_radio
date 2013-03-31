@@ -617,6 +617,12 @@ int main (int argc, char *argv[]) {
     }
   }
   
+  if (strncmp(argv[2], "demux", 5) == 0) {
+    if (argc == 4) {
+      kr_transponder_subunit_create (client, "demux", argv[3]);
+    }
+  }
+
   if (strncmp(argv[2], "mux", 3) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "mux", argv[3]);

@@ -298,6 +298,8 @@ char *kr_txpdr_subunit_type_to_string (kr_txpdr_su_type_t type) {
 			return "RAW In";
 		case RAWOUT:
 			return "RAW Out";
+		case DEMUX:
+			return "Demuxer";
 		case MUX:
 			return "Muxer";
 		case ENCODE:
@@ -316,13 +318,18 @@ kr_txpdr_su_type_t kr_txpdr_string_to_subunit_type (char *string) {
 		return RAWIN;
 	}
 	
+	if (((strlen(string) == 5) && (strncmp(string, "demux", 5) == 0)) ||
+      ((strlen(string) == 7) && (strncmp(string, "demuxer", 7) == 0))) {
+		return DEMUX;
+	}
+
 	if (((strlen(string) == 7) && (strncmp(string, "RAW Out", 7) == 0)) ||
 	     ((strlen(string) == 6) && (strncmp(string, "rawout", 6) == 0))) {
 		return RAWOUT;
 	}
 
 	if (((strlen(string) == 3) && (strncmp(string, "mux", 3) == 0)) ||
-      ((strlen(string) == 5) && (strncmp(string, "muxer", 3) == 0))) {
+      ((strlen(string) == 5) && (strncmp(string, "muxer", 5) == 0))) {
 		return MUX;
 	}
 	

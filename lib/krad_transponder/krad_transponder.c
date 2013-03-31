@@ -1744,6 +1744,12 @@ void krad_link_start (krad_link_t *link) {
                                   &link->composite_height);
 
   switch ( link->type ) {
+    case DEMUX:
+      demuxer_unit_create (link);
+      watch.readable_callback = demuxer_unit_process;
+      watch.destroy_callback = demuxer_unit_destroy;
+      link->graph_id = krad_Xtransponder_add_demuxer (link->krad_transponder->krad_Xtransponder, &watch);
+      break;
     case MUX:
       muxer_unit_create (link);
       watch.readable_callback = muxer_unit_process;

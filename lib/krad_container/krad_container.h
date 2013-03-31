@@ -4,6 +4,7 @@
 typedef struct krad_container_St krad_container_t;
 
 #include "krad_mkv.h"
+#include "krad_mkv_demux.h"
 #include "krad_ogg.h"
 #include "krad_transmitter.h"
 
