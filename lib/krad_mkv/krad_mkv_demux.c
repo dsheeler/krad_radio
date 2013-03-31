@@ -4,8 +4,36 @@ static int kr_mkv_check_ebml_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_segment_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_tracks (kr_mkv_t *mkv);
-static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t len);
-static char *mkv_identify (uint32_t element_id);
+static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos);
+static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
+                                     int len,
+                                     int *track,
+                                     uint64_t *timecode,
+                                     unsigned char *buffer);
+static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
+
+
+static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id) {
+  if ((strlen(codec_id) == 8) && (strncmp(codec_id, "A_VORBIS", 8) == 0)) {
+    return VORBIS;
+  }
+  if ((strlen(codec_id) == 6) && (strncmp(codec_id, "A_FLAC", 6) == 0)) {
+    return FLAC;
+  }
+  if ((strlen(codec_id) == 6) && (strncmp(codec_id, "A_OPUS", 6) == 0)) {
+    return OPUS;
+  }
+  if ((strlen(codec_id) == 5) && (strncmp(codec_id, "V_VP8", 5) == 0)) {
+    return VP8;
+  }
+  if ((strlen(codec_id) == 6) && (strncmp(codec_id, "V_KVHS", 6) == 0)) {
+    return KVHS;
+  }
+  if ((strlen(codec_id) == 8) && (strncmp(codec_id, "V_THEORA", 8) == 0)) {
+    return THEORA;
+  }
+  return NOCODEC;
+}
 
 static int kr_mkv_check_ebml_header (kr_mkv_t *mkv) {
 
@@ -65,8 +93,7 @@ static int kr_mkv_parse_segment_header (kr_mkv_t *mkv) {
       return -1;
     }
     if (id != MKV_TRACKS) {
-      printk ("Skipping %s size %"PRIu64"",
-              mkv_identify (id), size);
+      printk ("Skipping unknown element: %"PRIu64" bytes", size);
       kr_ebml2_advance (mkv->e, size);
       continue;
     } else {
@@ -74,7 +101,6 @@ static int kr_mkv_parse_segment_header (kr_mkv_t *mkv) {
       break;
     }  
   }
-
   return 0;
 }
 
@@ -93,7 +119,7 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv) {
     if ((id == MKV_CLUSTER) || (id == EID_VOID) ||
         (id == EID_CRC32) || (id == MKV_TAGS) || (id == MKV_CUES) ||
         (id == MKV_ATTACHMENTS) || (id == MKV_CHAPTERS)) {
-      printk ("Done with tracks");
+      printk ("Done with tracks. Got %d", mkv->track_count);
       return 0;
     }
     if (id != MKV_TRACK) {
@@ -101,7 +127,7 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv) {
       return -1;
     }
     printk ("Got Track!");
-    ret = kr_mkv_parse_track (mkv, size);
+    ret = kr_mkv_parse_track (mkv, mkv->e->pos + size);
     if (ret < 0) {
       printke ("Track parse error...");
       return -1;
@@ -110,40 +136,107 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv) {
   return 0;
 }
 
-static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t len) {
+static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
 
   int ret;
   uint32_t id;
   uint64_t size;
-
-  printke ("Got track %d", ++mkv->track_count);
-
-  kr_ebml2_advance (mkv->e, len);
-  return 0;
+  kr_mkv_track_t track;
+  uint8_t number;
+  uint8_t type;
+  char codec_id[32];
+  float samplerate;
+  
+  samplerate = 0;
+  number = 0;
+  memset (&track, 0, sizeof (kr_mkv_track_t));
+  memset (codec_id, 0, sizeof (codec_id));
 
   while (1) {
+    if (mkv->e->pos >= max_pos) {
+      printk ("Got to end of this tracks info");
+      break;
+    }  
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
     if (ret < 0) {
       printke ("Read error..");
       return -1;
     }
-    
+
+    switch (id) {
+      case MKV_AUDIO:
+      case MKV_VIDEO:
+        break;
+      case MKV_TRACKNUMBER:
+        if (number != 0) {
+          printke ("Got a second track number for the same track.");
+          return -1;
+        }
+        kr_ebml2_unpack_uint8 (mkv->e, &number, size);
+        break;
+      case MKV_TRACKTYPE:
+        if (type != 0) {
+          printke ("Got a second track type for the same track.");
+          return -1;
+        }
+        kr_ebml2_unpack_uint8 (mkv->e, &type, size);
+        break;
+      case MKV_CODECID:
+        kr_ebml2_unpack_string (mkv->e, codec_id, size);
+        track.codec = kr_mkv_codec_to_kr_codec (codec_id);
+        if (track.codec == NOCODEC) {
+          printke ("Unsupported Codec: %s", codec_id);
+          return -1;
+        }
+        printk ("Got codec: %s", krad_codec_to_string (track.codec));
+        break;
+      case MKV_CODECDATA:
+        printk ("Got codec data size %"PRIu64"", size);
+        kr_ebml2_advance (mkv->e, size);
+        break;
+      case MKV_WIDTH:
+        kr_ebml2_unpack_uint32 (mkv->e, &track.width, size);
+        break;
+      case MKV_HEIGHT:
+        kr_ebml2_unpack_uint32 (mkv->e, &track.height, size);
+        break;
+      case MKV_CHANNELS:
+        kr_ebml2_unpack_uint32 (mkv->e, &track.channels, size);
+        break;
+      case MKV_SAMPLERATE:
+        kr_ebml2_unpack_float (mkv->e, &samplerate, size);
+        track.sample_rate = samplerate;
+        break;
+      case MKV_BITDEPTH:
+        kr_ebml2_unpack_uint32 (mkv->e, &track.bit_depth, size);
+        break; 
+      default:
+        printk ("Skipping unknown element: %"PRIu64" bytes", size);
+        kr_ebml2_advance (mkv->e, size);
+        break;
+    }
   }
+
+  //FIXME temp
+  if (track.codec == VP8) {
+    track.changed = 1;
+  }
+  memcpy (&mkv->tracks[number], &track, sizeof(kr_mkv_track_t));
+  mkv->track_count++;
+
+  return 0;
 }
 
 static int kr_mkv_parse_header (kr_mkv_t *mkv) {
-
   if (kr_mkv_check_ebml_header (mkv) < 0) {
     return -1;
   }
   if (kr_mkv_parse_segment_header (mkv) < 0) {
     return -1;
   }
-  
   if (kr_mkv_parse_tracks (mkv) < 0) {
     return -1;
   }
-  
   return 0;
 }
 
@@ -174,60 +267,12 @@ kr_mkv_t *kr_mkv_open_file (char *filename) {
 
   printk ("read %zu bytes", mkv->io->len);
 
-  if (!kr_mkv_parse_header (mkv)) {
+  if (kr_mkv_parse_header (mkv) < 0) {
     kr_mkv_destroy (&mkv);
     return NULL;
   }
 
   return mkv;
-}
-
-static char *mkv_identify (uint32_t element_id) {
-
-  switch (element_id) {
-    case MKV_CLUSTER:
-      return "Cluster";
-    case MKV_SEEKHEAD:
-      return "Seek Head";
-    case EID_VOID:
-      return "Void Space";
-    case EID_CRC32:
-      return "CRC32";
-    case MKV_SEGMENT:
-      return "Segment Header";
-    case MKV_SEGMENT_INFO:
-      return "Segment Info";
-    case MKV_TRACKS:
-      return "Segment Tracks";
-    case MKV_SIMPLEBLOCK:
-      return "Simple Block";
-    case MKV_CLUSTER_TIMECODE:
-      return "Cluster Timecode";
-    case MKV_MUXINGAPP:
-      return "Muxing App";
-    case MKV_WRITINGAPP:
-      return "Writing App";
-    case MKV_CODECID:
-      return "Codec";
-    case MKV_VIDEOWIDTH:
-      return "Width";
-    case MKV_VIDEOHEIGHT:
-      return "Height";
-    case MKV_AUDIOCHANNELS:
-      return "Channels";
-    case MKV_DEFAULTDURATION:
-      return "Default Duration";
-    case MKV_TRACKNUMBER:
-      return "Track Number";
-    case MKV_AUDIOBITDEPTH:
-      return "Bit Depth";
-    case MKV_BLOCKGROUP:
-      return "Block Group";
-    case MKV_3D:
-      return "3D Mode";
-    default:
-      return "Unknown";
-  }
 }
 
 int kr_mkv_track_count (kr_mkv_t *kr_mkv) {
@@ -258,6 +303,14 @@ int kr_mkv_read_track_header (kr_mkv_t *kr_mkv, unsigned char *buffer,
 }
 
 int kr_mkv_track_active (kr_mkv_t *kr_mkv, int track) {
+  //FIXME temp
+  if (kr_mkv->tracks[track].codec == VP8) {
+    return 1;
+  } else {
+    return 0;
+  }
+  //ENDFIXME
+
   if (kr_mkv->tracks[track].codec != NOCODEC) {
     return 1;
   }
@@ -272,3 +325,76 @@ int kr_mkv_track_changed (kr_mkv_t *kr_mkv, int track) {
   return 0;
 }
 
+int kr_mkv_read_packet (kr_mkv_t *mkv, int *track,
+                        uint64_t *timecode, unsigned char *buffer) {
+
+  int ret;
+  uint32_t id;
+  uint64_t size;
+
+  printk ("kr_mkv_read_packet");
+
+  while (1) {
+    ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
+    if (ret < 0) {
+      printke ("Read error..");
+      return -1;
+    }
+
+    switch (id) {
+      case MKV_CLUSTER:
+        break;
+      case EID_VOID:
+      case EID_CRC32:
+      case MKV_TAGS:
+      case MKV_CUES:
+      case MKV_ATTACHMENTS:
+      case MKV_CHAPTERS:
+        kr_ebml2_advance (mkv->e, size);
+        break;
+      case MKV_CLUSTER_TIMECODE:
+        kr_ebml2_unpack_uint64 (mkv->e, &mkv->cluster_timecode, size);
+        break;
+      case MKV_SIMPLEBLOCK:
+        return kr_mkv_read_simpleblock (mkv, size, track, timecode, buffer);
+      default:
+        printke ("Err! Unknown element: %"PRIu64" bytes", size);
+        return -1;
+        break;
+    }
+  }
+
+  return 0;      
+}
+
+static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
+                                     int len,
+                                     int *track,
+                                     uint64_t *timecode,
+                                     unsigned char *buffer) {
+
+  int16_t block_timecode;
+  unsigned char flags;
+  unsigned char byte;
+
+  block_timecode = 0;
+
+  kr_ebml2_unpack_data ( mkv->e, &byte, 1 );
+  if (track != NULL) {
+    *track = (byte - 0x80);
+  }
+  printk ("tracknum is %d", *track);
+
+  kr_ebml2_unpack_int16 (mkv->e, &block_timecode, 2);
+  mkv->current_timecode = mkv->cluster_timecode + block_timecode;
+  printk ("Timecode is: %6.3f\n",
+          ((mkv->cluster_timecode +
+          (int64_t)block_timecode)/1000.0));
+  if (timecode != NULL) {
+    *timecode = mkv->current_timecode;
+  }
+  
+  kr_ebml2_unpack_data ( mkv->e, &flags, 1 );
+  kr_ebml2_unpack_data ( mkv->e, buffer, len - 4 );
+  return len - 4;
+}

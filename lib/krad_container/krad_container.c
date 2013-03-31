@@ -131,8 +131,7 @@ int krad_container_read_packet (krad_container_t *krad_container, int *track, ui
   if (krad_container->container_type == OGG) {
     return krad_ogg_read_packet ( krad_container->krad_ogg, track, timecode, buffer );
   } else {
-    //return kr_mkv_read_packet ( krad_container->mkv, track, timecode, buffer );
-    return -1;
+    return kr_mkv_read_packet ( krad_container->mkv, track, timecode, buffer );
   }
 }
 

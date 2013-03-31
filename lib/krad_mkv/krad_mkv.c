@@ -149,9 +149,9 @@ int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
     kr_ebml2_pack_data (mkv->e, MKV_CODECDATA, priv_data, priv_data_size);
   }
 
-  kr_ebml2_start_element (mkv->e, MKV_VIDEOSETTINGS, &video_info);
-  kr_ebml2_pack_int16 (mkv->e, MKV_VIDEOWIDTH, mkv->tracks[t].width);
-  kr_ebml2_pack_int16 (mkv->e, MKV_VIDEOHEIGHT, mkv->tracks[t].height);
+  kr_ebml2_start_element (mkv->e, MKV_VIDEO, &video_info);
+  kr_ebml2_pack_int16 (mkv->e, MKV_WIDTH, mkv->tracks[t].width);
+  kr_ebml2_pack_int16 (mkv->e, MKV_HEIGHT, mkv->tracks[t].height);
   kr_ebml2_finish_element (mkv->e, video_info);
   kr_ebml2_finish_element (mkv->e, track_info);  
 
@@ -191,10 +191,10 @@ int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
   kr_ebml2_pack_string (mkv->e, MKV_CODECID, kr_codec_to_mkv_codec (codec));
   kr_ebml2_pack_int8 (mkv->e, MKV_TRACKTYPE, 2);
 
-  kr_ebml2_start_element (mkv->e, MKV_AUDIOSETTINGS, &audio_info);
-  kr_ebml2_pack_uint8 (mkv->e, MKV_AUDIOCHANNELS, channels);
-  kr_ebml2_pack_float (mkv->e, MKV_AUDIOSAMPLERATE, sample_rate);
-  kr_ebml2_pack_uint8 (mkv->e, MKV_AUDIOBITDEPTH, 16);
+  kr_ebml2_start_element (mkv->e, MKV_AUDIO, &audio_info);
+  kr_ebml2_pack_uint8 (mkv->e, MKV_CHANNELS, channels);
+  kr_ebml2_pack_float (mkv->e, MKV_SAMPLERATE, sample_rate);
+  kr_ebml2_pack_uint8 (mkv->e, MKV_BITDEPTH, 16);
   kr_ebml2_finish_element (mkv->e, audio_info);
 
   if (priv_data_size > 0) {

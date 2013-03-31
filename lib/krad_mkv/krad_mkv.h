@@ -20,11 +20,16 @@ struct kr_mkv_track_St {
   uint64_t total_video_frames;
   uint64_t total_audio_frames;
   int audio_frames_since_cluster;
-  int fps_numerator;
-  int fps_denominator;
-  int width;
-  int height;
-  int sample_rate;
+
+  uint32_t fps_numerator;
+  uint32_t fps_denominator;
+  uint32_t width;
+  uint32_t height;
+  
+  uint32_t channels;
+  uint32_t bit_depth;
+  uint32_t sample_rate;
+
   krad_codec_t codec;
 
   unsigned char *codec_data;
@@ -47,6 +52,8 @@ struct kr_mkv_St {
   unsigned char *tracks_info;
 
   unsigned char *cluster;
+
+  uint64_t current_timecode;
   uint64_t cluster_timecode;
 
   float segment_duration;
