@@ -26,6 +26,14 @@ struct kr_mkv_track_St {
   int height;
   int sample_rate;
   krad_codec_t codec;
+
+  unsigned char *codec_data;
+  int codec_data_size;
+
+  int changed;
+  int headers;
+  unsigned char *header[3];
+  int header_len[3];
 };
 
 struct kr_mkv_St {

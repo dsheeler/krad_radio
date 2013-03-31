@@ -115,7 +115,7 @@ void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
 
   mkv->current_track = 1;
 
-  kr_ebml2_start_element (mkv->e, MKV_SEGMENT_TRACKS, &mkv->tracks_info);
+  kr_ebml2_start_element (mkv->e, MKV_TRACKS, &mkv->tracks_info);
 }
 
 int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
