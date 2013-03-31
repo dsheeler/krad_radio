@@ -316,6 +316,11 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         link->transport_mode = FILESYSTEM;
         sprintf (link->input, "%s", string2);
       }
+      
+      if (link->type == DECODE) {
+        link->av_mode = VIDEO_ONLY;
+        sprintf (link->input, "%s", string2);
+      }
 
       if (link->type == MUX) {
         link->transport_mode = FILESYSTEM;

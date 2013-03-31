@@ -339,6 +339,12 @@ kr_txpdr_su_type_t kr_txpdr_string_to_subunit_type (char *string) {
 		return ENCODE;
 	}
 
+	if (((strlen(string) == 3) && (strncmp(string, "dec", 3) == 0)) ||
+      ((strlen(string) == 6) && (strncmp(string, "decode", 6) == 0)) ||
+      ((strlen(string) == 7) && (strncmp(string, "decoder", 7) == 0))) {
+		return DECODE;
+	}
+
 	return FAILURE;
 }
 

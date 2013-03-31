@@ -65,7 +65,7 @@ typedef enum {
 	//TRANSMIT,
 	//PLAYBACK,
   DEMUX,
-  //DECODE,
+  DECODE,
   MUX,
   ENCODE,
 	RAWIN,

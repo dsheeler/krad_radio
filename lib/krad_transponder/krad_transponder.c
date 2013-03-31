@@ -1014,6 +1014,34 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
   return conns;
 }
 
+static int connect_decoder_to_demuxer (krad_link_t *link) {
+
+  char *pch;
+  char *save;
+  int t;
+  int conns;
+
+  conns = 0;
+	krad_Xtransponder_subunit_t *subunit;
+  t = 0;
+  save = NULL;
+
+  pch = strtok_r (link->input, "/, ", &save);
+  while (pch != NULL) {
+    t = atoi (pch);
+    subunit = krad_Xtransponder_get_subunit (link->krad_transponder->krad_Xtransponder, t);
+    printke ("its %d--", t);
+    if (subunit != NULL) {
+      krad_Xtransponder_subunit_connect (link->subunit, subunit);
+      conns++;
+
+    }
+    pch = strtok_r (NULL, "/ ", &save);
+  }
+  
+  return conns;
+}
+
 int muxer_unit_process (void *arg) {
 
   krad_link_t *link = (krad_link_t *)arg;
@@ -1746,9 +1774,17 @@ void krad_link_start (krad_link_t *link) {
                                   &link->composite_height);
 
   switch ( link->type ) {
+    case DECODE:
+      if (link->av_mode == VIDEO_ONLY) {
+        video_decoding_unit_create (link);
+        watch.readable_callback = video_decoding_unit_process;
+        watch.destroy_callback = video_decoding_unit_destroy;
+        link->graph_id = krad_Xtransponder_add_decoder (link->krad_transponder->krad_Xtransponder, &watch);
+      }
+      break;
     case DEMUX:
       demuxer_unit_create (link);
-      watch.idle_callback_interval = 5;
+      watch.idle_callback_interval = 22;
       watch.readable_callback = demuxer_unit_process;
       watch.destroy_callback = demuxer_unit_destroy;
       link->graph_id = krad_Xtransponder_add_demuxer (link->krad_transponder->krad_Xtransponder, &watch);
@@ -1818,6 +1854,9 @@ void krad_link_start (krad_link_t *link) {
   
   if (link->type == MUX) {
     connect_muxer_to_encoders (link);
+  }
+  if (link->type == DECODE) {
+    connect_decoder_to_demuxer (link);
   }
 }
 
