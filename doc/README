@@ -1,23 +1,20 @@
 Krad Radio - http://kradradio.com
 
-Note: This document is highly incomplete.
+Krad Radio is a daemon that is controlled locally or remotely by clients. Each
+running daemon is a station. Clients are written using the client API library.
 
-### Overview
+A station has three main components. The mixer, compositor and transponder.
+The transponder connects audio to the mixer and video to the compositor.
 
-Krad Radio is a daemon that is controlled locally or remotely by Krad Radio clients.
-Clients are written using the Krad Radio clientlib, writing clients that directly speak
-the Krad Radio IPC protocol is not advisable or supported. Clients can be command line, 
-ncurses, GUI or web based, and any number of clients can be connected to the daemon at 
-any time. This design is directly inspired from the design of XMMS2.
+Mixed/Composited Paths:
 
-The Krad Radio daemon can be thought of in three parts, the mixer, the compositor and 
-the transponder.
+                     raw-input -> comp/mixer -> raw-output
+                     raw-input -> comp/mixer -> encoder -> muxer -> fd-output
+fd-input -> demuxer -> decoder -> comp/mixer -> raw-output
+fd-input -> demuxer -> decoder -> comp/mixer -> encoder -> muxer -> fd-output
 
-                   [Compositor]
-[Incoming A/V] >>               >> [Outgoing A/V]
-                     [Mixer]
+Non Mixed/Composited Paths:
 
-
-A/V can come and go from a variety of things, files, network streams, or local A/V hardware.
-
-
+                               hw-encoder -> muxer -> fd-output
+                      fd-input -> demuxer -> muxer -> fd-output
+fd-input -> demuxer -> decoder -> encoder -> muxer -> fd-output
