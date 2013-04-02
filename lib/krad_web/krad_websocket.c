@@ -875,6 +875,7 @@ static void *krad_websocket_server_run (void *arg) {
                     cJSON_AddStringToObject (msg, "info", "sysname");
                     cJSON_AddStringToObject (msg, "infoval", krad_websocket->sysname);
                     kr_ws_client->hello_sent = 1;
+                    usleep (25000);
                   }
                   
                   kr_delivery_recv (kr_ws_client->kr_client);
