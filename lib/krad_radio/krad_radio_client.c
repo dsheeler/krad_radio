@@ -756,7 +756,7 @@ int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml, unsigned char **element_loc, 
 int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address) {
 
   uint32_t id;
-  size_t size;
+  uint64_t size;
 
   id = 0;
   size = 0;
