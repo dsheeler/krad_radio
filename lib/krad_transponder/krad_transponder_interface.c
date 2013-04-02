@@ -348,12 +348,15 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       }
 
       if (link->type == DEMUX) {
+        printk ("demuxx!");
         link->transport_mode = FILESYSTEM;
         sprintf (link->input, "%s", string2);
       }
       
       if (link->type == DECODE) {
-        link->av_mode = VIDEO_ONLY;
+        printk ("decode!!");
+        //link->av_mode = VIDEO_ONLY;
+        link->av_mode = AUDIO_ONLY;
         sprintf (link->input, "%s", string2);
       }
 

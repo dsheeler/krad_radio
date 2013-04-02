@@ -1034,11 +1034,9 @@ static int connect_decoder_to_demuxer (krad_link_t *link) {
     if (subunit != NULL) {
       krad_Xtransponder_subunit_connect (link->subunit, subunit);
       conns++;
-
     }
     pch = strtok_r (NULL, "/ ", &save);
   }
-  
   return conns;
 }
 
@@ -1502,6 +1500,8 @@ int audio_decoding_unit_process (void *arg) {
   int len;
   krad_slice_t *krad_slice;
 
+  printk ("Audio decoding process");
+
   /* THE FOLLOWING IS WHERE WE ENSURE WE ARE ON THE RIGHT CODEC AND READ HEADERS IF NEED BE */
 
   krad_slice = NULL;
@@ -1510,7 +1510,7 @@ int audio_decoding_unit_process (void *arg) {
   if (krad_slice == NULL) {
     return 1;
   }
-
+  printk ("Got slice!");
   krad_link->audio_codec = krad_slice->codec;
 
   if ((krad_link->last_audio_codec != krad_link->audio_codec) || (krad_link->audio_codec == NOCODEC)) {
@@ -1777,14 +1777,23 @@ void krad_link_start (krad_link_t *link) {
 
   switch ( link->type ) {
     case DECODE:
+      printk ("decoder!");
       if (link->av_mode == VIDEO_ONLY) {
         video_decoding_unit_create (link);
         watch.readable_callback = video_decoding_unit_process;
         watch.destroy_callback = video_decoding_unit_destroy;
         link->graph_id = krad_Xtransponder_add_decoder (link->krad_transponder->krad_Xtransponder, &watch);
       }
+      if (link->av_mode == AUDIO_ONLY) {
+        audio_decoding_unit_create (link);
+        //watch.idle_callback_interval = 22;
+        watch.readable_callback = audio_decoding_unit_process;
+        watch.destroy_callback = audio_decoding_unit_destroy;
+        link->graph_id = krad_Xtransponder_add_decoder (link->krad_transponder->krad_Xtransponder, &watch);
+      }
       break;
     case DEMUX:
+      printk ("demuxer!");
       demuxer_unit_create (link);
       watch.idle_callback_interval = 22;
       watch.readable_callback = demuxer_unit_process;

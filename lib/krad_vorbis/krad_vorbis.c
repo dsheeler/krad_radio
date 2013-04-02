@@ -1,5 +1,19 @@
 #include <krad_vorbis.h>
 
+static void test_encoder_header (krad_codec_header_t *hdr) {
+
+  krad_vorbis_t *vorbis_dec;
+  
+  vorbis_dec = NULL;
+
+  vorbis_dec = krad_vorbis_decoder_create (hdr->header[0], hdr->header_size[0],
+                                           hdr->header[1], hdr->header_size[1],
+                                           hdr->header[2], hdr->header_size[2]);
+  if (vorbis_dec != NULL) {
+    krad_vorbis_decoder_destroy (vorbis_dec);
+  }
+}
+
 /* Encoding */
 
 void krad_vorbis_encoder_destroy (krad_vorbis_t *krad_vorbis) {
@@ -24,6 +38,13 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   
   vorbis_info_init (&krad_vorbis->vinfo);
 
+  //printk ("KR Vorbis: Version: %d", krad_vorbis->vinfo.version);
+
+  //printk ("KR Vorbis: params: c%d sr%f q%f\n",
+  //        krad_vorbis->channels,
+  //        krad_vorbis->sample_rate,
+  //        krad_vorbis->quality);
+
   ret = vorbis_encode_init_vbr (&krad_vorbis->vinfo,
                                 krad_vorbis->channels,
                                 krad_vorbis->sample_rate,
@@ -47,10 +68,10 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   krad_vorbis->krad_codec_header.codec = VORBIS;
 
   vorbis_analysis_headerout (&krad_vorbis->vdsp,
-                 &krad_vorbis->vc, 
-                 &krad_vorbis->header_main,
-                 &krad_vorbis->header_comments,
-                 &krad_vorbis->header_codebooks);
+                             &krad_vorbis->vc, 
+                             &krad_vorbis->header_main,
+                             &krad_vorbis->header_comments,
+                             &krad_vorbis->header_codebooks);
 
   krad_vorbis->header[0] = 0x02;
   krad_vorbis->headerpos++;
@@ -71,6 +92,11 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   krad_vorbis->header[2] = (char)krad_vorbis->head_count;
   krad_vorbis->headerpos++;
   
+  //printk ("Vorbis header sizes: %ld %ld %ld\n",
+  //        krad_vorbis->header_main.bytes,
+  //       krad_vorbis->header_comments.bytes,
+  //        krad_vorbis->header_codebooks.bytes);
+  
   memcpy (krad_vorbis->header + krad_vorbis->headerpos,
           krad_vorbis->header_main.packet,
           krad_vorbis->header_main.bytes);
@@ -85,22 +111,29 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
           krad_vorbis->header_comments.bytes);
   krad_vorbis->krad_codec_header.header[1] =
     krad_vorbis->header + krad_vorbis->headerpos;
+    
   krad_vorbis->headerpos += krad_vorbis->header_comments.bytes;
+  
   krad_vorbis->krad_codec_header.header_size[1] =
     krad_vorbis->header_comments.bytes;
     
   memcpy (krad_vorbis->header + krad_vorbis->headerpos,
           krad_vorbis->header_codebooks.packet,
           krad_vorbis->header_codebooks.bytes);
+          
   krad_vorbis->krad_codec_header.header[2] =
     krad_vorbis->header + krad_vorbis->headerpos;
+    
   krad_vorbis->headerpos += krad_vorbis->header_codebooks.bytes;
+  
   krad_vorbis->krad_codec_header.header_size[2] =
     krad_vorbis->header_codebooks.bytes;
 
   krad_vorbis->krad_codec_header.header_combined = krad_vorbis->header;
   krad_vorbis->krad_codec_header.header_combined_size = krad_vorbis->headerpos;
   krad_vorbis->krad_codec_header.header_count = 3;
+
+  //test_encoder_header (&krad_vorbis->krad_codec_header);
 
   return krad_vorbis;
 }
@@ -157,9 +190,9 @@ void krad_vorbis_decoder_destroy (krad_vorbis_t *vorbis) {
     krad_ringbuffer_free (vorbis->ringbuf[1]);
   }
 
-  vorbis_info_clear(&vorbis->vinfo);
-  vorbis_comment_clear(&vorbis->vc);
-  vorbis_block_clear(&vorbis->vblock);
+  vorbis_info_clear (&vorbis->vinfo);
+  vorbis_comment_clear (&vorbis->vc);
+  vorbis_block_clear (&vorbis->vblock);
   
   //ogg_sync_destroy(&vorbis->oy);
   //ogg_stream_destroy(&vorbis->oggstate);
@@ -177,26 +210,26 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
   int ret;
   int c;
 
-  vorbis_info_init(&vorbis->vinfo);
-  vorbis_comment_init(&vorbis->vc);
+  vorbis_info_init (&vorbis->vinfo);
+  vorbis_comment_init (&vorbis->vc);
   
   vorbis->op.packet = header1;
   vorbis->op.bytes = header1len;
   vorbis->op.b_o_s = 1;
   vorbis->op.packetno = 0;
-  ret = vorbis_synthesis_headerin(&vorbis->vinfo, &vorbis->vc, &vorbis->op);
+  ret = vorbis_synthesis_headerin (&vorbis->vinfo, &vorbis->vc, &vorbis->op);
   if (ret != 0) {
     if (ret == OV_ENOTVORBIS) {
-      printke ("vorbis decoder says its not a vorbis on packet %llu",
+      printke ("KR Vorbis Decoder: Not a vorbis on packet %llu",
               vorbis->op.packetno);
     }
     if (ret == OV_EBADHEADER) {
-      printke ("vorbis decoder says bad header on packet %llu",
+      printke ("KR Vorbis Decoder: bad header on packet %llu",
                 vorbis->op.packetno);
     }
     if (ret == OV_EFAULT) {
-      printke("vorbis decoder fault on packet %llu",
-              vorbis->op.packetno);
+      printke ("KR Vorbis Decoder: fault on packet %llu",
+               vorbis->op.packetno);
     }
   }
 
@@ -207,15 +240,15 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
   ret = vorbis_synthesis_headerin(&vorbis->vinfo, &vorbis->vc, &vorbis->op);
   if (ret != 0) {
     if (ret == OV_ENOTVORBIS) {
-      printke ("vorbis decoder says its not a vorbis on packet %llu",
+      printke ("KR Vorbis Decoder: not a vorbis on packet %llu",
               vorbis->op.packetno);
     }
     if (ret == OV_EBADHEADER) {
-      printke ("vorbis decoder says bad header on packet %llu",
+      printke ("KR Vorbis Decoder: bad header on packet %llu",
                vorbis->op.packetno);
     }
     if (ret == OV_EFAULT) {
-      printke ("vorbis decoder fault on packet %llu",
+      printke ("KR Vorbis Decoder: fault on packet %llu",
                 vorbis->op.packetno);
     }
   }
@@ -226,34 +259,33 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
   ret = vorbis_synthesis_headerin(&vorbis->vinfo, &vorbis->vc, &vorbis->op);
   if (ret != 0) {
     if (ret == OV_ENOTVORBIS) {
-      printke ("vorbis decoder says its not a vorbis on packet %llu",
+      printke ("KR Vorbis Decoder: not a vorbis on packet %llu",
                vorbis->op.packetno);
     }
     if (ret == OV_EBADHEADER) {
-      printke ("vorbis decoder says bad header on packet %llu",
+      printke ("KR Vorbis Decoder: says bad header on packet %llu",
                vorbis->op.packetno);
     }
     if (ret == OV_EFAULT) {
-      printke ("vorbis decoder fault on packet %llu",
+      printke ("KR Vorbis Decoder: fault on packet %llu",
                vorbis->op.packetno);
     }
   }
 
   ret = vorbis_synthesis_init(&vorbis->vdsp, &vorbis->vinfo);
   if (ret != 0) {
-    printke("vorbis synthesis init fails!");
+    printke ("KR Vorbis Decoder: synthesis init fails!");
   }
   
   vorbis_block_init(&vorbis->vdsp, &vorbis->vblock);
-
-  printk ("Vorbis Info - Version: %d Channels: %d Sample Rate: %ld\n",
+  
+  printk ("KR Vorbis Decoder: Info - Version: %d Channels: %d Sample Rate: %ld",
           vorbis->vinfo.version, vorbis->vinfo.channels, vorbis->vinfo.rate);
-      
-  printk ("Bitrate: %ld %ld %ld\n",
+  printk ("KR Vorbis Decoder: Bitrate: %ld %ld %ld",
           vorbis->vinfo.bitrate_upper,
           vorbis->vinfo.bitrate_nominal,
           vorbis->vinfo.bitrate_lower);
-
+  
   vorbis->channels = vorbis->vinfo.channels;
   vorbis->sample_rate = vorbis->vinfo.rate;
 
@@ -267,7 +299,6 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
   }
 
   return vorbis;
-
 }
 
 int krad_vorbis_decoder_read_audio (krad_vorbis_t *vorbis, int channel,
@@ -302,11 +333,11 @@ void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
   
   if (ret != 0) {
     if (ret == OV_ENOTAUDIO) {
-      printke ("vorbis decoder not audio packet %llu - %d",
+      printke ("KR Vorbis Decoder: not audio packet %llu - %d",
                vorbis->op.packetno, bufferlen);
     }
     if (ret == OV_EBADPACKET) {
-      printke ("vorbis decoder bad packet %llu - %d",
+      printke ("KR Vorbis Decoder: bad packet %llu - %d",
                vorbis->op.packetno, bufferlen);
     }    
   }
@@ -315,14 +346,14 @@ void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
   
   if (ret != 0) {
     if (ret == OV_EINVAL) {
-      printke("vorbis decoder not ready for blockin!");
+      printke ("KR Vorbis Decoder: not ready for blockin!");
     }
   }  
   
   sample_count = vorbis_synthesis_pcmout(&vorbis->vdsp, &pcm);
   
   if (sample_count) {
-    //printf("Vorbis decoded %d samples\n", sample_count);
+    printk ("KR Vorbis Decoder: %d samples", sample_count);
     while((krad_ringbuffer_write_space(vorbis->ringbuf[0]) < sample_count * 4) ||
     (krad_ringbuffer_write_space(vorbis->ringbuf[1]) < sample_count * 4)) {
       usleep (15000);
@@ -338,7 +369,7 @@ void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
     ret = vorbis_synthesis_read(&vorbis->vdsp, sample_count);
     if (ret != 0) {
       if (ret == OV_EINVAL) {
-        printke("vorbis decoder synth read more than in buffer!");
+        printke ("KR Vorbis Decoder: synth read more than in buffer!");
       }
     }
   }
