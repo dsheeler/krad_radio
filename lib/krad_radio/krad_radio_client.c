@@ -96,8 +96,6 @@ int kr_check_connection (kr_client_t *client) {
 
   kr_ebml2_pack_header (client->ebml2, KRAD_IPC_CLIENT_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
   kr_client_push (client);
-  kr_client_sync (client);
-
 
   kr_poll (client, 25);
   kr_io2_read (client->io_in);
