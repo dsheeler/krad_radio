@@ -152,58 +152,6 @@ krad_container_t *krad_container_open_stream (char *host, int port,
   return container;
 }
 
-kr_io2_t *kr_container_raw_create (char *filename) {
-  
-  kr_io2_t *io;
-  int flags;
-  int fd;
-  
-  flags = O_WRONLY | O_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-  
-  if (file_exists(filename)) {
-    return NULL;
-  }
-  
-  fd = open ( filename, flags );
-  
-  if (fd < 0) {
-    return NULL;
-  }
-  
-  io = kr_io2_create_size (65535);
-  kr_io2_set_fd (io, fd);
-
-  return io;
-}
-
-kr_io2_t *kr_container_raw_open (char *filename) {
-  
-  kr_io2_t *io;
-  int flags;
-  int fd;
-  
-  flags = O_RDONLY;
-  
-  if (!file_exists(filename)) {
-    return NULL;
-  }
-  
-  fd = open ( filename, flags );
-  
-  if (fd < 0) {
-    return NULL;
-  }
-  
-  io = kr_io2_create_size (65535);
-  kr_io2_set_fd (io, fd);
-
-  kr_io2_read (io);
-
-  printk ("read %zu bytes", io->len);
-
-  return io;
-}
-
 krad_container_t *krad_container_open_file (char *filename,
                                             krad_io_mode_t mode) {
 
@@ -226,13 +174,12 @@ krad_container_t *krad_container_open_file (char *filename,
   }
   if (container->type == RAW) {
     if (mode == KRAD_IO_WRITEONLY) {
-      container->raw = kr_container_raw_create (filename);
+      container->raw = kr_file_create (filename);
     }
     if (mode == KRAD_IO_READONLY) {
-      container->raw = kr_container_raw_open (filename);
+      container->raw = kr_file_open (filename);
     }
   }  
-
   return container;
 }
 
@@ -281,15 +228,22 @@ void krad_container_destroy (krad_container_t **container) {
   }
 }  
 
+int krad_container_raw_add_data (krad_container_t *container,
+                                 unsigned char *buffer,
+                                 int len) {
+  if (container->type == RAW) {
+    kr_io2_pack (container->raw, buffer, len);
+    kr_io2_flush (container->raw);
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
 int krad_container_add_video_track_with_private_data (krad_container_t *container,
                                                       krad_codec_header_t *krad_codec_header,
                                                       int fps_numerator, int fps_denominator,
                                                       int width, int height) {
-  if (container->type == RAW) {
-    kr_io2_pack (container->raw,
-                 krad_codec_header->header_combined,
-                 krad_codec_header->header_combined_size);
-  }
 
   if (container->type == OGG) {
     return krad_ogg_add_video_track_with_private_data (container->ogg,
@@ -326,13 +280,6 @@ int krad_container_add_audio_track (krad_container_t *container,
                                     int sample_rate, int channels, 
                                     krad_codec_header_t *krad_codec_header) {
 
-  if (container->type == RAW) {
-    kr_io2_pack (container->raw,
-                 krad_codec_header->header_combined,
-                 krad_codec_header->header_combined_size);
-    kr_io2_flush (container->raw);
-  }
-
   if (container->type == OGG) {
     return krad_ogg_add_audio_track (container->ogg, codec,
                                      sample_rate, channels, 
@@ -351,11 +298,6 @@ void krad_container_add_video (krad_container_t *container, int track,
                                unsigned char *buffer, int buffer_size,
                                int keyframe) {
 
-  if (container->type == RAW) {
-    kr_io2_pack (container->raw, buffer, buffer_size);
-    kr_io2_flush (container->raw);
-  }
-
   if (container->type == OGG) {
     krad_ogg_add_video (container->ogg, track, buffer, buffer_size, keyframe);
   } else {
@@ -366,12 +308,6 @@ void krad_container_add_video (krad_container_t *container, int track,
 void krad_container_add_audio (krad_container_t *container, int track,
                                unsigned char *buffer, int buffer_size,
                                int frames) {
-
-  if (container->type == RAW) {
-    kr_io2_pack (container->raw, buffer, buffer_size);
-    kr_io2_flush (container->raw);
-  }
-
   if (container->type == OGG) {
     krad_ogg_add_audio (container->ogg, track, buffer, buffer_size, frames);
   } else {

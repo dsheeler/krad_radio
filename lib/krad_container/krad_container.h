@@ -7,6 +7,7 @@ typedef struct krad_container_St krad_container_t;
 #include "krad_mkv_demux.h"
 #include "krad_ogg.h"
 #include "krad_transmitter.h"
+#include "krad_file.h"
 
 struct krad_container_St {
   krad_container_type_t type;
@@ -45,6 +46,10 @@ int krad_container_read_packet (krad_container_t *container, int *track,
 
 /* Output */
 char *krad_container_select_mimetype (char *string);
+
+int krad_container_raw_add_data (krad_container_t *container,
+                                 unsigned char *buffer,
+                                 int len);
 int krad_container_add_video_track_with_private_data (krad_container_t *container,
                                                       krad_codec_header_t *krad_codec_header,
                                                       int fps_numerator, int fps_denominator,

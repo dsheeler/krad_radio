@@ -6,9 +6,12 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#ifndef KRAD_STREAM_H
-#define KRAD_STREAM_H
+#include "krad_io2.h"
 
-int kr_stream (char *host, int port, char *mount, char *password);
+#ifndef KRAD_FILE_H
+#define KRAD_FILE_H
+
+kr_io2_t *kr_file_open (char *filename);
+kr_io2_t *kr_file_create (char *filename);
 
 #endif

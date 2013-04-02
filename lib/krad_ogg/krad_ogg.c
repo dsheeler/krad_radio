@@ -450,14 +450,18 @@ krad_ogg_t *krad_ogg_create() {
 
 krad_ogg_t *krad_ogg_open_file (char *filename, krad_io_mode_t mode) {
 
-  krad_ogg_t *krad_ogg;
+  krad_ogg_t *ogg;
   
-  krad_ogg = krad_ogg_create ();
+  ogg = krad_ogg_create ();
   
-  //FIXME
-  //krad_ogg->io = krad_io_open_file (filename, mode);
+  if (mode == KRAD_IO_WRITEONLY) {
+    ogg->io = kr_file_create (filename);
+  }
+  if (mode == KRAD_IO_READONLY) {
+    ogg->io = kr_file_open (filename);
+  }
   
-  return krad_ogg;
+  return ogg;
 }
 
 krad_ogg_t *krad_ogg_open_stream (char *host, int port,
@@ -521,10 +525,9 @@ int krad_ogg_output_aux_headers (krad_ogg_t *krad_ogg) {
       while (ogg_stream_flush(&krad_ogg->tracks[t].stream_state, &page) != 0) {
   
         if (krad_ogg->io) {
-  
-          //krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
-          //krad_io_write (krad_ogg->krad_io, page.body, page.body_len);
-          //krad_io_write_sync (krad_ogg->krad_io);
+          kr_io2_pack (krad_ogg->io, page.header, page.header_len);
+          kr_io2_pack (krad_ogg->io, page.body, page.body_len);
+          kr_io2_flush (krad_ogg->io);
         }
         
         if (krad_ogg->krad_transmission) {    
@@ -554,8 +557,6 @@ int krad_ogg_add_video_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
                               int fps_numerator, int fps_denominator,
                               int width, int height) {
 
-  // invent vp8 header?
-  
   return krad_ogg_add_video_track_with_private_data (krad_ogg, codec,
                              fps_numerator, fps_denominator, width, height,
                              NULL, 0, 0);
@@ -658,10 +659,9 @@ int krad_ogg_add_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
     while (ogg_stream_flush(&krad_ogg->tracks[track].stream_state, &page) != 0) {
       
       if (krad_ogg->io) {
-
-        //krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
-        //krad_io_write (krad_ogg->krad_io, page.body, page.body_len);
-        //krad_io_write_sync (krad_ogg->krad_io);
+        kr_io2_pack (krad_ogg->io, page.header, page.header_len);
+        kr_io2_pack (krad_ogg->io, page.body, page.body_len);
+        kr_io2_flush (krad_ogg->io);
       }
       
       if (krad_ogg->krad_transmission) {    
@@ -669,10 +669,8 @@ int krad_ogg_add_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
         krad_transmitter_transmission_add_header (krad_ogg->krad_transmission, page.header, page.header_len);
         krad_transmitter_transmission_add_header (krad_ogg->krad_transmission, page.body, page.body_len);
       
-      }      
-
-      printkd ("created page sized %lu", page.header_len + page.body_len);      
-      
+      }
+      printkd ("created page sized %lu", page.header_len + page.body_len);
     }
   }
 
@@ -782,10 +780,9 @@ void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track,
         krad_ogg->last_out_track = track;
                 krad_ogg->last_out = krad_ogg->tracks[0].frames * 1470;
       if (krad_ogg->io) {
-        //FIXME
-        //krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
-        //krad_io_write (krad_ogg->krad_io, page.body, page.body_len);
-        //krad_io_write_sync (krad_ogg->krad_io);
+        kr_io2_pack (krad_ogg->io, page.header, page.header_len);
+        kr_io2_pack (krad_ogg->io, page.body, page.body_len);
+        kr_io2_flush (krad_ogg->io);
       }
       
       if (krad_ogg->krad_transmission) {
@@ -849,11 +846,9 @@ void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track,
     krad_ogg->last_out_track = track;
                     krad_ogg->last_out = krad_ogg->tracks[track].last_granulepos - frames;
       if (krad_ogg->io) {
-
-        //FIXME
-        //krad_io_write (krad_ogg->krad_io, page.header, page.header_len);
-        //krad_io_write (krad_ogg->krad_io, page.body, page.body_len);
-        //krad_io_write_sync (krad_ogg->krad_io);
+        kr_io2_pack (krad_ogg->io, page.header, page.header_len);
+        kr_io2_pack (krad_ogg->io, page.body, page.body_len);
+        kr_io2_flush (krad_ogg->io);
       }
       
       if (krad_ogg->krad_transmission) {    
@@ -871,4 +866,3 @@ void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track,
     }
   }
 }
-

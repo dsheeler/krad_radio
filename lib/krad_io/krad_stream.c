@@ -10,20 +10,20 @@ struct krad_stream_St {
   int sd;
 };
 
-static void krad_base64_encode (char *dest, char *src, int maxlen);
-static int krad_stream_write (krad_stream_t *krad_stream, void *buffer, size_t length);
-static int krad_stream_read (krad_stream_t *krad_stream, void *buffer, size_t length);
-static void krad_stream_destroy (krad_stream_t *krad_stream);
-static void krad_stream_free (krad_stream_t *krad_stream);
+static void kr_base64_encode (char *dest, char *src, int maxlen);
+static int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len);
+static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len);
+static void kr_stream_destroy (krad_stream_t *stream);
+static void kr_stream_free (krad_stream_t *stream);
 
-static void krad_base64_encode (char *dest, char *src, int maxlen) {
+static void kr_base64_encode (char *dest, char *src, int maxlen) {
 
-  static char base64table[64] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-                                  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                  'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-                                  'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                  'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-                                  '8', '9', '+', '/' };
+  char b64t[64] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+                    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                    'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+                    '8', '9', '+', '/' };
   int len;
   int base64_len;
   int chunk;
@@ -42,16 +42,16 @@ static void krad_base64_encode (char *dest, char *src, int maxlen) {
 
   while (len > 0) {
    chunk = (len > 3) ? 3 : len;
-    *out++ = base64table[(*src & 0xFC) >> 2];
-    *out++ = base64table[((*src & 0x03) << 4) | ((*(src + 1) & 0xF0) >> 4)];
+    *out++ = b64t[(*src & 0xFC) >> 2];
+    *out++ = b64t[((*src & 0x03) << 4) | ((*(src + 1) & 0xF0) >> 4)];
     switch(chunk) {
       case 3:
-        *out++ = base64table[((*(src + 1) & 0x0F) << 2) | ((*(src + 2) & 0xC0) >> 6)];
-        *out++ = base64table[(*(src + 2)) & 0x3F];
+        *out++ = b64t[((*(src + 1) & 0x0F) << 2) | ((*(src + 2) & 0xC0) >> 6)];
+        *out++ = b64t[(*(src + 2)) & 0x3F];
         break;
 
       case 2:
-        *out++ = base64table[((*(src + 1) & 0x0F) << 2)];
+        *out++ = b64t[((*(src + 1) & 0x0F) << 2)];
         *out++ = '=';
         break;
 
@@ -67,7 +67,7 @@ static void krad_base64_encode (char *dest, char *src, int maxlen) {
   strncpy (dest, result, maxlen);
 }
 
-static int krad_stream_write (krad_stream_t *krad_stream, void *buffer, size_t length) {
+static int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len) {
 
   int bytes;
   int ret;
@@ -75,8 +75,8 @@ static int krad_stream_write (krad_stream_t *krad_stream, void *buffer, size_t l
   ret = 0;
   bytes = 0;
 
-  while (bytes != length) {
-    ret += send (krad_stream->sd, buffer + bytes, length - bytes, 0);
+  while (bytes != len) {
+    ret += send (stream->sd, buffer + bytes, len - bytes, 0);
     if (ret <= 0) {
       break;
     } else {
@@ -86,20 +86,20 @@ static int krad_stream_write (krad_stream_t *krad_stream, void *buffer, size_t l
   return bytes;
 }
 
-static int krad_stream_read (krad_stream_t *krad_stream, void *buffer, size_t length) {
-  return recv (krad_stream->sd, buffer, length, 0);
+static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len) {
+  return recv (stream->sd, buffer, len, 0);
 }
 
-static void krad_stream_free (krad_stream_t *krad_stream) {
-  free (krad_stream);
+static void kr_stream_free (krad_stream_t *stream) {
+  free (stream);
 }
 
-static void krad_stream_destroy (krad_stream_t *krad_stream) {
-  if (krad_stream->sd != 0) {
-    close (krad_stream->sd);
-    krad_stream->sd = 0;
+static void kr_stream_destroy (krad_stream_t *stream) {
+  if (stream->sd != 0) {
+    close (stream->sd);
+    stream->sd = 0;
   }
-  krad_stream_free (krad_stream);
+  kr_stream_free (stream);
 }
 
 int kr_stream (char *host, int port, char *mount, char *password) {
@@ -129,7 +129,7 @@ int kr_stream (char *host, int port, char *mount, char *password) {
   }
 
   if ((host == NULL) || (mount == NULL) || ((port < 0) || (port > 65535))) {
-    krad_stream_destroy (krad_stream);
+    kr_stream_destroy (krad_stream);
     return -1;
   }
 
@@ -152,27 +152,27 @@ int kr_stream (char *host, int port, char *mount, char *password) {
   snprintf (port_string, 6, "%d", port);
   ret = getaddrinfo (host, port_string, &hints, &res);
   if (ret != 0) {
-    krad_stream_destroy (krad_stream);
+    kr_stream_destroy (krad_stream);
     return -1;
   }
 
-  krad_stream->sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+  krad_stream->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
   if (krad_stream->sd < 0) {
-    krad_stream_destroy (krad_stream);
+    kr_stream_destroy (krad_stream);
     krad_stream = NULL;
   } else {
     if (connect (krad_stream->sd, res->ai_addr, res->ai_addrlen) < 0) {
-      krad_stream_destroy (krad_stream);
+      kr_stream_destroy (krad_stream);
       krad_stream = NULL;
     } else {
       if (password == NULL) {
         snprintf (http_string, sizeof (http_string),
                   "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n", mount, host);
-        krad_stream_write (krad_stream, http_string, strlen(http_string));
+        kr_stream_write (krad_stream, http_string, strlen (http_string));
         int end_http_headers = 0;
         char buf[8];
         while (end_http_headers != 4) {
-          krad_stream_read (krad_stream, buf, 1);
+          kr_stream_read (krad_stream, buf, 1);
           if ((buf[0] == '\n') || (buf[0] == '\r')) {
             end_http_headers++;
           } else {
@@ -198,7 +198,7 @@ int kr_stream (char *host, int port, char *mount, char *password) {
           }
         }
         snprintf (auth, sizeof (auth), "source:%s", password );
-        krad_base64_encode ( auth_base64, auth, sizeof (auth_base64));
+        kr_base64_encode ( auth_base64, auth, sizeof (auth_base64));
         http_string_pos = snprintf ( http_string,
                                      sizeof (http_string) - http_string_pos, 
                                      "SOURCE %s ICE/1.0\r\n", mount);
@@ -207,10 +207,9 @@ int kr_stream (char *host, int port, char *mount, char *password) {
                                       "content-type: %s\r\n", content_type);
         http_string_pos += snprintf ( http_string + http_string_pos,
                                       sizeof (http_string) - http_string_pos,
-                                      "Authorization: Basic %s\r\n", auth_base64);
-        http_string_pos += snprintf ( http_string + http_string_pos,
-                                      sizeof (http_string) - http_string_pos, "\r\n");
-        krad_stream_write (krad_stream, http_string, http_string_pos);
+                                      "Authorization: Basic %s\r\n\r\n",
+                                      auth_base64);
+        kr_stream_write (krad_stream, http_string, http_string_pos);
       }
     }
   }
@@ -222,7 +221,7 @@ int kr_stream (char *host, int port, char *mount, char *password) {
 
   if (krad_stream != NULL) {
     sd = krad_stream->sd;
-    krad_stream_free (krad_stream);
+    kr_stream_free (krad_stream);
   }
 
   return sd;
