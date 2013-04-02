@@ -57,6 +57,41 @@ krad_sprite_t *krad_sprite_create_from_file (char *filename) {
 }
 
 #ifdef KRAD_GIF
+
+#if GIFLIB_MAJOR < 5
+typedef struct GraphicsControlBlock {
+    int DisposalMode;
+#define DISPOSAL_UNSPECIFIED      0       /* No disposal specified. */
+#define DISPOSE_DO_NOT            1       /* Leave image in place */
+#define DISPOSE_BACKGROUND        2       /* Set area too background color */
+#define DISPOSE_PREVIOUS          3       /* Restore to previous content */
+    bool UserInputFlag;      /* User confirmation required before disposal */
+    int DelayTime;           /* pre-display delay in 0.01sec units */
+    int TransparentColor;    /* Palette index for transparency, -1 if none */
+#define NO_TRANSPARENT_COLOR	-1
+} GraphicsControlBlock;
+#define UNSIGNED_LITTLE_ENDIAN(lo, hi)	((lo) | ((hi) << 8))
+int DGifExtensionToGCB(const size_t GifExtensionLength,
+		       const GifByteType *GifExtension,
+		       GraphicsControlBlock *GCB)
+{
+    if (GifExtensionLength != 4) {
+	return GIF_ERROR;
+    }
+
+    GCB->DisposalMode = (GifExtension[0] >> 2) & 0x07;
+    GCB->UserInputFlag = (GifExtension[0] & 0x02) != 0;
+    GCB->DelayTime = UNSIGNED_LITTLE_ENDIAN(GifExtension[1], GifExtension[2]);
+    if (GifExtension[0] & 0x01)
+	GCB->TransparentColor = (int)GifExtension[3];
+    else
+	GCB->TransparentColor = NO_TRANSPARENT_COLOR;
+
+    return GIF_OK;
+}
+
+#endif
+
 cairo_surface_t **gif2surface (char *filename, int *frames) {
 
   int  i, j, Size, Row, Col, Width, Height, ExtCode, Count;
