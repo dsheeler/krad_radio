@@ -111,7 +111,8 @@ cairo_surface_t **gif2surface (char *filename, int *frames) {
   int fail;
 
   cairo_surface_t *surface;
-  cairo_surface_t **surfaces;  
+  cairo_surface_t **surfaces;
+  //FIXME this is going to leak on free, make this be the correct amount
   surfaces = calloc (512, sizeof(cairo_surface_t *));
   cairo_t *cr;
 
@@ -337,6 +338,8 @@ cairo_surface_t **gif2surface (char *filename, int *frames) {
 
 int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
 
+  int64_t size;
+
   if (krad_sprite->sprite != NULL) {
     krad_sprite_reset (krad_sprite);
   }
@@ -345,7 +348,21 @@ int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
     return 0;
   }
   
-  if (!file_exists(filename)) {
+  size = file_size (filename);
+
+  if (size < 0) {
+    printke ("Krad Sprite: File is not right: %s", filename);
+    return 0;
+  }
+  
+  if (size < 1) {
+    printke ("Krad Sprite: File is zero bytes: %s", filename);
+    return 0;
+  }
+  
+  if (size > 50000000) {
+    printke ("Krad Sprite: File is too frigging big IMO: %"PRIi64" for %s",
+             size, filename);
     return 0;
   }
 
@@ -376,7 +393,7 @@ int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
     int stride;
     
     
-    jpeg_buffer = malloc (10000000);
+    jpeg_buffer = malloc (size);
     if (jpeg_buffer == NULL) {
       return 0;
     }
@@ -388,13 +405,7 @@ int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
       return 0;
     }
     
-    jpeg_size = read (jpeg_fd, jpeg_buffer, 10000000);        
-    
-    if (jpeg_size == 10000000) {
-      free (jpeg_buffer);
-      close (jpeg_fd);
-      return 0;
-    }
+    jpeg_size = read (jpeg_fd, jpeg_buffer, size);        
     
     jpeg_dec = tjInitDecompress ();
     

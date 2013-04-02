@@ -516,6 +516,35 @@ int file_exists (char *file) {
   return 0;
 }
 
+int64_t file_size (char *file) {
+
+  int err;
+  int64_t filesize;
+  struct stat s;
+
+  err = stat (file, &s);
+
+  if (err == -1) {
+    if(ENOENT == errno) {
+      // does not exist
+      return -2;
+    } else {
+      // another error
+      return -1;
+    }
+  } else {
+    if ((S_ISREG(s.st_mode)) || (S_ISLNK(s.st_mode))) {
+      // it's a file
+      filesize = s.st_size;
+      return filesize;
+    } else {
+      // exists but is not file
+      return -3;
+    }
+  }
+  return -1;
+}
+
 int krad_system_set_socket_nonblocking (int sd) {
 
   int ret;
