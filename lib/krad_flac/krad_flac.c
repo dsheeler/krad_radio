@@ -215,7 +215,7 @@ int krad_flac_encoder_finish (krad_flac_t *flac, unsigned char *encode_buffer) {
     FLAC__stream_encoder_finish (flac->encoder);
     flac->finished = 1;
   }
-  
+
   return flac->bytes;
 }
 
@@ -224,10 +224,8 @@ void krad_flac_encoder_destroy (krad_flac_t *flac) {
   if (flac->comment_header != NULL) {
     free (flac->comment_header);
   }
-
-  krad_flac_encoder_finish(flac, NULL);
-  FLAC__stream_encoder_delete(flac->encoder);
-  
+  krad_flac_encoder_finish (flac, NULL);
+  FLAC__stream_encoder_delete (flac->encoder);
   free (flac);
 }
 
@@ -453,8 +451,8 @@ krad_flac_t *krad_flac_decoder_create () {
 }
 
 void krad_flac_decoder_destroy (krad_flac_t *flac) {
-  free (flac->decode_buffer);
   FLAC__stream_decoder_finish ( flac->decoder );
   FLAC__stream_decoder_delete ( flac->decoder );
+  free (flac->decode_buffer);
   free (flac);
 }

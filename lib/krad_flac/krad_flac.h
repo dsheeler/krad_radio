@@ -67,9 +67,12 @@ int krad_flac_encode (krad_flac_t *flac,
                       float *audio, int frames,
                       unsigned char *encode_buffer);
 int krad_flac_encoder_frames_remaining (krad_flac_t *flac);
-int krad_flac_encoder_read_header (krad_flac_t *flac, unsigned char *buffer);
-int krad_flac_encoder_read_min_header (krad_flac_t *flac, unsigned char *buffer);
-int krad_flac_encoder_finish (krad_flac_t *flac, unsigned char *encode_buffer);
+int krad_flac_encoder_read_header (krad_flac_t *flac,
+                                   unsigned char *buffer);
+int krad_flac_encoder_read_min_header (krad_flac_t *flac,
+                                       unsigned char *buffer);
+int krad_flac_encoder_finish (krad_flac_t *flac,
+                              unsigned char *encode_buffer);
 void krad_flac_encoder_destroy (krad_flac_t *flac);
 krad_flac_t *krad_flac_encoder_create (int channels,
                                        int sample_rate,
