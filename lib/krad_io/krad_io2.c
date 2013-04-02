@@ -77,11 +77,18 @@ int kr_io2_flush (kr_io2_t *io) {
   int ret;
   int len;
   
+  if (!kr_io2_want_out (io)) {
+    return 0;
+  }
+  
   len = io->len;
   
   ret = kr_io2_write (io);
   if (ret != len) {
-    //return -1;
+    
+    printk ("Could not write all we wanted to: %d of %d",
+            ret, len);
+    printke ("Failing here a temporary test");
     exit (77);
   }
 
