@@ -36,7 +36,7 @@
 typedef struct krad_ogg_St krad_ogg_t;
 typedef struct krad_ogg_track_St krad_ogg_track_t;
 
-#include "krad_io.h"
+#include "krad_io2.h"
 #include "krad_system.h"
 #include "krad_codec_header.h"
 #include "krad_transmitter.h"
@@ -99,7 +99,7 @@ struct krad_ogg_St {
   int track_count;
   krad_ogg_track_t *tracks;
   ogg_sync_state sync_state;
-  krad_io_t *krad_io;
+  kr_io2_t *io;
   krad_transmission_t *krad_transmission;
   unsigned char *input_buffer;
 

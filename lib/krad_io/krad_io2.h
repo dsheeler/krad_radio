@@ -34,14 +34,14 @@
 typedef struct kr_io2_St kr_io2_t;
 
 typedef enum {
-  //kr_io2_READONLY,
-  kr_io2_WRITEONLY,
+  KRAD_IO_READONLY,
+  KRAD_IO_WRITEONLY,
   //krad_EBML_IO_READWRITE,
-} kr_io2_mode_t;
+} krad_io_mode_t;
 
 struct kr_io2_St {
   int fd;
-  kr_io2_mode_t mode;
+  krad_io_mode_t mode;
   //size_t pos;   // position in buffer
   size_t len;   // length of data in buffer
   size_t space; // space remaining in buffer

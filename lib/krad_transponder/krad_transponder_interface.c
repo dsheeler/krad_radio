@@ -165,9 +165,9 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
   }
 
   if (tr->type == MUX) {
-    tr->actual.muxer.type = link->krad_container->container_type;
+    tr->actual.muxer.type = link->krad_container->type;
     if (tr->actual.muxer.type == OGG) {
-      kr_ogg_muxer_to_rep (link->krad_container->krad_ogg, &tr->actual.muxer.container.ogg);
+      kr_ogg_muxer_to_rep (link->krad_container->ogg, &tr->actual.muxer.container.ogg);
     }
     if (tr->actual.muxer.type == MKV) {
       kr_mkv_muxer_to_rep (link->krad_container->mkv, &tr->actual.muxer.container.mkv);
@@ -181,9 +181,9 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
   }
   
   if (tr->type == DEMUX) {
-    tr->actual.demuxer.type = link->krad_container->container_type;
+    tr->actual.demuxer.type = link->krad_container->type;
     if (tr->actual.muxer.type == OGG) {
-      kr_ogg_muxer_to_rep (link->krad_container->krad_ogg, &tr->actual.muxer.container.ogg);
+      kr_ogg_muxer_to_rep (link->krad_container->ogg, &tr->actual.muxer.container.ogg);
     }
     if (tr->actual.muxer.type == MKV) {
       kr_mkv_muxer_to_rep (link->krad_container->mkv, &tr->actual.muxer.container.mkv);

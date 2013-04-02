@@ -932,7 +932,7 @@ void muxer_unit_create (void *arg) {
       
       krad_link->muxer_krad_transmission = krad_transmitter_transmission_create (krad_link->krad_transponder->krad_transmitter,
                                     krad_link->mount + 1,
-                                    krad_link_select_mimetype(krad_link->mount + 1));
+                                    krad_container_select_mimetype (krad_link->mount + 1));
 
       krad_link->port = krad_link->krad_transponder->krad_transmitter->port;
 
@@ -1092,7 +1092,7 @@ void muxer_unit_destroy (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
 
-  krad_container_destroy (krad_link->krad_container);
+  krad_container_destroy (&krad_link->krad_container);
 
   if (krad_link->muxer_krad_transmission != NULL) {
     krad_transmitter_transmission_destroy (krad_link->muxer_krad_transmission);
@@ -1219,7 +1219,7 @@ void demuxer_unit_destroy (void *arg) {
 
   printk ("Input/Demuxing thread exiting");
 
-  krad_container_destroy (krad_link->krad_container);
+  krad_container_destroy (&krad_link->krad_container);
 
   free (krad_link->demux_buffer);
   free (krad_link->demux_header_buffer);
