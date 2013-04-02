@@ -236,7 +236,8 @@ krad_container_t *krad_container_open_file (char *filename,
   return container;
 }
 
-krad_container_t *krad_container_open_transmission (krad_transmission_t *transmission) {
+krad_container_t *
+krad_container_open_transmission (krad_transmission_t *transmission) {
 
   krad_container_t *container;
   krad_container_type_t type;

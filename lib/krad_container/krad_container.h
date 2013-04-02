@@ -22,7 +22,8 @@ krad_container_t *krad_container_open_stream (char *host, int port,
                                               char *mount, char *password);
 krad_container_t *krad_container_open_file (char *filename,
                                             krad_io_mode_t mode);
-krad_container_t *krad_container_open_transmission (krad_transmission_t *transmission);
+krad_container_t *
+krad_container_open_transmission (krad_transmission_t *transmission);
 
 /* Input */
 int krad_container_track_count (krad_container_t *krad_container);
