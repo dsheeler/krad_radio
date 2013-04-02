@@ -90,8 +90,6 @@ struct krad_ogg_track_St {
 };
 
 struct krad_ogg_St {
-  int last_out_track;
-  ogg_int64_t last_out;
   int track_count;
   krad_ogg_track_t *tracks;
   ogg_sync_state sync_state;

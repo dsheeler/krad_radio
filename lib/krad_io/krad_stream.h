@@ -9,6 +9,9 @@
 #ifndef KRAD_STREAM_H
 #define KRAD_STREAM_H
 
-int kr_stream (char *host, int port, char *mount, char *password);
+#include "krad_io2.h"
+
+int kr_stream_connect (char *host, int port, char *mount, char *password);
+kr_io2_t *kr_stream (char *host, int port, char *mount, char *password);
 
 #endif

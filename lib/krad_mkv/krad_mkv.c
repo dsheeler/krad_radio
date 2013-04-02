@@ -374,9 +374,10 @@ kr_mkv_t *kr_mkv_stream (char *host, int port, char *mount, char *password) {
   kr_mkv_t *mkv;
   int fd;
   
-  fd = kr_stream (host, port, mount, password);
-      printk ("it is %s %d %s %s", host, port, mount, password);
-  printk ("and the fd is %d", fd);
+  fd = kr_stream_connect (host, port, mount, password);
+  
+  printk ("Krad MKV: %s %d %s %s", host, port, mount, password);
+  printk ("Krad MKV: fd %d", fd);
   
   if (fd < 0) {
     return NULL;

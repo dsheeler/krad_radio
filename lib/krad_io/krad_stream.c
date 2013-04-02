@@ -102,7 +102,7 @@ static void kr_stream_destroy (krad_stream_t *stream) {
   kr_stream_free (stream);
 }
 
-int kr_stream (char *host, int port, char *mount, char *password) {
+int kr_stream_connect (char *host, int port, char *mount, char *password) {
 
   krad_stream_t *krad_stream;
   int sd;
@@ -225,4 +225,22 @@ int kr_stream (char *host, int port, char *mount, char *password) {
   }
 
   return sd;
+}
+
+kr_io2_t *kr_stream (char *host, int port,
+                     char *mount, char *password) {
+  
+  kr_io2_t *io;
+  int fd;
+  
+  fd = kr_stream_connect (host, port, mount, password);
+  
+  if (fd < 0) {
+    return NULL;
+  }
+  
+  io = kr_io2_create_size (65535);
+  kr_io2_set_fd (io, fd);
+
+  return io;
 }

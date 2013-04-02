@@ -969,8 +969,11 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
   t = 0;
   save = NULL;
 
-  pch = strtok_r (link->input, "/, ", &save);
+  pch = strtok_r (link->input, ", ", &save);
   while (pch != NULL) {
+    if (pch[0] == '/') {
+      break;
+    }
     t = atoi (pch);
     subunit = krad_Xtransponder_get_subunit (link->krad_transponder->krad_Xtransponder, t);
     printke ("its %d--", t);
