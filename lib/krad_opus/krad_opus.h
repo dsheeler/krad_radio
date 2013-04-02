@@ -29,7 +29,8 @@
 #endif
 #define DEFAULT_CHANNEL_COUNT 2
 #define MAX_CHANNELS 8
-// SRC_SINC_BEST_QUALITY SRC_SINC_MEDIUM_QUALITY SRC_SINC_FASTEST SRC_ZERO_ORDER_HOLD SRC_LINEAR
+// SRC_SINC_BEST_QUALITY SRC_SINC_MEDIUM_QUALITY
+// SRC_SINC_FASTEST SRC_ZERO_ORDER_HOLD SRC_LINEAR
 // #define KRAD_OPUS_SRC_QUALITY SRC_SINC_BEST_QUALITY
 #define KRAD_OPUS_SRC_QUALITY SRC_SINC_MEDIUM_QUALITY
 
@@ -105,15 +106,22 @@ void krad_opus_set_bitrate (krad_opus_t *krad_opus, int bitrate);
 void krad_opus_set_signal (krad_opus_t *krad_opus, int signal);
 void krad_opus_set_bandwidth (krad_opus_t *krad_opus, int bandwidth);
 
-int krad_opus_encoder_read (krad_opus_t *krad_opus, unsigned char *buffer, int *nframes);
-int krad_opus_encoder_write (krad_opus_t *krad_opus, int channel, char *buffer, int buffer_length);
+int krad_opus_encoder_read (krad_opus_t *krad_opus,
+                            unsigned char *buffer, int *nframes);
+int krad_opus_encoder_write (krad_opus_t *krad_opus, int channel,
+                             char *buffer, int len);
 void krad_opus_encoder_destroy (krad_opus_t *krad_opus);
-krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate, int bitrate, int application);
+krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
+                                       int bitrate, int application);
 
 
 /* Decoding */
 
-krad_opus_t *krad_opus_decoder_create (unsigned char *header_data, int header_length, float output_sample_rate);
+krad_opus_t *krad_opus_decoder_create (unsigned char *header_data,
+                                       int header_length,
+                                       float output_sample_rate);
 void krad_opus_decoder_destroy (krad_opus_t *krad_opus);
-int krad_opus_decoder_read (krad_opus_t *krad_opus, int channel, char *buffer, int buffer_length);
-int krad_opus_decoder_write (krad_opus_t *krad_opus, unsigned char *buffer, int length);
+int krad_opus_decoder_read (krad_opus_t *krad_opus, int channel,
+                            char *buffer, int buffer_length);
+int krad_opus_decoder_write (krad_opus_t *krad_opus,
+                             unsigned char *buffer, int length);

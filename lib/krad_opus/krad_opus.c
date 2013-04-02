@@ -14,16 +14,15 @@ void krad_opus_encoder_destroy (krad_opus_t *krad_opus) {
 		free (krad_opus->read_samples[c]);
 		src_delete (krad_opus->src_resampler[c]);
 	}
-	
-	
+
 	free (krad_opus->opustags_header);
 	free (krad_opus->opus_header);
 	opus_multistream_encoder_destroy (krad_opus->encoder);
 	free (krad_opus);
-
 }
 
-krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate, int bitrate, int application) {
+krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
+                                       int bitrate, int application) {
 
 	int c;
 
@@ -51,9 +50,12 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate, int 
 		krad_opus->resampled_ringbuf[c] = krad_ringbuffer_create (RINGBUFFER_SIZE);
 		krad_opus->samples[c] = malloc(16 * 8192);
 		krad_opus->resampled_samples[c] = malloc(16 * 8192);
-		krad_opus->src_resampler[c] = src_new (KRAD_OPUS_SRC_QUALITY, 1, &krad_opus->src_error[c]);
+		krad_opus->src_resampler[c] = src_new (KRAD_OPUS_SRC_QUALITY,
+	                                         1,
+	                                         &krad_opus->src_error[c]);
 		if (krad_opus->src_resampler[c] == NULL) {
-			failfast ("Krad Opus Encoder: src resampler error: %s", src_strerror (krad_opus->src_error[c]));
+			failfast ("Krad Opus Encoder: src resampler error: %s",
+			          src_strerror (krad_opus->src_error[c]));
 		}
 		
 		krad_opus->src_data[c].src_ratio = 48000.0 / krad_opus->input_sample_rate;
@@ -147,21 +149,27 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate, int 
 														  &krad_opus->err);
 
 	if (krad_opus->err != OPUS_OK) {
-		failfast ("Krad Opus Encoder: Cannot create encoder: %s", opus_strerror (krad_opus->err));
+		failfast ("Krad Opus Encoder: Cannot create encoder: %s",
+		          opus_strerror (krad_opus->err));
 	}
 	
 
-	opus_multistream_encoder_ctl (krad_opus->encoder, OPUS_GET_LOOKAHEAD (&krad_opus->lookahead));
+	opus_multistream_encoder_ctl (krad_opus->encoder,
+	                              OPUS_GET_LOOKAHEAD (&krad_opus->lookahead));
 	krad_opus->opus_header->preskip = krad_opus->lookahead;
 
 	krad_opus->opus_header->gain = 0;
 	krad_opus->opus_header->input_sample_rate = 48000;
 	
-	if (opus_multistream_encoder_ctl (krad_opus->encoder, OPUS_SET_BITRATE (krad_opus->bitrate)) != OPUS_OK) {
+	if (opus_multistream_encoder_ctl (krad_opus->encoder,
+	                                  OPUS_SET_BITRATE (krad_opus->bitrate)) !=
+	                                  OPUS_OK) {
 		failfast ("Krad Opus Encoder: bitrate request failed");
 	}
 
-	krad_opus->header_data_size = opus_header_to_packet (krad_opus->opus_header, krad_opus->header_data, 100);
+	krad_opus->header_data_size = opus_header_to_packet (krad_opus->opus_header,
+                                                       krad_opus->header_data,
+                                                       100);
 	krad_opus->krad_codec_header.codec = OPUS;
 	krad_opus->krad_codec_header.header[0] = krad_opus->header_data;
 	krad_opus->krad_codec_header.header_size[0] = krad_opus->header_data_size;
@@ -170,34 +178,43 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate, int 
 	krad_opus->krad_codec_header.header_count = 2;
 
 	krad_opus->krad_codec_header.header_size[1] = 
-	8 + 4 + strlen (opus_get_version_string ()) + 4 + 4 + strlen ("ENCODER=") + strlen (APPVERSION);
+	8 + 4 + strlen (opus_get_version_string ()) + 4 + 4 + strlen ("ENCODER=") +
+	strlen (APPVERSION);
 	
-	krad_opus->opustags_header = calloc (1, krad_opus->krad_codec_header.header_size[1]);
+	krad_opus->opustags_header =
+	calloc (1, krad_opus->krad_codec_header.header_size[1]);
 	
 	memcpy (krad_opus->opustags_header, "OpusTags", 8);
 	
 	krad_opus->opustags_header[8] = strlen (opus_get_version_string ());
 	
-	memcpy (krad_opus->opustags_header + 12, opus_get_version_string (), strlen (opus_get_version_string ()));
+	memcpy (krad_opus->opustags_header + 12,
+          opus_get_version_string (),
+	        strlen (opus_get_version_string ()));
 
 	krad_opus->opustags_header[12 + strlen (opus_get_version_string ())] = 1;
 
-	krad_opus->opustags_header[12 + strlen (opus_get_version_string ()) + 4] = strlen ("ENCODER=") + strlen (APPVERSION);
+	krad_opus->opustags_header[12 + strlen (opus_get_version_string ()) + 4] =
+	strlen ("ENCODER=") + strlen (APPVERSION);
 	
-	memcpy (krad_opus->opustags_header + 12 + strlen (opus_get_version_string ()) + 4 + 4, "ENCODER=", strlen ("ENCODER="));
+	memcpy (krad_opus->opustags_header + 12 +
+	        strlen (opus_get_version_string ()) + 4 + 4,
+	        "ENCODER=",
+	        strlen ("ENCODER="));
 	
-	memcpy (krad_opus->opustags_header + 12 + strlen (opus_get_version_string ()) + 4 + 4 + strlen ("ENCODER="),
-			APPVERSION,
-			strlen (APPVERSION));	
+	memcpy (krad_opus->opustags_header + 12 +
+	        strlen (opus_get_version_string ()) + 4 + 4 + strlen ("ENCODER="),
+			    APPVERSION,
+			    strlen (APPVERSION));	
 	
 	krad_opus->krad_codec_header.header[1] = krad_opus->opustags_header;
-	
-	return krad_opus;
 
+	return krad_opus;
 }
 
-int krad_opus_encoder_write (krad_opus_t *krad_opus, int channel, char *buffer, int buffer_length) {
-	return krad_ringbuffer_write (krad_opus->ringbuf[channel - 1], buffer, buffer_length );
+int krad_opus_encoder_write (krad_opus_t *krad_opus, int channel,
+                             char *buffer, int len) {
+	return krad_ringbuffer_write (krad_opus->ringbuf[channel - 1], buffer, len );
 }
 
 int krad_opus_get_bitrate (krad_opus_t *krad_opus) { 
@@ -240,7 +257,9 @@ void krad_opus_set_bandwidth (krad_opus_t *krad_opus, int bandwidth) {
 	krad_opus->new_bandwidth = bandwidth;
 }
 
-int krad_opus_encoder_read (krad_opus_t *krad_opus, unsigned char *buffer, int *nframes) {
+int krad_opus_encoder_read (krad_opus_t *krad_opus,
+                            unsigned char *buffer,
+                            int *nframes) {
 
 	int ready;
 	int bytes;
@@ -331,7 +350,8 @@ int krad_opus_encoder_read (krad_opus_t *krad_opus, unsigned char *buffer, int *
 
 		for (s = 0; s < krad_opus->frame_size; s++) {
 			for (c = 0; c < krad_opus->channels; c++) {
-				krad_opus->interleaved_resampled_samples[s * krad_opus->channels + c] = krad_opus->resampled_samples[c][s];
+				krad_opus->interleaved_resampled_samples[s * krad_opus->channels + c] =
+				krad_opus->resampled_samples[c][s];
 			}
 		}
 
@@ -349,14 +369,10 @@ int krad_opus_encoder_read (krad_opus_t *krad_opus, unsigned char *buffer, int *
 
 		return bytes;
 	}
-	
 	return 0;
-
 }
 
-
 /* Decoding */
-
 
 void krad_opus_decoder_destroy (krad_opus_t *krad_opus) {
 	
@@ -374,10 +390,11 @@ void krad_opus_decoder_destroy (krad_opus_t *krad_opus) {
 	free (krad_opus->opus_header);
 	opus_multistream_decoder_destroy (krad_opus->decoder);
 	free (krad_opus);
-
 }
 
-krad_opus_t *krad_opus_decoder_create (unsigned char *header_data, int header_length, float output_sample_rate) {
+krad_opus_t *krad_opus_decoder_create (unsigned char *header_data,
+                                       int header_length,
+                                       float output_sample_rate) {
 
 	int c;
 
@@ -396,7 +413,7 @@ krad_opus_t *krad_opus_decoder_create (unsigned char *header_data, int header_le
 
 	krad_opus->channels = krad_opus->opus_header->channels;
 
-	krad_opus->interleaved_samples = malloc(16 * 8192);
+	krad_opus->interleaved_samples = malloc (16 * 8192);
 	
 	for (c = 0; c < krad_opus->channels; c++) {
 		krad_opus->ringbuf[c] = krad_ringbuffer_create (RINGBUFFER_SIZE);
@@ -405,15 +422,17 @@ krad_opus_t *krad_opus_decoder_create (unsigned char *header_data, int header_le
 		krad_opus->read_samples[c] = malloc (16 * 8192);
 		krad_opus->resampled_samples[c] = malloc (16 * 8192);
 
-		krad_opus->src_resampler[c] = src_new (KRAD_OPUS_SRC_QUALITY, 1, &krad_opus->src_error[c]);
+		krad_opus->src_resampler[c] =
+		src_new (KRAD_OPUS_SRC_QUALITY, 1, &krad_opus->src_error[c]);
 		if (krad_opus->src_resampler[c] == NULL) {
-			failfast ("krad_opus_decoder_create src resampler error: %s", src_strerror (krad_opus->src_error[c]));
+			failfast ("krad_opus_decoder_create src resampler error: %s",
+			          src_strerror (krad_opus->src_error[c]));
 		}
 	
 		krad_opus->src_data[c].src_ratio = output_sample_rate / 48000;
 	
-		printk ("krad_opus_decoder_create src resampler ratio is: %f", krad_opus->src_data[c].src_ratio);	
-
+		printk ("krad_opus_decoder_create src resampler ratio is: %f",
+		        krad_opus->src_data[c].src_ratio);	
 	}
 
 	krad_opus->streams = krad_opus->opus_header->nb_streams;
@@ -434,14 +453,16 @@ krad_opus_t *krad_opus_decoder_create (unsigned char *header_data, int header_le
 														  krad_opus->mapping,
 														  &krad_opus->opus_decoder_error);
 	if (krad_opus->opus_decoder_error != OPUS_OK) {
-		failfast ("Cannot create decoder: %s", opus_strerror (krad_opus->opus_decoder_error));
+		failfast ("Cannot create decoder: %s",
+		          opus_strerror (krad_opus->opus_decoder_error));
 	}
 
 	return krad_opus;
-
 }
 
-int krad_opus_decoder_write (krad_opus_t *krad_opus, unsigned char *buffer, int length) {
+int krad_opus_decoder_write (krad_opus_t *krad_opus,
+                             unsigned char *buffer,
+                             int length) {
 
 	int i;
 	int frames_decoded;
@@ -466,17 +487,13 @@ int krad_opus_decoder_write (krad_opus_t *krad_opus, unsigned char *buffer, int 
 		krad_opus->samples[1][i] = krad_opus->interleaved_samples[i * 2 + 1];
 	}
 
-
 	krad_ringbuffer_write (krad_opus->ringbuf[0], (char *)krad_opus->samples[0], (frames_decoded * 4) );
 	krad_ringbuffer_write (krad_opus->ringbuf[1], (char *)krad_opus->samples[1], (frames_decoded * 4) );
 
-
 	return 0;
-
 }
 
 int krad_opus_decoder_read (krad_opus_t *krad_opus, int channel, char *buffer, int buffer_length) {
-
 	
 	int resample_process_size = 512;
 
@@ -522,12 +539,6 @@ int krad_opus_decoder_read (krad_opus_t *krad_opus, int channel, char *buffer, i
 			}
 		
 		}
-
-		
 	}
-	
 	return 0;
-	
 }
-
-
