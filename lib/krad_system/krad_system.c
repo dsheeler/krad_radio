@@ -161,7 +161,7 @@ void *krad_system_monitor_cpu_thread (void *arg) {
 
   krad_system_cpu_monitor_t *kcm;
 
-  krad_system_set_thread_name ("kr_cpu_mon");  
+  krad_system_set_thread_name ("kr_system_mon");
   
   printk ("Krad System CPU Monitor On");
 

@@ -125,9 +125,9 @@ void v4l2_capture_unit_create (void *arg) {
   //krad_system_set_thread_name ("kr_cap_v4l2");
 
   krad_link_t *krad_link = (krad_link_t *)arg;
-  
+
   printk ("Video capture creating..");
-  
+
   krad_link->krad_v4l2 = krad_v4l2_create ();
 
   if (krad_link->video_codec != NOCODEC) {
@@ -1044,6 +1044,8 @@ static int connect_decoder_to_demuxer (krad_link_t *link) {
 
 int muxer_unit_process (void *arg) {
 
+  krad_system_set_thread_name ("kr_muxer");
+
   krad_link_t *link = (krad_link_t *)arg;
 
   krad_slice_t *krad_slice;
@@ -1103,8 +1105,6 @@ void demuxer_unit_create (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
 
-  krad_system_set_thread_name ("kr_stream_in");
-
   printk ("Input/Demuxing thread starting");
 
   krad_link->demux_header_buffer = malloc (4096 * 512);
@@ -1124,6 +1124,8 @@ void demuxer_unit_create (void *arg) {
 int demuxer_unit_process (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
+
+  krad_system_set_thread_name ("kr_demuxer");
 
   int packet_size;
   uint64_t timecode;

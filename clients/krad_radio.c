@@ -623,7 +623,7 @@ int main (int argc, char *argv[]) {
     }
   }
   
-  if (strncmp(argv[2], "demux", 5) == 0) {
+  if (strncmp(argv[2], "play", 4) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "demux", argv[3]);
     }

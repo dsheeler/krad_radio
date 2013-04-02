@@ -37,6 +37,14 @@ void kr_vpx_decoder_to_rep (krad_vpx_decoder_t *encoder, kr_vpx_decoder_t *rep) 
 
 }
 
+void kr_mkv_demuxer_to_rep (kr_mkv_t *mkv, kr_mkv_muxer_t *rep) {
+
+}
+
+void kr_ogg_demuxer_to_rep (krad_ogg_t *ogg, kr_ogg_muxer_t *rep) {
+
+}
+
 void kr_mkv_muxer_to_rep (kr_mkv_t *mkv, kr_mkv_muxer_t *rep) {
 
 }
@@ -137,7 +145,11 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
 	    }
     }
   }
-  
+
+  if (tr->type == DECODE) {
+    tr->actual.decoder.codec = link->codec;
+  }  
+
   if (tr->type == RAWIN) {
     //videoport in
     //audioport in
@@ -145,13 +157,13 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
     //x11
     //v4l2
   }
-  
+
   if (tr->type == RAWOUT) {
     //videoport out
     //audioport out
     //wayland display
   }
-  
+
   if (tr->type == MUX) {
     tr->actual.muxer.type = link->krad_container->container_type;
     if (tr->actual.muxer.type == OGG) {
@@ -167,6 +179,23 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
       
     }
   }
+  
+  if (tr->type == DEMUX) {
+    tr->actual.demuxer.type = link->krad_container->container_type;
+    if (tr->actual.muxer.type == OGG) {
+      kr_ogg_muxer_to_rep (link->krad_container->krad_ogg, &tr->actual.muxer.container.ogg);
+    }
+    if (tr->actual.muxer.type == MKV) {
+      kr_mkv_muxer_to_rep (link->krad_container->mkv, &tr->actual.muxer.container.mkv);
+    }
+    if (tr->actual.muxer.type == TOGG) {
+      
+    }
+    if (tr->actual.muxer.type == RAW) {
+      
+    }  
+  }
+  
   return 1;
 }
 
@@ -191,6 +220,12 @@ void krad_transponder_subunit_address ( kr_transponder_subunit_t *tr, int num, k
       break;
     case ENCODE:
       address->path.subunit.transponder_subunit = KR_ENCODER;
+      break;
+    case DEMUX:
+      address->path.subunit.transponder_subunit = KR_DEMUXER;
+      break;
+    case DECODE:
+      address->path.subunit.transponder_subunit = KR_DECODER;
       break;
     default:
       address->path.subunit.transponder_subunit = 0;

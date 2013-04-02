@@ -72,7 +72,6 @@ cairo_surface_t **gif2surface (char *filename, int *frames) {
   GifRowType GifRow;
   GifColorType *ColorMapEntry;
   GraphicsControlBlock gcb;  
-  int error;
   
   int fail;
 
@@ -91,7 +90,12 @@ cairo_surface_t **gif2surface (char *filename, int *frames) {
 
   //typedef int (*InputFunc) (GifFileType *, GifByteType *, int);
   //if ((gif = DGifOpen(void *userPtr, InputFunc readFunc, &error)) == NULL) {
+#if GIFLIB_MAJOR < 5
+  if ((gif = DGifOpenFileName(filename)) == NULL) {
+#else
+  int error;
   if ((gif = DGifOpenFileName(filename, &error)) == NULL) {
+#endif
     printk ("Gif failed to open");
     return NULL;
   }
