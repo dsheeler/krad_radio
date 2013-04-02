@@ -1040,7 +1040,9 @@ krad_mixer_portgroup_t *krad_mixer_get_portgroup_from_sysname (krad_mixer_t *kra
   return NULL;
 }
 
-int krad_mixer_set_portgroup_control (krad_mixer_t *krad_mixer, char *sysname, char *control, float value, int duration, void *ptr) {
+int krad_mixer_set_portgroup_control (krad_mixer_t *krad_mixer, char *sysname,
+                                      char *control, float value, int duration,
+                                      void *ptr) {
 
   krad_mixer_portgroup_t *portgroup;
 
@@ -1247,7 +1249,8 @@ uint32_t krad_mixer_get_sample_rate (krad_mixer_t *krad_mixer) {
 
 void krad_mixer_set_sample_rate (krad_mixer_t *krad_mixer, uint32_t sample_rate) {
   krad_mixer->sample_rate = sample_rate;
-  krad_tone_set_sample_rate (krad_mixer->tone_port->io_ptr, krad_mixer->sample_rate);
+  krad_tone_set_sample_rate (krad_mixer->tone_port->io_ptr,
+                             krad_mixer->sample_rate);
   
   if (krad_mixer->ticker_running == 1) {
     krad_mixer_stop_ticker (krad_mixer);
@@ -1261,7 +1264,8 @@ int krad_mixer_mix (uint32_t nframes, krad_mixer_t *krad_mixer) {
 
 void krad_mixer_set_ipc (krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc) {
   krad_mixer->krad_ipc = krad_ipc;
-  krad_mixer->broadcaster = krad_ipc_server_broadcaster_register ( krad_mixer->krad_ipc );
+  krad_mixer->broadcaster =
+    krad_ipc_server_broadcaster_register ( krad_mixer->krad_ipc );
 }
 
 void krad_mixer_destroy (krad_mixer_t *krad_mixer) {
@@ -1278,13 +1282,15 @@ void krad_mixer_destroy (krad_mixer_t *krad_mixer) {
   }
   
   for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
-    if ((krad_mixer->portgroup[p]->active == 2) && (krad_mixer->portgroup[p]->io_type != MIXBUS)) {
+    if ((krad_mixer->portgroup[p]->active == 2) &&
+        (krad_mixer->portgroup[p]->io_type != MIXBUS)) {
       krad_mixer_portgroup_mark_destroy (krad_mixer, krad_mixer->portgroup[p]);
     }
   }
   
   for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
-    if ((krad_mixer->portgroup[p]->active != 0) && (krad_mixer->portgroup[p]->io_type != MIXBUS)) {
+    if ((krad_mixer->portgroup[p]->active != 0) &&
+        (krad_mixer->portgroup[p]->io_type != MIXBUS)) {
       krad_mixer_portgroup_destroy (krad_mixer, krad_mixer->portgroup[p]);
     }
   }
@@ -1326,11 +1332,13 @@ krad_mixer_t *krad_mixer_create (char *name) {
   
   krad_mixer->name = strdup (name);
   krad_mixer->sample_rate = KRAD_MIXER_DEFAULT_SAMPLE_RATE;
-  krad_mixer->rms_window_size = (krad_mixer->sample_rate / 1000) * KRAD_MIXER_RMS_WINDOW_SIZE_MS;
+  krad_mixer->rms_window_size = (krad_mixer->sample_rate / 1000) *
+                                 KRAD_MIXER_RMS_WINDOW_SIZE_MS;
   krad_mixer->ticker_period = KRAD_MIXER_DEFAULT_TICKER_PERIOD;
   krad_mixer->frames_per_peak_broadcast = 1536;
   
-  krad_mixer->crossfade_group = calloc (KRAD_MIXER_MAX_PORTGROUPS / 2, sizeof (krad_mixer_crossfade_group_t));
+  krad_mixer->crossfade_group = calloc (KRAD_MIXER_MAX_PORTGROUPS / 2,
+                                        sizeof (krad_mixer_crossfade_group_t));
 
   for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
     krad_mixer->portgroup[p] = calloc (1, sizeof (krad_mixer_portgroup_t));
@@ -1338,11 +1346,15 @@ krad_mixer_t *krad_mixer_create (char *name) {
   
   krad_mixer->krad_audio = krad_audio_create (krad_mixer);
   
-  krad_mixer->master_mix = krad_mixer_portgroup_create (krad_mixer, "MasterBUS", MIX,
-                           NOTOUTPUT, 2, DEFAULT_MASTERBUS_LEVEL, NULL, MIXBUS, NULL, 0);
+  krad_mixer->master_mix =
+    krad_mixer_portgroup_create (krad_mixer, "MasterBUS", MIX,
+                                 NOTOUTPUT, 2, DEFAULT_MASTERBUS_LEVEL,
+                                 NULL, MIXBUS, NULL, 0);
   
-  krad_mixer->tone_port = krad_mixer_portgroup_create (krad_mixer, "DTMF", INPUT, NOTOUTPUT, 1, 35.0f,
-                              krad_mixer->master_mix, KRAD_TONE, NULL, 0);
+  krad_mixer->tone_port =
+    krad_mixer_portgroup_create (krad_mixer, "DTMF",
+                                 INPUT, NOTOUTPUT, 1, 35.0f,
+                                 krad_mixer->master_mix, KRAD_TONE, NULL, 0);
   
   krad_mixer_portgroup_mixmap_channel (krad_mixer->tone_port, 0, 1);
 

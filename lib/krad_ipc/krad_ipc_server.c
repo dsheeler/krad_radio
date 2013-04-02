@@ -179,7 +179,9 @@ int krad_ipc_server_recvfd (krad_ipc_server_client_t *client) {
   }
 }
 
-int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *interface, int port) {
+int krad_ipc_server_disable_remote (krad_ipc_server_t *ipc_server,
+                                    char *interface,
+                                    int port) {
 
   //FIXME needs to loop thru clients and disconnect remote ones .. optionally?
 
@@ -195,11 +197,12 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *in
   }
 
   for (r = 0; r < MAX_REMOTES; r++) {
-    if ((krad_ipc_server->tcp_sd[r] != 0) && ((port == 0) || (krad_ipc_server->tcp_port[r] == port))) {
-      close (krad_ipc_server->tcp_sd[r]);
-      krad_ipc_server->tcp_port[r] = 0;
-      krad_ipc_server->tcp_sd[r] = 0;
-      free (krad_ipc_server->tcp_interface[r]);
+    if ((ipc_server->tcp_sd[r] != 0) && ((port == 0) ||
+        (ipc_server->tcp_port[r] == port))) {
+      close (ipc_server->tcp_sd[r]);
+      ipc_server->tcp_port[r] = 0;
+      ipc_server->tcp_sd[r] = 0;
+      free (ipc_server->tcp_interface[r]);
       d = r;
       break;
     }
@@ -207,14 +210,16 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *in
 
   if (d > -1) {
     printk ("Disable remote on interface %s port %d", interface, port);
-    //krad_ipc_server_update_pollfds (krad_ipc_server);
+    //ipc_server_update_pollfds (ipc_server);
   }
   
   return d;  
 }
 
 #ifdef KR_LINUX
-int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server, char *adapter, int port) {
+int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *ipc_server,
+                                              char *adapter,
+                                              int port) {
 
   struct ifaddrs *ifaddr, *ifa;
   int family, s;
@@ -245,7 +250,7 @@ int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server
         printke ("getnameinfo() failed: %s\n", gai_strerror(s));
         return -1;
       }
-      ret = krad_ipc_server_enable_remote (krad_ipc_server, host, port);
+      ret = krad_ipc_server_enable_remote (ipc_server, host, port);
       if (ret == 1) {
         ifs++;
       }
@@ -258,7 +263,9 @@ int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *krad_ipc_server
 }
 #endif
 
-int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server, char *interface, int port) {
+int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server,
+                                   char *interface,
+                                   int port) {
 
   int r;
   int sd;
@@ -780,11 +787,14 @@ void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server) {
   pthread_create (&krad_ipc_server->server_thread, NULL, krad_ipc_server_run_thread, (void *)krad_ipc_server);
 }
 
-krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname,
-                                           void *client_create (void *),
-                                           void client_destroy (void *),
-                                           int client_handler (kr_io2_t *in, kr_io2_t *out, void *),
-                                           void *pointer) {
+krad_ipc_server_t *
+krad_ipc_server_create (char *appname, char *sysname,
+                        void *client_create (void *),
+                        void client_destroy (void *),
+                        int client_handler (kr_io2_t *in,
+                                            kr_io2_t *out,
+                                            void *),
+                        void *pointer) {
 
   krad_ipc_server_t *krad_ipc_server;
 

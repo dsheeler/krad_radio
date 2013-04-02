@@ -210,7 +210,7 @@ krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
 
 }
 
-void krad_theora_encoder_destroy(krad_theora_encoder_t *krad_theora) {
+void krad_theora_encoder_destroy (krad_theora_encoder_t *krad_theora) {
 
   while (krad_theora->header_count--) {
     //printf("krad_theora_encoder_destroy freeing header %d\n",

@@ -126,16 +126,23 @@ int krad_ipc_server_current_client_is_subscriber (krad_ipc_server_t *ipc);
 
 int krad_ipc_server_recvfd (krad_ipc_server_client_t *client);
 
-int krad_ipc_server_disable_remote (krad_ipc_server_t *krad_ipc_server, char *interface, int port);
-int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server, char *interface, int port);
+int krad_ipc_server_disable_remote (krad_ipc_server_t *ipc_server,
+                                    char *interface,
+                                    int port);
+int krad_ipc_server_enable_remote (krad_ipc_server_t *ipc_server,
+                                   char *interface,
+                                   int port);
 void krad_ipc_server_disable (krad_ipc_server_t *krad_ipc_server);
 void krad_ipc_server_destroy (krad_ipc_server_t *ipc_server);
 void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server);
-krad_ipc_server_t *krad_ipc_server_create (char *appname, char *sysname,
-                                           void *client_create (void *),
-                                           void client_destroy (void *),
-                                           int client_handler (kr_io2_t *in, kr_io2_t *out, void *),
-                                           void *pointer);
+krad_ipc_server_t *
+krad_ipc_server_create (char *appname, char *sysname,
+                        void *client_create (void *),
+                        void client_destroy (void *),
+                        int client_handler (kr_io2_t *in,
+                                            kr_io2_t *out,
+                                            void *),
+                        void *pointer);
 
 #endif
 
