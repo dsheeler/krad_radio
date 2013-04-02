@@ -2,8 +2,10 @@
 
 static void krad_vpx_fail (vpx_codec_ctx_t *ctx, const char *s);
 
-krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height, int fps_numerator,
-                       int fps_denominator, int bitrate) {
+krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
+                                             int fps_numerator,
+                                             int fps_denominator,
+                                             int bitrate) {
 
   krad_vpx_encoder_t *kradvpx;
   
@@ -15,16 +17,21 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height, int fps_nume
   kradvpx->fps_denominator = fps_denominator;
   kradvpx->bitrate = bitrate;
   
-  printk ("Krad Radio using libvpx version: %s", vpx_codec_version_str ());
+  printk ("Krad Radio using libvpx version: %s",
+          vpx_codec_version_str ());
 
-  if ((kradvpx->image = vpx_img_alloc (NULL, VPX_IMG_FMT_YV12, kradvpx->width, kradvpx->height, 1)) == NULL) {
+  if ((kradvpx->image = vpx_img_alloc (NULL, VPX_IMG_FMT_YV12,
+                                       kradvpx->width,
+                                       kradvpx->height, 1)) == NULL) {
     failfast ("Failed to allocate vpx image\n");
   }
 
-  kradvpx->res = vpx_codec_enc_config_default (vpx_codec_vp8_cx(), &kradvpx->cfg, 0);
+  kradvpx->res = vpx_codec_enc_config_default (vpx_codec_vp8_cx(),
+                                               &kradvpx->cfg, 0);
 
   if (kradvpx->res) {
-    failfast ("Failed to get config: %s\n", vpx_codec_err_to_string(kradvpx->res));
+    failfast ("Failed to get config: %s\n",
+              vpx_codec_err_to_string(kradvpx->res));
   }
 
   // print default config
@@ -50,7 +57,9 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height, int fps_nume
 
   //krad_vpx_encoder_print_config (kradvpx);
 
-  if (vpx_codec_enc_init(&kradvpx->encoder, vpx_codec_vp8_cx(), &kradvpx->cfg, 0)) {
+  if (vpx_codec_enc_init (&kradvpx->encoder,
+                          vpx_codec_vp8_cx(),
+                          &kradvpx->cfg, 0)) {
      krad_vpx_fail (&kradvpx->encoder, "Failed to initialize encoder");
   }
 
@@ -64,7 +73,6 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height, int fps_nume
 #endif
 
   return kradvpx;
-
 }
 
 void krad_vpx_encoder_print_config (krad_vpx_encoder_t *kradvpx) {
@@ -100,7 +108,8 @@ int krad_vpx_encoder_min_quantizer_get (krad_vpx_encoder_t *kradvpx) {
   return kradvpx->min_quantizer;
 }
 
-void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *kradvpx, int min_quantizer) {
+void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *kradvpx,
+                                         int min_quantizer) {
   kradvpx->min_quantizer = min_quantizer;
   kradvpx->cfg.rc_min_quantizer = kradvpx->min_quantizer;
   kradvpx->update_config = 1;
@@ -110,7 +119,8 @@ int krad_vpx_encoder_max_quantizer_get (krad_vpx_encoder_t *kradvpx) {
   return kradvpx->max_quantizer;
 }
 
-void krad_vpx_encoder_max_quantizer_set (krad_vpx_encoder_t *kradvpx, int max_quantizer) {
+void krad_vpx_encoder_max_quantizer_set (krad_vpx_encoder_t *kradvpx,
+                                         int max_quantizer) {
   kradvpx->max_quantizer = max_quantizer;
   kradvpx->cfg.rc_max_quantizer = kradvpx->max_quantizer;
   kradvpx->update_config = 1;
@@ -124,7 +134,8 @@ int krad_vpx_encoder_deadline_get (krad_vpx_encoder_t *kradvpx) {
   return kradvpx->deadline;
 }
 
-void krad_vpx_encoder_config_set (krad_vpx_encoder_t *kradvpx, vpx_codec_enc_cfg_t *cfg) {
+void krad_vpx_encoder_config_set (krad_vpx_encoder_t *kradvpx,
+                                  vpx_codec_enc_cfg_t *cfg) {
 
   int ret;
 
@@ -176,7 +187,8 @@ void krad_vpx_benchmark_finish (krad_vpx_encoder_t *kradvpx) {
 
   krad_timer_finish(kradvpx->krad_timer);
 
-  kradvpx->benchmark_times[kradvpx->benchmark_count] = krad_timer_duration_ms(kradvpx->krad_timer);
+  kradvpx->benchmark_times[kradvpx->benchmark_count] =
+    krad_timer_duration_ms(kradvpx->krad_timer);
 
   kradvpx->benchmark_count++;
 
@@ -204,14 +216,16 @@ void krad_vpx_benchmark_finish (krad_vpx_encoder_t *kradvpx) {
     kradvpx->benchmark_avg = kradvpx->benchmark_total / BENCHMARK_COUNT;
 
     printk ("VPX Benchmark: Frames: %d Shortest: %d Longest: %d Avg: %d",
-        BENCHMARK_COUNT, kradvpx->benchmark_short, kradvpx->benchmark_long, kradvpx->benchmark_avg);
+            BENCHMARK_COUNT, kradvpx->benchmark_short,
+            kradvpx->benchmark_long, kradvpx->benchmark_avg);
 
     kradvpx->benchmark_count = 0;
   }
-
 }
 
-int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet, int *keyframe) {
+int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx,
+                            unsigned char **packet,
+                            int *keyframe) {
 
   if (kradvpx->update_config == 1) {
     krad_vpx_encoder_config_set (kradvpx, &kradvpx->cfg);
@@ -223,7 +237,8 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet,
   krad_vpx_benchmark_start(kradvpx);
   #endif
 
-  if (vpx_codec_encode(&kradvpx->encoder, kradvpx->image, kradvpx->frames, 1, kradvpx->flags, kradvpx->deadline)) {
+  if (vpx_codec_encode (&kradvpx->encoder, kradvpx->image, kradvpx->frames,
+                        1, kradvpx->flags, kradvpx->deadline)) {
     krad_vpx_fail (&kradvpx->encoder, "Failed to encode frame");
   }
 
@@ -232,7 +247,8 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet,
   kradvpx->flags = 0;
   
   kradvpx->iter = NULL;
-  while ((kradvpx->pkt = vpx_codec_get_cx_data (&kradvpx->encoder, &kradvpx->iter))) {
+  while ((kradvpx->pkt = vpx_codec_get_cx_data (&kradvpx->encoder,
+                                                &kradvpx->iter))) {
     //printkd ("Got packet\n");
     if (kradvpx->pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
       *packet = kradvpx->pkt->data.frame.buf;
@@ -241,7 +257,8 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet,
         kradvpx->frames_since_keyframe++;
       } else {
         kradvpx->frames_since_keyframe = 0;
-        //printkd ("keyframe is %d pts is -%ld-\n", *keyframe, kradvpx->pkt->data.frame.pts);
+        //printkd ("keyframe is %d pts is -%ld-\n",
+        // *keyframe, kradvpx->pkt->data.frame.pts);
       }
       #ifdef BENCHMARK
       krad_vpx_benchmark_finish(kradvpx);
@@ -258,17 +275,21 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet,
 
 /* decoder */
 
-void krad_vpx_decoder_decode (krad_vpx_decoder_t *kradvpx, void *buffer, int len) {
+void krad_vpx_decoder_decode (krad_vpx_decoder_t *kradvpx,
+                              void *buffer,
+                              int len) {
 
 
   if (vpx_codec_decode(&kradvpx->decoder, buffer, len, 0, 0))
   {
-    failfast ("Failed to decode %d byte frame: %s\n", len, vpx_codec_error(&kradvpx->decoder));
+    failfast ("Failed to decode %d byte frame: %s\n",
+              len, vpx_codec_error(&kradvpx->decoder));
     //exit(1);
   }
 
   vpx_codec_get_stream_info (&kradvpx->decoder, &kradvpx->stream_info);
-  //printf("VPX Stream Info: W:%d H:%d KF:%d\n", kradvpx->stream_info.w, kradvpx->stream_info.h, 
+  //printf("VPX Stream Info: W:%d H:%d KF:%d\n",
+  //kradvpx->stream_info.w, kradvpx->stream_info.h, 
   //      kradvpx->stream_info.is_kf);
   
   if (kradvpx->width == 0) {
@@ -281,7 +302,8 @@ void krad_vpx_decoder_decode (krad_vpx_decoder_t *kradvpx, void *buffer, int len
     kradvpx->width = kradvpx->stream_info.w;
     kradvpx->height = kradvpx->stream_info.h;
     
-    if ((kradvpx->img = vpx_img_alloc(NULL, VPX_IMG_FMT_YV12, kradvpx->stream_info.w, 
+    if ((kradvpx->img = vpx_img_alloc(NULL, VPX_IMG_FMT_YV12,
+    //  kradvpx->stream_info.w, 
                       kradvpx->stream_info.h, 1)) == NULL) {
       failfast ("Failed to allocate vpx image\n");
     }
@@ -312,7 +334,10 @@ krad_vpx_decoder_t *krad_vpx_decoder_create () {
   kradvpx->dec_flags = 0;
   kradvpx->cfg.threads = 3;
   
-    vpx_codec_dec_init(&kradvpx->decoder, vpx_codec_vp8_dx(), &kradvpx->cfg, kradvpx->dec_flags);
+  vpx_codec_dec_init (&kradvpx->decoder,
+                     vpx_codec_vp8_dx(),
+                     &kradvpx->cfg,
+                     kradvpx->dec_flags);
 
   //kradvpx->ppcfg.post_proc_flag = VP8_DEBLOCK;
   //kradvpx->ppcfg.deblocking_level = 1;

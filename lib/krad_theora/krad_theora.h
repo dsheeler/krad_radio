@@ -97,19 +97,29 @@ struct krad_theora_decoder_St {
 /* encoder */
 
 int krad_theora_encoder_quality_get (krad_theora_encoder_t *krad_theora);
-void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora, int quality);
-int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char **packet, int *keyframe);
+void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora,
+                                      int quality);
+int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora,
+                               unsigned char **packet,
+                               int *keyframe);
 krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
-                                                   int fps_numerator, int fps_denominator,
-                                                   int color_depth, int quality);
+                                                   int fps_numerator,
+                                                   int fps_denominator,
+                                                   int color_depth,
+                                                   int quality);
 void krad_theora_encoder_destroy (krad_theora_encoder_t *krad_theora);
 
 /* decoder */
 
-void krad_theora_decoder_timecode (krad_theora_decoder_t *krad_theora, uint64_t *timecode);
+void krad_theora_decoder_timecode (krad_theora_decoder_t *krad_theora,
+                                   uint64_t *timecode);
 void krad_theora_decoder_write (krad_theora_decoder_t *krad_theora);
-void krad_theora_decoder_decode (krad_theora_decoder_t *krad_theora, void *buffer, int len);
-krad_theora_decoder_t *krad_theora_decoder_create ();
+void krad_theora_decoder_decode (krad_theora_decoder_t *krad_theora,
+                                 void *buffer, int len);
+krad_theora_decoder_t *
+krad_theora_decoder_create (unsigned char *header1, int header1len,
+                            unsigned char *header2, int header2len,
+                            unsigned char *header3, int header3len);
 void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora);
 
 #endif

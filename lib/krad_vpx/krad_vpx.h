@@ -91,25 +91,34 @@ struct krad_vpx_decoder_St {
 };
 
 int krad_vpx_encoder_min_quantizer_get (krad_vpx_encoder_t *kradvpx);
-void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *kradvpx, int min_quantizer);
+void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *kradvpx,
+                                         int min_quantizer);
 int krad_vpx_encoder_max_quantizer_get (krad_vpx_encoder_t *kradvpx);
-void krad_vpx_encoder_max_quantizer_set (krad_vpx_encoder_t *kradvpx, int max_quantizer);
+void krad_vpx_encoder_max_quantizer_set (krad_vpx_encoder_t *kradvpx,
+                                         int max_quantizer);
 int krad_vpx_encoder_bitrate_get (krad_vpx_encoder_t *kradvpx);
-void krad_vpx_encoder_bitrate_set (krad_vpx_encoder_t *kradvpx, int bitrate);
-void krad_vpx_encoder_deadline_set (krad_vpx_encoder_t *kradvpx, int deadline);
+void krad_vpx_encoder_bitrate_set (krad_vpx_encoder_t *kradvpx,
+                                   int bitrate);
+void krad_vpx_encoder_deadline_set (krad_vpx_encoder_t *kradvpx,
+                                    int deadline);
 int krad_vpx_encoder_deadline_get (krad_vpx_encoder_t *kradvpx);
 
 void krad_vpx_encoder_print_config (krad_vpx_encoder_t *kradvpx);
 
 void krad_vpx_encoder_finish (krad_vpx_encoder_t *kradvpx);
-void krad_vpx_encoder_config_set (krad_vpx_encoder_t *kradvpx, vpx_codec_enc_cfg_t *cfg);
-krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height, int fps_numerator,
-                                             int fps_denominator, int bitrate);
+void krad_vpx_encoder_config_set (krad_vpx_encoder_t *kradvpx,
+                                  vpx_codec_enc_cfg_t *cfg);
+krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
+                                             int fps_numerator,
+                                             int fps_denominator,
+                                             int bitrate);
 void krad_vpx_encoder_destroy (krad_vpx_encoder_t *kradvpx);
-int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx, unsigned char **packet, int *keyframe);
+int krad_vpx_encoder_write (krad_vpx_encoder_t *kradvpx,
+                            unsigned char **packet,
+                            int *keyframe);
 void krad_vpx_encoder_want_keyframe (krad_vpx_encoder_t *kradvpx);
-
 krad_vpx_decoder_t *krad_vpx_decoder_create ();
 void krad_vpx_decoder_destroy (krad_vpx_decoder_t *kradvpx);
-void krad_vpx_decoder_decode (krad_vpx_decoder_t *kradvpx, void *buffer, int len);
-
+void krad_vpx_decoder_decode (krad_vpx_decoder_t *kradvpx,
+                              void *buffer,
+                              int len);

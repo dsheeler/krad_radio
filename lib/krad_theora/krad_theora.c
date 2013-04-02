@@ -2,8 +2,10 @@
 
 
 krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
-                                                   int fps_numerator, int fps_denominator,
-                                                   int color_depth, int quality) {
+                                                   int fps_numerator,
+                                                   int fps_denominator,
+                                                   int color_depth,
+                                                   int quality) {
 
   krad_theora_encoder_t *krad_theora;
   
@@ -53,38 +55,58 @@ krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
 
   krad_theora->encoder = th_encode_alloc (&krad_theora->info);
 
-  //th_encode_ctl (krad_theora->encoder, TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE, &krad_theora->keyframe_distance, sizeof(int));
-  //printk ("Theora keyframe max distance %u\n", krad_theora->keyframe_distance);
+  //th_encode_ctl (krad_theora->encoder,
+  //TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE,
+  // &krad_theora->keyframe_distance, sizeof(int));
+  //printk ("Theora keyframe max distance %u\n",
+  //  krad_theora->keyframe_distance);
 
   if (strstr(krad_system_cpu_type(), "x86") == NULL) {
     //FOR ARM Realtime
-    th_encode_ctl (krad_theora->encoder, TH_ENCCTL_GET_SPLEVEL_MAX, &krad_theora->speed, sizeof(int));
-    printk ("Theora encoder speed: %d quality: %d", krad_theora->speed, krad_theora->quality);
-    th_encode_ctl (krad_theora->encoder, TH_ENCCTL_SET_SPLEVEL, &krad_theora->speed, sizeof(int));
+    th_encode_ctl (krad_theora->encoder,
+                   TH_ENCCTL_GET_SPLEVEL_MAX,
+                   &krad_theora->speed,
+                   sizeof(int));
+    printk ("Theora encoder speed: %d quality: %d",
+            krad_theora->speed, krad_theora->quality);
+    th_encode_ctl (krad_theora->encoder, TH_ENCCTL_SET_SPLEVEL,
+                   &krad_theora->speed, sizeof(int));
   } else {
     //FOR x86 Realtime
-    th_encode_ctl (krad_theora->encoder, TH_ENCCTL_GET_SPLEVEL_MAX, &krad_theora->speed, sizeof(int));
+    th_encode_ctl (krad_theora->encoder,
+                   TH_ENCCTL_GET_SPLEVEL_MAX,
+                   &krad_theora->speed, sizeof(int));
     if ((krad_theora->width <= 1280) && (krad_theora->height <= 720)) {
       krad_theora->speed -= 1;
     }
-    printk ("Theora encoder speed: %d quality: %d", krad_theora->speed, krad_theora->quality);
-    th_encode_ctl (krad_theora->encoder, TH_ENCCTL_SET_SPLEVEL, &krad_theora->speed, sizeof(int));
+    printk ("Theora encoder speed: %d quality: %d",
+            krad_theora->speed, krad_theora->quality);
+    th_encode_ctl (krad_theora->encoder,
+                   TH_ENCCTL_SET_SPLEVEL,
+                   &krad_theora->speed, sizeof(int));
   }
 
-  while (th_encode_flushheader ( krad_theora->encoder, &krad_theora->comment, &krad_theora->packet) > 0) {
+  while (th_encode_flushheader ( krad_theora->encoder,
+                                 &krad_theora->comment,
+                                 &krad_theora->packet) > 0) {
   
     krad_theora->header_combined_size += krad_theora->packet.bytes;
-  
-    krad_theora->header[krad_theora->header_count] = malloc(krad_theora->packet.bytes);
-    memcpy (krad_theora->header[krad_theora->header_count], krad_theora->packet.packet, krad_theora->packet.bytes);
-    krad_theora->header_len[krad_theora->header_count] = krad_theora->packet.bytes;
+    krad_theora->header[krad_theora->header_count] =
+      malloc (krad_theora->packet.bytes);
+    memcpy (krad_theora->header[krad_theora->header_count],
+            krad_theora->packet.packet,
+            krad_theora->packet.bytes);
+    krad_theora->header_len[krad_theora->header_count] =
+      krad_theora->packet.bytes;
     krad_theora->header_count++;
     
-    //printk ("krad_theora_encoder_create th_encode_flushheader got header packet %"PRIi64" which is %ld bytes\n", 
+    //printk ("krad_theora_encoder_create th_encode_flushheader got
+    // header packet %"PRIi64" which is %ld bytes\n", 
     //    krad_theora->packet.packetno, krad_theora->packet.bytes);
   }
   
-  //printk ("krad_theora_encoder_create Got %d header packets\n", krad_theora->header_count);
+  //printk ("krad_theora_encoder_create Got %d header packets\n",
+  //      krad_theora->header_count);
 
   krad_theora->header_combined = calloc (1, krad_theora->header_combined_size + 10);
 
@@ -111,17 +133,25 @@ krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
   
   krad_theora->header_combined_size += 3;
   
-  memcpy (krad_theora->header_combined + krad_theora->header_combined_pos, krad_theora->header[0], krad_theora->header_len[0]);
+  memcpy (krad_theora->header_combined + krad_theora->header_combined_pos,
+          krad_theora->header[0],
+          krad_theora->header_len[0]);
   krad_theora->header_combined_pos += krad_theora->header_len[0];
     
-  //printf("main is %ld bytes headerpos is  %d \n", vorbis->header_main.bytes, vorbis->headerpos);
+  //printf("main is %ld bytes headerpos is  %d \n",
+  //vorbis->header_main.bytes, vorbis->headerpos);
     
-  memcpy (krad_theora->header_combined + krad_theora->header_combined_pos, krad_theora->header[1], krad_theora->header_len[1]);
+  memcpy (krad_theora->header_combined + krad_theora->header_combined_pos,
+          krad_theora->header[1],
+          krad_theora->header_len[1]);
   krad_theora->header_combined_pos += krad_theora->header_len[1];
 
-  //printf("comments is %ld bytes headerpos is  %d \n", vorbis->header_comments.bytes, vorbis->headerpos);
+  //printf("comments is %ld bytes headerpos is  %d \n",
+  //vorbis->header_comments.bytes, vorbis->headerpos);
     
-  memcpy (krad_theora->header_combined + krad_theora->header_combined_pos, krad_theora->header[2], krad_theora->header_len[2]);
+  memcpy (krad_theora->header_combined + krad_theora->header_combined_pos,
+          krad_theora->header[2],
+          krad_theora->header_len[2]);
   krad_theora->header_combined_pos += krad_theora->header_len[2];
   krad_theora->krad_codec_header.codec = THEORA;
   krad_theora->krad_codec_header.header[0] = krad_theora->header[0];
@@ -183,7 +213,8 @@ krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
 void krad_theora_encoder_destroy(krad_theora_encoder_t *krad_theora) {
 
   while (krad_theora->header_count--) {
-    //printf("krad_theora_encoder_destroy freeing header %d\n", krad_theora->header_count);
+    //printf("krad_theora_encoder_destroy freeing header %d\n",
+    // krad_theora->header_count);
     free (krad_theora->header[krad_theora->header_count]);
   }
 
@@ -204,18 +235,21 @@ int krad_theora_encoder_quality_get (krad_theora_encoder_t *krad_theora) {
   return krad_theora->quality;
 }
 
-void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora, int quality) {
+void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora,
+                                      int quality) {
   krad_theora->quality = quality;
   krad_theora->update_config = 1;
 }
 
-int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char **packet, int *keyframe) {
+int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora,
+                               unsigned char **packet, int *keyframe) {
   
   int ret;
   int key;
 
   if (krad_theora->update_config) {
-    th_encode_ctl (krad_theora->encoder, TH_ENCCTL_SET_QUALITY, &krad_theora->quality, sizeof(int));
+    th_encode_ctl (krad_theora->encoder,
+                   TH_ENCCTL_SET_QUALITY, &krad_theora->quality, sizeof(int));
     krad_theora->update_config = 0;  
   }
 
@@ -228,9 +262,12 @@ int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char
   // Note: Currently the encoder operates in a one-frame-in,
   // one-packet-out manner. However, this may be changed in the future.
   
-  ret = th_encode_packetout (krad_theora->encoder, krad_theora->finish, &krad_theora->packet);
+  ret = th_encode_packetout (krad_theora->encoder,
+                             krad_theora->finish,
+                             &krad_theora->packet);
   if (ret < 1) {
-    failfast ("krad_theora_encoder_write th_encode_packetout failed! %d", ret);
+    failfast ("krad_theora_encoder_write th_encode_packetout failed! %d",
+              ret);
   }
   
   *packet = krad_theora->packet.packet;
@@ -238,7 +275,8 @@ int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char
   key = th_packet_iskeyframe (&krad_theora->packet);
   *keyframe = key;
   if (*keyframe == -1) {
-    failfast ("krad_theora_encoder_write th_packet_iskeyframe failed! %d", *keyframe);
+    failfast ("krad_theora_encoder_write th_packet_iskeyframe failed! %d",
+              *keyframe);
   }
   
   if (key) {
@@ -247,9 +285,11 @@ int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char
   
   // Double check
   //ogg_packet test_packet;
-  //ret = th_encode_packetout (krad_theora->encoder, krad_theora->finish, &test_packet);
+  //ret = th_encode_packetout (krad_theora->encoder,
+  // krad_theora->finish, &test_packet);
   //if (ret != 0) {
-  //  printf("krad_theora_encoder_write th_encode_packetout offerd up an extra packet! %d\n", ret);
+  //  printf("krad_theora_encoder_write th_encode_packetout
+  //  offerd up an extra packet! %d\n", ret);
   //  exit(1);
   //}
   
@@ -260,11 +300,11 @@ int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora, unsigned char
   return krad_theora->packet.bytes;
 }
 
-
-
 /* decoder */
 
-void krad_theora_decoder_decode(krad_theora_decoder_t *krad_theora, void *buffer, int len) {
+void krad_theora_decoder_decode (krad_theora_decoder_t *krad_theora,
+                                 void *buffer,
+                                 int len) {
 
   int ret;
   
@@ -272,7 +312,9 @@ void krad_theora_decoder_decode(krad_theora_decoder_t *krad_theora, void *buffer
   krad_theora->packet.bytes = len;
   krad_theora->packet.packetno++;
   
-  ret = th_decode_packetin (krad_theora->decoder, &krad_theora->packet, &krad_theora->granulepos);
+  ret = th_decode_packetin (krad_theora->decoder,
+                            &krad_theora->packet,
+                            &krad_theora->granulepos);
   
   if (ret == 0) {
     th_decode_ycbcr_out (krad_theora->decoder, krad_theora->ycbcr);
@@ -295,26 +337,23 @@ void krad_theora_decoder_decode(krad_theora_decoder_t *krad_theora, void *buffer
     if (ret == TH_EIMPL) {
       printke ("theora decoder EIMPL!");
     }
-  
   }
-
 }
 
-void krad_theora_decoder_timecode(krad_theora_decoder_t *krad_theora, uint64_t *timecode) {
+void krad_theora_decoder_timecode (krad_theora_decoder_t *theora,
+                                   uint64_t *timecode) {
 
   float frame_rate;
   ogg_int64_t iframe;
   ogg_int64_t pframe;
   
-  frame_rate = krad_theora->info.fps_numerator / krad_theora->info.fps_denominator;
+  frame_rate = theora->info.fps_numerator / theora->info.fps_denominator;
   
-  iframe = krad_theora->granulepos >> krad_theora->info.keyframe_granule_shift;
-  pframe = krad_theora->granulepos - (iframe << krad_theora->info.keyframe_granule_shift);
+  iframe = theora->granulepos >> theora->info.keyframe_granule_shift;
+  pframe = theora->granulepos - (iframe << theora->info.keyframe_granule_shift);
   /* kludged, we use the default shift of 6 and assume a 3.2.1+ bitstream */
   *timecode = ((iframe + pframe - 1) / frame_rate) * 1000.0;
-
 }
-
 
 void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora) {
   th_decode_free(krad_theora->decoder);
@@ -323,9 +362,10 @@ void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora) {
   free(krad_theora);
 }
 
-krad_theora_decoder_t *krad_theora_decoder_create (unsigned char *header1, int header1len,
-                                                   unsigned char *header2, int header2len,
-                                                   unsigned char *header3, int header3len) {
+krad_theora_decoder_t *
+krad_theora_decoder_create (unsigned char *header1, int header1len,
+                            unsigned char *header2, int header2len,
+                            unsigned char *header3, int header3len) {
 
   krad_theora_decoder_t *krad_theora;
   
@@ -379,7 +419,8 @@ krad_theora_decoder_t *krad_theora_decoder_create (unsigned char *header1, int h
   krad_theora->width = krad_theora->info.pic_width;
   krad_theora->height = krad_theora->info.pic_height;
 
-  krad_theora->decoder = th_decode_alloc(&krad_theora->info, krad_theora->setup_info);
+  krad_theora->decoder = th_decode_alloc (&krad_theora->info,
+                                          krad_theora->setup_info);
 
   th_setup_free(krad_theora->setup_info);
 
