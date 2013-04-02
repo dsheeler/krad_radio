@@ -557,7 +557,6 @@ void *kr_videoport_process_thread (void *arg) {
     if (ret != 1) {
       printke ("compositor client: unexpected write return value %d in kr_videoport_process_thread", ret);
     }
-
   }
 
   return NULL;
@@ -581,7 +580,7 @@ void kr_videoport_deactivate (kr_videoport_t *kr_videoport) {
 
 kr_videoport_t *kr_videoport_create (kr_client_t *client) {
 
-  kr_videoport_t *kr_videoport;
+  kr_videoport_t *videoport;
   int sockets[2];
 
   if (!kr_client_local (client)) {
@@ -589,42 +588,46 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client) {
     return NULL;
   }
 
-  kr_videoport = calloc (1, sizeof(kr_videoport_t));
+  videoport = calloc (1, sizeof(kr_videoport_t));
 
-  if (kr_videoport == NULL) {
+  if (videoport == NULL) {
     return NULL;
   }
 
-  kr_videoport->client = client;
+  videoport->client = client;
 
-  kr_videoport->kr_shm = kr_shm_create (kr_videoport->client);
+  videoport->kr_shm = kr_shm_create (videoport->client);
 
-  sprintf (kr_videoport->kr_shm->buffer, "waa hoo its yaytime");
+  sprintf (videoport->kr_shm->buffer, "waa hoo its yaytime");
 
-  if (kr_videoport->kr_shm == NULL) {
-    free (kr_videoport);
+  if (videoport->kr_shm == NULL) {
+    free (videoport);
     return NULL;
   }
 
-    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
-    kr_shm_destroy (kr_videoport->kr_shm);
-    free (kr_videoport);
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
+    kr_shm_destroy (videoport->kr_shm);
+    free (videoport);
     return NULL;
-    }
+  }
 
-  kr_videoport->sd = sockets[0];
+  videoport->sd = sockets[0];
   
   printf ("sockets %d and %d\n", sockets[0], sockets[1]);
   
-  kr_videoport_create_cmd (kr_videoport->client);
+  kr_videoport_create_cmd (videoport->client);
+
   //FIXME use a return message from daemon to indicate ready to receive fds
   usleep (33000);
-  kr_send_fd (kr_videoport->client, kr_videoport->kr_shm->fd);
-  usleep (33000);
-  kr_send_fd (kr_videoport->client, sockets[1]);
+  kr_send_fd (videoport->client, videoport->kr_shm->fd);
+
   usleep (33000);
 
-  return kr_videoport;
+  kr_send_fd (videoport->client, sockets[1]);
+
+  usleep (33000);
+
+  return videoport;
 }
 
 void kr_videoport_destroy (kr_videoport_t *kr_videoport) {

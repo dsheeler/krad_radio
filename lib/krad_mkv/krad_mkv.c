@@ -64,7 +64,8 @@ static int kr_mkv_generate_track_uid (int track_number) {
 static int kr_mkv_sync (kr_mkv_t *mkv) {
   //FIXME temp
   kr_io2_advance (mkv->io, mkv->e->pos);
-  kr_io2_flush (mkv->io);
+  //kr_io2_flush (mkv->io);
+  kr_io2_sync (mkv->io);
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
   
   return 0;

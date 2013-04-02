@@ -41,6 +41,9 @@ def options(opt):
   opt.add_option('--without-gif', action='store_true', default=False, dest='nogif',
     help='Don\'t build anything depending on giflib-5.x')
 
+  opt.add_option('--with-kplayer', action='store_true', default=False, dest='kplayer',
+    help='Build kplayer')
+
 def check_way(way):
   if way.options.nowayland == False:
     way.env['KRAD_USE_WAYLAND'] = "yes"

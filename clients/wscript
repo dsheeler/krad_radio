@@ -26,6 +26,10 @@ programs5 = """
 krad_radio_web.c
 """.split()
 
+programs6 = """
+kplayer.c
+""".split()
+
 libsources = """
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c
@@ -109,10 +113,17 @@ depsources5 = """
 ../lib/krad_web/krad_websocket.c
 """.split()
 
+depsources6 = """
+../../libav/cmdutils.c
+""".split()
+
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 shlibs = ["opus"]
 
 shlibs2 = ["cairo", "gtk+-3.0"]
+
+shlibs6 = ["cairo", "sdl", "libavutil", "libavformat", "libavfilter", "libavcodec",
+           "libavresample", "libswscale", "libavdevice"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
@@ -146,7 +157,8 @@ def configure(conf):
 
   global programs
   global shlibs
-  global shlibs2  
+  global shlibs2
+  global shlibs6
   global syslibs
   check_system(conf)
 
@@ -164,11 +176,18 @@ def configure(conf):
   for l in stlibs:
     conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
 
+  if conf.options.kplayer == True:
+    conf.env['KPLAYER'] = "yes"
+    for l in shlibs6:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+
 def build(bld):
 
+  global libav_dir
   global programs
   global shlibs
-  global shlibs2  
+  global shlibs2
+  global shlibs6
   global syslibs
   global syslibs2
   check_system(bld)
@@ -211,6 +230,15 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs + stlibs + syslibs + plibs)
+    
+  if bld.env['KPLAYER'] == "yes":
+    for p in programs6:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources6,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs6 + shlibs + stlibs + syslibs + plibs)
       
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:

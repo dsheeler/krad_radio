@@ -191,6 +191,8 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
 
   kr_ebml2_set_buffer ( &ebml_out, out->buf, out->space );
 
+  printk ("comp command");
+
 	switch ( command ) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT:
       unit_control.address.path.unit = KR_COMPOSITOR;
@@ -331,6 +333,35 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[1]);
       krad_compositor_set_resolution (krad_compositor, numbers[0], numbers[1]);
       break;
+      
+      
+    int p;
+    int sd1;
+    int sd2;
+      
+    case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
+      for (p = 0; p < KC_MAX_PORTS; p++) {
+        if (krad_compositor->port[p].local == 1) {
+          krad_compositor_port_destroy (krad_compositor, &krad_compositor->port[p]);
+          break;
+        }
+      }
+      break;
+    case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE:
+    printk ("VID command!!");
+      krad_system_set_socket_blocking (kr_ipc->current_client->sd);
+    
+      sd1 = krad_ipc_server_recvfd (kr_ipc->current_client);
+      sd2 = krad_ipc_server_recvfd (kr_ipc->current_client);
+      printk ("VIDEOPORT_CREATE Got FD's %d and %d\n", sd1, sd2);
+      krad_compositor_local_port_create (krad_compositor, "localport", INPUT, sd1, sd2);
+      
+      krad_system_set_socket_nonblocking (kr_ipc->current_client->sd);
+      
+      break;
+      
+      
+      
     default:
       return -1;    
   }

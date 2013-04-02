@@ -795,6 +795,8 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
     return NULL;
   }
 
+  printk("HIO!");
+
   return krad_compositor_port;  
 }
 

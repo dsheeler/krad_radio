@@ -72,6 +72,36 @@ static int kr_io2_restart (kr_io2_t *io) {
   return 0;
 }
 
+int kr_io2_sync (kr_io2_t *io) {
+
+  int bytes;
+  int ret;
+  int len;
+  unsigned char *buffer;
+  
+  buffer = io->buffer;
+  len = io->len;
+  ret = 0;
+  bytes = 0;
+
+  if (!kr_io2_want_out (io)) {
+    return 0;
+  }
+
+  while (bytes != len) {
+    ret += send (io->fd, buffer + bytes, len - bytes, 0);
+    if (ret <= 0) {
+      break;
+    } else {
+      bytes += ret;
+    }
+  }
+  
+  kr_io2_restart (io);
+  
+  return bytes;
+}
+
 int kr_io2_flush (kr_io2_t *io) {
 
   int ret;

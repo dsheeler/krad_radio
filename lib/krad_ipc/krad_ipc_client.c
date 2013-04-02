@@ -151,6 +151,9 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
 }
 
 int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd) {
+
+  krad_system_set_socket_blocking (client->sd);
+
   char buf[1];
   struct iovec iov;
   struct msghdr msg;
@@ -174,7 +177,9 @@ int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd) {
   cmsg->cmsg_type = SCM_RIGHTS;
   memmove(CMSG_DATA(cmsg), &fd, sizeof(int));
 
-  if((n=sendmsg(client->sd, &msg, 0)) != iov.iov_len)
-        return 0;
+  if ((n=sendmsg(client->sd, &msg, 0)) != iov.iov_len) {
+    krad_system_set_socket_nonblocking (client->sd);
+    return 0;
+  }
   return 1;
 }

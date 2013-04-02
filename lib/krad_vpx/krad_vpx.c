@@ -38,7 +38,7 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   //krad_vpx_encoder_print_config (vpx);
 
   //TEMP
-  vpx->cfg.g_lag_in_frames = 15;
+  //vpx->cfg.g_lag_in_frames = 15;
 
   vpx->cfg.g_w = vpx->width;
   vpx->cfg.g_h = vpx->height;
@@ -49,6 +49,8 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   vpx->cfg.g_threads = 4;
   vpx->cfg.kf_mode = VPX_KF_AUTO;
   vpx->cfg.rc_end_usage = VPX_VBR;
+  
+  vpx->cfg.kf_max_dist = 90;
   
   vpx->deadline = 15 * 1000;
 

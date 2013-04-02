@@ -61,7 +61,7 @@ void kr_io2_advance (kr_io2_t *io, size_t bytes);
 void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len);
 size_t kr_io2_write (kr_io2_t *io);
 int kr_io2_flush (kr_io2_t *io);
-
+int kr_io2_sync (kr_io2_t *io);
 void kr_io2_pulled (kr_io2_t *io, size_t bytes);
 size_t kr_io2_read (kr_io2_t *io);
 

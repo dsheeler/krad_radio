@@ -533,7 +533,8 @@ int krad_ogg_output_aux_headers (krad_ogg_t *krad_ogg) {
         if (krad_ogg->io) {
           kr_io2_pack (krad_ogg->io, page.header, page.header_len);
           kr_io2_pack (krad_ogg->io, page.body, page.body_len);
-          kr_io2_flush (krad_ogg->io);
+          //kr_io2_flush (krad_ogg->io);
+          kr_io2_sync (krad_ogg->io);
         }
         if (krad_ogg->krad_transmission) {
           krad_transmitter_transmission_add_header (krad_ogg->krad_transmission,
@@ -662,7 +663,8 @@ int krad_ogg_add_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
       if (krad_ogg->io) {
         kr_io2_pack (krad_ogg->io, page.header, page.header_len);
         kr_io2_pack (krad_ogg->io, page.body, page.body_len);
-        kr_io2_flush (krad_ogg->io);
+        //kr_io2_flush (krad_ogg->io);
+        kr_io2_sync (krad_ogg->io);
       }
       if (krad_ogg->krad_transmission) {
         krad_transmitter_transmission_add_header (krad_ogg->krad_transmission, page.header, page.header_len);
@@ -742,7 +744,8 @@ void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track,
     if (krad_ogg->io) {
       kr_io2_pack (krad_ogg->io, page.header, page.header_len);
       kr_io2_pack (krad_ogg->io, page.body, page.body_len);
-      kr_io2_flush (krad_ogg->io);
+      //kr_io2_flush (krad_ogg->io);
+      kr_io2_sync (krad_ogg->io);
     }
 
     if (krad_ogg->krad_transmission) {
@@ -789,7 +792,8 @@ void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track,
     if (krad_ogg->io) {
       kr_io2_pack (krad_ogg->io, page.header, page.header_len);
       kr_io2_pack (krad_ogg->io, page.body, page.body_len);
-      kr_io2_flush (krad_ogg->io);
+      //kr_io2_flush (krad_ogg->io);
+      kr_io2_sync (krad_ogg->io);
     }
     if (krad_ogg->krad_transmission) {
       if (krad_ogg->track_count == 1) {
