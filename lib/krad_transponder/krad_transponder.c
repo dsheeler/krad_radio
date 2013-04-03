@@ -979,7 +979,11 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
     subunit = krad_Xtransponder_get_subunit (link->krad_transponder->krad_Xtransponder, t);
     printke ("its %d--", t);
     if (subunit != NULL) {
-      krad_Xtransponder_subunit_connect (link->subunit, subunit);
+      if (conns == 0) {
+        krad_Xtransponder_subunit_connect (link->subunit, subunit);
+      } else {
+        krad_Xtransponder_subunit_connect2 (link->subunit, subunit);
+      }
       conns++;
       codec_header = krad_Xtransponder_get_header (subunit);
       if (codec_header == NULL) {
@@ -1012,7 +1016,7 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
       }
       link->track_sources[track_num] = subunit;
     }
-    pch = strtok_r (NULL, "/ ", &save);
+    pch = strtok_r (NULL, ", ", &save);
   }
   
   return conns;

@@ -46,6 +46,9 @@ struct kr_mkv_St {
 
   kr_mkv_track_t *tracks;
 
+  int video_tracks;
+  int seen_keyframe;
+
   int track_count;
   int current_track;
 

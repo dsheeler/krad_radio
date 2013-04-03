@@ -135,6 +135,7 @@ int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
     return t;
   }
 
+  mkv->video_tracks++;
   mkv->tracks[t].fps_numerator = fps_numerator;
   mkv->tracks[t].fps_denominator = fps_denominator;
   mkv->tracks[t].width = width;
@@ -235,10 +236,10 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
   int64_t timecode;
 
   flags = 0;
+  timecode = 0;
   block_timecode = 0;
   block_length = buffer_len + 4;
   block_length |= 0x10000000;
-
   track_number = track_num;
   track_number |= 0x80;
 
@@ -251,8 +252,9 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
   if (track->total_video_frames == 0) {
     if (keyframe == 0) {
       return;
-    }  
-    kr_mkv_cluster (mkv, 0);
+    } else {
+      mkv->seen_keyframe = 1;
+    }
   }
 
   timecode = round (1000000000 *
@@ -260,11 +262,11 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
                     track->fps_numerator *
                     track->fps_denominator / 1000000);
 
-  track->total_video_frames++;
-
   if (keyframe) {
     kr_mkv_cluster (mkv, timecode);
   }
+
+  track->total_video_frames++;
 
   /* Must be after clustering esp. in case of keyframe */
   block_timecode = timecode - mkv->cluster_timecode;  
@@ -294,6 +296,7 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
   short block_timecode;
   unsigned char flags;
 
+  timecode = 0;
   block_timecode = 0;
   flags = 0;
   flags |= 0x80;
@@ -306,23 +309,24 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
 
   track = &mkv->tracks[track_num];
 
-  if ((track->total_audio_frames == 0) && (mkv->track_count == 1)) {
-    kr_mkv_cluster (mkv, 0);
+  if ((mkv->video_tracks > 0) && (mkv->seen_keyframe == 0)) {
+    return;
   }
-
-  track->total_audio_frames += frames;
-  track->audio_frames_since_cluster += frames;
-
+  
   timecode = round ((1000000000 *
                      track->total_audio_frames /
                      track->sample_rate /
                      1000000));
 
-  if ((track->audio_frames_since_cluster >= track->sample_rate) &&
+  if (((track->audio_frames_since_cluster >= track->sample_rate) ||
+       (track->total_audio_frames == 0)) &&
       (mkv->track_count == 1)) {
     kr_mkv_cluster (mkv, timecode);
     track->audio_frames_since_cluster = 0;
-  }
+  }  
+
+  track->total_audio_frames += frames;
+  track->audio_frames_since_cluster += frames;
 
   block_timecode = timecode - mkv->cluster_timecode;
 
