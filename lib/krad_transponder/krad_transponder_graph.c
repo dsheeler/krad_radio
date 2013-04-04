@@ -1,8 +1,8 @@
 #include "krad_transponder_graph.h"
 
 static char *transponder_subunit_type_to_string (xpdr_subunit_type_t type);
-static void kr_xpdr_port_read (kr_xpdr_input_t *inport, void *msg);
-static void kr_xpdr_port_write (kr_xpdr_input_t *input, void *msg);
+static int kr_xpdr_port_read (kr_xpdr_input_t *inport, void *msg);
+static int kr_xpdr_port_write (kr_xpdr_input_t *input, void *msg);
 static void kr_xpdr_port_disconnect (xpdr_subunit_t *xpdr_subunit,
                                      kr_xpdr_output_t *output,
                                      kr_xpdr_input_t *input);
@@ -29,8 +29,7 @@ static void xpdr_subunit_stop (xpdr_subunit_t *xpdr_subunit);
 static void xpdr_subunit_send_destroy_msg (xpdr_subunit_t *xpdr_subunit);
 static void *xpdr_subunit_thread (void *arg);
 static int xpdr_subunit_poll (xpdr_subunit_t *xpdr_subunit);
-static void xpdr_subunit_handle_control_msg (xpdr_subunit_t *xpdr_subunit,
-                                             kr_xpdr_control_msg_t *msg);
+static void xpdr_subunit_handle_control_msg (xpdr_subunit_t *xpdr_subunit);
 static void xpdr_subunit_disconnect_ports_actual (xpdr_subunit_t *xpdr_subunit,
                                                   kr_xpdr_output_t *output,
                                                   kr_xpdr_input_t *input);
@@ -54,45 +53,80 @@ static char *transponder_subunit_type_to_string (xpdr_subunit_type_t type) {
   return "Unknown Subunit";
 }
 
-static void kr_xpdr_port_read (kr_xpdr_input_t *inport, void *msg) {
+static int kr_xpdr_port_read (kr_xpdr_input_t *inport, void *msg) {
 
   int ret;
-  char buffer[1];
+  uint8_t buffer[1];
+
+  if (inport == NULL) {
+    printke ("Krad XPDR subunit: kr_xpdr_port_read called with null subunit!");
+    return 0;
+  }
+  if (msg == NULL) {
+    printke ("Krad XPDR: kr_xpdr_port_read called with null msg ptr!");
+    return 0;
+  }
 
   ret = read (inport->socketpair[1], buffer, 1);
   if (ret != 1) {
     if (ret == 0) {
       printk ("Krad XPDR: port read got EOF");
-      return;
+      return 0;
     }
-    printk ("Krad XPDR: port read unexpected read return value %d", ret);
+    printke ("Krad XPDR: port read unexpected read return value %d", ret);
+    return 0;
+  }  
+  
+  ret = krad_ringbuffer_read_space (inport->msg_ring);
+  if (ret < sizeof(uint8_t *)) {
+    printke ("Krad XPDR: Not enough in port buffer to read msg! %d bytes",
+              ret); 
+    return 0;
   }
 
-  if (msg != NULL) {
-    //printk ("Krad Transponder: msg read space %zu",
-    // krad_ringbuffer_read_space (inport->msg_ring));  
-    ret = krad_ringbuffer_read (inport->msg_ring, (char *)msg, sizeof(void *));
-    if (ret != sizeof(void *)) {
-      printk ("Krad XPDR: invalid msg read len %d", ret);
-    }    
-  } else {
-    printk ("Krad XPDR: uh oh nullzor!");
+  ret = krad_ringbuffer_read (inport->msg_ring,
+                              (char *)msg,
+                              sizeof(uint8_t *));
+  if (ret != sizeof(uint8_t *)) {
+    printke ("Krad XPDR: invalid msg read len %d", ret);
+    return 0;
   }
-  //printk ("Krad Transponder: input port read");
+  
+  return 1;
 }
 
-static void kr_xpdr_port_write (kr_xpdr_input_t *input, void *msg) {
+static int kr_xpdr_port_write (kr_xpdr_input_t *input, void *msg) {
 
   int wrote;
+  int ret;
+  
+  wrote = 0;
+  ret = 0;
 
-  if (input != NULL) {
-    krad_ringbuffer_write (input->msg_ring, (char *)msg, sizeof(void *));
-    wrote = write (input->socketpair[0], "0", 1);
-    if (wrote != 1) {
-      printk ("Krad XPDR: port write unexpected write return value %d", wrote);
-    }
+  if (input == NULL) {
+    printke ("Krad XPDR subunit: kr_xpdr_port_write called with null subunit!"); 
+    return 0;
+  }
+  if (msg == NULL) {
+    printke ("Krad XPDR: kr_xpdr_port_write called with null msg ptr!");
+    return 0;
+  }
+  
+  ret = krad_ringbuffer_write_space (input->msg_ring);
+  if (ret < sizeof(uint8_t *)) {
+    printke ("Krad XPDR: Not enough in port buffer to write msg! %d bytes",
+              ret); 
+    return 0;
+  }
+  
+  krad_ringbuffer_write (input->msg_ring, (char *)msg, sizeof(uint8_t *));
+  wrote = write (input->socketpair[0], "0", 1);
+  if (wrote != 1) {
+    printke ("Krad XPDR: port write unexpected write return value %d", wrote);
+    return 0;
   }
   //printk ("Krad Transponder: port write");
+  return 1;
 }
 
 static void kr_xpdr_port_disconnect (xpdr_subunit_t *xpdr_subunit,
@@ -242,23 +276,56 @@ static void xpdr_subunit_disconnect_ports_actual (xpdr_subunit_t *xpdr_subunit,
   }
 }
 
-static void xpdr_subunit_handle_control_msg (xpdr_subunit_t *xpdr_subunit,
-                                             kr_xpdr_control_msg_t *msg) {
-  if (msg->type == CONNECTPORTS) {
-    //printk ("Krad Transponder Subunit: Got CONNECTPORTS msg!");
-    xpdr_subunit_connect_ports_actual (xpdr_subunit, msg->output, msg->input);
-    free (msg);
+static void xpdr_subunit_handle_control_msg (xpdr_subunit_t *xpdr_subunit) {
+
+  kr_xpdr_control_msg_t *msg;
+  int ret;
+  
+  ret = 0;
+  msg = NULL;
+
+  ret = kr_xpdr_port_read (xpdr_subunit->control, (void **)&msg);
+
+  if (ret != 1) {
+    printke ("Krad XPDR Subunit: Could not read control message!");
     return;
   }
-  if (msg->type == DISCONNECTPORTS) {
-    //printk ("Krad Transponder Subunit: got DISCONNECTPORTS msg!");
-    xpdr_subunit_disconnect_ports_actual (xpdr_subunit, msg->output, msg->input);    
-    free (msg);
-    return;
-  }
-  if (msg->type == UPDATE) {
-    printk ("Krad XPDR Subunit: Got Update msg!");
-    free (msg);
+
+  switch (msg->type) {
+    case CONNECTPORTS:
+      //printk ("Krad Transponder Subunit: Got CONNECTPORTS msg!");
+      xpdr_subunit_connect_ports_actual (xpdr_subunit, msg->output, msg->input);
+      free (msg);
+      return;
+    case DISCONNECTPORTS:
+      //printk ("Krad Transponder Subunit: got DISCONNECTPORTS msg!");
+      xpdr_subunit_disconnect_ports_actual (xpdr_subunit, msg->output, msg->input);    
+      free (msg);
+      return;
+    case UPDATE:
+      printk ("Krad XPDR Subunit: Got Update msg!");
+      free (msg);
+      return;
+    case DESTROY:
+      printk("Krad Transponder: Subunit Got Destroy MSG!");
+      free (msg);
+      xpdr_subunit->destroy = 1;
+      if ((xpdr_subunit->type == MUXER) || (xpdr_subunit->type == DECODER)) {
+        if (xpdr_subunit->inputs[0]->connected_to_subunit != NULL) {
+          xpdr_subunit->destroy++;
+          kr_xpdr_port_disconnect (xpdr_subunit->inputs[0]->connected_to_subunit,
+                                            xpdr_subunit->inputs[0]->connected_to_subunit->outputs[0],
+                                            xpdr_subunit->inputs[0]);
+        }
+        if (xpdr_subunit->type == MUXER) {
+          if (xpdr_subunit->inputs[1]->connected_to_subunit != NULL) {
+            xpdr_subunit->destroy++;
+            kr_xpdr_port_disconnect (xpdr_subunit->inputs[1]->connected_to_subunit,
+                                     xpdr_subunit->inputs[1]->connected_to_subunit->outputs[1],
+                                     xpdr_subunit->inputs[1]);
+          }
+        }
+      }
     return;
   }
 }
@@ -338,37 +405,7 @@ static int xpdr_subunit_poll (xpdr_subunit_t *xpdr_subunit) {
         }
 
         if (pollfds[n].fd == xpdr_subunit->control->socketpair[1]) {
-          kr_xpdr_control_msg_t *msg;
-          msg = NULL;
-          kr_xpdr_port_read (xpdr_subunit->control, (void **)&msg);
-          if (msg->type == DESTROY) {
-            printk("Krad Transponder: Subunit Got Destroy MSG!");
-            free (msg);
-            xpdr_subunit->destroy = 1;
-            if ((xpdr_subunit->type == MUXER) || (xpdr_subunit->type == DECODER)) {
-              if (xpdr_subunit->inputs[0]->connected_to_subunit != NULL) {
-                xpdr_subunit->destroy++;
-                kr_xpdr_port_disconnect (xpdr_subunit->inputs[0]->connected_to_subunit,
-                                                  xpdr_subunit->inputs[0]->connected_to_subunit->outputs[0],
-                                                  xpdr_subunit->inputs[0]);
-              }
-              if (xpdr_subunit->type == MUXER) {
-                if (xpdr_subunit->inputs[1]->connected_to_subunit != NULL) {
-                  xpdr_subunit->destroy++;
-                  kr_xpdr_port_disconnect (xpdr_subunit->inputs[1]->connected_to_subunit,
-                                           xpdr_subunit->inputs[1]->connected_to_subunit->outputs[1],
-                                           xpdr_subunit->inputs[1]);
-                }
-              }
-            }
-            if ((xpdr_subunit->type == ENCODER) ||
-                (xpdr_subunit->type == DEMUXER) ||
-                (xpdr_subunit->type == RAW)) {
-              return 0;
-            }
-          } else {
-            xpdr_subunit_handle_control_msg (xpdr_subunit, msg);
-          }
+          xpdr_subunit_handle_control_msg (xpdr_subunit);
         }
 
         if (xpdr_subunit->type == MUXER) {
