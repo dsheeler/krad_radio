@@ -1765,7 +1765,7 @@ void krad_link_start (krad_link_t *link) {
   kr_xpdr_watch_t watch;
   
   memset (&watch, 0, sizeof(kr_xpdr_watch_t));
-  watch.callback_pointer = link;
+  watch.ptr = link;
   
   if ((link->encoding_fps_numerator == 0) || (link->encoding_fps_denominator == 0)) {
     krad_compositor_get_frame_rate (link->krad_radio->krad_compositor,

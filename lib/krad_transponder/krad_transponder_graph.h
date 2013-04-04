@@ -36,7 +36,7 @@ struct kr_xpdr_watch_St {
   int (*readable_callback)(void *);
   void (*destroy_callback)(void *);
   krad_codec_header_t *(*encoder_header_callback)(void *);  
-  void *callback_pointer;
+  void *ptr;
   int fd;
 };
 
