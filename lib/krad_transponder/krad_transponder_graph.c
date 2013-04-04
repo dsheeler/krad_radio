@@ -195,9 +195,30 @@ static kr_xpdr_output_t *kr_xpdr_output_create () {
   return kr_xpdr_output;
 }
 
+static int
+kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
+                           krad_codec_header_t *header) {
+
+  int h;
+
+  h = 0;
+  if ((header != NULL) && (outport->headers == 0)) { 
+    for (h = 0; h < MIN(4, header->header_count); h++) {
+      outport->slice[h] =
+        kr_slice_create_with_data (header->header[h],
+                                   header->header_size[h]);
+      outport->slice[h]->header = h + 1;
+      outport->headers++;
+    }
+    outport->header = header;
+    return outport->headers;
+  }
+  return -1;
+}
+
 static void xpdr_subunit_connect_ports_actual (xpdr_subunit_t *xpdr_subunit,
-                                           kr_xpdr_output_t *output,
-                                           kr_xpdr_input_t *input) {
+                                              kr_xpdr_output_t *output,
+                                              kr_xpdr_input_t *input) {
 
   int p;
 
@@ -211,8 +232,8 @@ static void xpdr_subunit_connect_ports_actual (xpdr_subunit_t *xpdr_subunit,
 }
 
 static void xpdr_subunit_disconnect_ports_actual (xpdr_subunit_t *xpdr_subunit,
-                                              kr_xpdr_output_t *output,
-                                              kr_xpdr_input_t *input) {
+                                                  kr_xpdr_output_t *output,
+                                                  kr_xpdr_input_t *input) {
 
   int p;
 
@@ -305,7 +326,6 @@ static int xpdr_subunit_poll (xpdr_subunit_t *xpdr_subunit) {
     }
   }
   
-
   nfds = n;
 
   ret = poll (pollfds, nfds, timeout);
@@ -369,7 +389,6 @@ static int xpdr_subunit_poll (xpdr_subunit_t *xpdr_subunit) {
                   (xpdr_subunit->type == RAW)) {
                 return 0;
               }
-
             } else {
               xpdr_subunit_handle_control_msg (xpdr_subunit, msg);
             }
@@ -457,9 +476,9 @@ static void xpdr_subunit_send_destroy_msg (xpdr_subunit_t *xpdr_subunit) {
   kr_xpdr_port_write (xpdr_subunit->control, &msg);
 }
 
-static void xpdr_subunit_start (xpdr_subunit_t *xpdr_subunit) {
-  xpdr_subunit->control = kr_xpdr_input_create ();
-  pthread_create (&xpdr_subunit->thread, NULL, xpdr_subunit_thread, (void *)xpdr_subunit);
+static void xpdr_subunit_start (xpdr_subunit_t *subunit) {
+  subunit->control = kr_xpdr_input_create ();
+  pthread_create (&subunit->thread, NULL, xpdr_subunit_thread, subunit);
 }
 
 static void xpdr_subunit_stop (xpdr_subunit_t *xpdr_subunit) {
@@ -590,8 +609,8 @@ static xpdr_subunit_t *xpdr_subunit_create (kr_xpdr_t *xpdr,
 }
 
 static int xpdr_subunit_add (kr_xpdr_t *kr_xpdr,
-                                xpdr_subunit_type_t type,
-                                kr_xpdr_watch_t *watch) {
+                             xpdr_subunit_type_t type,
+                             kr_xpdr_watch_t *watch) {
 
   int m;
 
@@ -600,27 +619,6 @@ static int xpdr_subunit_add (kr_xpdr_t *kr_xpdr,
       kr_xpdr->subunits[m] = xpdr_subunit_create (kr_xpdr, type, watch);
       return m;
     }
-  }
-  return -1;
-}
-
-static int
-kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
-                           krad_codec_header_t *header) {
-
-  int h;
-  
-  h = 0;
-  if ((header != NULL) && (outport->headers == 0)) { 
-    for (h = 0; h < MIN(4, header->header_count); h++) {
-      outport->slice[h] =
-        kr_slice_create_with_data (header->header[h],
-                                   header->header_size[h]);
-      outport->slice[h]->header = h + 1;
-      outport->headers++;
-    }
-    outport->header = header;
-    return outport->headers;
   }
   return -1;
 }
