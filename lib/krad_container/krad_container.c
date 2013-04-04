@@ -19,11 +19,11 @@ static krad_container_type_t krad_container_select (char *string) {
   }
 
   if (strstr(string, ".y4m")) {
-    return RAW;
+    return Y4MFILE;
   }
 
   if (strstr(string, ".flac")) {
-    return RAW;
+    return NATIVEFLAC;
   }
   return MKV;
 }
@@ -133,7 +133,7 @@ krad_container_t *krad_container_open_stream (char *host, int port,
   
   type = krad_container_select (mount);
 
-  if (type == RAW) {
+  if ((type != OGG) && (type != MKV)) {
     return NULL;
   }
   
@@ -172,7 +172,7 @@ krad_container_t *krad_container_open_file (char *filename,
       container->mkv = kr_mkv_open_file (filename);
     }
   }
-  if (container->type == RAW) {
+  if ((container->type == NATIVEFLAC) || (Y4MFILE)) {
     if (mode == KRAD_IO_WRITEONLY) {
       container->raw = kr_file_create (filename);
     }
@@ -191,7 +191,7 @@ krad_container_open_transmission (krad_transmission_t *transmission) {
   
   type = krad_container_select (transmission->sysname);
 
-  if (type == RAW) {
+  if ((type != OGG) && (type != MKV)) {
     return NULL;
   }
   
@@ -218,7 +218,7 @@ void krad_container_destroy (krad_container_t **container) {
     if ((*container)->type == MKV) {
       kr_mkv_destroy (&(*container)->mkv);
     }
-    if ((*container)->type == RAW) {
+    if (((*container)->type == NATIVEFLAC) || ((*container)->type == Y4MFILE)) {
       if ((*container)->raw) {
         kr_io2_destroy (&((*container)->raw));
       }
@@ -231,7 +231,7 @@ void krad_container_destroy (krad_container_t **container) {
 int krad_container_raw_add_data (krad_container_t *container,
                                  unsigned char *buffer,
                                  int len) {
-  if (container->type == RAW) {
+  if ((container->type == NATIVEFLAC) || (container->type == Y4MFILE)) {
     kr_io2_pack (container->raw, buffer, len);
     kr_io2_flush (container->raw);
     return 0;

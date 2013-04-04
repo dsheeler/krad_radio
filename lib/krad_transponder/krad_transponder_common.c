@@ -383,7 +383,6 @@ char *krad_link_video_source_to_string (krad_link_video_source_t video_source) {
 }
 
 char *kr_container_type_to_string (kr_container_type_t type) {
-
 	switch (type) {
 		case MKV:
 			return "MKV";
@@ -391,8 +390,10 @@ char *kr_container_type_to_string (kr_container_type_t type) {
 			return "Ogg";
 		case TOGG:
 			return "transOgg";
-		case RAW:
-			return "Raw";
+		case NATIVEFLAC:
+			return "Native FLAC";
+		case Y4MFILE:
+			return "Y4M";
 		default:
 			return "Unknown";
 	}

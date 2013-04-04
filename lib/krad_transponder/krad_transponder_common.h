@@ -61,9 +61,6 @@ typedef enum {
 } krad_link_av_mode_t;
 
 typedef enum {
-	//RECEIVE,
-	//TRANSMIT,
-	//PLAYBACK,
   DEMUX,
   DECODE,
   MUX,

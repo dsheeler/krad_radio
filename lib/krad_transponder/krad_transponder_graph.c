@@ -1,13 +1,44 @@
 #include "krad_transponder_graph.h"
 
-/* Prototypes */
+static char *transponder_subunit_type_to_string (kr_xpdr_subunit_type_t type);
+static void kr_xpdr_port_read (kr_xpdr_input_t *inport, void *msg);
+static void kr_xpdr_port_write (kr_xpdr_input_t *input, void *msg);
+static void kr_xpdr_port_disconnect (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                     kr_xpdr_output_t *output,
+                                     kr_xpdr_input_t *input);
+static void kr_xpdr_port_connect (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                  kr_xpdr_subunit_t *from_kr_xpdr_subunit,
+                                  kr_xpdr_output_t *output,
+                                  kr_xpdr_input_t *input);
+static void kr_xpdr_input_disconnect (kr_xpdr_input_t *kr_xpdr_input);
+static void kr_xpdr_input_destroy (kr_xpdr_input_t *kr_xpdr_input);
+static void kr_xpdr_output_free (kr_xpdr_output_t *kr_xpdr_output);
+static void kr_xpdr_output_destroy (kr_xpdr_output_t *kr_xpdr_output);
+static kr_xpdr_output_t *kr_xpdr_output_create ();
+static void kr_xpdr_subunit_start (kr_xpdr_subunit_t *kr_xpdr_subunit);
+static int kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
+                                      krad_codec_header_t *krad_codec_header);
+static int kr_xpdr_subunit_add (kr_xpdr_t *kr_xpdr,
+                                kr_xpdr_subunit_type_t type,
+                                kr_xpdr_watch_t *watch);
+static kr_xpdr_subunit_t *xpdr_subunit_create (kr_xpdr_t *xpdr,
+                                               kr_xpdr_subunit_type_t type,
+                                               kr_xpdr_watch_t *watch);
+static void kr_xpdr_subunit_destroy (kr_xpdr_subunit_t **kr_xpdr_subunit);
+static void kr_xpdr_subunit_stop (kr_xpdr_subunit_t *kr_xpdr_subunit);
+static void kr_xpdr_subunit_send_destroy_msg (kr_xpdr_subunit_t *kr_xpdr_subunit);
+static void *kr_xpdr_subunit_thread (void *arg);
+static int kr_xpdr_subunit_poll (kr_xpdr_subunit_t *kr_xpdr_subunit);
+static void kr_xpdr_subunit_handle_control_msg (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                                kr_xpdr_control_msg_t *msg);
+static void kr_xpdr_subunit_disconnect_ports_actual (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                                     kr_xpdr_output_t *output,
+                                                     kr_xpdr_input_t *input);
+static void kr_xpdr_subunit_connect_ports_actual (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                                  kr_xpdr_output_t *output,
+                                                  kr_xpdr_input_t *input);
 
-void krad_Xtransponder_subunit_destroy (krad_Xtransponder_subunit_t **krad_Xtransponder_subunit);
-
-/* Internal */
-
-char *transponder_subunit_type_to_string (krad_Xtransponder_subunit_type_t type) {
-
+static char *transponder_subunit_type_to_string (kr_xpdr_subunit_type_t type) {
   switch (type) {
     case DEMUXER:
       return "Demuxer";
@@ -17,57 +48,13 @@ char *transponder_subunit_type_to_string (krad_Xtransponder_subunit_type_t type)
       return "Decoder";
     case ENCODER:
       return "Encoder";
-    case XCAPTURE:
-      return "Capture";
+    case RAW:
+      return "RAW";
   }
-  
   return "Unknown Subunit";
 }
 
-int krad_slice_set_data (krad_slice_t *krad_slice, unsigned char *data, uint32_t size) {
-  if ((krad_slice->size == 0) && (krad_slice->data == NULL)) {
-    krad_slice->size = size;
-    krad_slice->data = malloc (krad_slice->size);
-    memcpy (krad_slice->data, data, krad_slice->size);
-    return krad_slice->size;
-  }
-  return 0;
-}
-
-void krad_slice_destroy (krad_slice_t *krad_slice) {
-  if ((krad_slice->size > 0) && (krad_slice->data != NULL)) {
-    free (krad_slice->data);
-    krad_slice->size = 0;
-  }
-  free (krad_slice);
-}
-
-krad_slice_t *krad_slice_create () {
-  krad_slice_t *krad_slice;
-  krad_slice = calloc (1, sizeof(krad_slice_t));
-  krad_slice_ref (krad_slice);  
-  return krad_slice;
-}
-
-krad_slice_t *krad_slice_create_with_data (unsigned char *data, uint32_t size) {
-  krad_slice_t *krad_slice;
-  krad_slice = krad_slice_create ();
-  krad_slice_set_data (krad_slice, data, size);
-  return krad_slice;
-}
-
-void krad_slice_ref (krad_slice_t *krad_slice) {
-  __sync_fetch_and_add( &krad_slice->refs, 1 );
-}
-
-void krad_slice_unref (krad_slice_t *krad_slice) {
-  __sync_fetch_and_sub( &krad_slice->refs, 1 );
-  if (__sync_bool_compare_and_swap( &krad_slice->refs, 0, -1 )) {
-    krad_slice_destroy (krad_slice);
-  }
-}
-
-void krad_Xtransponder_port_read (krad_Xtransponder_input_port_t *inport, void *msg) {
+static void kr_xpdr_port_read (kr_xpdr_input_t *inport, void *msg) {
 
   int ret;
   char buffer[1];
@@ -75,26 +62,27 @@ void krad_Xtransponder_port_read (krad_Xtransponder_input_port_t *inport, void *
   ret = read (inport->socketpair[1], buffer, 1);
   if (ret != 1) {
     if (ret == 0) {
-      printk ("Krad Transponder: port read got EOF");
+      printk ("Krad XPDR: port read got EOF");
       return;
     }
-    printk ("Krad Transponder: port read unexpected read return value %d", ret);
+    printk ("Krad XPDR: port read unexpected read return value %d", ret);
   }
 
   if (msg != NULL) {
-    //printk ("Krad Transponder: msg read space %zu", krad_ringbuffer_read_space (inport->msg_ring));  
+    //printk ("Krad Transponder: msg read space %zu",
+    // krad_ringbuffer_read_space (inport->msg_ring));  
     ret = krad_ringbuffer_read (inport->msg_ring, (char *)msg, sizeof(void *));
     if (ret != sizeof(void *)) {
-      printk ("Krad Transponder: invalid msg read len %d", ret);
+      printk ("Krad XPDR: invalid msg read len %d", ret);
     }    
   } else {
-    printk ("uh oh nullzor!");
+    printk ("Krad XPDR: uh oh nullzor!");
   }
   //printk ("Krad Transponder: input port read");
 
 }
 
-void krad_Xtransponder_port_write (krad_Xtransponder_input_port_t *input, void *msg) {
+static void kr_xpdr_port_write (kr_xpdr_input_t *input, void *msg) {
 
   int wrote;
 
@@ -102,7 +90,7 @@ void krad_Xtransponder_port_write (krad_Xtransponder_input_port_t *input, void *
     krad_ringbuffer_write (input->msg_ring, (char *)msg, sizeof(void *));
     wrote = write (input->socketpair[0], "0", 1);
     if (wrote != 1) {
-      printk ("Krad Transponder: port write unexpected write return value %d", wrote);
+      printk ("Krad XPDR: port write unexpected write return value %d", wrote);
     }
   }
 
@@ -110,180 +98,152 @@ void krad_Xtransponder_port_write (krad_Xtransponder_input_port_t *input, void *
 
 }
 
-void krad_Xtransponder_port_broadcast (krad_Xtransponder_output_port_t *outport, void *msg) {
-
-  int p;
-  
-  //printk ("Krad Transponder: output port broadcasting");  
-  
-  for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
-    if (outport->connections[p] != NULL) {
-      krad_Xtransponder_port_write (outport->connections[p], msg);
-    }
-  }
-
-  //printk ("Krad Transponder: output port broadcasted");
-
-}
-
-void krad_Xtransponder_port_disconnect (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                    krad_Xtransponder_output_port_t *output,
-                                    krad_Xtransponder_input_port_t *input) {
+static void kr_xpdr_port_disconnect (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                     kr_xpdr_output_t *output,
+                                     kr_xpdr_input_t *input) {
 
   printk ("Krad Transponder: sending disconnect ports msg");
 
-  krad_Xtransponder_control_msg_t *msg;
-  msg = calloc (1, sizeof (krad_Xtransponder_control_msg_t));
+  kr_xpdr_control_msg_t *msg;
+  msg = calloc (1, sizeof (kr_xpdr_control_msg_t));
   msg->type = DISCONNECTPORTS;
-  msg->input_port = input;
-  msg->output_port = output;
-  krad_Xtransponder_port_write (krad_Xtransponder_subunit->control, &msg);
+  msg->input = input;
+  msg->output = output;
+  kr_xpdr_port_write (kr_xpdr_subunit->control, &msg);
 
   printk ("Krad Transponder: sent disconnect ports msg");
 }
 
-void krad_Xtransponder_port_connect (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                    krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit,
-                                    krad_Xtransponder_output_port_t *output,
-                                    krad_Xtransponder_input_port_t *input) {
+static void kr_xpdr_port_connect (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                  kr_xpdr_subunit_t *from_kr_xpdr_subunit,
+                                  kr_xpdr_output_t *output,
+                                  kr_xpdr_input_t *input) {
 
 
   printk ("Krad Transponder: sending connecting ports msg");
 
-  krad_Xtransponder_control_msg_t *msg;
-  msg = calloc (1, sizeof (krad_Xtransponder_control_msg_t));
+  kr_xpdr_control_msg_t *msg;
+  msg = calloc (1, sizeof (kr_xpdr_control_msg_t));
   msg->type = CONNECTPORTS;
-  msg->input_port = input;
-  msg->output_port = output;
+  msg->input = input;
+  msg->output = output;
   
-  input->connected_to_subunit = krad_Xtransponder_subunit;
-  input->subunit = from_krad_Xtransponder_subunit;
-  krad_Xtransponder_port_write (krad_Xtransponder_subunit->control, &msg);
+  input->connected_to_subunit = kr_xpdr_subunit;
+  input->subunit = from_kr_xpdr_subunit;
+  kr_xpdr_port_write (kr_xpdr_subunit->control, &msg);
 
   printk ("Krad Transponder: sent connecting ports msg");
 }
 
-void krad_Xtransponder_input_port_disconnect (krad_Xtransponder_input_port_t *krad_Xtransponder_input_port) {
+static void kr_xpdr_input_disconnect (kr_xpdr_input_t *kr_xpdr_input) {
   printk ("Krad Transponder: disconnecting ports");
-  //close (krad_Xtransponder_input_port->socketpair[0]);
-  close (krad_Xtransponder_input_port->socketpair[1]);
+  //close (kr_xpdr_input->socketpair[0]);
+  close (kr_xpdr_input->socketpair[1]);
 }
 
-void krad_Xtransponder_input_port_free (krad_Xtransponder_input_port_t *krad_Xtransponder_input_port) {
-  krad_ringbuffer_free ( krad_Xtransponder_input_port->msg_ring );
-  free (krad_Xtransponder_input_port);
+static void kr_xpdr_input_free (kr_xpdr_input_t *kr_xpdr_input) {
+  krad_ringbuffer_free ( kr_xpdr_input->msg_ring );
+  free (kr_xpdr_input);
 }
 
-void krad_Xtransponder_input_port_destroy (krad_Xtransponder_input_port_t *krad_Xtransponder_input_port) {
-  krad_Xtransponder_input_port_disconnect (krad_Xtransponder_input_port);
-  krad_Xtransponder_input_port_free (krad_Xtransponder_input_port);
+static void kr_xpdr_input_destroy (kr_xpdr_input_t *kr_xpdr_input) {
+  kr_xpdr_input_disconnect (kr_xpdr_input);
+  kr_xpdr_input_free (kr_xpdr_input);
   printk ("Krad Transponder: input port destroyed");
 }
 
-void krad_Xtransponder_output_port_free (krad_Xtransponder_output_port_t *krad_Xtransponder_output_port) {
+static void kr_xpdr_output_free (kr_xpdr_output_t *kr_xpdr_output) {
   int h;
   
-  for (h = 0; h < krad_Xtransponder_output_port->headers; h++) {
-    krad_slice_unref (krad_Xtransponder_output_port->krad_slice[h]);
+  for (h = 0; h < kr_xpdr_output->headers; h++) {
+    kr_slice_unref (kr_xpdr_output->kr_slice[h]);
   }
-  free (krad_Xtransponder_output_port->connections);
-  free (krad_Xtransponder_output_port);
+  free (kr_xpdr_output->connections);
+  free (kr_xpdr_output);
 }
 
-void krad_Xtransponder_output_port_destroy (krad_Xtransponder_output_port_t *krad_Xtransponder_output_port) {
+static void kr_xpdr_output_destroy (kr_xpdr_output_t *kr_xpdr_output) {
 
-  //krad_Xtransponder_port_disconnect (krad_Xtransponder_port);
-  krad_Xtransponder_output_port_free (krad_Xtransponder_output_port);
-  printk ("Krad Transponder: output port destroyed");
+  //kr_xpdr_port_disconnect (kr_xpdr_port);
+  kr_xpdr_output_free (kr_xpdr_output);
+  printk ("Krad XPDR: output port destroyed");
 }
 
-krad_Xtransponder_input_port_t *krad_Xtransponder_input_port_create () {
+kr_xpdr_input_t *kr_xpdr_input_create () {
 
-  krad_Xtransponder_input_port_t *krad_Xtransponder_input_port = calloc (1, sizeof(krad_Xtransponder_input_port_t));
+  kr_xpdr_input_t *kr_xpdr_input = calloc (1, sizeof(kr_xpdr_input_t));
 
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, krad_Xtransponder_input_port->socketpair)) {
-    printk ("Krad Transponder: subunit could not create socketpair errno: %d", errno);
-    free (krad_Xtransponder_input_port);
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, kr_xpdr_input->socketpair)) {
+    printk ("Krad XPDR: subunit could not create socketpair errno: %d", errno);
+    free (kr_xpdr_input);
     return NULL;
   }
 
-  krad_Xtransponder_input_port->msg_ring =
-  krad_ringbuffer_create ( 200 * sizeof(krad_slice_t *) );
+  kr_xpdr_input->msg_ring =
+  krad_ringbuffer_create ( 200 * sizeof(kr_slice_t *) );
 
-  printk ("Krad Transponder: input port created");
+  printk ("Krad XPDR: input port created");
 
-  return krad_Xtransponder_input_port;
+  return kr_xpdr_input;
 }
 
-krad_Xtransponder_output_port_t *krad_Xtransponder_output_port_create () {
-  krad_Xtransponder_output_port_t *krad_Xtransponder_output_port = calloc (1, sizeof(krad_Xtransponder_output_port_t));
-  krad_Xtransponder_output_port->connections = calloc (KRAD_TRANSPONDER_PORT_CONNECTIONS, sizeof(krad_Xtransponder_input_port_t *));
+static kr_xpdr_output_t *kr_xpdr_output_create () {
+  kr_xpdr_output_t *kr_xpdr_output = calloc (1, sizeof(kr_xpdr_output_t));
+  kr_xpdr_output->connections = calloc (KRAD_TRANSPONDER_PORT_CONNECTIONS,
+                                        sizeof(kr_xpdr_input_t *));
   printk ("Krad Transponder: output port created");
-  return krad_Xtransponder_output_port;
+  return kr_xpdr_output;
 }
 
-
-void krad_Xtransponder_output_connection_write_headers (krad_Xtransponder_output_port_t *output_port,
-                                                        krad_Xtransponder_input_port_t *input_port) {
-
-  int h;
-  
-  for (h = 0; h < output_port->headers; h++) {
-    krad_slice_ref (output_port->krad_slice[h]);
-    krad_Xtransponder_port_write (input_port, &output_port->krad_slice[h]);
-  }
-}
-
-void krad_Xtransponder_subunit_connect_ports_actual (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                                    krad_Xtransponder_output_port_t *output_port,
-                                                    krad_Xtransponder_input_port_t *input_port) {
+static void kr_xpdr_subunit_connect_ports_actual (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                           kr_xpdr_output_t *output,
+                                           kr_xpdr_input_t *input) {
 
   int p;
 
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
-    if (output_port->connections[p] == NULL) {
-      output_port->connections[p] = input_port;
-      //krad_Xtransponder_output_connection_write_headers (output_port, input_port);
+    if (output->connections[p] == NULL) {
+      output->connections[p] = input;
       printk ("Krad Transponder: output port actually connected!");
       break;
     }
   }
 }
 
-void krad_Xtransponder_subunit_disconnect_ports_actual (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                                    krad_Xtransponder_output_port_t *output_port,
-                                                    krad_Xtransponder_input_port_t *input_port) {
+static void kr_xpdr_subunit_disconnect_ports_actual (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                              kr_xpdr_output_t *output,
+                                              kr_xpdr_input_t *input) {
 
   int p;
 
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
-    if (output_port->connections[p] == input_port) {
-      output_port->connections[p] = NULL;
+    if (output->connections[p] == input) {
+      output->connections[p] = NULL;
       
-      krad_slice_t *krad_slice;
-      krad_slice = krad_slice_create ();
-      krad_slice->final = 1;
-      krad_slice->origin = krad_Xtransponder_subunit;
-      krad_Xtransponder_port_write (input_port, &krad_slice);
+      kr_slice_t *kr_slice;
+      kr_slice = kr_slice_create ();
+      kr_slice->final = 1;
+      //kr_slice->origin = kr_xpdr_subunit;
+      kr_xpdr_port_write (input, &kr_slice);
       
-      close (input_port->socketpair[0]);
+      close (input->socketpair[0]);
       printk ("Krad Transponder: output port actually disconnected!");
       break;
     }
   }
 }
 
-void krad_Xtransponder_subunit_handle_control_msg (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                             krad_Xtransponder_control_msg_t *msg) {
+static void kr_xpdr_subunit_handle_control_msg (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                             kr_xpdr_control_msg_t *msg) {
   if (msg->type == CONNECTPORTS) {
     printk("Krad Transponder Subunit: got CONNECTPORTS msg!");
-    krad_Xtransponder_subunit_connect_ports_actual (krad_Xtransponder_subunit, msg->output_port, msg->input_port);
+    kr_xpdr_subunit_connect_ports_actual (kr_xpdr_subunit, msg->output, msg->input);
     free (msg);
     return;
   }
   if (msg->type == DISCONNECTPORTS) {
     printk("Krad Transponder Subunit: got DISCONNECTPORTS msg!");
-    krad_Xtransponder_subunit_disconnect_ports_actual (krad_Xtransponder_subunit, msg->output_port, msg->input_port);    
+    kr_xpdr_subunit_disconnect_ports_actual (kr_xpdr_subunit, msg->output, msg->input);    
     free (msg);
     return;
   }
@@ -297,7 +257,7 @@ void krad_Xtransponder_subunit_handle_control_msg (krad_Xtransponder_subunit_t *
   
 }
 
-int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
+static int kr_xpdr_subunit_poll (kr_xpdr_subunit_t *kr_xpdr_subunit) {
 
   int n;
   int nfds;
@@ -308,39 +268,39 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
   timeout = -1;
   n = 0;
 
-  pollfds[n].fd = krad_Xtransponder_subunit->control->socketpair[1];
+  pollfds[n].fd = kr_xpdr_subunit->control->socketpair[1];
   pollfds[n].events = POLLIN;
   n++;
   
-  if (krad_Xtransponder_subunit->type == MUXER) {
-    //if (krad_Xtransponder_subunit->inputs[0]->connected_to_subunit != NULL) {
-      pollfds[n].fd = krad_Xtransponder_subunit->inputs[0]->socketpair[1];
+  if (kr_xpdr_subunit->type == MUXER) {
+    //if (kr_xpdr_subunit->inputs[0]->connected_to_subunit != NULL) {
+      pollfds[n].fd = kr_xpdr_subunit->inputs[0]->socketpair[1];
       pollfds[n].events = POLLIN;
       n++;
     //}
-    //if (krad_Xtransponder_subunit->inputs[1]->connected_to_subunit != NULL) {
-      pollfds[n].fd = krad_Xtransponder_subunit->inputs[1]->socketpair[1];
+    //if (kr_xpdr_subunit->inputs[1]->connected_to_subunit != NULL) {
+      pollfds[n].fd = kr_xpdr_subunit->inputs[1]->socketpair[1];
       pollfds[n].events = POLLIN;
       n++;
     //}
   }
   
-  if (krad_Xtransponder_subunit->type == DECODER) {
-    if (krad_Xtransponder_subunit->inputs[0]->connected_to_subunit != NULL) {
-      pollfds[n].fd = krad_Xtransponder_subunit->inputs[0]->socketpair[1];
+  if (kr_xpdr_subunit->type == DECODER) {
+    if (kr_xpdr_subunit->inputs[0]->connected_to_subunit != NULL) {
+      pollfds[n].fd = kr_xpdr_subunit->inputs[0]->socketpair[1];
       pollfds[n].events = POLLIN;
       n++;
     }
   }
   
-  if (krad_Xtransponder_subunit->watch != NULL) {
-    if (krad_Xtransponder_subunit->watch->fd > 0) {
-      pollfds[n].fd = krad_Xtransponder_subunit->watch->fd;
+  if (kr_xpdr_subunit->watch != NULL) {
+    if (kr_xpdr_subunit->watch->fd > 0) {
+      pollfds[n].fd = kr_xpdr_subunit->watch->fd;
       pollfds[n].events = POLLIN;
       n++;
     } else {
-      if (krad_Xtransponder_subunit->watch->idle_callback_interval > 0) {
-        timeout = krad_Xtransponder_subunit->watch->idle_callback_interval;
+      if (kr_xpdr_subunit->watch->idle_callback_interval > 0) {
+        timeout = kr_xpdr_subunit->watch->idle_callback_interval;
       }
     }
   }
@@ -355,8 +315,8 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
   }
   
   if (ret == 0) {
-    if (krad_Xtransponder_subunit->watch->idle_callback_interval > 0) {
-      krad_Xtransponder_subunit->watch->readable_callback (krad_Xtransponder_subunit->watch->callback_pointer);
+    if (kr_xpdr_subunit->watch->idle_callback_interval > 0) {
+      kr_xpdr_subunit->watch->readable_callback (kr_xpdr_subunit->watch->callback_pointer);
     }
     return 1;
   }  
@@ -366,7 +326,7 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
       if (pollfds[n].revents) {
         if (pollfds[n].revents & POLLERR) {
           printk("Krad Transponder Subunit: Err we got Err in Hrr!");
-          if (pollfds[n].fd == krad_Xtransponder_subunit->control->socketpair[1]) {
+          if (pollfds[n].fd == kr_xpdr_subunit->control->socketpair[1]) {
             printk("Krad Transponder Subunit: Err on control socket!");
           }
           return 0;
@@ -374,71 +334,71 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
 
         if (pollfds[n].revents & POLLIN) {
         
-          if ((krad_Xtransponder_subunit->watch != NULL) && 
-              (krad_Xtransponder_subunit->watch->fd > 0) &&
-              (pollfds[n].fd == krad_Xtransponder_subunit->watch->fd)) {
-            krad_Xtransponder_subunit->watch->readable_callback (krad_Xtransponder_subunit->watch->callback_pointer);          
+          if ((kr_xpdr_subunit->watch != NULL) && 
+              (kr_xpdr_subunit->watch->fd > 0) &&
+              (pollfds[n].fd == kr_xpdr_subunit->watch->fd)) {
+            kr_xpdr_subunit->watch->readable_callback (kr_xpdr_subunit->watch->callback_pointer);          
           }
 
-          if (pollfds[n].fd == krad_Xtransponder_subunit->control->socketpair[1]) {
-            krad_Xtransponder_control_msg_t *msg;
+          if (pollfds[n].fd == kr_xpdr_subunit->control->socketpair[1]) {
+            kr_xpdr_control_msg_t *msg;
             msg = NULL;
-            krad_Xtransponder_port_read (krad_Xtransponder_subunit->control, (void **)&msg);
+            kr_xpdr_port_read (kr_xpdr_subunit->control, (void **)&msg);
             if (msg->type == DESTROY) {
               printk("Krad Transponder: Subunit Got Destroy MSG!");
               free (msg);
-              krad_Xtransponder_subunit->destroy = 1;
-              if ((krad_Xtransponder_subunit->type == MUXER) || (krad_Xtransponder_subunit->type == DECODER)) {
-                if (krad_Xtransponder_subunit->inputs[0]->connected_to_subunit != NULL) {
-                  krad_Xtransponder_subunit->destroy++;
-                  krad_Xtransponder_port_disconnect (krad_Xtransponder_subunit->inputs[0]->connected_to_subunit,
-                                                    krad_Xtransponder_subunit->inputs[0]->connected_to_subunit->outputs[0],
-                                                    krad_Xtransponder_subunit->inputs[0]);
+              kr_xpdr_subunit->destroy = 1;
+              if ((kr_xpdr_subunit->type == MUXER) || (kr_xpdr_subunit->type == DECODER)) {
+                if (kr_xpdr_subunit->inputs[0]->connected_to_subunit != NULL) {
+                  kr_xpdr_subunit->destroy++;
+                  kr_xpdr_port_disconnect (kr_xpdr_subunit->inputs[0]->connected_to_subunit,
+                                                    kr_xpdr_subunit->inputs[0]->connected_to_subunit->outputs[0],
+                                                    kr_xpdr_subunit->inputs[0]);
                 }
-                if (krad_Xtransponder_subunit->type == MUXER) {
-                  if (krad_Xtransponder_subunit->inputs[1]->connected_to_subunit != NULL) {
-                    krad_Xtransponder_subunit->destroy++;
-                    krad_Xtransponder_port_disconnect (krad_Xtransponder_subunit->inputs[1]->connected_to_subunit,
-                                                      krad_Xtransponder_subunit->inputs[1]->connected_to_subunit->outputs[1],
-                                                      krad_Xtransponder_subunit->inputs[1]);
+                if (kr_xpdr_subunit->type == MUXER) {
+                  if (kr_xpdr_subunit->inputs[1]->connected_to_subunit != NULL) {
+                    kr_xpdr_subunit->destroy++;
+                    kr_xpdr_port_disconnect (kr_xpdr_subunit->inputs[1]->connected_to_subunit,
+                                             kr_xpdr_subunit->inputs[1]->connected_to_subunit->outputs[1],
+                                             kr_xpdr_subunit->inputs[1]);
                   }
                 }
               }
-              if ((krad_Xtransponder_subunit->type == ENCODER) ||
-                  (krad_Xtransponder_subunit->type == DEMUXER) ||
-                  (krad_Xtransponder_subunit->type == XCAPTURE)) {
+              if ((kr_xpdr_subunit->type == ENCODER) ||
+                  (kr_xpdr_subunit->type == DEMUXER) ||
+                  (kr_xpdr_subunit->type == RAW)) {
                 return 0;
               }
 
             } else {
-              krad_Xtransponder_subunit_handle_control_msg (krad_Xtransponder_subunit, msg);
+              kr_xpdr_subunit_handle_control_msg (kr_xpdr_subunit, msg);
             }
           }
 
-          if (krad_Xtransponder_subunit->type == MUXER) {
-            krad_slice_t *krad_slice;
-            krad_slice = NULL;
-            if (pollfds[n].fd == krad_Xtransponder_subunit->inputs[0]->socketpair[1]) {
-              krad_Xtransponder_port_read (krad_Xtransponder_subunit->inputs[0], &krad_slice);
+          if (kr_xpdr_subunit->type == MUXER) {
+            kr_slice_t *kr_slice;
+            kr_slice = NULL;
+            if (pollfds[n].fd == kr_xpdr_subunit->inputs[0]->socketpair[1]) {
+              kr_xpdr_port_read (kr_xpdr_subunit->inputs[0], &kr_slice);
             }
-            if (pollfds[n].fd == krad_Xtransponder_subunit->inputs[1]->socketpair[1]) {
-              krad_Xtransponder_port_read (krad_Xtransponder_subunit->inputs[1], (void **)&krad_slice);
+            if (pollfds[n].fd == kr_xpdr_subunit->inputs[1]->socketpair[1]) {
+              kr_xpdr_port_read (kr_xpdr_subunit->inputs[1], (void **)&kr_slice);
             }
-            if (krad_slice != NULL) {
+            if (kr_slice != NULL) {
               //printk ("Krad Transponder Subunit: Got a packet!");
               
-              if (krad_slice->final == 1) {
-                printk ("Krad Transponder Subunit: Got FINAL packet!");
+              if (kr_slice->final == 1) {
+                printk ("Krad XPDR Subunit: Got FINAL packet!");
               } else {
-                //printk ("Krad Transponder Subunit: packet size %u", krad_slice->size);
+                //printk ("Krad XPDR Subunit: packet size %u", kr_slice->size);
               }
               
-              krad_Xtransponder_subunit->krad_slice = krad_slice;
+              kr_xpdr_subunit->kr_slice = kr_slice;
               
-              krad_Xtransponder_subunit->watch->readable_callback (krad_Xtransponder_subunit->watch->callback_pointer);
+              kr_xpdr_subunit->watch->readable_callback (kr_xpdr_subunit->watch->callback_pointer);
               
-              krad_Xtransponder_subunit->krad_slice = NULL;
-              //krad_slice_unref (krad_slice);
+              kr_xpdr_subunit->kr_slice = NULL;
+              //kr_slice_unref (kr_slice);
             }
           }
         }
@@ -449,23 +409,23 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
         
         if (pollfds[n].revents & POLLHUP) {
           printk ("Krad Transponder Subunit: Got Hangup");
-          if (pollfds[n].fd == krad_Xtransponder_subunit->control->socketpair[1]) {
+          if (pollfds[n].fd == kr_xpdr_subunit->control->socketpair[1]) {
             printk("Err! Hangup on control socket!");
             return 0;
           }
-          if (krad_Xtransponder_subunit->type == MUXER) {
-            if (pollfds[n].fd == krad_Xtransponder_subunit->inputs[0]->socketpair[1]) {
-              printk ("Krad Transponder Subunit: Encoded Video Input Disconnected");
-              krad_Xtransponder_subunit->inputs[0]->connected_to_subunit = NULL;
-              if (krad_Xtransponder_subunit->destroy > 1) {
-                krad_Xtransponder_subunit->destroy--;
+          if (kr_xpdr_subunit->type == MUXER) {
+            if (pollfds[n].fd == kr_xpdr_subunit->inputs[0]->socketpair[1]) {
+              printk ("Krad XPDR Subunit: Encoded Video Input Disconnected");
+              kr_xpdr_subunit->inputs[0]->connected_to_subunit = NULL;
+              if (kr_xpdr_subunit->destroy > 1) {
+                kr_xpdr_subunit->destroy--;
               }
             }
-            if (pollfds[n].fd == krad_Xtransponder_subunit->inputs[1]->socketpair[1]) {
-              printk ("Krad Transponder Subunit: Encoded Audio Input Disconnected");
-              krad_Xtransponder_subunit->inputs[1]->connected_to_subunit = NULL;
-              if (krad_Xtransponder_subunit->destroy > 1) {
-                krad_Xtransponder_subunit->destroy--;
+            if (pollfds[n].fd == kr_xpdr_subunit->inputs[1]->socketpair[1]) {
+              printk ("Krad XPDR Subunit: Encoded Audio Input Disconnected");
+              kr_xpdr_subunit->inputs[1]->connected_to_subunit = NULL;
+              if (kr_xpdr_subunit->destroy > 1) {
+                kr_xpdr_subunit->destroy--;
               }
             }
           }
@@ -476,56 +436,56 @@ int krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit_t *krad_Xtranspond
   return 1;
 }
 
-void *krad_Xtransponder_subunit_thread (void *arg) {
+static void *kr_xpdr_subunit_thread (void *arg) {
 
-  krad_Xtransponder_subunit_t *krad_Xtransponder_subunit = (krad_Xtransponder_subunit_t *)arg;
+  kr_xpdr_subunit_t *kr_xpdr_subunit = (kr_xpdr_subunit_t *)arg;
 
   krad_system_set_thread_name ("kr_txp_su");
 
-  while (krad_Xtransponder_subunit_poll (krad_Xtransponder_subunit)) {
-    if (krad_Xtransponder_subunit->destroy == 1) {
+  while (kr_xpdr_subunit_poll (kr_xpdr_subunit)) {
+    if (kr_xpdr_subunit->destroy == 1) {
       break;
     }
   }
   return NULL;
 }
 
-void krad_Xtransponder_subunit_send_destroy_msg (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
-  krad_Xtransponder_control_msg_t *msg;
-  msg = calloc (1, sizeof (krad_Xtransponder_control_msg_t));
+static void kr_xpdr_subunit_send_destroy_msg (kr_xpdr_subunit_t *kr_xpdr_subunit) {
+  kr_xpdr_control_msg_t *msg;
+  msg = calloc (1, sizeof (kr_xpdr_control_msg_t));
   msg->type = DESTROY;
-  krad_Xtransponder_port_write (krad_Xtransponder_subunit->control, &msg);
+  kr_xpdr_port_write (kr_xpdr_subunit->control, &msg);
 }
 
-void krad_Xtransponder_subunit_start (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
-  krad_Xtransponder_subunit->control = krad_Xtransponder_input_port_create ();
-  pthread_create (&krad_Xtransponder_subunit->thread, NULL, krad_Xtransponder_subunit_thread, (void *)krad_Xtransponder_subunit);
+static void kr_xpdr_subunit_start (kr_xpdr_subunit_t *kr_xpdr_subunit) {
+  kr_xpdr_subunit->control = kr_xpdr_input_create ();
+  pthread_create (&kr_xpdr_subunit->thread, NULL, kr_xpdr_subunit_thread, (void *)kr_xpdr_subunit);
 }
 
-void krad_Xtransponder_subunit_stop (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
+static void kr_xpdr_subunit_stop (kr_xpdr_subunit_t *kr_xpdr_subunit) {
 
   int p;
   int m;
 
   // Recursive Dep Destroy
 
-  if ((krad_Xtransponder_subunit->type == ENCODER) || (krad_Xtransponder_subunit->type == DEMUXER)) {
+  if ((kr_xpdr_subunit->type == ENCODER) || (kr_xpdr_subunit->type == DEMUXER)) {
     for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
-      if (krad_Xtransponder_subunit->outputs[0] != NULL) {
-        if (krad_Xtransponder_subunit->outputs[0]->connections[p] != NULL) {
+      if (kr_xpdr_subunit->outputs[0] != NULL) {
+        if (kr_xpdr_subunit->outputs[0]->connections[p] != NULL) {
           for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
-            if (krad_Xtransponder_subunit->krad_Xtransponder->subunits[m] == krad_Xtransponder_subunit->outputs[0]->connections[p]->subunit) {
-              krad_Xtransponder_subunit_destroy (&krad_Xtransponder_subunit->krad_Xtransponder->subunits[m]);
+            if (kr_xpdr_subunit->xpdr->subunits[m] == kr_xpdr_subunit->outputs[0]->connections[p]->subunit) {
+              kr_xpdr_subunit_destroy (&kr_xpdr_subunit->xpdr->subunits[m]);
               break;
             }
           }
         }
       }
-      if (krad_Xtransponder_subunit->outputs[1] != NULL) {
-        if (krad_Xtransponder_subunit->outputs[1]->connections[p] != NULL) {
+      if (kr_xpdr_subunit->outputs[1] != NULL) {
+        if (kr_xpdr_subunit->outputs[1]->connections[p] != NULL) {
           for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
-            if (krad_Xtransponder_subunit->krad_Xtransponder->subunits[m] == krad_Xtransponder_subunit->outputs[1]->connections[p]->subunit) {
-              krad_Xtransponder_subunit_destroy (&krad_Xtransponder_subunit->krad_Xtransponder->subunits[m]);
+            if (kr_xpdr_subunit->xpdr->subunits[m] == kr_xpdr_subunit->outputs[1]->connections[p]->subunit) {
+              kr_xpdr_subunit_destroy (&kr_xpdr_subunit->xpdr->subunits[m]);
               break;
             }
           }
@@ -534,123 +494,129 @@ void krad_Xtransponder_subunit_stop (krad_Xtransponder_subunit_t *krad_Xtranspon
     }
   }
 
-  krad_Xtransponder_subunit_send_destroy_msg (krad_Xtransponder_subunit);
-  pthread_join (krad_Xtransponder_subunit->thread, NULL);
-  krad_Xtransponder_input_port_destroy (krad_Xtransponder_subunit->control);  
+  kr_xpdr_subunit_send_destroy_msg (kr_xpdr_subunit);
+  pthread_join (kr_xpdr_subunit->thread, NULL);
+  kr_xpdr_input_destroy (kr_xpdr_subunit->control);  
 }
 
-void krad_Xtransponder_subunit_destroy (krad_Xtransponder_subunit_t **krad_Xtransponder_subunit) {
+static void kr_xpdr_subunit_destroy (kr_xpdr_subunit_t **kr_xpdr_subunit) {
 
   int p;
   
-  if (*krad_Xtransponder_subunit != NULL) {
+  if (*kr_xpdr_subunit != NULL) {
   
-    krad_Xtransponder_subunit_stop (*krad_Xtransponder_subunit);
+    kr_xpdr_subunit_stop (*kr_xpdr_subunit);
     
     // maybe this happens elsewere
     for (p = 0; p < 2; p++) {
-      if ((*krad_Xtransponder_subunit)->inputs[p] != NULL) {
-        krad_Xtransponder_input_port_destroy ((*krad_Xtransponder_subunit)->inputs[p]);
+      if ((*kr_xpdr_subunit)->inputs[p] != NULL) {
+        kr_xpdr_input_destroy ((*kr_xpdr_subunit)->inputs[p]);
       }
-      if ((*krad_Xtransponder_subunit)->outputs[p] != NULL) {
-        krad_Xtransponder_output_port_destroy ((*krad_Xtransponder_subunit)->outputs[p]);
+      if ((*kr_xpdr_subunit)->outputs[p] != NULL) {
+        kr_xpdr_output_destroy ((*kr_xpdr_subunit)->outputs[p]);
       }
     }
     
-    if ((*krad_Xtransponder_subunit)->watch->destroy_callback != NULL) {
-      (*krad_Xtransponder_subunit)->watch->destroy_callback ((*krad_Xtransponder_subunit)->watch->callback_pointer);
+    if ((*kr_xpdr_subunit)->watch->destroy_callback != NULL) {
+      (*kr_xpdr_subunit)->watch->destroy_callback ((*kr_xpdr_subunit)->watch->callback_pointer);
     }
     
     printk ("Krad Transponder: %s subunit destroyed",
-            transponder_subunit_type_to_string((*krad_Xtransponder_subunit)->type));
+            transponder_subunit_type_to_string((*kr_xpdr_subunit)->type));
 
-    free ((*krad_Xtransponder_subunit)->inputs);
-    free ((*krad_Xtransponder_subunit)->outputs);
-    if ((*krad_Xtransponder_subunit)->watch != NULL) {
-      free ((*krad_Xtransponder_subunit)->watch);
+    free ((*kr_xpdr_subunit)->inputs);
+    free ((*kr_xpdr_subunit)->outputs);
+    if ((*kr_xpdr_subunit)->watch != NULL) {
+      free ((*kr_xpdr_subunit)->watch);
     }
     
-    free (*krad_Xtransponder_subunit);
-    *krad_Xtransponder_subunit = NULL;
+    free (*kr_xpdr_subunit);
+    *kr_xpdr_subunit = NULL;
   }
 }
 
-krad_Xtransponder_subunit_t *krad_Xtransponder_subunit_create (krad_Xtransponder_t *krad_Xtransponder, krad_Xtransponder_subunit_type_t type, krad_transponder_watch_t *watch) {
+static kr_xpdr_subunit_t *xpdr_subunit_create (kr_xpdr_t *xpdr,
+                                               kr_xpdr_subunit_type_t type,
+                                               kr_xpdr_watch_t *watch) {
 
   int p;
-  krad_Xtransponder_subunit_t *krad_Xtransponder_subunit = calloc (1, sizeof(krad_Xtransponder_subunit_t));
-  krad_Xtransponder_subunit->inputs = calloc (2, sizeof(krad_Xtransponder_input_port_t *));
-  krad_Xtransponder_subunit->outputs = calloc (2, sizeof(krad_Xtransponder_output_port_t *));
-  krad_Xtransponder_subunit->krad_Xtransponder = krad_Xtransponder;
-  krad_Xtransponder_subunit->type = type;
+  kr_xpdr_subunit_t *kr_xpdr_subunit = calloc (1, sizeof (kr_xpdr_subunit_t));
+  kr_xpdr_subunit->inputs = calloc (2, sizeof (kr_xpdr_input_t *));
+  kr_xpdr_subunit->outputs = calloc (2, sizeof (kr_xpdr_output_t *));
+  kr_xpdr_subunit->xpdr = xpdr;
+  kr_xpdr_subunit->type = type;
 
   printk ("Krad Transponder: creating %s subunit",
-          transponder_subunit_type_to_string(krad_Xtransponder_subunit->type));
+          transponder_subunit_type_to_string(kr_xpdr_subunit->type));
 
   switch (type) {
     case DEMUXER:
       for (p = 0; p < 2; p++) {
-        krad_Xtransponder_subunit->outputs[p] = krad_Xtransponder_output_port_create ();
+        kr_xpdr_subunit->outputs[p] = kr_xpdr_output_create ();
       }
       break;
     case MUXER:
       for (p = 0; p < 2; p++) {
-        krad_Xtransponder_subunit->inputs[p] = krad_Xtransponder_input_port_create ();
-        //krad_Xtransponder_subunit->outputs[p] = krad_Xtransponder_port_create ();    
+        kr_xpdr_subunit->inputs[p] = kr_xpdr_input_create ();
+        //kr_xpdr_subunit->outputs[p] = kr_xpdr_port_create ();    
       }
       break;
     case DECODER:
-      krad_Xtransponder_subunit->inputs[0] = krad_Xtransponder_input_port_create ();
+      kr_xpdr_subunit->inputs[0] = kr_xpdr_input_create ();
       break;      
     case ENCODER:
-      krad_Xtransponder_subunit->outputs[0] = krad_Xtransponder_output_port_create ();
+      kr_xpdr_subunit->outputs[0] = kr_xpdr_output_create ();
       break;
-    case XCAPTURE:
+    case RAW:
       break;
   }
   
   if (watch != NULL) {
-    krad_Xtransponder_subunit->watch = calloc(1, sizeof(krad_transponder_watch_t));
-    memcpy (krad_Xtransponder_subunit->watch, watch, sizeof(krad_transponder_watch_t));        
+    kr_xpdr_subunit->watch = calloc(1, sizeof(kr_xpdr_watch_t));
+    memcpy (kr_xpdr_subunit->watch, watch, sizeof(kr_xpdr_watch_t));        
   }
   
-  if ((krad_Xtransponder_subunit->type == ENCODER) &&
-      (krad_Xtransponder_subunit->watch->encoder_header_callback != NULL)) {
-    krad_Xtransponder_set_header (krad_Xtransponder_subunit,
-          krad_Xtransponder_subunit->watch->encoder_header_callback (krad_Xtransponder_subunit->watch->callback_pointer));
+  if ((kr_xpdr_subunit->type == ENCODER) &&
+      (kr_xpdr_subunit->watch->encoder_header_callback != NULL)) {
+    kr_xpdr_set_header (kr_xpdr_subunit,
+          kr_xpdr_subunit->watch->encoder_header_callback (kr_xpdr_subunit->watch->callback_pointer));
   }
 
-  krad_Xtransponder_subunit_start (krad_Xtransponder_subunit);
+  kr_xpdr_subunit_start (kr_xpdr_subunit);
   printk ("Krad Transponder: %s subunit created",
-          transponder_subunit_type_to_string(krad_Xtransponder_subunit->type));
+          transponder_subunit_type_to_string(kr_xpdr_subunit->type));
 
-  return krad_Xtransponder_subunit;
+  return kr_xpdr_subunit;
 }
 
-int krad_Xtransponder_subunit_add (krad_Xtransponder_t *krad_Xtransponder, krad_Xtransponder_subunit_type_t type, krad_transponder_watch_t *watch) {
+static int kr_xpdr_subunit_add (kr_xpdr_t *kr_xpdr,
+                                kr_xpdr_subunit_type_t type,
+                                kr_xpdr_watch_t *watch) {
 
   int m;
 
   for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
-    if (krad_Xtransponder->subunits[m] == NULL) {
-      krad_Xtransponder->subunits[m] = krad_Xtransponder_subunit_create (krad_Xtransponder, type, watch);
+    if (kr_xpdr->subunits[m] == NULL) {
+      kr_xpdr->subunits[m] = xpdr_subunit_create (kr_xpdr, type, watch);
       return m;
     }
   }
   return -1;
 }
 
-int krad_Xtransponder_output_port_set_header (krad_Xtransponder_output_port_t *outport,
-                                  krad_codec_header_t *krad_codec_header) {
+static int
+kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
+                           krad_codec_header_t *krad_codec_header) {
 
   int h;
   
   h = 0;
   if ((krad_codec_header != NULL) && (outport->headers == 0)) { 
     for (h = 0; h < MIN(4, krad_codec_header->header_count); h++) {
-      outport->krad_slice[h] = krad_slice_create_with_data (krad_codec_header->header[h],
-                                                            krad_codec_header->header_size[h]);
-      outport->krad_slice[h]->header = h + 1;
+      outport->kr_slice[h] =
+        kr_slice_create_with_data (krad_codec_header->header[h],
+                                   krad_codec_header->header_size[h]);
+      outport->kr_slice[h]->header = h + 1;
       outport->headers++;
     }
     outport->krad_codec_header = krad_codec_header;
@@ -661,57 +627,62 @@ int krad_Xtransponder_output_port_set_header (krad_Xtransponder_output_port_t *o
 
 /* Public API */
 
-krad_slice_t *krad_Xtransponder_get_slice (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
-  return krad_Xtransponder_subunit->krad_slice;
+kr_slice_t *
+kr_xpdr_get_slice (kr_xpdr_subunit_t *kr_xpdr_subunit) {
+  return kr_xpdr_subunit->kr_slice;
 }
 
-krad_codec_header_t *krad_Xtransponder_get_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
-  return krad_Xtransponder_get_subunit_output_header (krad_Xtransponder_subunit, 0);
+krad_codec_header_t *
+kr_xpdr_get_header (kr_xpdr_subunit_t *kr_xpdr_subunit) {
+  return kr_xpdr_get_subunit_output_header (kr_xpdr_subunit, 0);
 }
 
-krad_codec_header_t *krad_Xtransponder_get_audio_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit) {
-  return krad_Xtransponder_get_subunit_output_header (krad_Xtransponder_subunit, 1);
+krad_codec_header_t *
+kr_xpdr_get_audio_header (kr_xpdr_subunit_t *kr_xpdr_subunit) {
+  return kr_xpdr_get_subunit_output_header (kr_xpdr_subunit, 1);
 }
 
-krad_codec_header_t *krad_Xtransponder_get_subunit_output_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                                                  int port) {
-  if (krad_Xtransponder_subunit != NULL) {
-    if (krad_Xtransponder_subunit->type == ENCODER) {
-      return krad_Xtransponder_subunit->outputs[0]->krad_codec_header;
+krad_codec_header_t *
+kr_xpdr_get_subunit_output_header (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                   int port) {
+  if (kr_xpdr_subunit != NULL) {
+    if (kr_xpdr_subunit->type == ENCODER) {
+      return kr_xpdr_subunit->outputs[0]->krad_codec_header;
     }
-    if (krad_Xtransponder_subunit->type == DEMUXER) {
-      if (krad_Xtransponder_subunit->outputs[port] != NULL) {
-        return krad_Xtransponder_subunit->outputs[port]->krad_codec_header;
+    if (kr_xpdr_subunit->type == DEMUXER) {
+      if (kr_xpdr_subunit->outputs[port] != NULL) {
+        return kr_xpdr_subunit->outputs[port]->krad_codec_header;
       }
     }
   }
   return NULL;
 }
 
-int krad_Xtransponder_set_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                  krad_codec_header_t *krad_codec_header) {
+int kr_xpdr_set_header (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                        krad_codec_header_t *krad_codec_header) {
 
-  if (krad_Xtransponder_subunit->type == ENCODER) {
-    return krad_Xtransponder_output_port_set_header (krad_Xtransponder_subunit->outputs[0],
+  if (kr_xpdr_subunit->type == ENCODER) {
+    return kr_xpdr_output_set_header (kr_xpdr_subunit->outputs[0],
                                                      krad_codec_header);
   }
 
-  if (krad_Xtransponder_subunit->type == DEMUXER) {
+  if (kr_xpdr_subunit->type == DEMUXER) {
     if (krad_codec_header->codec == THEORA) {
-      return krad_Xtransponder_output_port_set_header (krad_Xtransponder_subunit->outputs[0],
+      return kr_xpdr_output_set_header (kr_xpdr_subunit->outputs[0],
                                                        krad_codec_header);
     }
     if ((krad_codec_header->codec == VORBIS) ||
         (krad_codec_header->codec == FLAC) ||
         (krad_codec_header->codec == OPUS)) {
-      return krad_Xtransponder_output_port_set_header (krad_Xtransponder_subunit->outputs[1],
+      return kr_xpdr_output_set_header (kr_xpdr_subunit->outputs[1],
                                                        krad_codec_header);
     }
   }
   return -1;
 }
 
-int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit, krad_slice_t **krad_slice) {
+int kr_xpdr_slice_broadcast (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                             kr_slice_t **kr_slice) {
 
   int p;
   int b;
@@ -721,20 +692,20 @@ int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransp
   
   port = 0;
   
-  (*krad_slice)->origin = krad_Xtransponder_subunit;
+  //(*kr_slice)->origin = kr_xpdr_subunit;
   
   
-  if ((krad_Xtransponder_subunit->type == DEMUXER) &&
-      (((*krad_slice)->codec == FLAC) || ((*krad_slice)->codec == OPUS) || ((*krad_slice)->codec == VORBIS))) {
+  if ((kr_xpdr_subunit->type == DEMUXER) &&
+      (((*kr_slice)->codec == FLAC) || ((*kr_slice)->codec == OPUS) || ((*kr_slice)->codec == VORBIS))) {
     port = 1;
   }
   
   //printk ("Krad Transponder: output port broadcasting");  
   
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
-    if (krad_Xtransponder_subunit->outputs[port]->connections[p] != NULL) {
-      krad_slice_ref (*krad_slice);
-      krad_Xtransponder_port_write (krad_Xtransponder_subunit->outputs[port]->connections[p], krad_slice);
+    if (kr_xpdr_subunit->outputs[port]->connections[p] != NULL) {
+      kr_slice_ref (*kr_slice);
+      kr_xpdr_port_write (kr_xpdr_subunit->outputs[port]->connections[p], kr_slice);
       b++;
     }
   }
@@ -744,22 +715,22 @@ int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransp
   return p;
 }
 
-void krad_Xtransponder_subunit_remove (krad_Xtransponder_t *krad_Xtransponder, int sid) {
+void kr_xpdr_subunit_remove (kr_xpdr_t *kr_xpdr, int sid) {
   if ((sid > -1) && (sid < KRAD_TRANSPONDER_SUBUNITS)) {
-    if (krad_Xtransponder->subunits[sid] != NULL) {
+    if (kr_xpdr->subunits[sid] != NULL) {
       printk ("Krad Transponder: removing subunit %d", sid);
-      krad_Xtransponder_subunit_destroy (&krad_Xtransponder->subunits[sid]);    
+      kr_xpdr_subunit_destroy (&kr_xpdr->subunits[sid]);    
     } else {
       printke ("Krad Transponder: can't remove subunit %d, not found", sid);
     }
   }
 }
 
-krad_Xtransponder_subunit_t *krad_Xtransponder_get_subunit (krad_Xtransponder_t *krad_Xtransponder, int sid) {
+kr_xpdr_subunit_t *kr_xpdr_get_subunit (kr_xpdr_t *kr_xpdr, int sid) {
   if ((sid > -1) && (sid < KRAD_TRANSPONDER_SUBUNITS)) {
-    if (krad_Xtransponder->subunits[sid] != NULL) {
+    if (kr_xpdr->subunits[sid] != NULL) {
       printk ("Krad Transponder: found subunit %d", sid);
-      return krad_Xtransponder->subunits[sid];
+      return kr_xpdr->subunits[sid];
     } else {
       printke ("Krad Transponder: can't find subunit %d", sid);
     }
@@ -767,55 +738,54 @@ krad_Xtransponder_subunit_t *krad_Xtransponder_get_subunit (krad_Xtransponder_t 
   return NULL;
 }
 
-int krad_Xtransponder_add_decoder (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch) {
-  return krad_Xtransponder_subunit_add (krad_Xtransponder, DECODER, watch);
+int kr_xpdr_add_raw (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch) {
+  return kr_xpdr_subunit_add (kr_xpdr, RAW, watch);
 }
 
-int krad_Xtransponder_add_encoder (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch) {
-  return krad_Xtransponder_subunit_add (krad_Xtransponder, ENCODER, watch);
+int kr_xpdr_add_decoder (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch) {
+  return kr_xpdr_subunit_add (kr_xpdr, DECODER, watch);
 }
 
-int krad_Xtransponder_add_capture (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch) {
-  return krad_Xtransponder_subunit_add (krad_Xtransponder, XCAPTURE, watch);
+int kr_xpdr_add_encoder (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch) {
+  return kr_xpdr_subunit_add (kr_xpdr, ENCODER, watch);
 }
 
-int krad_Xtransponder_add_demuxer (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch) {
-  return krad_Xtransponder_subunit_add (krad_Xtransponder, DEMUXER, watch);
+int kr_xpdr_add_demuxer (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch) {
+  return kr_xpdr_subunit_add (kr_xpdr, DEMUXER, watch);
 }
 
+int kr_xpdr_add_muxer (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch) {
+  return kr_xpdr_subunit_add (kr_xpdr, MUXER, watch);
+}
 
-void krad_Xtransponder_subunit_connect (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                        krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit) {
+void kr_xpdr_subunit_connect (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                              kr_xpdr_subunit_t *from_kr_xpdr_subunit) {
  
-  krad_Xtransponder_port_connect (from_krad_Xtransponder_subunit,
-                                  krad_Xtransponder_subunit,
-                                  from_krad_Xtransponder_subunit->outputs[0],
-                                  krad_Xtransponder_subunit->inputs[0]);
+  kr_xpdr_port_connect (from_kr_xpdr_subunit,
+                        kr_xpdr_subunit,
+                        from_kr_xpdr_subunit->outputs[0],
+                        kr_xpdr_subunit->inputs[0]);
 }
 
-void krad_Xtransponder_subunit_connect2 (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                         krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit) {
+void kr_xpdr_subunit_connect2 (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                               kr_xpdr_subunit_t *from_kr_xpdr_subunit) {
  
-  krad_Xtransponder_port_connect (from_krad_Xtransponder_subunit,
-                                  krad_Xtransponder_subunit,
-                                  from_krad_Xtransponder_subunit->outputs[0],
-                                  krad_Xtransponder_subunit->inputs[1]);
+  kr_xpdr_port_connect (from_kr_xpdr_subunit,
+                        kr_xpdr_subunit,
+                        from_kr_xpdr_subunit->outputs[0],
+                        kr_xpdr_subunit->inputs[1]);
 }
 
-void krad_Xtransponder_subunit_connect3 (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                         krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit) {
+void kr_xpdr_subunit_connect3 (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                               kr_xpdr_subunit_t *from_kr_xpdr_subunit) {
  
-  krad_Xtransponder_port_connect (from_krad_Xtransponder_subunit,
-                                  krad_Xtransponder_subunit,
-                                  from_krad_Xtransponder_subunit->outputs[1],
-                                  krad_Xtransponder_subunit->inputs[0]);
+  kr_xpdr_port_connect (from_kr_xpdr_subunit,
+                        kr_xpdr_subunit,
+                        from_kr_xpdr_subunit->outputs[1],
+                        kr_xpdr_subunit->inputs[0]);
 }
 
-int krad_Xtransponder_add_muxer (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch) {
-  return krad_Xtransponder_subunit_add (krad_Xtransponder, MUXER, watch);
-}
-
-int krad_Xtransponder_count (krad_Xtransponder_t *krad_Xtransponder) {
+int kr_xpdr_count (kr_xpdr_t *kr_xpdr) {
   
   int m;
   int c;
@@ -823,67 +793,67 @@ int krad_Xtransponder_count (krad_Xtransponder_t *krad_Xtransponder) {
   c = 0;
 
   for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
-    if (krad_Xtransponder->subunits[m] != NULL) {
+    if (kr_xpdr->subunits[m] != NULL) {
       c++;
     }
   }
   return c;
 }
 
-int krad_Xtransponder_get_info (krad_Xtransponder_t *krad_Xtransponder, int num, char *string) {
+int kr_xpdr_get_info (kr_xpdr_t *kr_xpdr, int num, char *string) {
   
-  if (krad_Xtransponder->subunits[num] != NULL) {
+  if (kr_xpdr->subunits[num] != NULL) {
     sprintf (string, "Krad Transponder: Subunit %d - %s",
              num,
-             transponder_subunit_type_to_string(krad_Xtransponder->subunits[num]->type));      
+             transponder_subunit_type_to_string(kr_xpdr->subunits[num]->type));      
     return 1;
   }
 
   return -1;
 }
 
-void *krad_Xtransponder_get_link (krad_Xtransponder_t *krad_Xtransponder, int num) {
+void *kr_xpdr_get_link (kr_xpdr_t *kr_xpdr, int num) {
   
-  if (krad_Xtransponder->subunits[num] != NULL) {
-    return krad_Xtransponder->subunits[num]->watch->callback_pointer;
+  if (kr_xpdr->subunits[num] != NULL) {
+    return kr_xpdr->subunits[num]->watch->callback_pointer;
   }
 
   return NULL;
 }
 
-void krad_Xtransponder_destroy (krad_Xtransponder_t **krad_Xtransponder) {
+void krad_xpdr_destroy (kr_xpdr_t **xpdr) {
 
   int m;
 
-  if (*krad_Xtransponder != NULL) {
+  if (*xpdr != NULL) {
 
-    printk ("Krad Transponder: Destroying");
+    printk ("Krad XPDR: Destroying");
 
     for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
-      if ((*krad_Xtransponder)->subunits[m] != NULL) {
-        krad_Xtransponder_subunit_destroy (&(*krad_Xtransponder)->subunits[m]);
+      if ((*xpdr)->subunits[m] != NULL) {
+        kr_xpdr_subunit_destroy (&(*xpdr)->subunits[m]);
       }
     }
 
-    free ((*krad_Xtransponder)->subunits);
-    free (*krad_Xtransponder);
-    *krad_Xtransponder = NULL;
+    free ((*xpdr)->subunits);
+    free (*xpdr);
+    *xpdr = NULL;
     
-    printk ("Krad Transponder: Destroyed");
+    printk ("Krad XPDR: Destroyed");
   }
 }
 
-krad_Xtransponder_t *krad_Xtransponder_create (krad_radio_t *krad_radio) {
+kr_xpdr_t *krad_xpdr_create () {
 
-  krad_Xtransponder_t *krad_Xtransponder;
+  kr_xpdr_t *xpdr;
 
-  printk ("Krad Transponder: Creating");
+  printk ("Krad XPDR: Creating");
 
-  krad_Xtransponder = calloc(1, sizeof(krad_Xtransponder_t));
-  krad_Xtransponder->krad_radio = krad_radio;
-  krad_Xtransponder->subunits = calloc(KRAD_TRANSPONDER_SUBUNITS, sizeof(krad_Xtransponder_subunit_t *));
+  xpdr = calloc (1, sizeof(kr_xpdr_t));
+  xpdr->subunits = calloc (KRAD_TRANSPONDER_SUBUNITS,
+                           sizeof(kr_xpdr_subunit_t *));
 
-  printk ("Krad Transponder: Created");
+  printk ("Krad XPDR: Created");
 
-  return krad_Xtransponder;
+  return xpdr;
 }

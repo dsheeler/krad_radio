@@ -3,13 +3,13 @@
 static void rmemcpy (void *dst, void *src, int len);
 static int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len);
 static int kr_ebml2_runpack (kr_ebml2_t *ebml, void *buffer, size_t len);
-static uint32_t kr_ebml2_length (unsigned char byte);
+static uint32_t kr_ebml2_length (uint8_t byte);
 //static void kr_ebml2_print_id (uint32_t id);
 
 static void rmemcpy (void *dst, void *src, int len) {
 
-  unsigned char *a_dst;
-  unsigned char *a_src;
+  uint8_t *a_dst;
+  uint8_t *a_src;
   int count;
   
   count = 0;
@@ -35,7 +35,7 @@ static int kr_ebml2_unpack (kr_ebml2_t *ebml, void *buffer, size_t len) {
   return 0;
 }
 
-static uint32_t kr_ebml2_length (unsigned char byte) {
+static uint32_t kr_ebml2_length (uint8_t byte) {
 
   if (byte & EBML_LENGTH_1) {
     return 1;
@@ -75,9 +75,9 @@ static uint32_t kr_ebml2_length (unsigned char byte) {
 /*
 static void kr_ebml2_print_id (uint32_t id) {
 
-  unsigned char *bytes;
+  uint8_t *bytes;
 
-  bytes = ((unsigned char *)&id);
+  bytes = ((uint8_t *)&id);
 
   if (bytes[3] != 0) {
     //printf ("ID: %02X%02X%02X%02X\n",
@@ -109,7 +109,7 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   uint32_t ebml_id;
   uint32_t ebml_data_size_length;
   uint64_t ebml_data_size;
-  unsigned char byte;
+  uint8_t byte;
 
   ebml_id = 0;
   ebml_data_size = 0;
@@ -163,27 +163,27 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   } else {
     if (ebml_data_size_length == 2) {
       kr_ebml2_runpack (ebml, &ebml_data_size, 2);
-      ((unsigned char *)&ebml_data_size)[1] = byte - EBML_LENGTH_2;
+      ((uint8_t *)&ebml_data_size)[1] = byte - EBML_LENGTH_2;
     } else {
       if (ebml_data_size_length == 3) {
         kr_ebml2_runpack (ebml, &ebml_data_size, 3);
-        ((unsigned char *)&ebml_data_size)[2] = byte - EBML_LENGTH_3;
+        ((uint8_t *)&ebml_data_size)[2] = byte - EBML_LENGTH_3;
       } else {
         if (ebml_data_size_length == 8) {
           kr_ebml2_runpack (ebml, &ebml_data_size, 8);
-          ((unsigned char *)&ebml_data_size)[7] = byte - EBML_LENGTH_8;
+          ((uint8_t *)&ebml_data_size)[7] = byte - EBML_LENGTH_8;
         } else {
           if (ebml_data_size_length == 4) {
             kr_ebml2_runpack (ebml, &ebml_data_size, 4);
-            ((unsigned char *)&ebml_data_size)[3] = byte - EBML_LENGTH_4;
+            ((uint8_t *)&ebml_data_size)[3] = byte - EBML_LENGTH_4;
           } else {
             if (ebml_data_size_length == 5) {
               kr_ebml2_runpack (ebml, &ebml_data_size, 5);
-              ((unsigned char *)&ebml_data_size)[4] = byte - EBML_LENGTH_5;
+              ((uint8_t *)&ebml_data_size)[4] = byte - EBML_LENGTH_5;
             } else {
               if (ebml_data_size_length == 6) {
                 kr_ebml2_runpack (ebml, &ebml_data_size, 6);
-                ((unsigned char *)&ebml_data_size)[5] = byte - EBML_LENGTH_6;
+                ((uint8_t *)&ebml_data_size)[5] = byte - EBML_LENGTH_6;
               }
             }
           }

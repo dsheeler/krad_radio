@@ -1,4 +1,5 @@
 #include "krad_radio.h"
+#include "krad_slice.h"
 
 #ifndef KRAD_TRANSPONDER_GRAPH
 #define KRAD_TRANSPONDER_GRAPH
@@ -6,145 +7,103 @@
 #define KRAD_TRANSPONDER_SUBUNITS 99
 #define KRAD_TRANSPONDER_PORT_CONNECTIONS 200
 
-typedef struct krad_Xtransponder_St krad_Xtransponder_t;
-typedef struct krad_Xtransponder_subunit_St krad_Xtransponder_subunit_t;
-typedef struct krad_Xtransponder_input_port_St krad_Xtransponder_input_port_t;
-typedef struct krad_Xtransponder_output_port_St krad_Xtransponder_output_port_t;
-typedef struct krad_slice_St krad_slice_t;
-typedef struct krad_Xtransponder_control_msg_St krad_Xtransponder_control_msg_t;
-typedef struct krad_transponder_watch_St krad_transponder_watch_t;
+typedef struct krad_xpdr_St krad_xpdr_t;
+typedef struct krad_xpdr_St kr_xpdr_t;
+typedef struct kr_xpdr_subunit_St kr_xpdr_subunit_t;
+typedef struct kr_xpdr_input_St kr_xpdr_input_t;
+typedef struct kr_xpdr_output_St kr_xpdr_output_t;
+typedef struct kr_xpdr_control_msg_St kr_xpdr_control_msg_t;
+typedef struct kr_xpdr_watch_St kr_xpdr_watch_t;
 
 typedef enum {
   CONNECTPORTS = 77999,
   DISCONNECTPORTS,
   UPDATE,
   DESTROY,
-} krad_Xtransponder_control_msg_type_t;
+} kr_xpdr_control_msg_type_t;
 
 typedef enum {
   DEMUXER = 1999,
   MUXER,
   DECODER,
   ENCODER,
-  XCAPTURE,
-  //XDISPLAY,
-  //OUTPUT,
-  //STREAMIN
-  //FILEIN
-  //transmitter
-  //listener
-} krad_Xtransponder_subunit_type_t;
+  RAW,
+} kr_xpdr_subunit_type_t;
 
-struct krad_transponder_watch_St {
-
+struct kr_xpdr_watch_St {
   int idle_callback_interval;
   int (*readable_callback)(void *);
   void (*destroy_callback)(void *);
   krad_codec_header_t *(*encoder_header_callback)(void *);  
   void *callback_pointer;
   int fd;
-  
 };
 
-struct krad_Xtransponder_control_msg_St {
-  
-  krad_Xtransponder_control_msg_type_t type;
-  
-  krad_Xtransponder_input_port_t *input_port;
-  krad_Xtransponder_output_port_t *output_port;
-    
+struct kr_xpdr_control_msg_St {
+  kr_xpdr_control_msg_type_t type;
+  kr_xpdr_input_t *input;
+  kr_xpdr_output_t *output;
 };
 
-struct krad_slice_St {
-  unsigned char *data;
-  int32_t size;
-  int frames;
-  int keyframe;
-  uint64_t timecode;  
-  int refs;
-  int final;
-  int header;
-  krad_codec_t codec;
-  krad_Xtransponder_subunit_t *origin;
-};
-
-struct krad_Xtransponder_input_port_St {
+struct kr_xpdr_input_St {
   krad_ringbuffer_t *msg_ring;
   int socketpair[2];
-  krad_Xtransponder_subunit_t *subunit;  
-  krad_Xtransponder_subunit_t *connected_to_subunit;
+  kr_xpdr_subunit_t *subunit;  
+  kr_xpdr_subunit_t *connected_to_subunit;
 };
 
-struct krad_Xtransponder_output_port_St {
-  krad_Xtransponder_input_port_t **connections;
-  krad_slice_t *krad_slice[4];
+struct kr_xpdr_output_St {
+  kr_xpdr_input_t **connections;
+  kr_slice_t *kr_slice[4];
   int headers;
   krad_codec_header_t *krad_codec_header;  
 };
 
-struct krad_Xtransponder_subunit_St {
+struct kr_xpdr_subunit_St {
   int destroy;
-  krad_Xtransponder_t *krad_Xtransponder;
-  krad_transponder_watch_t *watch;
+  kr_xpdr_t *xpdr;
+  kr_xpdr_watch_t *watch;
   pthread_t thread;
-  krad_Xtransponder_subunit_type_t type;
-  krad_Xtransponder_input_port_t *control;  
-  krad_Xtransponder_input_port_t **inputs;
-  krad_Xtransponder_output_port_t **outputs;
-  
-  krad_slice_t *krad_slice;
- 
+  kr_xpdr_subunit_type_t type;
+  kr_xpdr_input_t *control;  
+  kr_xpdr_input_t **inputs;
+  kr_xpdr_output_t **outputs;
+  kr_slice_t *kr_slice;
 };
 
-struct krad_Xtransponder_St {
-  krad_Xtransponder_subunit_t **subunits;
-  krad_radio_t *krad_radio;
+struct krad_xpdr_St {
+  kr_xpdr_subunit_t **subunits;
 };
 
+void kr_xpdr_subunit_connect2 (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                               kr_xpdr_subunit_t *from_kr_xpdr_subunit);
+void kr_xpdr_subunit_connect (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                              kr_xpdr_subunit_t *from_kr_xpdr_subunit);
+void kr_xpdr_subunit_connect3 (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                               kr_xpdr_subunit_t *from_kr_xpdr_subunit);
 
-krad_slice_t *krad_slice_create_with_data (unsigned char *data, uint32_t size);
-krad_slice_t *krad_slice_create ();
-int krad_slice_set_data (krad_slice_t *krad_slice, unsigned char *data, uint32_t size);
-void krad_slice_ref (krad_slice_t *krad_slice);
-void krad_slice_unref (krad_slice_t *krad_slice);
+krad_codec_header_t *kr_xpdr_get_audio_header (kr_xpdr_subunit_t *kr_xpdr_subunit);
+krad_codec_header_t *kr_xpdr_get_header (kr_xpdr_subunit_t *kr_xpdr_subunit);
+krad_codec_header_t *kr_xpdr_get_subunit_output_header (kr_xpdr_subunit_t *kr_xpdr_subunit, int port);
+int kr_xpdr_set_header (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                        krad_codec_header_t *krad_codec_header);
 
-void krad_Xtransponder_subunit_connect2 (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                         krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit);
-void krad_Xtransponder_subunit_connect (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                        krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit);
+kr_slice_t *kr_xpdr_get_slice (kr_xpdr_subunit_t *kr_xpdr_subunit);
+int kr_xpdr_slice_broadcast (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                             kr_slice_t **kr_slice);
 
+int kr_xpdr_count (kr_xpdr_t *kr_xpdr);
+int kr_xpdr_get_info (kr_xpdr_t *kr_xpdr, int num, char *string);
+void *kr_xpdr_get_link (kr_xpdr_t *kr_xpdr, int num);
+kr_xpdr_subunit_t *kr_xpdr_get_subunit (kr_xpdr_t *kr_xpdr, int sid);
+int kr_xpdr_add_raw (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch);
+int kr_xpdr_add_muxer (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch);
+int kr_xpdr_add_demuxer (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch);
+int kr_xpdr_add_encoder (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch);
+int kr_xpdr_add_decoder (kr_xpdr_t *kr_xpdr, kr_xpdr_watch_t *watch);
+void kr_xpdr_subunit_remove (kr_xpdr_t *kr_xpdr, int sid);
 
-void krad_Xtransponder_subunit_connect3 (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                         krad_Xtransponder_subunit_t *from_krad_Xtransponder_subunit);
-
-
-krad_codec_header_t *krad_Xtransponder_get_audio_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit);
-krad_codec_header_t *krad_Xtransponder_get_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit);
-
-krad_codec_header_t *krad_Xtransponder_get_subunit_output_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                                                  int port);
-
-int krad_Xtransponder_set_header (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit,
-                                  krad_codec_header_t *krad_codec_header);
-
-krad_slice_t *krad_Xtransponder_get_slice (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit);
-int krad_Xtransponder_slice_broadcast (krad_Xtransponder_subunit_t *krad_Xtransponder_subunit, krad_slice_t **krad_slice);
-
-int krad_Xtransponder_count (krad_Xtransponder_t *krad_Xtransponder);
-int krad_Xtransponder_get_info (krad_Xtransponder_t *krad_Xtransponder, int num, char *string);
-void *krad_Xtransponder_get_link (krad_Xtransponder_t *krad_Xtransponder, int num);
-
-int krad_Xtransponder_add_capture (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);
-int krad_Xtransponder_add_muxer (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);
-int krad_Xtransponder_add_demuxer (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);
-int krad_Xtransponder_add_encoder (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);
-int krad_Xtransponder_add_decoder (krad_Xtransponder_t *krad_Xtransponder, krad_transponder_watch_t *watch);
-
-krad_Xtransponder_subunit_t *krad_Xtransponder_get_subunit (krad_Xtransponder_t *krad_Xtransponder, int sid);
-
-void krad_Xtransponder_subunit_remove (krad_Xtransponder_t *krad_Xtransponder, int sid);
-
-void krad_Xtransponder_destroy (krad_Xtransponder_t **krad_Xtransponder);
-krad_Xtransponder_t *krad_Xtransponder_create (krad_radio_t *krad_radio);
+void krad_xpdr_destroy (kr_xpdr_t **xpdr);
+krad_xpdr_t *krad_xpdr_create ();
 
 #endif

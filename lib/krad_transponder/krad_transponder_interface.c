@@ -80,11 +80,13 @@ void kr_vpx_encoder_to_rep (krad_vpx_encoder_t *encoder, kr_vpx_encoder_t *rep) 
   rep->deadline = encoder->deadline;
 }
 
-int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int num, kr_transponder_subunit_t *tr ) {
+int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
+                                      int num,
+                                      kr_transponder_subunit_t *tr ) {
 
   krad_link_t *link;
 
-  link = krad_Xtransponder_get_link (krad_transponder->krad_Xtransponder, num);
+  link = kr_xpdr_get_link (krad_transponder->xpdr, num);
 
   if (link == NULL) {
     return 0;
@@ -175,7 +177,10 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
     if (tr->actual.muxer.type == TOGG) {
       
     }
-    if (tr->actual.muxer.type == RAW) {
+    if (tr->actual.muxer.type == NATIVEFLAC) {
+      
+    }
+    if (tr->actual.muxer.type == Y4MFILE) {
       
     }
   }
@@ -191,9 +196,12 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder, int 
     if (tr->actual.muxer.type == TOGG) {
       
     }
-    if (tr->actual.muxer.type == RAW) {
+    if (tr->actual.muxer.type == NATIVEFLAC) {
       
-    }  
+    }
+    if (tr->actual.muxer.type == Y4MFILE) {
+      
+    }
   }
   
   return 1;
@@ -296,7 +304,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       kr_ebml2_finish_element (&ebml_out, response);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST:
-      num = krad_Xtransponder_count (krad_transponder->krad_Xtransponder);
+      num = kr_xpdr_count (krad_transponder->xpdr);
       for (i = 0; i < KRAD_TRANSPONDER_MAX_SUBUNITS; i++) {
         if (!krad_transponder_subunit_to_rep ( krad_transponder, i, &transponder_subunit_rep )) {
           continue;

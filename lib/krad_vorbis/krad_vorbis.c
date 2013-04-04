@@ -1,5 +1,7 @@
 #include <krad_vorbis.h>
 
+static void test_encoder_header (krad_codec_header_t *hdr);
+
 static void test_encoder_header (krad_codec_header_t *hdr) {
 
   krad_vorbis_t *vorbis_dec;
@@ -133,8 +135,10 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   krad_vorbis->krad_codec_header.header_combined_size = krad_vorbis->headerpos;
   krad_vorbis->krad_codec_header.header_count = 3;
 
-  //test_encoder_header (&krad_vorbis->krad_codec_header);
-
+  if (0) {
+    test_encoder_header (&krad_vorbis->krad_codec_header);
+  }
+  
   return krad_vorbis;
 }
 

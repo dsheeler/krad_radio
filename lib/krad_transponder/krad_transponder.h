@@ -6,6 +6,7 @@ typedef struct krad_transponder_St krad_transponder_t;
 
 #include "krad_radio.h"
 #include "krad_receiver.h"
+#include "krad_slice.h"
 #include "krad_transponder_interface.h"
 
 #define DEFAULT_VPX_BITRATE 700
@@ -33,7 +34,7 @@ struct krad_transponder_St {
 	krad_radio_t *krad_radio;
 	krad_receiver_t *krad_receiver;	
 	krad_transmitter_t *krad_transmitter;	
-	krad_Xtransponder_t *krad_Xtransponder;
+	kr_xpdr_t *xpdr;
 };
 
 struct krad_link_St {
@@ -140,9 +141,9 @@ struct krad_link_St {
 
 	int channels;
 	
-	krad_Xtransponder_subunit_t *track_sources[10];
+	kr_xpdr_subunit_t *track_sources[10];
 
-	krad_Xtransponder_subunit_t *subunit;
+	kr_xpdr_subunit_t *subunit;
 
 	krad_mixer_portgroup_t *mixer_portgroup;
 	int au_framecnt;
