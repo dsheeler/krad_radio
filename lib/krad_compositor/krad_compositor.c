@@ -128,6 +128,11 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
 
           port->subunit.xscale = (float)port->subunit.width / port->source_width;
           port->subunit.yscale = (float)port->subunit.height / port->source_height;
+        } else {
+        
+          port->subunit.xscale = 1.0f;
+          port->subunit.yscale = 1.0f;
+        
         }
         
         if ((port->subunit.xscale != 1.0f) || (port->subunit.yscale != 1.0f)) {
