@@ -55,9 +55,9 @@ struct kr_xpdr_input_St {
 
 struct kr_xpdr_output_St {
   kr_xpdr_input_t **connections;
-  kr_slice_t *kr_slice[4];
+  kr_slice_t *slice[4];
   int headers;
-  krad_codec_header_t *krad_codec_header;  
+  krad_codec_header_t *header;  
 };
 
 struct kr_xpdr_subunit_St {
@@ -69,7 +69,7 @@ struct kr_xpdr_subunit_St {
   kr_xpdr_input_t *control;  
   kr_xpdr_input_t **inputs;
   kr_xpdr_output_t **outputs;
-  kr_slice_t *kr_slice;
+  kr_slice_t *slice;
 };
 
 struct krad_xpdr_St {
@@ -87,11 +87,11 @@ krad_codec_header_t *kr_xpdr_get_audio_header (kr_xpdr_subunit_t *xpdr_subunit);
 krad_codec_header_t *kr_xpdr_get_header (kr_xpdr_subunit_t *xpdr_subunit);
 krad_codec_header_t *kr_xpdr_get_subunit_output_header (kr_xpdr_subunit_t *xpdr_subunit, int port);
 int kr_xpdr_set_header (kr_xpdr_subunit_t *xpdr_subunit,
-                        krad_codec_header_t *krad_codec_header);
+                        krad_codec_header_t *header);
 
 kr_slice_t *kr_xpdr_get_slice (kr_xpdr_subunit_t *xpdr_subunit);
 int kr_xpdr_slice_broadcast (kr_xpdr_subunit_t *xpdr_subunit,
-                             kr_slice_t **kr_slice);
+                             kr_slice_t **slice);
 
 int kr_xpdr_count (kr_xpdr_t *xpdr);
 int kr_xpdr_get_info (kr_xpdr_t *xpdr, int num, char *string);

@@ -17,26 +17,26 @@ static void kr_xpdr_output_destroy (kr_xpdr_output_t *kr_xpdr_output);
 static kr_xpdr_output_t *kr_xpdr_output_create ();
 static void xpdr_subunit_start (xpdr_subunit_t *xpdr_subunit);
 static int kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
-                                      krad_codec_header_t *krad_codec_header);
+                                      krad_codec_header_t *header);
 static int xpdr_subunit_add (kr_xpdr_t *kr_xpdr,
-                                xpdr_subunit_type_t type,
-                                kr_xpdr_watch_t *watch);
+                             xpdr_subunit_type_t type,
+                             kr_xpdr_watch_t *watch);
 static xpdr_subunit_t *xpdr_subunit_create (kr_xpdr_t *xpdr,
-                                               xpdr_subunit_type_t type,
-                                               kr_xpdr_watch_t *watch);
+                                            xpdr_subunit_type_t type,
+                                            kr_xpdr_watch_t *watch);
 static void xpdr_subunit_destroy (xpdr_subunit_t **xpdr_subunit);
 static void xpdr_subunit_stop (xpdr_subunit_t *xpdr_subunit);
 static void xpdr_subunit_send_destroy_msg (xpdr_subunit_t *xpdr_subunit);
 static void *xpdr_subunit_thread (void *arg);
 static int xpdr_subunit_poll (xpdr_subunit_t *xpdr_subunit);
 static void xpdr_subunit_handle_control_msg (xpdr_subunit_t *xpdr_subunit,
-                                                kr_xpdr_control_msg_t *msg);
+                                             kr_xpdr_control_msg_t *msg);
 static void xpdr_subunit_disconnect_ports_actual (xpdr_subunit_t *xpdr_subunit,
-                                                     kr_xpdr_output_t *output,
-                                                     kr_xpdr_input_t *input);
-static void xpdr_subunit_connect_ports_actual (xpdr_subunit_t *xpdr_subunit,
                                                   kr_xpdr_output_t *output,
                                                   kr_xpdr_input_t *input);
+static void xpdr_subunit_connect_ports_actual (xpdr_subunit_t *xpdr_subunit,
+                                               kr_xpdr_output_t *output,
+                                               kr_xpdr_input_t *input);
 
 static char *transponder_subunit_type_to_string (xpdr_subunit_type_t type) {
   switch (type) {
@@ -156,7 +156,7 @@ static void kr_xpdr_output_free (kr_xpdr_output_t *kr_xpdr_output) {
   int h;
   
   for (h = 0; h < kr_xpdr_output->headers; h++) {
-    kr_slice_unref (kr_xpdr_output->kr_slice[h]);
+    kr_slice_unref (kr_xpdr_output->slice[h]);
   }
   free (kr_xpdr_output->connections);
   free (kr_xpdr_output);
@@ -220,11 +220,11 @@ static void xpdr_subunit_disconnect_ports_actual (xpdr_subunit_t *xpdr_subunit,
     if (output->connections[p] == input) {
       output->connections[p] = NULL;
       
-      kr_slice_t *kr_slice;
-      kr_slice = kr_slice_create ();
-      kr_slice->final = 1;
-      //kr_slice->origin = xpdr_subunit;
-      kr_xpdr_port_write (input, &kr_slice);
+      kr_slice_t *slice;
+      slice = kr_slice_create ();
+      slice->final = 1;
+      //slice->origin = xpdr_subunit;
+      kr_xpdr_port_write (input, &slice);
       
       close (input->socketpair[0]);
       printk ("Krad Transponder: output port actually disconnected!");
@@ -376,29 +376,29 @@ static int xpdr_subunit_poll (xpdr_subunit_t *xpdr_subunit) {
           }
 
           if (xpdr_subunit->type == MUXER) {
-            kr_slice_t *kr_slice;
-            kr_slice = NULL;
+            kr_slice_t *slice;
+            slice = NULL;
             if (pollfds[n].fd == xpdr_subunit->inputs[0]->socketpair[1]) {
-              kr_xpdr_port_read (xpdr_subunit->inputs[0], &kr_slice);
+              kr_xpdr_port_read (xpdr_subunit->inputs[0], &slice);
             }
             if (pollfds[n].fd == xpdr_subunit->inputs[1]->socketpair[1]) {
-              kr_xpdr_port_read (xpdr_subunit->inputs[1], (void **)&kr_slice);
+              kr_xpdr_port_read (xpdr_subunit->inputs[1], (void **)&slice);
             }
-            if (kr_slice != NULL) {
+            if (slice != NULL) {
               //printk ("Krad Transponder Subunit: Got a packet!");
               
-              if (kr_slice->final == 1) {
+              if (slice->final == 1) {
                 printk ("Krad XPDR Subunit: Got FINAL packet!");
               } else {
-                //printk ("Krad XPDR Subunit: packet size %u", kr_slice->size);
+                //printk ("Krad XPDR Subunit: packet size %u", slice->size);
               }
               
-              xpdr_subunit->kr_slice = kr_slice;
+              xpdr_subunit->slice = slice;
               
               xpdr_subunit->watch->readable_callback (xpdr_subunit->watch->callback_pointer);
               
-              xpdr_subunit->kr_slice = NULL;
-              //kr_slice_unref (kr_slice);
+              xpdr_subunit->slice = NULL;
+              //kr_slice_unref (slice);
             }
           }
         }
@@ -606,20 +606,20 @@ static int xpdr_subunit_add (kr_xpdr_t *kr_xpdr,
 
 static int
 kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
-                           krad_codec_header_t *krad_codec_header) {
+                           krad_codec_header_t *header) {
 
   int h;
   
   h = 0;
-  if ((krad_codec_header != NULL) && (outport->headers == 0)) { 
-    for (h = 0; h < MIN(4, krad_codec_header->header_count); h++) {
-      outport->kr_slice[h] =
-        kr_slice_create_with_data (krad_codec_header->header[h],
-                                   krad_codec_header->header_size[h]);
-      outport->kr_slice[h]->header = h + 1;
+  if ((header != NULL) && (outport->headers == 0)) { 
+    for (h = 0; h < MIN(4, header->header_count); h++) {
+      outport->slice[h] =
+        kr_slice_create_with_data (header->header[h],
+                                   header->header_size[h]);
+      outport->slice[h]->header = h + 1;
       outport->headers++;
     }
-    outport->krad_codec_header = krad_codec_header;
+    outport->header = header;
     return outport->headers;
   }
   return -1;
@@ -629,7 +629,7 @@ kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
 
 kr_slice_t *
 kr_xpdr_get_slice (xpdr_subunit_t *xpdr_subunit) {
-  return xpdr_subunit->kr_slice;
+  return xpdr_subunit->slice;
 }
 
 krad_codec_header_t *
@@ -647,11 +647,11 @@ kr_xpdr_get_subunit_output_header (xpdr_subunit_t *xpdr_subunit,
                                    int port) {
   if (xpdr_subunit != NULL) {
     if (xpdr_subunit->type == ENCODER) {
-      return xpdr_subunit->outputs[0]->krad_codec_header;
+      return xpdr_subunit->outputs[0]->header;
     }
     if (xpdr_subunit->type == DEMUXER) {
       if (xpdr_subunit->outputs[port] != NULL) {
-        return xpdr_subunit->outputs[port]->krad_codec_header;
+        return xpdr_subunit->outputs[port]->header;
       }
     }
   }
@@ -659,30 +659,27 @@ kr_xpdr_get_subunit_output_header (xpdr_subunit_t *xpdr_subunit,
 }
 
 int kr_xpdr_set_header (xpdr_subunit_t *xpdr_subunit,
-                        krad_codec_header_t *krad_codec_header) {
+                        krad_codec_header_t *header) {
 
   if (xpdr_subunit->type == ENCODER) {
-    return kr_xpdr_output_set_header (xpdr_subunit->outputs[0],
-                                                     krad_codec_header);
+    return kr_xpdr_output_set_header (xpdr_subunit->outputs[0], header);
   }
 
   if (xpdr_subunit->type == DEMUXER) {
-    if (krad_codec_header->codec == THEORA) {
-      return kr_xpdr_output_set_header (xpdr_subunit->outputs[0],
-                                                       krad_codec_header);
+    if (header->codec == THEORA) {
+      return kr_xpdr_output_set_header (xpdr_subunit->outputs[0], header);
     }
-    if ((krad_codec_header->codec == VORBIS) ||
-        (krad_codec_header->codec == FLAC) ||
-        (krad_codec_header->codec == OPUS)) {
-      return kr_xpdr_output_set_header (xpdr_subunit->outputs[1],
-                                                       krad_codec_header);
+    if ((header->codec == VORBIS) ||
+        (header->codec == FLAC) ||
+        (header->codec == OPUS)) {
+      return kr_xpdr_output_set_header (xpdr_subunit->outputs[1], header);
     }
   }
   return -1;
 }
 
 int kr_xpdr_slice_broadcast (xpdr_subunit_t *xpdr_subunit,
-                             kr_slice_t **kr_slice) {
+                             kr_slice_t **slice) {
 
   int p;
   int b;
@@ -696,7 +693,7 @@ int kr_xpdr_slice_broadcast (xpdr_subunit_t *xpdr_subunit,
   
   
   if ((xpdr_subunit->type == DEMUXER) &&
-      (((*kr_slice)->codec == FLAC) || ((*kr_slice)->codec == OPUS) || ((*kr_slice)->codec == VORBIS))) {
+      (((*slice)->codec == FLAC) || ((*slice)->codec == OPUS) || ((*slice)->codec == VORBIS))) {
     port = 1;
   }
   
@@ -704,8 +701,8 @@ int kr_xpdr_slice_broadcast (xpdr_subunit_t *xpdr_subunit,
   
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
     if (xpdr_subunit->outputs[port]->connections[p] != NULL) {
-      kr_slice_ref (*kr_slice);
-      kr_xpdr_port_write (xpdr_subunit->outputs[port]->connections[p], kr_slice);
+      kr_slice_ref (*slice);
+      kr_xpdr_port_write (xpdr_subunit->outputs[port]->connections[p], slice);
       b++;
     }
   }
