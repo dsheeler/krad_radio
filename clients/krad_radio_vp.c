@@ -88,9 +88,9 @@ int videoport_process (void *buffer, void *arg) {
 
 	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
 												 CAIRO_FORMAT_ARGB32,
-												 1280,
-												 720,
-												 1280 * 4);
+												 960,
+												 540,
+												 960 * 4);
 	
 	cr = cairo_create (cst);
 	cairo_save (cr);
@@ -109,8 +109,8 @@ int videoport_process (void *buffer, void *arg) {
 
 int main (int argc, char *argv[]) {
 
-	kr_client_t *kr;
-	kr_videoport_t *kr_videoport;
+	kr_client_t *client;
+	kr_videoport_t *videoport;
 
 	if (argc != 2) {
 		if (argc > 2) {
@@ -121,30 +121,30 @@ int main (int argc, char *argv[]) {
 		return 1;
 	}
 		
-	kr = kr_connect (argv[1]);
+	client = kr_connect (argv[1]);
 	
-	if (kr == NULL) {
+	if (client == NULL) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n", argv[1]);
 		return 1;
 	}	
 
-	kr_videoport = kr_videoport_create (kr);
+	videoport = kr_videoport_create (client);
 
-	if (kr_videoport != NULL) {
+	if (videoport != NULL) {
 		printf ("i worked real good\n");
 	}
 	
-	kr_videoport_set_callback (kr_videoport, videoport_process, NULL);
+	kr_videoport_set_callback (videoport, videoport_process, NULL);
 	
-	kr_videoport_activate (kr_videoport);
+	kr_videoport_activate (videoport);
 	
 	usleep (8000000);
 	
-	kr_videoport_deactivate (kr_videoport);
+	kr_videoport_deactivate (videoport);
 	
-	kr_videoport_destroy (kr_videoport);
+	kr_videoport_destroy (videoport);
 
-	kr_disconnect (kr);
+	kr_disconnect (client);
 
 	return 0;
 	

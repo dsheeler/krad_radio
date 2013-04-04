@@ -1441,6 +1441,7 @@ krad_compositor_t *krad_compositor_create (int width, int height, int fps_numera
   krad_compositor_t *compositor = calloc (1, sizeof(krad_compositor_t));
 
   printk ("Krad Compositor: Cairo Version: %s", cairo_version_string());
+  printk ("Krad Compositor: SWScale Version: %u", swscale_version());
 
   FT_Init_FreeType (&compositor->ft_library);
 
