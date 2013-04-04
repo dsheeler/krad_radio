@@ -103,9 +103,9 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
                                                           int width, int height, int holdlock, int local);                           
 krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *krad_compositor,
                                                            char *sysname, int direction, int shm_sd, int msg_sd);
-void krad_compositor_port_set_io_params (krad_compositor_port_t *krad_compositor_port,
+void krad_compositor_port_set_io_params (krad_compositor_port_t *port,
                                          int width, int height);
-void krad_compositor_port_set_comp_params (krad_compositor_port_t *krad_compositor_port,
+void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
                                            int x, int y, int width, int height, 
                                            int crop_x, int crop_y,
                                            int crop_width, int crop_height, float opacity, float rotation);
