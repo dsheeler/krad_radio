@@ -1,6 +1,5 @@
 #include <cairo/cairo.h>
-
-#include "krad_radio_client.h"
+#include "kr_client.h"
 
 #define GREY  0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255   * 1.0
 #define BLUE 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0
@@ -120,8 +119,9 @@ int main (int argc, char *argv[]) {
 		}
 		return 1;
 	}
-		
-	client = kr_connect (argv[1]);
+	
+	client = kr_client_create ("krad videoport client");
+  kr_connect (client, argv[1]);
 	
 	if (client == NULL) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n", argv[1]);

@@ -80,7 +80,7 @@ void kr_audioport_create_cmd (kr_client_t *client, krad_mixer_portgroup_directio
 
 
 float *kr_audioport_get_buffer (kr_audioport_t *kr_audioport, int channel) {
-  return (float *)kr_audioport->kr_shm->buffer + (channel * 1600);
+  return (float *)kr_audioport->kr_shm->buffer + (channel * KRAD_MIXER_DEFAULT_TICKER_PERIOD);
 }
 
 
@@ -105,7 +105,7 @@ void *kr_audioport_process_thread (void *arg) {
       printke ("krad mixer client: unexpected read return value %d in kr_audioport_process_thread", ret);
     }
     //kr_audioport->callback (kr_audioport->kr_shm->buffer, kr_audioport->pointer);
-    kr_audioport->callback (1600, kr_audioport->pointer);
+    kr_audioport->callback (KRAD_MIXER_DEFAULT_TICKER_PERIOD, kr_audioport->pointer);
 
     // write a byte to socket
     ret = write (kr_audioport->sd, buf, 1);

@@ -371,7 +371,9 @@ static void krad_mixer_local_audio_samples_callback (int nframes,
   buf[0] = 0;
   
   if (krad_mixer_local_portgroup->direction == OUTPUT) {
-    memcpy (krad_mixer_local_portgroup->local_buffer, samples[0], 2 * 4 * 1600);
+    memcpy (krad_mixer_local_portgroup->local_buffer,
+            samples[0],
+            2 * 4 * krad_mixer_local_portgroup->krad_mixer->ticker_period);
   }
   wrote = write (krad_mixer_local_portgroup->msg_sd, buf, 1);
   if (wrote == 1) {
@@ -764,7 +766,7 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
                          PROT_READ | PROT_WRITE, MAP_SHARED,
                          krad_mixer_local_portgroup->shm_sd, 0);
 
-
+  krad_mixer_local_portgroup->krad_mixer = krad_mixer;
   krad_mixer_local_portgroup->direction = direction;
   
   if (krad_mixer_local_portgroup->direction == INPUT) {
@@ -777,7 +779,7 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
                           output_type, 2, 100.0f, krad_mixer->master_mix, KLOCALSHM, krad_mixer_local_portgroup, NOAUDIO);
 
   krad_mixer_portgroup->samples[0] = (float *)krad_mixer_local_portgroup->local_buffer;
-  krad_mixer_portgroup->samples[1] = (float *)krad_mixer_local_portgroup->local_buffer + 1600;
+  krad_mixer_portgroup->samples[1] = (float *)krad_mixer_local_portgroup->local_buffer + (1 * krad_mixer->ticker_period);
 
   krad_mixer_portgroup->active = 1;
 

@@ -113,6 +113,10 @@ depsources5 = """
 ../lib/krad_web/krad_websocket.c
 """.split()
 
+depsources4 = """
+../lib/krad_sfx/krad_tone.c
+""".split()
+
 depsources6 = """
 ../../libav/cmdutils.c
 """.split()
@@ -121,7 +125,7 @@ depsources6 = """
 shlibs = ["opus"]
 
 shlibs2 = ["cairo", "gtk+-3.0"]
-
+shlibs4 = ["cairo"]
 shlibs6 = ["cairo", "sdl", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice"]
 
@@ -137,7 +141,8 @@ def check_system(systm):
   global includedirs
   global libsources
   global shlibs
-  global shlibs2  
+  global shlibs2
+  global shlibs4
   global syslibs
   global syslibs2
 
@@ -158,6 +163,7 @@ def configure(conf):
   global programs
   global shlibs
   global shlibs2
+  global shlibs4
   global shlibs6
   global syslibs
   check_system(conf)
@@ -222,6 +228,14 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs + stlibs + syslibs + plibs)
+
+  for p in programs4:
+    bld(features = 'c cprogram', 
+    source = [p] + depsources4, 
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["kradradio_client"],
+    uselib = shlibs + shlibs4 + stlibs + syslibs)
 
   for p in programs5:
     bld(features = 'c cprogram', 

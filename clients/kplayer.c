@@ -26,6 +26,7 @@ typedef struct kplayer_St kplayer_t;
 struct kplayer_St {
 	kr_client_t *client;
 	kr_videoport_t *videoport;
+  kr_audioport_t *audioport;
   struct SwsContext *sws_converter;
   char *station;
   unsigned char *rgba[960 * 540 * 4];
@@ -35,7 +36,11 @@ struct kplayer_St {
   int old_src_w;
   int old_src_h;
   int old_px_fmt;
-  
+  void *aptr;
+  float audiocrap[4096 * 4];
+  float audiocrap0[4096 * 4];
+  float audiocrap1[4096 * 4];
+  float audiocrap2[4096 * 4];
 };
 
 static kplayer_t kplayer;
@@ -1245,12 +1250,13 @@ static void stream_close(VideoState *is)
 static void do_exit(void)
 {
 
-    kplayer_end ();
+
 
     if (cur_stream) {
         stream_close(cur_stream);
         cur_stream = NULL;
     }
+    kplayer_end ();
     uninit_opts();
 #if CONFIG_AVFILTER
     avfilter_uninit();
@@ -1357,7 +1363,7 @@ void send_frame_to_krad (AVFrame *src_frame) {
 
     kplayer.updated = 1;
   } else {
-    if (kplayer.updated2 == 0) {
+    if (kplayer.updated2 == 3) {
   dst[0] = kplayer.rgba2;
       sws_scale (kplayer.sws_converter, src_frame->data, src_frame->linesize,
                 0, src_frame->height, dst, rgb_stride_arr);
@@ -2164,15 +2170,19 @@ static int stream_component_open(VideoState *is, int stream_index)
         wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
         wanted_spec.callback = sdl_audio_callback;
         wanted_spec.userdata = is;
-        if (SDL_OpenAudio(&wanted_spec, &spec) < 0) {
-            fprintf(stderr, "SDL_OpenAudio: %s\n", SDL_GetError());
-            return -1;
-        }
-        is->audio_hw_buf_size = spec.size;
-        is->sdl_sample_fmt          = AV_SAMPLE_FMT_S16;
+        kplayer.aptr = is;
+        //if (SDL_OpenAudio(&wanted_spec, &spec) < 0) {
+        //    fprintf(stderr, "SDL_OpenAudio: %s\n", SDL_GetError());
+        //    return -1;
+        //}
+        kr_audioport_activate (kplayer.audioport);
+        is->audio_hw_buf_size = KRAD_MIXER_DEFAULT_TICKER_PERIOD;//spec.size;
+        //AV_SAMPLE_FMT_FLTP
+        //is->sdl_sample_fmt          = AV_SAMPLE_FMT_S16;
+        is->sdl_sample_fmt          = AV_SAMPLE_FMT_FLT;
         is->resample_sample_fmt     = is->sdl_sample_fmt;
         is->resample_channel_layout = avctx->channel_layout;
-        is->resample_sample_rate    = avctx->sample_rate;
+        is->resample_sample_rate    = 48000;//avctx->sample_rate;
     }
 
     ic->streams[stream_index]->discard = AVDISCARD_DEFAULT;
@@ -2192,7 +2202,7 @@ static int stream_component_open(VideoState *is, int stream_index)
 
         memset(&is->audio_pkt, 0, sizeof(is->audio_pkt));
         packet_queue_init(&is->audioq);
-        SDL_PauseAudio(0);
+        //SDL_PauseAudio(0);
         break;
     case AVMEDIA_TYPE_VIDEO:
         is->video_stream = stream_index;
@@ -2227,7 +2237,8 @@ static void stream_component_close(VideoState *is, int stream_index)
     case AVMEDIA_TYPE_AUDIO:
         packet_queue_abort(&is->audioq);
 
-        SDL_CloseAudio();
+        //SDL_CloseAudio();
+        kr_audioport_deactivate (kplayer.audioport);
 
         packet_queue_end(&is->audioq);
         av_free_packet(&is->audio_pkt);
@@ -3009,72 +3020,79 @@ int videoport_process (void *buffer, void *arg) {
 	return 0;
 }
 
+static void krad_int16_to_float_array (const int *in,
+                                       float *out,
+                                       int len) {
+  while (len)  {  
+    len--;
+    out[len] = (float) ((in[len] << 16) / (8.0 * 0x10000000));
+  };
+}
+
+int audioport_process (uint32_t nframes, void *arg) {
+
+	int s;
+	int c;
+	float *buffer;
+	float *buffer2;	
+	kplayer_t *mykplayer;
+	
+	mykplayer = (kplayer_t *)arg;
+
+  buffer = kr_audioport_get_buffer (mykplayer->audioport, 0);
+
+  buffer2 = kr_audioport_get_buffer (mykplayer->audioport, 1);
+
+  if (mykplayer->aptr != NULL) {
+
+    sdl_audio_callback (mykplayer->aptr, &mykplayer->audiocrap, KRAD_MIXER_DEFAULT_TICKER_PERIOD * 4 * 2);
+	
+	  for (s = 0; s < KRAD_MIXER_DEFAULT_TICKER_PERIOD; s++) {
+	    for (c = 0; c < 2; c++) {
+	      buffer[s] = mykplayer->audiocrap[s * 2 + c];
+ 	      buffer2[s] = mykplayer->audiocrap[s * 2 + c];
+	    }
+	  }
+	}
+	
+	return 0;
+
+}
+
 int kplayer_start (char *station) {
 
-	kr_client_t *client;
-	kr_videoport_t *videoport;
-
-  client = kr_client_create ("krad simple client");
-
-  kplayer.client = client;
-
   kplayer.station = strdup (station);
+  kplayer.client = kr_client_create ("krad simple client");
 
-
-
-  if (client == NULL) {
+  if (kplayer.client == NULL) {
     fprintf (stderr, "Could create client\n");
     return 1;
   }
 
-  if (!kr_connect (client, station)) {
-    fprintf (stderr, "Could not connect to %s krad radio daemon\n", station);
-    kr_client_destroy (&client);
+  if (!kr_connect (kplayer.client, kplayer.station)) {
+    fprintf (stderr, "Could not connect to %s krad radio daemon\n", kplayer.station);
+    kr_client_destroy (&kplayer.client);
     return 1;
   }
-
-  printf ("Connected to %s!\n", station);
-
+  printf ("Connected to %s!\n", kplayer.station);
   //kr_compositor_info (client);
-
-	videoport = kr_videoport_create (client);
-
-	if (videoport != NULL) {
-		printf ("i worked real good\n");
-	}
-	
-	kr_videoport_set_callback (videoport, videoport_process, NULL);
-	
-  kplayer.videoport = videoport;
-	
-	kr_videoport_activate (videoport);
-	
-	usleep (50000);
+	kplayer.videoport = kr_videoport_create (kplayer.client);
+	kr_videoport_set_callback (kplayer.videoport, videoport_process, &kplayer);
+  kplayer.audioport = kr_audioport_create (kplayer.client, INPUT);
+  kr_audioport_set_callback (kplayer.audioport, audioport_process, &kplayer);
+	//kr_audioport_activate (kplayer.audioport);  
+	kr_videoport_activate (kplayer.videoport);
 	
   return 0;
 }
 
 static int kplayer_end () {
 
-  usleep (50000);
-  
-  kr_client_t *client;
-	kr_videoport_t *videoport;
-	
-	client = kplayer.client;
-	videoport = kplayer.videoport;
-	
-	kr_videoport_deactivate (videoport);
-	
-	kr_videoport_destroy (videoport);
-
-
-  printf ("Disconnecting from %s..\n", kplayer.station);
-  kr_disconnect (client);
-  printf ("Disconnected from %s.\n", kplayer.station);
-  printf ("Destroying client..\n");
-  kr_client_destroy (&client);
-  printf ("Client Destroyed.\n");
+	kr_videoport_deactivate (kplayer.videoport);
+	kr_videoport_destroy (kplayer.videoport);
+	//kr_audioport_deactivate (kplayer.audioport);
+	kr_audioport_destroy (kplayer.audioport);
+  kr_client_destroy (&kplayer.client);
 
   if (kplayer.sws_converter != NULL) {
     sws_freeContext ( kplayer.sws_converter );
