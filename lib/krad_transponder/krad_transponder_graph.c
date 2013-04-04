@@ -715,11 +715,11 @@ int kr_xpdr_slice_broadcast (xpdr_subunit_t *xpdr_subunit,
   return p;
 }
 
-void xpdr_subunit_remove (kr_xpdr_t *xpdr, int sid) {
+void kr_xpdr_subunit_remove (kr_xpdr_t *xpdr, int sid) {
   if ((sid > -1) && (sid < KRAD_TRANSPONDER_SUBUNITS)) {
-    if (kr_xpdr->subunits[sid] != NULL) {
+    if (xpdr->subunits[sid] != NULL) {
       printk ("Krad Transponder: removing subunit %d", sid);
-      xpdr_subunit_destroy (&kr_xpdr->subunits[sid]);    
+      xpdr_subunit_destroy (&xpdr->subunits[sid]);    
     } else {
       printke ("Krad Transponder: can't remove subunit %d, not found", sid);
     }
@@ -758,7 +758,7 @@ int kr_xpdr_add_muxer (kr_xpdr_t *xpdr, kr_xpdr_watch_t *watch) {
   return xpdr_subunit_add (xpdr, MUXER, watch);
 }
 
-void xpdr_subunit_connect (xpdr_subunit_t *xpdr_subunit,
+void kr_xpdr_subunit_connect (xpdr_subunit_t *xpdr_subunit,
                            xpdr_subunit_t *from_xpdr_subunit) {
  
   kr_xpdr_port_connect (from_xpdr_subunit,
@@ -767,7 +767,7 @@ void xpdr_subunit_connect (xpdr_subunit_t *xpdr_subunit,
                         xpdr_subunit->inputs[0]);
 }
 
-void xpdr_subunit_connect2 (xpdr_subunit_t *xpdr_subunit,
+void kr_xpdr_subunit_connect2 (xpdr_subunit_t *xpdr_subunit,
                             xpdr_subunit_t *from_xpdr_subunit) {
  
   kr_xpdr_port_connect (from_xpdr_subunit,
@@ -776,7 +776,7 @@ void xpdr_subunit_connect2 (xpdr_subunit_t *xpdr_subunit,
                         xpdr_subunit->inputs[1]);
 }
 
-void xpdr_subunit_connect3 (xpdr_subunit_t *xpdr_subunit,
+void kr_xpdr_subunit_connect3 (xpdr_subunit_t *xpdr_subunit,
                             xpdr_subunit_t *from_xpdr_subunit) {
  
   kr_xpdr_port_connect (from_xpdr_subunit,
