@@ -20,7 +20,6 @@ struct kr_slice_St {
   int final;
   int header;
   krad_codec_t codec;
-  //kr_xpdr_subunit_t *origin;
 };
 
 void kr_slice_ref (kr_slice_t *kr_slice);

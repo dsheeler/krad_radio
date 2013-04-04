@@ -14,7 +14,7 @@ typedef struct kr_xpdr_subunit_St xpdr_subunit_t;
 typedef struct kr_xpdr_input_St kr_xpdr_input_t;
 typedef struct kr_xpdr_output_St kr_xpdr_output_t;
 typedef struct kr_xpdr_control_msg_St kr_xpdr_control_msg_t;
-typedef struct kr_xpdr_watch_St kr_xpdr_watch_t;
+typedef struct kr_xpdr_su_spec_St kr_xpdr_su_spec_t;
 
 typedef enum {
   CONNECTPORTS = 77999,
@@ -31,7 +31,7 @@ typedef enum {
   RAW,
 } xpdr_subunit_type_t;
 
-struct kr_xpdr_watch_St {
+struct kr_xpdr_su_spec_St {
   int idle_callback_interval;
   int (*readable_callback)(void *);
   void (*destroy_callback)(void *);
@@ -63,7 +63,7 @@ struct kr_xpdr_output_St {
 struct kr_xpdr_subunit_St {
   int destroy;
   kr_xpdr_t *xpdr;
-  kr_xpdr_watch_t *watch;
+  kr_xpdr_su_spec_t spec;
   pthread_t thread;
   xpdr_subunit_type_t type;
   kr_xpdr_input_t *control;  
@@ -76,12 +76,10 @@ struct krad_xpdr_St {
   kr_xpdr_subunit_t **subunits;
 };
 
-void kr_xpdr_subunit_connect2 (kr_xpdr_subunit_t *kr_xpdr_subunit,
-                               kr_xpdr_subunit_t *from_kr_xpdr_subunit);
-void kr_xpdr_subunit_connect (kr_xpdr_subunit_t *kr_xpdr_subunit,
-                              kr_xpdr_subunit_t *from_kr_xpdr_subunit);
-void kr_xpdr_subunit_connect3 (kr_xpdr_subunit_t *kr_xpdr_subunit,
-                               kr_xpdr_subunit_t *from_kr_xpdr_subunit);
+void kr_xpdr_subunit_connect_mux_to_video (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                           kr_xpdr_subunit_t *from);
+void kr_xpdr_subunit_connect_mux_to_audio (kr_xpdr_subunit_t *kr_xpdr_subunit,
+                                           kr_xpdr_subunit_t *from);
 
 krad_codec_header_t *kr_xpdr_get_audio_header (kr_xpdr_subunit_t *xpdr_subunit);
 krad_codec_header_t *kr_xpdr_get_header (kr_xpdr_subunit_t *xpdr_subunit);
@@ -97,11 +95,11 @@ int kr_xpdr_count (kr_xpdr_t *xpdr);
 int kr_xpdr_get_info (kr_xpdr_t *xpdr, int num, char *string);
 void *kr_xpdr_get_link (kr_xpdr_t *xpdr, int num);
 kr_xpdr_subunit_t *kr_xpdr_get_subunit (kr_xpdr_t *xpdr, int sid);
-int kr_xpdr_add_raw (kr_xpdr_t *xpdr, kr_xpdr_watch_t *watch);
-int kr_xpdr_add_muxer (kr_xpdr_t *xpdr, kr_xpdr_watch_t *watch);
-int kr_xpdr_add_demuxer (kr_xpdr_t *xpdr, kr_xpdr_watch_t *watch);
-int kr_xpdr_add_encoder (kr_xpdr_t *xpdr, kr_xpdr_watch_t *watch);
-int kr_xpdr_add_decoder (kr_xpdr_t *xpdr, kr_xpdr_watch_t *watch);
+int kr_xpdr_add_raw (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
+int kr_xpdr_add_muxer (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
+int kr_xpdr_add_demuxer (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
+int kr_xpdr_add_encoder (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
+int kr_xpdr_add_decoder (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
 void kr_xpdr_subunit_remove (kr_xpdr_t *xpdr, int sid);
 
 void krad_xpdr_destroy (kr_xpdr_t **xpdr);

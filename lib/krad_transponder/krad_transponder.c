@@ -977,23 +977,24 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
     }
     t = atoi (pch);
     subunit = kr_xpdr_get_subunit (link->krad_transponder->xpdr, t);
-    printke ("its %d--", t);
     if (subunit != NULL) {
       if (conns == 0) {
-        kr_xpdr_subunit_connect (link->subunit, subunit);
+        printk ("calling mux to video conn");
+        kr_xpdr_subunit_connect_mux_to_video (link->subunit, subunit);
       } else {
-        kr_xpdr_subunit_connect2 (link->subunit, subunit);
+        printk ("calling mux to audio conn");
+        kr_xpdr_subunit_connect_mux_to_audio (link->subunit, subunit);
       }
       conns++;
       codec_header = kr_xpdr_get_header (subunit);
       if (codec_header == NULL) {
         //FIXME this isn't exactly solid evidence
         track_num = krad_container_add_video_track (link->krad_container,
-                                              VP8,
-                                              link->encoding_fps_numerator,
-                                              link->encoding_fps_denominator,
-                                              link->encoding_width,
-                                              link->encoding_height);
+                                                    VP8,
+                                                    link->encoding_fps_numerator,
+                                                    link->encoding_fps_denominator,
+                                                    link->encoding_width,
+                                                    link->encoding_height);
       } else {
         if (krad_codec_is_video(codec_header->codec)) {
           if (codec_header->codec == THEORA) {
@@ -1024,12 +1025,16 @@ static int connect_muxer_to_encoders (krad_link_t *link) {
 
 static int connect_decoder_to_demuxer (krad_link_t *link) {
 
+  return 0;
+
+  /*
   char *pch;
   char *save;
   int t;
   int conns;
 
   conns = 0;
+
 	kr_xpdr_subunit_t *subunit;
   t = 0;
   save = NULL;
@@ -1045,7 +1050,9 @@ static int connect_decoder_to_demuxer (krad_link_t *link) {
     }
     pch = strtok_r (NULL, "/ ", &save);
   }
+
   return conns;
+  */
 }
 
 int muxer_unit_process (void *arg) {
@@ -1054,42 +1061,47 @@ int muxer_unit_process (void *arg) {
 
   krad_link_t *link = (krad_link_t *)arg;
 
-  kr_slice_t *kr_slice;
-  kr_slice = NULL;
-  int t;
+  kr_slice_t *slice;
+  slice = NULL;
+  //int t;
   
-  kr_slice = kr_xpdr_get_slice (link->subunit);
+  slice = kr_xpdr_get_slice (link->subunit);
 
-  if (kr_slice == NULL) {
-    return 1;
+  if (slice == NULL) {
+    printke ("Muxer got a null slice!");
+    return -1;
   }
 
-  for (t = 0; t < 10; t++) {
+  //for (t = 0; t < 10; t++) {
   //  if (link->track_sources[t] == kr_slice->origin) {
   //    break;
   //  }
-  }
-  if (t == 10) {
-    return 1;
-  }
+  //}
+  //if (t == 10) {
+  //  printke ("Muxer could not match track to slice!");
+  //  return 1;
+  //}
   
   
-  if (krad_codec_is_video(kr_slice->codec)) {
+  if (krad_codec_is_video(slice->codec)) {
     krad_container_add_video (link->krad_container, 
-                              t,
-                              kr_slice->data,
-                              kr_slice->size,
-                              kr_slice->keyframe);
+                              1,
+                              slice->data,
+                              slice->size,
+                              slice->keyframe);
   } else {
-    if (krad_codec_is_audio(kr_slice->codec)) {
+    if (krad_codec_is_audio(slice->codec)) {
       krad_container_add_audio (link->krad_container,
-                                t,
-                                kr_slice->data,
-                                kr_slice->size,
-                                kr_slice->frames);
+                                2,
+                                slice->data,
+                                slice->size,
+                                slice->frames);
+    } else {
+      printke ("Muxer Could not match codec to track!");
+      return -1;
     }
   }
-  kr_slice_unref (kr_slice);
+  kr_slice_unref (slice);
   
   return 0;
 }
@@ -1762,10 +1774,11 @@ krad_link_t *krad_link_prepare (int linknum) {
 
 void krad_link_start (krad_link_t *link) {
 
-  kr_xpdr_watch_t watch;
+  kr_xpdr_su_spec_t spec;
   
-  memset (&watch, 0, sizeof(kr_xpdr_watch_t));
-  watch.ptr = link;
+  memset (&spec, 0, sizeof(kr_xpdr_su_spec_t));
+  spec.fd = -1;
+  spec.ptr = link;
   
   if ((link->encoding_fps_numerator == 0) || (link->encoding_fps_denominator == 0)) {
     krad_compositor_get_frame_rate (link->krad_radio->krad_compositor,
@@ -1788,55 +1801,55 @@ void krad_link_start (krad_link_t *link) {
       printk ("decoder!");
       if (link->av_mode == VIDEO_ONLY) {
         video_decoding_unit_create (link);
-        watch.readable_callback = video_decoding_unit_process;
-        watch.destroy_callback = video_decoding_unit_destroy;
-        link->graph_id = kr_xpdr_add_decoder (link->krad_transponder->xpdr, &watch);
+        spec.readable_callback = video_decoding_unit_process;
+        spec.destroy_callback = video_decoding_unit_destroy;
+        link->graph_id = kr_xpdr_add_decoder (link->krad_transponder->xpdr, &spec);
       }
       if (link->av_mode == AUDIO_ONLY) {
         audio_decoding_unit_create (link);
-        //watch.idle_callback_interval = 22;
-        watch.readable_callback = audio_decoding_unit_process;
-        watch.destroy_callback = audio_decoding_unit_destroy;
-        link->graph_id = kr_xpdr_add_decoder (link->krad_transponder->xpdr, &watch);
+        //spec.idle_callback_interval = 22;
+        spec.readable_callback = audio_decoding_unit_process;
+        spec.destroy_callback = audio_decoding_unit_destroy;
+        link->graph_id = kr_xpdr_add_decoder (link->krad_transponder->xpdr, &spec);
       }
-      break;
-    case DEMUX:
-      printk ("demuxer!");
-      demuxer_unit_create (link);
-      watch.idle_callback_interval = 22;
-      watch.readable_callback = demuxer_unit_process;
-      watch.destroy_callback = demuxer_unit_destroy;
-      link->graph_id = kr_xpdr_add_demuxer (link->krad_transponder->xpdr, &watch);
-      break;
-    case MUX:
-      muxer_unit_create (link);
-      watch.readable_callback = muxer_unit_process;
-      watch.destroy_callback = muxer_unit_destroy;
-      link->graph_id = kr_xpdr_add_muxer (link->krad_transponder->xpdr, &watch);
       break;
     case ENCODE:
       if (link->av_mode == AUDIO_ONLY) {
         audio_encoding_unit_create (link);
-        watch.fd = link->socketpair[1];
-        watch.readable_callback = audio_encoding_unit_process;
-        watch.encoder_header_callback = audio_encoding_unit_get_header;
-        watch.destroy_callback = audio_encoding_unit_destroy;
+        spec.fd = link->socketpair[1];
+        spec.readable_callback = audio_encoding_unit_process;
+        spec.encoder_header_callback = audio_encoding_unit_get_header;
+        spec.destroy_callback = audio_encoding_unit_destroy;
       } else {
         video_encoding_unit_create (link);
-        watch.fd = link->krad_compositor_port_fd;
-        watch.encoder_header_callback = video_encoding_unit_get_header;
-        watch.readable_callback = video_encoding_unit_process;
-        watch.destroy_callback = video_encoding_unit_destroy;
+        spec.fd = link->krad_compositor_port_fd;
+        spec.encoder_header_callback = video_encoding_unit_get_header;
+        spec.readable_callback = video_encoding_unit_process;
+        spec.destroy_callback = video_encoding_unit_destroy;
       }
-      link->graph_id = kr_xpdr_add_encoder (link->krad_transponder->xpdr, &watch);
+      link->graph_id = kr_xpdr_add_encoder (link->krad_transponder->xpdr, &spec);
       break;  
+    case DEMUX:
+      printk ("demuxer!");
+      demuxer_unit_create (link);
+      spec.idle_callback_interval = 22;
+      spec.readable_callback = demuxer_unit_process;
+      spec.destroy_callback = demuxer_unit_destroy;
+      link->graph_id = kr_xpdr_add_demuxer (link->krad_transponder->xpdr, &spec);
+      break;
+    case MUX:
+      muxer_unit_create (link);
+      spec.readable_callback = muxer_unit_process;
+      spec.destroy_callback = muxer_unit_destroy;
+      link->graph_id = kr_xpdr_add_muxer (link->krad_transponder->xpdr, &spec);
+      break;
     case RAWOUT:
 #ifdef KRAD_USE_WAYLAND
       wayland_display_unit_create (link);
-      watch.fd = link->krad_wayland->display_fd;
-      watch.readable_callback = wayland_display_unit_process;
-      watch.destroy_callback = wayland_display_unit_destroy;
-      link->graph_id = kr_xpdr_add_raw (link->krad_transponder->xpdr, &watch);      
+      spec.fd = link->krad_wayland->display_fd;
+      spec.readable_callback = wayland_display_unit_process;
+      spec.destroy_callback = wayland_display_unit_destroy;
+      link->graph_id = kr_xpdr_add_raw (link->krad_transponder->xpdr, &spec);
 #endif
       break;
     case RAWIN:
@@ -1845,25 +1858,25 @@ void krad_link_start (krad_link_t *link) {
           return;
         case X11:
           x11_capture_unit_create (link);
-          watch.idle_callback_interval = 5;
-          watch.readable_callback = x11_capture_unit_process;
-          watch.destroy_callback = x11_capture_unit_destroy;
+          spec.idle_callback_interval = 5;
+          spec.readable_callback = x11_capture_unit_process;
+          spec.destroy_callback = x11_capture_unit_destroy;
           break;
 #ifdef KR_LINUX
         case V4L2:
           v4l2_capture_unit_create (link);
-          watch.fd = link->krad_v4l2->fd;
-          watch.readable_callback = v4l2_capture_unit_process;
-          watch.destroy_callback = v4l2_capture_unit_destroy;
+          spec.fd = link->krad_v4l2->fd;
+          spec.readable_callback = v4l2_capture_unit_process;
+          spec.destroy_callback = v4l2_capture_unit_destroy;
           break; 
 #endif
         case DECKLINK:
           decklink_capture_unit_create (link);
-          watch.readable_callback = NULL;
-          watch.destroy_callback = decklink_capture_unit_destroy;
+          spec.readable_callback = NULL;
+          spec.destroy_callback = decklink_capture_unit_destroy;
           break;
       }
-      link->graph_id = kr_xpdr_add_raw (link->krad_transponder->xpdr, &watch);
+      link->graph_id = kr_xpdr_add_raw (link->krad_transponder->xpdr, &spec);
       break;
     default:
       return;

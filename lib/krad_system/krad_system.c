@@ -135,26 +135,26 @@ void krad_system_log_on (char *filename) {
     krad_system_log_off ();
   }
 
-  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
+  while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
   krad_system.log_fd = open (filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (krad_system.log_fd > 0) {
     dprintf (krad_system.log_fd, "Log %d started\n", krad_system.lognum);
   } else {
     failfast ("frak");
   }
-  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
+  while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
 }
 
 void krad_system_log_off () {
 
-  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
+  while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
   if (krad_system.log_fd > 0) {
     dprintf (krad_system.log_fd, "Log %d ended\n", krad_system.lognum++);
     fsync (krad_system.log_fd);
     close (krad_system.log_fd);
     krad_system.log_fd = 0;
   }
-  while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
+  while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
 }
 
 void *krad_system_monitor_cpu_thread (void *arg) {
@@ -321,13 +321,13 @@ void failfast (char* format, ...) {
 
   va_list args;
   if (krad_system.log_fd > 0) {
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     dprintf (krad_system.log_fd, "\n***ERROR! FAILURE!\n");
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
     krad_system_log_off ();
   }
   exit (133);
@@ -338,13 +338,13 @@ void printke (char* format, ...) {
   va_list args;
 
   if (krad_system.log_fd > 0) {
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     dprintf (krad_system.log_fd, "***ERROR!: ");
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
   }
 }
 
@@ -353,12 +353,12 @@ void printkd (char* format, ...) {
   va_list args;
 
   if (krad_system.log_fd > 0) {
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
   }
 }
 
@@ -367,12 +367,12 @@ void printk (char* format, ...) {
   va_list args;
 
   if (krad_system.log_fd > 0) {
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
     va_start(args, format);
     vdprintf(krad_system.log_fd, format, args);
     va_end(args);
     dprintf (krad_system.log_fd, "\n");
-    while (__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
+    while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 1, 0 ));
   }
 }
 
