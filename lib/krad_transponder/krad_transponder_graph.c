@@ -163,7 +163,6 @@ static void kr_xpdr_port_connect (xpdr_subunit_t *xpdr_subunit,
 
 static void kr_xpdr_input_disconnect (kr_xpdr_input_t *input) {
   printk ("Krad Transponder: Disconnecting ports");
-  //close (kr_xpdr_input->socketpair[0]);
   close (input->socketpair[1]);
 }
 
@@ -244,8 +243,8 @@ static void xpdr_subunit_connect_ports_actual (xpdr_subunit_t *xpdr_subunit,
 
   int p;
 
-  printk ("Running ports actual connection su type %s", 
-          transponder_subunit_type_to_string(xpdr_subunit->type));
+  //printk ("Running ports actual connection su type %s", 
+  //        transponder_subunit_type_to_string(xpdr_subunit->type));
 
   for (p = 0; p < KRAD_TRANSPONDER_PORT_CONNECTIONS; p++) {
     if (output->connections[p] == NULL) {

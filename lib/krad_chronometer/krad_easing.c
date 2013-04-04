@@ -5,19 +5,13 @@ void krad_easing_destroy (krad_easing_t *krad_easing) {
 }
 
 krad_easing_t *krad_easing_create () {
-
 	krad_easing_t *krad_easing = calloc (1, sizeof(krad_easing_t));
-	
 	return krad_easing;
 }
 
 krad_ease_t krad_ease_random () {
-
 	return rand () % (LASTEASING - FIRSTEASING) + FIRSTEASING;
-
 }
-
-
 
 float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr) {
 
@@ -59,7 +53,8 @@ float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr
     while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1 ));
     // FIXME probably should recheck elapsed_time == duration here but
     // ill leave it alone for now since it appears to work..
-    // PS i think what we do is check for update = 1 since we use active to know if to process teh ease
+    // PS i think what we do is check for update = 1 
+    // since we use active to know if to process teh ease
     if (ptr != NULL) {
       *ptr = krad_easing->ptr;
       //if (krad_easing->ptr != NULL) {
@@ -73,7 +68,6 @@ float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr
 
   return value;
 }
-
 
 void krad_easing_set_new_value (krad_easing_t *krad_easing, float target, int duration, krad_ease_t krad_ease, void *ptr) {
   while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1 ));
