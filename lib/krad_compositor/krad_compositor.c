@@ -1438,7 +1438,8 @@ void krad_compositor_destroy (krad_compositor_t *compositor) {
   printk ("Krad Compositor: Destroy Complete");
 }
 
-krad_compositor_t *krad_compositor_create (int width, int height, int fps_numerator, int fps_denominator) {
+krad_compositor_t *
+krad_compositor_create (int width, int height, int fps_num, int fps_den) {
 
   krad_compositor_t *compositor = calloc (1, sizeof(krad_compositor_t));
 
@@ -1448,7 +1449,7 @@ krad_compositor_t *krad_compositor_create (int width, int height, int fps_numera
   FT_Init_FreeType (&compositor->ft_library);
 
   krad_compositor_set_resolution (compositor, width, height);
-  krad_compositor_set_frame_rate (compositor, fps_numerator, fps_denominator);
+  krad_compositor_set_frame_rate (compositor, fps_num, fps_den);
 
   compositor->address.path.unit = KR_COMPOSITOR;
   compositor->address.path.subunit.compositor_subunit = KR_UNIT;
