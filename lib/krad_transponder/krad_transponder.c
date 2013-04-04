@@ -1345,9 +1345,9 @@ int video_decoding_unit_process (void *arg) {
       printk ("Theora Header byte sizes: %d %d %d", krad_link->vu_header_len[0], krad_link->vu_header_len[1], krad_link->vu_header_len[2]);
       krad_link->krad_theora_decoder = krad_theora_decoder_create(krad_link->vu_header[0], krad_link->vu_header_len[0], krad_link->vu_header[1], krad_link->vu_header_len[1], krad_link->vu_header[2], krad_link->vu_header_len[2]);
 
-      krad_compositor_port_set_io_params (krad_link->krad_compositor_port,
-                        krad_link->krad_theora_decoder->width,
-                        krad_link->krad_theora_decoder->height);
+      krad_compositor_port_set_source_size (krad_link->krad_compositor_port,
+                                            krad_link->krad_theora_decoder->width,
+                                            krad_link->krad_theora_decoder->height);
       port_updated = 1;                          
     }
   }
@@ -1386,9 +1386,9 @@ int video_decoding_unit_process (void *arg) {
     if (krad_link->krad_vpx_decoder->img != NULL) {
       
       if (port_updated == 0) {
-        krad_compositor_port_set_io_params (krad_link->krad_compositor_port,
-                          krad_link->krad_vpx_decoder->width,
-                          krad_link->krad_vpx_decoder->height);
+        krad_compositor_port_set_source_size (krad_link->krad_compositor_port,
+                                              krad_link->krad_vpx_decoder->width,
+                                              krad_link->krad_vpx_decoder->height);
         port_updated = 1;
       }
 
@@ -1413,9 +1413,9 @@ int video_decoding_unit_process (void *arg) {
     if (krad_link->krad_vhs->width != 0) {
       if (port_updated == 0) {
         printk ("got vhs res: %dx%d", krad_link->krad_vhs->width, krad_link->krad_vhs->height);
-        krad_compositor_port_set_io_params (krad_link->krad_compositor_port,
-                          krad_link->krad_vhs->width,
-                          krad_link->krad_vhs->height);
+        krad_compositor_port_set_source_size (krad_link->krad_compositor_port,
+                                              krad_link->krad_vhs->width,
+                                              krad_link->krad_vhs->height);
                                 
         port_updated = 1;
       }
@@ -1429,9 +1429,9 @@ int video_decoding_unit_process (void *arg) {
   if (krad_link->video_codec == Y4M) {
     //fixme
     //if (port_updated == 0) {
-    //  krad_compositor_port_set_io_params (krad_link->krad_compositor_port,
-    //                    krad_link->krad_vhs->width,
-    //                    krad_link->krad_vhs->height);
+    //  krad_compositor_port_set_source_size (krad_link->krad_compositor_port,
+    //                                        krad_link->krad_vhs->width,
+    //                                        krad_link->krad_vhs->height);
     //                          
     //  port_updated = 1;
     //}

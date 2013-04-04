@@ -123,8 +123,8 @@ krad_compositor_local_port_create (krad_compositor_t *compositor,
                                    char *sysname, int direction,
                                    int shm_sd, int msg_sd);
 
-void krad_compositor_port_set_io_params (kr_comp_port_t *port,
-                                         int width, int height);
+void krad_compositor_port_set_source_size (kr_comp_port_t *port,
+                                           int width, int height);
 
 void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
                                            int x, int y,

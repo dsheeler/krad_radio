@@ -32,6 +32,9 @@ struct krad_frame_St {
 	
 	uint64_t timecode;
 	
+	int width;
+	int height;
+	
 };
 
 struct krad_framepool_St {

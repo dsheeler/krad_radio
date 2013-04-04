@@ -93,6 +93,20 @@ void krad_compositor_clear_frame (krad_compositor_t *compositor) {
   cairo_restore (compositor->cr);
 }
 
+void krad_compositor_port_tick (krad_compositor_port_t *port) {
+
+  krad_compositor_subunit_tick (&port->subunit);
+
+  if (port->crop_width_easing.active) {
+    port->crop_width = krad_easing_process (&port->crop_width_easing,
+                                            port->crop_width, NULL);
+  }
+  if (port->crop_height_easing.active) {
+    port->crop_height = krad_easing_process (&port->crop_height_easing,
+                                             port->crop_height, NULL);
+  }
+}
+
 void krad_compositor_videoport_render (krad_compositor_port_t *port,
                                        cairo_t *cr) {
 
@@ -100,7 +114,7 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
   
   frame = NULL;
 
-  frame = krad_compositor_port_pull_frame (port);    
+  frame = krad_compositor_port_pull_frame (port);
 
   if (frame != NULL) {
 
@@ -108,10 +122,30 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
 
       cairo_save (cr);
 
-      if (port->subunit.rotation != 0.0f) {
-        cairo_translate (cr, port->crop_width / 2, port->crop_height / 2);
-        cairo_rotate (cr, port->subunit.rotation * (M_PI/180.0));
-        cairo_translate (cr, port->crop_width / -2, port->crop_height / -2);
+      if (port->local == 1) {
+        if ((port->subunit.width != port->source_width) ||
+            (port->subunit.height != port->source_height)) {
+
+          port->subunit.xscale = (float)port->subunit.width / port->source_width;
+          port->subunit.yscale = (float)port->subunit.height / port->source_height;
+        }
+        
+        if ((port->subunit.xscale != 1.0f) || (port->subunit.yscale != 1.0f)) {
+          cairo_translate (cr, port->subunit.x, port->subunit.y);
+          cairo_translate (cr, ((port->subunit.width / 2) * port->subunit.xscale),
+                  ((port->subunit.height / 2) * port->subunit.yscale));
+          cairo_scale (cr, port->subunit.xscale, port->subunit.yscale);
+          cairo_translate (cr, port->subunit.width / -2, port->subunit.height / -2);    
+          cairo_translate (cr, port->subunit.x * -1, port->subunit.y * -1);    
+        }
+
+        if (port->subunit.rotation != 0.0f) {
+          cairo_translate (cr, port->subunit.x, port->subunit.y);
+          cairo_translate (cr, frame->width / 2, frame->height / 2);
+          cairo_rotate (cr, port->subunit.rotation * (M_PI/180.0));
+          cairo_translate (cr, frame->width / -2, frame->height / -2);
+          cairo_translate (cr, -port->subunit.x, -port->subunit.y);
+        }
       }
 
       cairo_set_source_surface (cr, frame->cst,
@@ -120,7 +154,7 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
 
       cairo_rectangle (cr,
                        port->subunit.x, port->subunit.y,
-                       port->crop_width, port->crop_height);
+                       frame->width, frame->height);
 
       cairo_clip (cr);
 
@@ -132,9 +166,7 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
 
       cairo_restore (cr);
     }
-    
-    krad_compositor_subunit_tick (&port->subunit);
-  
+
     krad_framepool_unref_frame (frame);
     frame = NULL;
   }
@@ -300,7 +332,7 @@ void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
                                            int crop_width, int crop_height,
                                            float opacity, float rotation) {
 
-  printkd ("comp compy params func called");
+  printk ("comp params func called");
 
   if ((x != port->subunit.x) || (y != port->subunit.y)) {
     krad_compositor_subunit_set_xy (&port->subunit, x, y, 0);
@@ -326,8 +358,8 @@ void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
   port->comp_params_updated = 1;
 }
 
-void krad_compositor_port_set_io_params (krad_compositor_port_t *port,
-                                         int width, int height) {
+void krad_compositor_port_set_source_size (krad_compositor_port_t *port,
+                                           int width, int height) {
 
   int x;
   int y;
@@ -335,13 +367,15 @@ void krad_compositor_port_set_io_params (krad_compositor_port_t *port,
   x = 0;
   y = 0;
 
-  printkd ("comp io params func called");
+  printk ("comp set_source_size func called %p %dx%d",
+          port, width, height);
 
   port->source_width = width;
   port->source_height = height;
 
   krad_compositor_aspect_scale (port->source_width, port->source_height,
-                                port->krad_compositor->width, port->krad_compositor->height,
+                                port->krad_compositor->width,
+                                port->krad_compositor->height,
                                 &port->subunit.width, &port->subunit.height);
 
   port->crop_width = port->subunit.width;
@@ -372,49 +406,44 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *port, krad_fra
   int rgb_stride_arr[3] = {4*dststride, 0, 0};
   unsigned char *dst[4];
   
-  if ((port->io_params_updated) || (port->comp_params_updated)) {
-    if (port->sws_converter != NULL) {
-      sws_freeContext ( port->sws_converter );
-      port->sws_converter = NULL;
-    }
-    port->io_params_updated = 0;
-    port->comp_params_updated = 0;
-    printkd ("I knew about the update");
-  }
+  krad_compositor_port_tick (port);
   
   if (port->yuv_color_depth != krad_frame->format) {
-    if (port->sws_converter != NULL) {
-      sws_freeContext ( port->sws_converter );
-      port->sws_converter = NULL;
-    }
     port->yuv_color_depth = krad_frame->format;
   }  
   
+  port->sws_converter = sws_getCachedContext ( port->sws_converter,
+                                               port->source_width,
+                                               port->source_height,
+                                               port->yuv_color_depth,
+                                               port->subunit.width,
+                                               port->subunit.height,
+                                               PIX_FMT_RGB32, 
+                                               port->sws_algorithm,
+                                               NULL, NULL, NULL);
+
   if (port->sws_converter == NULL) {
+    failfast ("Krad Compositor: could not sws_getCachedContext");
+  }
 
-    port->sws_converter =
-      sws_getContext ( port->source_width,
-               port->source_height,
-               port->yuv_color_depth,
-               port->subunit.width,
-               port->subunit.height,
-               PIX_FMT_RGB32, 
-               port->sws_algorithm,
-               NULL, NULL, NULL);
-      
-    printk ("compositor port scaling now: %dx%d [%dx%d]-> %dx%d",
-        port->source_width,
-        port->source_height,
-        port->crop_width,
-        port->crop_height,        
-        port->subunit.width,
-        port->subunit.height);         
-  }                   
-
+  /*    
+  printk ("compositor port scaling now: %dx%d [%dx%d]-> %dx%d",
+          port->source_width,
+          port->source_height,
+          port->crop_width,
+          port->crop_height,        
+          port->subunit.width,
+          port->subunit.height);         
+  */
   dst[0] = (unsigned char *)krad_frame->pixels;
   sws_scale (port->sws_converter,
         (const uint8_t * const*)krad_frame->yuv_pixels,
          krad_frame->yuv_strides, 0, port->source_height, dst, rgb_stride_arr);
+         
+         
+  krad_frame->width = port->subunit.width;
+  krad_frame->height = port->subunit.height;
+         
   krad_compositor_port_push_frame (port, krad_frame);
 }
 
@@ -430,34 +459,23 @@ krad_frame_t *krad_compositor_port_pull_yuv_frame (krad_compositor_port_t *port,
     int rgb_stride_arr[3] = {4*port->krad_compositor->width, 0, 0};
     unsigned char *src[4];
     
-    if (port->io_params_updated) {
-      if (port->sws_converter != NULL) {
-        sws_freeContext ( port->sws_converter );
-        port->sws_converter = NULL;
-      }
-      port->io_params_updated = 0;
-    }
-    
     if (port->yuv_color_depth != color_depth) {
-      if (port->sws_converter != NULL) {
-        sws_freeContext ( port->sws_converter );
-        port->sws_converter = NULL;
-      }
       port->yuv_color_depth = color_depth;
     }
     
-    if (port->sws_converter == NULL) {
+    port->sws_converter = sws_getCachedContext ( port->sws_converter,
+                                                 port->krad_compositor->width,
+                                                 port->krad_compositor->height,
+                                                 PIX_FMT_RGB32,
+                                                 port->subunit.width,
+                                                 port->subunit.height,
+                                                 port->yuv_color_depth, 
+                                                 port->sws_algorithm,
+                                                 NULL, NULL, NULL);
 
-      port->sws_converter =
-        sws_getContext ( port->krad_compositor->width,
-                 port->krad_compositor->height,
-                 PIX_FMT_RGB32,
-                 port->subunit.width,
-                 port->subunit.height,
-                 port->yuv_color_depth, 
-                 port->sws_algorithm,
-                 NULL, NULL, NULL);
-    }                   
+    if (port->sws_converter == NULL) {
+      failfast ("Krad Compositor: could not sws_getCachedContext");
+    }
 
     src[0] = (unsigned char *)krad_frame->pixels;
 
@@ -478,43 +496,34 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *port, krad_fr
   unsigned char *src[4];  
   krad_frame_t *scaled_frame;  
   
+  krad_compositor_port_tick (port);
+  
   krad_frame->format = PIX_FMT_RGB32;
   
   if ((port->source_width != port->subunit.width) ||
-    (port->source_height != port->subunit.height)) {
-  
-    if ((port->io_params_updated) || (port->comp_params_updated)) {
-      if (port->sws_converter != NULL) {
-        sws_freeContext ( port->sws_converter );
-        port->sws_converter = NULL;
-      }
-      port->io_params_updated = 0;
-      port->comp_params_updated = 0;
-      printkd ("I knew about the rgb update");
-    }
-  
-    if (port->sws_converter == NULL) {
+      (port->source_height != port->subunit.height)) {
 
-      port->sws_converter =
-        sws_getContext ( port->source_width,
-                 port->source_height,
-                 krad_frame->format,
-                 port->subunit.width,
-                 port->subunit.height,
-                 PIX_FMT_RGB32, 
-                 port->sws_algorithm,
-                 NULL, NULL, NULL);
+  port->sws_converter = sws_getCachedContext ( port->sws_converter,
+                                               port->source_width,
+                                               port->source_height,
+                                               krad_frame->format,
+                                               port->subunit.width,
+                                               port->subunit.height,
+                                               PIX_FMT_RGB32, 
+                                               port->sws_algorithm,
+                                               NULL, NULL, NULL);
         
-      if (port->sws_converter == NULL) {
-        failfast ("Krad Compositor: fraked");
-      }
-                 
-      printk ("set scaling to w %d h %d sw %d sh %d",
-          port->subunit.width,
-          port->subunit.height,
-          port->source_width,
-          port->source_height);               
+    if (port->sws_converter == NULL) {
+      failfast ("Krad Compositor: could not sws_getCachedContext");
     }
+      
+    /*      
+    printk ("set scaling to w %d h %d sw %d sh %d",
+        port->subunit.width,
+        port->subunit.height,
+        port->source_width,
+        port->source_height);               
+    */
 
     while (krad_ringbuffer_read_space (port->frame_ring) >= (sizeof(krad_frame_t *) * 30)) {
       usleep (18000);
@@ -533,9 +542,16 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *port, krad_fr
     sws_scale (port->sws_converter, (const uint8_t * const*)src,
            input_rgb_stride_arr, 0, port->source_height, dst, output_rgb_stride_arr);
 
+    krad_frame->width = port->subunit.width;
+    krad_frame->height = port->subunit.height;
+
     krad_compositor_port_push_frame (port, scaled_frame);
     krad_framepool_unref_frame (scaled_frame);
   } else {
+  
+    krad_frame->width = port->subunit.width;
+    krad_frame->height = port->subunit.height;
+  
     krad_compositor_port_push_frame (port, krad_frame);
   }
 }
@@ -566,6 +582,11 @@ krad_frame_t *krad_compositor_port_pull_frame_local (krad_compositor_port_t *por
   ret = 0;
   wrote = 0;
   buf[0] = 0;
+
+  krad_compositor_port_tick (port);
+
+  port->local_frame->width = port->source_width;
+  port->local_frame->height = port->source_height;
 
   cairo_surface_flush (port->local_frame->cst);
   wrote = write (port->msg_sd, buf, 1);
@@ -1195,10 +1216,22 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                                                uc->value.integer);                
                 break;
               case KR_WIDTH:
+
+                //if (uc->value.integer < compositor->port[uc->address.id.number].crop_width) {
+                  krad_easing_set_new_value (&compositor->port[uc->address.id.number].crop_width_easing,
+                                             uc->value.integer, uc->duration, EASEINOUTSINE, NULL);
+                //}
+              
                 krad_compositor_subunit_set_width (&compositor->port[uc->address.id.number].subunit,
                                                uc->value.integer, uc->duration);                
                 break;
               case KR_HEIGHT:
+
+                //if (uc->value.integer < compositor->port[uc->address.id.number].crop_height) {
+                  krad_easing_set_new_value (&compositor->port[uc->address.id.number].crop_height_easing,
+                                             uc->value.integer, uc->duration, EASEINOUTSINE, NULL);
+                //}
+
                 krad_compositor_subunit_set_height (&compositor->port[uc->address.id.number].subunit,
                                                uc->value.integer, uc->duration);                
                 break;

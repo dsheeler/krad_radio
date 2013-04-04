@@ -23,6 +23,11 @@ struct krad_compositor_port_St {
   int crop_width;
   int crop_height;
   
+  krad_easing_t crop_x_easing;
+  krad_easing_t crop_y_easing;
+  krad_easing_t crop_width_easing;
+  krad_easing_t crop_height_easing;
+  
   int crop_start_pixel[4];
   
   struct SwsContext *sws_converter;

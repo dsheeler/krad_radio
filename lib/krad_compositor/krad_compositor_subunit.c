@@ -14,8 +14,9 @@ void krad_compositor_subunit_reset (krad_compositor_subunit_t *subunit) {
 
   subunit->xscale = 1.0f;
   subunit->yscale = 1.0f;
-  //subunit->opacity = 0.0f;
-  subunit->opacity = 1.0f;
+  subunit->opacity = 0.0f;
+  //subunit->opacity = 1.0f;
+  krad_compositor_subunit_set_opacity (subunit, 1.0f, 24);
   subunit->rotation = 0.0f;
 }
 
