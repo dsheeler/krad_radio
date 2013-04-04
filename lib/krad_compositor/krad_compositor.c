@@ -399,7 +399,7 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *port, krad_fra
                port->subunit.width,
                port->subunit.height,
                PIX_FMT_RGB32, 
-               SWS_BICUBIC,
+               port->sws_algorithm,
                NULL, NULL, NULL);
       
     printk ("compositor port scaling now: %dx%d [%dx%d]-> %dx%d",
@@ -455,7 +455,7 @@ krad_frame_t *krad_compositor_port_pull_yuv_frame (krad_compositor_port_t *port,
                  port->subunit.width,
                  port->subunit.height,
                  port->yuv_color_depth, 
-                 SWS_BICUBIC,
+                 port->sws_algorithm,
                  NULL, NULL, NULL);
     }                   
 
@@ -502,7 +502,7 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *port, krad_fr
                  port->subunit.width,
                  port->subunit.height,
                  PIX_FMT_RGB32, 
-                 SWS_BICUBIC,
+                 port->sws_algorithm,
                  NULL, NULL, NULL);
         
       if (port->sws_converter == NULL) {
@@ -682,6 +682,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
     return NULL;
   }
   
+  port->sws_algorithm = SWS_BILINEAR;
   port->krad_compositor = krad_compositor;
   port->local = local;
   port->direction = direction;  

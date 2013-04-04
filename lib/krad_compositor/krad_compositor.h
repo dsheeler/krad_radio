@@ -39,7 +39,7 @@ struct krad_compositor_St {
 
   krad_frame_t *frame;
   krad_framepool_t *framepool;
-    
+
   int width;
   int height;
   int fps_numerator;

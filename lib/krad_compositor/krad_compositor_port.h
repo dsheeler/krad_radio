@@ -25,7 +25,8 @@ struct krad_compositor_port_St {
   
   int crop_start_pixel[4];
   
-  struct SwsContext *sws_converter;  
+  struct SwsContext *sws_converter;
+  int sws_algorithm;
   int yuv_color_depth;
   
   int io_params_updated;
