@@ -1703,7 +1703,11 @@ static int video_thread(void *arg)
           pts = pts_int * av_q2d(is->video_st->time_base);
           
   send_frame_to_krad (frame, pts);
-          
+  
+  
+    av_frame_unref(frame);
+    
+    
   //while (kplayer.updated == 1) {
   //  usleep(2000);
   //}
@@ -2118,10 +2122,10 @@ static void sdl_audio_callback(void *opaque, Uint8 *stream, int len)
                is->audio_buf      = is->silence_buf;
                is->audio_buf_size = sizeof(is->silence_buf);
            } else {
-               if (is->show_audio)
-                   update_sample_display(is, (int16_t *)is->audio_buf, audio_size);
-               audio_size = synchronize_audio(is, (int16_t *)is->audio_buf, audio_size,
-                                              pts);
+               //if (is->show_audio)
+               //    update_sample_display(is, (int16_t *)is->audio_buf, audio_size);
+              // audio_size = synchronize_audio(is, (int16_t *)is->audio_buf, audio_size,
+               //                               pts);
                is->audio_buf_size = audio_size;
            }
            is->audio_buf_index = 0;
@@ -2185,9 +2189,9 @@ static int stream_component_open(VideoState *is, int stream_index)
             fprintf(stderr, "unable to guess channel layout\n");
             return -1;
         }
-        if (avctx->channels == 1)
-            is->sdl_channel_layout = AV_CH_LAYOUT_MONO;
-        else
+       // if (avctx->channels == 1)
+         //   is->sdl_channel_layout = AV_CH_LAYOUT_MONO;
+        //else
             is->sdl_channel_layout = AV_CH_LAYOUT_STEREO;
         is->sdl_channels = av_get_channel_layout_nb_channels(is->sdl_channel_layout);
 
@@ -3061,7 +3065,7 @@ int videoport_process (void *buffer, void *arg) {
   }
 
   //if (kplayer.last_frame_ms > 0) {
-    kplayer.ms = (float)kplayer.samples / 48000.0f;
+
   //}
 
 	return 0;
@@ -3095,6 +3099,8 @@ int audioport_process (uint32_t nframes, void *arg) {
     sdl_audio_callback (mykplayer->aptr, &mykplayer->audiocrap, KRAD_MIXER_DEFAULT_TICKER_PERIOD * 4 * 2);
 	
 	  mykplayer->samples += 1024;
+	
+  mykplayer->ms = (float)kplayer.samples / 48000.0f;
 	
 	  for (s = 0; s < KRAD_MIXER_DEFAULT_TICKER_PERIOD; s++) {
 	    for (c = 0; c < 2; c++) {
