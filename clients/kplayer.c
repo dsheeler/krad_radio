@@ -18,12 +18,15 @@
 #include <libswscale/swscale.h>
 #include <libavresample/avresample.h>
 #include <libavfilter/avfilter.h>
-
+static void send_frame_to_krad (AVFrame *src_frame, float last_frame_ms);
 static int kplayer_end ();
 
 typedef struct kplayer_St kplayer_t;
 
 struct kplayer_St {
+  uint64_t samples;
+  float last_frame_ms;
+  float ms;
 	kr_client_t *client;
 	kr_videoport_t *videoport;
   kr_audioport_t *audioport;
@@ -233,10 +236,10 @@ typedef struct VideoState {
 static AVInputFormat *file_iformat;
 static const char *input_filename;
 static const char *window_title;
-static int fs_screen_width;
-static int fs_screen_height;
-static int screen_width  = 0;
-static int screen_height = 0;
+static int fs_screen_width = 960;
+static int fs_screen_height = 540;
+static int screen_width  = 960;
+static int screen_height = 540;
 static int audio_disable;
 static int video_disable;
 static int wanted_stream[AVMEDIA_TYPE_NB] = {
@@ -901,29 +904,29 @@ static int video_open(VideoState *is)
         h = is->video_st->codec->height;
 #endif
     } else {
-        w = 640;
-        h = 480;
+        w = 960;
+        h = 540;
     }
-    if (screen && is->width == screen->w && screen->w == w
-       && is->height== screen->h && screen->h == h)
-        return 0;
+    //if (screen && is->width == screen->w && screen->w == w
+    //   && is->height== screen->h && screen->h == h)
+     //   return 0;
 
 #if defined(__APPLE__) && !SDL_VERSION_ATLEAST(1, 2, 14)
     /* setting bits_per_pixel = 0 or 32 causes blank video on OS X and older SDL */
-    screen = SDL_SetVideoMode(w, h, 24, flags);
+    //screen = SDL_SetVideoMode(w, h, 24, flags);
 #else
-    screen = SDL_SetVideoMode(w, h, 0, flags);
+    //screen = SDL_SetVideoMode(w, h, 0, flags);
 #endif
-    if (!screen) {
-        fprintf(stderr, "SDL: could not set video mode - exiting\n");
-        return -1;
-    }
+    //if (!screen) {
+    //    fprintf(stderr, "SDL: could not set video mode - exiting\n");
+     //   return -1;
+    //}
     if (!window_title)
         window_title = input_filename;
-    SDL_WM_SetCaption(window_title, window_title);
+   // SDL_WM_SetCaption(window_title, window_title);
 
-    is->width  = screen->w;
-    is->height = screen->h;
+    is->width  = 960;// screen->w;
+    is->height = 540; // screen->h;
 
     return 0;
 }
@@ -1168,8 +1171,8 @@ retry:
             }
 
             /* display picture */
-            if (!display_disable)
-                video_display(is);
+            //if (!display_disable)
+            //    video_display(is);
 
             /* update queue size and signal for next picture */
             if (++is->pictq_rindex == VIDEO_PICTURE_QUEUE_SIZE)
@@ -1187,8 +1190,8 @@ retry:
            than nothing, just to test the implementation */
 
         /* display picture */
-        if (!display_disable)
-            video_display(is);
+      //  if (!display_disable)
+        //    video_display(is);
     }
     if (show_status) {
         static int64_t last_time;
@@ -1232,7 +1235,7 @@ static void stream_close(VideoState *is)
     for (i = 0; i < VIDEO_PICTURE_QUEUE_SIZE; i++) {
         vp = &is->pictq[i];
         if (vp->bmp) {
-            SDL_FreeYUVOverlay(vp->bmp);
+            //SDL_FreeYUVOverlay(vp->bmp);
             vp->bmp = NULL;
         }
     }
@@ -1278,8 +1281,8 @@ static void alloc_picture(void *opaque)
 
     vp = &is->pictq[is->pictq_windex];
 
-    if (vp->bmp)
-        SDL_FreeYUVOverlay(vp->bmp);
+    //if (vp->bmp)
+    //    SDL_FreeYUVOverlay(vp->bmp);
 
 #if CONFIG_AVFILTER
     vp->width   = is->out_video_filter->inputs[0]->w;
@@ -1290,18 +1293,19 @@ static void alloc_picture(void *opaque)
     vp->height  = is->video_st->codec->height;
     vp->pix_fmt = is->video_st->codec->pix_fmt;
 #endif
-
+/*
     vp->bmp = SDL_CreateYUVOverlay(vp->width, vp->height,
                                    SDL_YV12_OVERLAY,
                                    screen);
     if (!vp->bmp || vp->bmp->pitches[0] < vp->width) {
         /* SDL allocates a buffer smaller than requested if the video
-         * overlay hardware is unable to support the requested size. */
+         * overlay hardware is unable to support the requested size. 
         fprintf(stderr, "Error: the video system does not support an image\n"
                         "size of %dx%d pixels. Try using -vf \"scale=w:h\"\n"
                         "to reduce the image size.\n", vp->width, vp->height );
         do_exit();
     }
+    */
 
     SDL_LockMutex(is->pictq_mutex);
     vp->allocated = 1;
@@ -1309,8 +1313,7 @@ static void alloc_picture(void *opaque)
     SDL_UnlockMutex(is->pictq_mutex);
 }
 
-
-void send_frame_to_krad (AVFrame *src_frame) {
+static void send_frame_to_krad (AVFrame *src_frame, float last_frame_ms) {
 
   int rgb_stride_arr[3] = {4*960, 0, 0};
   unsigned char *dst[4];
@@ -1356,20 +1359,24 @@ void send_frame_to_krad (AVFrame *src_frame) {
   }
   
   
+      if (last_frame_ms < kplayer.ms) {
+        return;
+      }
+  
+    while (last_frame_ms > kplayer.ms + 0.040) {
+      usleep(2000);
+    }
+  
+  
   if (kplayer.updated == 0) {
+  
+
+  
   dst[0] = kplayer.rgba;
     sws_scale (kplayer.sws_converter, src_frame->data, src_frame->linesize,
               0, src_frame->height, dst, rgb_stride_arr);
-
+  kplayer.last_frame_ms = last_frame_ms;
     kplayer.updated = 1;
-  } else {
-    if (kplayer.updated2 == 3) {
-  dst[0] = kplayer.rgba2;
-      sws_scale (kplayer.sws_converter, src_frame->data, src_frame->linesize,
-                0, src_frame->height, dst, rgb_stride_arr);
-
-      kplayer.updated2 = 1;
-    }
   }
   
   //dst[0] = (unsigned char *)krad_frame->pixels;
@@ -1389,7 +1396,7 @@ static int queue_picture(VideoState *is, AVFrame *src_frame, double pts, int64_t
 #else
     int dst_pix_fmt = AV_PIX_FMT_YUV420P;
 #endif
-
+//send_frame_to_krad (src_frame);
     /* wait until we have space to put a new picture */
     SDL_LockMutex(is->pictq_mutex);
 
@@ -1406,6 +1413,7 @@ static int queue_picture(VideoState *is, AVFrame *src_frame, double pts, int64_t
         return -1;
 
     vp = &is->pictq[is->pictq_windex];
+//send_frame_to_krad (src_frame);
 
     /* alloc or resize hardware picture buffer */
     if (!vp->bmp || vp->reallocate ||
@@ -1417,7 +1425,7 @@ static int queue_picture(VideoState *is, AVFrame *src_frame, double pts, int64_t
         vp->height != is->video_st->codec->height) {
 #endif
         SDL_Event event;
-
+vp->bmp = "d";
         vp->allocated  = 0;
         vp->reallocate = 0;
 
@@ -1438,11 +1446,13 @@ static int queue_picture(VideoState *is, AVFrame *src_frame, double pts, int64_t
             return -1;
     }
 
-    /* if the frame is not skipped, then display it */
+
+
+    /* if the frame is not skipped, then display it 
     if (vp->bmp) {
         AVPicture pict = { { 0 } };
 
-        /* get a pointer on the bitmap */
+        /* get a pointer on the bitmap 
         SDL_LockYUVOverlay (vp->bmp);
 
         pict.data[0] = vp->bmp->pixels[0];
@@ -1481,9 +1491,9 @@ send_frame_to_krad (src_frame);
         sws_scale(is->img_convert_ctx, src_frame->data, src_frame->linesize,
                   0, vp->height, pict.data, pict.linesize);
 #endif
-        /* update the bitmap content */
+        /* update the bitmap content 
         SDL_UnlockYUVOverlay(vp->bmp);
-
+*/
         vp->pts = pts;
         vp->pos = pos;
 
@@ -1495,7 +1505,7 @@ send_frame_to_krad (src_frame);
 
         is->pictq_size++;
         SDL_UnlockMutex(is->pictq_mutex);
-    }
+    //}
     return 0;
 }
 
@@ -1677,8 +1687,8 @@ static int video_thread(void *arg)
 #if CONFIG_AVFILTER
         AVRational tb;
 #endif
-        while (is->paused && !is->videoq.abort_request)
-            SDL_Delay(10);
+      //  while (is->paused && !is->videoq.abort_request)
+      //      SDL_Delay(10);
 
         av_free_packet(&pkt);
 
@@ -1689,6 +1699,24 @@ static int video_thread(void *arg)
         if (!ret)
             continue;
 
+
+          pts = pts_int * av_q2d(is->video_st->time_base);
+          
+  send_frame_to_krad (frame, pts);
+          
+  //while (kplayer.updated == 1) {
+  //  usleep(2000);
+  //}
+  
+      //VideoPicture *vp;
+    //vp = &is->pictq[is->pictq_rindex];
+  
+        //vp->pts = pts_int;
+        //vp->pos = pos;
+        //vp->target_clock = compute_target_time(vp->pts, is);
+  
+  
+            continue;
 #if CONFIG_AVFILTER
         if (   last_w != is->video_st->codec->width
             || last_h != is->video_st->codec->height) {
@@ -2699,6 +2727,12 @@ static void toggle_audio_display(void)
 /* handle an event sent by the GUI */
 static void event_loop(void)
 {
+
+
+    getchar();
+    do_exit();
+  
+
     SDL_Event event;
     double incr, pos, frac;
 
@@ -2819,10 +2853,10 @@ static void event_loop(void)
             break;
         case SDL_VIDEORESIZE:
             if (cur_stream) {
-                screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 0,
-                                          SDL_HWSURFACE|SDL_RESIZABLE|SDL_ASYNCBLIT|SDL_HWACCEL);
-                screen_width  = cur_stream->width  = event.resize.w;
-                screen_height = cur_stream->height = event.resize.h;
+                //screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 0,
+                //                          SDL_HWSURFACE|SDL_RESIZABLE|SDL_ASYNCBLIT|SDL_HWACCEL);
+                screen_width  = 960; //cur_stream->width  = event.resize.w;
+                screen_height = 540; //cur_stream->height = event.resize.h;
             }
             break;
         case SDL_QUIT:
@@ -3006,8 +3040,17 @@ static void opt_input_file(void *optctx, const char *filename)
 int videoport_process (void *buffer, void *arg) {
 
   if (kplayer.updated == 1) {
-    memcpy (buffer, kplayer.rgba, 960 * 540 * 4);
-    kplayer.updated = 0;
+    
+    
+
+    
+ 
+        memcpy (buffer, kplayer.rgba, 960 * 540 * 4);
+        kplayer.updated = 0;
+
+
+
+    
   } else {
   
     if (kplayer.updated2 == 1) {
@@ -3016,6 +3059,10 @@ int videoport_process (void *buffer, void *arg) {
     }
   
   }
+
+  //if (kplayer.last_frame_ms > 0) {
+    kplayer.ms = (float)kplayer.samples / 48000.0f;
+  //}
 
 	return 0;
 }
@@ -3046,6 +3093,8 @@ int audioport_process (uint32_t nframes, void *arg) {
   if (mykplayer->aptr != NULL) {
 
     sdl_audio_callback (mykplayer->aptr, &mykplayer->audiocrap, KRAD_MIXER_DEFAULT_TICKER_PERIOD * 4 * 2);
+	
+	  mykplayer->samples += 1024;
 	
 	  for (s = 0; s < KRAD_MIXER_DEFAULT_TICKER_PERIOD; s++) {
 	    for (c = 0; c < 2; c++) {
@@ -3139,7 +3188,8 @@ int main(int argc, char **argv)
     if (display_disable) {
         video_disable = 1;
     }
-    flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+   // flags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
+        flags = SDL_INIT_TIMER;
 #if !defined(__MINGW32__) && !defined(__APPLE__)
     flags |= SDL_INIT_EVENTTHREAD; /* Not supported on Windows or Mac OS X */
 #endif
@@ -3147,13 +3197,13 @@ int main(int argc, char **argv)
         fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());
         exit(1);
     }
-
+/*
     if (!display_disable) {
         const SDL_VideoInfo *vi = SDL_GetVideoInfo();
         fs_screen_width = vi->current_w;
         fs_screen_height = vi->current_h;
     }
-
+*/
     SDL_EventState(SDL_ACTIVEEVENT, SDL_IGNORE);
     SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
     SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
