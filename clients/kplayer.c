@@ -8,13 +8,13 @@
 /*
 #include <libavutil/time.h>
 #include <libavutil/frame.h>
-#include <libavutil/opt.h>
 */
+#include <libavutil/opt.h>
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavdevice/avdevice.h>
 #include <libswscale/swscale.h>
-
+#include <libavresample/avresample.h>
 #include "kr_client.h"
 
 typedef struct krad_player_St krad_player_t;
@@ -23,6 +23,7 @@ typedef struct krad_libav_St krad_libav_t;
 
 struct krad_libav_St {
   AVFormatContext *ctx;
+  AVAudioResampleContext *avr;
   AVRational sar;
   AVInputFormat *iformat;
   AVStream *audio_st;
@@ -51,8 +52,9 @@ struct krad_player_St {
   int old_src_w;
   int old_src_h;
   int old_px_fmt;
-  void *aptr;
-  float audio[4096 * 4];
+  float audio0[8192];
+  float audio1[8192];
+  int samples_buffered;
   krad_libav_t avc;
 };
 /*
@@ -172,6 +174,16 @@ void krad_player_open (krad_player_t *player, char *input) {
     fprintf (stderr, "Could not find open the needed codec");
   }
   
+  player->avc.avr = avresample_alloc_context();
+  av_opt_set_int(player->avc.avr, "in_channel_layout",  codec_ctx->channel_layout, 0);
+  av_opt_set_int(player->avc.avr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
+  av_opt_set_int(player->avc.avr, "in_sample_rate",     codec_ctx->sample_rate,                0);
+  av_opt_set_int(player->avc.avr, "out_sample_rate",    48000,                0);
+  av_opt_set_int(player->avc.avr, "in_sample_fmt",      codec_ctx->sample_fmt,   0);
+  av_opt_set_int(player->avc.avr, "out_sample_fmt",     AV_SAMPLE_FMT_FLTP,    0);
+
+  avresample_open (player->avc.avr);  
+  
   kr_audioport_activate (player->audioport);
 
   AVPacket packet;
@@ -191,7 +203,7 @@ void krad_player_open (krad_player_t *player, char *input) {
     }
 
     if (packet.stream_index != stream_id) {
-      printf ("skipping track %d\n", packet.stream_index);
+      //printf ("skipping track %d\n", packet.stream_index);
       av_free_packet (&packet);
       continue;
     }
@@ -211,29 +223,38 @@ void krad_player_open (krad_player_t *player, char *input) {
       printf ("Got to EOF from decoder\n");
       break;
     }
+    
+    while (avresample_available(player->avc.avr) >= 48000) {
+      usleep (10000);
+    }
 
+    /*
     printf ("Decoded! %d\n", packets++);
     
-    if (packets < 10) {
-      printf ("Samplerate %d Channels %d Channel Layout %lu FMT %s\n",
-              frame->sample_rate, codec_ctx->channels, 
-              frame->channel_layout,
-              av_get_sample_fmt_name (frame->format));
-              
-      data_size = av_samples_get_buffer_size (NULL, codec_ctx->channels,
-                                              frame->nb_samples,
-                                              frame->format, 1);
-      printf ("Data size %d\n", data_size); 
-      //break;
-    } else {
-      break;
-    }
+    printf ("Samplerate %d Channels %d Channel Layout %lu FMT %s\n",
+            frame->sample_rate, codec_ctx->channels, 
+            frame->channel_layout,
+            av_get_sample_fmt_name (frame->format));
+    */   
+    data_size = av_samples_get_buffer_size (NULL, codec_ctx->channels,
+                                            frame->nb_samples,
+                                            frame->format, 1);
+    //printf ("Data size %d\n", data_size); 
+
+    player->samples_buffered += avresample_convert (player->avc.avr,
+                                                    NULL, 0, 0,
+                                                    frame->data,
+                                                    frame->linesize[0],
+                                                    frame->nb_samples);
+
+    printf ("Playback position: %f\r",
+            (float)player->samples / 48000.0f);
+    fflush (stdout);
   }
 
   av_frame_free (&frame);
-
+  avresample_free(&player->avc.avr);
   kr_audioport_deactivate (player->audioport);
-
   krad_player_close (player);
 }
 
@@ -251,33 +272,22 @@ int videoport_process (void *buffer, void *arg) {
 
 int audioport_process (uint32_t nframes, void *arg) {
 
-  int s;
-  int c;
-  float *buffer;
-  float *buffer2;  
   krad_player_t *player;
+
+  uint8_t *outputs[2];
 
   player = (krad_player_t *)arg;
 
-  buffer = kr_audioport_get_buffer (player->audioport, 0);
-  buffer2 = kr_audioport_get_buffer (player->audioport, 1);
+  if (avresample_available(player->avc.avr) >= nframes) {
+    outputs[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
+    outputs[1] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 1);
 
-  if (player->aptr != NULL) {
-
-    //old_audio_callback (player->aptr, &player->audio,
-      //                  KRAD_MIXER_DEFAULT_TICKER_PERIOD * 4 * 2);
-  
-    player->samples += 1024;
-    player->ms = (float)player->samples / 48000.0f;
-  
-    for (s = 0; s < KRAD_MIXER_DEFAULT_TICKER_PERIOD; s++) {
-      for (c = 0; c < 2; c++) {
-        buffer[s] = player->audio[s * 2 + c];
-         buffer2[s] = player->audio[s * 2 + c];
-      }
-    }
+    avresample_read (player->avc.avr, outputs, nframes);
   }
-  
+
+  player->samples += 1024;
+  player->ms = (float)player->samples / 48000.0f;
+
   return 0;
 }
 
@@ -287,8 +297,6 @@ void libav_init () {
   avdevice_register_all();
   av_register_all();
   avformat_network_init();
-  //av_init_packet(&flush_pkt);
-  //flush_pkt.data = "FLUSH";
 }
 
 void libav_shutdown () {
