@@ -32,6 +32,10 @@ struct krad_libav_St {
   struct SwsContext *scaler;
   int aid;
   int vid;
+  AVCodecContext* adec;
+  AVCodecContext* vdec;
+  AVCodec* acodec;
+  AVCodec* vcodec;
 };
 
 struct krad_player_St {
@@ -126,7 +130,9 @@ void krad_player_close (krad_player_t *player) {
   if (player->audioport) {
     kr_audioport_deactivate (player->audioport);
   }
-  avformat_close_input (&player->avc.ctx);
+  if (player->avc.ctx != NULL) {
+    avformat_close_input (&player->avc.ctx);
+  }
   if (player->avc.avr != NULL) {
     avresample_free (&player->avc.avr);
   }
@@ -135,10 +141,19 @@ void krad_player_close (krad_player_t *player) {
   }
 }
 
+void handle_metadata (krad_player_t *player) {
+  if (0) {
+    AVDictionary* metadata = player->avc.ctx->metadata;
+    AVDictionaryEntry *artist = av_dict_get (metadata, "artist", NULL, 0);
+    AVDictionaryEntry *title = av_dict_get (metadata, "title", NULL, 0);
+    fprintf (stdout, "Playing: %s - %s\n", artist->value, title->value);
+  }
+}
+
 void krad_player_open (krad_player_t *player, char *input) {
 
-  int err;
   int i;
+  int err;
   
   player->avc.ctx = avformat_alloc_context ();
   
@@ -157,28 +172,29 @@ void krad_player_open (krad_player_t *player, char *input) {
   player->avc.aid = -1;
 
   for (i = 0; i < player->avc.ctx->nb_streams; i++) {
-    if (player->avc.ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+    if ((player->avc.vid == -1) && 
+        (player->avc.ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)) {
+      player->avc.vid = i;
+      printf ("Got a Video Track\n");
+    }
+    if ((player->avc.aid == -1) && 
+        (player->avc.ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)) {
       player->avc.aid = i;
-      break;
+      printf ("Got a Audio Track\n");
      }
    }
  
-  if (player->avc.aid == -1) {
+  if ((player->avc.aid == -1) && (player->avc.vid == -1)) {
     fprintf (stderr, "Krad Player: Could get info on input: %s\n", input);
     return;
   }
- 
-  if (0) {
-    AVDictionary* metadata = player->avc.ctx->metadata;
-    AVDictionaryEntry *artist = av_dict_get (metadata, "artist", NULL, 0);
-    AVDictionaryEntry *title = av_dict_get (metadata, "title", NULL, 0);
-    fprintf (stdout, "Playing: %s - %s\n", artist->value, title->value);
-  }
 
-  AVCodecContext* codec_ctx = player->avc.ctx->streams[player->avc.aid]->codec;
-  AVCodec* codec = avcodec_find_decoder (codec_ctx->codec_id);
+  handle_metadata (player); 
 
-  if (!avcodec_open2 (codec_ctx, codec, NULL) < 0) {
+  player->avc.adec = player->avc.ctx->streams[player->avc.aid]->codec;
+  player->avc.acodec = avcodec_find_decoder (player->avc.adec->codec_id);
+
+  if (!avcodec_open2 (player->avc.adec, player->avc.acodec, NULL) < 0) {
     fprintf (stderr, "Krad Player: Could not find open the needed codec");
   }
   
@@ -196,13 +212,13 @@ void krad_player_open (krad_player_t *player, char *input) {
       break;
     }
 
-    if (packet.stream_index != player->avc.aid) {
-      //printf ("skipping track %d\n", packet.stream_index);
+    if ((packet.stream_index != player->avc.aid) && 
+        (packet.stream_index != player->avc.vid)) {
       av_free_packet (&packet);
       continue;
     }
 
-    err = avcodec_decode_audio4 (codec_ctx,
+    err = avcodec_decode_audio4 (player->avc.adec,
                                  frame,
                                  &got_frame,
                                  &packet);
@@ -248,7 +264,6 @@ void krad_player_open (krad_player_t *player, char *input) {
   }
 
   av_frame_free (&frame);
-  krad_player_close (player);
 }
 
 int videoport_process (void *buffer, void *arg) {
@@ -375,6 +390,8 @@ void krad_player (char *station, char *input) {
   signal (SIGINT, signal_recv);
   
   krad_player_open (player, input);
+  krad_player_close (player);
+
   krad_player_destroy (player);
 }
 
