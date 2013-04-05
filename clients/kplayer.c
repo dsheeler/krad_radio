@@ -6,17 +6,18 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <libavutil/avutil.h>
 /*
 #include <libavutil/time.h>
 #include <libavutil/frame.h>
 */
+#include <libavutil/avutil.h>
 #include <libavutil/opt.h>
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavdevice/avdevice.h>
 #include <libswscale/swscale.h>
 #include <libavresample/avresample.h>
+
 #include "kr_client.h"
 
 static int destroy = 0;
@@ -28,34 +29,21 @@ typedef struct krad_libav_St krad_libav_t;
 struct krad_libav_St {
   AVFormatContext *ctx;
   AVAudioResampleContext *avr;
-  AVRational sar;
-  AVInputFormat *iformat;
-  AVStream *audio_st;
-  AVPacket audio_pkt_temp;
-  AVPacket audio_pkt;
-  enum AVPixelFormat pix_fmt;
-  AVFrame *frame;
-  int video_stream;
-  AVStream *video_st;
-  AVPacket flush_pkt;
+  struct SwsContext *scaler;
+  int aid;
+  int vid;
 };
 
 struct krad_player_St {
-  uint64_t samples;
-  float timecode;
-  float ms;
   kr_client_t *client;
   kr_videoport_t *videoport;
   kr_audioport_t *audioport;
-  struct SwsContext *sws_converter;
   char *station;
+  uint64_t samples;
+  float timecode;
+  float ms;
   unsigned char *rgba[960 * 540 * 4];
   unsigned char *rgba2[960 * 540 * 4];
-  int updated;
-  int updated2;
-  int old_src_w;
-  int old_src_h;
-  int old_px_fmt;
   float audio0[8192];
   float audio1[8192];
   int samples_buffered;
@@ -76,8 +64,6 @@ void *video_decoding_thread (void *arg) {
   player = (krad_player_t *)arg;
   frames = 0;
 
-  printf ("Video thread!\n");
-
   for (;;) {
     av_free_packet(&pkt);
     //avcodec_flush_buffers(is->video_st->codec);
@@ -95,7 +81,7 @@ void *video_decoding_thread (void *arg) {
   int rgb_stride_arr[3] = {4*960, 0, 0};
   uint8_t *dst[4];
   
-  player->sws_converter = sws_getCachedContext ( player->sws_converter,
+  player->scaler = sws_getCachedContext ( player->sws_converter,
                                                 frame->width,
                                                 frame->height,
                                                 frame->format,
@@ -115,13 +101,13 @@ void *video_decoding_thread (void *arg) {
       usleep(2000);
     }
 
-    if (player->updated == 0) {
+
       dst[0] = player->rgba;
-      sws_scale (player->sws_converter, frame->data, frame->linesize,
+      sws_scale (player->scaler, frame->data, frame->linesize,
                  0, frame->height, dst, rgb_stride_arr);
       player->timecode = pts;
       player->updated = 1;
-    }
+
    }
   av_free_packet(&pkt);
   av_frame_free(&frame);
@@ -134,12 +120,26 @@ void signal_recv (int sig) {
 }
 
 void krad_player_close (krad_player_t *player) {
+  if (player->videoport) {
+    kr_videoport_deactivate (player->videoport);
+  }
+  if (player->audioport) {
+    kr_audioport_deactivate (player->audioport);
+  }
   avformat_close_input (&player->avc.ctx);
+  if (player->avc.avr != NULL) {
+    avresample_free (&player->avc.avr);
+  }
+  if (player->avc.scaler != NULL) {
+    sws_freeContext ( player->avc.scaler );
+  }
 }
 
 void krad_player_open (krad_player_t *player, char *input) {
 
   int err;
+  int i;
+  
   player->avc.ctx = avformat_alloc_context ();
   
   err = avformat_open_input (&player->avc.ctx, input, NULL, NULL);
@@ -153,31 +153,29 @@ void krad_player_open (krad_player_t *player, char *input) {
     return;
   }
 
-  int stream_id = -1;
-  int i;
+  player->avc.vid = -1;
+  player->avc.aid = -1;
 
   for (i = 0; i < player->avc.ctx->nb_streams; i++) {
     if (player->avc.ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-      stream_id = i;
+      player->avc.aid = i;
       break;
      }
    }
  
-  if (stream_id == -1) {
+  if (player->avc.aid == -1) {
     fprintf (stderr, "Krad Player: Could get info on input: %s\n", input);
     return;
   }
  
   if (0) {
     AVDictionary* metadata = player->avc.ctx->metadata;
-    
     AVDictionaryEntry *artist = av_dict_get (metadata, "artist", NULL, 0);
     AVDictionaryEntry *title = av_dict_get (metadata, "title", NULL, 0);
-
     fprintf (stdout, "Playing: %s - %s\n", artist->value, title->value);
   }
 
-  AVCodecContext* codec_ctx = player->avc.ctx->streams[stream_id]->codec;
+  AVCodecContext* codec_ctx = player->avc.ctx->streams[player->avc.aid]->codec;
   AVCodec* codec = avcodec_find_decoder (codec_ctx->codec_id);
 
   if (!avcodec_open2 (codec_ctx, codec, NULL) < 0) {
@@ -198,7 +196,7 @@ void krad_player_open (krad_player_t *player, char *input) {
       break;
     }
 
-    if (packet.stream_index != stream_id) {
+    if (packet.stream_index != player->avc.aid) {
       //printf ("skipping track %d\n", packet.stream_index);
       av_free_packet (&packet);
       continue;
@@ -250,20 +248,16 @@ void krad_player_open (krad_player_t *player, char *input) {
   }
 
   av_frame_free (&frame);
-  kr_audioport_deactivate (player->audioport);
-  avresample_free (&player->avc.avr);
   krad_player_close (player);
 }
 
 int videoport_process (void *buffer, void *arg) {
 
-  krad_player_t *player;
-  player = (krad_player_t *)arg;
+  //krad_player_t *player;
+  //player = (krad_player_t *)arg;
 
-  if (player->updated == 1) {
-    memcpy (buffer, player->rgba, 960 * 540 * 4);
-    player->updated = 0;
-  }
+  //memcpy (buffer, player->rgba, 960 * 540 * 4);
+
   return 0;
 }
 
@@ -318,10 +312,6 @@ void krad_player_destroy (krad_player_t *player) {
   }
 
   kr_client_destroy (&player->client);
-
-  if (player->sws_converter != NULL) {
-    sws_freeContext ( player->sws_converter );
-  }
   free (player->station);
 
   libav_shutdown ();
