@@ -609,13 +609,16 @@ static void kr_crate_payload_ebml_reset (kr_crate_t *crate) {
 }
 
 static int kr_radio_crate_to_rep (kr_crate_t *crate) {
-  //crate->contains = KR_STATION;
+
   switch ( crate->address.path.subunit.station_subunit ) {
     case KR_STATION_UNIT:
       kr_ebml_to_radio_rep (&crate->payload_ebml, &crate->rep.radio);
       return 1;
-    default:
-      break;
+    case KR_CPU:
+      return 0;
+    case KR_REMOTE:
+      kr_ebml_to_remote_status_rep (&crate->payload_ebml, &crate->rep.remote);
+      return 1;
   }
   return 0;
 }
@@ -635,6 +638,7 @@ int kr_response_to_rep (kr_crate_t *crate) {
   switch ( crate->address.path.unit ) {
     case KR_STATION:
       kr_radio_crate_to_rep (crate);
+      return 1;
     case KR_MIXER:
       kr_mixer_crate_to_rep (crate);
       return 1;

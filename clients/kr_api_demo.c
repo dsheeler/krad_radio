@@ -1,11 +1,5 @@
 #include "kr_client.h"
 
-void my_remote_print (kr_remote_t *remote) {
-  printf ("oh its a remote! %d on interface %s\n",
-          remote->port,
-          remote->interface);
-}
-
 void my_tag_print (kr_tag_t *tag) {
   printf ("The tag I wanted: %s - %s\n",
           tag->name,
@@ -56,27 +50,50 @@ void my_mixer_print (kr_mixer_t *mixer) {
 					 mixer->sample_rate);
 }
 
-void my_print (kr_crate_t *crate) {
+void my_remote_print (kr_remote_t *remote) {
 
-  if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.zero == KR_UNIT)) {
+  printf ("Remote Listening on interface: %s Port: %d\n",
+					 remote->interface, remote->port);
+}
+
+int ap_match (kr_crate_t *crate, int unit, int subunit) {
+  if ((crate->addr->path.unit == unit) &&
+      (crate->addr->path.subunit.zero == subunit)) {
+    return 1;   
+  }
+  return 0;
+}
+
+void my_print (kr_crate_t *crate) {
+  if (ap_match(crate, KR_STATION, KR_REMOTE)) {
+    my_remote_print (crate->inside.remote);
+  }
+
+  if (ap_match(crate, KR_MIXER, KR_UNIT)) {
     my_mixer_print (crate->inside.mixer);
   }
-  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_UNIT)) {
+  
+  if (ap_match(crate, KR_COMPOSITOR, KR_UNIT)) {
     my_compositor_print (crate->inside.compositor);
   }
-  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_SPRITE)) {
+  
+  if (ap_match(crate, KR_COMPOSITOR, KR_SPRITE)) {
     my_sprite_print (crate->inside.sprite);
   }
-  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_TEXT)) {
+  
+  if (ap_match(crate, KR_COMPOSITOR, KR_TEXT)) {
     my_text_print (crate->inside.text);
   } 
-  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VECTOR)) {
+  
+  if (ap_match(crate, KR_COMPOSITOR, KR_VECTOR)) {
     my_vector_print (crate->inside.vector);
   } 
-  if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VIDEOPORT)) {
+  
+  if (ap_match(crate, KR_COMPOSITOR, KR_VIDEOPORT)) {
     my_videoport_print (crate->inside.videoport);
   } 
-  if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
+  
+  if (ap_match(crate, KR_MIXER, KR_PORTGROUP)) {
     my_portgroup_print (crate->inside.portgroup);
   }
 }
@@ -201,8 +218,8 @@ void one_shot_demo (kr_client_t *client) {
   kr_system_info (client);
   accept_some_deliveries (client);
 
-  //kr_remote_list (client);
-  //accept_some_deliveries (client);
+  kr_remote_list (client);
+  accept_some_deliveries (client);
 
   kr_mixer_info (client);
   accept_some_deliveries (client);
@@ -215,7 +232,6 @@ void one_shot_demo (kr_client_t *client) {
   
   kr_compositor_subunit_list (client);
   accept_some_deliveries (client);
-
 }
 
 void one_shot_demo2 (kr_client_t *client) {

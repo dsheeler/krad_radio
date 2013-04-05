@@ -125,6 +125,8 @@ void *video_decoding_thread (void *arg) {
 */
 void krad_player_close (krad_player_t *player) {
   avformat_close_input (&player->avc.ctx);
+  avformat_free_context (player->avc.ctx);
+  player->avc.ctx = NULL;
 }
 
 void krad_player_open (krad_player_t *player, char *input) {
@@ -174,13 +176,13 @@ void krad_player_open (krad_player_t *player, char *input) {
     fprintf (stderr, "Krad Player: Could not find open the needed codec");
   }
   
-  player->avc.avr = avresample_alloc_context();
-  av_opt_set_int(player->avc.avr, "in_channel_layout",  codec_ctx->channel_layout, 0);
-  av_opt_set_int(player->avc.avr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
-  av_opt_set_int(player->avc.avr, "in_sample_rate",     codec_ctx->sample_rate,                0);
-  av_opt_set_int(player->avc.avr, "out_sample_rate",    48000,                0);
-  av_opt_set_int(player->avc.avr, "in_sample_fmt",      codec_ctx->sample_fmt,   0);
-  av_opt_set_int(player->avc.avr, "out_sample_fmt",     AV_SAMPLE_FMT_FLTP,    0);
+  player->avc.avr = avresample_alloc_context ();
+  av_opt_set_int(player->avc.avr, "in_channel_layout", codec_ctx->channel_layout, 0);
+  av_opt_set_int(player->avc.avr, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+  av_opt_set_int(player->avc.avr, "in_sample_rate", codec_ctx->sample_rate, 0);
+  av_opt_set_int(player->avc.avr, "out_sample_rate", 48000, 0);
+  av_opt_set_int(player->avc.avr, "in_sample_fmt", codec_ctx->sample_fmt, 0);
+  av_opt_set_int(player->avc.avr, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
 
   avresample_open (player->avc.avr);  
   
