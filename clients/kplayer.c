@@ -184,16 +184,6 @@ void krad_player_open (krad_player_t *player, char *input) {
     fprintf (stderr, "Krad Player: Could not find open the needed codec");
   }
   
-  player->avc.avr = avresample_alloc_context ();
-  av_opt_set_int(player->avc.avr, "in_channel_layout", codec_ctx->channel_layout, 0);
-  av_opt_set_int(player->avc.avr, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-  av_opt_set_int(player->avc.avr, "in_sample_rate", codec_ctx->sample_rate, 0);
-  av_opt_set_int(player->avc.avr, "out_sample_rate", 48000, 0);
-  av_opt_set_int(player->avc.avr, "in_sample_fmt", codec_ctx->sample_fmt, 0);
-  av_opt_set_int(player->avc.avr, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
-
-  avresample_open (player->avc.avr);  
-  
   kr_audioport_activate (player->audioport);
 
   AVPacket packet;
@@ -223,6 +213,16 @@ void krad_player_open (krad_player_t *player, char *input) {
       break;
     }
     
+    if (player->avc.avr == NULL) {
+      player->avc.avr = avresample_alloc_context ();
+      av_opt_set_int(player->avc.avr, "in_channel_layout", frame->channel_layout, 0);
+      av_opt_set_int(player->avc.avr, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+      av_opt_set_int(player->avc.avr, "in_sample_rate", frame->sample_rate, 0);
+      av_opt_set_int(player->avc.avr, "out_sample_rate", 48000, 0);
+      av_opt_set_int(player->avc.avr, "in_sample_fmt", frame->format, 0);
+      av_opt_set_int(player->avc.avr, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
+      avresample_open (player->avc.avr);
+    }
     av_free_packet (&packet);
     
     if (!got_frame) {
@@ -274,6 +274,10 @@ int audioport_process (uint32_t nframes, void *arg) {
   uint8_t *outputs[2];
 
   player = (krad_player_t *)arg;
+
+  if (player->avc.avr == NULL) {
+    return 0;
+  }
 
   if (avresample_available(player->avc.avr) >= nframes) {
     outputs[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
