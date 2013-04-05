@@ -122,7 +122,7 @@ shlibs = ["opus"]
 
 shlibs2 = ["cairo", "gtk+-3.0"]
 shlibs4 = ["cairo"]
-shlibs6 = ["cairo", "sdl", "libavutil", "libavformat", "libavfilter", "libavcodec",
+shlibs6 = ["libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice"]
 
 stlibs = []
