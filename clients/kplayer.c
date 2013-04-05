@@ -125,8 +125,6 @@ void *video_decoding_thread (void *arg) {
 */
 void krad_player_close (krad_player_t *player) {
   avformat_close_input (&player->avc.ctx);
-  avformat_free_context (player->avc.ctx);
-  player->avc.ctx = NULL;
 }
 
 void krad_player_open (krad_player_t *player, char *input) {
@@ -238,7 +236,7 @@ void krad_player_open (krad_player_t *player, char *input) {
 
   av_frame_free (&frame);
   kr_audioport_deactivate (player->audioport);
-  avresample_free(&player->avc.avr);
+  avresample_free (&player->avc.avr);
   krad_player_close (player);
 }
 
