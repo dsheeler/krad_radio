@@ -117,10 +117,6 @@ depsources4 = """
 ../lib/krad_sfx/krad_tone.c
 """.split()
 
-depsources6 = """
-../../libav/cmdutils.c
-""".split()
-
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 shlibs = ["opus"]
 
@@ -248,7 +244,7 @@ def build(bld):
   if bld.env['KPLAYER'] == "yes":
     for p in programs6:
       bld(features = 'c cprogram', 
-      source = [p] + depsources6,
+      source = [p],
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
