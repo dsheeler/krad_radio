@@ -1,7 +1,9 @@
 #include <inttypes.h>
 #include <math.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 
 #include <libavutil/avutil.h>
@@ -16,6 +18,8 @@
 #include <libswscale/swscale.h>
 #include <libavresample/avresample.h>
 #include "kr_client.h"
+
+static int destroy = 0;
 
 typedef struct krad_player_St krad_player_t;
 typedef struct krad_player_St kplayer_t;
@@ -57,6 +61,7 @@ struct krad_player_St {
   int samples_buffered;
   krad_libav_t avc;
 };
+
 /*
 void *video_decoding_thread (void *arg) {
 
@@ -123,6 +128,11 @@ void *video_decoding_thread (void *arg) {
   return NULL;
 }
 */
+
+void signal_recv (int sig) {
+  destroy = 1;
+}
+
 void krad_player_close (krad_player_t *player) {
   avformat_close_input (&player->avc.ctx);
 }
@@ -192,7 +202,7 @@ void krad_player_open (krad_player_t *player, char *input) {
   
   frame = av_frame_alloc();
 
-  while (1) {
+  while (!destroy) {
     if (av_read_frame (player->avc.ctx, &packet) < 0) {
       printf ("Got to EOF\n");
       break;
@@ -220,8 +230,13 @@ void krad_player_open (krad_player_t *player, char *input) {
       break;
     }
     
-    while (avresample_available(player->avc.avr) >= 48000) {
+    while ((avresample_available(player->avc.avr) >= 48000) && 
+          (!destroy)) {
       usleep (10000);
+    }
+    
+    if (destroy == 1) {
+      break;
     }
 
     player->samples_buffered += avresample_convert (player->avc.avr,
@@ -362,6 +377,8 @@ void krad_player (char *station, char *input) {
   }  
   
   kr_audioport_set_callback (player->audioport, audioport_process, player);
+  
+  signal (SIGINT, signal_recv);
   
   krad_player_open (player, input);
   krad_player_destroy (player);
