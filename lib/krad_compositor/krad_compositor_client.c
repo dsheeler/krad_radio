@@ -613,7 +613,7 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client) {
 
   videoport->sd = sockets[0];
   
-  printf ("sockets %d and %d\n", sockets[0], sockets[1]);
+  //printf ("sockets %d and %d\n", sockets[0], sockets[1]);
   
   kr_videoport_create_cmd (videoport->client);
 

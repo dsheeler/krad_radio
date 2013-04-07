@@ -71,7 +71,8 @@ struct krad_player_St {
   uint32_t produced;
   float audio0[8192];
   float audio1[8192];
-  uint32_t samples_buffered;
+  uint32_t samples_produced;
+  uint32_t samples_consumed;
   krad_libav_t avc;
 };
 
@@ -239,7 +240,7 @@ int decode_audio (krad_player_t *player, AVPacket *packet) {
     return 0;
   }
 
-  player->samples_buffered += avresample_convert (player->avc.avr,
+  player->samples_produced += avresample_convert (player->avc.avr,
                                                   NULL, 0, 0,
                                                   player->avc.aframe->data,
                                                   player->avc.aframe->linesize[0],
@@ -258,8 +259,8 @@ int videoport_process (void *buffer, void *arg) {
   player = (krad_player_t *)arg;
   
   if (player->avc.aid == -1) {
-    player->samples += 1600;
-    player->ms = player->samples / 48;
+    player->samples_consumed += 1600;
+    player->ms = player->samples_consumed / 48;
   }
   
   if (player->produced > player->consumed) {
@@ -294,18 +295,17 @@ int audioport_process (uint32_t nframes, void *arg) {
 
   player = (krad_player_t *)arg;
 
-  if (player->avc.avr == NULL) {
-    return 0;
-  }
+  outputs[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
+  outputs[1] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 1);
 
-  if (avresample_available(player->avc.avr) >= nframes) {
-    outputs[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
-    outputs[1] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 1);
-
+  if ((player->avc.avr != NULL) && 
+      (avresample_available(player->avc.avr) >= nframes)) {
     avresample_read (player->avc.avr, outputs, nframes);
-
-    player->samples += nframes;
-    player->ms = (float)player->samples / (float)player->sample_rate * 1000;
+    player->samples_consumed += nframes;
+    player->ms = (float)player->samples_consumed / (float)player->sample_rate * 1000;
+  } else {
+    memset (outputs[0], 0, nframes * 4);
+    memset (outputs[0], 0, nframes * 4);
   }
 
   return 0;
@@ -431,10 +431,13 @@ void krad_player_open (krad_player_t *player, char *input) {
     pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
                 player->ms, player->last_frame_time, player->repeated, player->skipped,
                 player->avc.video_frames, player->avc.video_packets,
-                (float)player->samples / (float)player->sample_rate, player->avc.audio_packets);
+                (float)player->samples_consumed / (float)player->sample_rate, player->avc.audio_packets);
     fflush (stdout);
   }
-  printf ("\n");  
+  printf ("\n");
+  
+  // Handling draining / fadeout here
+  
 }
 
 void libav_init () {
