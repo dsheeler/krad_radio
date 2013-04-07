@@ -79,6 +79,22 @@ void signal_recv (int sig) {
   destroy = 1;
 }
 
+void krad_player_free_framebuf (krad_player_t *player) {
+  if (player->rgba != NULL) {
+    free (player->rgba);
+    free (player->frame_time);
+    player->rgba = NULL;
+    player->frame_time = NULL;
+  }
+}
+
+void krad_player_alloc_framebuf (krad_player_t *player) {
+  player->framebufsize = DEFAULT_FBUFSIZE;
+  player->frame_size = player->width * player->height * 4;
+  player->rgba = malloc (player->frame_size * player->framebufsize);
+  player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
+}
+
 void krad_player_close (krad_player_t *player) {
   if (player->videoport) {
     kr_videoport_deactivate (player->videoport);
@@ -380,6 +396,8 @@ void krad_player_open (krad_player_t *player, char *input) {
       exit (1);
     }
 
+    krad_player_alloc_framebuf (player);
+
     kr_videoport_set_callback (player->videoport, videoport_process, player);
     
     kr_videoport_activate (player->videoport);
@@ -429,22 +447,6 @@ void libav_init () {
 
 void libav_shutdown () {
   avformat_network_deinit();
-}
-
-void krad_player_free_framebuf (krad_player_t *player) {
-  if (player->rgba != NULL) {
-    free (player->rgba);
-    free (player->frame_time);
-    player->rgba = NULL;
-    player->frame_time = NULL;
-  }
-}
-
-void krad_player_alloc_framebuf (krad_player_t *player) {
-  player->framebufsize = DEFAULT_FBUFSIZE;
-  player->frame_size = player->width * player->height * 4;
-  player->rgba = malloc (player->frame_size * player->framebufsize);
-  player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
 }
 
 void krad_player_destroy (krad_player_t **destroy_player) {
@@ -507,7 +509,6 @@ void wait_for_station_info (krad_player_t *player) {
           player->height = crate->inside.compositor->height;
           player->fps_den = crate->inside.compositor->fps_denominator;
           player->fps_num = crate->inside.compositor->fps_numerator;
-          krad_player_alloc_framebuf (player);
         }
       }
       kr_crate_recycle (&crate);
