@@ -1042,6 +1042,18 @@ int kr_delivery_get_until_final (kr_client_t *client, kr_crate_t **crate, uint32
   kr_crate_t *lcrate;
   
   lcrate = NULL;
+ 
+  if (client == NULL) {
+    failfast ("kr_delivery_get_until_final called with NULL client pointer");
+  }
+  
+  if (crate == NULL) {
+    failfast ("kr_delivery_get_until_final called with NULL crate pointer");
+  }
+  
+  if ((crate != NULL) && (*crate != NULL)) {
+    kr_crate_recycle (crate);
+  }
 
   while (1) {
     kr_delivery_get (client, &lcrate);
@@ -1053,6 +1065,7 @@ int kr_delivery_get_until_final (kr_client_t *client, kr_crate_t **crate, uint32
       }
     } else {
       if (kr_delivery_final (client)) {
+        kr_crate_recycle (&lcrate);
         kr_delivery_final_reset (client);
         return 0;
       }
