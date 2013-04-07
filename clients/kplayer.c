@@ -20,6 +20,11 @@
 
 #include "kr_client.h"
 
+#define WIDTH 960
+#define HEIGHT 540
+#define FSIZE WIDTH * HEIGHT * 4
+#define FBUFSIZE 120
+
 static int destroy = 0;
 
 typedef struct krad_player_St krad_player_t;
@@ -51,8 +56,9 @@ struct krad_player_St {
   uint64_t samples;
   float timecode;
   float ms;
-  unsigned char *rgba[960 * 540 * 4];
-  unsigned char *rgba2[960 * 540 * 4];
+  unsigned char rgba[FSIZE * FBUFSIZE];
+  int consumed;
+  int produced;
   float audio0[8192];
   float audio1[8192];
   int samples_buffered;
@@ -125,19 +131,19 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
   
   player->avc.video_frames++;  
 
-  int rgb_stride_arr[3] = {4*960, 0, 0};
+  int rgb_stride_arr[3] = {4*WIDTH, 0, 0};
   uint8_t *dst[4];
   
   player->avc.scaler = sws_getCachedContext ( player->avc.scaler,
                                               player->avc.vframe->width,
                                               player->avc.vframe->height,
                                               player->avc.vframe->format,
-                                              960,
-                                              540,
+                                              WIDTH,
+                                              HEIGHT,
                                               PIX_FMT_RGB32, 
                                               SWS_BICUBIC,
                                               NULL, NULL, NULL);
-  
+  //av_frame_unref (player->avc.vframe);  
 
   /*
     printf ("last frame ms: %f kplayer ms: %f", pts, player->ms);
@@ -152,16 +158,25 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
 
   */
 
-  dst[0] = (unsigned char *)player->rgba;
+  while (player->produced - player->consumed == FBUFSIZE) {
+    usleep (100000);
+  }
+
+  int pos = (player->produced % FBUFSIZE) * FSIZE;
+
+  dst[0] = (unsigned char *)player->rgba + pos;
+  
+  
   sws_scale (player->avc.scaler,
              (const uint8_t * const*)player->avc.vframe->data,
              player->avc.vframe->linesize,
              0, player->avc.vframe->height,
              dst, rgb_stride_arr);
 
-  //player->timecode = pts;
 
-  av_free_packet (packet);
+  player->produced++;
+
+  //player->timecode = pts;
   
   return 0;
 }
@@ -199,9 +214,9 @@ int decode_audio (krad_player_t *player, AVPacket *packet) {
     return -1;
   }
 
-  while ((avresample_available(player->avc.avr) >= 48000) && 
+  while ((avresample_available(player->avc.avr) >= 48000 * 4) && 
         (!destroy)) {
-    usleep (10000);
+    usleep (5000);
   }
 
   if (destroy == 1) {
@@ -213,6 +228,9 @@ int decode_audio (krad_player_t *player, AVPacket *packet) {
                                                   player->avc.aframe->data,
                                                   player->avc.aframe->linesize[0],
                                                   player->avc.aframe->nb_samples);
+
+  //av_frame_unref (player->avc.aframe);
+
   return 1;
 }
 
@@ -311,10 +329,14 @@ void krad_player_open (krad_player_t *player, char *input) {
 
 int videoport_process (void *buffer, void *arg) {
 
-  //krad_player_t *player;
-  //player = (krad_player_t *)arg;
-
-  //memcpy (buffer, player->rgba, 960 * 540 * 4);
+  krad_player_t *player;
+  player = (krad_player_t *)arg;
+  
+  if (player->produced > player->consumed) {
+    int pos = (player->consumed % FBUFSIZE) * FSIZE;
+    memcpy (buffer, player->rgba + pos, WIDTH * HEIGHT * 4);
+    player->consumed++;
+  }
 
   return 0;
 }
