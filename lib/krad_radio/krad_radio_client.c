@@ -280,7 +280,7 @@ kr_shm_t *kr_shm_create (kr_client_t *client) {
     return NULL;
   }
 
-  kr_shm->size = 960 * 540 * 4 * 2;
+  kr_shm->size = 1920 * 1080 * 4 * 2;
 
   kr_shm->fd = mkstemp (filename);
   if (kr_shm->fd < 0) {

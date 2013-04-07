@@ -20,10 +20,7 @@
 
 #include "kr_client.h"
 
-#define WIDTH 960
-#define HEIGHT 540
-#define FSIZE WIDTH * HEIGHT * 4
-#define FBUFSIZE 120
+#define DEFAULT_FBUFSIZE 120
 
 static int destroy = 0;
 
@@ -35,17 +32,17 @@ struct krad_libav_St {
   AVFormatContext *ctx;
   AVAudioResampleContext *avr;
   struct SwsContext *scaler;
-  int aid;
-  int vid;
+  int32_t aid;
+  int32_t vid;
   AVCodecContext* adec;
   AVCodecContext* vdec;
   AVCodec* acodec;
   AVCodec* vcodec;
   AVFrame *aframe;
   AVFrame *vframe;
-  int video_frames;
-  int video_packets;
-  int audio_packets;
+  uint32_t video_frames;
+  uint32_t video_packets;
+  uint32_t audio_packets;
   char *audio_err;
   char *video_err;
 };
@@ -58,19 +55,23 @@ struct krad_player_St {
   int64_t samples;
   float timecode;
   int64_t ms;
-  int sample_rate;
-  int fps_den;
-  int fps_num;
-  unsigned char rgba[FSIZE * FBUFSIZE];
-  int64_t frame_time[FBUFSIZE];
+  uint32_t sample_rate;
+  uint32_t fps_den;
+  uint32_t fps_num;
+  uint32_t width;
+  uint32_t height;
+  uint32_t frame_size;
+  uint32_t framebufsize;
+  unsigned char *rgba;
+  int64_t *frame_time;
   int64_t last_frame_time;
-  int repeated;
-  int skipped;
-  int consumed;
-  int produced;
+  uint32_t repeated;
+  uint32_t skipped;
+  uint32_t consumed;
+  uint32_t produced;
   float audio0[8192];
   float audio1[8192];
-  int samples_buffered;
+  uint32_t samples_buffered;
   krad_libav_t avc;
 };
 
@@ -140,21 +141,21 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
   
   player->avc.video_frames++;  
 
-  int rgb_stride_arr[3] = {4*WIDTH, 0, 0};
+  int rgb_stride_arr[3] = {4*player->width, 0, 0};
   uint8_t *dst[4];
   
   player->avc.scaler = sws_getCachedContext ( player->avc.scaler,
                                               player->avc.vframe->width,
                                               player->avc.vframe->height,
                                               player->avc.vframe->format,
-                                              WIDTH,
-                                              HEIGHT,
+                                              player->width,
+                                              player->height,
                                               PIX_FMT_RGB32, 
                                               SWS_BICUBIC,
                                               NULL, NULL, NULL);
   //av_frame_unref (player->avc.vframe);  
 
-  while (player->produced - player->consumed == FBUFSIZE) {
+  while (player->produced - player->consumed == player->framebufsize) {
     usleep (100000);
   }
   
@@ -162,7 +163,7 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
     return 0;
   }  
 
-  int pos = (player->produced % FBUFSIZE) * FSIZE;
+  int pos = (player->produced % player->framebufsize) * player->frame_size;
   dst[0] = (unsigned char *)player->rgba + pos;
 
   sws_scale (player->avc.scaler,
@@ -171,7 +172,7 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
              0, player->avc.vframe->height,
              dst, rgb_stride_arr);
 
-  player->frame_time[player->produced % FBUFSIZE] = 
+  player->frame_time[player->produced % player->framebufsize] = 
     av_q2d (player->avc.ctx->streams[player->avc.vid]->time_base) *
             player->avc.vframe->pkt_pts * 1000;
   
@@ -246,20 +247,20 @@ int videoport_process (void *buffer, void *arg) {
   }
   
   if (player->produced > player->consumed) {
-    pos = (player->consumed % FBUFSIZE);
+    pos = (player->consumed % player->framebufsize);
     if (player->ms >= player->frame_time[pos]) {
       while (player->produced > player->consumed + 2) {
-        npos = ((player->consumed + 2) % FBUFSIZE);
+        npos = ((player->consumed + 2) % player->framebufsize);
         if (player->ms > player->frame_time[npos]) {
           player->consumed++;
           player->skipped++;
-          pos = (player->consumed % FBUFSIZE);
+          pos = (player->consumed % player->framebufsize);
         } else {
           break;
         }
       }
       player->last_frame_time = player->frame_time[pos];
-      memcpy (buffer, player->rgba + (pos * FSIZE), WIDTH * HEIGHT * 4);
+      memcpy (buffer, player->rgba + (pos * player->frame_size), player->width * player->height * 4);
       player->consumed++;
     } else {
       player->repeated++;
@@ -430,7 +431,32 @@ void libav_shutdown () {
   avformat_network_deinit();
 }
 
-void krad_player_destroy (krad_player_t *player) {
+void krad_player_free_framebuf (krad_player_t *player) {
+  if (player->rgba != NULL) {
+    free (player->rgba);
+    free (player->frame_time);
+    player->rgba = NULL;
+    player->frame_time = NULL;
+  }
+}
+
+void krad_player_alloc_framebuf (krad_player_t *player) {
+  player->framebufsize = DEFAULT_FBUFSIZE;
+  player->frame_size = player->width * player->height * 4;
+  player->rgba = malloc (player->frame_size * player->framebufsize);
+  player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
+}
+
+void krad_player_destroy (krad_player_t **destroy_player) {
+
+  krad_player_t *player;
+
+  if ((destroy_player == NULL) || (*destroy_player == NULL)) {
+    return;
+  } else {
+    player = *destroy_player;
+    *destroy_player = NULL;
+  }
 
   printf ("Krad Player: Self Destructing\n");
   
@@ -443,9 +469,10 @@ void krad_player_destroy (krad_player_t *player) {
     kr_audioport_destroy (player->audioport);
   }
 
+  krad_player_free_framebuf (player);
   kr_client_destroy (&player->client);
   free (player->station);
-
+  free (player);
   libav_shutdown ();
 
   printf ("See you next time space cowboy!\n");
@@ -476,7 +503,11 @@ void wait_for_station_info (krad_player_t *player) {
           player->sample_rate = crate->inside.mixer->sample_rate;
         }
         if (ap_match(crate, KR_COMPOSITOR, KR_UNIT)) {
-          //
+          player->width = crate->inside.compositor->width;
+          player->height = crate->inside.compositor->height;
+          player->fps_den = crate->inside.compositor->fps_denominator;
+          player->fps_num = crate->inside.compositor->fps_numerator;
+          krad_player_alloc_framebuf (player);
         }
       }
       kr_crate_recycle (&crate);
@@ -521,7 +552,7 @@ void krad_player (char *station, char *input) {
   krad_player_open (player, input);
   krad_player_close (player);
 
-  krad_player_destroy (player);
+  krad_player_destroy (&player);
 }
 
 int main (int argc, char **argv) {
