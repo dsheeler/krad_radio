@@ -34,7 +34,8 @@ struct krad_jack_St {
   jack_status_t status;
   jack_client_t *client;
   
-  int sample_rate;
+  uint32_t sample_rate;
+  uint32_t period_size;
   
   char *stay_connected[256];
   char *stay_connected_to[256];

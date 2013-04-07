@@ -346,11 +346,17 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
   krad_mixer_set_pusher (krad_jack->krad_audio->krad_mixer, JACK);
 
   krad_jack->sample_rate = jack_get_sample_rate ( krad_jack->client );
+  krad_jack->period_size = jack_get_buffer_size ( krad_jack->client );
 
   if (krad_jack->sample_rate != krad_mixer_get_sample_rate (krad_jack->krad_audio->krad_mixer)) {
     krad_mixer_set_sample_rate (krad_jack->krad_audio->krad_mixer, krad_jack->sample_rate);
-    printk ("Krad Jack: Set Krad Mixer sample rate to %d", krad_jack->sample_rate);    
+    printk ("Krad Jack: Set Krad Mixer sample rate to %u", krad_jack->sample_rate);    
   }
+  
+  if (krad_jack->period_size != krad_mixer_get_period_size (krad_jack->krad_audio->krad_mixer)) {
+    krad_mixer_set_period_size (krad_jack->krad_audio->krad_mixer, krad_jack->period_size);
+    printk ("Krad Jack: Set Krad Mixer period size to %u", krad_jack->period_size);    
+  }  
 
   // Set up Callbacks
 

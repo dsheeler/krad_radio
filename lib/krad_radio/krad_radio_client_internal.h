@@ -15,6 +15,12 @@ struct kr_client_St {
   kr_io2_t *io;
   kr_ebml2_t *ebml_in;
   kr_io2_t *io_in;
+  
+  uint32_t period_size;
+  uint32_t sample_rate;
+  uint32_t fps_num;
+  uint32_t fps_den;
+  
 };
 
 struct kr_shm_St {

@@ -373,7 +373,7 @@ static void krad_mixer_local_audio_samples_callback (int nframes,
   if (krad_mixer_local_portgroup->direction == OUTPUT) {
     memcpy (krad_mixer_local_portgroup->local_buffer,
             samples[0],
-            2 * 4 * krad_mixer_local_portgroup->krad_mixer->ticker_period);
+            2 * 4 * krad_mixer_local_portgroup->krad_mixer->period_size);
   }
   wrote = write (krad_mixer_local_portgroup->msg_sd, buf, 1);
   if (wrote == 1) {
@@ -411,13 +411,13 @@ static void *krad_mixer_ticker_thread (void *arg) {
 
   krad_system_set_thread_name ("kr_mixer");
   pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
-  krad_mixer->krad_ticker = krad_ticker_create (krad_mixer->sample_rate, krad_mixer->ticker_period);
+  krad_mixer->krad_ticker = krad_ticker_create (krad_mixer->sample_rate, krad_mixer->period_size);
   pthread_cleanup_push (krad_mixer_ticker_thread_cleanup, krad_mixer);
   pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
   krad_ticker_start_at (krad_mixer->krad_ticker, krad_mixer->start_time);
   while (krad_mixer->ticker_running == 1) {
     pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
-    krad_mixer_process (krad_mixer->ticker_period, krad_mixer);
+    krad_mixer_process (krad_mixer->period_size, krad_mixer);
     pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
     krad_ticker_wait (krad_mixer->krad_ticker);
   }
@@ -779,7 +779,7 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
                           output_type, 2, 100.0f, krad_mixer->master_mix, KLOCALSHM, krad_mixer_local_portgroup, NOAUDIO);
 
   krad_mixer_portgroup->samples[0] = (float *)krad_mixer_local_portgroup->local_buffer;
-  krad_mixer_portgroup->samples[1] = (float *)krad_mixer_local_portgroup->local_buffer + (1 * krad_mixer->ticker_period);
+  krad_mixer_portgroup->samples[1] = (float *)krad_mixer_local_portgroup->local_buffer + (1 * krad_mixer->period_size);
 
   krad_mixer_portgroup->active = 1;
 
@@ -1222,6 +1222,11 @@ void krad_mixer_unset_pusher (krad_mixer_t *krad_mixer) {
   if (krad_mixer->ticker_running == 1) {
     krad_mixer_stop_ticker (krad_mixer);
   }
+  
+  if (krad_mixer_get_period_size(krad_mixer) != KRAD_MIXER_DEFAULT_PERIOD_SIZE) {
+    krad_mixer_set_period_size (krad_mixer, KRAD_MIXER_DEFAULT_PERIOD_SIZE);
+  }
+  
   krad_mixer_start_ticker (krad_mixer);
   krad_mixer->pusher = 0;
 }
@@ -1243,6 +1248,14 @@ int krad_mixer_has_pusher (krad_mixer_t *krad_mixer) {
 
 krad_audio_api_t krad_mixer_get_pusher (krad_mixer_t *krad_mixer) {
   return krad_mixer->pusher;
+}
+
+uint32_t krad_mixer_get_period_size (krad_mixer_t *krad_mixer) {
+  return krad_mixer->period_size;
+}
+
+void krad_mixer_set_period_size (krad_mixer_t *krad_mixer, uint32_t period_size) {
+  krad_mixer->period_size = period_size;
 }
 
 uint32_t krad_mixer_get_sample_rate (krad_mixer_t *krad_mixer) {
@@ -1336,7 +1349,7 @@ krad_mixer_t *krad_mixer_create (char *name) {
   krad_mixer->sample_rate = KRAD_MIXER_DEFAULT_SAMPLE_RATE;
   krad_mixer->rms_window_size = (krad_mixer->sample_rate / 1000) *
                                  KRAD_MIXER_RMS_WINDOW_SIZE_MS;
-  krad_mixer->ticker_period = KRAD_MIXER_DEFAULT_TICKER_PERIOD;
+  krad_mixer->period_size = KRAD_MIXER_DEFAULT_PERIOD_SIZE;
   krad_mixer->frames_per_peak_broadcast = 1536;
   
   krad_mixer->crossfade_group = calloc (KRAD_MIXER_MAX_PORTGROUPS / 2,

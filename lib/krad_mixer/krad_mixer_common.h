@@ -10,7 +10,7 @@ typedef struct krad_mixer_portgroup_rep_St krad_mixer_portgroup_rep_t;
 #define KRAD_MIXER_MAX_PORTGROUPS 12
 #define KRAD_MIXER_MAX_CHANNELS 8
 #define KRAD_MIXER_DEFAULT_SAMPLE_RATE 48000
-#define KRAD_MIXER_DEFAULT_TICKER_PERIOD 1024
+#define KRAD_MIXER_DEFAULT_PERIOD_SIZE 1024
 #define DEFAULT_MASTERBUS_LEVEL 75.0f
 #define KRAD_MIXER_RMS_WINDOW_SIZE_MS 125
 
@@ -99,6 +99,7 @@ struct krad_mixer_portgroup_rep_St {
 };
 
 struct krad_mixer_rep_St {
+  uint32_t period_size;
   uint32_t sample_rate;
   uint32_t inputs;
   uint32_t outputs;

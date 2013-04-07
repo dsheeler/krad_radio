@@ -79,8 +79,8 @@ void kr_audioport_create_cmd (kr_client_t *client, krad_mixer_portgroup_directio
 }
 
 
-float *kr_audioport_get_buffer (kr_audioport_t *kr_audioport, int channel) {
-  return (float *)kr_audioport->kr_shm->buffer + (channel * KRAD_MIXER_DEFAULT_TICKER_PERIOD);
+float *kr_audioport_get_buffer (kr_audioport_t *audioport, int channel) {
+  return (float *)audioport->kr_shm->buffer + (channel * audioport->client->period_size);
 }
 
 
@@ -91,24 +91,24 @@ void kr_audioport_set_callback (kr_audioport_t *kr_audioport, int callback (uint
 
 void *kr_audioport_process_thread (void *arg) {
 
-  kr_audioport_t *kr_audioport = (kr_audioport_t *)arg;
+  kr_audioport_t *audioport = (kr_audioport_t *)arg;
   int ret;
   char buf[1];
   
   krad_system_set_thread_name ("krc_audioport");
 
-  while (kr_audioport->active == 1) {
+  while (audioport->active == 1) {
   
     // wait for socket to have a byte
-    ret = read (kr_audioport->sd, buf, 1);
+    ret = read (audioport->sd, buf, 1);
     if (ret != 1) {
       printke ("krad mixer client: unexpected read return value %d in kr_audioport_process_thread", ret);
     }
-    //kr_audioport->callback (kr_audioport->kr_shm->buffer, kr_audioport->pointer);
-    kr_audioport->callback (KRAD_MIXER_DEFAULT_TICKER_PERIOD, kr_audioport->pointer);
+
+    audioport->callback (audioport->client->period_size, audioport->pointer);
 
     // write a byte to socket
-    ret = write (kr_audioport->sd, buf, 1);
+    ret = write (audioport->sd, buf, 1);
     if (ret != 1) {
       printke ("krad mixer client: unexpected write return value %d in kr_audioport_process_thread", ret);
     }
@@ -534,6 +534,7 @@ static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_
 }
 
 static void kr_ebml_to_mixer_rep (kr_ebml2_t *ebml, kr_mixer_t *mixer_rep) {
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->period_size);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->sample_rate);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->inputs);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->outputs);
@@ -713,6 +714,10 @@ int kr_mixer_crate_to_rep (kr_crate_t *crate) {
       (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
     crate->contains = KR_MIXER;
     kr_ebml_to_mixer_rep (&crate->payload_ebml, &crate->rep.mixer);
+    
+    crate->client->sample_rate = crate->rep.mixer.sample_rate;
+    crate->client->period_size = crate->rep.mixer.period_size;
+
     return 1;
   }
   switch ( crate->address.path.subunit.mixer_subunit ) {

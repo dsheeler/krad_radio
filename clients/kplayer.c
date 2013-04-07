@@ -58,6 +58,9 @@ struct krad_player_St {
   int64_t samples;
   float timecode;
   int64_t ms;
+  int sample_rate;
+  int fps_den;
+  int fps_num;
   unsigned char rgba[FSIZE * FBUFSIZE];
   int64_t frame_time[FBUFSIZE];
   int64_t last_frame_time;
@@ -203,14 +206,14 @@ int decode_audio (krad_player_t *player, AVPacket *packet) {
     av_opt_set_int(player->avc.avr, "in_channel_layout", player->avc.aframe->channel_layout, 0);
     av_opt_set_int(player->avc.avr, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
     av_opt_set_int(player->avc.avr, "in_sample_rate", player->avc.aframe->sample_rate, 0);
-    av_opt_set_int(player->avc.avr, "out_sample_rate", 48000, 0);
+    av_opt_set_int(player->avc.avr, "out_sample_rate", player->sample_rate, 0);
     av_opt_set_int(player->avc.avr, "in_sample_fmt", player->avc.aframe->format, 0);
     av_opt_set_int(player->avc.avr, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
     avresample_open (player->avc.avr);
   }
   av_free_packet (packet);
 
-  while ((avresample_available(player->avc.avr) >= 48000 * 4) && 
+  while ((avresample_available(player->avc.avr) >= player->sample_rate * 4) && 
         (!destroy)) {
     usleep (5000);
   }
@@ -284,8 +287,8 @@ int audioport_process (uint32_t nframes, void *arg) {
 
     avresample_read (player->avc.avr, outputs, nframes);
 
-    player->samples += 1024;
-    player->ms = player->samples / 48;
+    player->samples += nframes;
+    player->ms = (float)player->samples / (float)player->sample_rate * 1000;
   }
 
   return 0;
@@ -409,7 +412,7 @@ void krad_player_open (krad_player_t *player, char *input) {
     pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
                 player->ms, player->last_frame_time, player->repeated, player->skipped,
                 player->avc.video_frames, player->avc.video_packets,
-                (float)player->samples / 48000.0f, player->avc.audio_packets);
+                (float)player->samples / (float)player->sample_rate, player->avc.audio_packets);
     fflush (stdout);
   }
   printf ("\n");  
@@ -450,6 +453,37 @@ void krad_player_destroy (krad_player_t *player) {
   exit (0);
 }
 
+int ap_match (kr_crate_t *crate, int unit, int subunit) {
+  if ((crate->addr->path.unit == unit) &&
+      (crate->addr->path.subunit.zero == subunit)) {
+    return 1;   
+  }
+  return 0;
+}
+
+void wait_for_station_info (krad_player_t *player) {
+
+  int wait_ms;
+  kr_crate_t *crate;
+
+  crate = NULL;
+  wait_ms = 750;
+
+  while (kr_delivery_get_until_final (player->client, &crate, wait_ms)) {
+    if (crate != NULL) {
+      if (kr_crate_loaded (crate)) {
+        if (ap_match(crate, KR_MIXER, KR_UNIT)) {
+          player->sample_rate = crate->inside.mixer->sample_rate;
+        }
+        if (ap_match(crate, KR_COMPOSITOR, KR_UNIT)) {
+          //
+        }
+      }
+      kr_crate_recycle (&crate);
+    }
+  }
+}
+
 void krad_player (char *station, char *input) {
 
   krad_player_t *player;
@@ -477,7 +511,10 @@ void krad_player (char *station, char *input) {
   }
   printf ("Krad Player Connected to %s!\n", player->station);
   
-  //kr_compositor_info (client);
+  kr_compositor_info (player->client);
+  kr_mixer_info (player->client);
+  wait_for_station_info (player);
+  wait_for_station_info (player);
   
   signal (SIGINT, signal_recv);
   

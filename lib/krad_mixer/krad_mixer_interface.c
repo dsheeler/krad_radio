@@ -110,7 +110,8 @@ void krad_mixer_to_rep ( krad_mixer_t *krad_mixer, kr_mixer_t *mixer_rep ) {
       }
     }
   }
-  
+
+  mixer_rep->period_size = krad_mixer_get_period_size (krad_mixer);
   mixer_rep->sample_rate = krad_mixer_get_sample_rate (krad_mixer);
   
   if (krad_mixer->pusher == JACK) {
@@ -121,6 +122,7 @@ void krad_mixer_to_rep ( krad_mixer_t *krad_mixer, kr_mixer_t *mixer_rep ) {
 }
 
 void krad_mixer_rep_to_ebml ( kr_ebml2_t *ebml, kr_mixer_t *mixer_rep ) {
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mixer_rep->period_size);
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mixer_rep->sample_rate);
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mixer_rep->inputs);
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mixer_rep->outputs);

@@ -86,6 +86,7 @@ struct krad_mixer_St {
   pthread_t ticker_thread;
     
   char *name;
+  uint32_t period_size;
   uint32_t sample_rate;
     
   int rms_window_size;
@@ -131,8 +132,11 @@ void krad_mixer_unset_pusher (krad_mixer_t *krad_mixer);
 
 int krad_mixer_mix (uint32_t nframes, krad_mixer_t *krad_mixer);
 
-uint32_t krad_mixer_get_sample_rate ();
-void krad_mixer_set_sample_rate ();
+uint32_t krad_mixer_get_sample_rate (krad_mixer_t *krad_mixer);
+void krad_mixer_set_sample_rate (krad_mixer_t *krad_mixer, uint32_t sample_rate);
+
+uint32_t krad_mixer_get_period_size (krad_mixer_t *krad_mixer);
+void krad_mixer_set_period_size (krad_mixer_t *krad_mixer, uint32_t period_size);
 
 krad_mixer_t *krad_mixer_create (char *name);
 void krad_mixer_destroy (krad_mixer_t *krad_mixer);
