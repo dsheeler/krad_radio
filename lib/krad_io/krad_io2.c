@@ -18,6 +18,7 @@ kr_io2_t *kr_io2_create () {
 
 int kr_io2_destroy (kr_io2_t **io) {
   if ((io != NULL) && (*io != NULL)) {
+    free ((*io)->buffer);
     free (*io);
     return 0;
   }
