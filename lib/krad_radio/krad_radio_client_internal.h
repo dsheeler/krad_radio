@@ -18,6 +18,8 @@ struct kr_client_St {
   
   uint32_t period_size;
   uint32_t sample_rate;
+  uint32_t width;
+  uint32_t height;
   uint32_t fps_num;
   uint32_t fps_den;
   

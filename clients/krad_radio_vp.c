@@ -6,6 +6,20 @@
 #define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255   * 1.0, 0.255 / 0.255   * 1.0
 #define ORANGE  0.255 / 0.255 * 1.0, 0.080 / 0.255 * 1.0, 0.0
 
+typedef struct videoport_demo_St videoport_demo_t;
+
+struct videoport_demo_St {
+  uint32_t width;
+  uint32_t height;
+  uint32_t frames;
+};
+
+static int destroy = 0;
+
+void signal_recv (int sig) {
+  destroy = 1;
+}
+
 void render_hex (cairo_t *cr, int x, int y, int w) {
 
 	cairo_pattern_t *pat;
@@ -80,16 +94,19 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 }
 
 
-int videoport_process (void *buffer, void *arg) {
+int videoport_process (void *buffer, void *user) {
 
 	cairo_surface_t *cst;
 	cairo_t *cr;
+  videoport_demo_t *demo;
+  
+  demo = (videoport_demo_t *)user;
 
 	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
 												 CAIRO_FORMAT_ARGB32,
-												 960,
-												 540,
-												 960 * 4);
+												 demo->width,
+												 demo->height,
+												 demo->width * 4);
 	
 	cr = cairo_create (cst);
 	cairo_save (cr);
@@ -97,19 +114,27 @@ int videoport_process (void *buffer, void *arg) {
 	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
 	cairo_paint (cr);
 	cairo_restore (cr);
-	render_hex (cr, 640, 360, 66);
+	render_hex (cr, demo->width / 2, demo->height / 2, 66);
 	cairo_surface_flush (cst);
 	cairo_destroy (cr);
 	cairo_surface_destroy (cst);
 
-	return 0;
+  demo->frames++;
 
+	return 0;
 }
 
 int main (int argc, char *argv[]) {
 
+  int i;
+  int ret;
+	uint32_t width;
+	uint32_t height;
 	kr_client_t *client;
 	kr_videoport_t *videoport;
+  videoport_demo_t *demo;
+
+  ret = 0;
 
 	if (argc != 2) {
 		if (argc > 2) {
@@ -121,31 +146,81 @@ int main (int argc, char *argv[]) {
 	}
 	
 	client = kr_client_create ("krad videoport client");
-  kr_connect (client, argv[1]);
-	
+
 	if (client == NULL) {
-		fprintf (stderr, "Could not connect to %s krad radio daemon.\n", argv[1]);
+		fprintf (stderr, "Could not create KR client.\n");
 		return 1;
 	}	
 
+  kr_connect (client, argv[1]);
+  
+  if (!kr_connected (client)) {
+		fprintf (stderr, "Could not connect to %s krad radio daemon.\n", argv[1]);
+	  kr_client_destroy (&client);
+	  return 1;
+  }
+	
+  if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
+	  kr_client_destroy (&client);
+	  return 1;
+  }
+  
+  if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
+    fprintf (stderr, "Could not get compositor info!\n");
+	  kr_client_destroy (&client);
+	  return 1;
+  }
+
 	videoport = kr_videoport_create (client);
 
-	if (videoport != NULL) {
-		printf ("i worked real good\n");
+	if (videoport == NULL) {
+		fprintf (stderr, "Could not make videoport.\n");
+	  kr_client_destroy (&client);
+	  return 1;
+	} else {
+		printf ("Working!\n");
 	}
+
+  demo = calloc (1, sizeof (videoport_demo_t));
+  
+  demo->width = width;
+  demo->height = height;
 	
-	kr_videoport_set_callback (videoport, videoport_process, NULL);
+	kr_videoport_set_callback (videoport, videoport_process, demo);
+	
+  signal (SIGINT, signal_recv);
+  signal (SIGTERM, signal_recv);	
 	
 	kr_videoport_activate (videoport);
 	
-	usleep (8000000);
+	for (i = 0; i < 300; i++) {
+	  usleep (30000);
+	  if (destroy == 1) {
+		  printf ("Got signal!\n");
+	    break;
+	  }
+    if (kr_videoport_error (videoport)) {
+      printf ("Error: %s\n", "videoport Error");
+      ret = 1;
+      break;
+    }
+	}
 	
 	kr_videoport_deactivate (videoport);
 	
 	kr_videoport_destroy (videoport);
 
-	kr_disconnect (client);
+	kr_client_destroy (&client);
 
-	return 0;
-	
+	if (demo->frames > 0) {
+		printf ("Rendered %d frames!\n", demo->frames);
+	}
+
+  free (demo);
+
+	if (ret == 0) {
+		printf ("Worked!\n");
+	}
+
+	return ret;	
 }

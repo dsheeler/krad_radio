@@ -18,6 +18,7 @@ struct kr_videoport_St {
   void *pointer;
 
   int active;
+  int error;
   pthread_t process_thread;
 };
 
@@ -386,6 +387,12 @@ int kr_compositor_crate_to_rep (kr_crate_t *crate) {
       (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
     crate->contains = KR_COMPOSITOR;
     kr_ebml_to_compositor_rep (&crate->payload_ebml, &crate->rep.compositor);
+    
+    crate->client->width = crate->rep.compositor.width;
+    crate->client->height = crate->rep.compositor.height;
+    crate->client->fps_num = crate->rep.compositor.fps_numerator;
+    crate->client->fps_den = crate->rep.compositor.fps_denominator;
+    
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_SPRITE) && 
@@ -537,45 +544,97 @@ void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void
 
 void *kr_videoport_process_thread (void *arg) {
 
-  kr_videoport_t *kr_videoport = (kr_videoport_t *)arg;
+  kr_videoport_t *videoport = (kr_videoport_t *)arg;
   int ret;
   char buf[1];
+  int timeout_ms;
+  struct pollfd pollfds[1];
+
+  timeout_ms = 300;
+
+  pollfds[0].fd = videoport->sd;
 
   krad_system_set_thread_name ("krc_videoport");
 
-  while (kr_videoport->active == 1) {
-  
-    // wait for socket to have a byte
-    ret = read (kr_videoport->sd, buf, 1);
-    if (ret != 1) {
-      printke ("compositor client: unexpected read return value %d in kr_videoport_process_thread", ret);
-    }
-    kr_videoport->callback (kr_videoport->kr_shm->buffer, kr_videoport->pointer);
+  while (videoport->active == 1) {
 
-    // write a byte to socket
-    ret = write (kr_videoport->sd, buf, 1);
-    if (ret != 1) {
-      printke ("compositor client: unexpected write return value %d in kr_videoport_process_thread", ret);
+    pollfds[0].events = POLLIN;  
+    ret = poll (pollfds, 1, timeout_ms);
+    
+    if (ret == 0) {
+      printke ("krad mixer client: audioport poll read timeout", ret);
+      break;
     }
+    
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad mixer client: audioport poll hangup", ret);
+      break;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad mixer client: audioport poll error", ret);
+      break;
+    }
+    
+    ret = read (videoport->sd, buf, 1);
+    if (ret != 1) {
+      printke ("krad mixer client: unexpected read return value %d in kr_audioport_process_thread", ret);
+      break;
+    }
+
+    videoport->callback (videoport->kr_shm->buffer, videoport->pointer);
+
+    pollfds[0].events = POLLOUT;
+    ret = poll (pollfds, 1, timeout_ms);
+    
+    if (ret == 0) {
+      printke ("krad mixer client: audioport poll write timeout", ret);
+      break;
+    }
+    
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad mixer client: audioport poll hangup", ret);
+      break;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad mixer client: audioport poll error", ret);
+      break;
+    }
+    
+    ret = write (videoport->sd, buf, 1);
+    if (ret != 1) {
+      printke ("krad mixer client: unexpected write return value %d in kr_audioport_process_thread", ret);
+      break;
+    }
+  }
+  
+  if (videoport->active == 1) {
+    videoport->error = 1;
   }
 
   return NULL;
 }
 
-void kr_videoport_activate (kr_videoport_t *kr_videoport) {
-  if ((kr_videoport->active == 0) && (kr_videoport->callback != NULL)) {
-    pthread_create (&kr_videoport->process_thread, NULL, kr_videoport_process_thread, (void *)kr_videoport);
-    kr_videoport->active = 1;
+void kr_videoport_activate (kr_videoport_t *videoport) {
+  if ((videoport->active == 0) && (videoport->callback != NULL)) {
+    videoport->active = 1;
+    pthread_create (&videoport->process_thread, NULL, kr_videoport_process_thread, (void *)videoport);
   }
 }
 
-void kr_videoport_deactivate (kr_videoport_t *kr_videoport) {
-
-  if (kr_videoport->active == 1) {
-    kr_videoport->active = 2;
-    pthread_join (kr_videoport->process_thread, NULL);
-    kr_videoport->active = 0;
+void kr_videoport_deactivate (kr_videoport_t *videoport) {
+  if (videoport->active == 1) {
+    videoport->active = 2;
+    pthread_join (videoport->process_thread, NULL);
+    videoport->error = 0;
+    videoport->active = 0;
   }
+}
+
+int kr_videoport_error (kr_videoport_t *videoport) {
+  if (videoport != NULL) {
+    return videoport->error;
+  }
+  return -1;
 }
 
 kr_videoport_t *kr_videoport_create (kr_client_t *client) {
@@ -614,6 +673,7 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client) {
   videoport->sd = sockets[0];
   
   //printf ("sockets %d and %d\n", sockets[0], sockets[1]);
+  krad_system_set_socket_nonblocking (videoport->sd);
   
   kr_videoport_create_cmd (videoport->client);
 
@@ -649,5 +709,47 @@ void kr_videoport_destroy (kr_videoport_t *kr_videoport) {
     }
     free(kr_videoport);
   }
+}
+
+int kr_compositor_get_info_wait (kr_client_t *client,
+                            uint32_t *width,
+                            uint32_t *height,
+                            uint32_t *fps_num,
+                            uint32_t *fps_den) {
+
+  int wait_ms;
+  int ret;
+  kr_crate_t *crate;
+
+  ret = 0;
+  crate = NULL;
+  wait_ms = 750;
+
+  kr_compositor_info (client);
+
+  while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
+    if (crate != NULL) {
+      if (kr_crate_loaded (crate)) {
+        if (kr_crate_addr_path_match(crate, KR_COMPOSITOR, KR_UNIT)) {
+          if (width != NULL) {
+            *width = crate->inside.compositor->width;
+          }
+          if (height != NULL) {
+            *height = crate->inside.compositor->height;
+          }
+          if (fps_den != NULL) {
+            *fps_den = crate->inside.compositor->fps_denominator;
+          }
+          if (fps_num != NULL) {
+            *fps_num = crate->inside.compositor->fps_numerator;
+          }
+          ret = 1;
+        }
+      }
+      kr_crate_recycle (&crate);
+    }
+  }
+  
+  return ret;
 }
 

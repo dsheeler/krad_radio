@@ -25,6 +25,7 @@ struct kr_audioport_St {
   void *pointer;
   
   int active;
+  int error;
   
   pthread_t process_thread;  
   
@@ -94,49 +95,100 @@ void *kr_audioport_process_thread (void *arg) {
   kr_audioport_t *audioport = (kr_audioport_t *)arg;
   int ret;
   char buf[1];
-  
+  int timeout_ms;
+  struct pollfd pollfds[1];
+
+  timeout_ms = 300;
+
+  pollfds[0].fd = audioport->sd;
+
   krad_system_set_thread_name ("krc_audioport");
 
   while (audioport->active == 1) {
-  
-    // wait for socket to have a byte
+
+    pollfds[0].events = POLLIN;  
+    ret = poll (pollfds, 1, timeout_ms);
+    
+    if (ret == 0) {
+      printke ("krad mixer client: audioport poll read timeout", ret);
+      break;
+    }
+    
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad mixer client: audioport poll hangup", ret);
+      break;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad mixer client: audioport poll error", ret);
+      break;
+    }
+    
     ret = read (audioport->sd, buf, 1);
     if (ret != 1) {
       printke ("krad mixer client: unexpected read return value %d in kr_audioport_process_thread", ret);
+      break;
     }
 
     audioport->callback (audioport->client->period_size, audioport->pointer);
 
-    // write a byte to socket
+    pollfds[0].events = POLLOUT;
+    ret = poll (pollfds, 1, timeout_ms);
+    
+    if (ret == 0) {
+      printke ("krad mixer client: audioport poll write timeout", ret);
+      break;
+    }
+    
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad mixer client: audioport poll hangup", ret);
+      break;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad mixer client: audioport poll error", ret);
+      break;
+    }
+    
     ret = write (audioport->sd, buf, 1);
     if (ret != 1) {
       printke ("krad mixer client: unexpected write return value %d in kr_audioport_process_thread", ret);
+      break;
     }
-
+  }
+  
+  if (audioport->active == 1) {
+    audioport->error = 1;
   }
 
   return NULL;
 }
 
-void kr_audioport_activate (kr_audioport_t *kr_audioport) {
-  if ((kr_audioport->active == 0) && (kr_audioport->callback != NULL)) {
-    pthread_create (&kr_audioport->process_thread, NULL, kr_audioport_process_thread, (void *)kr_audioport);
-    kr_audioport->active = 1;
+void kr_audioport_activate (kr_audioport_t *audioport) {
+  if ((audioport->active == 0) && (audioport->callback != NULL)) {
+    audioport->active = 1;
+    pthread_create (&audioport->process_thread, NULL, kr_audioport_process_thread, (void *)audioport);
   }
 }
 
-void kr_audioport_deactivate (kr_audioport_t *kr_audioport) {
+void kr_audioport_deactivate (kr_audioport_t *audioport) {
 
-  if (kr_audioport->active == 1) {
-    kr_audioport->active = 2;
-    pthread_join (kr_audioport->process_thread, NULL);
-    kr_audioport->active = 0;
+  if (audioport->active == 1) {
+    audioport->active = 2;
+    pthread_join (audioport->process_thread, NULL);
+    audioport->active = 0;
+    audioport->error = 0;
   }
+}
+
+int kr_audioport_error (kr_audioport_t *audioport) {
+  if (audioport != NULL) {
+    return audioport->error;
+  }
+  return -1;
 }
 
 kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_direction_t direction) {
 
-  kr_audioport_t *kr_audioport;
+  kr_audioport_t *audioport;
   int sockets[2];
 
   if (!kr_client_local (client)) {
@@ -144,63 +196,64 @@ kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_d
     return NULL;
   }
 
-  kr_audioport = calloc (1, sizeof(kr_audioport_t));
+  audioport = calloc (1, sizeof(kr_audioport_t));
 
-  if (kr_audioport == NULL) {
+  if (audioport == NULL) {
     return NULL;
   }
 
-  kr_audioport->client = client;
-  kr_audioport->direction = direction;
+  audioport->client = client;
+  audioport->direction = direction;
 
-  kr_audioport->kr_shm = kr_shm_create (kr_audioport->client);
+  audioport->kr_shm = kr_shm_create (audioport->client);
 
   //sprintf (kr_audioport->kr_shm->buffer, "waa hoo its yaytime");
 
-  if (kr_audioport->kr_shm == NULL) {
-    free (kr_audioport);
+  if (audioport->kr_shm == NULL) {
+    free (audioport);
     return NULL;
   }
 
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
-    kr_shm_destroy (kr_audioport->kr_shm);
-    free (kr_audioport);
+    kr_shm_destroy (audioport->kr_shm);
+    free (audioport);
     return NULL;
     }
 
-  kr_audioport->sd = sockets[0];
+  audioport->sd = sockets[0];
   
-  printf ("sockets %d and %d\n", sockets[0], sockets[1]);
+  krad_system_set_socket_nonblocking (audioport->sd);
+    
+  //printf ("sockets %d and %d\n", sockets[0], sockets[1]);
   
-  kr_audioport_create_cmd (kr_audioport->client, kr_audioport->direction);
+  kr_audioport_create_cmd (audioport->client, audioport->direction);
   //FIXME use a return message from daemon to indicate ready to receive fds
   usleep (33000);
-  kr_send_fd (kr_audioport->client, kr_audioport->kr_shm->fd);
+  kr_send_fd (audioport->client, audioport->kr_shm->fd);
   usleep (33000);
-  kr_send_fd (kr_audioport->client, sockets[1]);
+  kr_send_fd (audioport->client, sockets[1]);
   usleep (33000);
-  return kr_audioport;
-
+  return audioport;
 }
 
-void kr_audioport_destroy (kr_audioport_t *kr_audioport) {
+void kr_audioport_destroy (kr_audioport_t *audioport) {
 
-  if (kr_audioport->active == 1) {
-    kr_audioport_deactivate (kr_audioport);
+  if (audioport->active == 1) {
+    kr_audioport_deactivate (audioport);
   }
 
-  kr_audioport_destroy_cmd (kr_audioport->client);
+  kr_audioport_destroy_cmd (audioport->client);
 
-  if (kr_audioport != NULL) {
-    if (kr_audioport->sd != 0) {
-      close (kr_audioport->sd);
-      kr_audioport->sd = 0;
+  if (audioport != NULL) {
+    if (audioport->sd != 0) {
+      close (audioport->sd);
+      audioport->sd = 0;
     }
-    if (kr_audioport->kr_shm != NULL) {
-      kr_shm_destroy (kr_audioport->kr_shm);
-      kr_audioport->kr_shm = NULL;
+    if (audioport->kr_shm != NULL) {
+      kr_shm_destroy (audioport->kr_shm);
+      audioport->kr_shm = NULL;
     }
-    free(kr_audioport);
+    free (audioport);
   }
 }
 
@@ -275,6 +328,40 @@ void kr_mixer_info (kr_client_t *client) {
   kr_ebml2_finish_element (client->ebml2, mixer_command);
     
   kr_client_push (client);
+}
+
+int kr_mixer_get_info_wait (kr_client_t *client,
+                            uint32_t *sample_rate,
+                            uint32_t *period_size) {
+
+  int wait_ms;
+  int ret;
+  kr_crate_t *crate;
+
+  ret = 0;
+  crate = NULL;
+  wait_ms = 750;
+
+  kr_mixer_info (client);
+
+  while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
+    if (crate != NULL) {
+      if (kr_crate_loaded (crate)) {
+        if (kr_crate_addr_path_match(crate, KR_MIXER, KR_UNIT)) {
+          if (sample_rate != NULL) {
+            *sample_rate = crate->inside.mixer->sample_rate;
+          }
+          if (period_size != NULL) {
+            *period_size = crate->inside.mixer->period_size;
+          }
+          ret = 1;
+        }
+      }
+      kr_crate_recycle (&crate);
+    }
+  }
+  
+  return ret;
 }
 
 void kr_mixer_plug_portgroup (kr_client_t *client, char *name, char *remote_name) {

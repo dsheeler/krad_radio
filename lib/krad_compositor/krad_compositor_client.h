@@ -38,8 +38,14 @@ int kr_compositor_background (kr_client_t *client, char *filename);
 void kr_compositor_snapshot (kr_client_t *client);
 void kr_compositor_snapshot_jpeg (kr_client_t *client);
 
-/* Compositor Local Video Ports */
+int kr_compositor_get_info_wait (kr_client_t *client,
+                            uint32_t *width,
+                            uint32_t *height,
+                            uint32_t *fps_num,
+                            uint32_t *fps_den);
 
+/* Compositor Local Video Ports */
+int kr_videoport_error (kr_videoport_t *videoport);
 void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void *, void *), void *pointer);
 void kr_videoport_activate (kr_videoport_t *kr_videoport);
 void kr_videoport_deactivate (kr_videoport_t *kr_videoport);

@@ -344,6 +344,18 @@ void kr_delivery_final_reset (kr_client_t *client) {
   client->last_delivery_was_final = 0;
 }
 
+int kr_crate_addr_path_match (kr_crate_t *crate, int unit, int subunit) {
+
+  if (crate == NULL) {
+    return 0;
+  }
+
+  if ((crate->addr->path.unit == unit) &&
+      (crate->addr->path.subunit.zero == subunit)) {
+    return 1;   
+  }
+  return 0;
+}
 
 int kr_radio_uptime_to_string (uint64_t uptime, char *string) {
 

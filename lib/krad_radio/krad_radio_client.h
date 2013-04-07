@@ -289,7 +289,7 @@ void kr_subscribe_all (kr_client_t *client);
  */
  
 int kr_poll (kr_client_t *client, uint32_t timeout_ms);
-
+int kr_crate_addr_path_match (kr_crate_t *crate, int unit, int subunit);
 void kr_crate_recycle (kr_crate_t **crate);
 int kr_crate_to_string (kr_crate_t *crate, char **string);
 int kr_crate_to_int (kr_crate_t *crate, int *number);

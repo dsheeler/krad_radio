@@ -56,44 +56,36 @@ void my_remote_print (kr_remote_t *remote) {
 					 remote->interface, remote->port);
 }
 
-int ap_match (kr_crate_t *crate, int unit, int subunit) {
-  if ((crate->addr->path.unit == unit) &&
-      (crate->addr->path.subunit.zero == subunit)) {
-    return 1;   
-  }
-  return 0;
-}
-
 void my_print (kr_crate_t *crate) {
-  if (ap_match(crate, KR_STATION, KR_REMOTE)) {
+  if (kr_crate_addr_path_match(crate, KR_STATION, KR_REMOTE)) {
     my_remote_print (crate->inside.remote);
   }
 
-  if (ap_match(crate, KR_MIXER, KR_UNIT)) {
+  if (kr_crate_addr_path_match(crate, KR_MIXER, KR_UNIT)) {
     my_mixer_print (crate->inside.mixer);
   }
   
-  if (ap_match(crate, KR_COMPOSITOR, KR_UNIT)) {
+  if (kr_crate_addr_path_match(crate, KR_COMPOSITOR, KR_UNIT)) {
     my_compositor_print (crate->inside.compositor);
   }
   
-  if (ap_match(crate, KR_COMPOSITOR, KR_SPRITE)) {
+  if (kr_crate_addr_path_match(crate, KR_COMPOSITOR, KR_SPRITE)) {
     my_sprite_print (crate->inside.sprite);
   }
   
-  if (ap_match(crate, KR_COMPOSITOR, KR_TEXT)) {
+  if (kr_crate_addr_path_match(crate, KR_COMPOSITOR, KR_TEXT)) {
     my_text_print (crate->inside.text);
   } 
   
-  if (ap_match(crate, KR_COMPOSITOR, KR_VECTOR)) {
+  if (kr_crate_addr_path_match(crate, KR_COMPOSITOR, KR_VECTOR)) {
     my_vector_print (crate->inside.vector);
   } 
   
-  if (ap_match(crate, KR_COMPOSITOR, KR_VIDEOPORT)) {
+  if (kr_crate_addr_path_match(crate, KR_COMPOSITOR, KR_VIDEOPORT)) {
     my_videoport_print (crate->inside.videoport);
   } 
   
-  if (ap_match(crate, KR_MIXER, KR_PORTGROUP)) {
+  if (kr_crate_addr_path_match(crate, KR_MIXER, KR_PORTGROUP)) {
     my_portgroup_print (crate->inside.portgroup);
   }
 }
