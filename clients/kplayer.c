@@ -355,6 +355,10 @@ int krad_player_open (krad_player_t *player, char *input) {
   
   player->avc.ctx = avformat_alloc_context ();
   
+  if (input[0] == '-') {
+    input = "pipe:0";
+  }
+  
   err = avformat_open_input (&player->avc.ctx, input, NULL, NULL);
   if (err < 0) {
     fprintf (stderr, "Krad Player: Could not open input: %s\n", input);
