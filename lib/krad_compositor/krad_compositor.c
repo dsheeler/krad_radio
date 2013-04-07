@@ -71,18 +71,21 @@ int krad_compositor_has_background (krad_compositor_t *krad_compositor) {
 }
 
 void krad_compositor_render_no_input (krad_compositor_t *compositor) {
-  if ((compositor->frames % 30) > 15) {
-    cairo_save (compositor->cr);
-    cairo_set_source_rgb (compositor->cr, RED);
-    cairo_select_font_face (compositor->cr,
-                            "sans",
-                            CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (compositor->cr, 88.0);
-    cairo_move_to (compositor->cr, compositor->width/4.0, compositor->height/2);
-    cairo_show_text (compositor->cr, "KR: NO INPUT");
-    cairo_restore (compositor->cr);
+  cairo_save (compositor->cr);
+  if ((compositor->frames % 24) < 12) {
+    cairo_set_source_rgba (compositor->cr, RED, 0.0f + ((compositor->frames % 12) * 0.09f));
+  } else {
+    cairo_set_source_rgba (compositor->cr, RED, 1.0f + ((compositor->frames % 12) * -0.09f));
   }
+  cairo_select_font_face (compositor->cr,
+                          "",
+                          CAIRO_FONT_SLANT_NORMAL,
+                          CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size (compositor->cr, 42.0);
+  cairo_move_to (compositor->cr, 64, 64 + 42);
+  cairo_show_text (compositor->cr, "KR: No Input!");
+  cairo_stroke (compositor->cr);
+  cairo_restore (compositor->cr);
 }
 
 void krad_compositor_clear_frame (krad_compositor_t *compositor) {
