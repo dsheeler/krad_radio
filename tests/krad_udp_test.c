@@ -2,10 +2,9 @@
 
 #define TEST_PORT 42666
 
-void receiver_test() {
+void receiver_test (int port) {
 
 	krad_rebuilder_t *krad_rebuilder;
-	int port;
 	int sd;
 	int ret;
 	int slen;
@@ -19,7 +18,6 @@ void receiver_test() {
 	buffer = calloc (1, 2000);
 	packet_buffer = calloc (1, 200000);
 	sd = socket (AF_INET, SOCK_DGRAM, 0);
-	port = TEST_PORT;
 	krad_rebuilder = krad_rebuilder_create ();
 
 	memset((char *) &local_address, 0, sizeof(local_address));
@@ -59,7 +57,7 @@ void receiver_test() {
 	free (packet_buffer);
 	free (buffer);
 }
-
+/*
 void sender_test() {
 
 	krad_slicer_t *krad_slicer;
@@ -87,14 +85,14 @@ void sender_test() {
 	free (buffer);
 
 }
-
+*/
 
 int main (int argc, char *argv[]) {
 
 	if (argc > 1) {
-		receiver_test();
+		receiver_test(atoi(argv[1]));
 	} else {
-		sender_test();
+		//sender_test();
 	}
 	
 	return 0;

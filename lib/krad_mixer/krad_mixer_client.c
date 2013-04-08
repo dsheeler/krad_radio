@@ -224,15 +224,12 @@ kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_d
   
   krad_system_set_socket_nonblocking (audioport->sd);
     
-  //printf ("sockets %d and %d\n", sockets[0], sockets[1]);
-  
+  krad_system_set_socket_blocking (audioport->client->krad_ipc_client->sd);
   kr_audioport_create_cmd (audioport->client, audioport->direction);
-  //FIXME use a return message from daemon to indicate ready to receive fds
-  usleep (33000);
+  usleep (5000);
   kr_send_fd (audioport->client, audioport->kr_shm->fd);
-  usleep (33000);
   kr_send_fd (audioport->client, sockets[1]);
-  usleep (33000);
+  krad_system_set_socket_nonblocking (audioport->client->krad_ipc_client->sd);
   return audioport;
 }
 

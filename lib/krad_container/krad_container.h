@@ -8,11 +8,13 @@ typedef struct krad_container_St krad_container_t;
 #include "krad_ogg.h"
 #include "krad_transmitter.h"
 #include "krad_file.h"
+#include "krad_udp.h"
 
 struct krad_container_St {
   krad_container_type_t type;
   krad_ogg_t *ogg;
   kr_mkv_t *mkv;
+  krad_udp_t *udp;  
   kr_io2_t *raw;
   krad_transmission_t *transmission;
 };

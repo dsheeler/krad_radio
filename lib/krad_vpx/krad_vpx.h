@@ -103,3 +103,5 @@ void krad_vpx_decoder_destroy (krad_vpx_decoder_t *vpx);
 void krad_vpx_decoder_decode (krad_vpx_decoder_t *vpx,
                               void *buffer,
                               int len);
+                              
+void krad_vpx_decoder_decode_again (krad_vpx_decoder_t *vpx);

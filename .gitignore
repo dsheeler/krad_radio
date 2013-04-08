@@ -77,3 +77,4 @@ krad_radio.update-filelist.sh
 scripts/kradradio_client.pyc
 clients/rust/krad_radio
 tests/krad_pipe
+tests/krad_udp_test

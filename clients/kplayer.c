@@ -214,7 +214,7 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
 
   player->frame_time[player->frames_dec % player->framebufsize] = 
     av_q2d (player->avc.ctx->streams[player->avc.vid]->time_base) *
-            player->avc.vframe->pkt_pts * 1000;
+            (player->avc.vframe->pkt_pts - player->avc.ctx->streams[player->avc.vid]->start_time) * 1000;
   
   player->frames_dec++;
 

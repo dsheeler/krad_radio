@@ -386,6 +386,8 @@ char *kr_container_type_to_string (kr_container_type_t type) {
 	switch (type) {
 		case MKV:
 			return "MKV";
+		case KUDP:
+			return "KUDP";
 		case OGG:
 			return "Ogg";
 		case TOGG:

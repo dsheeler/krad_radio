@@ -183,6 +183,9 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
     if (tr->actual.muxer.type == Y4MFILE) {
       
     }
+    if (tr->actual.muxer.type == KUDP) {
+      
+    }
   }
   
   if (tr->type == DEMUX) {
@@ -372,27 +375,34 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
 
         sprintf (link->input, "%s", string2);
         
-        if (strstr(string2, "stream") != NULL) {
-        //if (1) {
-          strcpy (link->host, "europa.kradradio.com");
-          link->port = 8008;
-          if (strstr(string2, "mkv") != NULL) {
-            strcpy (link->mount, "/krad_radio_streaming.mkv");
-          } else {
-            if (strstr(string2, "webm") != NULL) {
-              strcpy (link->mount, "/krad_radio_streaming.webm");
-            } else {
-              strcpy (link->mount, "/krad_radio_streaming.ogg");
-            }
-          }
-          strcpy (link->password, "firefox");
+        if (strstr(string2, ".udp") != NULL) {
+            link->port = 44000;
+            strcpy (link->host, "50.17.250.78");
+            strcpy (link->mount, "/krad.udp");
+            strcpy (link->password, "firefox");
         } else {
-          if (strstr(string2, "ogg") != NULL) {
-            sprintf (link->output,
-                     "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
+          if (strstr(string2, "stream") != NULL) {
+          //if (1) {
+            strcpy (link->host, "europa.kradradio.com");
+            link->port = 8008;
+            if (strstr(string2, "mkv") != NULL) {
+              strcpy (link->mount, "/krad_radio_streaming.mkv");
+            } else {
+              if (strstr(string2, "webm") != NULL) {
+                strcpy (link->mount, "/krad_radio_streaming.webm");
+              } else {
+                strcpy (link->mount, "/krad_radio_streaming.ogg");
+              }
+            }
+            strcpy (link->password, "firefox");
           } else {
-            sprintf (link->output,
-                     "%s/kr_test_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
+            if (strstr(string2, "ogg") != NULL) {
+              sprintf (link->output,
+                       "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
+            } else {
+              sprintf (link->output,
+                       "%s/kr_test_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
+            }
           }
         }
       }

@@ -38,7 +38,7 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   //krad_vpx_encoder_print_config (vpx);
 
   //TEMP
-  //vpx->cfg.g_lag_in_frames = 15;
+  //vpx->cfg.g_lag_in_frames = 1;
 
   vpx->cfg.g_w = vpx->width;
   vpx->cfg.g_h = vpx->height;
@@ -209,7 +209,7 @@ void krad_vpx_decoder_decode (krad_vpx_decoder_t *vpx,
                               int len) {
 
   if (vpx_codec_decode (&vpx->decoder, buffer, len, 0, 0)) {
-    failfast ("Failed to decode %d byte frame: %s\n",
+    printf ("Failed to decode %d byte frame: %s\n",
               len, vpx_codec_error (&vpx->decoder));
   }
 
@@ -217,7 +217,7 @@ void krad_vpx_decoder_decode (krad_vpx_decoder_t *vpx,
 
     vpx_codec_get_stream_info (&vpx->decoder, &vpx->stream_info);
 
-    printk ("VPX Stream Info: W:%d H:%d KF:%d\n",
+    printf ("VPX Stream Info: W:%d H:%d KF:%d\n",
             vpx->stream_info.w,
             vpx->stream_info.h, 
             vpx->stream_info.is_kf);
@@ -229,6 +229,11 @@ void krad_vpx_decoder_decode (krad_vpx_decoder_t *vpx,
   vpx->iter = NULL;
   vpx->img = vpx_codec_get_frame (&vpx->decoder, &vpx->iter);
 }
+
+void krad_vpx_decoder_decode_again (krad_vpx_decoder_t *vpx) {
+  vpx->img = vpx_codec_get_frame (&vpx->decoder, &vpx->iter);
+}
+
 
 void krad_vpx_decoder_destroy (krad_vpx_decoder_t *vpx) {
   vpx_codec_destroy (&vpx->decoder);
@@ -276,6 +281,6 @@ static void krad_vpx_fail (vpx_codec_ctx_t *ctx, const char *msg) {
     err_details = "None";
   }
 
-  failfast ("Krad VPX Fail: %s %s\nDetail: %s",
+  printf ("Krad VPX Fail: %s %s\nDetail: %s",
             msg, vpx_codec_error (ctx), err_details);
 }

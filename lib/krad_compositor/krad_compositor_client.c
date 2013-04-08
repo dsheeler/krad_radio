@@ -561,23 +561,31 @@ void *kr_videoport_process_thread (void *arg) {
     pollfds[0].events = POLLIN;  
     ret = poll (pollfds, 1, timeout_ms);
     
+    if (ret < 0) {
+      printke ("krad compositor client: poll failure %d", ret);
+      break;
+    }
+    
     if (ret == 0) {
-      printke ("krad mixer client: audioport poll read timeout", ret);
+      printke ("krad compositor client: audioport poll read timeout", ret);
       break;
     }
     
     if (pollfds[0].revents & POLLHUP) {
-      printke ("krad mixer client: audioport poll hangup", ret);
+      printke ("krad compositor client: audioport poll hangup", ret);
       break;
     }
     if (pollfds[0].revents & POLLERR) {
-      printke ("krad mixer client: audioport poll error", ret);
+      printke ("krad compositor client: audioport poll error", ret);
       break;
     }
-    
+    if (!(pollfds[0].revents & POLLIN)) {
+      printke ("krad compositor client: could not polling", ret);
+      break;
+    }
     ret = read (videoport->sd, buf, 1);
     if (ret != 1) {
-      printke ("krad mixer client: unexpected read return value %d in kr_audioport_process_thread", ret);
+      printke ("krad compositor client: unexpected read return value %d in kr_compositor_process_thread", ret);
       break;
     }
 
@@ -587,16 +595,16 @@ void *kr_videoport_process_thread (void *arg) {
     ret = poll (pollfds, 1, timeout_ms);
     
     if (ret == 0) {
-      printke ("krad mixer client: audioport poll write timeout", ret);
+      printke ("krad compositor client: videoport poll write timeout", ret);
       break;
     }
     
     if (pollfds[0].revents & POLLHUP) {
-      printke ("krad mixer client: audioport poll hangup", ret);
+      printke ("krad compositor client: videoport poll hangup", ret);
       break;
     }
     if (pollfds[0].revents & POLLERR) {
-      printke ("krad mixer client: audioport poll error", ret);
+      printke ("krad compositor client: videoport poll error", ret);
       break;
     }
     
@@ -674,18 +682,13 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client) {
   
   //printf ("sockets %d and %d\n", sockets[0], sockets[1]);
   krad_system_set_socket_nonblocking (videoport->sd);
-  
+    
+  krad_system_set_socket_blocking (videoport->client->krad_ipc_client->sd);
   kr_videoport_create_cmd (videoport->client);
-
-  //FIXME use a return message from daemon to indicate ready to receive fds
-  usleep (33000);
+  usleep (5000);
   kr_send_fd (videoport->client, videoport->kr_shm->fd);
-
-  usleep (33000);
-
   kr_send_fd (videoport->client, sockets[1]);
-
-  usleep (33000);
+  krad_system_set_socket_nonblocking (videoport->client->krad_ipc_client->sd);
 
   return videoport;
 }

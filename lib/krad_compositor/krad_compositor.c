@@ -1,5 +1,5 @@
 #include "krad_compositor.h"
-
+static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port);
 static void krad_compositor_port_destroy_actual (krad_compositor_t *krad_compositor, krad_compositor_port_t *port);
 static void krad_compositor_aspect_scale (int width, int height,
                                           int avail_width, int avail_height,
@@ -182,11 +182,25 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
 
 static void krad_compositor_prepare (krad_compositor_t *compositor) {
 
+  int i;
+  int ret;
+
   while (compositor->frame == NULL) {
     compositor->frame = krad_framepool_getframe (compositor->framepool);
     if (compositor->frame == NULL) {
-      printke ("This is very bad! Compositor wanted a frame but could not get one right away!");
+      printke ("Compositor wanted a frame but could not get one right away!");
       usleep (5000);
+    }
+  }
+  
+  for (i = 0; i < KC_MAX_PORTS; i++) {
+    if ((compositor->port[i].subunit.active == 1) &&
+        (compositor->port[i].direction == INPUT) &&
+        (compositor->port[i].local == 1)) {
+      ret = krad_compositor_local_videoport_notify (&compositor->port[i]);
+      if (ret == -2) {
+        krad_compositor_port_destroy (compositor, &compositor->port[i]);
+      }
     }
   }
   
@@ -579,13 +593,12 @@ void krad_compositor_port_push_frame (krad_compositor_port_t *port, krad_frame_t
   }
 }
 
-krad_frame_t *krad_compositor_port_pull_frame_local (krad_compositor_port_t *port) {
+static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port) {
 
   int ret;
   int wrote;
   char buf[1];
-  
-  static int frames = 0;
+  struct pollfd pollfds[1];
   
   ret = 0;
   wrote = 0;
@@ -597,16 +610,82 @@ krad_frame_t *krad_compositor_port_pull_frame_local (krad_compositor_port_t *por
   port->local_frame->height = port->source_height;
 
   cairo_surface_flush (port->local_frame->cst);
-  wrote = write (port->msg_sd, buf, 1);
 
-  if (wrote == 1) {
-    ret = read (port->msg_sd, buf, 1);
-    if (ret == 1) {
-      frames++;
-      cairo_surface_mark_dirty (port->local_frame->cst);
-      return port->local_frame;
+  pollfds[0].events = POLLOUT;
+  pollfds[0].fd = port->msg_sd;
+  
+  ret = poll (pollfds, 1, 0);
+
+  if (ret < 0) {
+    printke ("krad compositor poll failure %d", ret);
+    return -2;
+  }
+  
+  if (ret == 0) {
+    printke ("krad compositor : videoport poll write timeout", ret);
+    return -1;
+  }
+
+  if (ret == 1) {
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad compositor: videoport poll hangup", ret);
+      return -2;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad compositor: videoport poll error", ret);
+      return -2;
+    }  
+    if (pollfds[0].revents & POLLOUT) {
+      wrote = write (port->msg_sd, buf, 1);
+      return wrote;
     }
   }
+  
+  return ret;
+}
+
+krad_frame_t *krad_compositor_port_pull_frame_local (krad_compositor_port_t *port) {
+
+  int ret;
+  char buf[1];
+  struct pollfd pollfds[1];
+  
+  ret = 0;
+  buf[0] = 0;
+
+  pollfds[0].events = POLLIN;
+  pollfds[0].fd = port->msg_sd;
+  
+  ret = poll (pollfds, 1, 3);
+
+  if (ret < 0) {
+    printke ("krad compositor poll failure %d", ret);
+    return NULL;
+  }
+  
+  if (ret == 0) {
+    printke ("krad compositor : videoport poll read timeout", ret);
+    return NULL;
+  }
+
+  if (ret == 1) {
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad compositor: videoport poll hangup", ret);
+      return NULL;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad compositor: videoport poll error", ret);
+      return NULL;
+    }  
+    if (pollfds[0].revents & POLLIN) {
+      ret = read (port->msg_sd, buf, 1);
+      if (ret == 1) {
+        cairo_surface_mark_dirty (port->local_frame->cst);
+        return port->local_frame;
+      }
+    }
+  }
+
   return NULL;
 }
 
@@ -801,6 +880,8 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
 
   if ((port->local_buffer != NULL) && (port->shm_sd != 0) &&
     (port->msg_sd != 0)) {
+    
+    krad_system_set_socket_nonblocking (port->msg_sd);
     
     port->local_frame = calloc (1, sizeof(krad_frame_t));
     if (port->local_frame == NULL) {

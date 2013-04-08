@@ -26,6 +26,7 @@ struct krad_mixer_local_portgroup_St {
   int local_buffer_size;
   krad_mixer_portgroup_direction_t direction;
   krad_mixer_t *krad_mixer;
+  int last_wrote;
 };
 
 struct krad_mixer_portgroup_St {

@@ -9,11 +9,11 @@ typedef struct krad_transponder_St krad_transponder_t;
 #include "krad_slice.h"
 #include "krad_transponder_interface.h"
 
-#define DEFAULT_VPX_BITRATE 700
+#define DEFAULT_VPX_BITRATE 1100
 #define DEFAULT_THEORA_QUALITY 31
 #define DEFAULT_CAPTURE_BUFFER_FRAMES 50
 #define DEFAULT_DECODING_BUFFER_FRAMES 50
-#define DEFAULT_VORBIS_QUALITY 0.5
+#define DEFAULT_VORBIS_QUALITY 0.4
 #define KRAD_DEFAULT_FLAC_BIT_DEPTH 16
 #define DEFAULT_COMPOSITOR_WIDTH 960
 #define DEFAULT_COMPOSITOR_HEIGHT 540

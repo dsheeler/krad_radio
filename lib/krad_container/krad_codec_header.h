@@ -27,6 +27,7 @@ typedef enum {
   TOGG,
   NATIVEFLAC,
   Y4MFILE,
+  KUDP,
 } krad_container_type_t;
 
 typedef krad_container_type_t kr_container_type_t;

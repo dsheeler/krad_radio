@@ -478,7 +478,7 @@ void video_encoding_unit_create (void *arg) {
                                                          krad_link->vp8_bitrate);
 
     //if (krad_link->type == TRANSMIT) {
-    krad_link->krad_vpx_encoder->cfg.kf_min_dist = 90;
+    krad_link->krad_vpx_encoder->cfg.kf_min_dist = 10;
     krad_link->krad_vpx_encoder->cfg.kf_max_dist = 90;
     //}
 
@@ -489,7 +489,7 @@ void video_encoding_unit_create (void *arg) {
 
     krad_vpx_encoder_config_set (krad_link->krad_vpx_encoder, &krad_link->krad_vpx_encoder->cfg);
 
-    krad_vpx_encoder_deadline_set (krad_link->krad_vpx_encoder, 13333);
+    krad_vpx_encoder_deadline_set (krad_link->krad_vpx_encoder, 5000);
 
     krad_vpx_encoder_print_config (krad_link->krad_vpx_encoder);
   }

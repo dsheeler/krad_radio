@@ -38,10 +38,12 @@ typedef struct kr_vorbis_decoder_St kr_vorbis_decoder_t;
 typedef struct kr_opus_decoder_St kr_opus_decoder_t;
 typedef struct kr_flac_decoder_St kr_flac_decoder_t;
 
+typedef struct kr_udp_muxer_St kr_udp_muxer_t;
 typedef struct kr_ogg_muxer_St kr_ogg_muxer_t;
 typedef struct kr_mkv_muxer_St kr_mkv_muxer_t;
 typedef struct kr_transogg_muxer_St kr_transogg_muxer_t;
 
+typedef struct kr_udp_demuxer_St kr_udp_demuxer_t;
 typedef struct kr_ogg_demuxer_St kr_ogg_demuxer_t;
 typedef struct kr_mkv_demuxer_St kr_mkv_demuxer_t;
 typedef struct kr_transogg_demuxer_St kr_transogg_demuxer_t;
@@ -213,6 +215,10 @@ struct kr_decoder_St {
 	kr_av_decoder_t decoder;	
 };
 
+struct kr_udp_muxer_St {
+  int ok;
+};
+
 struct kr_ogg_muxer_St {
   int ok;
 };
@@ -222,6 +228,10 @@ struct kr_mkv_muxer_St {
 };
 
 struct kr_transogg_muxer_St {
+  int ok;
+};
+
+struct kr_udp_demuxer_St {
   int ok;
 };
 
@@ -241,6 +251,7 @@ typedef union {
 	kr_ogg_muxer_t ogg;
 	kr_mkv_muxer_t mkv;
 	kr_transogg_muxer_t togg;
+	kr_udp_muxer_t udp;	
 } kr_muxer_actual_t;
 
 struct kr_muxer_St {
@@ -249,6 +260,7 @@ struct kr_muxer_St {
 };
 
 typedef union {
+	kr_udp_demuxer_t udp;
 	kr_ogg_demuxer_t ogg;
 	kr_mkv_demuxer_t mkv;
 	kr_transogg_demuxer_t togg;

@@ -4,7 +4,7 @@ static void krad_mixer_ticker_thread_cleanup (void *arg);
 static void *krad_mixer_ticker_thread (void *arg);
 static void krad_mixer_stop_ticker (krad_mixer_t *krad_mixer);
 static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer);
-static void krad_mixer_local_audio_samples_callback (int nframes,
+static int krad_mixer_local_audio_samples_callback (int nframes,
                                               krad_mixer_local_portgroup_t *krad_mixer_local_portgroup,
                                               float **samples);
 static void krad_mixer_update_portgroups (krad_mixer_t *krad_mixer);
@@ -359,30 +359,85 @@ static void krad_mixer_update_portgroups (krad_mixer_t *krad_mixer) {
   }
 }
 
-static void krad_mixer_local_audio_samples_callback (int nframes,
-                                                     krad_mixer_local_portgroup_t *krad_mixer_local_portgroup,
+static int krad_mixer_local_audio_samples_callback (int nframes,
+                                                     krad_mixer_local_portgroup_t *portgroup,
                                                      float **samples) {
   int ret;
   int wrote;
   char buf[1];
-  
+  struct pollfd pollfds[1];
+
   ret = 0;
   wrote = 0;
   buf[0] = 0;
   
-  if (krad_mixer_local_portgroup->direction == OUTPUT) {
-    memcpy (krad_mixer_local_portgroup->local_buffer,
+  if (portgroup->direction == OUTPUT) {
+    memcpy (portgroup->local_buffer,
             samples[0],
-            2 * 4 * krad_mixer_local_portgroup->krad_mixer->period_size);
+            2 * 4 * portgroup->krad_mixer->period_size);
   }
-  wrote = write (krad_mixer_local_portgroup->msg_sd, buf, 1);
-  if (wrote == 1) {
-    ret = read (krad_mixer_local_portgroup->msg_sd, buf, 1);
-    if (ret == 1) {
+  
+  pollfds[0].events = POLLOUT;
+  pollfds[0].fd = portgroup->msg_sd;
 
+  ret = poll (pollfds, 1, 0);
+  if (ret < 0) {
+    printke ("krad mixer poll failure %d", ret);
+    return -2;
+  }
+  if (ret == 0) {
+    printke ("krad mixer : local_audio port poll write timeout", ret);
+    return -1;
+  }
+  if (ret == 1) {
+    if (pollfds[0].revents & POLLHUP) {
+      printke ("krad mixer: local_audio port poll hangup", ret);
+      return -2;
+    }
+    if (pollfds[0].revents & POLLERR) {
+      printke ("krad mixer: local_audio port poll error", ret);
+      return -2;
+    }  
+    if (pollfds[0].revents & POLLOUT) {
+      wrote = write (portgroup->msg_sd, buf, 1);
+      if (wrote == 1) {
+        portgroup->last_wrote++;
+      }
     }
   }
-  return;
+  
+  if (portgroup->last_wrote > 0) {
+    pollfds[0].events = POLLIN;
+    pollfds[0].fd = portgroup->msg_sd;
+    ret = poll (pollfds, 1, -1);
+    if (ret < 0) {
+      printke ("krad mixer poll failure %d", ret);
+      return -2;
+    }
+    if (ret == 0) {
+      printke ("krad mixer : local_audio port poll read timeout", ret);
+      //return -1;
+    }
+    if (ret == 1) {
+      if (pollfds[0].revents & POLLHUP) {
+        printke ("krad mixer: local_audio port poll hangup", ret);
+        return -2;
+      }
+      if (pollfds[0].revents & POLLERR) {
+        printke ("krad mixer: videoport poll error", ret);
+        return -2;
+      }  
+      if (pollfds[0].revents & POLLIN) {
+        ret = read (portgroup->msg_sd, buf, 1);
+        if (ret == 1) {
+          portgroup->last_wrote--;
+          //return 0;
+        }
+      }
+    }
+  }
+  
+  return -1;
 }
 
 static void portgroup_update_volume (krad_mixer_portgroup_t *portgroup) {
@@ -765,6 +820,8 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
   krad_mixer_local_portgroup->local_buffer = mmap (NULL, krad_mixer_local_portgroup->local_buffer_size,
                          PROT_READ | PROT_WRITE, MAP_SHARED,
                          krad_mixer_local_portgroup->shm_sd, 0);
+
+  //krad_system_set_socket_nonblocking (krad_mixer_local_portgroup->msg_sd);
 
   krad_mixer_local_portgroup->krad_mixer = krad_mixer;
   krad_mixer_local_portgroup->direction = direction;

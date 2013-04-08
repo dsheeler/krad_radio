@@ -25,6 +25,9 @@ static krad_container_type_t krad_container_select (char *string) {
   if (strstr(string, ".flac")) {
     return NATIVEFLAC;
   }
+  if (strstr(string, ".udp")) {
+    return KUDP;
+  }
   return MKV;
 }
 
@@ -133,7 +136,7 @@ krad_container_t *krad_container_open_stream (char *host, int port,
   
   type = krad_container_select (mount);
 
-  if ((type != OGG) && (type != MKV)) {
+  if ((type != OGG) && (type != MKV) && (type != KUDP)) {
     return NULL;
   }
   
@@ -148,6 +151,10 @@ krad_container_t *krad_container_open_stream (char *host, int port,
   if (container->type == MKV) {
     container->mkv = kr_mkv_stream (host, port, mount, password);
   }
+  
+  if (container->type == KUDP) {
+    container->udp = kr_udp (host, port, mount, password);
+  }  
 
   return container;
 }
@@ -218,6 +225,9 @@ void krad_container_destroy (krad_container_t **container) {
     if ((*container)->type == MKV) {
       kr_mkv_destroy (&(*container)->mkv);
     }
+    if ((*container)->type == KUDP) {
+      kr_udp_destroy (&(*container)->udp);
+    }
     if (((*container)->type == NATIVEFLAC) || ((*container)->type == Y4MFILE)) {
       if ((*container)->raw) {
         kr_io2_destroy (&((*container)->raw));
@@ -252,12 +262,15 @@ int krad_container_add_video_track_with_private_data (krad_container_t *containe
                                                        width, height, krad_codec_header->header,
                                                        krad_codec_header->header_size,
                                                        krad_codec_header->header_count);
-  } else {
+  } 
+
+  if (container->type == MKV) {
     return kr_mkv_add_video_track_with_private_data (container->mkv, krad_codec_header->codec,
                                                      fps_numerator, fps_denominator, width, height,
                                                      krad_codec_header->header_combined,
                                                      krad_codec_header->header_combined_size);
   }
+  return -1;
 }
 
 int krad_container_add_video_track (krad_container_t *container,
@@ -268,11 +281,14 @@ int krad_container_add_video_track (krad_container_t *container,
   if (container->type == OGG) {
     return krad_ogg_add_video_track (container->ogg, codec, fps_numerator,
                                      fps_denominator, width, height);
-  } else {
+  } 
+
+  if (container->type == MKV) {
     return kr_mkv_add_video_track (container->mkv, codec,
                                    fps_numerator, fps_denominator,
                                    width, height);
   }
+  return -1;
 }
 
 int krad_container_add_audio_track (krad_container_t *container,
@@ -286,12 +302,15 @@ int krad_container_add_audio_track (krad_container_t *container,
                                      krad_codec_header->header,
                                      krad_codec_header->header_size,
                                      krad_codec_header->header_count);
-  } else {
+  }
+  
+  if (container->type == MKV) {
     return kr_mkv_add_audio_track (container->mkv, codec,
                                    sample_rate, channels, 
                                    krad_codec_header->header_combined,
                                    krad_codec_header->header_combined_size);
   }
+  return -1;
 }
 
 void krad_container_add_video (krad_container_t *container, int track,
@@ -300,8 +319,13 @@ void krad_container_add_video (krad_container_t *container, int track,
 
   if (container->type == OGG) {
     krad_ogg_add_video (container->ogg, track, buffer, buffer_size, keyframe);
-  } else {
+  }
+  if (container->type == MKV) {
     kr_mkv_add_video (container->mkv, track, buffer, buffer_size, keyframe);
+  }
+  if (container->type == KUDP) {
+    krad_slicer_sendto (container->udp->slicer, buffer, buffer_size, 1, keyframe,
+                        container->udp->host, container->udp->port);
   }
 }
 
@@ -310,7 +334,8 @@ void krad_container_add_audio (krad_container_t *container, int track,
                                int frames) {
   if (container->type == OGG) {
     krad_ogg_add_audio (container->ogg, track, buffer, buffer_size, frames);
-  } else {
+  }
+  if (container->type == MKV) {
     kr_mkv_add_audio (container->mkv, track, buffer, buffer_size, frames);
   }
 }
