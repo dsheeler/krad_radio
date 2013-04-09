@@ -158,7 +158,7 @@ shlibs7 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice", "vpx"]
 
 shlibs8 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
-           "libavresample", "libswscale", "libavdevice", "vpx", "turbojpeg"]
+           "libavresample", "libswscale", "libavdevice", "vpx"]
 
 shlibs9 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice", "vpx",
@@ -168,6 +168,7 @@ stlibs = []
 syslibs = ['m', 'dl', 'z']
 
 syslibs2 = ['pthread']
+syslibs3 = ['turbojpeg']
 plibs = ['rt', 'pthread']
 
 def check_system(systm):
@@ -183,7 +184,8 @@ def check_system(systm):
   global shlibs9
   global syslibs
   global syslibs2
-
+  global syslibs3
+  
   if systm.env['KR_LINUX']:
     #shlibs = shlibs + ["alsa"]    
     #libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
@@ -207,9 +209,13 @@ def configure(conf):
   global shlibs8
   global shlibs9  
   global syslibs
+  global syslibs3  
   check_system(conf)
 
   for l in syslibs:
+    conf.check(lib = l, cflags='-Wall', uselib_store = l)
+
+  for l in syslibs3:
     conf.check(lib = l, cflags='-Wall', uselib_store = l)
 
   for l in shlibs:
@@ -246,6 +252,7 @@ def build(bld):
   global shlibs9  
   global syslibs
   global syslibs2
+  global syslibs3
   check_system(bld)
 
   # read version number to be used for the shared library
@@ -319,7 +326,7 @@ def build(bld):
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
-      uselib = shlibs8 + shlibs + stlibs + syslibs + plibs)
+      uselib = shlibs8 + shlibs + stlibs + syslibs3 + syslibs + plibs)
 
   if bld.env['KR_LINUX'] and bld.env['KRAD_USE_WAYLAND']:
     for p in programs9:
