@@ -1,5 +1,7 @@
 #include "krad_v4l2.h"
 
+#define KRAD_TURBOJPEG
+
 krad_v4l2_t *krad_v4l2_create() {
 
 	krad_v4l2_t *krad_v4l2;
@@ -474,7 +476,9 @@ void krad_v4l2_alloc_codec_buffer (krad_v4l2_t *krad_v4l2) {
 
 void krad_v4l2_free_codec_buffer (krad_v4l2_t *krad_v4l2) {
 	if (krad_v4l2->jpeg_dec != NULL) {
+#ifdef KRAD_TURBOJPEG
 		tjDestroy ( krad_v4l2->jpeg_dec );
+#endif
 		krad_v4l2->jpeg_dec = NULL;
 	}
 	if (krad_v4l2->codec_buffer != NULL) {
@@ -490,7 +494,9 @@ void krad_v4l2_yuv_mode (krad_v4l2_t *krad_v4l2) {
 
 void krad_v4l2_mjpeg_mode (krad_v4l2_t *krad_v4l2) {
 	if (krad_v4l2->jpeg_dec == NULL) {
+#ifdef KRAD_TURBOJPEG
 		krad_v4l2->jpeg_dec = tjInitDecompress();
+#endif
 	}
 	krad_v4l2_alloc_codec_buffer (krad_v4l2);
 	krad_v4l2->mode = V4L2_PIX_FMT_MJPEG;
@@ -498,7 +504,9 @@ void krad_v4l2_mjpeg_mode (krad_v4l2_t *krad_v4l2) {
 
 void krad_v4l2_h264_mode (krad_v4l2_t *krad_v4l2) {
 	if (krad_v4l2->jpeg_dec != NULL) {
+#ifdef KRAD_TURBOJPEG
 		tjDestroy ( krad_v4l2->jpeg_dec );
+#endif
 		krad_v4l2->jpeg_dec = NULL;
 	}
 	krad_v4l2_alloc_codec_buffer (krad_v4l2);
@@ -553,6 +561,8 @@ static char mjpg_dht[0x1A4] =
 
 void krad_v4l2_mjpeg_to_rgb (krad_v4l2_t *krad_v4l2, unsigned char *argb_buffer, unsigned char *mjpeg_buffer, unsigned int mjpeg_size) {
 
+#ifdef KRAD_TURBOJPEG
+
 	unsigned long jpeg_size_long;
 	int stride;
 	int ret;
@@ -600,6 +610,10 @@ void krad_v4l2_mjpeg_to_rgb (krad_v4l2_t *krad_v4l2, unsigned char *argb_buffer,
 	if (ret != 0) {
 		printke ("JPEG decoding error: %s\n", tjGetErrorStr());
 	}
+
+
+#endif
+
 }
 
 

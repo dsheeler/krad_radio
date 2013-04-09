@@ -34,6 +34,10 @@ programs7 = """
 kr_udp_recvr.c
 """.split()
 
+programs8 = """
+kr_udp_sendr.c
+""".split()
+
 libsources = """
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c
@@ -126,6 +130,12 @@ depsources7 = """
 ../lib/krad_vpx/krad_vpx.c
 """.split()
 
+depsources8 = """
+../lib/krad_udp/krad_udp.c
+../lib/krad_vpx/krad_vpx.c
+../lib/krad_v4l2/krad_v4l2.c
+""".split()
+
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 shlibs = ["opus"]
 
@@ -136,6 +146,9 @@ shlibs6 = ["libavutil", "libavformat", "libavfilter", "libavcodec",
 
 shlibs7 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice", "vpx"]
+
+shlibs8 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
+           "libavresample", "libswscale", "libavdevice", "vpx", "turbojpeg"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
@@ -152,6 +165,7 @@ def check_system(systm):
   global shlibs2
   global shlibs4
   global shlibs7
+  global shlibs8  
   global syslibs
   global syslibs2
 
@@ -175,6 +189,7 @@ def configure(conf):
   global shlibs4
   global shlibs6
   global shlibs7
+  global shlibs8  
   global syslibs
   check_system(conf)
 
@@ -197,6 +212,11 @@ def configure(conf):
     for l in shlibs6:
       conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
+  if conf.options.kplayer == True:
+    conf.env['KPLAYER'] = "yes"
+    for l in shlibs8:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+
 def build(bld):
 
   global libav_dir
@@ -206,6 +226,7 @@ def build(bld):
   global shlibs4
   global shlibs6
   global shlibs7
+  global shlibs8
   global syslibs
   global syslibs2
   check_system(bld)
@@ -273,6 +294,15 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs7 + shlibs + stlibs + syslibs + plibs)
+
+  if bld.env['KR_LINUX']:
+    for p in programs8:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources8,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs8 + shlibs + stlibs + syslibs + plibs)
 
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:

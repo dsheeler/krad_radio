@@ -291,6 +291,7 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 
 	krad_rebuilder_destroy (krad_rebuilder);
 	close (sd);
+  sws_freeContext ( scaler );
 	free (packet_buffer);
 	free (buffer);
 }
