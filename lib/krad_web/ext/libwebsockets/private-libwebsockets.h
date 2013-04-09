@@ -74,7 +74,11 @@
 #include <sys/socket.h>
 #ifndef LWS_NO_FORK
 #ifdef HAVE_SYS_PRCTL_H
+#ifdef FRAK_MACOSX
+#undef HAVE_SYS_PRCTL_H
+#else
 #include <sys/prctl.h>
+#endif
 #endif
 #endif
 #include <netinet/in.h>

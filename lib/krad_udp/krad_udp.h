@@ -22,14 +22,14 @@
 
 #include "krad_system.h"
 
+#ifndef KRAD_UDP_H
+#define KRAD_UDP_H
+
 typedef struct krad_udp_St krad_udp_t;
 
 typedef struct krad_subslice_St krad_subslice_t;
 typedef struct krad_slicer_St krad_slicer_t;
 typedef struct krad_rebuilder_St krad_rebuilder_t;
-
-#ifndef KRAD_UDP_H
-#define KRAD_UDP_H
 
 #define KRAD_UDP_MAX_PAYOAD_SIZE 1300
 #define KRAD_UDP_HEADER_SIZE 19
