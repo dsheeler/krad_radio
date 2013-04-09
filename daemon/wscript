@@ -125,7 +125,7 @@ includedirs = """
 /usr/include
 """.split()
 
-shlibs = ["jack", "cairo", "xmms2-client", "samplerate",
+shlibs = ["jack", "cairo", "cairo-ft", "xmms2-client", "samplerate",
           "theora", "theoraenc", "theoradec",
           "vorbis", "vorbisenc", "opus", "flac",
           "vpx", "libswscale", "libavutil", 'freetype2']
