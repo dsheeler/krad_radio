@@ -15,7 +15,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include <cairo/cairo.h>
+#include <cairo.h>
 
 #include "krad_system.h"
 

@@ -203,6 +203,7 @@ def build(bld):
   global programs
   global shlibs
   global shlibs2
+  global shlibs4
   global shlibs6
   global shlibs7
   global syslibs

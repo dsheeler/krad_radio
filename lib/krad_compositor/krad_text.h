@@ -9,7 +9,7 @@
 #include <freetype/ftadvanc.h>
 #include <freetype/ftsnames.h>
 #include <freetype/tttables.h>
-#include <cairo/cairo-ft.h>
+#include <cairo-ft.h>
 
 #define KRAD_TEXT_DEFAULT_FONT "helvetica sans"
 
