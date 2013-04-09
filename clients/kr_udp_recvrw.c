@@ -298,11 +298,24 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 int main (int argc, char *argv[]) {
 
   kr_udp_recvr_t *udp_recvr;
+  int port;
+  
+  printf ("Options: port width height\n");
 
   udp_recvr = calloc (1, sizeof (kr_udp_recvr_t));
-  
+
+  port = 3777;  
   udp_recvr->width = 960;
   udp_recvr->height = 540;
+
+	if (argc > 1) {
+	  port = atoi (argv[1]);
+	}
+	
+	if (argc > 3) {
+    udp_recvr->width = atoi (argv[2]);
+    udp_recvr->height = atoi (argv[3]);
+	}
 
 	signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);	
@@ -326,8 +339,7 @@ int main (int argc, char *argv[]) {
 
   krad_wayland_open_window (udp_recvr->krad_wayland);
 	
-	
-  kr_udp_recvr (udp_recvr, 3777);	
+  kr_udp_recvr (udp_recvr, port);	
 
 	if (udp_recvr->frames_dec > 0) {
 		printf ("Rendered %d frames!\n", udp_recvr->frames_dec);

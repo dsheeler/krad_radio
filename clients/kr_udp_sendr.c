@@ -14,6 +14,8 @@ struct kr_udp_sendr_St {
   krad_udp_t *udp;
 	krad_vpx_encoder_t *vpxenc;	
 	krad_v4l2_t *krad_v4l2;
+	int bitrate;
+	char device[256];
 };
 
 static int destroy = 0;
@@ -41,9 +43,9 @@ void kr_udp_sendr (kr_udp_sendr_t *udp_sendr, char *host, int port) {
   udp_sendr->krad_v4l2 = krad_v4l2_create ();
   udp_sendr->vpxenc = krad_vpx_encoder_create (udp_sendr->width,
                                                udp_sendr->height,
-                                               30, 1, 1200);
+                                               30, 1, udp_sendr->bitrate);
 
-  krad_v4l2_open (udp_sendr->krad_v4l2, "/dev/video0",
+  krad_v4l2_open (udp_sendr->krad_v4l2, udp_sendr->device,
                   udp_sendr->width, udp_sendr->height, 30);
 
   udp_sendr->vpxenc->cfg.kf_min_dist = 10;
@@ -125,7 +127,7 @@ int main (int argc, char *argv[]) {
   kr_udp_sendr_t *udp_sendr;
 
 	if (argc < 3) {
-    printf ("need host and port\n");
+    printf ("use: host port width height bitrate device\n");
 		return 1;
 	}
 	
@@ -137,10 +139,22 @@ int main (int argc, char *argv[]) {
 	krad_system_log_on (logfile);
 
   udp_sendr = calloc (1, sizeof (kr_udp_sendr_t));
-  
-  udp_sendr->width = 640;
-  udp_sendr->height = 360;
 
+  udp_sendr->bitrate = 800;
+  
+	if (argc >= 5) {
+    udp_sendr->width = atoi(argv[3]);
+    udp_sendr->height = atoi(argv[4]);
+  }
+  
+	if (argc >= 6) {
+    udp_sendr->bitrate = atoi(argv[5]);
+  }
+  
+	if (argc >= 7) {
+    strncpy (udp_sendr->device, argv[6], sizeof(udp_sendr->device));
+  }
+  
 	signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);	
 	

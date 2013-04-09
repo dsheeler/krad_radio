@@ -304,10 +304,12 @@ int main (int argc, char *argv[]) {
 	kr_client_t *client;
 	kr_videoport_t *videoport;
   kr_udp_recvr_t *udp_recvr;
-
+  int port;
+  
+  port = 3777;
   ret = 0;
 
-	if (argc != 2) {
+	if (argc < 2) {
 		if (argc > 2) {
 			fprintf (stderr, "Only takes station argument.\n");
 		} else {
@@ -315,6 +317,10 @@ int main (int argc, char *argv[]) {
 		}
 		return 1;
 	}
+	
+	if (argc > 2) {
+	  port = atoi (argv[2]);
+	}	
 	
 	client = kr_client_create ("krad videoport client");
 
@@ -367,7 +373,7 @@ int main (int argc, char *argv[]) {
 	
 	kr_videoport_activate (videoport);
 	
-  kr_udp_recvr (udp_recvr, 3777);	
+  kr_udp_recvr (udp_recvr, port);	
 	
 	kr_videoport_deactivate (videoport);
 	
