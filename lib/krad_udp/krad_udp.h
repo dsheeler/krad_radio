@@ -30,7 +30,7 @@ typedef struct krad_udp_St krad_udp_t;
 typedef struct krad_subslice_St krad_subslice_t;
 typedef struct krad_slicer_St krad_slicer_t;
 typedef struct krad_rebuilder_St krad_rebuilder_t;
-
+typedef struct krad_rebuilder_track_St krad_rebuilder_track_t;
 #define KRAD_UDP_MAX_PAYOAD_SIZE 1300
 #define KRAD_UDP_HEADER_SIZE 19
 
@@ -55,11 +55,15 @@ struct krad_slicer_St {
 	int track_seq[3];
 };
 
-struct krad_rebuilder_St {
+struct krad_rebuilder_track_St {
 	krad_subslice_t *slices;
 	int slice_count;
 	int slice_position;
 	int slice_read_position;
+};
+
+struct krad_rebuilder_St {
+  krad_rebuilder_track_t tracks[2];
 };
 
 struct krad_udp_St {
