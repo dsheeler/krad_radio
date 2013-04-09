@@ -1,4 +1,4 @@
-#include <cairo/cairo.h>
+#include <cairo.h>
 #include "kr_client.h"
 
 #define GREY  0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255   * 1.0
