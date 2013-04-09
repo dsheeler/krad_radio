@@ -163,6 +163,8 @@ int main (int argc, char *argv[]) {
   
 	if (argc >= 7) {
     strncpy (udp_sendr->device, argv[6], sizeof(udp_sendr->device));
+  } else {
+    strncpy (udp_sendr->device, "/dev/video0", sizeof(udp_sendr->device));
   }
   
 	signal (SIGINT, signal_recv);
