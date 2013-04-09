@@ -77,7 +77,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
           if (strcmp(part2->valuestring, "xmms2") == 0) {
             kr_mixer_portgroup_xmms2_cmd (kr_ws_client->kr_client, part->valuestring, part3->valuestring);
           } else {
-            floatval = part3->valuedouble;
+            floatval = part3->valuefloat;
             kr_mixer_set_control (kr_ws_client->kr_client, part->valuestring, part2->valuestring, floatval, 0);
           }
         }
@@ -88,7 +88,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
         part3 = cJSON_GetObjectItem (cmd, "control_name");
         part4 = cJSON_GetObjectItem (cmd, "value");
         if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
-          floatval = part4->valuedouble;
+          floatval = part4->valuefloat;
           if (part2->valuestring[0] == 'e') {
             sub_id = 0;
           } else {
@@ -117,7 +117,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
         part4 = cJSON_GetObjectItem (cmd, "control_name");
         part5 = cJSON_GetObjectItem (cmd, "value");
         if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL) && (part5 != NULL)) {
-          floatval = part5->valuedouble;
+          floatval = part5->valuefloat;
           if (part2->valuestring[0] == 'e') {
             sub_id = 0;
           } else {
@@ -160,7 +160,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
         part2 = cJSON_GetObjectItem (cmd, "control_name");
         part3 = cJSON_GetObjectItem (cmd, "value");
         if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {
-            //floatval = part3->valuedouble;
+            //floatval = part3->valuefloat;
             //kr_mixer_set_control (kr_ws_client->kr_client, part->valuestring, part2->valuestring, floatval, 0);
             //printk ("ahha sprite to %d mofuker", part3->valueint);
             memset (&uc, 0, sizeof(uc));
@@ -171,7 +171,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
             uc.address.control.compositor_control = krad_string_to_compositor_control (part2->valuestring);
             if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
                 (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
-              uc.value.real = part3->valuedouble;
+              uc.value.real = part3->valuefloat;
             } else {
               uc.value.integer = part3->valueint;
             }

@@ -41,7 +41,7 @@ extern "C"
 
 /* The cJSON structure: */
 typedef struct cJSON {
-	double valuedouble;			/* The item's number, if type==cJSON_Number */
+	float valuefloat;			/* The item's number, if type==cJSON_Number */
 	struct cJSON *next,*prev;	/* next/prev allow you to walk array/object chains. Alternatively, use GetArraySize/GetArrayItem/GetObjectItem */
 	struct cJSON *child;		/* An array or object item will have a child pointer pointing to a chain of the items in the array/object. */
 	int type;					/* The type of the item, as above. */
@@ -85,7 +85,7 @@ extern cJSON *cJSON_CreateNull();
 extern cJSON *cJSON_CreateTrue();
 extern cJSON *cJSON_CreateFalse();
 extern cJSON *cJSON_CreateBool(int b);
-extern cJSON *cJSON_CreateNumber(double num);
+extern cJSON *cJSON_CreateNumber(float num);
 extern cJSON *cJSON_CreateString(const char *string);
 extern cJSON *cJSON_CreateArray();
 extern cJSON *cJSON_CreateObject();
@@ -93,7 +93,6 @@ extern cJSON *cJSON_CreateObject();
 /* These utilities create an Array of count items. */
 extern cJSON *cJSON_CreateIntArray(int *numbers,int count);
 extern cJSON *cJSON_CreateFloatArray(float *numbers,int count);
-extern cJSON *cJSON_CreateDoubleArray(double *numbers,int count);
 extern cJSON *cJSON_CreateStringArray(const char **strings,int count);
 
 /* Append item to the specified array/object. */
