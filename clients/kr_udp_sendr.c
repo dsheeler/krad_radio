@@ -125,8 +125,11 @@ void kr_udp_sendr (kr_udp_sendr_t *udp_sendr, char *host, int port) {
 int main (int argc, char *argv[]) {
 
   kr_udp_sendr_t *udp_sendr;
+  int port;
+  
+  port = 3777;
 
-	if (argc < 3) {
+	if (argc < 2) {
     printf ("use: host port width height bitrate device\n");
 		return 1;
 	}
@@ -141,6 +144,13 @@ int main (int argc, char *argv[]) {
   udp_sendr = calloc (1, sizeof (kr_udp_sendr_t));
 
   udp_sendr->bitrate = 800;
+  
+	if (argc > 2) {
+	  port = atoi (argv[2]);
+	}
+	
+  udp_sendr->width = 640;
+  udp_sendr->height = 360;
   
 	if (argc >= 5) {
     udp_sendr->width = atoi(argv[3]);
@@ -158,7 +168,7 @@ int main (int argc, char *argv[]) {
 	signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);	
 	
-  kr_udp_sendr (udp_sendr, argv[1], atoi(argv[2]));	
+  kr_udp_sendr (udp_sendr, argv[1], port);	
 
 	if (udp_sendr->frames > 0) {
 		printf ("Sent %d frames!\n", udp_sendr->frames);
