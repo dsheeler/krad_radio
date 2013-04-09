@@ -38,6 +38,10 @@ programs8 = """
 kr_udp_sendr.c
 """.split()
 
+programs9 = """
+kr_udp_recvrw.c
+""".split()
+
 libsources = """
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c
@@ -136,6 +140,12 @@ depsources8 = """
 ../lib/krad_v4l2/krad_v4l2.c
 """.split()
 
+depsources9 = """
+../lib/krad_udp/krad_udp.c
+../lib/krad_vpx/krad_vpx.c
+../lib/krad_wayland/krad_wayland.c
+""".split()
+
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 shlibs = ["opus"]
 
@@ -149,6 +159,10 @@ shlibs7 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
 
 shlibs8 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice", "vpx", "turbojpeg"]
+
+shlibs9 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
+           "libavresample", "libswscale", "libavdevice", "vpx",
+           "wayland-client"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
@@ -166,6 +180,7 @@ def check_system(systm):
   global shlibs4
   global shlibs7
   global shlibs8  
+  global shlibs9
   global syslibs
   global syslibs2
 
@@ -189,7 +204,8 @@ def configure(conf):
   global shlibs4
   global shlibs6
   global shlibs7
-  global shlibs8  
+  global shlibs8
+  global shlibs9  
   global syslibs
   check_system(conf)
 
@@ -227,6 +243,7 @@ def build(bld):
   global shlibs6
   global shlibs7
   global shlibs8
+  global shlibs9  
   global syslibs
   global syslibs2
   check_system(bld)
@@ -303,6 +320,15 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs8 + shlibs + stlibs + syslibs + plibs)
+
+  if bld.env['KR_LINUX'] and bld.env['KRAD_USE_WAYLAND']:
+    for p in programs9:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs9 + shlibs + stlibs + syslibs + plibs)
 
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:
