@@ -29,20 +29,20 @@ def options(opt):
   opt.add_option('--optimize', action='store_true', default=False,
     help='Compile with -O3 rather than -g')  
 
-  opt.add_option('--without-x11', action='store_true', default=False, dest='nox11', 
+  opt.add_option('--without-x11', action='store_true', default=True, dest='nox11', 
     help='Don\'t build anything depending on X11 (X11 capture)')
     
   opt.add_option('--without-wayland', action='store_true', default=False, dest='nowayland', 
     help='Don\'t build anything depending on Wayland')
     
-  opt.add_option('--without-gtk', action='store_true', default=False, dest='nogtk',
+  opt.add_option('--without-gtk', action='store_true', default=True, dest='nogtk',
     help='Don\'t build anything depending on gtk+ (GUI)')
     
   opt.add_option('--without-gif', action='store_true', default=False, dest='nogif',
-    help='Don\'t build anything depending on giflib-5.x')
+    help='Don\'t build anything depending on giflib')
 
   opt.add_option('--with-kplayer', action='store_true', default=False, dest='kplayer',
-    help='Build kplayer')
+    help='Build kplayer (requires git libav)')
 
 def check_way(way):
   if way.options.nowayland == False:
