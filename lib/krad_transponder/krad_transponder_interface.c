@@ -376,10 +376,13 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         sprintf (link->input, "%s", string2);
         
         if (strstr(string2, ".udp") != NULL) {
-            //link->port = 44000;
+          if (strstr(string2, ".udpre") != NULL) {
+              link->port = 44000;
+              strcpy (link->host, "50.17.250.78");
+           } else {
             link->port = 3400;
-            //strcpy (link->host, "50.17.250.78");
             strcpy (link->host, "127.0.0.1");
+           }
             strcpy (link->mount, "/krad.udp");
             strcpy (link->password, "firefox");
         } else {
