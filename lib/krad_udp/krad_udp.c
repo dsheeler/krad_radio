@@ -190,9 +190,11 @@ void krad_rebuilder_write (krad_rebuilder_t *krad_rebuilder, unsigned char *data
 
 	payload_size = length - KRAD_UDP_HEADER_SIZE;
 	
+	track = track - 1;
+	
 	//printf("packet size: %d track %d slice num %d slice size %d %s\n", length, track, slice_num, slice_size, data);
 
-	if (slice_num < krad_rebuilder->tracks[0].slice_position - 7) {
+	if (slice_num < krad_rebuilder->tracks[track].slice_position - 7) {
 		printf ("krad packet too damn old\n");
 		return;
 	}
@@ -242,6 +244,8 @@ void krad_rebuilder_write (krad_rebuilder_t *krad_rebuilder, unsigned char *data
 int krad_rebuilder_read_packet (krad_rebuilder_t *krad_rebuilder, unsigned char *data, int track, int *keyframe) {
 
 	int s;
+	
+	track = track - 1;	
 	
 	if (krad_rebuilder->tracks[track].slice_read_position < (krad_rebuilder->tracks[track].slice_position - 5)) {
 		printf ("fell behind and readjusted %d \n", krad_rebuilder->tracks[track].slice_read_position);

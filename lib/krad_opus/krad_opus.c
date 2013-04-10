@@ -477,7 +477,8 @@ int krad_opus_decoder_write (krad_opus_t *krad_opus,
 																  0);
 
 	if (krad_opus->opus_decoder_error < 0) {
-		failfast ("Krad Opus decoder error: %d\n", krad_opus->opus_decoder_error);
+		printke ("Krad Opus decoder error: %s\n",
+		          opus_strerror (krad_opus->opus_decoder_error));
 	} else {
 		frames_decoded = krad_opus->opus_decoder_error;
 	}

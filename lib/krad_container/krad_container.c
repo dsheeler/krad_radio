@@ -338,5 +338,9 @@ void krad_container_add_audio (krad_container_t *container, int track,
   if (container->type == MKV) {
     kr_mkv_add_audio (container->mkv, track, buffer, buffer_size, frames);
   }
+  if (container->type == KUDP) {
+    krad_slicer_sendto (container->udp->slicer, buffer, buffer_size, 2, 0,
+                        container->udp->host, container->udp->port);
+  }
 }
 
