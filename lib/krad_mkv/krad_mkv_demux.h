@@ -8,7 +8,7 @@
 kr_mkv_t *kr_mkv_open_file (char *filename);
 
 
-int kr_mkv_track_count(kr_mkv_t *kr_mkv);
+int kr_mkv_track_count (kr_mkv_t *kr_mkv);
 krad_codec_t kr_mkv_track_codec (kr_mkv_t *kr_mkv, int track);
 int kr_mkv_track_header_count (kr_mkv_t *kr_mkv, int track);
 int kr_mkv_track_header_size (kr_mkv_t *kr_mkv, int track, int header);

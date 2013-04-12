@@ -376,9 +376,17 @@ void printk (char* format, ...) {
   }
 }
 
+int krad_checkroot () {
+	return (getuid () == 0 || geteuid () == 0);
+}
 
 void krad_system_init () {
 
+  if (krad_checkroot ()) {
+    fprintf (stderr, "No Krad System should be run as root!\n");
+    exit (1);
+  }
+  
   if (krad_system_initialized != 31337) {
     krad_system_initialized = 31337;
     krad_system.log_in_use = 0;
