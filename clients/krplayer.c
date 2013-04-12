@@ -59,8 +59,44 @@ void kr_player_cli_handle_input (kr_player_cli_t *kcp) {
   ret = read (STDIN_FILENO, buf, 1);
 
   if (ret == 1) {
-    printf ("\nGot: %c\n", buf[0]);
+    //printf ("\nGot: %c\n", buf[0]);
   }
+  
+  if (buf[0] == 'p') {
+    kr_player_play (kcp->player);
+  }
+  
+  if (buf[0] == 's') {
+    kr_player_stop (kcp->player);
+  }
+  
+  if (buf[0] == 'r') {
+    kr_player_direction_set (kcp->player, REVERSE);
+  }   
+
+  if (buf[0] == 'f') {
+    kr_player_direction_set (kcp->player, FORWARD);
+  }
+  
+  if (buf[0] == 't') {
+    kr_player_seek (kcp->player, 666);
+  }
+  
+  if (buf[0] == 'q') {
+    destroy = 1;
+  }
+  
+  /*
+  kr_player_play (kcp->player);
+  kr_player_pause (kcp->player);
+
+ 
+  kr_player_speed_set (kcp->player, 1.2);
+  kr_player_speed_set (kcp->player, 122.45678);
+  kr_player_stop (kcp->player);    
+  kr_player_play (kcp->player);
+  kr_player_pause (kcp->player);
+  */  
 }
 
 void kr_player_cli_check_input (kr_player_cli_t *kcp) {
@@ -111,21 +147,6 @@ int main (int argc, char **argv) {
     fprintf (stderr, "Could not create player\n");
     return 1;
   }
-
-/*
-  kr_player_cli_status (kcp);
-
-  kr_player_play (kcp->player);
-  kr_player_pause (kcp->player);
-  kr_player_seek (kcp->player, 666);
-  kr_player_direction_set (kcp->player, FORWARD);  
-  kr_player_direction_set (kcp->player, REVERSE);  
-  kr_player_speed_set (kcp->player, 1.2);
-  kr_player_speed_set (kcp->player, 122.45678);
-  kr_player_stop (kcp->player);    
-  kr_player_play (kcp->player);
-  kr_player_pause (kcp->player);
-*/
 
   kr_player_cli_run (kcp);
   

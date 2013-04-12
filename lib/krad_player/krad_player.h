@@ -13,6 +13,7 @@
 
 #include "krad_system.h"
 #include "krad_container.h"
+#include "krad_msg.h"
 
 typedef enum {
   REVERSE,
@@ -41,7 +42,6 @@ typedef enum {
 } kr_player_cmd_t;
 
 typedef struct kr_player_St kr_player_t;
-typedef struct kr_player_track_St kr_player_track_t;
 
 void kr_player_destroy (kr_player_t **player);
 kr_player_t *kr_player_create (char *url);

@@ -167,6 +167,7 @@ depsources10 = """
 
 depsources11 = """
 ../lib/krad_player/krad_player.c
+../lib/krad_player/krad_msg.c
 ../lib/krad_transmitter/krad_transmitter.c
 ../lib/krad_container/krad_container.c
 ../lib/krad_mkv/krad_mkv.c
