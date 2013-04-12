@@ -73,15 +73,19 @@ static void *kr_player_thread (void *arg) {
         break;
       case PAUSE:
         printf ("\nGot PAUSE command!\n");
+        player->state = CUED;
         break;
       case STOP:
         printf ("\nGot STOP command!\n");
+        player->state = CUED;
         break;
       case CUE:
         printf ("\nGot CUE command!\n");
+        player->state = CUED;
         break;
       case PLAY:
         printf ("\nGot PLAY command!\n");
+        player->state = PLAYING;
         break;
       case SEEK:
         printf ("\nGot SEEK %"PRIi64" command!\n", msg.param.integer);
@@ -154,6 +158,16 @@ char *kr_player_state_to_string (kr_player_state_t state) {
       return "RESUMING";
     case LOOPING:
       return "LOOPING";
+  }
+  return "Unknown";
+}
+
+char *kr_direction_to_string (kr_direction_t direction) {
+  switch (direction) {
+    case FORWARD:
+      return "Forward";
+    case REVERSE:
+      return "Reverse";
   }
   return "Unknown";
 }

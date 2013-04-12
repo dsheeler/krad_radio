@@ -11,7 +11,7 @@ typedef struct kr_player_cli_St kr_player_cli_t;
 struct kr_player_cli_St {
 	/* krad_wayland_t *wayland; */
   kr_player_t *player;
-  struct termios ttystate;  
+  struct termios ttystate;
 };
 
 static int destroy = 0;
@@ -58,45 +58,37 @@ void kr_player_cli_handle_input (kr_player_cli_t *kcp) {
   
   ret = read (STDIN_FILENO, buf, 1);
 
-  if (ret == 1) {
-    //printf ("\nGot: %c\n", buf[0]);
+  if (ret != 1) {
+    printf ("\nError read: %d\n", ret);
   }
   
   if (buf[0] == 'p') {
     kr_player_play (kcp->player);
   }
-  
   if (buf[0] == 's') {
     kr_player_stop (kcp->player);
   }
-  
   if (buf[0] == 'r') {
     kr_player_direction_set (kcp->player, REVERSE);
   }   
-
   if (buf[0] == 'f') {
     kr_player_direction_set (kcp->player, FORWARD);
   }
-  
   if (buf[0] == 't') {
     kr_player_seek (kcp->player, 666);
   }
-  
+  if (buf[0] == 'a') {
+    kr_player_speed_set (kcp->player, kr_player_speed_get (kcp->player) - 0.1f);
+  }
+  if (buf[0] == 'd') {
+    kr_player_speed_set (kcp->player, kr_player_speed_get (kcp->player) + 0.1f);
+  }  
+  if (buf[0] == 'b') {
+    kr_player_pause (kcp->player);
+  } 
   if (buf[0] == 'q') {
     destroy = 1;
   }
-  
-  /*
-  kr_player_play (kcp->player);
-  kr_player_pause (kcp->player);
-
- 
-  kr_player_speed_set (kcp->player, 1.2);
-  kr_player_speed_set (kcp->player, 122.45678);
-  kr_player_stop (kcp->player);    
-  kr_player_play (kcp->player);
-  kr_player_pause (kcp->player);
-  */  
 }
 
 void kr_player_cli_check_input (kr_player_cli_t *kcp) {
@@ -116,11 +108,11 @@ void kr_player_cli_check_input (kr_player_cli_t *kcp) {
 }
 
 void kr_player_cli_status (kr_player_cli_t *kcp) {
-  printf ("\rSpeed: %0.3f ", kr_player_speed_get (kcp->player));
-  printf ("Direction: %d ", kr_player_direction_get (kcp->player));
-  printf ("Position: %"PRIi64" ", kr_player_position_get (kcp->player));
-  printf ("State: %s",
-          kr_player_state_to_string (kr_player_state_get (kcp->player)));
+  printf ("\r%s %s ",
+          kr_player_state_to_string (kr_player_state_get (kcp->player)),
+          kr_direction_to_string (kr_player_direction_get (kcp->player)));
+  printf ("%0.3f%% ::", kr_player_speed_get (kcp->player));
+  printf (" %"PRIi64" ", kr_player_position_get (kcp->player));
   fflush (stdout);
 }
 
