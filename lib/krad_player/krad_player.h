@@ -33,7 +33,6 @@ typedef enum {
   PLAY,
   PAUSE,
   STOP,
-  CUE,
   SEEK,
   SETSPEED,
   SETDIR,

@@ -38,7 +38,7 @@ static void kr_player_free_user_msg (kr_msgpair_t *msgpair, void **usermsg) {
   }
 }
 
-static int kr_msg_read (kr_msgpair_t *msgpair, void **msgout) {
+static int kr_msg_read (kr_msgpair_t *msgpair, void *msgout) {
 
   int ret;
   kr_msg_t *msg;
@@ -50,7 +50,7 @@ static int kr_msg_read (kr_msgpair_t *msgpair, void **msgout) {
     exit (1);
   }
 
-  memcpy (*msgout, msg->ptr, msgpair->msgsys->msg_sz);
+  memcpy (msgout, msg->ptr, msgpair->msgsys->msg_sz);
   //*msgout = msg->ptr;
   kr_player_free_user_msg (msgpair, &msg->ptr);
   kr_player_free_msg (msgpair, &msg);
@@ -116,7 +116,7 @@ static kr_msgpair_t **kr_msgpairs_create (kr_msgsys_t *msgsys) {
   return msgpairs;
 }
 
-int kr_msgsys_wait (kr_msgsys_t *msgsys, void **msg) {
+int kr_msgsys_wait (kr_msgsys_t *msgsys, void *msg) {
 
   int n;
   int ret;

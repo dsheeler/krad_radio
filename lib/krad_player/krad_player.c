@@ -27,10 +27,6 @@ struct kr_player_St {
 
 /* Private Functions */
 
-static int kr_player_msg_wait (kr_player_t *player, kr_player_msg_t *msg) {
-  return kr_msgsys_wait (player->msgsys, (void **)&msg);
-}
-
 static void *kr_player_thread (void *arg) {
 
   kr_player_t *player;
@@ -55,11 +51,13 @@ static void *kr_player_thread (void *arg) {
     player->state = IDLE;
   } else {
     player->state = CUED;
+    printf ("\nGot Track Count: %d\n",
+            krad_container_track_count (player->input));
   }
-
+  
   while (running) {
     /* printf ("Cycle!\n"); */
-    ret = kr_player_msg_wait (player, &msg);
+    ret = kr_msgsys_wait (player->msgsys, &msg);
     if (ret == 0) {
       break;
     }
@@ -73,19 +71,21 @@ static void *kr_player_thread (void *arg) {
         break;
       case PAUSE:
         printf ("\nGot PAUSE command!\n");
-        player->state = CUED;
+        if (player->input != NULL) {
+          player->state = CUED;
+        }
         break;
       case STOP:
         printf ("\nGot STOP command!\n");
-        player->state = CUED;
-        break;
-      case CUE:
-        printf ("\nGot CUE command!\n");
-        player->state = CUED;
+        if (player->input != NULL) {
+          player->state = CUED;
+        }
         break;
       case PLAY:
         printf ("\nGot PLAY command!\n");
-        player->state = PLAYING;
+        if (player->input != NULL) {
+          player->state = PLAYING;
+        }
         break;
       case SEEK:
         printf ("\nGot SEEK %"PRIi64" command!\n", msg.param.integer);

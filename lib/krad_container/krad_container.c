@@ -146,14 +146,26 @@ krad_container_t *krad_container_open_stream (char *host, int port,
 
   if (container->type == OGG) {
     container->ogg = krad_ogg_open_stream (host, port, mount, password);
+    if (container->ogg == NULL) {
+      free (container);
+      return NULL;
+    }
   }
   
   if (container->type == MKV) {
     container->mkv = kr_mkv_stream (host, port, mount, password);
+    if (container->mkv == NULL) {
+      free (container);
+      return NULL;
+    }
   }
   
   if (container->type == KUDP) {
     container->udp = kr_udp (host, port, mount, password);
+    if (container->udp == NULL) {
+      free (container);
+      return NULL;
+    }
   }  
 
   return container;
@@ -170,6 +182,10 @@ krad_container_t *krad_container_open_file (char *filename,
 
   if (container->type == OGG) {
     container->ogg = krad_ogg_open_file (filename, mode);
+    if (container->ogg == NULL) {
+      free (container);
+      return NULL;
+    } 
   }
   if (container->type == MKV) {
     if (mode == KRAD_IO_WRITEONLY) {
@@ -178,6 +194,10 @@ krad_container_t *krad_container_open_file (char *filename,
     if (mode == KRAD_IO_READONLY) {
       container->mkv = kr_mkv_open_file (filename);
     }
+    if (container->mkv == NULL) {
+      free (container);
+      return NULL;
+    }    
   }
   if ((container->type == NATIVEFLAC) || (Y4MFILE)) {
     if (mode == KRAD_IO_WRITEONLY) {
@@ -186,6 +206,10 @@ krad_container_t *krad_container_open_file (char *filename,
     if (mode == KRAD_IO_READONLY) {
       container->raw = kr_file_open (filename);
     }
+    if (container->raw == NULL) {
+      free (container);
+      return NULL;
+    }  
   }  
   return container;
 }
