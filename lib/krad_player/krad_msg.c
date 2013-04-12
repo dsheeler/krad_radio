@@ -118,23 +118,24 @@ static kr_msgpair_t **kr_msgpairs_create (kr_msgsys_t *msgsys) {
 
 int kr_msgsys_wait (kr_msgsys_t *msgsys, void **msg) {
 
-  struct pollfd pollfds[4];
   int n;
   int ret;
 
-  n = 0;
-  pollfds[n].fd = msgsys->msgpairs[0]->fd[1];
-  pollfds[n].events = POLLIN;
-  n++;
+  for (n = 0; n < msgsys->msgpairs_count; n++) {
+    msgsys->pollfds[n].fd = msgsys->msgpairs[n]->fd[1];
+    msgsys->pollfds[n].events = POLLIN;
+  }
 
-  n = poll (pollfds, n, -1);
+  n = poll (msgsys->pollfds, msgsys->msgpairs_count, -1);
 
   if (n < 1) {
     return 0;
   } else {
-    if (pollfds[0].revents == POLLIN) {
-      ret = kr_msg_read (msgsys->msgpairs[0], msg);
-      return ret;
+    for (n = 0; n < msgsys->msgpairs_count; n++) {
+      if (msgsys->pollfds[n].revents == POLLIN) {
+        ret = kr_msg_read (msgsys->msgpairs[n], msg);
+        return ret;
+      }
     }
   }
 
@@ -167,6 +168,7 @@ void kr_msgsys_destroy (kr_msgsys_t **msgsys) {
   
   if ((msgsys != NULL) && (*msgsys != NULL)) {
     kr_msgpairs_destroy (*msgsys);
+    free ((*msgsys)->pollfds);
     free (*msgsys);
     *msgsys = NULL;
   }
@@ -179,6 +181,7 @@ kr_msgsys_t *kr_msgsys_create (uint32_t count, size_t msg_sz) {
   msgsys = calloc (1, sizeof (kr_msgsys_t));
   msgsys->msgpairs_count = count;
   msgsys->msg_sz = msg_sz;
+  msgsys->pollfds = calloc (msgsys->msgpairs_count, sizeof(struct pollfd));
   msgsys->msgpairs = kr_msgpairs_create (msgsys);
   return msgsys;
 }

@@ -51,6 +51,12 @@ static void *kr_player_thread (void *arg) {
   player->input = krad_container_open_file (player->url,
                                             KRAD_IO_READONLY);
 
+  if (player->input == NULL) {
+    player->state = IDLE;
+  } else {
+    player->state = CUED;
+  }
+
   while (running) {
     /* printf ("Cycle!\n"); */
     ret = kr_player_msg_wait (player, &msg);
@@ -132,6 +138,24 @@ void kr_player_destroy (kr_player_t **player) {
     *player = NULL;
     printf ("kr_player_destroy()!\n");    
   }
+}
+
+char *kr_player_state_to_string (kr_player_state_t state) {
+  switch (state) {
+    case IDLE:
+      return "IDLE";
+    case CUED:
+      return "CUED";
+    case PLAYING:
+      return "PLAYING";
+    case PAUSING:
+      return "PAUSING";
+    case RESUMING:
+      return "RESUMING";
+    case LOOPING:
+      return "LOOPING";
+  }
+  return "Unknown";
 }
 
 float kr_player_speed_get (kr_player_t *player) {

@@ -32,6 +32,7 @@ struct kr_msgpair_St {
 
 struct kr_msgsys_St {
   kr_msgpair_t **msgpairs;
+  struct pollfd *pollfds;
   uint32_t msgpairs_count;
   size_t msg_sz;
 };

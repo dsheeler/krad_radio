@@ -119,7 +119,8 @@ void kr_player_cli_status (kr_player_cli_t *kcp) {
   printf ("\rSpeed: %0.3f ", kr_player_speed_get (kcp->player));
   printf ("Direction: %d ", kr_player_direction_get (kcp->player));
   printf ("Position: %"PRIi64" ", kr_player_position_get (kcp->player));
-  printf ("State: %d", kr_player_state_get (kcp->player));
+  printf ("State: %s",
+          kr_player_state_to_string (kr_player_state_get (kcp->player)));
   fflush (stdout);
 }
 

@@ -43,6 +43,8 @@ typedef enum {
 
 typedef struct kr_player_St kr_player_t;
 
+char *kr_player_state_to_string (kr_player_state_t state);
+
 void kr_player_destroy (kr_player_t **player);
 kr_player_t *kr_player_create (char *url);
 
