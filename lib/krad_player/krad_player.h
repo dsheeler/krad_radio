@@ -14,6 +14,9 @@
 #include "krad_system.h"
 #include "krad_container.h"
 #include "krad_msg.h"
+#include "krad_transponder_graph.h"
+#include "krad_ring.h"
+#include "krad_resample_ring.h"
 
 typedef enum {
   REVERSE,
@@ -37,7 +40,7 @@ typedef enum {
   SETSPEED,
   SETDIR,
   TICKLE,
-  DESTROY
+  PLAYERDESTROY
 } kr_player_cmd_t;
 
 typedef struct kr_player_St kr_player_t;
@@ -45,7 +48,7 @@ typedef struct kr_player_St kr_player_t;
 char *kr_player_state_to_string (kr_player_state_t state);
 char *kr_direction_to_string (kr_direction_t direction);
 void kr_player_destroy (kr_player_t **player);
-kr_player_t *kr_player_create (char *url);
+kr_player_t *kr_player_create (char *station, krad_xpdr_t *xpdr, char *url);
 
 float kr_player_speed_get (kr_player_t *player);
 void kr_player_speed_set (kr_player_t *player, float speed);

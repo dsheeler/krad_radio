@@ -86,7 +86,7 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
 
   krad_link_t *link;
 
-  link = kr_xpdr_get_link (krad_transponder->xpdr, num);
+  link = kr_xpdr_get_ptr (krad_transponder->xpdr, num);
 
   if (link == NULL) {
     return 0;

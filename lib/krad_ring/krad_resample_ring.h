@@ -11,6 +11,9 @@
 #include "krad_system.h"
 #include "krad_ring.h"
 
+#ifndef KRAD_RESAMPLE_RING
+#define KRAD_RESAMPLE_RING
+
 #define KRAD_RESAMPLE_RING_SRC_QUALITY SRC_SINC_MEDIUM_QUALITY
 
 typedef struct krad_resample_ring_St krad_resample_ring_t;
@@ -46,3 +49,5 @@ uint32_t krad_resample_ring_write_space (krad_resample_ring_t *krad_resample_rin
 
 uint32_t krad_resample_ring_read (krad_resample_ring_t *krad_resample_ring, unsigned char *dest, uint32_t cnt);
 uint32_t krad_resample_ring_write (krad_resample_ring_t *krad_resample_ring, unsigned char *src, uint32_t cnt);
+
+#endif

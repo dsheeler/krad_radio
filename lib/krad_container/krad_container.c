@@ -185,32 +185,34 @@ krad_container_t *krad_container_open_file (char *filename,
     if (container->ogg == NULL) {
       free (container);
       return NULL;
-    } 
+    }
+  } else {
+    if (container->type == MKV) {
+      if (mode == KRAD_IO_WRITEONLY) {
+        container->mkv = kr_mkv_create_file (filename);
+      }
+      if (mode == KRAD_IO_READONLY) {
+        container->mkv = kr_mkv_open_file (filename);
+      }
+      if (container->mkv == NULL) {
+        free (container);
+        return NULL;
+      }    
+    } else {
+      if ((container->type == NATIVEFLAC) || (container->type == Y4MFILE)) {
+        if (mode == KRAD_IO_WRITEONLY) {
+          container->raw = kr_file_create (filename);
+        }
+        if (mode == KRAD_IO_READONLY) {
+          container->raw = kr_file_open (filename);
+        }
+        if (container->raw == NULL) {
+          free (container);
+          return NULL;
+        }  
+      }
+    }
   }
-  if (container->type == MKV) {
-    if (mode == KRAD_IO_WRITEONLY) {
-      container->mkv = kr_mkv_create_file (filename);
-    }
-    if (mode == KRAD_IO_READONLY) {
-      container->mkv = kr_mkv_open_file (filename);
-    }
-    if (container->mkv == NULL) {
-      free (container);
-      return NULL;
-    }    
-  }
-  if ((container->type == NATIVEFLAC) || (Y4MFILE)) {
-    if (mode == KRAD_IO_WRITEONLY) {
-      container->raw = kr_file_create (filename);
-    }
-    if (mode == KRAD_IO_READONLY) {
-      container->raw = kr_file_open (filename);
-    }
-    if (container->raw == NULL) {
-      free (container);
-      return NULL;
-    }  
-  }  
   return container;
 }
 

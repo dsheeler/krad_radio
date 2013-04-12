@@ -1,5 +1,8 @@
 #include "krad_player.h"
 
+#include "kr_client.h"
+
+
 #define CTRLMP 0
 #define VIDEOMP 1
 #define AUDIOMP 2
@@ -23,125 +26,222 @@ struct kr_player_St {
   kr_player_state_t state;
   kr_direction_t direction;
   krad_container_t *input;
+  krad_xpdr_t *xpdr;
+  int xpdr_id;
+  
+  char *station;
+  kr_client_t *client;
+  kr_videoport_t *videoport;
+  kr_audioport_t *audioport;
+	krad_resample_ring_t *resample_ring[2];
+  uint32_t sample_rate;
+  
 };
 
 /* Private Functions */
 
-static void *kr_player_thread (void *arg) {
+int videoport_process (void *buffer, void *arg) {
+
+  kr_player_t *player;
+  player = (kr_player_t *)arg;
+  
+  if (player->state == PLAYING) {
+  
+  }
+  
+  return 0;
+}
+
+int audioport_process (uint32_t nframes, void *arg) {
+
+  kr_player_t *player;
+
+  uint8_t *output[2];
+
+  player = (kr_player_t *)arg;
+
+  output[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
+  output[1] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 1);
+
+  if ((player->state == PLAYING) && 
+      ((krad_resample_ring_read_space (player->resample_ring[0]) >= nframes * 4) && 
+      (krad_resample_ring_read_space (player->resample_ring[1]) >= nframes * 4))) {
+       krad_resample_ring_read (player->resample_ring[0], output[0], nframes * 4);
+      krad_resample_ring_read (player->resample_ring[1], output[1], nframes * 4);
+  } else {
+    memset(output[0], '0', nframes * 4);
+    memset(output[1], '0', nframes * 4);
+  }
+
+  return 0;
+}
+
+void kr_player_destroy_internal (void *arg) {
+
+  int c;
+  kr_player_t *player;
+
+  player = (kr_player_t *)arg;
+  krad_container_destroy (&player->input);
+  kr_msgsys_destroy (&player->msgsys);
+  
+  for (c = 0; c < 2; c++) {
+    krad_resample_ring_destroy ( player->resample_ring[c] );  
+  }
+  
+  free (player->station);
+  free (player->url);
+  free (player);
+  printf ("kr_player_destroy_internal()!\n");    
+}
+
+int kr_player_process (void *arg) {
 
   kr_player_t *player;
   kr_player_msg_t msg;
-  int running;
   int ret;
 
-  running = 1;
   player = (kr_player_t *)arg;
 
-
-  /* open url
-     open a/v ports?
-     state in sense of active tracks,
-     and auto decode video or audio or only?
-  */
-  
-  player->input = krad_container_open_file (player->url,
-                                            KRAD_IO_READONLY);
-
-  if (player->input == NULL) {
-    player->state = IDLE;
-  } else {
-    player->state = CUED;
-    printf ("\nGot Track Count: %d\n",
-            krad_container_track_count (player->input));
+  ret = kr_msgsys_read_watch_fd (player->msgsys, CTRLMP, &msg); 
+  if (ret == 0) {
+    return 0;
   }
-  
-  while (running) {
-    /* printf ("Cycle!\n"); */
-    ret = kr_msgsys_wait (player->msgsys, &msg);
-    if (ret == 0) {
+  switch (msg.cmd) {
+    case TICKLE:
+      printf ("\nGot TICKLE command!\n");
+      krad_container_destroy (&player->input);   
       break;
-    }
-    switch (msg.cmd) {
-      case TICKLE:
-        printf ("\nGot TICKLE command!\n");
-        break;
-      case DESTROY:
-        printf ("\nGot DESTROY command!\n");
-        running = 0;
-        break;
-      case PAUSE:
-        printf ("\nGot PAUSE command!\n");
-        if (player->input != NULL) {
-          player->state = CUED;
-        }
-        break;
-      case STOP:
-        printf ("\nGot STOP command!\n");
-        if (player->input != NULL) {
-          player->state = CUED;
-        }
-        break;
-      case PLAY:
-        printf ("\nGot PLAY command!\n");
-        if (player->input != NULL) {
-          player->state = PLAYING;
-        }
-        break;
-      case SEEK:
-        printf ("\nGot SEEK %"PRIi64" command!\n", msg.param.integer);
-        break;
-      case SETSPEED:
-        printf ("\nGot SETSPEED %0.3f command!\n", msg.param.real);
-        player->speed = msg.param.real;
-        break;
-      case SETDIR:
-        printf ("\nGot SETDIR %"PRIi64" command!\n", msg.param.integer);
-        player->direction = msg.param.integer;
-        break;    
-    }
+    case PLAYERDESTROY:
+      printf ("\nGot PLAYERDESTROY command!\n");
+      krad_container_destroy (&player->input);
+      break;
+    case PAUSE:
+      printf ("\nGot PAUSE command!\n");
+      if (player->input != NULL) {
+        player->state = CUED;
+      }
+      break;
+    case STOP:
+      printf ("\nGot STOP command!\n");
+      if (player->input != NULL) {
+        player->state = CUED;
+      }
+      break;
+    case PLAY:
+      printf ("\nGot PLAY command!\n");
+      if (player->input == NULL) {
+        player->input = krad_container_open_file (player->url,
+                                                  KRAD_IO_READONLY);      
+      }
+      if (player->input != NULL) {
+        player->state = PLAYING;
+      }
+      break;
+    case SEEK:
+      printf ("\nGot SEEK %"PRIi64" command!\n", msg.param.integer);
+      break;
+    case SETSPEED:
+      printf ("\nGot SETSPEED %0.3f command!\n", msg.param.real);
+      player->speed = msg.param.real;
+      break;
+    case SETDIR:
+      printf ("\nGot SETDIR %"PRIi64" command!\n", msg.param.integer);
+      player->direction = msg.param.integer;
+      break;    
   }
-  
-  krad_container_destroy (&player->input);  
 
-  return NULL;
+  return 0;
 }
 
 /* Public Functions */
 
-kr_player_t *kr_player_create (char *url) {
+void kr_player_destroy (kr_player_t **player) {
+  if ((player != NULL) && (*player != NULL)) {
+    printf ("kr_player_destroy()!\n");
+    if ((*player)->videoport != NULL) {
+      kr_videoport_deactivate ((*player)->videoport);
+      kr_videoport_destroy ((*player)->videoport);
+    }
+    if ((*player)->audioport != NULL) {
+      kr_audioport_deactivate ((*player)->audioport);
+      kr_audioport_destroy ((*player)->audioport);
+    }
+    kr_xpdr_subunit_remove ((*player)->xpdr, (*player)->xpdr_id);
+  }
+}
 
+kr_player_t *kr_player_create (char *station, krad_xpdr_t *xpdr, char *url) {
+
+  int c;
   kr_player_t *player;
+  kr_xpdr_su_spec_t spec;
   
+  memset (&spec, 0, sizeof(kr_xpdr_su_spec_t));
   player = calloc (1, sizeof(kr_player_t));
 
+  player->xpdr = xpdr;
   player->direction = FORWARD;
   player->speed = 100.0f;
   player->state = IDLE;
   player->url = strdup (url);
-  player->msgsys = kr_msgsys_create (3, sizeof(kr_player_msg_t));
+  player->msgsys = kr_msgsys_create (1, sizeof(kr_player_msg_t));
+
+  spec.fd = kr_msgsys_get_watch_fd (player->msgsys, CTRLMP);
+  spec.ptr = player;
+  spec.readable_callback = kr_player_process;
+  spec.destroy_callback = kr_player_destroy_internal;
   
-  if (pthread_create (&player->thread, NULL,
-                      kr_player_thread, (void *)player)) {
-    fprintf (stderr, "Can't Start thread\n");
-    free (player);
+  
+  player->station = strdup (station);
+  player->client = kr_client_create ("Krad Player");
+
+  if (player->client == NULL) {
+    fprintf (stderr, "Krad Player: Could create client\n");
     return NULL;
   }
+
+  if (!kr_connect (player->client, player->station)) {
+    fprintf (stderr, "Krad Player: Could not connect to %s krad radio daemon\n",
+             player->station);
+    kr_client_destroy (&player->client);
+    return NULL;
+  }
+  printf ("Krad Player Connected to %s!\n", player->station);
+  
+  if (kr_mixer_get_info_wait (player->client,
+                              &player->sample_rate, NULL) != 1) {
+    fprintf (stderr, "Krad Player: Could not get mixer info!\n");
+	  kr_client_destroy (&player->client);
+	  return NULL;
+  }
+
+  for (c = 0; c < 2; c++) {
+    player->resample_ring[c] = krad_resample_ring_create (600000, 48000,
+                                                          player->sample_rate);
+  }
+  
+  player->audioport = kr_audioport_create (player->client, INPUT);
+  if (player->audioport == NULL) {
+    fprintf (stderr, "Krad Player: could not setup audioport\n");
+    exit (1);
+  }
+  kr_audioport_set_callback (player->audioport, audioport_process, player);
+  kr_audioport_activate (player->audioport);
+  /*
+  player->videoport = kr_videoport_create (player->client);
+  if (player->videoport == NULL) {
+    fprintf (stderr, "could not setup videoport\n");
+    exit (1);
+  }
+  //krad_player_alloc_framebuf (player);
+  kr_videoport_set_callback (player->videoport, videoport_process, player);
+  kr_videoport_activate (player->videoport);
+  */
+  player->xpdr_id = kr_xpdr_add_player (player->xpdr, &spec);
+
   printf ("kr_player_create()!\n");
   return player;
-}
-
-void kr_player_destroy (kr_player_t **player) {
-  kr_player_msg_t msg;
-  if ((player != NULL) && (*player != NULL)) {
-    msg.cmd = DESTROY;
-    kr_msgsys_write ((*player)->msgsys, CTRLMP, &msg);
-    pthread_join ((*player)->thread, NULL);
-    kr_msgsys_destroy (&(*player)->msgsys);
-    free ((*player)->url);
-    free (*player);
-    *player = NULL;
-    printf ("kr_player_destroy()!\n");    
-  }
 }
 
 char *kr_player_state_to_string (kr_player_state_t state) {

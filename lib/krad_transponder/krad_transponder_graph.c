@@ -49,6 +49,8 @@ static char *transponder_subunit_type_to_string (xpdr_subunit_type_t type) {
       return "Encoder";
     case RAW:
       return "RAW";
+    case PLAYER:
+      return "Player";
   }
   return "Unknown Subunit";
 }
@@ -630,8 +632,9 @@ static xpdr_subunit_t *xpdr_subunit_create (kr_xpdr_t *xpdr,
       break;
     case RAW:
       break;
+    case PLAYER:
+      break;
   }
-  
 
   memcpy (&xpdr_subunit->spec, spec, sizeof(kr_xpdr_su_spec_t));        
   
@@ -790,6 +793,10 @@ int kr_xpdr_add_muxer (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *spec) {
   return xpdr_subunit_add (xpdr, MUXER, spec);
 }
 
+int kr_xpdr_add_player (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *spec) {
+  return xpdr_subunit_add (xpdr, PLAYER, spec);
+}
+
 void kr_xpdr_subunit_connect_mux_to_video (xpdr_subunit_t *mux_subunit,
                                            xpdr_subunit_t *from) {
   kr_xpdr_port_connect (from,
@@ -833,7 +840,7 @@ int kr_xpdr_get_info (kr_xpdr_t *xpdr, int num, char *string) {
   return -1;
 }
 
-void *kr_xpdr_get_link (kr_xpdr_t *xpdr, int num) {
+void *kr_xpdr_get_ptr (kr_xpdr_t *xpdr, int num) {
   
   if (xpdr->subunits[num] != NULL) {
     return xpdr->subunits[num]->spec.ptr;
@@ -847,19 +854,15 @@ void krad_xpdr_destroy (kr_xpdr_t **xpdr) {
   int m;
 
   if (*xpdr != NULL) {
-
     printk ("Krad XPDR: Destroying");
-
     for (m = 0; m < KRAD_TRANSPONDER_SUBUNITS; m++) {
       if ((*xpdr)->subunits[m] != NULL) {
         xpdr_subunit_destroy (&(*xpdr)->subunits[m]);
       }
     }
-
     free ((*xpdr)->subunits);
     free (*xpdr);
     *xpdr = NULL;
-    
     printk ("Krad XPDR: Destroyed");
   }
 }
@@ -867,14 +870,8 @@ void krad_xpdr_destroy (kr_xpdr_t **xpdr) {
 kr_xpdr_t *krad_xpdr_create () {
 
   kr_xpdr_t *xpdr;
-
-  printk ("Krad XPDR: Creating");
-
   xpdr = calloc (1, sizeof(kr_xpdr_t));
   xpdr->subunits = calloc (KRAD_TRANSPONDER_SUBUNITS,
                            sizeof(xpdr_subunit_t *));
-
-  printk ("Krad XPDR: Created");
-
   return xpdr;
 }

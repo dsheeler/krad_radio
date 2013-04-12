@@ -149,6 +149,7 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
   
   samplerate = 0;
   number = 0;
+  type = 0;
   memset (&track, 0, sizeof (kr_mkv_track_t));
   memset (codec_id, 0, sizeof (codec_id));
 

@@ -164,6 +164,14 @@ int kr_msgsys_write (kr_msgsys_t *msgsys, uint32_t msgpair, void *msgin) {
   return ret;
 }
 
+int kr_msgsys_get_watch_fd (kr_msgsys_t *msgsys, uint32_t msgpair) {
+  return msgsys->msgpairs[msgpair]->fd[1];
+}
+
+int kr_msgsys_read_watch_fd (kr_msgsys_t *msgsys, uint32_t msgpair, void *msg) {
+  return kr_msg_read (msgsys->msgpairs[msgpair], msg);
+}
+
 void kr_msgsys_destroy (kr_msgsys_t **msgsys) {
   
   if ((msgsys != NULL) && (*msgsys != NULL)) {

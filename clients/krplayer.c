@@ -10,6 +10,7 @@ typedef struct kr_player_cli_St kr_player_cli_t;
 
 struct kr_player_cli_St {
 	/* krad_wayland_t *wayland; */
+	krad_xpdr_t *xpdr;
   kr_player_t *player;
   struct termios ttystate;
 };
@@ -20,13 +21,15 @@ void signal_recv (int sig) {
   destroy = 1;
 }
 
-kr_player_cli_t *kr_player_cli_create (char *input) {
+kr_player_cli_t *kr_player_cli_create (char *station, char *input) {
 
   kr_player_cli_t *kcp;
 
   kcp = calloc (1, sizeof (kr_player_cli_t));
 
-  kcp->player = kr_player_create (input);
+  kcp->xpdr = krad_xpdr_create ();
+
+  kcp->player = kr_player_create (station, kcp->xpdr, input);
   if (kcp->player == NULL) {
     fprintf (stderr, "Could not create player :/\n");
     free (kcp);
@@ -48,6 +51,7 @@ void kr_player_cli_destroy (kr_player_cli_t *kcp) {
   kcp->ttystate.c_lflag |= ICANON | ECHO;
   tcsetattr (STDIN_FILENO, TCSANOW, &kcp->ttystate);
   kr_player_destroy (&kcp->player);
+  krad_xpdr_destroy (&kcp->xpdr);
   free (kcp);
 }
 
@@ -130,12 +134,12 @@ int main (int argc, char **argv) {
 
   kr_player_cli_t *kcp;
 
-  if (argc < 2) {
-    fprintf (stderr, "No input specified.\n");
+  if (argc < 3) {
+    fprintf (stderr, "krplayer [station] [url]\n");
     return 1;
   }
 
-  kcp = kr_player_cli_create (argv[1]);
+  kcp = kr_player_cli_create (argv[1], argv[2]);
   if (kcp == NULL) {
     fprintf (stderr, "Could not create player\n");
     return 1;

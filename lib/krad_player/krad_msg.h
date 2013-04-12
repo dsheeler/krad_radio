@@ -40,5 +40,7 @@ struct kr_msgsys_St {
 
 int kr_msgsys_write (kr_msgsys_t *msgsys, uint32_t msgpair, void *msgin);
 int kr_msgsys_wait (kr_msgsys_t *msgsys, void *msg);
+int kr_msgsys_get_watch_fd (kr_msgsys_t *msgsys, uint32_t msgpair);
+int kr_msgsys_read_watch_fd (kr_msgsys_t *msgsys, uint32_t msgpair, void *msg);
 kr_msgsys_t *kr_msgsys_create (uint32_t count, size_t msg_sz);
 void kr_msgsys_destroy (kr_msgsys_t **msgsys);

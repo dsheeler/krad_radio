@@ -184,6 +184,11 @@ struct krad_link_St {
 #endif
 };
 
+void demuxer_unit_create (void *arg);
+int demuxer_unit_process (void *arg);
+void demuxer_unit_destroy (void *arg);
+
+
 krad_link_t *krad_transponder_get_link_from_sysname (krad_transponder_t *krad_transponder, char *sysname);
 krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *krad_transponder, char *sysname);
 krad_tags_t *krad_link_get_tags (krad_link_t *krad_link);

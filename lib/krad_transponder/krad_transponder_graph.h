@@ -1,5 +1,5 @@
-#include "krad_radio.h"
 #include "krad_slice.h"
+#include "krad_container.h"
 
 #ifndef KRAD_TRANSPONDER_GRAPH
 #define KRAD_TRANSPONDER_GRAPH
@@ -29,6 +29,7 @@ typedef enum {
   DECODER,
   ENCODER,
   RAW,
+  PLAYER,
 } xpdr_subunit_type_t;
 
 struct kr_xpdr_su_spec_St {
@@ -93,13 +94,14 @@ int kr_xpdr_slice_broadcast (kr_xpdr_subunit_t *xpdr_subunit,
 
 int kr_xpdr_count (kr_xpdr_t *xpdr);
 int kr_xpdr_get_info (kr_xpdr_t *xpdr, int num, char *string);
-void *kr_xpdr_get_link (kr_xpdr_t *xpdr, int num);
+void *kr_xpdr_get_ptr (kr_xpdr_t *xpdr, int num);
 kr_xpdr_subunit_t *kr_xpdr_get_subunit (kr_xpdr_t *xpdr, int sid);
 int kr_xpdr_add_raw (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
 int kr_xpdr_add_muxer (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
 int kr_xpdr_add_demuxer (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
 int kr_xpdr_add_encoder (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
 int kr_xpdr_add_decoder (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *su_spec);
+int kr_xpdr_add_player (kr_xpdr_t *xpdr, kr_xpdr_su_spec_t *spec);
 void kr_xpdr_subunit_remove (kr_xpdr_t *xpdr, int sid);
 
 void krad_xpdr_destroy (kr_xpdr_t **xpdr);
