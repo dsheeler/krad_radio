@@ -110,6 +110,7 @@ includedirs = """
 ../lib/krad_ring/
 ../lib/krad_ogg/
 ../lib/krad_io/
+../lib/krad_player/
 ../lib/krad_transponder/
 ../lib/krad_transmitter/
 ../lib/krad_container/

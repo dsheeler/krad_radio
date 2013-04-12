@@ -23,7 +23,9 @@
 typedef struct krad_theora_encoder_St krad_theora_encoder_t;
 typedef struct krad_theora_decoder_St krad_theora_decoder_t;
 
-#include "krad_radio.h"
+#include <libswscale/swscale.h>
+
+#include "krad_system.h"
 #include "krad_codec_header.h"
 
 struct krad_theora_encoder_St {

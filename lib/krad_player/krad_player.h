@@ -11,18 +11,22 @@
 #include <poll.h>
 #include <pthread.h>
 
+#include "krad_system.h"
+#include "krad_container.h"
+
 typedef enum {
-  FORWARD,
   REVERSE,
+  FORWARD
 } kr_direction_t;
 
 typedef enum {
+  IDLE,
   CUED,
   PLAYING,
   PAUSING,
   RESUMING,
-  LOOPING,
-} kr_playback_state_t;
+  LOOPING
+} kr_player_state_t;
 
 typedef enum {
   PLAY,
@@ -33,15 +37,14 @@ typedef enum {
   SETSPEED,
   SETDIR,
   TICKLE,
-  DESTROY,
+  DESTROY
 } kr_player_cmd_t;
 
 typedef struct kr_player_St kr_player_t;
 typedef struct kr_player_track_St kr_player_track_t;
 
-
 void kr_player_destroy (kr_player_t **player);
-kr_player_t *kr_player_create ();
+kr_player_t *kr_player_create (char *url);
 
 float kr_player_speed_get (kr_player_t *player);
 void kr_player_speed_set (kr_player_t *player, float speed);
@@ -50,7 +53,7 @@ void kr_player_direction_set (kr_player_t *player, kr_direction_t direction);
 
 int64_t kr_player_position_get (kr_player_t *player);
 
-kr_playback_state_t kr_player_playback_state_get (kr_player_t *player);
+kr_player_state_t kr_player_state_get (kr_player_t *player);
 
 void kr_player_seek (kr_player_t *player, int64_t position);
 void kr_player_play (kr_player_t *player);
