@@ -422,6 +422,7 @@ int krad_flac_decode (krad_flac_t *flac,
     flac->decode_buffer_pos = 0;
     flac->decode_buffer_len = 0;  
   }
+  printk ("Krad FLAC Decoded %d", flac->frames);
   return flac->frames;
 }
 

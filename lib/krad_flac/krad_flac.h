@@ -12,6 +12,9 @@
 #include "krad_system.h"
 #include "krad_codec_header.h"
 
+#ifndef KRAD_FLAC_H
+#define KRAD_FLAC_H
+
 #define KRAD_FLAC_MINIMAL_HEADER_SIZE 42
 #define KRAD_FLAC_STREAMINFO_BLOCK_SIZE 38
 #define KRAD_FLAC_MARKER "fLaC"
@@ -85,3 +88,5 @@ int krad_flac_decode (krad_flac_t *flac,
                       float **audio);
 krad_flac_t *krad_flac_decoder_create ();
 void krad_flac_decoder_destroy (krad_flac_t *flac);
+
+#endif

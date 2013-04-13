@@ -27,6 +27,13 @@ kr_player_cli_t *kr_player_cli_create (char *station, char *input) {
 
   kcp = calloc (1, sizeof (kr_player_cli_t));
 
+  krad_system_init ();
+	
+  char logfile[265];
+  sprintf (logfile, "%s/kr_player_%"PRIu64".log",
+           getenv ("HOME"), krad_unixtime ());	
+  krad_system_log_on (logfile);
+
   kcp->xpdr = krad_xpdr_create ();
 
   kcp->player = kr_player_create (station, kcp->xpdr, input);
