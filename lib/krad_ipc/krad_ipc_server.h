@@ -77,7 +77,7 @@ struct krad_ipc_server_St {
   int on_linux;
   int sd;
   int tcp_sd[MAX_REMOTES];
-  int tcp_port[MAX_REMOTES];
+  uint16_t tcp_port[MAX_REMOTES];
   char *tcp_interface[MAX_REMOTES];
   int shutdown;
 
@@ -131,7 +131,7 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *ipc_server,
                                     int port);
 int krad_ipc_server_enable_remote (krad_ipc_server_t *ipc_server,
                                    char *interface,
-                                   int port);
+                                   uint16_t port);
 void krad_ipc_server_disable (krad_ipc_server_t *krad_ipc_server);
 void krad_ipc_server_destroy (krad_ipc_server_t *ipc_server);
 void krad_ipc_server_run (krad_ipc_server_t *krad_ipc_server);

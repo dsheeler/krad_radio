@@ -1135,10 +1135,14 @@ int kr_remote_on (kr_client_t *client, char *interface, int port) {
 
   unsigned char *radio_command;
   unsigned char *enable_remote;
+  uint16_t port_actual;
 
   if (!kr_sys_port_valid (port)) {
     return -1;
   }
+  
+  port_actual = port;
+  
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_REMOTE_ENABLE, &enable_remote);
   if ((interface != NULL) && (strlen(interface))) {
@@ -1146,7 +1150,7 @@ int kr_remote_on (kr_client_t *client, char *interface, int port) {
   } else {
     kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, "");
   }
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_TCP_PORT, port);
+  kr_ebml2_pack_uint16 (client->ebml2, EBML_ID_KRAD_RADIO_TCP_PORT, port_actual);
   kr_ebml2_finish_element (client->ebml2, enable_remote);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 

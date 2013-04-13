@@ -219,7 +219,7 @@ int krad_ipc_server_disable_remote (krad_ipc_server_t *ipc_server,
 #ifdef KR_LINUX
 int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *ipc_server,
                                               char *adapter,
-                                              int port) {
+                                              uint16_t port) {
 
   struct ifaddrs *ifaddr, *ifa;
   int family, s;
@@ -265,7 +265,7 @@ int krad_ipc_server_enable_remote_on_adapter (krad_ipc_server_t *ipc_server,
 
 int krad_ipc_server_enable_remote (krad_ipc_server_t *krad_ipc_server,
                                    char *interface,
-                                   int port) {
+                                   uint16_t port) {
 
   int r;
   int sd;

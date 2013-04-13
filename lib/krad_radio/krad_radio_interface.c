@@ -4,13 +4,8 @@
 static void krad_radio_remote_rep_to_ebml (kr_remote_t *remote, kr_ebml2_t *ebml);
 
 static void krad_radio_remote_rep_to_ebml (kr_remote_t *remote, kr_ebml2_t *ebml) {
-
-  unsigned char *remote_loc;
-
-  kr_ebml2_start_element (ebml, EBML_ID_KRAD_RADIO_REMOTE_STATUS, &remote_loc);
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, remote->interface);
   kr_ebml2_pack_uint16 (ebml, EBML_ID_KRAD_RADIO_REMOTE_PORT, remote->port);
-  kr_ebml2_finish_element (ebml, remote_loc);
 }
 
 int krad_radio_broadcast_subunit_destroyed (krad_ipc_broadcaster_t *broadcaster, kr_address_t *address) {
