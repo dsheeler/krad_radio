@@ -164,11 +164,11 @@ int kr_msgsys_write (kr_msgsys_t *msgsys, uint32_t msgpair, void *msgin) {
   return ret;
 }
 
-int kr_msgsys_get_watch_fd (kr_msgsys_t *msgsys, uint32_t msgpair) {
+int kr_msgsys_get_fd (kr_msgsys_t *msgsys, uint32_t msgpair) {
   return msgsys->msgpairs[msgpair]->fd[1];
 }
 
-int kr_msgsys_read_watch_fd (kr_msgsys_t *msgsys, uint32_t msgpair, void *msg) {
+int kr_msgsys_read (kr_msgsys_t *msgsys, uint32_t msgpair, void *msg) {
   return kr_msg_read (msgsys->msgpairs[msgpair], msg);
 }
 

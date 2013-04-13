@@ -10,7 +10,6 @@ typedef struct kr_player_cli_St kr_player_cli_t;
 
 struct kr_player_cli_St {
 	/* krad_wayland_t *wayland; */
-	krad_xpdr_t *xpdr;
   kr_player_t *player;
   struct termios ttystate;
 };
@@ -34,9 +33,7 @@ kr_player_cli_t *kr_player_cli_create (char *station, char *input) {
            getenv ("HOME"), krad_unixtime ());	
   krad_system_log_on (logfile);
 
-  kcp->xpdr = krad_xpdr_create ();
-
-  kcp->player = kr_player_create (station, kcp->xpdr, input);
+  kcp->player = kr_player_create (station, input);
   if (kcp->player == NULL) {
     fprintf (stderr, "Could not create player :/\n");
     free (kcp);
@@ -58,7 +55,6 @@ void kr_player_cli_destroy (kr_player_cli_t *kcp) {
   kcp->ttystate.c_lflag |= ICANON | ECHO;
   tcsetattr (STDIN_FILENO, TCSANOW, &kcp->ttystate);
   kr_player_destroy (&kcp->player);
-  krad_xpdr_destroy (&kcp->xpdr);
   free (kcp);
 }
 
