@@ -396,25 +396,25 @@ int kr_compositor_crate_to_rep (kr_crate_t *crate) {
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_SPRITE) && 
-      (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO)) {
+      ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_SPRITE;
     kr_ebml_to_sprite_rep (&crate->payload_ebml, &crate->rep.sprite);
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_TEXT) && 
-      (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO)) {
+      ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_TEXT;
     kr_ebml_to_text_rep (&crate->payload_ebml, &crate->rep.text);
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_VECTOR) && 
-      (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO)) {
+      ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_VECTOR;
     kr_ebml_to_vector_rep (&crate->payload_ebml, &crate->rep.vector);
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_VIDEOPORT) && 
-      (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO)) {
+      ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_VIDEOPORT;
     kr_ebml_to_videoport_rep (&crate->payload_ebml, &crate->rep.videoport);
     return 1;
