@@ -38,9 +38,18 @@ typedef enum {
 } kr_demuxer_cmd_t;
 
 typedef struct kr_demuxer_St kr_demuxer_t;
+typedef struct kr_demuxer_params_St kr_demuxer_params_t;
+
+struct kr_demuxer_params_St {
+  void *controller;
+  char *url;
+  //size_t msg_sz;
+  void (*status_cb)(kr_demuxer_state_t, void *);
+  int (*packet_cb)(kr_packet_t *, void *);  
+};
 
 void kr_demuxer_destroy (kr_demuxer_t **demuxer);
-kr_demuxer_t *kr_demuxer_create (char *url);
+kr_demuxer_t *kr_demuxer_create (kr_demuxer_params_t *demuxer_params);
 
 kr_direction_t kr_demuxer_direction_get (kr_demuxer_t *demuxer);
 void kr_demuxer_direction_set (kr_demuxer_t *demuxer, kr_direction_t direction);

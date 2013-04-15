@@ -4,7 +4,7 @@
 typedef struct kr_demuxer_msg_St kr_demuxer_msg_t;
 
 static void kr_demuxer_start (void *actual);
-static int kr_demuxer_process (void *msgin, void *actual);
+static int32_t kr_demuxer_process (void *msgin, void *actual);
 static void kr_demuxer_destroy_actual (void *actual);
 
 struct kr_demuxer_msg_St {
@@ -16,7 +16,7 @@ struct kr_demuxer_msg_St {
 };
 
 struct kr_demuxer_St {
-  char *url;
+  kr_demuxer_params_t params;
   int64_t position;
   kr_demuxer_state_t state;
   kr_direction_t direction;
@@ -26,7 +26,36 @@ struct kr_demuxer_St {
 
 /* Private Functions */
 
-static int kr_demuxer_process (void *msgin, void *actual) {
+static void kr_demuxer_step (kr_demuxer_t *demuxer) {
+
+  kr_packet_t packet;
+  int track;
+  uint64_t timecode;
+  int ret;
+  int size;
+  uint8_t *buffer;
+  
+  buffer = malloc (2000000);
+  
+  while (1) {
+    size = krad_container_read_packet (demuxer->input, &track,
+                                      &timecode, buffer);
+    if (size < 1) {
+      break;
+    }
+    packet.size = size;
+    packet.buffer = buffer;
+    packet.track = track;
+    ret = demuxer->params.packet_cb (&packet, demuxer->params.controller);
+    if (ret != 1) {
+      break;
+    }
+  }
+
+  free (buffer);
+}
+
+static int32_t kr_demuxer_process (void *msgin, void *actual) {
 
   kr_demuxer_t *demuxer;
   kr_demuxer_msg_t *msg;
@@ -45,9 +74,17 @@ static int kr_demuxer_process (void *msgin, void *actual) {
       break; 
     case DMPAUSE:
       printf ("Got DMPAUSE command!\n");
+      demuxer->state = DMCUED;
+      demuxer->params.status_cb (demuxer->state, demuxer->params.controller);
       break;      
     case ROLL:
       printf ("Got ROLL command!\n");
+      if (demuxer->state == DMCUED) {
+        demuxer->state = DEMUXING;
+      }
+      if (demuxer->state == DEMUXING) {
+        kr_demuxer_step (demuxer);
+      }
       break;
     case DEMUXERDESTROY:
       printf ("Got DEMUXERDESTROY command!\n");
@@ -69,7 +106,7 @@ static void kr_demuxer_destroy_actual (void *actual) {
   demuxer = (kr_demuxer_t *)actual;
 
   krad_container_destroy (&demuxer->input);
-  free (demuxer->url);
+  free (demuxer->params.url);
 }
 
 static void kr_demuxer_start (void *actual) {
@@ -78,11 +115,12 @@ static void kr_demuxer_start (void *actual) {
 
   demuxer = (kr_demuxer_t *)actual;
 
-  demuxer->input = krad_container_open_file (demuxer->url,
+  demuxer->input = krad_container_open_file (demuxer->params.url,
                                              KRAD_IO_READONLY);
   if (demuxer->input != NULL) {
     demuxer->state = DMCUED;
   }
+  demuxer->params.status_cb (demuxer->state, demuxer->params.controller);
 
   printf ("kr_demuxer_start()!\n");
 }
@@ -101,14 +139,18 @@ void kr_demuxer_destroy (kr_demuxer_t **demuxer) {
   }
 }
 
-kr_demuxer_t *kr_demuxer_create (char *url) {
+kr_demuxer_t *kr_demuxer_create (kr_demuxer_params_t *demuxer_params) {
   
   kr_demuxer_t *demuxer;
   kr_machine_params_t machine_params;
 
   demuxer = calloc (1, sizeof(kr_demuxer_t));
 
-  demuxer->url = strdup (url);
+  demuxer->params.url = strdup (demuxer_params->url);
+  demuxer->params.controller = demuxer_params->controller;
+  demuxer->params.status_cb = demuxer_params->status_cb;  
+  demuxer->params.packet_cb = demuxer_params->packet_cb;
+
   demuxer->direction = FORWARD;
   demuxer->state = DMIDLE;
 

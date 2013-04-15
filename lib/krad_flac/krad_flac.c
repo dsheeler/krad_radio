@@ -430,6 +430,9 @@ krad_flac_t *krad_flac_decoder_create () {
 
   krad_flac_t *flac = calloc (1, sizeof(krad_flac_t));
   FLAC__StreamDecoderInitStatus ret;
+    
+  flac->channels = 2;
+  flac->bit_depth = 16;
   
   flac->decoder = FLAC__stream_decoder_new ();
 

@@ -50,11 +50,15 @@ kr_machine_t *krad_machine_create (kr_machine_params_t *params) {
   
   machine = calloc (1, sizeof (kr_machine_t));
   memcpy (&machine->params, params, sizeof(kr_machine_params_t));
-  machine->msgsys = kr_msgsys_create (1, machine->params.msg_sz);
+  machine->msgsys = kr_msgsys_create (2, machine->params.msg_sz);
   pthread_create (&machine->thread, NULL, krad_machine_run, (void *)machine);
   return machine;
 }
 
 void krad_machine_msg (kr_machine_t *machine, void *msg) {
   kr_msgsys_write (machine->msgsys, 0, msg);
+}
+
+void krad_machine_msg2 (kr_machine_t *machine, void *msg) {
+  kr_msgsys_write (machine->msgsys, 1, msg);
 }

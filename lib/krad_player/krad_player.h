@@ -30,6 +30,7 @@ typedef enum {
   IDLE,
   CUED,
   PLAYING,
+  PLAYERDESTROYING
 //  PAUSING,
 //  RESUMING,
 //  LOOPING

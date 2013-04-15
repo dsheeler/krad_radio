@@ -17,14 +17,14 @@
 #ifndef KRAD_MACHINE_H
 #define KRAD_MACHINE_H
 
-typedef struct kr_machine_params_St kr_machine_params_t;
 typedef struct kr_machine_St kr_machine_t;
+typedef struct kr_machine_params_St kr_machine_params_t;
 
 struct kr_machine_params_St {
   void *actual;
   size_t msg_sz;
   void (*start)(void *);
-  int (*process)(void *, void *);
+  int32_t (*process)(void *, void *);
   void (*destroy)(void *);
 };
 
@@ -38,5 +38,5 @@ kr_machine_t *krad_machine_create (kr_machine_params_t *params);
 void krad_machine_destroy (kr_machine_t **machine);
 
 void krad_machine_msg (kr_machine_t *machine, void *msg);
-
+void krad_machine_msg2 (kr_machine_t *machine, void *msg);
 #endif

@@ -269,7 +269,7 @@ kr_mkv_t *kr_mkv_open_file (char *filename) {
     return NULL;
   }
   
-  mkv = kr_mkv_create_bufsize (50000000);
+  mkv = kr_mkv_create_bufsize (500000000);
   mkv->fd = fd;  
   kr_io2_set_fd (mkv->io, mkv->fd);
 

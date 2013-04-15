@@ -6,4 +6,14 @@ typedef enum {
   FORWARD
 } kr_direction_t;
 
+typedef struct kr_packet_St kr_packet_t;
+
+struct kr_packet_St {
+  uint8_t *buffer;
+  size_t size;
+  
+  uint32_t track;
+};
+
+
 #endif
