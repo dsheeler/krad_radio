@@ -15,9 +15,9 @@ typedef struct krad_transponder_subunit_rep_St kr_transponder_subunit_t;
 typedef struct kr_rawin_St kr_rawin_t;
 typedef struct kr_rawout_St kr_rawout_t;
 typedef struct kr_encoder_St kr_encoder_t;
-typedef struct kr_decoder_St kr_decoder_t;
+//typedef struct kr_decoder_St kr_decoder_t;
 typedef struct kr_muxer_St kr_muxer_t;
-typedef struct kr_demuxer_St kr_demuxer_t;
+//typedef struct kr_demuxer_St kr_demuxer_t;
 
 typedef struct kr_audio_encoder_St kr_audio_encoder_t;
 typedef struct kr_video_encoder_St kr_video_encoder_t;
@@ -209,12 +209,12 @@ typedef union {
 	kr_audio_decoder_t audio;
 	kr_video_decoder_t video;
 } kr_av_decoder_t;
-
+/*
 struct kr_decoder_St {
 	krad_codec_t codec;
 	kr_av_decoder_t decoder;	
 };
-
+*/
 struct kr_udp_muxer_St {
   int ok;
 };
@@ -266,10 +266,12 @@ typedef union {
 	kr_transogg_demuxer_t togg;
 } kr_demuxer_actual_t;
 
+/*
 struct kr_demuxer_St {
 	kr_container_type_t type;
 	kr_demuxer_actual_t container;
 };
+*/
 
 struct kr_rawin_St {
   int yea;
@@ -281,9 +283,9 @@ struct kr_rawout_St {
 
 typedef union {
   kr_encoder_t encoder;
-  kr_decoder_t decoder;
+//  kr_decoder_t decoder;
   kr_muxer_t muxer;
-  kr_demuxer_t demuxer;
+//  kr_demuxer_t demuxer;
   kr_rawout_t rawout;
   kr_rawin_t rawin;
 } kr_transponder_subunit_actual_t;

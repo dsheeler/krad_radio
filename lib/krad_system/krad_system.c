@@ -300,19 +300,22 @@ void krad_system_daemon_wait () {
   while (1) {
 
     if (sigwait (&krad_system.signal_mask, &signal_caught) != 0) {
-      failfast ("error on sigwait!");
+      failfast ("Krad Radio: Error on sigwait!");
     }
     switch (signal_caught) {
       case SIGHUP:
-        printkd ("Got HANGUP Signal!");
+        printk ("Got HANGUP Signal!");
         break;
       case SIGINT:
-        printkd ("Got SIGINT Signal!");
-      case SIGTERM:
-        printkd ("Got SIGTERM Signal!");
-      default:
-        printk ("Krad Radio Shutting down!");
+        printk ("Got INT Signal!");
+        printk ("Krad Radio: Shutting down");
         return;
+      case SIGTERM:
+        printk ("Got TERM Signal!");
+        printk ("Krad Radio: Shutting down");
+        return;
+      default:
+        printk ("Krad Radio: Got Signal %d", signal_caught);
     }
   }
 }
@@ -437,9 +440,7 @@ void krad_system_daemonize () {
   }
   
   sigemptyset (&krad_system.signal_mask);
-  sigaddset (&krad_system.signal_mask, SIGINT);
-  sigaddset (&krad_system.signal_mask, SIGTERM);
-  sigaddset (&krad_system.signal_mask, SIGHUP);
+  sigfillset (&krad_system.signal_mask);
   if (pthread_sigmask (SIG_BLOCK, &krad_system.signal_mask, NULL) != 0) {
     failfast ("Could not set signal mask!");
   } 

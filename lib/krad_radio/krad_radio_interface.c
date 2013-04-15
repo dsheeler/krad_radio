@@ -52,7 +52,7 @@ int krad_radio_broadcast_subunit_created ( krad_ipc_broadcaster_t *broadcaster, 
     krad_mixer_portgroup_rep_to_ebml2 (&rep.portgroup, &ebml);
   }
   
-  if (address->path.unit == KR_COMPOSITOR) { 
+  if (address->path.unit == KR_COMPOSITOR) {
     if (address->path.subunit.compositor_subunit == KR_SPRITE) {
       krad_compositor_sprite_to_ebml2 ( &ebml, subunit_in );
     }

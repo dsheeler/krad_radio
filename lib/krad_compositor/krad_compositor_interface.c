@@ -249,7 +249,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
         if (type == KR_TEXT) {
           krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster,
                                                  &krad_compositor->text[s].subunit.address,
-                                                 (void *)&krad_compositor->text[s]);        
+                                                 (void *)&krad_compositor->text[s]);
         }
         if (type == KR_VECTOR) {
           krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster,

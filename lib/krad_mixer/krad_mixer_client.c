@@ -809,7 +809,7 @@ int kr_mixer_crate_to_rep (kr_crate_t *crate) {
 
       break;
     case KR_PORTGROUP:
-      if ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || ((crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
+      if ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO)) {
         crate->contains = KR_PORTGROUP;
         kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &crate->rep.portgroup);
         return 1;

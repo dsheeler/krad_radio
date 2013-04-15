@@ -92,7 +92,7 @@ void kr_player_cli_handle_input (kr_player_cli_t *kcp) {
   }  
   if (buf[0] == 'b') {
     kr_player_pause (kcp->player);
-  } 
+  }
   if (buf[0] == 'q') {
     destroy = 1;
   }
@@ -116,7 +116,7 @@ void kr_player_cli_check_input (kr_player_cli_t *kcp) {
 
 void kr_player_cli_status (kr_player_cli_t *kcp) {
   printf ("\r%s %s ",
-          kr_player_state_to_string (kr_player_state_get (kcp->player)),
+          kr_player_playback_state_to_string (kr_player_playback_state_get (kcp->player)),
           kr_direction_to_string (kr_player_direction_get (kcp->player)));
   printf ("%0.3f%% ::", kr_player_speed_get (kcp->player));
   printf (" %"PRIi64" ", kr_player_position_get (kcp->player));

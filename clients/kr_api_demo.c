@@ -22,13 +22,15 @@ void my_compositor_print (kr_compositor_t *compositor) {
 
 void my_sprite_print (kr_sprite_t *sprite) {
 
-  printf ("Sprite stuf: %d %f\n",
+  printf ("Sprite stuf: %s %d %f\n",
+           sprite->filename,
 					 sprite->controls.width, sprite->controls.rotation);
 }
 
 void my_text_print (kr_text_t *text) {
 
-  printf ("text stuf: %d %f\n",
+  printf ("text stuf: %s %d %f\n",
+					 text->text,
 					 text->controls.width, text->controls.rotation);
 }
 

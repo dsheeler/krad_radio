@@ -149,7 +149,7 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
   }
 
   if (tr->type == DECODE) {
-    tr->actual.decoder.codec = link->codec;
+  //  tr->actual.decoder.codec = link->codec;
   }  
 
   if (tr->type == RAWIN) {
@@ -189,6 +189,7 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
   }
   
   if (tr->type == DEMUX) {
+  /*
     tr->actual.demuxer.type = link->krad_container->type;
     if (tr->actual.muxer.type == OGG) {
       kr_ogg_muxer_to_rep (link->krad_container->ogg, &tr->actual.muxer.container.ogg);
@@ -205,6 +206,7 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
     if (tr->actual.muxer.type == Y4MFILE) {
       
     }
+  */
   }
   
   return 1;

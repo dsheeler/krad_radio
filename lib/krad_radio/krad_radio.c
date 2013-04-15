@@ -258,7 +258,6 @@ krad_tags_t *krad_radio_find_tags_for_item ( krad_radio_t *krad_radio, char *ite
   }
 
   return NULL;
-
 }
 
 void krad_radio_set_dir ( krad_radio_t *krad_radio, char *dir ) {
@@ -277,4 +276,3 @@ void krad_radio_set_dir ( krad_radio_t *krad_radio, char *dir ) {
   }
   printk ("Current Unix Time: %"PRIu64"", krad_unixtime ());
 }
-

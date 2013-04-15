@@ -3,9 +3,9 @@
 #include "krad_transponder_common.h"
 
 static int kr_transponder_get_string_from_muxer (kr_muxer_t *muxer, char *string, int maxlen);
-static int kr_transponder_get_string_from_demuxer (kr_demuxer_t *demuxer, char *string, int maxlen);
+//static int kr_transponder_get_string_from_demuxer (kr_demuxer_t *demuxer, char *string, int maxlen);
 static int kr_transponder_get_string_from_encoder (kr_encoder_t *encoder, char *string, int maxlen);
-static int kr_transponder_get_string_from_decoder (kr_decoder_t *decoder, char *string, int maxlen);
+//static int kr_transponder_get_string_from_decoder (kr_decoder_t *decoder, char *string, int maxlen);
 
 static int kr_transponder_crate_get_string_from_adapter (kr_crate_t *crate, char **string, int maxlen);
 
@@ -249,7 +249,7 @@ static int kr_transponder_get_string_from_muxer (kr_muxer_t *muxer, char *string
   len += sprintf (string + len, "%s Muxer", kr_container_type_to_string (muxer->type));
   return len;
 }
-
+/*
 static int kr_transponder_get_string_from_demuxer (kr_demuxer_t *demuxer, char *string, int maxlen) {
 
   int len;
@@ -269,6 +269,7 @@ static int kr_transponder_get_string_from_decoder (kr_decoder_t *decoder, char *
   len += sprintf (string + len, "%s Decoder", krad_codec_to_string (decoder->codec));
   return len;
 }
+*/
 
 static int kr_transponder_get_string_from_encoder (kr_encoder_t *encoder, char *string, int maxlen) {
 
@@ -343,13 +344,13 @@ static int kr_transponder_crate_get_string_from_subunit (kr_crate_t *crate, char
       len += kr_transponder_get_string_from_encoder (&transponder_subunit.actual.encoder, *string + len, maxlen - len);
       break;
     case DECODE:
-      len += kr_transponder_get_string_from_decoder (&transponder_subunit.actual.decoder, *string + len, maxlen - len);
+      //len += kr_transponder_get_string_from_decoder (&transponder_subunit.actual.decoder, *string + len, maxlen - len);
       break;
     case MUX:
       len += kr_transponder_get_string_from_muxer (&transponder_subunit.actual.muxer, *string + len, maxlen - len);
       break;
     case DEMUX:
-      len += kr_transponder_get_string_from_demuxer (&transponder_subunit.actual.demuxer, *string + len, maxlen - len);
+      //len += kr_transponder_get_string_from_demuxer (&transponder_subunit.actual.demuxer, *string + len, maxlen - len);
       break;
     default:
       len += sprintf (*string + len, "%s", kr_txpdr_subunit_type_to_string (transponder_subunit.type));

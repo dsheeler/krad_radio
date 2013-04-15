@@ -136,6 +136,9 @@ int kr_msgsys_wait (kr_msgsys_t *msgsys, void *msg) {
         ret = kr_msg_read (msgsys->msgpairs[n], msg);
         return ret;
       }
+      if (msgsys->pollfds[n].revents == POLLHUP) {
+        return 0;
+      }
     }
   }
 
