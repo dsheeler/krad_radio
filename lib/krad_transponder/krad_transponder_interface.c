@@ -391,7 +391,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
           if (strstr(string2, "stream") != NULL) {
           //if (1) {
             strcpy (link->host, "europa.kradradio.com");
-            link->port = 8080;
+            link->port = 8008;
             if (strstr(string2, "mkv") != NULL) {
               snprintf (link->mount, sizeof(link->mount),
                         "/krad_radio_%s.mkv",
