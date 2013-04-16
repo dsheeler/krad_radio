@@ -183,6 +183,9 @@ depsources11 = """
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_ring/krad_resample_ring.c
 ../lib/krad_udp/krad_udp.c
+../lib/krad_vhs/ext/imagezero/libiz.cpp
+../lib/krad_vhs/ext/imagezero/table.cpp
+../lib/krad_vhs/krad_vhs.cpp
 ../lib/krad_theora/krad_theora.c
 ../lib/krad_vpx/krad_vpx.c
 ../lib/krad_vorbis/krad_vorbis.c
@@ -405,7 +408,7 @@ def build(bld):
     uselib = shlibs10 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs11:
-    bld(features = 'c cprogram', 
+    bld(features = 'c cprogram cxx cxxprogram', 
     source = [p] + depsources11,
     includes = includedirs, 
     target = p.replace(".c", ""),

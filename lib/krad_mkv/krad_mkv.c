@@ -350,15 +350,17 @@ kr_mkv_t *kr_mkv_create_file (char *filename) {
   
   kr_mkv_t *mkv;
   int flags;
+  int mode;
   int fd;
   
-  flags = O_WRONLY | O_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+  flags = O_WRONLY | O_CREAT;
+  mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
   
   if (file_exists(filename)) {
     return NULL;
   }
   
-  fd = open ( filename, flags );
+  fd = open ( filename, flags, mode );
   
   if (fd < 0) {
     return NULL;

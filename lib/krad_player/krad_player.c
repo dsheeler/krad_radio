@@ -47,16 +47,30 @@ struct kr_player_St {
   kr_demuxer_t *demuxer;
   kr_decoder_t *decoder;
   
-  krad_flac_t *flac;
-	float *samples[8];
-
   char *station;
   kr_client_t *client;
   kr_videoport_t *videoport;
   kr_audioport_t *audioport;
-	krad_resample_ring_t *resample_ring[2];
+  krad_resample_ring_t *resample_ring[2];
   uint32_t sample_rate;
   int channels;
+
+  krad_vhs_t *kvhs;
+  krad_flac_t *flac;
+  float *samples[8];
+  int64_t ms;
+  uint32_t width;
+  uint32_t height;
+  uint32_t frame_size;
+  uint32_t framebufsize;
+  unsigned char *rgba;
+  int64_t *frame_time;
+  int64_t last_frame_time;
+  uint32_t repeated;
+  uint32_t skipped;
+  uint32_t consumed;
+  uint32_t frames_dec;
+  uint32_t samples_consumed;
 };
 
 /* Private Functions */
@@ -65,9 +79,22 @@ int videoport_process (void *buffer, void *arg) {
 
   kr_player_t *player;
   player = (kr_player_t *)arg;
+
+  int pos;
   
   if (player->state == PLAYING) {
-  
+    if (player->frames_dec > player->consumed) {
+      pos = (player->consumed % player->framebufsize);
+      if (player->ms >= player->frame_time[pos]) {
+        player->last_frame_time = player->frame_time[pos];
+        memcpy (buffer,
+                player->rgba + (pos * player->frame_size),
+                player->width * player->height * 4);
+        player->consumed++;
+      } else {
+        player->repeated++;
+      }
+    }
   }
   
   return 0;
@@ -87,15 +114,14 @@ int audioport_process (uint32_t nframes, void *arg) {
   if ((player->state == PLAYING) && 
       ((krad_resample_ring_read_space (player->resample_ring[0]) >= nframes * 4) && 
       (krad_resample_ring_read_space (player->resample_ring[1]) >= nframes * 4))) {
-       krad_resample_ring_read (player->resample_ring[0], output[0], nframes * 4);
-      krad_resample_ring_read (player->resample_ring[1], output[1], nframes * 4);
+       
+    krad_resample_ring_read (player->resample_ring[0], output[0], nframes * 4);
+    krad_resample_ring_read (player->resample_ring[1], output[1], nframes * 4);
+
+    player->samples_consumed += nframes;
+    player->ms = (float)player->samples_consumed /
+                 (float)player->sample_rate * 1000;
   } else {
-    //printf ("Got ne\n!");
-    //if (player->state == PLAYING) {
-    //  kr_player_msg_t msg;
-    //  msg.cmd = PLAY;
-    //  kr_msgsys_write (player->msgsys, NEEDDATA, &msg);
-    //}  
     memset(output[0], '0', nframes * 4);
     memset(output[1], '0', nframes * 4);
   }
@@ -111,8 +137,6 @@ static int32_t kr_player_process (void *msgin, void *actual) {
   msg = (kr_player_msg_t *)msgin;
   player = (kr_player_t *)actual;
 
-  //printf ("kr_player_process cmd %d\n", msg->cmd);
-
   if (msg->from == THEDEMUXER) {
     printf ("Got new DEMUXER state! %d - %d\n",
             player->demuxer_state, msg->actual.demuxer.state);
@@ -120,7 +144,8 @@ static int32_t kr_player_process (void *msgin, void *actual) {
     if ((player->state == IDLE) && (player->demuxer_state == DMCUED)) {
       player->state = CUED;
     }
-    if ((player->state == PLAYERDESTROYING) && (player->demuxer_state == DMCUED)) {
+    if ((player->state == PLAYERDESTROYING) &&
+        (player->demuxer_state == DMCUED)) {
       return 0;
     }
     return 1;
@@ -176,50 +201,53 @@ static int32_t kr_player_process (void *msgin, void *actual) {
         break;    
     }
   }
-  
-  //printf ("kr_player_process done\n");  
-  
   return 1;
 }
 
 static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
 
   kr_player_t *player;
-
+  uint32_t pos;
   player = (kr_player_t *)actual;
 
   printf ("wee packet sized %zu track %d!\n", packet->size, packet->track);
   
-  if (packet->track == 1) {
+  if (packet->track == 1) {  
+  
+    pos = (player->frames_dec % player->framebufsize) * player->frame_size;
+  
+    krad_vhs_decode (player->kvhs,
+                     packet->buffer,
+                     player->rgba + pos);
+    player->frames_dec++;
+  }
+  
+  if (packet->track == 2) {
     int ret;
     ret = krad_flac_decode (player->flac, packet->buffer,
                             packet->size, player->samples);
     printf ("flac decode ret is %d\n", ret);
     
     while ((krad_resample_ring_write_space (player->resample_ring[0]) <= ret * 4) || 
-          (krad_resample_ring_write_space (player->resample_ring[1]) <= ret * 4)) {
-      usleep (60000);
-         if ((player->state == CUED) || (player->state == PLAYERDESTROYING)) {
-          return 0;
-        }
+           (krad_resample_ring_write_space (player->resample_ring[1]) <= ret * 4)) {
+      usleep (6000);
+      if ((player->state == CUED) || (player->state == PLAYERDESTROYING)) {
+        return 0;
+      }
     }
 
     krad_resample_ring_write (player->resample_ring[0], (uint8_t *)player->samples[0], ret * 4);
     krad_resample_ring_write (player->resample_ring[1], (uint8_t *)player->samples[1], ret * 4);
-    
-    
-         if ((player->state == CUED) || (player->state == PLAYERDESTROYING)) {
-          return 0;
-        }
-    
-    
+
+    if ((player->state == CUED) || (player->state == PLAYERDESTROYING)) {
+      return 0;
+    }
     if (ret > 0) {
       return 1;
     } else {
       return 0;
     }
   }
-  
   return 1;
 }
 
@@ -242,7 +270,7 @@ static void kr_player_destroy_actual (void *actual) {
   kr_player_t *player;
 
   player = (kr_player_t *)actual;
-
+  kr_videoport_destroy (player->videoport);
   kr_audioport_destroy (player->audioport);
   
   for (c = 0; c < player->channels; c++) {
@@ -254,7 +282,8 @@ static void kr_player_destroy_actual (void *actual) {
 
   //kr_decoder_destroy (&player->decoder);
   kr_demuxer_destroy (&player->demuxer);
-  
+
+  krad_vhs_destroy (player->kvhs);
   krad_flac_decoder_destroy (player->flac);
   
   free (player->station);
@@ -292,12 +321,12 @@ static void kr_player_start (void *actual) {
   if (kr_mixer_get_info_wait (player->client,
                               &player->sample_rate, NULL) != 1) {
     fprintf (stderr, "Krad player: Could not get mixer info!\n");
-	  kr_client_destroy (&player->client);
+    kr_client_destroy (&player->client);
     exit (1);
   }
 
   for (c = 0; c < player->channels; c++) {
-    player->resample_ring[c] = krad_resample_ring_create (600000, player->sample_rate,
+    player->resample_ring[c] = krad_resample_ring_create (1600000, 48000,
                                                           player->sample_rate);
     player->samples[c] = malloc(4 * 8192);
   }
@@ -309,17 +338,17 @@ static void kr_player_start (void *actual) {
   }
   kr_audioport_set_callback (player->audioport, audioport_process, player);
   kr_audioport_activate (player->audioport);
-  /*
+
   player->videoport = kr_videoport_create (player->client);
   if (player->videoport == NULL) {
     fprintf (stderr, "could not setup videoport\n");
     exit (1);
   }
-  //krad_player_alloc_framebuf (player);
+
   kr_videoport_set_callback (player->videoport, videoport_process, player);
   kr_videoport_activate (player->videoport);
-  */
-  
+
+  player->kvhs = krad_vhs_create_decoder ();
   player->flac = krad_flac_decoder_create ();
 
   kr_demuxer_params_t demuxer_params;
@@ -334,6 +363,24 @@ static void kr_player_start (void *actual) {
   printf ("kr_player_start()!\n");
 }
 
+void krad_player_free_framebuf (kr_player_t *player) {
+  if (player->rgba != NULL) {
+    free (player->rgba);
+    free (player->frame_time);
+    player->rgba = NULL;
+    player->frame_time = NULL;
+  }
+}
+
+void krad_player_alloc_framebuf (kr_player_t *player) {
+  player->width = 960;
+  player->height = 540;
+  player->framebufsize = 120;
+  player->frame_size = player->width * player->height * 4;
+  player->rgba = malloc (player->frame_size * player->framebufsize);
+  player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
+}
+
 /* Public Functions */
 
 void kr_player_destroy (kr_player_t **player) {
@@ -344,6 +391,7 @@ void kr_player_destroy (kr_player_t **player) {
     msg.actual.user.cmd = PLAYERDESTROY;
     krad_machine_msg ((*player)->machine, &msg);
     krad_machine_destroy (&(*player)->machine);
+    krad_player_free_framebuf (*player);    
     free (*player);
     *player = NULL;
   }
@@ -355,7 +403,7 @@ kr_player_t *kr_player_create (char *station, char *url) {
   kr_machine_params_t machine_params;
 
   player = calloc (1, sizeof(kr_player_t));
-
+  krad_player_alloc_framebuf (player);
   player->url = strdup (url);
   player->station = strdup (station);
 

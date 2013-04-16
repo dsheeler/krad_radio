@@ -18,6 +18,10 @@
 #include "krad_ring.h"
 #include "krad_resample_ring.h"
 
+#include "krad_vhs.h"
+#include "krad_theora.h"
+#include "krad_vpx.h"
+
 #include "krad_vorbis.h"
 #include "krad_flac.h"
 #include "krad_opus.h"

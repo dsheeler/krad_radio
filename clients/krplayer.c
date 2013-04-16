@@ -28,10 +28,10 @@ kr_player_cli_t *kr_player_cli_create (char *station, char *input) {
 
   krad_system_init ();
 	
-  char logfile[265];
-  sprintf (logfile, "%s/kr_player_%"PRIu64".log",
-           getenv ("HOME"), krad_unixtime ());	
-  krad_system_log_on (logfile);
+  //char logfile[265];
+  //sprintf (logfile, "%s/kr_player_%"PRIu64".log",
+  //         getenv ("HOME"), krad_unixtime ());	
+  //krad_system_log_on (logfile);
 
   kcp->player = kr_player_create (station, input);
   if (kcp->player == NULL) {
