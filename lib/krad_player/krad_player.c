@@ -290,6 +290,30 @@ static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
                        player->rgba + pos);
       player->frames_dec++;
     }
+    /*
+    player->theora = krad_theora_decoder_create (krad_link->vu_header[0], krad_link->vu_header_len[0],
+                                                 krad_link->vu_header[1], krad_link->vu_header_len[1],
+                                                 krad_link->vu_header[2], krad_link->vu_header_len[2]);
+    if (krad_link->video_codec == THEORA) {
+      krad_theora_decoder_decode (krad_link->krad_theora_decoder, kr_slice->data, kr_slice->size);    
+      krad_theora_decoder_timecode (krad_link->krad_theora_decoder, &timecode2);      
+      //printk ("timecode1: %zu timecode2: %zu", timecode, timecode2);
+      timecode = timecode2;
+
+      krad_frame->format = krad_link->krad_theora_decoder->color_depth;
+
+      krad_frame->yuv_pixels[0] = krad_link->krad_theora_decoder->ycbcr[0].data + (krad_link->krad_theora_decoder->offset_y * krad_link->krad_theora_decoder->ycbcr[0].stride);
+      krad_frame->yuv_pixels[1] = krad_link->krad_theora_decoder->ycbcr[1].data + (krad_link->krad_theora_decoder->offset_y * krad_link->krad_theora_decoder->ycbcr[1].stride);
+      krad_frame->yuv_pixels[2] = krad_link->krad_theora_decoder->ycbcr[2].data + (krad_link->krad_theora_decoder->offset_y * krad_link->krad_theora_decoder->ycbcr[2].stride);
+
+      krad_frame->yuv_strides[0] = krad_link->krad_theora_decoder->ycbcr[0].stride;
+      krad_frame->yuv_strides[1] = krad_link->krad_theora_decoder->ycbcr[1].stride;
+      krad_frame->yuv_strides[2] = krad_link->krad_theora_decoder->ycbcr[2].stride;
+      krad_frame->timecode = timecode;
+      krad_compositor_port_push_yuv_frame (krad_link->krad_compositor_port, krad_frame);
+    }
+    krad_theora_decoder_destroy (player->theora);
+    */
   }
   
   if (packet->track == 2) {
