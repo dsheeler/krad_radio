@@ -55,15 +55,23 @@ struct kr_player_St {
   uint32_t sample_rate;
   int channels;
 
+  struct SwsContext *scaler;
   krad_vhs_t *kvhs;
+	krad_vpx_decoder_t *vpx;
+  krad_theora_decoder_t *theora;
   krad_flac_t *flac;
+  krad_opus_t *opus;
+  krad_vorbis_t *vorbis;
+
   float *samples[8];
   int64_t ms;
+  uint32_t fps_den;
+  uint32_t fps_num;  
   uint32_t width;
   uint32_t height;
   uint32_t frame_size;
   uint32_t framebufsize;
-  unsigned char *rgba;
+  uint8_t *rgba;
   int64_t *frame_time;
   int64_t last_frame_time;
   uint32_t repeated;
@@ -85,15 +93,15 @@ int videoport_process (void *buffer, void *arg) {
   if (player->state == PLAYING) {
     if (player->frames_dec > player->consumed) {
       pos = (player->consumed % player->framebufsize);
-      if (player->ms >= player->frame_time[pos]) {
-        player->last_frame_time = player->frame_time[pos];
+      //if (player->ms >= player->frame_time[pos]) {
+     //   player->last_frame_time = player->frame_time[pos];
         memcpy (buffer,
                 player->rgba + (pos * player->frame_size),
                 player->width * player->height * 4);
         player->consumed++;
-      } else {
-        player->repeated++;
-      }
+      //} else {
+      //  player->repeated++;
+      //}
     }
   }
   
@@ -204,25 +212,88 @@ static int32_t kr_player_process (void *msgin, void *actual) {
   return 1;
 }
 
+int krad_player_check_av_ports (kr_player_t *player) {
+  if ((player->audioport == NULL) && (player->videoport == NULL)) {
+    return -1;
+  }
+
+  if (player->videoport != NULL) {
+    if (kr_videoport_error(player->videoport)) {
+      printf ("\r\nError: %s\n", "Videoport Error");
+      return 1;
+    }
+  }
+  if (player->audioport != NULL) {
+    if (kr_audioport_error(player->audioport)) {
+      printf ("\r\nError: %s\n", "Audioport Error");
+      return 2;
+    }
+  }
+  return 0;
+}
+
 static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
 
   kr_player_t *player;
   uint32_t pos;
   player = (kr_player_t *)actual;
 
-  printf ("wee packet sized %zu track %d!\n", packet->size, packet->track);
+  printf ("Packet sized %zu track %d!\n", packet->size, packet->track);
   
-  if (packet->track == 1) {  
+  if (packet->track == 1) {
+
+    krad_vpx_decoder_decode (player->vpx, packet->buffer, packet->size);
+
+    while (player->vpx->img != NULL) {
+
+
+      while (player->frames_dec - player->consumed + 5 >= player->framebufsize) {
+        usleep (100000);
+        if (krad_player_check_av_ports (player)) {
+          return -3;
+        }
+      }
+
+
+      int rgb_stride_arr[3] = {4*player->width, 0, 0};
+      uint8_t *dst[4];
+      
+      player->scaler = sws_getCachedContext ( player->scaler,
+                                              player->vpx->width,
+                                              player->vpx->height,
+                                              PIX_FMT_YUV420P,
+                                              player->width,
+                                              player->height,
+                                              PIX_FMT_RGB32, 
+                                              SWS_BICUBIC,
+                                              NULL, NULL, NULL);
+
+      pos = (player->frames_dec % player->framebufsize) * player->frame_size;
+      dst[0] = player->rgba + pos;
+
+      sws_scale (player->scaler,
+                 (const uint8_t * const*)player->vpx->img->planes,
+                 player->vpx->img->stride,
+                 0, player->vpx->height,
+                 dst, rgb_stride_arr);
+
+
+      player->frames_dec++;
+      krad_vpx_decoder_decode_again (player->vpx);
+    }
   
-    pos = (player->frames_dec % player->framebufsize) * player->frame_size;
-  
-    krad_vhs_decode (player->kvhs,
-                     packet->buffer,
-                     player->rgba + pos);
-    player->frames_dec++;
+    if (0) {
+      pos = (player->frames_dec + 1 % player->framebufsize) * player->frame_size;
+    
+      krad_vhs_decode (player->kvhs,
+                       packet->buffer,
+                       player->rgba + pos);
+      player->frames_dec++;
+    }
   }
   
   if (packet->track == 2) {
+    /*
     int ret;
     ret = krad_flac_decode (player->flac, packet->buffer,
                             packet->size, player->samples);
@@ -247,6 +318,7 @@ static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
     } else {
       return 0;
     }
+    */
   }
   return 1;
 }
@@ -285,9 +357,28 @@ static void kr_player_destroy_actual (void *actual) {
 
   krad_vhs_destroy (player->kvhs);
   krad_flac_decoder_destroy (player->flac);
-  
+  krad_vpx_decoder_destroy (player->vpx);
+
+  sws_freeContext (player->scaler);
+
   free (player->station);
   free (player->url);
+}
+
+void krad_player_free_framebuf (kr_player_t *player) {
+  if (player->rgba != NULL) {
+    free (player->rgba);
+    free (player->frame_time);
+    player->rgba = NULL;
+    player->frame_time = NULL;
+  }
+}
+
+void krad_player_alloc_framebuf (kr_player_t *player) {
+  player->framebufsize = 120;
+  player->frame_size = player->width * player->height * 4;
+  player->rgba = malloc (player->frame_size * player->framebufsize);
+  player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
 }
 
 static void kr_player_start (void *actual) {
@@ -325,6 +416,14 @@ static void kr_player_start (void *actual) {
     exit (1);
   }
 
+  if (kr_compositor_get_info_wait (player->client,
+                                   &player->width, &player->height,
+                                   &player->fps_num, &player->fps_den) != 1) {
+    fprintf (stderr, "Krad Player: Could not get compositor info!\n");
+	  kr_client_destroy (&player->client);
+    exit (1);
+  }
+  krad_player_alloc_framebuf (player);
   for (c = 0; c < player->channels; c++) {
     player->resample_ring[c] = krad_resample_ring_create (1600000, 48000,
                                                           player->sample_rate);
@@ -350,6 +449,7 @@ static void kr_player_start (void *actual) {
 
   player->kvhs = krad_vhs_create_decoder ();
   player->flac = krad_flac_decoder_create ();
+  player->vpx = krad_vpx_decoder_create ();
 
   kr_demuxer_params_t demuxer_params;
 
@@ -361,24 +461,6 @@ static void kr_player_start (void *actual) {
   //player->decoder = kr_decoder_create ();
 
   printf ("kr_player_start()!\n");
-}
-
-void krad_player_free_framebuf (kr_player_t *player) {
-  if (player->rgba != NULL) {
-    free (player->rgba);
-    free (player->frame_time);
-    player->rgba = NULL;
-    player->frame_time = NULL;
-  }
-}
-
-void krad_player_alloc_framebuf (kr_player_t *player) {
-  player->width = 960;
-  player->height = 540;
-  player->framebufsize = 120;
-  player->frame_size = player->width * player->height * 4;
-  player->rgba = malloc (player->frame_size * player->framebufsize);
-  player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
 }
 
 /* Public Functions */
@@ -403,7 +485,6 @@ kr_player_t *kr_player_create (char *station, char *url) {
   kr_machine_params_t machine_params;
 
   player = calloc (1, sizeof(kr_player_t));
-  krad_player_alloc_framebuf (player);
   player->url = strdup (url);
   player->station = strdup (station);
 
