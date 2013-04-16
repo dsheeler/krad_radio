@@ -52,16 +52,18 @@ int kr_poll_out (kr_client_t *client, uint32_t timeout_ms) {
   return ret;
 }
 
-int kr_client_push (kr_client_t *client) {
-  kr_io2_advance (client->io, client->ebml2->pos);
-  if ((client->autosync == 1) && (kr_poll_out (client, 3) > 0)) {
-    kr_client_sync (client);
-  }
-  return 0;  
-}
-
 int kr_client_want_out (kr_client_t *client) {
   return kr_io2_want_out (client->io);
+}
+
+int kr_client_push (kr_client_t *client) {
+  kr_io2_advance (client->io, client->ebml2->pos);
+  if (kr_client_want_out (client)) {
+    if ((client->autosync == 1) && (kr_poll_out (client, 0) > 0)) {
+      kr_client_sync (client);
+    }
+  }
+  return 0;  
 }
 
 kr_client_t *kr_client_create (char *client_name) {
@@ -342,9 +344,18 @@ int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
   struct pollfd pollfds[1];
 
   pollfds[0].fd = client->krad_ipc_client->sd;
-  pollfds[0].events = POLLIN;
+
+  if ((kr_client_want_out (client)) && (client->autosync == 1)) {
+    pollfds[0].events = POLLIN | POLLOUT;
+  } else {
+    pollfds[0].events = POLLIN;
+  }
 
   ret = poll (pollfds, 1, timeout_ms);
+
+  if (pollfds[0].revents & POLLOUT) {
+    kr_client_sync (client);
+  }
 
   if (pollfds[0].revents & POLLHUP) {
     ret = -1;
