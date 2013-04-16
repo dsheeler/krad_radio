@@ -35,9 +35,26 @@ int kr_client_sync (kr_client_t *client) {
   return 0;
 }
 
+int kr_poll_out (kr_client_t *client, uint32_t timeout_ms) {
+
+  int ret;
+  struct pollfd pollfds[1];
+
+  pollfds[0].fd = client->krad_ipc_client->sd;
+  pollfds[0].events = POLLOUT;
+
+  ret = poll (pollfds, 1, timeout_ms);
+
+  if (pollfds[0].revents & POLLHUP) {
+    ret = -1;
+  }
+
+  return ret;
+}
+
 int kr_client_push (kr_client_t *client) {
   kr_io2_advance (client->io, client->ebml2->pos);
-  if (client->autosync == 1) {
+  if ((client->autosync == 1) && (kr_poll_out (client, 3) > 0)) {
     kr_client_sync (client);
   }
   return 0;  
