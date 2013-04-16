@@ -219,7 +219,7 @@ int krad_radio_destroy (char *sysname) {
   
   pid = 0;
   wait_time_total = 0;
-  clean_shutdown_wait_time_limit = 3000000;
+  clean_shutdown_wait_time_limit = 1500000;
   wait_time_interval = clean_shutdown_wait_time_limit / 40;
     
   pid = krad_radio_pid (sysname);
