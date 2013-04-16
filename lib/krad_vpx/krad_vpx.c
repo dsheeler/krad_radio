@@ -237,7 +237,6 @@ void krad_vpx_decoder_decode_again (krad_vpx_decoder_t *vpx) {
 
 void krad_vpx_decoder_destroy (krad_vpx_decoder_t *vpx) {
   vpx_codec_destroy (&vpx->decoder);
-  vpx_img_free (vpx->img);
   free (vpx);
 }
 

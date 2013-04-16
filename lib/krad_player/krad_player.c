@@ -238,7 +238,7 @@ static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
   uint32_t pos;
   player = (kr_player_t *)actual;
 
-  printf ("Packet sized %zu track %d!\n", packet->size, packet->track);
+  //printf ("Packet sized %zu track %d!\n", packet->size, packet->track);
   
   if (packet->track == 1) {
 
@@ -246,14 +246,17 @@ static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
 
     while (player->vpx->img != NULL) {
 
+      if ((player->state == CUED) || (player->state == PLAYERDESTROYING)) {
+        return 0;
+      }
 
-      while (player->frames_dec - player->consumed + 5 >= player->framebufsize) {
+      if (player->frames_dec - player->consumed + 5 >= player->framebufsize) {
         usleep (100000);
         if (krad_player_check_av_ports (player)) {
           return -3;
         }
+        continue;
       }
-
 
       int rgb_stride_arr[3] = {4*player->width, 0, 0};
       uint8_t *dst[4];

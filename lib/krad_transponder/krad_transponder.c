@@ -1277,7 +1277,6 @@ krad_transponder_t *krad_transponder_create (krad_radio_t *krad_radio) {
   krad_transponder->xpdr = krad_xpdr_create (krad_transponder->krad_radio);
 
   return krad_transponder;
-
 }
 
 void krad_transponder_destroy (krad_transponder_t *krad_transponder) {
@@ -1300,6 +1299,4 @@ void krad_transponder_destroy (krad_transponder_t *krad_transponder) {
   free (krad_transponder);
   
   printk ("Krad Transponder: Destroy Completed");
-
 }
-
