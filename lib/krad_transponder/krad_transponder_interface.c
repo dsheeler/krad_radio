@@ -391,14 +391,20 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
           if (strstr(string2, "stream") != NULL) {
           //if (1) {
             strcpy (link->host, "europa.kradradio.com");
-            link->port = 8008;
+            link->port = 80;
             if (strstr(string2, "mkv") != NULL) {
-              strcpy (link->mount, "/krad_radio_streaming.mkv");
+              snprintf (link->mount, sizeof(link->mount),
+                        "/krad_radio_%s.mkv",
+                        link->krad_radio->sysname);
             } else {
               if (strstr(string2, "webm") != NULL) {
-                strcpy (link->mount, "/krad_radio_streaming.webm");
+                snprintf (link->mount, sizeof(link->mount),
+                          "/krad_radio_%s.webm",
+                          link->krad_radio->sysname);
               } else {
-                strcpy (link->mount, "/krad_radio_streaming.ogg");
+                snprintf (link->mount, sizeof(link->mount),
+                          "/krad_radio_%s.ogg",
+                          link->krad_radio->sysname);
               }
             }
             strcpy (link->password, "firefox");
