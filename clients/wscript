@@ -82,6 +82,8 @@ includedirs = """
 ../lib/krad_web/ext/libwebsockets/
 ../lib/krad_web/res/
 ../lib/krad_vhs/
+../lib/krad_vhs/ext
+../lib/krad_vhs/ext/imagezero
 ../lib/krad_sfx/
 ../lib/krad_tone/
 ../lib/krad_ipc/
