@@ -128,7 +128,6 @@ void krad_system_monitor_cpu_off () {
   }
 }
 
-
 void krad_system_log_on (char *filename) {
 
   if (krad_system.log_fd > 0) {
@@ -136,7 +135,9 @@ void krad_system_log_on (char *filename) {
   }
 
   while (!__sync_bool_compare_and_swap( &krad_system.log_in_use, 0, 1 ));
-  krad_system.log_fd = open (filename, O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  krad_system.log_fd = open (filename,
+                             O_WRONLY | O_CREAT | O_EXCL,
+                             S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (krad_system.log_fd > 0) {
     dprintf (krad_system.log_fd, "Log %d started\n", krad_system.lognum);
   } else {
@@ -246,7 +247,6 @@ void krad_system_unset_monitor_cpu_callback () {
   kcm = &krad_system.kcm;
   kcm->unset_cpu_monitor_callback = 1;
 }
-                   
 
 void krad_system_set_monitor_cpu_callback (void *callback_pointer, 
                    void (*cpu_monitor_callback)( void *, uint32_t)) {

@@ -1,0 +1,150 @@
+#!/usr/bin/env python
+
+import os
+
+programs = """
+sigma_mkv.c
+""".split()
+
+krmkvlibsources = """
+../lib/krad_system/krad_system.c
+../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_file.c
+../lib/krad_io/krad_stream.c
+../lib/krad_ebml/krad_ebml2.c
+../lib/krad_ebml/krad_ebml2w.c
+../lib/krad_mkv/krad_mkv.c
+../lib/krad_mkv/krad_mkv_demux.c
+""".split()
+
+includedirs = """
+../lib/krad_compositor/
+../lib/krad_chronometer/
+../lib/krad_xmms2/
+../lib/krad_y4m/
+../lib/krad_framepool/
+../lib/krad_web/
+../lib/krad_web/ext/
+../lib/krad_web/ext/libwebsockets/
+../lib/krad_web/res/
+../lib/krad_vhs/
+../lib/krad_vhs/ext
+../lib/krad_vhs/ext/imagezero
+../lib/krad_sfx/
+../lib/krad_tone/
+../lib/krad_ipc/
+../lib/krad_tags/
+../lib/krad_audio/
+../lib/krad_theora/
+../lib/krad_jack/
+../lib/krad_alsa/
+../lib/krad_mixer/
+../lib/krad_osc/
+../lib/krad_xmms2/
+../lib/krad_wayland/
+../lib/krad_vpx/
+../lib/krad_v4l2/
+../lib/krad_flac/
+../lib/krad_vorbis/
+../lib/krad_opus/
+../lib/krad_radio/
+../lib/krad_ring/
+../lib/krad_ogg/
+../lib/krad_io/
+../lib/krad_mkv/
+../lib/krad_player/
+../lib/krad_transponder/
+../lib/krad_transmitter/
+../lib/krad_container/
+../lib/krad_x11/
+../lib/krad_udp/
+../lib/krad_system/
+../lib/krad_decklink/
+../lib/krad_ebml/
+../lib/krad_legacy/
+/usr/local/include
+/usr/include
+""".split()
+
+kmkvshlibs = []
+
+stlibs = []
+syslibs = ['m', 'dl', 'z']
+
+syslibs2 = ['pthread']
+syslibs3 = ['turbojpeg']
+plibs = ['rt', 'pthread']
+
+def check_system(systm):
+
+  global libav_dir
+  global programs
+  global kmkvshlibs
+  global syslibs
+  global syslibs2
+
+  if systm.env['KR_LINUX']:
+    #kmkvshlibs = kmkvshlibs + ["alsa"]    
+    #libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
+    #programs = ["krad_radio_ev.c"] + programs
+    syslibs = syslibs + syslibs2
+
+
+  if systm.env['FRAK_MACOSX']:
+    libsources = ["../lib/krad_legacy/krad_mach.c"] + libsources
+    includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
+    kmkvshlibs = kmkvshlibs + ['turbojpeg']
+
+def configure(conf):
+
+  global libav_dir
+  global programs
+  global kmkvshlibs
+  global syslibs
+  check_system(conf)
+
+  for l in syslibs:
+    conf.check(lib = l, cflags='-Wall', uselib_store = l)
+
+  for l in kmkvshlibs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+
+  for l in stlibs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
+
+def build(bld):
+
+  global libav_dir
+  global programs
+  global kmkvshlibs
+  global syslibs
+  check_system(bld)
+
+  # read version number to be used for the shared library
+  f = open("lib/krad_radio/krad_radio_version.h", "r")
+  for line in f:
+    if "#define VERSION_NUMBER" in line:
+      krad_version = line.split(' ')[2].strip()
+      break
+  f.close()
+
+  # we use "KRAD_VERSION.0.0" for now as vnum. this basically means 
+  # that we advise to rebuild clients every new version due to 
+  # possible API-breakages. closest to reality currently.
+  # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only 
+  # needed when we _really_ break the API
+
+  for p in programs:
+    bld(features = 'c cprogram', 
+    source = [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + stlibs + syslibs + plibs)
+
+  bld.shlib(
+    source = krmkvlibsources, 
+    includes = includedirs, 
+    target = "krad_mkv",
+    vnum = krad_version + ".0.0",
+    uselib = kmkvshlibs + stlibs + syslibs)

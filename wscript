@@ -12,6 +12,7 @@ libdir = "lib"
 clientsdir = "clients"
 wayraddir = "clients/wayrad"
 daemondir = "daemon"
+toolsdir = "tools"
 subdirs = os.listdir('./' + libdir)
 
 for s in subdirs:
@@ -20,6 +21,7 @@ for s in subdirs:
 subdirs += [os.getcwd() + "/" + clientsdir]
 subdirs += [os.getcwd() + "/" + wayraddir]
 subdirs += [os.getcwd() + "/" + daemondir]
+subdirs += [os.getcwd() + "/" + toolsdir]
 
 def options(opt):
 

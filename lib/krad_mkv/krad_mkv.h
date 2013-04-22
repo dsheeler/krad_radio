@@ -18,10 +18,6 @@ typedef struct kr_mkv_St kr_mkv_t;
 typedef struct kr_mkv_track_St kr_mkv_track_t;
 
 struct kr_mkv_track_St {
-  uint64_t total_video_frames;
-  uint64_t total_audio_frames;
-  int audio_frames_since_cluster;
-
   uint32_t fps_numerator;
   uint32_t fps_denominator;
   uint32_t width;
@@ -33,13 +29,17 @@ struct kr_mkv_track_St {
 
   krad_codec_t codec;
 
-  unsigned char *codec_data;
-  int codec_data_size;
+  uint8_t *codec_data;
+  size_t codec_data_size;
 
-  int changed;
-  int headers;
-  unsigned char *header[3];
-  int header_len[3];
+  uint32_t headers;
+  uint8_t *header[3];
+  size_t header_len[3];
+
+  uint64_t total_video_frames;
+  uint64_t total_audio_frames;
+  uint32_t audio_frames_since_cluster;
+  uint32_t changed;
 };
 
 struct kr_mkv_St {
