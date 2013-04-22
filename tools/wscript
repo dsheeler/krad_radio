@@ -4,6 +4,7 @@ import os
 
 programs = """
 sigma_mkv.c
+kr_mkvinfo.c
 """.split()
 
 krmkvlibsources = """

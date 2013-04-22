@@ -11,7 +11,7 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
                                      uint64_t *timecode,
                                      unsigned char *buffer);
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
-static void kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
+static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
                                          kr_mkv_track_t *track,
                                          uint64_t size);
 
@@ -146,19 +146,33 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv, uint64_t max_pos) {
   return 0;
 }
 
-static void kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
+static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
                                          kr_mkv_track_t *track,
                                          uint64_t size) {
 
-  //TODO check size > sane size
+  int ret;
+
+  if (size > KRAD_MKV_CODEC_HDR_MAX_SANE_SZ) {
+    printke ("Got codec data size %"PRIu64". To big!", size);
+    return -1;
+  }
+  
+  if (size == 0) {
+    printke ("Got codec data size of zero!");
+    return -1;
+  }
+
   //FIXME FREE
 
   printk ("Got codec data size %"PRIu64"", size);
 
   track->codec_data_size = size;
   track->codec_data = malloc (track->codec_data_size);
-  //FIXME check success
-  kr_ebml2_unpack_data (mkv->e, track->codec_data, track->codec_data_size);
+  ret = kr_ebml2_unpack_data (mkv->e, track->codec_data, track->codec_data_size);
+  if (ret != 0) {
+    printke ("Got error unpacking codec data!");
+    return -1;
+  }
 
   if ((track->codec == OPUS) || (track->codec == FLAC)) {
     track->headers = 1;
@@ -167,9 +181,72 @@ static void kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
   }
   
   if ((track->codec == VORBIS) || (track->codec == THEORA)) {
-    //FIXME parse xiph lacing
-    //point to headers in codec data
+    
+    uint8_t byte;
+    uint32_t bytes_read;    
+    uint32_t value;
+    uint32_t maxlen;
+    uint32_t current_header;
+    
+    current_header = 0;
+    bytes_read = 0;
+    value = 0;
+    maxlen = MIN (10, track->codec_data_size);
+
+    byte = track->codec_data[bytes_read];
+    bytes_read += 1;
+
+    if (byte != 2) {
+      printke ("Unknown number of Xiph laced headers");
+      return -1;
+    }
+
+    while ((current_header < 3) && (bytes_read < maxlen)) {
+      value = 0;
+      while ((current_header < 2) && (bytes_read < maxlen)) {
+        byte = track->codec_data[bytes_read];
+        bytes_read += 1;
+        value += byte;
+        if (byte != 255) {
+          track->header_len[current_header] = value;
+          printk ("Xiph lace value %u is %u",
+                  current_header, track->header_len[current_header]);
+          current_header++;
+          break;
+        } else {
+          value += 255;
+        }
+      }
+      if (current_header == 2) {
+        track->header_len[current_header] = track->codec_data_size -
+                                            (bytes_read +
+                                            track->header_len[0] +
+                                            track->header_len[1]);
+        printk ("Xiph lace value %u is %u",
+                current_header, track->header_len[current_header]);
+        break;
+      }
+    }
+    
+    if ((track->header_len[0] == 0) ||
+        (track->header_len[1] == 0) ||
+        (track->header_len[2] == 0)) {
+      printke ("Error reading Xiph lace sizes, a zero");
+      return -1;
+    }
+    if ((track->header_len[0] + track->header_len[1] +
+         track->header_len[2] + bytes_read) != track->codec_data_size) {
+      printke ("Error reading Xiph lace sizes, miss-sized");
+      return -1;
+    }
+    track->header[0] = track->codec_data + bytes_read;
+    track->header[1] = track->codec_data + (bytes_read + track->header_len[0]);
+    track->header[2] = track->codec_data + (bytes_read +
+                                            track->header_len[0] +
+                                            track->header_len[1]);
   }
+
+  return 0;    
 }
 
 static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
@@ -228,7 +305,11 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
         printk ("Got codec: %s", codec_id);
         break;
       case MKV_CODECDATA:
-        kr_mkv_track_read_codec_hdr (mkv, &track, size);
+        ret = kr_mkv_track_read_codec_hdr (mkv, &track, size);
+        if (ret < 0) {
+          printke ("Error reading codec data header");
+          return -1;
+        }
         break;
       case MKV_WIDTH:
         kr_ebml2_unpack_uint32 (mkv->e, &track.width, size);

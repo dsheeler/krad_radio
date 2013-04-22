@@ -5,6 +5,8 @@
 #ifndef KRAD_MKV_DEMUX_H
 #define KRAD_MKV_DEMUX_H
 
+#define KRAD_MKV_CODEC_HDR_MAX_SANE_SZ 25000
+
 kr_mkv_t *kr_mkv_open_file (char *filename);
 
 
