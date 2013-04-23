@@ -107,12 +107,12 @@ void handle_crate (kr_crate_t *crate) {
 
   /* Crate sometimes can be converted
      to a integer, float or string */
-  
+
   if (kr_uncrate_string (crate, &string)) {
     printf ("String: \n%s\n", string);
     kr_string_recycle (&string);
   }
-  
+
   if (kr_uncrate_int (crate, &integer)) {
     printf ("Int: %d\n", integer);
     /* or but check first always! */
@@ -120,7 +120,7 @@ void handle_crate (kr_crate_t *crate) {
     //   crate->integer;
     // }
   }
-  
+
   if (kr_uncrate_float (crate, &real)) {
     printf ("Float: %f\n", real);
     /* or but check first always! */

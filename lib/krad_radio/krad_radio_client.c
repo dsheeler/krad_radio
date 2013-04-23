@@ -13,7 +13,7 @@
 static int kr_radio_crate_to_rep (kr_crate_t *crate);
 static int kr_ebml_to_radio_rep (kr_ebml2_t *ebml, kr_radio_t *radio_rep);
 static void kr_crate_payload_ebml_reset (kr_crate_t *crate);
-static int kr_radio_response_to_int (kr_crate_t *crate, int *integer);
+static int kr_radio_crate_to_int (kr_crate_t *crate, int *integer);
 static int kr_ebml_to_remote_status_rep (kr_ebml2_t *ebml, kr_remote_t *remote);
 static int kr_ebml_to_tag_rep (kr_ebml2_t *ebml, kr_tag_t *tag);
 static void kr_crate_destroy (kr_crate_t **crate);
@@ -507,7 +507,33 @@ int kr_radio_crate_to_string (kr_crate_t *crate, char **string) {
   return 0;  
 }
 
-static int kr_radio_response_to_int (kr_crate_t *crate, int *integer) {
+static int kr_compositor_crate_to_int (kr_crate_t *crate, int *integer) {
+
+  uint32_t id;
+  uint64_t size;
+  uint32_t unsigned_integer;
+  
+  kr_ebml2_unpack_id (&crate->payload_ebml, &id, &size);
+
+printf("comp control is %d\n", crate->address.control.compositor_control);
+
+  switch ( crate->address.control.compositor_control ) {
+    case KR_X:
+    case KR_Y:
+    case KR_Z:
+    case KR_WIDTH:
+    case KR_HEIGHT:                
+    case KR_TICKRATE:
+      kr_ebml2_unpack_uint32 (&crate->payload_ebml, &unsigned_integer, size);
+      *integer = unsigned_integer;
+      return 1;
+  }
+
+  *integer = 0;
+  return -1;  
+}
+
+static int kr_radio_crate_to_int (kr_crate_t *crate, int *integer) {
 
   uint32_t id;
   uint64_t size;
@@ -523,7 +549,7 @@ static int kr_radio_response_to_int (kr_crate_t *crate, int *integer) {
   }
 
   *integer = 0;
-  return -1;  
+  return -1;
 }
 
 int kr_mixer_crate_to_float (kr_crate_t *crate, float *real) {
@@ -540,7 +566,7 @@ int kr_mixer_crate_to_float (kr_crate_t *crate, float *real) {
       return 1;
     }
   }
-  return -1;     
+  return -1;
 }
 
 int kr_crate_to_int (kr_crate_t *crate, int *number) {
@@ -549,15 +575,19 @@ int kr_crate_to_int (kr_crate_t *crate, int *number) {
     return 0;
   }
 
+  if (crate->notice != EBML_ID_KRAD_SUBUNIT_CONTROL) {
+    return 0;
+  }
+
   kr_crate_payload_ebml_reset (crate);
 
   switch ( crate->address.path.unit ) {
     case KR_STATION:
-      return kr_radio_response_to_int (crate, number);
+      return kr_radio_crate_to_int (crate, number);
     case KR_MIXER:
       break;
     case KR_COMPOSITOR:
-      break;
+      return kr_compositor_crate_to_int (crate, number);
     case KR_TRANSPONDER:
       break;
   }
@@ -772,6 +802,7 @@ int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml, unsigned char **element_loc, 
       kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
       if (address->path.subunit.compositor_subunit != KR_UNIT) {
         kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_ID_NUMBER, address->id.number);
+        kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_RADIO_SUBUNIT_CONTROL, address->control.compositor_control);
       }
       return 1;
     case KR_TRANSPONDER:
@@ -845,6 +876,8 @@ int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address) {
       if (address->path.subunit.mixer_subunit != KR_UNIT) {
         kr_ebml2_unpack_id (ebml, &id, &size);
         kr_ebml2_unpack_uint32 (ebml, &address->id.number, size);
+        kr_ebml2_unpack_id (ebml, &id, &size);
+        kr_ebml2_unpack_uint32 (ebml, &address->control.compositor_control, size);
       }
       break;
     case EBML_ID_KRAD_TRANSPONDER_MSG:

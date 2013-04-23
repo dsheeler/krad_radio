@@ -102,9 +102,11 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
   if (address.path.unit == KR_MIXER) {
     address.path.subunit.mixer_subunit = address_in->path.subunit.mixer_subunit;
     strncpy (address.id.name, address_in->id.name, sizeof (address.id.name));
+    address.control.portgroup_control = control;
   } else {
     if (address.path.unit == KR_COMPOSITOR) {
       address.path.subunit.compositor_subunit = address_in->path.subunit.compositor_subunit;
+      address.control.compositor_control = control;
     } else {
       if (address.path.unit == KR_TRANSPONDER) {
         address.path.subunit.transponder_subunit = address_in->path.subunit.transponder_subunit;
@@ -115,7 +117,6 @@ int krad_radio_broadcast_subunit_update (krad_ipc_broadcaster_t *broadcaster, kr
   
   address.sub_id = address_in->sub_id;
   address.sub_id2 = address_in->sub_id2;
-  address.control.portgroup_control = control;
 
   krad_radio_address_to_ebml2 (&ebml, &message_loc, &address);
   kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CONTROL);

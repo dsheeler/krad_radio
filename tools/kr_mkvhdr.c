@@ -5,6 +5,7 @@
 
 #include <krad_theora.h>
 #include <krad_vorbis.h>
+#include <krad_flac.h>
 
 #include "krad_debug.c"
 
