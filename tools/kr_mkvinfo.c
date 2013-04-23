@@ -37,6 +37,27 @@ void krad_debug_shutdown () {
   show_log ();
 }
 
+void mkv_frames_print (kr_mkv_t *mkv) {
+
+  int ret;
+  int track;
+  uint64_t timecode;
+  uint8_t *buffer;
+  
+  buffer = malloc (10000000);
+
+  do {
+    ret = kr_mkv_read_packet (mkv, &track, &timecode, buffer);
+    if (ret > 0) {
+      printf ("Got packet for track %d, size %d, timecode %"PRIu64"\n",
+              track, ret, timecode);
+    }
+  } while (ret > 0);
+
+
+  free (buffer);
+}
+
 int main (int argc, char *argv[]) {
 
   int32_t ret;
@@ -48,6 +69,11 @@ int main (int argc, char *argv[]) {
  
   if (mkv == NULL) {
     printf ("Error opening %s\n", argv[1]);
+    return 1;
+  }
+  
+  if (argc > 2) {
+    mkv_frames_print (mkv);
   }
 
   if (mkv != NULL) {
