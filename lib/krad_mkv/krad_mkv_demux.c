@@ -9,7 +9,7 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
                                      int len,
                                      int *track,
                                      uint64_t *timecode,
-                                     unsigned char *buffer);
+                                     uint8_t *buffer);
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
 static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
                                         kr_mkv_track_t *track,
@@ -244,6 +244,7 @@ static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
     track->header[2] = track->codec_data + (bytes_read +
                                             track->header_len[0] +
                                             track->header_len[1]);
+    track->headers = 3;
   }
 
   return 0;
@@ -353,6 +354,38 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv) {
   return 0;
 }
 
+static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
+                                     int len,
+                                     int *track,
+                                     uint64_t *timecode,
+                                     uint8_t *buffer) {
+
+  int16_t block_timecode;
+  unsigned char flags;
+  unsigned char byte;
+
+  block_timecode = 0;
+
+  kr_ebml2_unpack_data ( mkv->e, &byte, 1 );
+  if (track != NULL) {
+    *track = (byte - 0x80);
+  }
+  printk ("Track Number is %d", *track);
+
+  kr_ebml2_unpack_int16 (mkv->e, &block_timecode, 2);
+  mkv->current_timecode = mkv->cluster_timecode + block_timecode;
+  printk ("Timecode is: %6.3f\n",
+          ((mkv->cluster_timecode +
+          (int64_t)block_timecode)/1000.0));
+  if (timecode != NULL) {
+    *timecode = mkv->current_timecode;
+  }
+  
+  kr_ebml2_unpack_data ( mkv->e, &flags, 1 );
+  kr_ebml2_unpack_data ( mkv->e, buffer, len - 4 );
+  return len - 4;
+}
+
 kr_mkv_t *kr_mkv_open_file (char *filename) {
   
   kr_mkv_t *mkv;
@@ -404,7 +437,7 @@ int kr_mkv_track_header_size (kr_mkv_t *mkv, int track, int header) {
   return mkv->tracks[track].header_len[header];
 }
 
-int kr_mkv_read_track_header (kr_mkv_t *mkv, unsigned char *buffer,
+int kr_mkv_read_track_header (kr_mkv_t *mkv, uint8_t *buffer,
                               int track, int header) {
   if (mkv->tracks[track].codec_data_size) {
     memcpy (buffer,
@@ -432,7 +465,7 @@ int kr_mkv_track_changed (kr_mkv_t *mkv, int track) {
 }
 
 int kr_mkv_read_packet (kr_mkv_t *mkv, int *track,
-                        uint64_t *timecode, unsigned char *buffer) {
+                        uint64_t *timecode, uint8_t *buffer) {
 
   int ret;
   uint32_t id;
@@ -470,36 +503,4 @@ int kr_mkv_read_packet (kr_mkv_t *mkv, int *track,
     }
   }
   return 0;      
-}
-
-static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
-                                     int len,
-                                     int *track,
-                                     uint64_t *timecode,
-                                     unsigned char *buffer) {
-
-  int16_t block_timecode;
-  unsigned char flags;
-  unsigned char byte;
-
-  block_timecode = 0;
-
-  kr_ebml2_unpack_data ( mkv->e, &byte, 1 );
-  if (track != NULL) {
-    *track = (byte - 0x80);
-  }
-  printk ("Track Number is %d", *track);
-
-  kr_ebml2_unpack_int16 (mkv->e, &block_timecode, 2);
-  mkv->current_timecode = mkv->cluster_timecode + block_timecode;
-  printk ("Timecode is: %6.3f\n",
-          ((mkv->cluster_timecode +
-          (int64_t)block_timecode)/1000.0));
-  if (timecode != NULL) {
-    *timecode = mkv->current_timecode;
-  }
-  
-  kr_ebml2_unpack_data ( mkv->e, &flags, 1 );
-  kr_ebml2_unpack_data ( mkv->e, buffer, len - 4 );
-  return len - 4;
 }

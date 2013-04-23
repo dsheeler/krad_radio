@@ -23,7 +23,7 @@ void show_log () {
 void krad_debug_init () {
 
   krad_system_init ();
-   
+
   sprintf (logfile, "%s/kr_mkvinfo_%"PRIu64".log",
            getenv ("HOME"), krad_unixtime ());
 
@@ -54,8 +54,30 @@ void mkv_frames_print (kr_mkv_t *mkv) {
     }
   } while (ret > 0);
 
-
   free (buffer);
+}
+
+void mkv_info_print (kr_mkv_t *mkv) {
+
+  int t;
+  int h;
+  int headers;
+  int header_size;
+  int tracks;
+
+  tracks = kr_mkv_track_count (mkv);
+
+  printf ("Found %d tracks\n", tracks);
+
+  for (t = 1; t < tracks + 1; t++) {
+    headers = kr_mkv_track_header_count (mkv, t);
+    printf ("Track %d has %d headers\n", t, headers);
+    for (h = 0; h < headers; h++) {
+      header_size = kr_mkv_track_header_size (mkv, t, h);
+      printf ("Track %d header %d is %d bytes\n",
+              t, h, header_size);  
+    }
+  }
 }
 
 int main (int argc, char *argv[]) {
@@ -71,6 +93,8 @@ int main (int argc, char *argv[]) {
     printf ("Error opening %s\n", argv[1]);
     return 1;
   }
+  
+  mkv_info_print (mkv);
   
   if (argc > 2) {
     mkv_frames_print (mkv);
