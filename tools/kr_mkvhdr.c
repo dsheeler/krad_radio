@@ -2,6 +2,8 @@
 #include <unistd.h>
 
 #include <krad_mkv_demux.h>
+
+#include <krad_theora.h>
 #include <krad_vorbis.h>
 
 #include "krad_debug.c"
@@ -30,14 +32,15 @@ void mkv_header_test (kr_mkv_t *mkv) {
               t, h, header_size);  
     }
   }
-  
+
   for (t = 1; t < tracks + 1; t++) {
-    codec = kr_mkv_track_codec (mkv, t);
     headers = kr_mkv_track_header_count (mkv, t);
+    codec = kr_mkv_track_codec (mkv, t);
+
     if (codec == VORBIS) {
       printf ("Testing Track %d headers with Vorbis decoder\n", t);
       header.header_count = headers;
-      header.codec = VORBIS;
+      header.codec = codec;
       for (h = 0; h < headers; h++) {
         header.header_size[h] = kr_mkv_track_header_size (mkv, t, h);
         header.header[h] = malloc (header.header_size[h]);
@@ -53,8 +56,28 @@ void mkv_header_test (kr_mkv_t *mkv) {
         free (header.header[h]);
       }
     }
+
+    if (codec == THEORA) {
+      printf ("Testing Track %d headers with Theora decoder\n", t);
+      header.header_count = headers;
+      header.codec = codec;
+      for (h = 0; h < headers; h++) {
+        header.header_size[h] = kr_mkv_track_header_size (mkv, t, h);
+        header.header[h] = malloc (header.header_size[h]);
+        ret = kr_mkv_read_track_header (mkv, header.header[h], t, h);
+        if (ret != header.header_size[h]) {
+          printf ("Header read fail\n");  
+          exit (1);
+        }
+      }
+      krad_theora_test_headers (&header);
+      for (h = 0; h < headers; h++) {
+        header.header_size[h] = 0;
+        free (header.header[h]);
+      }
+    }
   }
-  
+
 }
 
 int main (int argc, char *argv[]) {

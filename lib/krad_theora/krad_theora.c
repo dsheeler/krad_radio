@@ -355,6 +355,22 @@ void krad_theora_decoder_timecode (krad_theora_decoder_t *theora,
   *timecode = ((iframe + pframe - 1) / frame_rate) * 1000.0;
 }
 
+int krad_theora_test_headers (krad_codec_header_t *hdr) {
+
+  krad_theora_decoder_t *theora_dec;
+  
+  theora_dec = NULL;
+
+  theora_dec = krad_theora_decoder_create (hdr->header[0], hdr->header_size[0],
+                                           hdr->header[1], hdr->header_size[1],
+                                           hdr->header[2], hdr->header_size[2]);
+  if (theora_dec != NULL) {
+    krad_theora_decoder_destroy (theora_dec);
+    return 0;
+  }
+  return -1;
+}
+
 void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora) {
   th_decode_free(krad_theora->decoder);
   th_comment_clear(&krad_theora->comment);

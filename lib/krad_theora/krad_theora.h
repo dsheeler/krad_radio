@@ -113,6 +113,8 @@ void krad_theora_encoder_destroy (krad_theora_encoder_t *krad_theora);
 
 /* decoder */
 
+int krad_theora_test_headers (krad_codec_header_t *hdr);
+
 void krad_theora_decoder_timecode (krad_theora_decoder_t *krad_theora,
                                    uint64_t *timecode);
 void krad_theora_decoder_write (krad_theora_decoder_t *krad_theora);
