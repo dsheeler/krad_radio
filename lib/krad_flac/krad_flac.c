@@ -165,7 +165,7 @@ krad_flac_encoder_write_callback (const FLAC__StreamEncoder *encoder,
 
 int krad_flac_encode (krad_flac_t *flac,
                       float *audio, int frames,
-                      unsigned char *encode_buffer) {
+                      uint8_t *encode_buffer) {
 
   int ret;
   int num_samples;
@@ -201,7 +201,7 @@ int krad_flac_encode (krad_flac_t *flac,
   return ret;
 }
 
-int krad_flac_encoder_finish (krad_flac_t *flac, unsigned char *encode_buffer) {
+int krad_flac_encoder_finish (krad_flac_t *flac, uint8_t *encode_buffer) {
 
   flac->bytes = 0;
 
@@ -275,12 +275,12 @@ void krad_flac_encode_info (krad_flac_t *flac) {
 }
 
 int krad_flac_encoder_read_min_header (krad_flac_t *flac,
-                                       unsigned char *buffer) {
+                                       uint8_t *buffer) {
   memcpy (buffer, flac->min_header, KRAD_FLAC_MINIMAL_HEADER_SIZE);
   return KRAD_FLAC_MINIMAL_HEADER_SIZE;
 }
 
-int krad_flac_encoder_read_header (krad_flac_t *flac, unsigned char *buffer) {
+int krad_flac_encoder_read_header (krad_flac_t *flac, uint8_t *buffer) {
   memcpy (buffer, flac->header, flac->header_size);
   return flac->header_size;
 }
@@ -393,7 +393,7 @@ krad_flac_decoder_callback_read (const FLAC__StreamDecoder *flacdecoder,
 }
 
 int krad_flac_decode (krad_flac_t *flac,
-                      unsigned char *encoded_buffer, int len,
+                      uint8_t *encoded_buffer, int len,
                       float **audio) {
 
   FLAC__bool ret;
@@ -426,7 +426,7 @@ int krad_flac_decode (krad_flac_t *flac,
   return flac->frames;
 }
 
-krad_flac_t *krad_flac_decoder_create () {
+krad_flac_t *krad_flac_decoder_create (uint8_t *header, int len) {
 
   krad_flac_t *flac = calloc (1, sizeof(krad_flac_t));
   FLAC__StreamDecoderInitStatus ret;
@@ -450,6 +450,10 @@ krad_flac_t *krad_flac_decoder_create () {
   if (ret != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
     failfast ("Krad FLAC Decoder failure on create");
   }
+  
+  if ((len > 0) && (header != NULL)) {
+    krad_flac_decode (flac, header, len, NULL);
+  }
 
   return flac;
 }
@@ -459,4 +463,17 @@ void krad_flac_decoder_destroy (krad_flac_t *flac) {
   FLAC__stream_decoder_delete ( flac->decoder );
   free (flac->decode_buffer);
   free (flac);
+}
+
+int krad_flac_decoder_test (uint8_t *header, int len) {
+
+  krad_flac_t *flac;
+
+  flac = krad_flac_decoder_create (header, len);
+  
+  if (flac != NULL) {
+    krad_flac_decoder_destroy (flac);
+    return 0;
+  }
+  return -1;
 }

@@ -37,6 +37,23 @@ void mkv_header_test (kr_mkv_t *mkv) {
     headers = kr_mkv_track_header_count (mkv, t);
     codec = kr_mkv_track_codec (mkv, t);
 
+    if (codec == FLAC) {
+      printf ("Testing Track %d header with FLAC decoder\n", t);
+      header.header_count = headers;
+      header.codec = codec;
+
+      header.header_size[0] = kr_mkv_track_header_size (mkv, t, 0);
+      header.header[0] = malloc (header.header_size[0]);
+      ret = kr_mkv_read_track_header (mkv, header.header[0], t, 0);
+      if (ret != header.header_size[0]) {
+        printf ("Header read fail\n");  
+        exit (1);
+      }
+      krad_flac_decoder_test (header.header[0], header.header_size[0]);
+      header.header_size[0] = 0;
+      free (header.header[0]);
+    }
+
     if (codec == VORBIS) {
       printf ("Testing Track %d headers with Vorbis decoder\n", t);
       header.header_count = headers;

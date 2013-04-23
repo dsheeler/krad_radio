@@ -41,7 +41,7 @@ struct krad_flac_St {
   unsigned char header[256];
   int header_size;
   
-  unsigned char *comment_header;
+  uint8_t *comment_header;
   
   int have_min_header;
   int streaminfo_rewrite;
@@ -52,10 +52,10 @@ struct krad_flac_St {
   unsigned long long total_bytes;
   
   int bytes;
-  unsigned char *encode_buffer;
+  uint8_t *encode_buffer;
   int int32_samples[8192 * 4];
   
-  unsigned char *decode_buffer;
+  uint8_t *decode_buffer;
   int decode_buffer_len;
   int decode_buffer_pos;
   
@@ -68,14 +68,14 @@ struct krad_flac_St {
 
 int krad_flac_encode (krad_flac_t *flac,
                       float *audio, int frames,
-                      unsigned char *encode_buffer);
+                      uint8_t *encode_buffer);
 int krad_flac_encoder_frames_remaining (krad_flac_t *flac);
 int krad_flac_encoder_read_header (krad_flac_t *flac,
-                                   unsigned char *buffer);
+                                   uint8_t *buffer);
 int krad_flac_encoder_read_min_header (krad_flac_t *flac,
-                                       unsigned char *buffer);
+                                       uint8_t *buffer);
 int krad_flac_encoder_finish (krad_flac_t *flac,
-                              unsigned char *encode_buffer);
+                              uint8_t *encode_buffer);
 void krad_flac_encoder_destroy (krad_flac_t *flac);
 krad_flac_t *krad_flac_encoder_create (int channels,
                                        int sample_rate,
@@ -83,10 +83,12 @@ krad_flac_t *krad_flac_encoder_create (int channels,
 
 /* Decoding */
 
+int krad_flac_decoder_test (uint8_t *header, int len);
+
 int krad_flac_decode (krad_flac_t *flac,
-                      unsigned char *encoded_buffer, int len,
+                      uint8_t *buffer, int len,
                       float **audio);
-krad_flac_t *krad_flac_decoder_create ();
+krad_flac_t *krad_flac_decoder_create (uint8_t *header, int len);
 void krad_flac_decoder_destroy (krad_flac_t *flac);
 
 #endif
