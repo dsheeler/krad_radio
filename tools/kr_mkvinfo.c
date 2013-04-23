@@ -29,11 +29,14 @@ void krad_debug_init () {
 
   krad_system_log_on (logfile);
 
-  printf ("Logging to: %s\n", logfile);
+  //printf ("Logging to: %s\n", logfile);
 }
 
 void krad_debug_shutdown () {
   krad_system_log_off ();
+
+  printf ("\nDebug log: %s\n\n", logfile);
+  
   show_log ();
 }
 

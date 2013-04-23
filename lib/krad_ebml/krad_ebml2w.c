@@ -80,21 +80,21 @@ static void kr_ebml2_print_id (uint32_t id) {
   bytes = ((uint8_t *)&id);
 
   if (bytes[3] != 0) {
-    //printf ("ID: %02X%02X%02X%02X\n",
+    //printk ("ID: %02X%02X%02X%02X\n",
     //        bytes[3], bytes[2], bytes[1], bytes[0]);  
   } else {
     if (bytes[2] != 0) {
-      //printf ("ID: %02X%02X%02X\n",
+      //printk ("ID: %02X%02X%02X\n",
       //        bytes[2], bytes[1], bytes[0]);
     } else {
       if (bytes[1] != 0) {
-        //printf ("ID: %02X%02X\n",
+        //printk ("ID: %02X%02X\n",
         //        bytes[1], bytes[0]);
       } else {
         if (bytes[0] != 0) {
-          //printf ("ID: %02X\n", bytes[0]);
+          //printk ("ID: %02X\n", bytes[0]);
         } else {
-          //printf ("ID: INVALID\n");
+          //printk ("ID: INVALID\n");
         }
       }
     }
@@ -115,31 +115,31 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   ebml_data_size = 0;
   
   //printk ("Unpacking ID at position: %zu\n", ebml->pos);
-  //printf(" ");
+  //printk(" ");
   //byte = ebml->buffer[ebml->pos];  
   byte = *ebml->buf;
 
   if (byte & EBML_LENGTH_1) {
     rmemcpy ( &ebml_id, ebml->buf, 1);
     kr_ebml2_advance (ebml, 1);
-    //printf ("ID Length: %u\n ", 1);
+    //printk ("ID Length: %u\n ", 1);
   } else {
     if (byte & EBML_LENGTH_2) {
       rmemcpy ( &ebml_id, ebml->buf, 2);
       kr_ebml2_advance (ebml, 2);
-      //printf ("ID Length: %u\n ", 2);
+      //printk ("ID Length: %u\n ", 2);
     } else {
       if (byte & EBML_LENGTH_3) {
         rmemcpy ( &ebml_id, ebml->buf, 3);
         kr_ebml2_advance (ebml, 3);
-        //printf ("ID Length: %u\n ", 3);
+        //printk ("ID Length: %u\n ", 3);
       } else {
         if (byte & EBML_LENGTH_4) {
           rmemcpy ( &ebml_id, ebml->buf, 4);
           kr_ebml2_advance (ebml, 4);
-          //printf ("ID Length: %u\n ", 4);
+          //printk ("ID Length: %u\n ", 4);
         } else {
-          //printf ("ID Length Invalid\n");
+          //printk ("ID Length Invalid\n");
           return -1;
         }
       }
@@ -149,13 +149,13 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   *element = ebml_id;
 
   //kr_ebml2_print_id (ebml_id);
-  //printf(" ");
+  //printk(" ");
   
   //byte = ebml->buffer[ebml->pos];
   byte = *ebml->buf;
   ebml_data_size_length = kr_ebml2_length ( byte );
-  //printf("Data size length: %u\n", ebml_data_size_length);
-  //printf(" ");
+  //printk("Data size length: %u\n", ebml_data_size_length);
+  //printk(" ");
 
   if (ebml_data_size_length == 1) {
     kr_ebml2_advance (ebml, 1);
@@ -194,10 +194,10 @@ int kr_ebml2_unpack_id (kr_ebml2_t *ebml, uint32_t *element, uint64_t *data_size
   
   if (ebml_data_size != EBML_DATA_SIZE_UNKNOWN_UNPACKED) {
     *data_size = ebml_data_size;
-    //printf("Data size is %"PRIu64"\n", ebml_data_size);  
+    //printk("Data size is %"PRIu64"\n", ebml_data_size);  
   } else {
     *data_size = 0;
-    printf ("Data size is Unknown!\n");
+    printk ("Data size is Unknown!");
   }
 
   return 0;
