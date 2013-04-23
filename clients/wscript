@@ -50,6 +50,18 @@ programs11 = """
 krplayer.c
 """.split()
 
+kr_shell = """
+./krad_shell/krad_shell.c
+""".split()
+
+kr_mixer = """
+./krad_radio_mixer/kr_mixer.c
+""".split()
+
+kr_gnmc = """
+./krad_radio_gnmc/kr_gnmc.c
+""".split()
+
 libsources = """
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c
@@ -71,7 +83,35 @@ depsources2 = """
 ../lib/krad_osc/krad_osc.c
 """.split()
 
+krad_shell_dep = """
+./krad_shell/kr_cmds.c
+./krad_shell/history.c
+./krad_shell/tcomp.c
+./krad_shell/util.c
+./krad_shell/cmdmenu.c
+./krad_shell/batch.c
+./krad_shell/globals.c
+""".split()
+
+kr_mixer_dep = """
+./krad_radio_mixer/mixer.c
+./krad_radio_mixer/util.c
+./krad_radio_mixer/eq.c
+""".split()
+
+kr_gnmc_dep = """
+./krad_radio_gnmc/gnmc.c
+./krad_radio_gnmc/util.c
+./krad_radio_gnmc/screen.c
+./krad_radio_gnmc/box.c
+./krad_radio_gnmc/tds/tommyarray.c
+./krad_radio_gnmc/crcache.c
+""".split()
+
 includedirs = """
+./krad_shell/
+./krad_radio_mixer/
+./krad_radio_gnmc/
 ../lib/krad_compositor/
 ../lib/krad_chronometer/
 ../lib/krad_xmms2/
@@ -229,6 +269,10 @@ syslibs2 = ['pthread']
 syslibs3 = ['turbojpeg']
 plibs = ['rt', 'pthread']
 
+kr_shell_libs = ['ncurses','panel','menu','form']
+kr_mixer_libs = ['ncurses','panel','form']
+kr_gnmc_libs = ['ncursesw','panel','form']
+
 def check_system(systm):
 
   global programs
@@ -300,6 +344,15 @@ def configure(conf):
     conf.env['KPLAYER'] = "yes"
     for l in shlibs8:
       conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+
+  for l in kr_shell_libs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+
+  for l in kr_mixer_libs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+
+  for l in kr_gnmc_libs:
+    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
 def build(bld):
 
@@ -416,6 +469,30 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+  for p in kr_shell:
+    bld(features = 'c cprogram', 
+    source = [p] + krad_shell_dep,
+    includes = includedirs, 
+    target = 'kr_shell',
+    use = ["kradradio_client"],
+    uselib = shlibs + stlibs + syslibs + kr_shell_libs)
+
+  for p in kr_mixer:
+    bld(features = 'c cprogram', 
+    source = [p] + kr_mixer_dep,
+    includes = includedirs, 
+    target = 'kr_mixer',
+    use = ["kradradio_client"],
+    uselib = shlibs + stlibs + syslibs + kr_mixer_libs)
+
+#  for p in kr_gnmc:
+#    bld(features = 'c cprogram', 
+#    source = [p] + kr_gnmc_dep,
+#    includes = includedirs, 
+#    target = 'kr_gnmc',
+#    use = ["kradradio_client"],
+#    uselib = shlibs + stlibs + syslibs + kr_gnmc_libs)
 
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:
