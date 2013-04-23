@@ -6,8 +6,8 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_tracks (kr_mkv_t *mkv, uint64_t max_pos);
 static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos);
 static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
-                                     int len,
-                                     int *track,
+                                     uint32_t len,
+                                     uint32_t *track,
                                      uint64_t *timecode,
                                      uint8_t *buffer);
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
@@ -168,7 +168,9 @@ static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
 
   track->codec_data_size = size;
   track->codec_data = malloc (track->codec_data_size);
-  ret = kr_ebml2_unpack_data (mkv->e, track->codec_data, track->codec_data_size);
+  ret = kr_ebml2_unpack_data (mkv->e,
+                              track->codec_data,
+                              track->codec_data_size);
   if (ret != 0) {
     printke ("Got error unpacking codec data!");
     return -1;
@@ -355,8 +357,8 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv) {
 }
 
 static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
-                                     int len,
-                                     int *track,
+                                     uint32_t len,
+                                     uint32_t *track,
                                      uint64_t *timecode,
                                      uint8_t *buffer) {
 
@@ -425,20 +427,20 @@ int kr_mkv_track_count (kr_mkv_t *mkv) {
   return mkv->track_count;
 }
 
-krad_codec_t kr_mkv_track_codec (kr_mkv_t *mkv, int track) {
+krad_codec_t kr_mkv_track_codec (kr_mkv_t *mkv, uint32_t track) {
   return mkv->tracks[track].codec;
 }
 
-int kr_mkv_track_header_count (kr_mkv_t *mkv, int track) {
+int kr_mkv_track_header_count (kr_mkv_t *mkv, uint32_t track) {
   return mkv->tracks[track].headers;
 }
 
-int kr_mkv_track_header_size (kr_mkv_t *mkv, int track, int header) {
+int kr_mkv_track_header_size (kr_mkv_t *mkv, uint32_t track, uint32_t header) {
   return mkv->tracks[track].header_len[header];
 }
 
 int kr_mkv_read_track_header (kr_mkv_t *mkv, uint8_t *buffer,
-                              int track, int header) {
+                              uint32_t track, uint32_t header) {
   if (mkv->tracks[track].codec_data_size) {
     memcpy (buffer,
             mkv->tracks[track].header[header],
@@ -448,15 +450,16 @@ int kr_mkv_read_track_header (kr_mkv_t *mkv, uint8_t *buffer,
   return 0;
 }
 
-int kr_mkv_track_active (kr_mkv_t *mkv, int track) {
+int kr_mkv_track_active (kr_mkv_t *mkv, uint32_t track) {
   //FIXME F'UP
-  if ((mkv->tracks[track].codec != NOCODEC) && (mkv->tracks[track].codec != KVHS)) {
+  if ((mkv->tracks[track].codec != NOCODEC) &&
+      (mkv->tracks[track].codec != KVHS)) {
     return 1;
   }
   return 0;
 }
 
-int kr_mkv_track_changed (kr_mkv_t *mkv, int track) {
+int kr_mkv_track_changed (kr_mkv_t *mkv, uint32_t track) {
   if (mkv->tracks[track].changed == 1) {
     mkv->tracks[track].changed = 0;
     return 1;
@@ -464,7 +467,7 @@ int kr_mkv_track_changed (kr_mkv_t *mkv, int track) {
   return 0;
 }
 
-int kr_mkv_read_packet (kr_mkv_t *mkv, int *track,
+int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
                         uint64_t *timecode, uint8_t *buffer) {
 
   int ret;

@@ -7,6 +7,10 @@ sigma_mkv.c
 kr_mkvinfo.c
 """.split()
 
+programs2 = """
+kr_mkvhdr.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -16,6 +20,15 @@ krmkvlibsources = """
 ../lib/krad_ebml/krad_ebml2w.c
 ../lib/krad_mkv/krad_mkv.c
 ../lib/krad_mkv/krad_mkv_demux.c
+""".split()
+
+krmkvhdrsources = """
+../lib/krad_ring/krad_ring.c
+../lib/krad_theora/krad_theora.c
+../lib/krad_vorbis/krad_vorbis.c
+../lib/krad_flac/krad_flac.c
+../lib/krad_opus/krad_opus.c
+../lib/krad_opus/opus_header.c
 """.split()
 
 includedirs = """
@@ -69,6 +82,9 @@ includedirs = """
 
 kmkvshlibs = []
 
+kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac",
+                 "theoradec", "theoraenc", "samplerate", "libswscale"]
+
 stlibs = []
 syslibs = ['m', 'dl', 'z']
 
@@ -85,9 +101,6 @@ def check_system(systm):
   global syslibs2
 
   if systm.env['KR_LINUX']:
-    #kmkvshlibs = kmkvshlibs + ["alsa"]    
-    #libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
-    #programs = ["krad_radio_ev.c"] + programs
     syslibs = syslibs + syslibs2
 
 
@@ -111,7 +124,9 @@ def configure(conf):
     conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
   for l in stlibs:
-    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs --static')
+    conf.check_cfg(package = l,
+                   uselib_store = l,
+                   args='--cflags --libs --static')
 
 def build(bld):
 
@@ -142,6 +157,14 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["krad_mkv"],
     uselib = kmkvshlibs + stlibs + syslibs + plibs)
+
+  for p in programs2:
+    bld(features = 'c cprogram', 
+    source = [p] + krmkvhdrsources,
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
 
   bld.shlib(
     source = krmkvlibsources, 

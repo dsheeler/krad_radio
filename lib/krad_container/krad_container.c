@@ -68,7 +68,7 @@ int krad_container_track_count (krad_container_t *container) {
 }
 
 krad_codec_t krad_container_track_codec (krad_container_t *container,
-                                         int track) {
+                                         uint32_t track) {
   if (container->type == OGG) {
     return krad_ogg_track_codec ( container->ogg, track );
   } else {
@@ -77,7 +77,7 @@ krad_codec_t krad_container_track_codec (krad_container_t *container,
 }
 
 int krad_container_track_header_size (krad_container_t *container,
-                                      int track, int header) {
+                                      uint32_t track, uint32_t header) {
   if (container->type == OGG) {
     return krad_ogg_track_header_size ( container->ogg, track, header );
   } else {
@@ -86,8 +86,8 @@ int krad_container_track_header_size (krad_container_t *container,
 }
 
 int krad_container_read_track_header (krad_container_t *container,
-                                      unsigned char *buffer,
-                                      int track, int header) {
+                                      uint8_t *buffer,
+                                      uint32_t track, uint32_t header) {
   if (container->type == OGG) {
     return krad_ogg_read_track_header ( container->ogg, buffer, track, header );
   } else {
@@ -95,7 +95,7 @@ int krad_container_read_track_header (krad_container_t *container,
   }
 }
 
-int krad_container_track_changed (krad_container_t *container, int track) {
+int krad_container_track_changed (krad_container_t *container, uint32_t track) {
   if (container->type == OGG) {
     return krad_ogg_track_changed ( container->ogg, track );
   } else {
@@ -103,7 +103,7 @@ int krad_container_track_changed (krad_container_t *container, int track) {
   }
 }
 
-int krad_container_track_active (krad_container_t *container, int track) {
+int krad_container_track_active (krad_container_t *container, uint32_t track) {
   if (container->type == OGG) {
     return krad_ogg_track_active ( container->ogg, track );
   } else {
@@ -111,16 +111,16 @@ int krad_container_track_active (krad_container_t *container, int track) {
   }
 }
 
-int krad_container_track_header_count (krad_container_t *container, int track) {
-  if (container->type == OGG) {
-    return krad_ogg_track_header_count ( container->ogg, track );
+int krad_container_track_header_count (krad_container_t *ctr, uint32_t track) {
+  if (ctr->type == OGG) {
+    return krad_ogg_track_header_count ( ctr->ogg, track );
   } else {
-    return kr_mkv_track_header_count ( container->mkv, track );    
+    return kr_mkv_track_header_count ( ctr->mkv, track );    
   }
 }
 
-int krad_container_read_packet (krad_container_t *container, int *track,
-                                uint64_t *timecode, unsigned char *buffer) {
+int krad_container_read_packet (krad_container_t *container, uint32_t *track,
+                                uint64_t *timecode, uint8_t *buffer) {
   if (container->type == OGG) {
     return krad_ogg_read_packet ( container->ogg, track, timecode, buffer );
   } else {
@@ -128,7 +128,7 @@ int krad_container_read_packet (krad_container_t *container, int *track,
   }
 }
 
-krad_container_t *krad_container_open_stream (char *host, int port,
+krad_container_t *krad_container_open_stream (char *host, uint32_t port,
                                               char *mount, char *password) {
 
   krad_container_t *container;
@@ -265,7 +265,7 @@ void krad_container_destroy (krad_container_t **container) {
 }  
 
 int krad_container_raw_add_data (krad_container_t *container,
-                                 unsigned char *buffer,
+                                 uint8_t *buffer,
                                  int len) {
   if ((container->type == NATIVEFLAC) || (container->type == Y4MFILE)) {
     kr_io2_pack (container->raw, buffer, len);
@@ -340,7 +340,7 @@ int krad_container_add_audio_track (krad_container_t *container,
 }
 
 void krad_container_add_video (krad_container_t *container, int track,
-                               unsigned char *buffer, int buffer_size,
+                               uint8_t *buffer, int buffer_size,
                                int keyframe) {
 
   if (container->type == OGG) {
@@ -356,7 +356,7 @@ void krad_container_add_video (krad_container_t *container, int track,
 }
 
 void krad_container_add_audio (krad_container_t *container, int track,
-                               unsigned char *buffer, int buffer_size,
+                               uint8_t *buffer, int buffer_size,
                                int frames) {
   if (container->type == OGG) {
     krad_ogg_add_audio (container->ogg, track, buffer, buffer_size, frames);

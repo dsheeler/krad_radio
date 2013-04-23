@@ -21,7 +21,7 @@ struct krad_container_St {
 
 /* Create / Destroy */
 void krad_container_destroy (krad_container_t **krad_container);
-krad_container_t *krad_container_open_stream (char *host, int port,
+krad_container_t *krad_container_open_stream (char *host, uint32_t port,
                                               char *mount, char *password);
 krad_container_t *krad_container_open_file (char *filename,
                                             krad_io_mode_t mode);
@@ -31,26 +31,26 @@ krad_container_open_transmission (krad_transmission_t *transmission);
 /* Input */
 int krad_container_track_count (krad_container_t *krad_container);
 krad_codec_t krad_container_track_codec (krad_container_t *container,
-                                         int track);
+                                         uint32_t track);
 int krad_container_track_header_count (krad_container_t *container,
-                                       int track);
+                                       uint32_t track);
 int krad_container_track_header_size (krad_container_t *container,
-                                      int track,
-                                      int header);
+                                      uint32_t track,
+                                      uint32_t header);
 int krad_container_read_track_header (krad_container_t *container,
-                                      unsigned char *buffer,
-                                      int track, int header);
-int krad_container_track_active (krad_container_t *container, int track);
-int krad_container_track_changed (krad_container_t *container, int track);
-int krad_container_read_packet (krad_container_t *container, int *track,
-                                uint64_t *timecode, unsigned char *buffer);
+                                      uint8_t *buffer,
+                                      uint32_t track, uint32_t header);
+int krad_container_track_active (krad_container_t *container, uint32_t track);
+int krad_container_track_changed (krad_container_t *container, uint32_t track);
+int krad_container_read_packet (krad_container_t *container, uint32_t *track,
+                                uint64_t *timecode, uint8_t *buffer);
 
 
 /* Output */
 char *krad_container_select_mimetype (char *string);
 
 int krad_container_raw_add_data (krad_container_t *container,
-                                 unsigned char *buffer,
+                                 uint8_t *buffer,
                                  int len);
 int krad_container_add_video_track_with_private_data (krad_container_t *container,
                                                       krad_codec_header_t *krad_codec_header,
@@ -65,10 +65,10 @@ int krad_container_add_audio_track (krad_container_t *container,
                                     int sample_rate, int channels,
                                     krad_codec_header_t *krad_codec_header);
 void krad_container_add_video (krad_container_t *container, int track,
-                               unsigned char *buffer, int buffer_size,
+                               uint8_t *buffer, int buffer_size,
                                int keyframe);
 void krad_container_add_audio (krad_container_t *container, int track,
-                               unsigned char *buffer, int buffer_size, 
+                               uint8_t *buffer, int buffer_size, 
                                int frames);
 
 #endif

@@ -29,10 +29,10 @@ struct kr_demuxer_St {
 static void kr_demuxer_step (kr_demuxer_t *demuxer) {
 
   kr_packet_t packet;
-  int track;
+  uint32_t track;
   uint64_t timecode;
   int ret;
-  int size;
+  uint32_t size;
   uint8_t *buffer;
   
   buffer = malloc (2000000);

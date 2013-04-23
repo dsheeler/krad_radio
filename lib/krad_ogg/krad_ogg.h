@@ -66,7 +66,7 @@ struct krad_ogg_track_St {
   int fps_denominator;
   
   int header_count;
-  unsigned char *header[32];
+  uint8_t *header[32];
   int header_len[32];
   
   ogg_stream_state stream_state;
@@ -95,24 +95,24 @@ struct krad_ogg_St {
   ogg_sync_state sync_state;
   kr_io2_t *io;
   krad_transmission_t *krad_transmission;
-  unsigned char *input_buffer;
+  uint8_t *input_buffer;
   int output_aux_headers;
 };
 
-int krad_ogg_track_count (krad_ogg_t *krad_ogg);
-krad_codec_t krad_ogg_track_codec (krad_ogg_t *krad_ogg, int track);
-int krad_ogg_track_header_count (krad_ogg_t *krad_ogg, int track);
-int krad_ogg_track_header_size (krad_ogg_t *krad_ogg, int track, int header);
-int krad_ogg_read_track_header (krad_ogg_t *krad_ogg, unsigned char *buffer,
-                                int track, int header);
-int krad_ogg_track_active (krad_ogg_t *krad_ogg, int track);
-int krad_ogg_track_changed (krad_ogg_t *krad_ogg, int track);
-int krad_ogg_read_packet (krad_ogg_t *krad_ogg, int *track,
-                          uint64_t *timecode, unsigned char *buffer);
-int krad_ogg_write (krad_ogg_t *krad_ogg, unsigned char *buffer, int length);
+uint32_t krad_ogg_track_count (krad_ogg_t *krad_ogg);
+krad_codec_t krad_ogg_track_codec (krad_ogg_t *ogg, uint32_t track);
+uint32_t krad_ogg_track_header_count (krad_ogg_t *ogg, uint32_t track);
+uint32_t krad_ogg_track_header_size (krad_ogg_t *ogg, uint32_t track, uint32_t header);
+uint32_t krad_ogg_read_track_header (krad_ogg_t *ogg, uint8_t *buffer,
+                                     uint32_t track, uint32_t header);
+uint32_t krad_ogg_track_active (krad_ogg_t *krad_ogg, uint32_t track);
+int krad_ogg_track_changed (krad_ogg_t *krad_ogg, uint32_t track);
+int krad_ogg_read_packet (krad_ogg_t *krad_ogg, uint32_t *track,
+                          uint64_t *timecode, uint8_t *buffer);
+int krad_ogg_write (krad_ogg_t *krad_ogg, uint8_t *buffer, uint32_t length);
 void krad_ogg_process (krad_ogg_t *krad_ogg);
 krad_ogg_t *krad_ogg_open_file (char *filename, krad_io_mode_t mode);
-krad_ogg_t *krad_ogg_open_stream (char *host, int port,
+krad_ogg_t *krad_ogg_open_stream (char *host, uint32_t port,
                                   char *mount, char *password);
 krad_ogg_t *krad_ogg_open_transmission (krad_transmission_t *krad_transmission);
 krad_ogg_t *krad_ogg_create();
@@ -122,8 +122,8 @@ void krad_ogg_set_max_packets_per_page (krad_ogg_t *krad_ogg, int max_packets);
 int krad_ogg_add_video_track_with_private_data (krad_ogg_t *krad_ogg,
                         krad_codec_t codec, int fps_numerator,
                         int fps_denominator, int width, int height,
-                        unsigned char *header[],
-                        int header_size[], int header_count);
+                        uint8_t *header[],
+                        uint32_t header_size[], uint32_t header_count);
 
 int krad_ogg_add_video_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
                               int fps_numerator, int fps_denominator,
@@ -133,16 +133,16 @@ int krad_ogg_output_aux_headers (krad_ogg_t *krad_ogg);
 
 int krad_ogg_add_audio_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
                               int sample_rate, int channels, 
-                              unsigned char *header[], int header_size[],
-                              int header_count);  
+                              uint8_t *header[], uint32_t header_size[],
+                              uint32_t header_count);  
 
 int krad_ogg_add_track (krad_ogg_t *krad_ogg, krad_codec_t codec, 
-            unsigned char *header[], int header_size[], int header_count);
+            uint8_t *header[], uint32_t header_size[], uint32_t header_count);
 
 
-void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
+void krad_ogg_add_video (krad_ogg_t *krad_ogg, int track, uint8_t *buffer,
                          int buffer_size, int keyframe);
-void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track, unsigned char *buffer,
+void krad_ogg_add_audio (krad_ogg_t *krad_ogg, int track, uint8_t *buffer,
                          int buffer_size, int frames);
 
 #endif

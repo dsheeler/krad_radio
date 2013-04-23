@@ -3,47 +3,12 @@
 
 #include <krad_mkv_demux.h>
 
-static char logfile[256];
-
-void show_log () {
-
-  int ret;
-  char *args[3];
-
-  args[0] = "cat";
-  args[1] = logfile;
-  args[2] = NULL;
-
-  ret = execv ("/bin/cat", args);
-  if (ret == -1) {
-    printf ("Error running cat...\n");
-  }
-}
-
-void krad_debug_init () {
-
-  krad_system_init ();
-
-  sprintf (logfile, "%s/kr_mkvinfo_%"PRIu64".log",
-           getenv ("HOME"), krad_unixtime ());
-
-  krad_system_log_on (logfile);
-
-  //printf ("Logging to: %s\n", logfile);
-}
-
-void krad_debug_shutdown () {
-  krad_system_log_off ();
-
-  printf ("\nDebug log: %s\n\n", logfile);
-  
-  show_log ();
-}
+#include "krad_debug.c"
 
 void mkv_frames_print (kr_mkv_t *mkv) {
 
   int ret;
-  int track;
+  uint32_t track;
   uint64_t timecode;
   uint8_t *buffer;
   
@@ -64,9 +29,9 @@ void mkv_info_print (kr_mkv_t *mkv) {
 
   int t;
   int h;
-  int headers;
-  int header_size;
-  int tracks;
+  uint32_t headers;
+  uint32_t header_size;
+  uint32_t tracks;
 
   tracks = kr_mkv_track_count (mkv);
 
@@ -88,7 +53,7 @@ int main (int argc, char *argv[]) {
   int32_t ret;
   kr_mkv_t *mkv;
 
-  krad_debug_init ();
+  krad_debug_init ("kr_mkvinfo");
  
   mkv = kr_mkv_open_file (argv[1]);
  
