@@ -214,6 +214,8 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       }
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &unit_control.duration);
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[1]);
+      //FIXME   test to see if subunit exists before broadcasting update to
+      //        a phantom subunit
       krad_compositor_subunit_update (krad_compositor, &unit_control);
       if (unit_control.data_type == KR_FLOAT) {
         krad_radio_broadcast_subunit_update ( kr_ipc->ipc_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,

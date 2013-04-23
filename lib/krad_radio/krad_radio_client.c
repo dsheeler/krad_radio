@@ -515,8 +515,6 @@ static int kr_compositor_crate_to_int (kr_crate_t *crate, int *integer) {
   
   kr_ebml2_unpack_id (&crate->payload_ebml, &id, &size);
 
-printf("comp control is %d\n", crate->address.control.compositor_control);
-
   switch ( crate->address.control.compositor_control ) {
     case KR_X:
     case KR_Y:
@@ -527,10 +525,12 @@ printf("comp control is %d\n", crate->address.control.compositor_control);
       kr_ebml2_unpack_uint32 (&crate->payload_ebml, &unsigned_integer, size);
       *integer = unsigned_integer;
       return 1;
+    default:
+      break;
   }
 
   *integer = 0;
-  return -1;  
+  return 0;  
 }
 
 static int kr_radio_crate_to_int (kr_crate_t *crate, int *integer) {
@@ -549,7 +549,28 @@ static int kr_radio_crate_to_int (kr_crate_t *crate, int *integer) {
   }
 
   *integer = 0;
-  return -1;
+  return 0;
+}
+
+int kr_compositor_crate_to_float (kr_crate_t *crate, float *real) {
+
+  switch ( crate->address.control.compositor_control ) {
+    case KR_ROTATION:
+    case KR_OPACITY:
+    case KR_XSCALE:
+    case KR_YSCALE:
+    case KR_RED:                
+    case KR_GREEN:
+    case KR_BLUE:
+    case KR_ALPHA:    
+      kr_ebml2_unpack_element_float (&crate->payload_ebml, NULL, real);
+      return 1;
+    default:
+      break;
+  }
+
+  *real = 0.0f;
+  return -1; 
 }
 
 int kr_mixer_crate_to_float (kr_crate_t *crate, float *real) {
@@ -566,7 +587,7 @@ int kr_mixer_crate_to_float (kr_crate_t *crate, float *real) {
       return 1;
     }
   }
-  return -1;
+  return 0;
 }
 
 int kr_crate_to_int (kr_crate_t *crate, int *number) {
@@ -612,6 +633,7 @@ int kr_crate_to_float (kr_crate_t *crate, float *number) {
     case KR_MIXER:
       return kr_mixer_crate_to_float (crate, number);
     case KR_COMPOSITOR:
+      return kr_compositor_crate_to_float (crate, number);
       break;
     case KR_TRANSPONDER:
       break;
@@ -646,7 +668,7 @@ int kr_crate_to_string (kr_crate_t *crate, char **string) {
 }
 
 static int kr_ebml_to_remote_status_rep (kr_ebml2_t *ebml, kr_remote_t *remote) {
-    
+
   kr_ebml2_unpack_element_string (ebml, NULL, remote->interface, 666);
   kr_ebml2_unpack_element_uint16 (ebml, NULL, &remote->port);
 
