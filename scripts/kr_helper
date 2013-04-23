@@ -1,0 +1,541 @@
+#!/usr/bin/env bash
+
+#
+# Interactive Krad Radio Helper :)
+#
+
+# Checking for deps
+command -v dialog >/dev/null 2>&1 || { tput bold; echo >&2 "I require dialog but it's not installed.  Aborting."; tput sgr0; exit 1; }
+command -v krad_radio >/dev/null 2>&1 || { tput bold; echo >&2 "I require krad_radio but it's not installed.  Aborting."; tput sgr0; exit 1; }
+
+
+# Some util funcs
+
+success_msg () {
+
+	dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "$1"  \
+		--ok-label "Awesome!" --msgbox "$2" 5 60
+
+}
+
+# Star showing dialogs
+
+dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Welcome!"  \
+--ok-label "Thanks!" --msgbox "Welcome to the fabulous world of Krad!" 5 60
+
+if [ $? -ne 0 ] ; then
+	clear
+	echo 'Aborted'
+	exit 0
+fi
+
+
+dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Let's start" \
+--yes-label "Bring it on!" --no-label "No, I'm too scared" --yesno 'Are you ready to undertake your journey?' 5 60
+
+if [ $? -ne 0 ] ; then
+	clear
+	echo 'Aborted'
+	exit 0
+fi
+
+# Choosing name and launching station
+
+def="krstation"
+station=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --ok-label "Launch!" --title "Choose your station name" \
+	--inputmenu "" 9 55 15 "Station Name" "$def")
+
+
+res=(`echo $station | tr "," "\n"`)
+
+
+if [ "${res[0]}" == "RENAMED" ] ; then
+	sysname=${res[3]}
+elif [ "${res[0]}" == "Station" ] ; then
+	sysname=$def
+else
+	clear
+	echo 'Aborted'
+	exit 0
+fi
+
+krad_radio "$sysname" launch
+
+success_msg "Lanched!" "Station $sysname launched!"
+
+# Main Menu
+
+while true ;
+do
+
+choice=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Menu for station $sysname" --menu "Main Menu" \
+	10 60 10 "Compositor" "Video stuff" "Mixer" "Audio stuff" "Transponder" "Transmit & Record stuff")
+
+if [ $? -ne 0 ] ; then
+	clear
+	echo 'Aborted'
+	exit 0
+fi
+
+
+case $choice in
+
+	Compositor )
+
+	while true;
+		do
+
+		choice=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Compositor settings for $sysname" --menu "" 20 60 20 \
+			"Set Resolution" "" "Set Framerate" "" "Capture Source" "" \
+			)
+
+		if [ $? -ne 0 ] ; then
+			break
+		fi
+
+		case "$choice" in
+			"Set Resolution" )
+
+				# Setting compositor resolution
+
+				resolution=$(dialog --stdout --title "Res" --backtitle "Krad Radio Interactive Helper" --form "Set Resolution" 10 60 0 \
+					"Width:" 1 1 "640" 1 10 5 0 \
+					"Height:" 2 1 "480" 2 10 5 0)
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+				reso=(`echo $resolution | tr "," "\n"`)
+
+				krad_radio $sysname res ${reso[0]} ${reso[1]}
+
+				success_msg "" "Resolution for station $sysname set to ${reso[0]} x ${reso[1]}!"
+
+
+			;;
+			"Set Framerate" )
+
+				# Setting compositor framerate
+
+				fps=$(dialog --stdout --title "FPS" --backtitle "Krad Radio Interactive Helper" --form "Set Framerate" 7 60 0 \
+					"FPS:" 1 1 "30" 1 8 4 0 )
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+				reso=(`echo $fps | tr "," "\n"`)
+
+				krad_radio "$sysname" fps ${reso[0]}
+
+				success_msg "" "Framerate for station $sysname set to ${reso[0]} fps!"
+
+
+			;;
+			"Capture Source" )
+
+				# Source Capture
+
+				choice=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Capture Source" --menu "" 20 60 20 \
+					"v4l2" "" "x11" "" \
+					)
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+				case "$choice" in
+					"x11" )
+					;;
+					"v4l2" )
+					;;
+				esac
+
+				krad_radio "$sysname" capture "$choice"
+
+				success_msg "" "Capturing $choice for station $sysname started!"
+
+
+			;;
+		esac
+
+	done
+		;;
+
+	Mixer )
+
+	while true;
+		do
+		choice=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Mixer settings for $sysname" --menu "" 8 60 8 \
+			"New input" "" "New output" ""  \
+			)
+
+		if [ $? -ne 0 ] ; then
+			break
+		fi
+
+		case "$choice" in
+		
+			"New input" )
+
+				definput="Music"
+
+				input=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Input name" \
+					--inputmenu "" 9 55 15 "Input Name" "$definput")
+
+				res=(`echo $input | tr "," "\n"`)
+
+				if [ "${res[0]}" == "RENAMED" ] ; then
+					input=${res[3]}
+				elif [ "${res[0]}" == "Input" ] ; then
+					input=$definput
+				else
+					continue;
+				fi
+
+				krad_radio "$sysname" input "$input"
+
+				success_msg "" "Input $input added!"
+
+				;;
+
+			"New output" )
+				
+				defout="Outp"
+
+				output=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Output name" \
+					--inputmenu "" 9 55 15 "Output Name" "$definput")
+
+				res=(`echo $output | tr "," "\n"`)
+
+				if [ "${res[0]}" == "RENAMED" ] ; then
+					output=${res[3]}
+				elif [ "${res[0]}" == "Output" ] ; then
+					output=$defout
+				else
+					continue;
+				fi
+
+				krad_radio "$sysname" auxout "$output"
+
+				success_msg "" "Output $output added!"
+
+				;;
+		esac
+
+	done
+		;;
+
+	Transponder )
+	while true;
+		do
+
+		choice=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Transponder settings for $sysname" --menu "" 8 60 8 \
+			"Record" "" "Transmit" ""  \
+			)
+
+		if [ $? -ne 0 ] ; then
+			break
+		fi
+
+		case "$choice" in
+			"Record" )
+
+				# Setting recording
+
+				# Rec type
+
+				rectype=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Type" 10 60 10 \
+					"audiovideo" "" on \
+					"video" "" off \
+					"audio" "" off \
+					)
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+
+				# Rec path
+
+				def="/home/krad/rec.webm"
+				tmp=$(dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Recording path" \
+					--inputmenu "" 9 55 15 "Recording Path" "$def")
+
+
+				res=(`echo $tmp | tr "," "\n"`)
+
+
+				if [ "${res[0]}" == "RENAMED" ] ; then
+					path=${res[3]}
+				elif [ "${res[0]}" == "Recording" ] ; then
+					path=$def
+				else
+					continue;
+				fi
+
+				# Rec codec
+
+				case "$rectype" in
+					"audiovideo" )
+						codec=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Codec" 10 60 10 \
+						"vp8vorbis" "" on \
+						"theoravorbis" "" off \
+						"vp8opus" "" off \
+						"theoraopus" "" off \
+						)
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+					;;
+					"video" )
+						codec=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Codec" 10 60 10 \
+						"vp8" "" on \
+						"theora" "" off \
+						)
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+					;;
+					"audio" )
+						codec=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Codec" 10 60 10 \
+						"vorbis" "" on \
+						"opus" "" off \
+						)
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+					;;
+				esac
+
+				# Recording resolution
+
+				if [ "$rectype" != "audio" ] ; then
+
+					recres=$(dialog --stdout --title "Res" --backtitle "Krad Radio Interactive Helper" --form "Set Recording Resolution" 10 60 0 \
+						"Width:" 1 1 "640" 1 10 5 0 \
+						"Height:" 2 1 "480" 2 10 5 0)
+
+					if [ $? -ne 0 ] ; then
+						continue;
+					fi
+
+					recreso=$(echo $recres | tr "," "\n")
+
+					recres=$(echo "${recreso[0]} ${recreso[1]}")
+
+
+				else
+					recres="0 0"
+				fi
+
+				# Video Bitrate
+
+				if [ "$rectype" != "audio" ] ; then
+					vb=$(dialog --stdout --title "Video Bitrate" --backtitle "Krad Radio Interactive Helper" --form "Set Video Bitrate" 7 60 0 \
+						"Video Bitrate:" 1 1 "1024" 1 15 8 0 )
+
+					if [ $? -ne 0 ] ; then
+						continue;
+					fi
+
+					vb=(`echo $vb | tr "," "\n"`)
+				fi
+
+				# Audio Bitrate
+
+				if [ "$rectype" != "video" ] ; then
+
+					if [[ ( "$codec" -eq "vp8opus" ) || ( "$codec" -eq "theoraopus" ) ]] ; then
+						ab=$(dialog --stdout --title "Audio Bitrate" --backtitle "Krad Radio Interactive Helper" --form "Set Audio Bitrate" 7 60 0 \
+							"Audio Bitrate:" 1 1 "64" 1 15 8 0 )
+
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+
+						ab=(`echo $ab | tr "," "\n"`)
+
+				
+					else
+						ab=$(dialog --stdout --title "Audio Bitrate" --backtitle "Krad Radio Interactive Helper" --rangebox "Set Audio Bitrate" \
+							8 60 8 0.1 0.9 0.5 )
+
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+
+						ab=(`echo $ab | tr "," "\n"`)
+
+
+					fi
+					
+				fi
+
+
+				dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Recording Summary"  \
+					--ok-label "Record!" --msgbox "Type: $rectype\nPath: $path\nCodec: $codec\nResolution: $recres\nAudio Bitrate: $ab\nVideo Bitrate: $vb" 10 60
+
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+				krad_radio $sysname record $rectype $path $codec $recres $vb $ab
+
+				success_msg "" "Recording Started!"
+
+			;;
+			"Transmit" )
+
+				# Setting transmission type
+
+				transtype=$(dialog --stdout --title "Transmission Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Type" 10 60 10 \
+					"audiovideo" "" on \
+					"video" "" off \
+					"audio" "" off \
+					)
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+
+				tform=$(dialog --stdout --title "Transmission Settings" --backtitle "Krad Radio Interactive Helper" --form "Settings" 32 60 0 \
+						"Host:" 1 1 "" 1 7 32 0 \
+						"Port:" 2 1 "" 2 7 7 0 \
+						"Mount:" 3 1 "" 3 8 32 0 \
+						"Password:" 4 1 "" 4 10 16 0 \
+						)
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+				transm=(`echo $tform | tr "," "\n"`)
+
+				# Trans codec
+
+				case "$transtype" in
+					"audiovideo" )
+						codec=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Codec" 10 60 10 \
+						"vp8vorbis" "" on \
+						"theoravorbis" "" off \
+						"vp8opus" "" off \
+						"theoraopus" "" off \
+						)
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+					;;
+					"video" )
+						codec=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Codec" 10 60 10 \
+						"vp8" "" on \
+						"theora" "" off \
+						)
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+					;;
+					"audio" )
+						codec=$(dialog --stdout --title "Recording Setup" --backtitle "Krad Radio Interactive Helper" --radiolist "Codec" 10 60 10 \
+						"vorbis" "" on \
+						"opus" "" off \
+						)
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+					;;
+				esac
+
+				# Res
+
+				if [ "$transtype" != "audio" ] ; then
+
+				 transres=$(dialog --stdout --title "Res" --backtitle "Krad Radio Interactive Helper" --form "Set Transmission Resolution" 10 60 0 \
+					 "Width:" 1 1 "640" 1 10 5 0 \
+					 "Height:" 2 1 "480" 2 10 5 0)
+
+				 if [ $? -ne 0 ] ; then
+					 continue;
+				 fi
+
+				 transreso=$(echo $transres | tr "," "\n")
+
+				 transres=$(echo "${transreso[0]} ${transreso[1]}")
+
+				else
+					transres="0 0"
+				fi
+
+				# Video Bitrate
+
+				if [ "$transtype" != "audio" ] ; then
+					vb=$(dialog --stdout --title "Video Bitrate" --backtitle "Krad Radio Interactive Helper" --form "Set Video Bitrate" 7 60 0 \
+						"Video Bitrate:" 1 1 "1024" 1 15 8 0 )
+
+					if [ $? -ne 0 ] ; then
+						continue;
+					fi
+
+					vb=(`echo $vb | tr "," "\n"`)
+				else
+					vb="0"
+				fi
+
+				# Audio Bitrate
+
+				if [ "$transtype" != "video" ] ; then
+
+					if [[ ( "$codec" -eq "vp8opus" ) || ( "$codec" -eq "theoraopus" ) ]] ; then
+						ab=$(dialog --stdout --title "Audio Bitrate" --backtitle "Krad Radio Interactive Helper" --form "Set Audio Bitrate" 7 60 0 \
+							"Audio Bitrate:" 1 1 "64" 1 15 8 0 )
+
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+
+						ab=(`echo $ab | tr "," "\n"`)
+
+				
+					else
+						ab=$(dialog --stdout --title "Audio Bitrate" --backtitle "Krad Radio Interactive Helper" --rangebox "Set Audio Bitrate" \
+							8 60 8 0.1 0.9 0.5 )
+
+						if [ $? -ne 0 ] ; then
+							continue;
+						fi
+
+						ab=(`echo $ab | tr "," "\n"`)
+
+
+					fi
+
+				else
+					ab="0"	
+				fi
+
+
+				dialog --stdout --backtitle "Krad Radio Interactive Helper" --title "Transmission Summary"  \
+					--ok-label "Transmit!" --msgbox "Type: $transtype\nHost: ${transm[0]}\nPort: ${transm[1]}\nMount: ${transm[2]}\nPassword: ${transm[3]}\nCodec: $codec\nResolution: $transres\nAudio Bitrate: $ab\nVideo Bitrate: $vb" 15 60
+
+
+				if [ $? -ne 0 ] ; then
+					continue;
+				fi
+
+				krad_radio $sysname transmit $transtype ${transm[0]} ${transm[1]} ${transm[2]} ${transm[3]} $codec $transres $vb $ab
+
+				success_msg "" "Transmission Started!"
+
+
+			;;
+		esac
+
+	done
+		;;
+
+esac
+
+done
