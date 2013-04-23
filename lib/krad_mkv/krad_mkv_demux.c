@@ -12,8 +12,8 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
                                      unsigned char *buffer);
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
 static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
-                                         kr_mkv_track_t *track,
-                                         uint64_t size);
+                                        kr_mkv_track_t *track,
+                                        uint64_t size);
 
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id) {
   if ((strlen(codec_id) == 8) && (strncmp(codec_id, "A_VORBIS", 8) == 0)) {
@@ -147,8 +147,8 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv, uint64_t max_pos) {
 }
 
 static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
-                                         kr_mkv_track_t *track,
-                                         uint64_t size) {
+                                        kr_mkv_track_t *track,
+                                        uint64_t size) {
 
   int ret;
 
@@ -246,7 +246,7 @@ static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
                                             track->header_len[1]);
   }
 
-  return 0;    
+  return 0;
 }
 
 static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
