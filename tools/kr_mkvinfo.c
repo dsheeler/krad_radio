@@ -3,9 +3,24 @@
 
 #include <krad_mkv_demux.h>
 
-void krad_debug_init () {
+static char logfile[256];
 
-  char logfile[256];
+void show_log () {
+
+  int ret;
+  char *args[3];
+
+  args[0] = "cat";
+  args[1] = logfile;
+  args[2] = NULL;
+
+  ret = execv ("/bin/cat", args);
+  if (ret == -1) {
+    printf ("Error running cat...\n");
+  }
+}
+
+void krad_debug_init () {
 
   krad_system_init ();
    
@@ -15,6 +30,11 @@ void krad_debug_init () {
   krad_system_log_on (logfile);
 
   printf ("Logging to: %s\n", logfile);
+}
+
+void krad_debug_shutdown () {
+  krad_system_log_off ();
+  show_log ();
 }
 
 int main (int argc, char *argv[]) {
@@ -36,6 +56,8 @@ int main (int argc, char *argv[]) {
       printf ("Error closing %s\n", argv[1]);
     }
   }
+  
+  krad_debug_shutdown ();
 
   return 0;
 }
