@@ -90,7 +90,7 @@ int kr_io2_sync (kr_io2_t *io) {
   }
 
   while (bytes != len) {
-    ret += send (io->fd, buffer + bytes, len - bytes, 0);
+    ret += write (io->fd, buffer + bytes, len - bytes);
     if (ret <= 0) {
       break;
     } else {
