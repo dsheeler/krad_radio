@@ -15,6 +15,7 @@ void remux (kr_mkv_t *mkv, char *file) {
   uint32_t out_track;
   kr_mkv_t *new_mkv;
   int keyframe;
+  uint8_t flags;
   int packets;
   
   packets = 0;
@@ -40,18 +41,20 @@ void remux (kr_mkv_t *mkv, char *file) {
 
   printf ("\n");
 
-  keyframe = 1;
-
-  while ((bytes_read = kr_mkv_read_packet (mkv, &track, &timecode, buffer)) > 0) {
+  while ((bytes_read = kr_mkv_read_packet (mkv, &track, &timecode, &flags, buffer)) > 0) {
     
     printf ("\rRead packet %d track %d %d bytes\t\t", packets++, track, bytes_read);
     fflush (stdout);
+
+    if (flags == 0x80) {
+      keyframe = 1;
+    } else {
+      keyframe = 0;
+    }
+
     //if (track == 0) {
       kr_mkv_add_video (new_mkv, out_track, buffer, bytes_read, keyframe);
     //}
-    
-    keyframe = 0;
-    
   }
 
   printf ("\nDone.\n");

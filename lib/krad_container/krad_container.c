@@ -124,7 +124,7 @@ int krad_container_read_packet (krad_container_t *container, uint32_t *track,
   if (container->type == OGG) {
     return krad_ogg_read_packet ( container->ogg, track, timecode, buffer );
   } else {
-    return kr_mkv_read_packet ( container->mkv, track, timecode, buffer );
+    return kr_mkv_read_packet ( container->mkv, track, timecode, NULL, buffer );
   }
 }
 

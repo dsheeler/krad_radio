@@ -9,6 +9,7 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
                                      uint32_t len,
                                      uint32_t *track,
                                      uint64_t *timecode,
+                                     uint8_t *flags,
                                      uint8_t *buffer);
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
 static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
@@ -360,11 +361,12 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
                                      uint32_t len,
                                      uint32_t *track,
                                      uint64_t *timecode,
+                                     uint8_t *flags,
                                      uint8_t *buffer) {
 
   int16_t block_timecode;
-  unsigned char flags;
-  unsigned char byte;
+  uint8_t flags_tmp;
+  uint8_t byte;
 
   block_timecode = 0;
 
@@ -383,7 +385,12 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
     *timecode = mkv->current_timecode;
   }
   
-  kr_ebml2_unpack_data ( mkv->e, &flags, 1 );
+  kr_ebml2_unpack_data ( mkv->e, &flags_tmp, 1 );
+
+  if (flags != NULL) {
+    *flags = flags_tmp;
+  }
+
   kr_ebml2_unpack_data ( mkv->e, buffer, len - 4 );
   return len - 4;
 }
@@ -468,7 +475,7 @@ int kr_mkv_track_changed (kr_mkv_t *mkv, uint32_t track) {
 }
 
 int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
-                        uint64_t *timecode, uint8_t *buffer) {
+                        uint64_t *timecode, uint8_t *flags, uint8_t *buffer) {
 
   int ret;
   uint32_t id;
@@ -498,7 +505,7 @@ int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
         kr_ebml2_unpack_uint64 (mkv->e, &mkv->cluster_timecode, size);
         break;
       case MKV_SIMPLEBLOCK:
-        return kr_mkv_read_simpleblock (mkv, size, track, timecode, buffer);
+        return kr_mkv_read_simpleblock (mkv, size, track, timecode, flags, buffer);
       default:
         printke ("Err! Unknown element: %"PRIu64" bytes", size);
         return -1;

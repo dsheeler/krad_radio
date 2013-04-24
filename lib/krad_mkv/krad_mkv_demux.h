@@ -20,6 +20,6 @@ int kr_mkv_track_active (kr_mkv_t *mkv, uint32_t track);
 int kr_mkv_track_changed (kr_mkv_t *mkv, uint32_t track);
 
 int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
-                        uint64_t *timecode, uint8_t *buffer);
+                        uint64_t *timecode, uint8_t *flags, uint8_t *buffer);
 
 #endif
