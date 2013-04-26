@@ -14,8 +14,9 @@ struct krad_container_St {
   krad_container_type_t type;
   krad_ogg_t *ogg;
   kr_mkv_t *mkv;
-  krad_udp_t *udp;  
-  kr_io2_t *raw;
+  krad_udp_t *udp;
+  kr_file_t *raw;
+  kr_io2_t *rawio;
   krad_transmission_t *transmission;
 };
 

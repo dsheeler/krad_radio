@@ -429,6 +429,8 @@ void krad_ogg_destroy (krad_ogg_t *krad_ogg) {
 
 krad_ogg_t *krad_ogg_create () {
 
+  failfast ("Ogg is disabled for the moment");
+
   int t;  
   krad_ogg_t *krad_ogg;
   

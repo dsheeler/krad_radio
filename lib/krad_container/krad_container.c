@@ -209,7 +209,10 @@ krad_container_t *krad_container_open_file (char *filename,
         if (container->raw == NULL) {
           free (container);
           return NULL;
-        }  
+        } else {
+          container->rawio = kr_io2_create ();
+          kr_io2_set_fd (container->rawio, container->raw->fd);
+        }
       }
     }
   }
@@ -256,7 +259,8 @@ void krad_container_destroy (krad_container_t **container) {
     }
     if (((*container)->type == NATIVEFLAC) || ((*container)->type == Y4MFILE)) {
       if ((*container)->raw) {
-        kr_io2_destroy (&((*container)->raw));
+        kr_io2_destroy (&((*container)->rawio));
+        kr_file_close (&((*container)->raw));
       }
     }
     free (*container);
@@ -268,8 +272,8 @@ int krad_container_raw_add_data (krad_container_t *container,
                                  uint8_t *buffer,
                                  int len) {
   if ((container->type == NATIVEFLAC) || (container->type == Y4MFILE)) {
-    kr_io2_pack (container->raw, buffer, len);
-    kr_io2_flush (container->raw);
+    kr_io2_pack (container->rawio, buffer, len);
+    kr_io2_flush (container->rawio);
     return 0;
   } else {
     return -1;
