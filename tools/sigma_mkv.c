@@ -257,11 +257,6 @@ static void kraise_splice (char *file1, char *file2, char *fileout) {
              (((bytes_read = kr_mkv_read_packet (in[1], &track, &timecode, &flags, buffer[1])) > 0))) {
         
         if (have_buffer[1] == 1) {
-
-          printf ("Using buffer of %d bytes\n",
-                  2, packets++, track, bytes_read);
-          fflush (stdout);
-
           keyframe = 1;
           have_buffer[1] = 0;
         } else {
