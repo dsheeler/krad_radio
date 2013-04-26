@@ -296,7 +296,7 @@ int kr_crate_to_int (kr_crate_t *crate, int *number);
 int kr_crate_to_float (kr_crate_t *crate, float *number);
 char *kr_response_alloc_string (int length);
 void kr_response_free_string (char **string);
-int kr_response_to_rep (kr_crate_t *crate);
+int kr_uncrate_rep (kr_crate_t *crate);
 void kr_response_address (kr_response_t *response, kr_address_t **address);
 void kr_address_debug_print (kr_address_t *addr);
 int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address);
@@ -310,7 +310,7 @@ void kr_client_response_wait_print (kr_client_t *client);
  * @param kr_client handle of the IPC-connection to the station
  */
 int kr_delivery_get (kr_client_t *client, kr_crate_t **crate);
-
+#define kr_crate_loaded kr_uncrate_rep
 int kr_crate_loaded (kr_crate_t *crate);
 int kr_crate_has_int (kr_crate_t *crate);
 int kr_crate_has_float (kr_crate_t *crate);
@@ -328,8 +328,7 @@ int kr_crate_has_float (kr_crate_t *crate);
 #define kr_crate_notice kr_response_get_event
 
 #define kr_uncrate_int kr_crate_to_int
-#define kr_uncrate_rep kr_response_to_rep
-#define kr_uncrate kr_response_to_rep
+#define kr_uncrate kr_uncrate_rep
 
 #define kr_uncrate_float kr_crate_to_float
 

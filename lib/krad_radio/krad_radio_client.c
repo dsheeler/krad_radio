@@ -570,7 +570,7 @@ int kr_compositor_crate_to_float (kr_crate_t *crate, float *real) {
   }
 
   *real = 0.0f;
-  return -1; 
+  return 0; 
 }
 
 int kr_mixer_crate_to_float (kr_crate_t *crate, float *real) {
@@ -634,7 +634,6 @@ int kr_crate_to_float (kr_crate_t *crate, float *number) {
       return kr_mixer_crate_to_float (crate, number);
     case KR_COMPOSITOR:
       return kr_compositor_crate_to_float (crate, number);
-      break;
     case KR_TRANSPONDER:
       break;
   }
@@ -715,12 +714,14 @@ static int kr_radio_crate_to_rep (kr_crate_t *crate) {
   return 0;
 }
 
-int kr_response_to_rep (kr_crate_t *crate) {
+int kr_uncrate_rep (kr_crate_t *crate) {
 
-  if (crate->notice == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) {
+  if (!((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || 
+      (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO) ||
+      (crate->notice == EBML_ID_KRAD_UNIT_INFO))) {
     return 0;
   }
-  
+
   if (crate->size == 0) {
     return 0;
   }
@@ -914,13 +915,6 @@ int krad_read_address_from_ebml (kr_ebml2_t *ebml, kr_address_t *address) {
   }
   
   return 1;
-}
-
-int kr_crate_loaded (kr_crate_t *crate) {
-  if (kr_response_to_rep (crate)) {
-    return 1;
-  }
-  return 0;
 }
 
 int krad_message_notice_has_payload (uint32_t notice) {
