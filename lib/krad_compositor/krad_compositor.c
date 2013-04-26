@@ -243,15 +243,15 @@ static void krad_compositor_composite (krad_compositor_t *compositor) {
     }
   }
 
-  for (i = 0; i < KC_MAX_TEXTS; i++) {
-    if (compositor->text[i].subunit.active == 1) {
-      krad_text_render (&compositor->text[i], compositor->cr);
-    }
-  }
-  
   for (i = 0; i < KC_MAX_VECTORS; i++) {
     if (compositor->vector[i].subunit.active == 1) {
       krad_vector_render (&compositor->vector[i], compositor->cr);
+    }
+  }
+
+  for (i = 0; i < KC_MAX_TEXTS; i++) {
+    if (compositor->text[i].subunit.active == 1) {
+      krad_text_render (&compositor->text[i], compositor->cr);
     }
   }
 }
