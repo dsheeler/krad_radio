@@ -1,20 +1,8 @@
 #include "krad_stream.h"
 
-#define BUF_SIZE 4096
-#define DEBUG 1
-#define VERSION 4
-
-typedef struct krad_stream_St krad_stream_t;
-
-struct krad_stream_St {
-  int sd;
-};
-
 static void kr_base64_encode (char *dest, char *src, int maxlen);
 static int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len);
 static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len);
-static void kr_stream_destroy (krad_stream_t *stream);
-static void kr_stream_free (krad_stream_t *stream);
 
 static void kr_base64_encode (char *dest, char *src, int maxlen) {
 
@@ -90,22 +78,60 @@ static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len) {
   return recv (stream->sd, buffer, len, 0);
 }
 
-static void kr_stream_free (krad_stream_t *stream) {
-  free (stream);
-}
-
-static void kr_stream_destroy (krad_stream_t *stream) {
+int kr_stream_disconnect (krad_stream_t *stream) {
+  if (stream == NULL) {
+    return -2;
+  }
   if (stream->sd != 0) {
     close (stream->sd);
     stream->sd = 0;
+    return 0;
   }
-  kr_stream_free (stream);
+  return -1;
 }
 
-int kr_stream_connect (char *host, int port, char *mount, char *password) {
+int kr_stream_free (krad_stream_t **stream) {
+
+  if ((stream == NULL) || (*stream == NULL)) {
+    return -1;
+  }
+  
+  if ((*stream)->host != NULL) {
+    free ((*stream)->host);
+    (*stream)->host = NULL;
+  }
+  if ((*stream)->mount != NULL) {
+    free ((*stream)->mount);
+    (*stream)->mount = NULL;
+  }
+  if ((*stream)->password != NULL) {
+    free ((*stream)->password);
+    (*stream)->password = NULL;
+  }
+
+  free (*stream);
+  *stream = NULL;
+  return 0;
+}
+
+int kr_stream_destroy (krad_stream_t **stream) {
+  if ((stream == NULL) || (*stream == NULL)) {
+    return -1;
+  }
+  kr_stream_disconnect (*stream);
+  return kr_stream_free (stream);
+}
+
+int kr_stream_reconnect (krad_stream_t *stream) {
+  //kr_stream_disconnect (stream);
+  //FIXME RECCONNECTING
+  return -1;
+}
+
+krad_stream_t *kr_stream_connect (char *host, int port,
+                                  char *mount, char *password) {
 
   krad_stream_t *krad_stream;
-  int sd;
   int http_string_pos;
   char *content_type;
   char auth[256];
@@ -117,20 +143,15 @@ int kr_stream_connect (char *host, int port, char *mount, char *password) {
   struct addrinfo hints;
   struct addrinfo *res;
 
-  sd = -1;
   krad_stream = NULL;
   res = NULL;  
   http_string_pos = 0;
 
   krad_stream = calloc (1, sizeof(krad_stream_t));
-  
-  if (krad_stream == NULL) {
-    return -1;
-  }
 
   if ((host == NULL) || (mount == NULL) || ((port < 0) || (port > 65535))) {
-    kr_stream_destroy (krad_stream);
-    return -1;
+    kr_stream_destroy (&krad_stream);
+    return NULL;
   }
 
   memset (&hints, 0x00, sizeof (hints));
@@ -152,18 +173,16 @@ int kr_stream_connect (char *host, int port, char *mount, char *password) {
   snprintf (port_string, 6, "%d", port);
   ret = getaddrinfo (host, port_string, &hints, &res);
   if (ret != 0) {
-    kr_stream_destroy (krad_stream);
-    return -1;
+    kr_stream_destroy (&krad_stream);
+    return NULL;
   }
 
   krad_stream->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
   if (krad_stream->sd < 0) {
-    kr_stream_destroy (krad_stream);
-    krad_stream = NULL;
+    kr_stream_destroy (&krad_stream);
   } else {
     if (connect (krad_stream->sd, res->ai_addr, res->ai_addrlen) < 0) {
-      kr_stream_destroy (krad_stream);
-      krad_stream = NULL;
+      kr_stream_destroy (&krad_stream);
     } else {
       if (password == NULL) {
         snprintf (http_string, sizeof (http_string),
@@ -220,27 +239,11 @@ int kr_stream_connect (char *host, int port, char *mount, char *password) {
   }
 
   if (krad_stream != NULL) {
-    sd = krad_stream->sd;
-    kr_stream_free (krad_stream);
+    krad_stream->host = strdup (host);
+    krad_stream->port = port;
+    krad_stream->mount = strdup (mount);
+    krad_stream->password = strdup (password);
   }
 
-  return sd;
-}
-
-kr_io2_t *kr_stream (char *host, int port,
-                     char *mount, char *password) {
-  
-  kr_io2_t *io;
-  int fd;
-  
-  fd = kr_stream_connect (host, port, mount, password);
-  
-  if (fd < 0) {
-    return NULL;
-  }
-  
-  io = kr_io2_create_size (65535);
-  kr_io2_set_fd (io, fd);
-
-  return io;
+  return krad_stream;
 }

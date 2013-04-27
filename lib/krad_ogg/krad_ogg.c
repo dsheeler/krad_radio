@@ -452,15 +452,16 @@ krad_ogg_t *krad_ogg_create () {
 
 krad_ogg_t *krad_ogg_open_file (char *filename, krad_io_mode_t mode) {
 
+  failfast ("Ogg is disabled for the moment");
   krad_ogg_t *ogg;
   
   ogg = krad_ogg_create ();
   
   if (mode == KRAD_IO_WRITEONLY) {
-    ogg->io = kr_file_create (filename);
+    //ogg->io = kr_file_create (filename);
   }
   if (mode == KRAD_IO_READONLY) {
-    ogg->io = kr_file_open (filename);
+    //ogg->io = kr_file_open (filename);
   }
   
   return ogg;
@@ -469,12 +470,15 @@ krad_ogg_t *krad_ogg_open_file (char *filename, krad_io_mode_t mode) {
 krad_ogg_t *krad_ogg_open_stream (char *host, uint32_t port,
                                   char *mount, char *password) {
 
+  failfast ("Ogg is disabled for the moment");
+  return NULL;
+  /*
   krad_ogg_t *ogg;
   kr_io2_t *io;
   
   printk ("Krad Ogg: %s %d %s %s", host, port, mount, password);
   
-  io = kr_stream (host, port, mount, password);
+  //io = kr_stream (host, port, mount, password);
 
   printk ("Krad Ogg: fd %d", io->fd);
 
@@ -487,6 +491,7 @@ krad_ogg_t *krad_ogg_open_stream (char *host, uint32_t port,
   ogg->io = io;
 
   return ogg;
+  */
 }
 
 krad_ogg_t *krad_ogg_open_transmission (krad_transmission_t *krad_transmission) {

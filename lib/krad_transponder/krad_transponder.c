@@ -127,7 +127,9 @@ void v4l2_capture_unit_create (void *arg) {
   krad_link_t *krad_link = (krad_link_t *)arg;
 
   printk ("Video capture creating..");
-
+  
+  //krad_link->video_codec = MJPEG;
+  
   krad_link->krad_v4l2 = krad_v4l2_create ();
 
   if (krad_link->video_codec != NOCODEC) {

@@ -18,6 +18,9 @@ typedef enum {
   H264,
   VORBIS,
 } krad_codec_t;
+
+typedef krad_codec_t kr_codec_t;
+
 #define KRAD_CODEC_T 1
 #endif
 
@@ -32,6 +35,7 @@ typedef enum {
 
 typedef krad_container_type_t kr_container_type_t;
 typedef struct krad_codec_header_St krad_codec_header_t;
+typedef struct krad_codec_header_St kr_codec_hdr_t;
 
 struct krad_codec_header_St {
   krad_codec_t codec;

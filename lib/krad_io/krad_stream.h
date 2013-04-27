@@ -11,7 +11,32 @@
 
 #include "krad_io2.h"
 
-int kr_stream_connect (char *host, int port, char *mount, char *password);
-kr_io2_t *kr_stream (char *host, int port, char *mount, char *password);
+typedef struct krad_stream_St krad_stream_t;
+
+struct krad_stream_St {
+  int32_t sd;
+  uint64_t position;
+  int32_t readable;
+  int32_t writable;
+
+  char *host;
+  int32_t port;
+  char *mount;
+  char *password;
+};
+
+/* Close SD only */
+int kr_stream_disconnect (krad_stream_t *stream);
+
+/* Free stream but do not close SD */
+int kr_stream_free (krad_stream_t **stream);
+
+/* Disconnect and then free stream */
+int kr_stream_destroy (krad_stream_t **stream);
+
+int kr_stream_reconnect (krad_stream_t *stream);
+
+krad_stream_t *kr_stream_connect (char *host, int port,
+                                  char *mount, char *password);
 
 #endif

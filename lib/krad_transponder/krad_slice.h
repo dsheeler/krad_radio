@@ -11,11 +11,11 @@
 typedef struct kr_slice_St kr_slice_t;
 
 struct kr_slice_St {
-  unsigned char *data;
+  uint8_t *data;
   int32_t size;
   int frames;
   int keyframe;
-  uint64_t timecode;  
+  uint64_t timecode;
   int refs;
   int final;
   int header;
@@ -24,10 +24,10 @@ struct kr_slice_St {
 
 void kr_slice_ref (kr_slice_t *kr_slice);
 void kr_slice_unref (kr_slice_t *kr_slice);
-kr_slice_t *kr_slice_create_with_data (unsigned char *data, uint32_t size);
+kr_slice_t *kr_slice_create_with_data (uint8_t *data, uint32_t size);
 kr_slice_t *kr_slice_create ();
 int kr_slice_set_data (kr_slice_t *kr_slice,
-                       unsigned char *data, uint32_t size);
+                       uint8_t *data, uint32_t size);
                          
                          
 #endif

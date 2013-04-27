@@ -1,5 +1,7 @@
 #include "krad_mkv.h"
+#include "krad_mkv_internal.h"
 
+static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title);
 static char *kr_codec_to_mkv_codec (krad_codec_t codec);
 static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode);
 static int kr_mkv_new_tracknumber (kr_mkv_t *mkv);
@@ -91,7 +93,7 @@ static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode) {
   kr_ebml2_pack_int64 (mkv->e, MKV_CLUSTER_TIMECODE, mkv->cluster_timecode);
 }
 
-void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
+static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
 
   unsigned char *segment_info;
   
@@ -371,20 +373,22 @@ kr_mkv_t *kr_mkv_create_file (char *filename) {
 kr_mkv_t *kr_mkv_stream (char *host, int port, char *mount, char *password) {
   
   kr_mkv_t *mkv;
-  int fd;
+  krad_stream_t *stream;
   
-  fd = kr_stream_connect (host, port, mount, password);
+  stream = kr_stream_connect (host, port, mount, password);
   
-  printk ("Krad MKV: %s %d %s %s", host, port, mount, password);
-  printk ("Krad MKV: fd %d", fd);
-  
-  if (fd < 0) {
+  if (stream == NULL) {
     return NULL;
   }
+
+  printk ("Krad MKV: %s %d %s %s - SD %s",
+          host, port, mount, password, stream->sd);
+  printk ("Krad MKV: SD %d", stream->sd);
   
   mkv = kr_mkv_create ();
+  mkv->stream = stream;
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
-  mkv->fd = fd;  
+  mkv->fd = stream->sd;  
   kr_io2_set_fd (mkv->io, mkv->fd);
 
   kr_mkv_start_segment (mkv, "A Krad Radio Stream");
@@ -411,6 +415,9 @@ int kr_mkv_destroy (kr_mkv_t **mkv) {
     free ((*mkv)->tracks);
     if ((*mkv)->file != NULL) {
       kr_file_close (&(*mkv)->file);
+    }
+    if ((*mkv)->stream != NULL) {
+      kr_stream_destroy (&(*mkv)->stream);
     }
     free (*mkv);
     return 0;

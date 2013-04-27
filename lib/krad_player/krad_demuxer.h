@@ -24,6 +24,11 @@
 #define KRAD_DEMUXER_H
 
 typedef enum {
+  REV,
+  FWD
+} kr_ddir_t;
+
+typedef enum {
   DMIDLE,
   DMCUED,
   DEMUXING
@@ -45,14 +50,14 @@ struct kr_demuxer_params_St {
   char *url;
   //size_t msg_sz;
   void (*status_cb)(kr_demuxer_state_t, void *);
-  int (*packet_cb)(kr_packet_t *, void *);  
+  int (*codeme_cb)(kr_codeme_t *, void *);  
 };
 
 void kr_demuxer_destroy (kr_demuxer_t **demuxer);
 kr_demuxer_t *kr_demuxer_create (kr_demuxer_params_t *demuxer_params);
 
-kr_direction_t kr_demuxer_direction_get (kr_demuxer_t *demuxer);
-void kr_demuxer_direction_set (kr_demuxer_t *demuxer, kr_direction_t direction);
+kr_ddir_t kr_demuxer_direction_get (kr_demuxer_t *demuxer);
+void kr_demuxer_direction_set (kr_demuxer_t *demuxer, kr_ddir_t);
 int64_t kr_demuxer_position_get (kr_demuxer_t *demuxer);
 kr_demuxer_state_t kr_demuxer_state_get (kr_demuxer_t *demuxer);
 

@@ -19,7 +19,7 @@ struct kr_demuxer_St {
   kr_demuxer_params_t params;
   int64_t position;
   kr_demuxer_state_t state;
-  kr_direction_t direction;
+  kr_ddir_t direction;
   krad_container_t *input;
   kr_machine_t *machine;  
 };
@@ -28,7 +28,7 @@ struct kr_demuxer_St {
 
 static void kr_demuxer_step (kr_demuxer_t *demuxer) {
 
-  kr_packet_t packet;
+  kr_codeme_t codeme;
   uint32_t track;
   uint64_t timecode;
   int ret;
@@ -43,10 +43,10 @@ static void kr_demuxer_step (kr_demuxer_t *demuxer) {
     if (size < 1) {
       break;
     }
-    packet.size = size;
-    packet.buffer = buffer;
-    packet.track = track;
-    ret = demuxer->params.packet_cb (&packet, demuxer->params.controller);
+    codeme.sz = size;
+    codeme.data = buffer;
+    codeme.trk = track;
+    ret = demuxer->params.codeme_cb (&codeme, demuxer->params.controller);
     if (ret != 1) {
       break;
     }
@@ -149,9 +149,9 @@ kr_demuxer_t *kr_demuxer_create (kr_demuxer_params_t *demuxer_params) {
   demuxer->params.url = strdup (demuxer_params->url);
   demuxer->params.controller = demuxer_params->controller;
   demuxer->params.status_cb = demuxer_params->status_cb;  
-  demuxer->params.packet_cb = demuxer_params->packet_cb;
+  demuxer->params.codeme_cb = demuxer_params->codeme_cb;
 
-  demuxer->direction = FORWARD;
+  demuxer->direction = FWD;
   demuxer->state = DMIDLE;
 
   machine_params.actual = demuxer;
@@ -165,7 +165,7 @@ kr_demuxer_t *kr_demuxer_create (kr_demuxer_params_t *demuxer_params) {
   return demuxer;
 };
 
-kr_direction_t kr_demuxer_direction_get (kr_demuxer_t *demuxer) {
+kr_ddir_t kr_demuxer_direction_get (kr_demuxer_t *demuxer) {
   return demuxer->direction;
 }
 
@@ -177,7 +177,7 @@ kr_demuxer_state_t kr_demuxer_state_get (kr_demuxer_t *demuxer) {
   return demuxer->state;
 }
 
-void kr_demuxer_direction_set (kr_demuxer_t *demuxer, kr_direction_t direction) {
+void kr_demuxer_direction_set (kr_demuxer_t *demuxer, kr_ddir_t direction) {
   kr_demuxer_msg_t msg;
   msg.cmd = SETDMDIR;
   msg.param.integer = direction;

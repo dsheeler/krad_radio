@@ -232,17 +232,17 @@ int krad_player_check_av_ports (kr_player_t *player) {
   return 0;
 }
 
-static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
+static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
 
   kr_player_t *player;
   uint32_t pos;
   player = (kr_player_t *)actual;
 
-  //printf ("Packet sized %zu track %d!\n", packet->size, packet->track);
+  //printf ("Codeme sized %zu track %d!\n", codeme->sz, codeme->trk);
   
-  if (packet->track == 1) {
+  if (codeme->trk == 1) {
 
-    krad_vpx_decoder_decode (player->vpx, packet->buffer, packet->size);
+    krad_vpx_decoder_decode (player->vpx, codeme->data, codeme->sz);
 
     while (player->vpx->img != NULL) {
 
@@ -289,7 +289,7 @@ static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
       pos = (player->frames_dec + 1 % player->framebufsize) * player->frame_size;
     
       krad_vhs_decode (player->kvhs,
-                       packet->buffer,
+                       codeme->data,
                        player->rgba + pos);
       player->frames_dec++;
     }
@@ -319,11 +319,11 @@ static int kr_player_demuxer_packet (kr_packet_t *packet, void *actual) {
     */
   }
   
-  if (packet->track == 2) {
+  if (codeme->trk == 2) {
     /*
     int ret;
-    ret = krad_flac_decode (player->flac, packet->buffer,
-                            packet->size, player->samples);
+    ret = krad_flac_decode (player->flac, codeme->data,
+                            codeme->sz, player->samples);
     printf ("flac decode ret is %d\n", ret);
     
     while ((krad_resample_ring_write_space (player->resample_ring[0]) <= ret * 4) || 
@@ -483,7 +483,7 @@ static void kr_player_start (void *actual) {
   demuxer_params.url = player->url;
   demuxer_params.controller = player;
   demuxer_params.status_cb = kr_player_demuxer_status;
-  demuxer_params.packet_cb = kr_player_demuxer_packet;
+  demuxer_params.codeme_cb = kr_player_process_codeme;
   player->demuxer = kr_demuxer_create (&demuxer_params);
   //player->decoder = kr_decoder_create ();
 

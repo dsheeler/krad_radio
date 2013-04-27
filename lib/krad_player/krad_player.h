@@ -27,6 +27,11 @@
 #define KRAD_PLAYER_H
 
 typedef enum {
+  REVERSE,
+  FORWARD
+} kr_direction_t;
+
+typedef enum {
   IDLE,
   CUED,
   PLAYING,
