@@ -401,9 +401,16 @@ void decklink_capture_unit_create (void *arg) {
                                     &krad_link->capture_height);
   }
   
+  //krad_decklink_set_video_mode (krad_link->krad_decklink,
+  //                              krad_link->capture_width, krad_link->capture_height,
+  //                              krad_link->fps_numerator, krad_link->fps_denominator);
+
+
   krad_decklink_set_video_mode (krad_link->krad_decklink,
                                 krad_link->capture_width, krad_link->capture_height,
-                                krad_link->fps_numerator, krad_link->fps_denominator);
+                                60000, 1001);
+
+
   krad_decklink_set_audio_input (krad_link->krad_decklink, krad_link->audio_input);
   krad_decklink_set_video_input (krad_link->krad_decklink, "hdmi");
 
@@ -709,8 +716,6 @@ void audio_encoding_unit_create (void *arg) {
   int c;
 
   printk ("Audio unit create");
-  
-  krad_link->channels = 2;
   
   if (krad_link->codec != VORBIS) {
     krad_link->au_buffer = malloc (300000);
@@ -1133,7 +1138,7 @@ krad_link_t *krad_link_prepare (int linknum) {
   krad_link->theora_quality = DEFAULT_THEORA_QUALITY;
   krad_link->video_source = NOVIDEO;
   krad_link->transport_mode = TCP;
-
+  krad_link->channels = 2;
   sprintf (krad_link->sysname, "link%d", linknum);
   krad_link->krad_tags = krad_tags_create (krad_link->sysname);
 
