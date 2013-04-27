@@ -95,7 +95,7 @@ static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode) {
 
 static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
 
-  unsigned char *segment_info;
+  uint8_t *segment_info;
   
   if (title == NULL) {
     title = "A Krad Radio Creation";
@@ -126,11 +126,11 @@ int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
                                               int fps_numerator,
                                               int fps_denominator,
                                               int width, int height,
-                                              unsigned char *priv_data,
+                                              uint8_t *priv_data,
                                               int priv_data_size) {
   int t;
-  unsigned char *track_info;
-  unsigned char *video_info;
+  uint8_t *track_info;
+  uint8_t *video_info;
 
   t = kr_mkv_new_tracknumber (mkv);
   if (t == -1) {
@@ -174,12 +174,12 @@ int kr_mkv_add_video_track (kr_mkv_t *mkv, krad_codec_t codec,
 
 int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
                             uint32_t sample_rate, uint8_t channels,
-                            unsigned char *priv_data,
+                            uint8_t *priv_data,
                             int priv_data_size) {
 
   int t;
-  unsigned char *track_info;
-  unsigned char *audio_info;
+  uint8_t *track_info;
+  uint8_t *audio_info;
 
   t = kr_mkv_new_tracknumber (mkv);
   if (t == -1) {
@@ -213,7 +213,7 @@ int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
 int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id) {
 
   int t;
-  unsigned char *track_info;
+  uint8_t *track_info;
 
   t = kr_mkv_new_tracknumber (mkv);
 
@@ -227,7 +227,7 @@ int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id) {
   return t;
 }
 
-void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
+void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
                        int buffer_len, int keyframe) {
 
   kr_mkv_track_t *track;
@@ -288,7 +288,7 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
   kr_mkv_sync (mkv);
 }
 
-void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
+void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
                        int buffer_len, int frames) {
 
   kr_mkv_track_t *track;
@@ -370,12 +370,13 @@ kr_mkv_t *kr_mkv_create_file (char *filename) {
   return mkv;
 }
 
-kr_mkv_t *kr_mkv_stream (char *host, int port, char *mount, char *password) {
+kr_mkv_t *kr_mkv_create_stream (char *host, int port,
+                                char *mount, char *password) {
   
   kr_mkv_t *mkv;
   krad_stream_t *stream;
   
-  stream = kr_stream_connect (host, port, mount, password);
+  stream = kr_stream_create (host, port, mount, password);
   
   if (stream == NULL) {
     return NULL;

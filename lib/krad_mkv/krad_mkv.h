@@ -53,10 +53,10 @@ struct kr_mkv_St {
   int track_count;
   int current_track;
 
-  unsigned char *segment;
-  unsigned char *tracks_info;
+  uint8_t *segment;
+  uint8_t *tracks_info;
 
-  unsigned char *cluster;
+  uint8_t *cluster;
 
   uint64_t current_timecode;
   uint64_t cluster_timecode;
@@ -77,14 +77,15 @@ struct kr_mkv_St {
 int kr_mkv_destroy (kr_mkv_t **mkv);
 
 kr_mkv_t *kr_mkv_create_file (char *filename);
-kr_mkv_t *kr_mkv_stream (char *host, int port, char *mount, char *password);
+kr_mkv_t *kr_mkv_create_stream (char *host, int port,
+                                char *mount, char *password);
 
 int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
                                               krad_codec_t codec,
                                               int fps_numerator,
                                               int fps_denominator,
                                               int width, int height,
-                                              unsigned char *priv_data,
+                                              uint8_t *priv_data,
                                               int priv_data_size);
 
 int kr_mkv_add_video_track (kr_mkv_t *mkv, krad_codec_t codec,
@@ -93,15 +94,15 @@ int kr_mkv_add_video_track (kr_mkv_t *mkv, krad_codec_t codec,
 
 int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
                             uint32_t sample_rate, uint8_t channels,
-                            unsigned char *priv_data,
+                            uint8_t *priv_data,
                             int priv_data_size);
 
 int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id);
 
-void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
+void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
                        int buffer_len, int keyframe);
 
-void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
+void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
                        int buffer_len, int frames);
 
 #endif

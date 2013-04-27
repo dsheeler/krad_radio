@@ -938,7 +938,7 @@ void muxer_unit_create (void *arg) {
   
     } else {
   
-      krad_link->krad_container = krad_container_open_stream (krad_link->host,
+      krad_link->krad_container = krad_container_create_stream (krad_link->host,
                                   krad_link->port,
                                   krad_link->mount,
                                   krad_link->password);

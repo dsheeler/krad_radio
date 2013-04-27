@@ -22,8 +22,8 @@ struct krad_container_St {
 
 /* Create / Destroy */
 void krad_container_destroy (krad_container_t **krad_container);
-krad_container_t *krad_container_open_stream (char *host, uint32_t port,
-                                              char *mount, char *password);
+krad_container_t *krad_container_create_stream (char *host, uint32_t port,
+                                                char *mount, char *password);
 krad_container_t *krad_container_open_file (char *filename,
                                             krad_io_mode_t mode);
 krad_container_t *

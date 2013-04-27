@@ -9,6 +9,7 @@
 
 kr_mkv_t *kr_mkv_open_file (char *filename);
 
+kr_mkv_t *kr_mkv_open_stream (char *host, int port, char *mount);
 
 int kr_mkv_track_count (kr_mkv_t *mkv);
 krad_codec_t kr_mkv_track_codec (kr_mkv_t *mkv, uint32_t track);

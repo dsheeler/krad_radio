@@ -128,8 +128,8 @@ int krad_container_read_packet (krad_container_t *container, uint32_t *track,
   }
 }
 
-krad_container_t *krad_container_open_stream (char *host, uint32_t port,
-                                              char *mount, char *password) {
+krad_container_t *krad_container_create_stream (char *host, uint32_t port,
+                                                char *mount, char *password) {
 
   krad_container_t *container;
   krad_container_type_t type;
@@ -145,7 +145,7 @@ krad_container_t *krad_container_open_stream (char *host, uint32_t port,
   container->type = type;
 
   if (container->type == OGG) {
-    container->ogg = krad_ogg_open_stream (host, port, mount, password);
+    //container->ogg = krad_ogg_open_stream (host, port, mount, password);
     if (container->ogg == NULL) {
       free (container);
       return NULL;
@@ -153,7 +153,7 @@ krad_container_t *krad_container_open_stream (char *host, uint32_t port,
   }
   
   if (container->type == MKV) {
-    container->mkv = kr_mkv_stream (host, port, mount, password);
+    container->mkv = kr_mkv_create_stream (host, port, mount, password);
     if (container->mkv == NULL) {
       free (container);
       return NULL;

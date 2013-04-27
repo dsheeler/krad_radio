@@ -36,7 +36,9 @@ int kr_stream_destroy (krad_stream_t **stream);
 
 int kr_stream_reconnect (krad_stream_t *stream);
 
-krad_stream_t *kr_stream_connect (char *host, int port,
-                                  char *mount, char *password);
+krad_stream_t *kr_stream_create (char *host, int port,
+                                 char *mount, char *password);
+
+krad_stream_t *kr_stream_open (char *host, int port, char *mount);
 
 #endif

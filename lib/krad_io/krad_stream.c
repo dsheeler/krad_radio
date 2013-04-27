@@ -128,8 +128,8 @@ int kr_stream_reconnect (krad_stream_t *stream) {
   return -1;
 }
 
-krad_stream_t *kr_stream_connect (char *host, int port,
-                                  char *mount, char *password) {
+krad_stream_t *kr_stream_create (char *host, int port,
+                                 char *mount, char *password) {
 
   krad_stream_t *krad_stream;
   int http_string_pos;
@@ -247,3 +247,9 @@ krad_stream_t *kr_stream_connect (char *host, int port,
 
   return krad_stream;
 }
+
+krad_stream_t *kr_stream_open (char *host, int port, char *mount) {
+  //FIXME
+  return NULL;
+}
+

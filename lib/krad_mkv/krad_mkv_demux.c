@@ -396,6 +396,11 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
   return len - 4;
 }
 
+kr_mkv_t *kr_mkv_open_stream (char *host, int port, char *mount) {
+  //FIXME
+  return NULL;
+}
+
 kr_mkv_t *kr_mkv_open_file (char *filename) {
   
   kr_mkv_t *mkv;
