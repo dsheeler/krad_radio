@@ -43,7 +43,7 @@ static int cJSON_strcasecmp(const char *s1,const char *s2)
 	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
 }
 
-#define CJSON_MEMSIZE 4096 * 32
+#define CJSON_MEMSIZE 4096 * 64
 
 static char cjson_mem[CJSON_MEMSIZE];
 static size_t cjson_mempos;
