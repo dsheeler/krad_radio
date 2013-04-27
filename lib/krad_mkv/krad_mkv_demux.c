@@ -398,23 +398,17 @@ static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
 kr_mkv_t *kr_mkv_open_file (char *filename) {
   
   kr_mkv_t *mkv;
-  int flags;
-  int fd;
-  
-  flags = O_RDONLY;
-  
-  if (!file_exists(filename)) {
-    return NULL;
-  }
-  
-  fd = open ( filename, flags );
-  
-  if (fd < 0) {
+  kr_file_t *file;
+
+  file = kr_file_open (filename);  
+
+  if (file == NULL) {
     return NULL;
   }
   
   mkv = kr_mkv_create_bufsize (500000000);
-  mkv->fd = fd;  
+  mkv->file = file;
+  mkv->fd = file->fd;
   kr_io2_set_fd (mkv->io, mkv->fd);
 
   kr_io2_read (mkv->io);

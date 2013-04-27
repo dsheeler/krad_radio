@@ -349,26 +349,18 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, unsigned char *buffer,
 kr_mkv_t *kr_mkv_create_file (char *filename) {
   
   kr_mkv_t *mkv;
-  int flags;
-  int mode;
-  int fd;
-  
-  flags = O_WRONLY | O_CREAT;
-  mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-  
-  if (file_exists(filename)) {
-    return NULL;
-  }
-  
-  fd = open ( filename, flags, mode );
-  
-  if (fd < 0) {
+  kr_file_t *file;
+
+  file = kr_file_create (filename);  
+
+  if (file == NULL) {
     return NULL;
   }
   
   mkv = kr_mkv_create ();
+  mkv->file = file;
+  mkv->fd = file->fd;
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
-  mkv->fd = fd;  
   kr_io2_set_fd (mkv->io, mkv->fd);
 
   kr_mkv_start_segment (mkv, "A Krad Radio File");
@@ -417,7 +409,9 @@ int kr_mkv_destroy (kr_mkv_t **mkv) {
   if ((mkv != NULL) && (*mkv != NULL)) {
     kr_io2_destroy (&(*mkv)->io);
     free ((*mkv)->tracks);
-    close ((*mkv)->fd);
+    if ((*mkv)->file != NULL) {
+      kr_file_close (&(*mkv)->file);
+    }
     free (*mkv);
     return 0;
   }

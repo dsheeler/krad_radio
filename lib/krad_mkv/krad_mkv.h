@@ -70,6 +70,7 @@ struct kr_mkv_St {
   
   int fd;
   kr_io2_t *io;
+  kr_file_t *file;
 };
 
 int kr_mkv_destroy (kr_mkv_t **mkv);

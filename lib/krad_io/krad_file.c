@@ -1,20 +1,42 @@
 #include "krad_file.h"
 
-static kr_file_t *kr_file_open_stdin () {
-  //FIXME check that we are not a daemon, stdin open
-  //fd = STDIN_FILENO;
-  //file->std_stream = 1;
-  //file->seekable = 0;
-  //return NULL;
-  return NULL;
+static kr_file_t kr_file_stdin;
+static kr_file_t kr_file_stdout;
+
+kr_file_t *kr_file_open_stdin () {
+
+  errno = 0;
+  fcntl (STDIN_FILENO, F_GETFD);
+  if (errno == EBADF) {
+    return NULL;
+  }
+  
+  kr_file_stdin.fd = STDIN_FILENO;
+  kr_file_stdin.path = "STDIN";
+  kr_file_stdin.std_stream = 1;
+  kr_file_stdin.seekable = 0;
+  kr_file_stdin.readable = 1;
+  kr_file_stdin.writable = 0;
+
+  return &kr_file_stdin;
 }
 
-static kr_file_t *kr_file_open_stdout () {
-  //FIXME check that we are not a daemon, stdout open
-  //fd = STDOUT_FILENO;
-  //file->std_stream = 1;
-  //file->seekable = 0;
-  return NULL;
+kr_file_t *kr_file_open_stdout () {
+  
+  errno = 0;
+  fcntl (STDOUT_FILENO, F_GETFD);
+  if (errno == EBADF) {
+    return NULL;
+  }
+  
+  kr_file_stdout.fd = STDOUT_FILENO;
+  kr_file_stdout.path = "STDOUT";
+  kr_file_stdout.std_stream = 1;
+  kr_file_stdout.seekable = 0;
+  kr_file_stdout.readable = 0;
+  kr_file_stdout.writable = 1;
+
+  return &kr_file_stdout;
 }
 
 int file_exists (char *path) {
@@ -172,10 +194,12 @@ kr_file_t *kr_file_open (char *path) {
     }
   } else {
     //FIXME handle symlink
-    if (!(S_ISREG(file.st.st_mode))) {
+    if (!(S_ISREG (file.st.st_mode))) {
       return NULL;
     }
   }
+  
+  file.size = file.st.st_size;
 
 #ifdef KR_LINUX
   if (statfs (path, &file.stfs) != -1) {
@@ -215,10 +239,13 @@ int kr_file_close (kr_file_t **file) {
   if ((file == NULL) || (*file == NULL)) {
     return -1;
   }
+
   // We would never close std streams here
-  if ((*file)->std_stream != 1) {
-    close ((*file)->fd);
+  if ((*file == &kr_file_stdin) || (*file == &kr_file_stdout)) {
+    return 0;
   }
+
+  close ((*file)->fd);
   free ((*file)->path);
   free (*file);
   *file = NULL;

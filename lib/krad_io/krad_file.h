@@ -26,7 +26,7 @@ typedef struct kr_file_St kr_file_t;
 
 struct kr_file_St {
   int32_t fd;
-  size_t position;
+  off_t position;
   int32_t readable;
   int32_t writable;
   int32_t seekable;
@@ -34,6 +34,7 @@ struct kr_file_St {
   int32_t local;
   int32_t remote;
   int32_t mapmode;
+  off_t size;
   char *path;
   struct stat st;
   struct statfs stfs;
@@ -42,9 +43,16 @@ struct kr_file_St {
 int file_exists (char *path);
 int64_t file_size (char *path);
 
+kr_file_t *kr_file_open_stdin ();
+kr_file_t *kr_file_open_stdout ();
+
 kr_file_t *kr_file_open (char *path);
 kr_file_t *kr_file_create (char *path);
 
 int kr_file_close (kr_file_t **file);
+
+
+//FIXME  add _adv version with BYOB and error string
+//       add free w/o close for normal files
 
 #endif
