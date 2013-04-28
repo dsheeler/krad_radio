@@ -116,11 +116,12 @@ static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
   kr_ebml2_pack_header ( mkv->e, "webm", 2, 2);
 
   kr_ebml2_start_element (mkv->e, MKV_SEGMENT, &mkv->segment);
+
   kr_ebml2_start_element (mkv->e, MKV_SEGMENT_INFO, &segment_info);
   kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_TITLE, title);
-  kr_ebml2_pack_int32 (mkv->e, MKV_TIMECODESCALE, 1000000);
-  kr_ebml2_pack_string (mkv->e, MKV_MUXINGAPP, KRAD_MKV_VERSION);
-  kr_ebml2_pack_string (mkv->e, MKV_WRITINGAPP, KRAD_VERSION_STRING);
+  kr_ebml2_pack_int32 (mkv->e, MKV_SEGMENT_TIMECODESCALE, 1000000);
+  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
+  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_WRITINGAPP, KRAD_VERSION_STRING);
   kr_ebml2_finish_element (mkv->e, segment_info);
 
   mkv->current_track = 1;

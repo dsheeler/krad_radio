@@ -75,6 +75,16 @@ struct kr_mkv_St {
 
   uint8_t *stream_hdr;
   size_t stream_hdr_len;
+
+  /* demux only below */
+  uint8_t *segment_info_data;
+  uint8_t *tracks_info_data;
+  uint64_t segment_info_data_size;
+  uint64_t tracks_info_data_size;
+  
+  double duration;
+  uint64_t timecode_scale;
+  
 };
 
 int kr_mkv_destroy (kr_mkv_t **mkv);

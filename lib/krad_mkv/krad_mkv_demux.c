@@ -70,6 +70,55 @@ static int kr_mkv_check_ebml_header (kr_mkv_t *mkv) {
   return 0;
 }
 
+static int kr_mkv_parse_segment_info (kr_mkv_t *mkv, uint64_t max_pos) {
+
+  int ret;
+  uint32_t id;
+  uint64_t size;
+
+  while (1) {
+    if (mkv->e->pos >= max_pos) {
+      printk ("Got to end of segment info");
+      break;
+    }  
+    ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
+    if (ret < 0) {
+      printke ("Read error..");
+      return -1;
+    }
+
+    switch (id) {
+      case MKV_SEGMENT_TITLE:
+      case MKV_SEGMENT_UID:
+      case MKV_SEGMENT_FILENAME:
+      case MKV_SEGMENT_PREVUID:
+      case MKV_SEGMENT_PREVFILENAME:
+      case MKV_SEGMENT_NEXTUID:
+      case MKV_SEGMENT_NEXTFILENAME:
+      case MKV_SEGMENT_FAMILY:
+      case MKV_SEGMENT_CHAPTERTRANSLATE:
+      case MKV_SEGMENT_TIMECODESCALE:
+        kr_ebml2_unpack_uint64 (mkv->e, &mkv->timecode_scale, size);
+        break;
+      case MKV_SEGMENT_DURATION:
+        kr_ebml2_unpack_double (mkv->e, &mkv->duration, size);
+        break;
+      case MKV_SEGMENT_DATEUTC:
+      case MKV_SEGMENT_MUXINGAPP:
+      case MKV_SEGMENT_WRITINGAPP:
+        kr_ebml2_advance (mkv->e, size);
+        break;
+      default:
+        printk ("Skipping unknown element in segment info: %"PRIu64" bytes",
+                size);
+        kr_ebml2_advance (mkv->e, size);
+        break;
+    }
+  }
+
+  return 0;
+}
+
 static int kr_mkv_parse_segment_header (kr_mkv_t *mkv) {
 
   int ret;
@@ -95,18 +144,29 @@ static int kr_mkv_parse_segment_header (kr_mkv_t *mkv) {
       printke ("Read error..");
       return -1;
     }
-    if (id != MKV_TRACKS) {
-      printk ("Skipping unknown element: %"PRIu64" bytes", size);
-      kr_ebml2_advance (mkv->e, size);
-      continue;
-    } else {
-      printk ("Got Tracks!");
-      if (kr_mkv_parse_tracks (mkv, mkv->e->pos + size) < 0) {
-        return -1;
-      } else {
+
+    switch (id) {
+      case MKV_TRACKS:
+        mkv->tracks_info_data = mkv->e->bufstart + mkv->e->pos;
+        mkv->tracks_info_data_size = size;
+        if (kr_mkv_parse_tracks (mkv, mkv->e->pos + size) < 0) {
+          return -1;
+        } else {
+          return 0;
+        }
+      case MKV_SEGMENT_INFO:
+        mkv->segment_info_data = mkv->e->bufstart + mkv->e->pos;
+        mkv->segment_info_data_size = size;
+        printk ("Got Segment Info: %"PRIu64" bytes", size);
+        if (kr_mkv_parse_segment_info (mkv, mkv->e->pos + size) < 0) {
+          return -1;
+        }
+        break;        
+      default:
+        printk ("Skipping unknown element: %"PRIu64" bytes", size);
+        kr_ebml2_advance (mkv->e, size);
         break;
-      }
-    }  
+    }
   }
   return 0;
 }
@@ -347,6 +407,41 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
   return 0;
 }
 
+static void kr_mkv_rebuild_header_for_streaming (kr_mkv_t *mkv) {
+
+  size_t len;
+  uint8_t *segment;
+  uint8_t *segment_info;
+  kr_mkv_t *shdr;
+  char *title;
+  
+  len = mkv->e->pos;
+  mkv->stream_hdr = malloc (len);
+
+  shdr = kr_mkv_create_bufsize (len);
+  kr_ebml2_set_buffer (shdr->e, shdr->io->buf, shdr->io->space);
+
+  kr_ebml2_pack_header (shdr->e, "webm", 2, 2);
+  kr_ebml2_start_element (shdr->e, MKV_SEGMENT, &segment);
+
+  title = "A Krad Restream";
+
+  kr_ebml2_start_element (shdr->e, MKV_SEGMENT_INFO, &segment_info);
+  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_TITLE, title);
+  kr_ebml2_pack_int32 (shdr->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
+  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
+  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_WRITINGAPP, KRAD_VERSION_STRING);
+  kr_ebml2_finish_element (shdr->e, segment_info);
+
+  kr_ebml2_pack_data (shdr->e, MKV_TRACKS,
+                      mkv->tracks_info_data, mkv->tracks_info_data_size);
+    
+  mkv->stream_hdr_len = shdr->e->pos;
+  memcpy (mkv->stream_hdr, shdr->e->bufstart, mkv->stream_hdr_len);
+
+  kr_mkv_destroy (&shdr);
+}
+
 static int kr_mkv_parse_header (kr_mkv_t *mkv) {
   if (kr_mkv_check_ebml_header (mkv) < 0) {
     return -1;
@@ -354,12 +449,8 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv) {
   if (kr_mkv_parse_segment_header (mkv) < 0) {
     return -1;
   }
-  
-  //FIXME NEED TO REMOVE STREAM UNSAFE ELEMENTS
-  
-  mkv->stream_hdr_len = mkv->e->pos;
-  mkv->stream_hdr = malloc (mkv->stream_hdr_len);
-  memcpy (mkv->stream_hdr, mkv->e->bufstart, mkv->stream_hdr_len);
+
+  kr_mkv_rebuild_header_for_streaming (mkv);
   
   return 0;
 }
