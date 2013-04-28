@@ -35,8 +35,9 @@ krmkvhdrsources = """
 ../lib/krad_opus/opus_header.c
 """.split()
 
-kriceblastsources = """
+krtxmtrsources = """
 ../lib/krad_transmitter/krad_transmitter.c
+../lib/krad_chronometer/krad_ticker.c
 """.split()
 
 includedirs = """
@@ -178,7 +179,7 @@ def build(bld):
 
   for p in programs3:
     bld(features = 'c cprogram',
-    source = krmkvhdrsources + kriceblastsources + [p],
+    source = krmkvhdrsources + krtxmtrsources + [p],
     includes = includedirs, 
     target = p.replace(".c", ""),
     use = ["krad_mkv"],
