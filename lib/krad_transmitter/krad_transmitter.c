@@ -1,6 +1,5 @@
 #include "krad_transmitter.h"
 
-
 static krad_transmission_receiver_t *krad_transmitter_receiver_create (krad_transmitter_t *krad_transmitter, int fd);
 static void krad_transmitter_receiver_destroy (krad_transmission_receiver_t *krad_transmission_receiver);
 static int krad_transmitter_transmission_transmit (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
@@ -350,11 +349,11 @@ static void krad_transmission_remove_ready (krad_transmission_t *krad_transmissi
 	krad_transmission->ready_receiver_count--;
 }
 
-int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmission, unsigned char *buffer, int length) {
+int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmission, uint8_t *buffer, int length) {
 
 	int header_temp_len;
-	unsigned char *header_temp;
-	unsigned char *temp;
+	uint8_t *header_temp;
+	uint8_t *temp;
 	
 	temp = NULL;
 
@@ -382,11 +381,11 @@ int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmis
 	return length;
 }
 
-void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmission, unsigned char *buffer, int length) {
+void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmission, uint8_t *buffer, int length) {
 
 	int header_temp_len;
-	unsigned char *header_temp;
-	unsigned char *temp;
+	uint8_t *header_temp;
+	uint8_t *temp;
 	
 	temp = NULL;
 
@@ -424,15 +423,15 @@ void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmi
 			krad_transmission->header_len);
 }
 
-int krad_transmitter_transmission_add_data (krad_transmission_t *krad_transmission, unsigned char *buffer, int length) {
+int krad_transmitter_transmission_add_data (krad_transmission_t *krad_transmission, uint8_t *buffer, int length) {
 	return krad_transmitter_transmission_add_data_opt (krad_transmission, buffer, length, 0);
 }
 
-int krad_transmitter_transmission_add_data_sync (krad_transmission_t *krad_transmission, unsigned char *buffer, int length) {
+int krad_transmitter_transmission_add_data_sync (krad_transmission_t *krad_transmission, uint8_t *buffer, int length) {
 	return krad_transmitter_transmission_add_data_opt (krad_transmission, buffer, length, 1);
 }
 
-int krad_transmitter_transmission_add_data_opt (krad_transmission_t *krad_transmission, unsigned char *buffer, int length, int sync) {
+int krad_transmitter_transmission_add_data_opt (krad_transmission_t *krad_transmission, uint8_t *buffer, int length, int sync) {
 
 	int ret;
 	ret = 0;
@@ -516,7 +515,6 @@ krad_transmission_t *krad_transmitter_transmission_create (krad_transmitter_t *k
 	return NULL;
 
 }
-
 
 void krad_transmitter_transmission_destroy (krad_transmission_t *krad_transmission) {
 
@@ -1006,7 +1004,6 @@ krad_transmitter_t *krad_transmitter_create () {
 	krad_transmitter->not_found_len += sprintf (krad_transmitter->not_found + krad_transmitter->not_found_len, "\r\n404 Not Found");
 
 	return krad_transmitter;
-
 }
 
 void krad_transmitter_destroy (krad_transmitter_t *krad_transmitter) {

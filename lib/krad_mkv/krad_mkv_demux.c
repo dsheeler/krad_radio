@@ -6,12 +6,12 @@ static int kr_mkv_parse_segment_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_header (kr_mkv_t *mkv);
 static int kr_mkv_parse_tracks (kr_mkv_t *mkv, uint64_t max_pos);
 static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos);
-static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
-                                     uint32_t len,
-                                     uint32_t *track,
-                                     uint64_t *timecode,
-                                     uint8_t *flags,
-                                     uint8_t *buffer);
+static int kr_mkv_parse_simpleblock ( kr_mkv_t *mkv,
+                                      uint32_t len,
+                                      uint32_t *track,
+                                      uint64_t *timecode,
+                                      uint8_t *flags,
+                                      uint8_t *buffer);
 static krad_codec_t kr_mkv_codec_to_kr_codec (char *codec_id);
 static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
                                         kr_mkv_track_t *track,
@@ -355,15 +355,20 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv) {
   if (kr_mkv_parse_segment_header (mkv) < 0) {
     return -1;
   }
+  
+  mkv->stream_hdr_len = mkv->e->pos;
+  mkv->stream_hdr = malloc (mkv->stream_hdr_len);
+  memcpy (mkv->stream_hdr, mkv->e->bufstart, mkv->stream_hdr_len);
+  
   return 0;
 }
 
-static int kr_mkv_read_simpleblock ( kr_mkv_t *mkv,
-                                     uint32_t len,
-                                     uint32_t *track,
-                                     uint64_t *timecode,
-                                     uint8_t *flags,
-                                     uint8_t *buffer) {
+static int kr_mkv_parse_simpleblock ( kr_mkv_t *mkv,
+                                       uint32_t len,
+                                       uint32_t *track,
+                                       uint64_t *timecode,
+                                       uint8_t *flags,
+                                       uint8_t *buffer) {
 
   int16_t block_timecode;
   uint8_t flags_tmp;
@@ -505,7 +510,69 @@ int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
         kr_ebml2_unpack_uint64 (mkv->e, &mkv->cluster_timecode, size);
         break;
       case MKV_SIMPLEBLOCK:
-        return kr_mkv_read_simpleblock (mkv, size, track, timecode, flags, buffer);
+        //FIXME parse simpleblock then unpack data
+        return kr_mkv_parse_simpleblock (mkv, size, track, timecode, flags, buffer);
+      default:
+        printke ("Err! Unknown element: %"PRIu64" bytes", size);
+        return -1;
+        break;
+    }
+  }
+  return 0;      
+}
+
+int kr_mkv_read_streamable_raw_element (kr_mkv_t *mkv, uint32_t *track,
+                                        uint64_t *timecode, uint8_t *flags,
+                                        uint8_t *buffer) {
+
+  int ret;
+  uint32_t id;
+  uint64_t size;
+  size_t obpos;
+  size_t cbpos;
+  size_t el_bytes;
+
+  obpos = 0;
+  cbpos = 0;
+
+  while (1) {
+    cbpos = mkv->e->pos;
+    ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
+    if (ret < 0) {
+      printke ("Read error..");
+      return -1;
+    }
+
+    switch (id) {
+      case MKV_CLUSTER:
+        el_bytes = mkv->e->pos - cbpos;
+        memcpy (buffer + obpos, mkv->e->bufstart + cbpos, el_bytes);
+        obpos += el_bytes;
+        break;
+      case EID_VOID:
+      case EID_CRC32:
+      case MKV_TAGS:
+      case MKV_CUES:
+      case MKV_ATTACHMENTS:
+      case MKV_CHAPTERS:
+        kr_ebml2_advance (mkv->e, size);
+        break;
+      case MKV_CLUSTER_TIMECODE:
+        kr_ebml2_unpack_uint64 (mkv->e, &mkv->cluster_timecode, size);
+        el_bytes = mkv->e->pos - cbpos;
+        memcpy (buffer + obpos, mkv->e->bufstart + cbpos, el_bytes);
+        obpos += el_bytes;
+        break;
+      case MKV_SIMPLEBLOCK:
+        //FIXME PARSE THE BLOCK
+        *track = 0;
+        *timecode = 0;
+        *flags = 0;
+        el_bytes = mkv->e->pos - cbpos;
+        memcpy (buffer + obpos, mkv->e->bufstart + cbpos, el_bytes);
+        obpos += el_bytes;
+        kr_ebml2_unpack_data ( mkv->e, buffer + obpos, size );
+        return obpos + size;
       default:
         printke ("Err! Unknown element: %"PRIu64" bytes", size);
         return -1;

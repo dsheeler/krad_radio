@@ -15,29 +15,31 @@
 #ifndef KRAD_TRANSMITTER_H
 #define KRAD_TRANSMITTER_H
 
-
 #ifdef KR_LINUX
 #include <sys/epoll.h>
 #endif
 
+#ifdef KRAD_RADIO
 #include "krad_radio_version.h"
+#define KRAD_TRANSMITTER_SERVER APPVERSION
+#else
+#define KRAD_TRANSMITTER_SERVER "Krad Transmitter 21"
+#endif
+
 #include "krad_system.h"
 #include "krad_ring.h"
 
 #define DEFAULT_MAX_RECEIVERS_PER_TRANSMISSION 128
 #define DEFAULT_MAX_TRANSMISSIONS 32
 #define TOTAL_RECEIVERS DEFAULT_MAX_RECEIVERS_PER_TRANSMISSION * DEFAULT_MAX_TRANSMISSIONS
-#define KRAD_TRANSMITTER_SERVER APPVERSION
 
 #define KRAD_TRANSMITTER_MAXEVENTS 64
 #define DEFAULT_RING_SIZE 10000000
-
 
 typedef enum {
 	IS_FILE = 3150,
 	IS_TCP,
 } krad_transmission_receiver_type_t;
-
 
 typedef struct krad_transmitter_St krad_transmitter_t;
 typedef struct krad_transmission_St krad_transmission_t;
@@ -80,7 +82,7 @@ struct krad_transmission_St {
 	char http_header[256];
 	uint64_t http_header_len;
 
-	unsigned char *header;
+	uint8_t *header;
 	uint64_t header_len;
 
 	int connections_efd;
@@ -92,10 +94,10 @@ struct krad_transmission_St {
 	krad_ringbuffer_t *ringbuffer;
 	krad_ringbuffer_t *transmission_ringbuffer;
 	krad_ringbuffer_data_t tx_vec[2];
-	unsigned char *transmission_buffer;
+	uint8_t *transmission_buffer;
 	
 	uint64_t new_data;
-	unsigned char *new_data_buf;
+	uint8_t *new_data_buf;
 	uint64_t new_sync_point;
 	uint64_t new_data_size;
 
@@ -143,13 +145,17 @@ struct krad_transmission_receiver_St {
 
 krad_transmission_t *krad_transmitter_transmission_create (krad_transmitter_t *krad_transmitter, char *name, char *content_type);
 void krad_transmitter_transmission_destroy (krad_transmission_t *krad_transmission);
-int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmission, unsigned char *buffer, int length);
-void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmission, unsigned char *buffer, int length);
-int krad_transmitter_transmission_add_data (krad_transmission_t *krad_transmission, unsigned char *buffer, int length);
-int krad_transmitter_transmission_add_data_sync (krad_transmission_t *krad_transmission, unsigned char *buffer, int length);
-int krad_transmitter_transmission_add_data_opt (krad_transmission_t *krad_transmission, unsigned char *buffer, int length, int sync);
+
+int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmission, uint8_t *buffer, int length);
+void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmission, uint8_t *buffer, int length);
+
+int krad_transmitter_transmission_add_data (krad_transmission_t *krad_transmission, uint8_t *buffer, int length);
+int krad_transmitter_transmission_add_data_sync (krad_transmission_t *krad_transmission, uint8_t *buffer, int length);
+int krad_transmitter_transmission_add_data_opt (krad_transmission_t *krad_transmission, uint8_t *buffer, int length, int sync);
+
 int krad_transmitter_listen_on (krad_transmitter_t *krad_transmitter, uint16_t port);
 void krad_transmitter_stop_listening (krad_transmitter_t *krad_transmitter);
+
 krad_transmitter_t *krad_transmitter_create ();
 void krad_transmitter_destroy (krad_transmitter_t *krad_transmitter);
 

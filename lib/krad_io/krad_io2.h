@@ -46,9 +46,9 @@ struct kr_io2_St {
   size_t len;   // length of data in buffer
   size_t space; // space remaining in buffer
   size_t size;  // total size of buffer
-  unsigned char *buf;
-  unsigned char *rd_buf;
-  unsigned char *buffer;
+  uint8_t *buf;
+  uint8_t *rd_buf;
+  uint8_t *buffer;
 };
 
 kr_io2_t *kr_io2_create ();

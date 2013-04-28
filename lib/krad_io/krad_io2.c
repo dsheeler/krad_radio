@@ -78,7 +78,7 @@ int kr_io2_sync (kr_io2_t *io) {
   int bytes;
   int ret;
   int len;
-  unsigned char *buffer;
+  uint8_t *buffer;
   
   buffer = io->buffer;
   len = io->len;

@@ -72,6 +72,9 @@ struct kr_mkv_St {
   kr_io2_t *io;
   kr_file_t *file;
   krad_stream_t *stream;
+
+  uint8_t *stream_hdr;
+  size_t stream_hdr_len;
 };
 
 int kr_mkv_destroy (kr_mkv_t **mkv);

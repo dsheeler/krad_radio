@@ -64,9 +64,16 @@ static int kr_mkv_generate_track_uid (int track_number) {
 }
 
 static int kr_mkv_sync (kr_mkv_t *mkv) {
+
   //FIXME temp
+  
+  if ((mkv->stream_hdr_len == 0) && (mkv->e->pos > 0)) {
+    mkv->stream_hdr_len = mkv->e->pos;
+    mkv->stream_hdr = malloc (mkv->stream_hdr_len);
+    memcpy (mkv->stream_hdr, mkv->io->buf, mkv->stream_hdr_len);
+  }
+  
   kr_io2_advance (mkv->io, mkv->e->pos);
-  //kr_io2_flush (mkv->io);
   kr_io2_sync (mkv->io);
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
   
@@ -414,6 +421,9 @@ int kr_mkv_destroy (kr_mkv_t **mkv) {
   if ((mkv != NULL) && (*mkv != NULL)) {
     kr_io2_destroy (&(*mkv)->io);
     free ((*mkv)->tracks);
+    if ((*mkv)->stream_hdr_len > 0) {
+      free ((*mkv)->stream_hdr);
+    }
     if ((*mkv)->file != NULL) {
       kr_file_close (&(*mkv)->file);
     }

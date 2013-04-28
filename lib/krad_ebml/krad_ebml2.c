@@ -1,38 +1,38 @@
 #include "krad_ebml2.h"
 
 void kr_ebml2_advance (kr_ebml2_t *ebml, size_t bytes);
-void rmemcpy1 (unsigned char *dst, unsigned char *src);
-void rmemcpy2 (unsigned char *dst, unsigned char *src);
-void rmemcpy3 (unsigned char *dst, unsigned char *src);
-void rmemcpy4 (unsigned char *dst, unsigned char *src);
-void rmemcpy5 (unsigned char *dst, unsigned char *src);
-void rmemcpy6 (unsigned char *dst, unsigned char *src);
-void rmemcpy7 (unsigned char *dst, unsigned char *src);
-void rmemcpy8 (unsigned char *dst, unsigned char *src);
+void rmemcpy1 (uint8_t *dst, uint8_t *src);
+void rmemcpy2 (uint8_t *dst, uint8_t *src);
+void rmemcpy3 (uint8_t *dst, uint8_t *src);
+void rmemcpy4 (uint8_t *dst, uint8_t *src);
+void rmemcpy5 (uint8_t *dst, uint8_t *src);
+void rmemcpy6 (uint8_t *dst, uint8_t *src);
+void rmemcpy7 (uint8_t *dst, uint8_t *src);
+void rmemcpy8 (uint8_t *dst, uint8_t *src);
 
-void rmemcpy1 (unsigned char *dst, unsigned char *src) {
+void rmemcpy1 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[0];
 }
 
-void rmemcpy2 (unsigned char *dst, unsigned char *src) {
+void rmemcpy2 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[1];
   dst[1] = src[0];
 }
 
-void rmemcpy3 (unsigned char *dst, unsigned char *src) {
+void rmemcpy3 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[2];
   dst[1] = src[1];
   dst[2] = src[0];
 }
 
-void rmemcpy4 (unsigned char *dst, unsigned char *src) {
+void rmemcpy4 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[3];
   dst[1] = src[2];
   dst[2] = src[1];
   dst[3] = src[0];
 }
 
-void rmemcpy5 (unsigned char *dst, unsigned char *src) {
+void rmemcpy5 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[4];
   dst[1] = src[3];
   dst[2] = src[2];
@@ -40,7 +40,7 @@ void rmemcpy5 (unsigned char *dst, unsigned char *src) {
   dst[4] = src[0];
 }
 
-void rmemcpy6 (unsigned char *dst, unsigned char *src) {
+void rmemcpy6 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[5];
   dst[1] = src[4];
   dst[2] = src[3];
@@ -49,7 +49,7 @@ void rmemcpy6 (unsigned char *dst, unsigned char *src) {
   dst[5] = src[0];
 }
 
-void rmemcpy7 (unsigned char *dst, unsigned char *src) {
+void rmemcpy7 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[6];
   dst[1] = src[5];
   dst[2] = src[4];
@@ -59,7 +59,7 @@ void rmemcpy7 (unsigned char *dst, unsigned char *src) {
   dst[6] = src[0];
 }
 
-void rmemcpy8 (unsigned char *dst, unsigned char *src) {
+void rmemcpy8 (uint8_t *dst, uint8_t *src) {
   dst[0] = src[7];
   dst[1] = src[6];
   dst[2] = src[5];
@@ -122,15 +122,15 @@ void kr_ebml2_revpack8 (kr_ebml2_t *ebml, void *buffer) {
 
 void kr_ebml2_pack_element (kr_ebml2_t *ebml, uint32_t element) {
   if (element < 0x00000100) {
-    kr_ebml2_revpack1 (ebml, (unsigned char *)&element);
+    kr_ebml2_revpack1 (ebml, (uint8_t *)&element);
   } else {
     if (element < 0x00010000) {
-      kr_ebml2_revpack2 (ebml, (unsigned char *)&element);
+      kr_ebml2_revpack2 (ebml, (uint8_t *)&element);
     } else {
       if (element < 0x01000000) {
-        kr_ebml2_revpack3 (ebml, (unsigned char *)&element);
+        kr_ebml2_revpack3 (ebml, (uint8_t *)&element);
       } else {
-        kr_ebml2_revpack4 (ebml, (unsigned char *)&element);
+        kr_ebml2_revpack4 (ebml, (uint8_t *)&element);
       }
     }
   }
@@ -237,18 +237,18 @@ void kr_ebml2_pack_data_size ( kr_ebml2_t *ebml, uint64_t data_size ) {
   }
 }
 
-void kr_ebml2_pack_data_size_update (kr_ebml2_t *ebml, unsigned char *element_position, uint64_t data_size) {
+void kr_ebml2_pack_data_size_update (kr_ebml2_t *ebml, uint8_t *element_position, uint64_t data_size) {
   data_size |= (0x000000000000080LLU << ((EBML_DATA_SIZE_UNKNOWN_LENGTH - 1) * 7));
-  rmemcpy8 (element_position, (unsigned char *)&data_size);
+  rmemcpy8 (element_position, (uint8_t *)&data_size);
 }
 
-void kr_ebml2_start_element (kr_ebml2_t *ebml, uint32_t element, unsigned char **position) {
+void kr_ebml2_start_element (kr_ebml2_t *ebml, uint32_t element, uint8_t **position) {
   kr_ebml2_pack_element ( ebml, element );
   *position = ebml->buf;
   kr_ebml2_pack_data_size_unknown ( ebml ); 
 }
 
-void kr_ebml2_finish_element (kr_ebml2_t *ebml, unsigned char *element_position) {
+void kr_ebml2_finish_element (kr_ebml2_t *ebml, uint8_t *element_position) {
 
   uint64_t element_data_size;
 
@@ -335,7 +335,7 @@ void kr_ebml2_pack_double ( kr_ebml2_t *ebml, uint32_t element, double number) {
 
 void kr_ebml2_pack_header ( kr_ebml2_t *ebml, char *doctype, uint32_t version, uint32_t read_version) {
 
-  unsigned char *header;
+  uint8_t *header;
 
   kr_ebml2_start_element (ebml, EID_HEADER, &header);
   
@@ -351,7 +351,7 @@ void kr_ebml2_pack_header ( kr_ebml2_t *ebml, char *doctype, uint32_t version, u
   kr_ebml2_finish_element (ebml, header);
 }
 
-int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, unsigned char *buffer, size_t len) {
+int kr_ebml2_set_buffer ( kr_ebml2_t *ebml, uint8_t *buffer, size_t len) {
   if ((buffer == NULL) || (len < 1)) {
     return -1;
   }
