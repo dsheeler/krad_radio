@@ -11,6 +11,10 @@ programs2 = """
 kr_mkvhdr.c
 """.split()
 
+programs3 = """
+kr_txmtr.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -29,6 +33,10 @@ krmkvhdrsources = """
 ../lib/krad_flac/krad_flac.c
 ../lib/krad_opus/krad_opus.c
 ../lib/krad_opus/opus_header.c
+""".split()
+
+kriceblastsources = """
+../lib/krad_transmitter/krad_transmitter.c
 """.split()
 
 includedirs = """
@@ -84,6 +92,8 @@ kmkvshlibs = []
 
 kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac",
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
+
+krtxpndrlibs = []
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
@@ -161,6 +171,14 @@ def build(bld):
   for p in programs2:
     bld(features = 'c cprogram', 
     source = [p] + krmkvhdrsources,
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+  for p in programs3:
+    bld(features = 'c cprogram',
+    source = krmkvhdrsources + kriceblastsources + [p],
     includes = includedirs, 
     target = p.replace(".c", ""),
     use = ["krad_mkv"],

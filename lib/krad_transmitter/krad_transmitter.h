@@ -141,19 +141,6 @@ struct krad_transmission_receiver_St {
 	krad_transmission_receiver_t *next;
 };
 
-
-
-
-krad_transmission_receiver_t *krad_transmitter_receiver_create (krad_transmitter_t *krad_transmitter, int fd);
-void krad_transmitter_receiver_destroy (krad_transmission_receiver_t *krad_transmission_receiver);
-int krad_transmitter_transmission_transmit (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
-void *krad_transmitter_transmission_thread (void *arg);
-void *krad_transmitter_listening_thread (void *arg);
-void krad_transmitter_receiver_attach (krad_transmission_receiver_t *krad_transmission_receiver, char *request);
-void krad_transmitter_handle_incoming_connection (krad_transmitter_t *krad_transmitter, krad_transmission_receiver_t *krad_transmission_receiver);
-void krad_transmission_add_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
-void krad_transmission_remove_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
-
 krad_transmission_t *krad_transmitter_transmission_create (krad_transmitter_t *krad_transmitter, char *name, char *content_type);
 void krad_transmitter_transmission_destroy (krad_transmission_t *krad_transmission);
 int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmission, unsigned char *buffer, int length);

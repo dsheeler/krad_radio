@@ -1,8 +1,19 @@
 #include "krad_transmitter.h"
 
+
+static krad_transmission_receiver_t *krad_transmitter_receiver_create (krad_transmitter_t *krad_transmitter, int fd);
+static void krad_transmitter_receiver_destroy (krad_transmission_receiver_t *krad_transmission_receiver);
+static int krad_transmitter_transmission_transmit (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
+static void *krad_transmitter_transmission_thread (void *arg);
+static void *krad_transmitter_listening_thread (void *arg);
+static void krad_transmitter_receiver_attach (krad_transmission_receiver_t *krad_transmission_receiver, char *request);
+static void krad_transmitter_handle_incoming_connection (krad_transmitter_t *krad_transmitter, krad_transmission_receiver_t *krad_transmission_receiver);
+static void krad_transmission_add_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
+static void krad_transmission_remove_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver);
+
 //FIXME writev duh
 
-int krad_transmitter_transmission_transmit_header (krad_transmission_t *krad_transmission,
+static int krad_transmitter_transmission_transmit_header (krad_transmission_t *krad_transmission,
 											krad_transmission_receiver_t *krad_transmission_receiver) {
 
   int wrote;
@@ -57,10 +68,9 @@ int krad_transmitter_transmission_transmit_header (krad_transmission_t *krad_tra
 
   krad_transmission_receiver->position = krad_transmission->sync_point;
   return 1;
-
 }
 
-int krad_transmitter_transmission_transmit (krad_transmission_t *krad_transmission,
+static int krad_transmitter_transmission_transmit (krad_transmission_t *krad_transmission,
 											krad_transmission_receiver_t *krad_transmission_receiver) {
 
 	int ret;
@@ -155,7 +165,7 @@ int krad_transmitter_transmission_transmit (krad_transmission_t *krad_transmissi
 	return 0;
 }
 
-void *krad_transmitter_transmission_thread (void *arg) {
+static void *krad_transmitter_transmission_thread (void *arg) {
 
 	krad_transmission_t *krad_transmission = (krad_transmission_t *)arg;
 	
@@ -279,11 +289,9 @@ void *krad_transmitter_transmission_thread (void *arg) {
 
 	printk ("Krad Transmitter: transmission thread exiting for %s", krad_transmission->sysname);
 	return NULL;
-
 }
 
-
-void krad_transmission_add_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver) {
+static void krad_transmission_add_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver) {
 
 	if (krad_transmission_receiver->ready == 1) {
 		printke ("Krad Transmitter: receiver was already ready!");
@@ -306,8 +314,7 @@ void krad_transmission_add_ready (krad_transmission_t *krad_transmission, krad_t
 	krad_transmission->ready_receiver_count++;
 }
 
-
-void krad_transmission_remove_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver) {
+static void krad_transmission_remove_ready (krad_transmission_t *krad_transmission, krad_transmission_receiver_t *krad_transmission_receiver) {
 
 	if (krad_transmission_receiver->ready != 1) {
 		printke ("Krad Transmitter: receiver was not ready!");	
@@ -358,12 +365,12 @@ int krad_transmitter_transmission_set_header (krad_transmission_t *krad_transmis
 	if (krad_transmission->header != NULL) {
 		temp = krad_transmission->header;
 	}
-	
+
 	// FIXME this isn't atomic
 	krad_transmission->header_len = 0;
 	krad_transmission->header = header_temp;
 	krad_transmission->header_len = header_temp_len;
-	
+
 	if (temp != NULL) {
 		free (temp);
 	}
@@ -388,9 +395,9 @@ void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmi
 	if (krad_transmission->header_len != 0) {
 		header_temp_len += krad_transmission->header_len;
 	}
-	
+
 	header_temp = calloc (1, header_temp_len);
-	
+
 	if (krad_transmission->header_len != 0) {
 		memcpy (header_temp, krad_transmission->header, krad_transmission->header_len);
 		memcpy (header_temp + krad_transmission->header_len, buffer, length);
@@ -401,12 +408,12 @@ void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmi
 	if (krad_transmission->header != NULL) {
 		temp = krad_transmission->header;
 	}
-	
+
 	// FIXME this isn't atomic
 	krad_transmission->header_len = 0;
 	krad_transmission->header = header_temp;
 	krad_transmission->header_len = header_temp_len;
-	
+
 	if (temp != NULL) {
 		free (temp);
 	}
@@ -415,9 +422,7 @@ void krad_transmitter_transmission_add_header (krad_transmission_t *krad_transmi
 			krad_transmission->sysname,
 			length,
 			krad_transmission->header_len);
-
 }
-
 
 int krad_transmitter_transmission_add_data (krad_transmission_t *krad_transmission, unsigned char *buffer, int length) {
 	return krad_transmitter_transmission_add_data_opt (krad_transmission, buffer, length, 0);
@@ -1030,6 +1035,4 @@ void krad_transmitter_destroy (krad_transmitter_t *krad_transmitter) {
 	free (krad_transmitter);
 	
 	printk ("Krad Transmitter: Destroyed!");
-
 }
-
