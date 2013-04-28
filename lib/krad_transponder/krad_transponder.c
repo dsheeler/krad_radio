@@ -1279,7 +1279,7 @@ krad_transponder_t *krad_transponder_create (krad_radio_t *krad_radio) {
   krad_transponder->address.path.subunit.mixer_subunit = KR_UNIT;
 
   krad_transponder->krad_radio = krad_radio;
-  krad_transponder->krad_receiver = krad_receiver_create (krad_transponder);  
+  krad_transponder->krad_receiver = krad_receiver_create ();  
   krad_transponder->krad_transmitter = krad_transmitter_create ();
   krad_transponder->xpdr = krad_xpdr_create (krad_transponder->krad_radio);
 
