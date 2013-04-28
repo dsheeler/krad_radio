@@ -355,6 +355,8 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv) {
     return -1;
   }
   
+  //FIXME NEED TO REMOVE STREAM UNSAFE ELEMENTS
+  
   mkv->stream_hdr_len = mkv->e->pos;
   mkv->stream_hdr = malloc (mkv->stream_hdr_len);
   memcpy (mkv->stream_hdr, mkv->e->bufstart, mkv->stream_hdr_len);
@@ -378,13 +380,12 @@ static int kr_mkv_parse_simpleblock ( kr_mkv_t *mkv,
   if (track != NULL) {
     *track = (byte - 0x80);
   }
-  printk ("Track Number is %d", *track);
 
   kr_ebml2_unpack_int16 (mkv->e, &block_timecode, 2);
   mkv->current_timecode = mkv->cluster_timecode + block_timecode;
-  printk ("Timecode is: %6.3f\n",
-          ((mkv->cluster_timecode +
-          (int64_t)block_timecode)/1000.0));
+  //printk ("Timecode is: %6.3f\n",
+  //        ((mkv->cluster_timecode +
+  //        (int64_t)block_timecode)/1000.0));
   if (timecode != NULL) {
     *timecode = mkv->current_timecode;
   }

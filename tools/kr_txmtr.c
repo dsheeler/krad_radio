@@ -49,10 +49,10 @@ void krad_transmitter_mkv_test (int port, char *filename) {
   ticker = krad_ticker_throttle_create ();
   transmitter = krad_transmitter_create ();
   krad_transmitter_listen_on (transmitter, port);
-  
+
   tx = krad_transmitter_transmission_create (transmitter,
-                                                       stream_name,
-                                                       content_type);
+                                             stream_name,
+                                             content_type);
 
   printf ("Stream header is %zu bytes\n", mkv->stream_hdr_len);
 
@@ -82,7 +82,6 @@ void krad_transmitter_mkv_test (int port, char *filename) {
     fflush (stdout);
     
     krad_transmitter_transmission_add_data_opt (tx, buffer, size, keyframe);
-
 
     if ((last_tc) && (last_tc < timecode)) {
       sleeptime = (timecode - start_tc) - (last_tc - start_tc);
