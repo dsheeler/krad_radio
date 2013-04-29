@@ -929,9 +929,11 @@ void muxer_unit_create (void *arg) {
   printk ("Output/Muxing thread starting");
 
   if (krad_link->host[0] != '\0') {
-  
+  /*
     if ((strcmp(krad_link->host, "transmitter") == 0) &&
       (krad_link->krad_transponder->krad_transmitter->listening == 1)) {
+      
+        failfast ("temp disabled transission");
       
       krad_link->muxer_krad_transmission = krad_transmitter_transmission_create (krad_link->krad_transponder->krad_transmitter,
                                     krad_link->mount + 1,
@@ -939,15 +941,15 @@ void muxer_unit_create (void *arg) {
 
       krad_link->port = krad_link->krad_transponder->krad_transmitter->port;
 
-      krad_link->krad_container = krad_container_open_transmission (krad_link->muxer_krad_transmission);
+      //krad_link->krad_container = krad_container_open_transmission (krad_link->muxer_krad_transmission);
   
     } else {
-  
+  */
       krad_link->krad_container = krad_container_create_stream (krad_link->host,
                                   krad_link->port,
                                   krad_link->mount,
                                   krad_link->password);
-    }                                  
+    //}                                  
   } else {
     printk ("Outputing to file: %s", krad_link->output);
     krad_link->krad_container = krad_container_open_file (krad_link->output, KRAD_IO_WRITEONLY);

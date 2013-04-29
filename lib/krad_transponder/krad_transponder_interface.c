@@ -2,7 +2,7 @@
 
 void krad_transponder_to_rep ( krad_transponder_t *krad_transponder, kr_transponder_t *transponder_rep ) {
   transponder_rep->receiver_port = krad_transponder->krad_receiver->port;
-  transponder_rep->transmitter_port = krad_transponder->krad_transmitter->port;
+  transponder_rep->transmitter_port = 666; // FIXME TEMP krad_transponder->krad_transmitter->port;
 }
 
 void krad_transponder_rep_to_ebml ( kr_ebml2_t *ebml, kr_transponder_t *transponder_rep ) {

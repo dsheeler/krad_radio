@@ -222,9 +222,13 @@ krad_container_t *krad_container_open_file (char *filename,
 krad_container_t *
 krad_container_open_transmission (krad_transmission_t *transmission) {
 
+  failfast ("temp disabled transission");  
+  return NULL;
+/*
+
   krad_container_t *container;
   krad_container_type_t type;
-  
+
   type = krad_container_select (transmission->sysname);
 
   if ((type != OGG) && (type != MKV)) {
@@ -244,6 +248,7 @@ krad_container_open_transmission (krad_transmission_t *transmission) {
   }
 
   return container;
+  */
 }
 
 void krad_container_destroy (krad_container_t **container) {

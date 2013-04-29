@@ -418,6 +418,33 @@ kr_mkv_t *kr_mkv_create () {
   return kr_mkv_create_bufsize (2000000);
 }
 
+kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
+                                      char *mount,
+                                      char *content_type) {
+
+  
+  kr_mkv_t *mkv;
+  krad_transmission_t *transmission;
+
+  if ((transmitter == NULL) || (mount == NULL) || (content_type == NULL)) {
+    return NULL;
+  }
+
+  transmission = kr_transmission_create (transmitter, mount, content_type);
+
+  if (transmission == NULL) {
+    return NULL;
+  }
+  
+  mkv = kr_mkv_create ();
+  mkv->transmission = transmission;
+  kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
+
+  kr_mkv_start_segment (mkv, "A Krad Radio Stream");
+
+  return mkv;
+}
+
 int kr_mkv_destroy (kr_mkv_t **mkv) {
   if ((mkv != NULL) && (*mkv != NULL)) {
     kr_io2_destroy (&(*mkv)->io);
@@ -431,7 +458,12 @@ int kr_mkv_destroy (kr_mkv_t **mkv) {
     if ((*mkv)->stream != NULL) {
       kr_stream_destroy (&(*mkv)->stream);
     }
+    if ((*mkv)->transmission != NULL) {
+      kr_transmission_destroy ((*mkv)->transmission);
+      (*mkv)->transmission = NULL;
+    }
     free (*mkv);
+    *mkv = NULL;
     return 0;
   }
   return -1;

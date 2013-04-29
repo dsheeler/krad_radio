@@ -1,6 +1,8 @@
 #include <time.h>
 #include <math.h>
 
+#include "krad_transmitter.h"
+
 #include "krad_mkv_ids.h"
 #include "krad_ebml2.h"
 #include "krad_io2.h"
@@ -85,7 +87,13 @@ struct kr_mkv_St {
   double duration;
   uint64_t timecode_scale;
   
+  /* krad mkv transmitter */
+  krad_transmission_t *transmission;
 };
+
+kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
+                                      char *mount,
+                                      char *content_type);
 
 int kr_mkv_destroy (kr_mkv_t **mkv);
 
