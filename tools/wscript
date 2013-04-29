@@ -12,8 +12,7 @@ kr_mkvhdr.c
 """.split()
 
 programs3 = """
-kr_txmtr.c
-kr_txmtr.c
+kr_mkv_txmtr.c
 """.split()
 
 krmkvlibsources = """

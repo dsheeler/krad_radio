@@ -22,6 +22,7 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
   krad_ticker_t *ticker;
 
   int i;
+  int ret;
   uint32_t track;
   int bytes_read;  
   uint32_t out_track;
@@ -80,9 +81,20 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
 
   ticker = krad_ticker_throttle_create ();
   transmitter = krad_transmitter_create ();
-  krad_transmitter_listen_on (transmitter, port);
+
+  ret = krad_transmitter_listen_on (transmitter, port);
+
+  if (ret != 0) {
+    fprintf (stderr, "transmitter could not listen on port %d\n", port);
+    exit (1);
+  }
 
   mkv_tx = kr_mkv_create_transmission (transmitter, stream_name, content_type);
+
+  if (mkv_tx == NULL) {
+    fprintf (stderr, "Could not create mkv transmission\n");
+    exit (1);
+  }
 
   out_track = kr_mkv_add_video_track (mkv_tx, VP8,
                                       30,

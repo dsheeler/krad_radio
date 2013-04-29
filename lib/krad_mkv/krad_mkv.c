@@ -7,7 +7,7 @@ static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode);
 static int kr_mkv_new_tracknumber (kr_mkv_t *mkv);
 static int kr_mkv_generate_track_uid (int track_number);
 
-static int kr_mkv_sync (kr_mkv_t *mkv);
+static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint);
 
 static char *kr_codec_to_mkv_codec (krad_codec_t codec) {
   switch (codec) {
@@ -63,7 +63,7 @@ static int kr_mkv_generate_track_uid (int track_number) {
   return rval;
 }
 
-static int kr_mkv_sync (kr_mkv_t *mkv) {
+static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
 
   //FIXME temp
   
@@ -71,11 +71,25 @@ static int kr_mkv_sync (kr_mkv_t *mkv) {
     mkv->stream_hdr_len = mkv->e->pos;
     mkv->stream_hdr = malloc (mkv->stream_hdr_len);
     memcpy (mkv->stream_hdr, mkv->io->buf, mkv->stream_hdr_len);
+    if (mkv->transmission != NULL) {
+      krad_transmitter_transmission_set_header (mkv->transmission,
+                                                mkv->stream_hdr,
+                                                mkv->stream_hdr_len);
+      return 0;
+    }
   }
-  
-  kr_io2_advance (mkv->io, mkv->e->pos);
-  kr_io2_sync (mkv->io);
-  kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
+
+  kr_io2_advance (mkv->io, mkv->e->pos);  
+  if (mkv->transmission != NULL) {
+    krad_transmitter_transmission_add_data_opt (mkv->transmission,
+                                                mkv->io->buffer,
+                                                mkv->io->len,
+                                                splicepoint);
+    kr_io2_restart (mkv->io);
+  } else {
+    kr_io2_sync (mkv->io);
+  }
+  kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
   
   return 0;
 }
@@ -92,7 +106,7 @@ static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode) {
     mkv->cluster = NULL;
   }
 
-  kr_mkv_sync (mkv);
+  kr_mkv_sync (mkv, 1);
 
   mkv->cluster_timecode = timecode;
 
@@ -293,7 +307,7 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_ebml2_pack (mkv->e, &flags, 1);
   kr_ebml2_pack (mkv->e, buffer, buffer_len);
     
-  kr_mkv_sync (mkv);
+  kr_mkv_sync (mkv, 0);
 }
 
 void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
@@ -352,7 +366,7 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_ebml2_pack (mkv->e, &flags, 1);
   kr_ebml2_pack (mkv->e, buffer, buffer_len);
   
-  kr_mkv_sync (mkv);
+  kr_mkv_sync (mkv, 0);
 }
 
 

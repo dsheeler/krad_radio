@@ -1,7 +1,5 @@
 #include "krad_io2.h"
 
-static int kr_io2_restart (kr_io2_t *io);
-
 kr_io2_t *kr_io2_create_size (size_t size) {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
@@ -64,7 +62,7 @@ size_t kr_io2_write (kr_io2_t *io) {
   return write (io->fd, io->buffer, io->len);
 }
 
-static int kr_io2_restart (kr_io2_t *io) {
+int kr_io2_restart (kr_io2_t *io) {
   io->buf = io->buffer;
   io->rd_buf = io->buffer;
   //io->pos = 0;

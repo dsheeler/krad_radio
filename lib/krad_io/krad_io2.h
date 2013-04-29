@@ -51,6 +51,8 @@ struct kr_io2_St {
   uint8_t *buffer;
 };
 
+int kr_io2_restart (kr_io2_t *io);
+
 kr_io2_t *kr_io2_create ();
 kr_io2_t *kr_io2_create_size (size_t size);
 int kr_io2_destroy (kr_io2_t **io);
