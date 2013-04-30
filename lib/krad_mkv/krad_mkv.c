@@ -81,7 +81,7 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
       return 0;
     }
     if (mkv->io_cb_ptr != NULL) {
-      mkv->io_callback (mkv->stream_hdr, mkv->stream_hdr_len, 0, mkv->io_cb_ptr);
+      mkv->io_callback (mkv->stream_hdr, mkv->stream_hdr_len, splicepoint, mkv->io_cb_ptr);
       kr_io2_advance (mkv->io, mkv->e->pos); 
       kr_io2_restart (mkv->io);
       kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);

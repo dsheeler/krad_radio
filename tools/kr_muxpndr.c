@@ -27,6 +27,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
 
   int i;
   int ret;
+  int first_file_output;
   uint32_t track;
   int bytes_read;  
   uint32_t out_track;
@@ -135,9 +136,24 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   output_params.transport = LOCAL_FILE;
   output_params.transport_params.file_output_params.filename = file_name;
 
-  kr_muxponder_create_output (muxponder, &output_params);
+  first_file_output = kr_muxponder_create_output (muxponder, &output_params);
 
   for (i = 0; i < 2; i++) {
+  
+    if (i == 1) {
+    
+      snprintf (file_name, sizeof(file_name), "%s/file_%"PRIu64".webm",
+                getenv ("HOME"), krad_unixtime());
+      output_params.container = MKV;
+      output_params.transport = LOCAL_FILE;
+      output_params.transport_params.file_output_params.filename = file_name;
+
+      kr_muxponder_create_output (muxponder, &output_params);
+    
+      kr_muxponder_destroy_output (muxponder, first_file_output);
+    
+    }
+
     while ((bytes_read = kr_mkv_read_packet (in[i], &track, &timecode, &flags, buffer)) > 0) {
 
       if (start_tc == 0) {
