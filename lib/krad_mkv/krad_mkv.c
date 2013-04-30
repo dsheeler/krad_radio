@@ -137,6 +137,8 @@ static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
     title = "A Krad Radio Creation";
   }
 
+  mkv->timecode_scale = 1000000;
+
   //FIXME
   //make sure title is nullterm and not insane len
 
@@ -148,7 +150,7 @@ static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
 
   kr_ebml2_start_element (mkv->e, MKV_SEGMENT_INFO, &segment_info);
   kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_TITLE, title);
-  kr_ebml2_pack_int32 (mkv->e, MKV_SEGMENT_TIMECODESCALE, 1000000);
+  kr_ebml2_pack_uint64 (mkv->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
   kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
   kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_WRITINGAPP, KRAD_VERSION_STRING);
   kr_ebml2_finish_element (mkv->e, segment_info);
@@ -299,7 +301,7 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   timecode = round (1000000000 *
                     track->total_video_frames /
                     track->fps_numerator *
-                    track->fps_denominator / 1000000);
+                    track->fps_denominator / mkv->timecode_scale);
 
   if (keyframe) {
     kr_mkv_cluster (mkv, timecode);
@@ -354,8 +356,7 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   
   timecode = round ((1000000000 *
                      track->total_audio_frames /
-                     track->sample_rate /
-                     1000000));
+                     track->sample_rate / mkv->timecode_scale));
 
   if (((track->audio_frames_since_cluster >= track->sample_rate) ||
        (track->total_audio_frames == 0)) &&
