@@ -176,6 +176,10 @@ int kr_muxponder_create_track (kr_muxponder_t *muxponder,
 
   int t;
 
+  if (muxponder->got_hdr == 1) {
+    return -2;
+  }
+
   t = kr_muxponder_new_tracknumber (muxponder);
   if (t == -1) {
     return t;
