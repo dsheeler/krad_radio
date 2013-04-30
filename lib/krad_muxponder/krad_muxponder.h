@@ -9,6 +9,7 @@
 
 #include "krad_player_common.h"
 #include "krad_transmitter.h"
+#include "krad_mkv.h"
 
 #define KR_MUXPONDER_MAX_TRACKS 10
 #define KR_MUXPONDER_MAX_OUTPUTS 10
@@ -66,6 +67,6 @@ int kr_muxponder_add_data (kr_muxponder_t *muxponder,
                            uint8_t *data, size_t size, int sync);
 
 int kr_muxponder_create_output (kr_muxponder_t *muxponder, kr_muxer_output_params_t *params);
-int kr_muxponder_destroy_output (kr_muxponder_t *muxponder, int num);
+
 
 #endif

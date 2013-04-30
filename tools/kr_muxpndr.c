@@ -38,6 +38,9 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   int keyframe;
   uint8_t flags;
   int packets;
+  char stream_name[256];
+  char file_name[256];
+  char *content_type;
   
   start_tc = 0;
   last_tc = 0;
@@ -46,8 +49,11 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   memset (&track_info, 0, sizeof(kr_track_info_t));
   memset (&output_params, 0, sizeof(kr_muxer_output_params_t));
 
-  char *stream_name = "stream.webm";
-  char *content_type = "video/webm";
+  content_type = "video/webm";
+  snprintf (stream_name, sizeof(stream_name), "stream_%"PRIu64".webm",
+            krad_unixtime());
+  snprintf (file_name, sizeof(file_name), "%s/file_%"PRIu64".webm",
+            getenv ("HOME"), krad_unixtime());
 
   buffer = malloc (10000000);
 
@@ -125,6 +131,12 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
 
   kr_muxponder_create_output (muxponder, &output_params);
 
+  output_params.container = MKV;
+  output_params.transport = LOCAL_FILE;
+  output_params.transport_params.file_output_params.filename = file_name;
+
+  kr_muxponder_create_output (muxponder, &output_params);
+
   for (i = 0; i < 2; i++) {
     while ((bytes_read = kr_mkv_read_packet (in[i], &track, &timecode, &flags, buffer)) > 0) {
 
@@ -144,7 +156,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
       fflush (stdout);
 
       if (track == 1) {
-        //kr_mkv_add_video (mkv_tx, out_track, buffer, bytes_read, keyframe);
+        kr_muxponder_add_data (muxponder, out_track, timecode, buffer, bytes_read, keyframe);
       }
 
       if ((last_tc) && (last_tc < timecode)) {

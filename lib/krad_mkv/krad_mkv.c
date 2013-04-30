@@ -75,19 +75,34 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
       krad_transmitter_transmission_set_header (mkv->transmission,
                                                 mkv->stream_hdr,
                                                 mkv->stream_hdr_len);
+      kr_io2_advance (mkv->io, mkv->e->pos); 
+      kr_io2_restart (mkv->io);  
+      kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
+      return 0;
+    }
+    if (mkv->io_cb_ptr != NULL) {
+      mkv->io_callback (mkv->stream_hdr, mkv->stream_hdr_len, 0, mkv->io_cb_ptr);
+      kr_io2_advance (mkv->io, mkv->e->pos); 
+      kr_io2_restart (mkv->io);
+      kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
       return 0;
     }
   }
-
-  kr_io2_advance (mkv->io, mkv->e->pos);  
-  if (mkv->transmission != NULL) {
-    krad_transmitter_transmission_add_data_opt (mkv->transmission,
-                                                mkv->io->buffer,
-                                                mkv->io->len,
-                                                splicepoint);
-    kr_io2_restart (mkv->io);
+  
+  kr_io2_advance (mkv->io, mkv->e->pos);
+  if (mkv->io_cb_ptr != NULL) {
+    mkv->io_callback (mkv->io->buffer, mkv->io->len, splicepoint, mkv->io_cb_ptr);
+    kr_io2_restart (mkv->io);  
   } else {
-    kr_io2_sync (mkv->io);
+    if (mkv->transmission != NULL) {
+      krad_transmitter_transmission_add_data_opt (mkv->transmission,
+                                                  mkv->io->buffer,
+                                                  mkv->io->len,
+                                                  splicepoint);
+      kr_io2_restart (mkv->io);
+    } else {
+      kr_io2_sync (mkv->io);
+    }
   }
   kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
   
@@ -452,6 +467,24 @@ kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
   
   mkv = kr_mkv_create ();
   mkv->transmission = transmission;
+  kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
+
+  kr_mkv_start_segment (mkv, "A Krad Radio Stream");
+
+  return mkv;
+}
+
+kr_mkv_t *kr_mkv_create_io_callback (mkv_io_callback cb, void *ptr) {
+
+  kr_mkv_t *mkv;
+
+  if ((cb == NULL) || (ptr == NULL)) {
+    return NULL;
+  }
+  
+  mkv = kr_mkv_create ();
+  mkv->io_callback = cb;
+  mkv->io_cb_ptr = ptr;
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
 
   kr_mkv_start_segment (mkv, "A Krad Radio Stream");

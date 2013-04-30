@@ -1,7 +1,6 @@
 #include "krad_stream.h"
 
 static void kr_base64_encode (char *dest, char *src, int maxlen);
-static int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len);
 static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len);
 
 static void kr_base64_encode (char *dest, char *src, int maxlen) {
@@ -55,7 +54,7 @@ static void kr_base64_encode (char *dest, char *src, int maxlen) {
   strncpy (dest, result, maxlen);
 }
 
-static int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len) {
+int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len) {
 
   int bytes;
   int ret;
@@ -153,6 +152,15 @@ krad_stream_t *kr_stream_create (char *host, int port,
     kr_stream_destroy (&krad_stream);
     return NULL;
   }
+  
+  if (mount[0] == '/') {
+    if (strlen(mount) > 1) {
+      mount = mount + 1;
+    } else {
+      kr_stream_destroy (&krad_stream);
+      return NULL;
+    }
+  }
 
   memset (&hints, 0x00, sizeof (hints));
   hints.ai_flags = AI_NUMERICSERV;
@@ -220,7 +228,7 @@ krad_stream_t *kr_stream_create (char *host, int port,
         kr_base64_encode ( auth_base64, auth, sizeof (auth_base64));
         http_string_pos = snprintf ( http_string,
                                      sizeof (http_string) - http_string_pos, 
-                                     "SOURCE %s ICE/1.0\r\n", mount);
+                                     "SOURCE /%s ICE/1.0\r\n", mount);
         http_string_pos += snprintf ( http_string + http_string_pos,
                                       sizeof (http_string) - http_string_pos,
                                       "content-type: %s\r\n", content_type);

@@ -36,6 +36,8 @@ int kr_stream_destroy (krad_stream_t **stream);
 
 int kr_stream_reconnect (krad_stream_t *stream);
 
+int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len);
+
 krad_stream_t *kr_stream_create (char *host, int port,
                                  char *mount, char *password);
 

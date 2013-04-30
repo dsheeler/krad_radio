@@ -45,6 +45,8 @@ struct kr_mkv_track_St {
   uint32_t changed;
 };
 
+typedef int (*mkv_io_callback)(uint8_t *, size_t, uint32_t, void *);
+
 struct kr_mkv_St {
 
   kr_mkv_track_t *tracks;
@@ -89,17 +91,23 @@ struct kr_mkv_St {
   
   /* krad mkv transmitter */
   krad_transmission_t *transmission;
+
+  /* io callback */
+  mkv_io_callback io_callback;
+  void *io_cb_ptr;
 };
 
 kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
                                       char *mount,
                                       char *content_type);
 
-int kr_mkv_destroy (kr_mkv_t **mkv);
-
 kr_mkv_t *kr_mkv_create_file (char *filename);
 kr_mkv_t *kr_mkv_create_stream (char *host, int port,
                                 char *mount, char *password);
+
+kr_mkv_t *kr_mkv_create_io_callback (mkv_io_callback cb, void *ptr);
+
+int kr_mkv_destroy (kr_mkv_t **mkv);
 
 int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
                                               krad_codec_t codec,
