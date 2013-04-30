@@ -34,9 +34,19 @@ struct kr_muxponder_St {
   
 };
 
-int kr_muxponder_destroy_output (kr_muxponder_output_t *output);
+int kr_muxponder_destroy_output (kr_muxponder_t *muxponder, int num) {
 
-int kr_muxponder_destroy_output (kr_muxponder_output_t *output) {
+  kr_muxponder_output_t *output;
+  
+  if (num >= KR_MUXPONDER_MAX_OUTPUTS) {
+    return -2;
+  }
+
+  output = &muxponder->outputs[num];
+
+  if (output->active == 0) {
+    return -1;
+  }
 
   switch (output->params.transport) {
     case LOCAL_FILE:
@@ -60,7 +70,7 @@ int kr_muxponder_destroy (kr_muxponder_t **muxponder) {
   if ((muxponder != NULL) && (*muxponder != NULL)) {
     for (o = 0; o < KR_MUXPONDER_MAX_OUTPUTS; o++) {
       if ((*muxponder)->outputs[o].active == 1) {
-        kr_muxponder_destroy_output (&(*muxponder)->outputs[o]);
+        kr_muxponder_destroy_output ((*muxponder), o);
       }    
     }
     kr_mkv_destroy (&(*muxponder)->mkv);
