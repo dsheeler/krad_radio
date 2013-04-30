@@ -26,11 +26,14 @@ struct kr_muxponder_St {
   kr_muxponder_output_t *outputs;
   kr_transmitter_t *transmitter;
   kr_mkv_t *mkv;
+  kr_ogg_t *ogg;
   int track_count;
   int current_track;
   int got_hdr;
   uint8_t *mkv_hdr;
   size_t mkv_hdr_size;
+  uint8_t *ogg_hdr;
+  size_t ogg_hdr_size;
 };
 
 int kr_muxponder_destroy_output (kr_muxponder_t *muxponder, int num) {
@@ -77,6 +80,7 @@ int kr_muxponder_destroy (kr_muxponder_t **muxponder) {
       free ((*muxponder)->mkv_hdr);
     }
     kr_mkv_destroy (&(*muxponder)->mkv);
+    kr_ogg_destroy (&(*muxponder)->ogg);
     free ((*muxponder)->tracks);
     free ((*muxponder)->outputs);
     free (*muxponder);
@@ -176,6 +180,7 @@ kr_muxponder_t *kr_muxponder_create (krad_transmitter_t *transmitter) {
   muxponder->transmitter = transmitter;
   muxponder->current_track = 1;
   muxponder->mkv = kr_mkv_create_io_callback (muxponder_data_cb, muxponder);
+  muxponder->ogg = kr_ogg_create ();
 
   return muxponder;
 }

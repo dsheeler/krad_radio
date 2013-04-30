@@ -69,6 +69,7 @@ depsources = """
 ../lib/krad_transponder/krad_receiver.c
 ../lib/krad_transmitter/krad_transmitter.c
 ../lib/krad_ogg/krad_ogg.c
+../lib/krad_ogg/krad_ogg2.c
 ../lib/krad_x11/krad_x11.c
 ../lib/krad_udp/krad_udp.c
 ../lib/krad_decklink/krad_decklink.c

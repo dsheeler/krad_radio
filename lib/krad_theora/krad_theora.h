@@ -45,11 +45,11 @@ struct krad_theora_encoder_St {
 
   th_enc_ctx *encoder;
   
-  unsigned char *header[10];
+  uint8_t *header[10];
   int header_len[10];
   int header_count;
 
-  unsigned char *header_combined;
+  uint8_t *header_combined;
   int header_combined_size;
   int header_combined_pos;
   int demented;
@@ -93,7 +93,7 @@ struct krad_theora_decoder_St {
   uint8_t *buf;
   unsigned char compressed_video_buffer[800000];
 
-  unsigned char *frame_data;
+  uint8_t *frame_data;
 };
 
 /* encoder */
@@ -102,7 +102,7 @@ int krad_theora_encoder_quality_get (krad_theora_encoder_t *krad_theora);
 void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora,
                                       int quality);
 int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora,
-                               unsigned char **packet,
+                               uint8_t **packet,
                                int *keyframe);
 krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
                                                    int fps_numerator,
@@ -121,9 +121,7 @@ void krad_theora_decoder_write (krad_theora_decoder_t *krad_theora);
 void krad_theora_decoder_decode (krad_theora_decoder_t *krad_theora,
                                  void *buffer, int len);
 krad_theora_decoder_t *
-krad_theora_decoder_create (unsigned char *header1, int header1len,
-                            unsigned char *header2, int header2len,
-                            unsigned char *header3, int header3len);
+krad_theora_decoder_create (krad_codec_header_t *header);
 void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora);
 
 #endif

@@ -474,9 +474,7 @@ int main (int argc, char *argv[]) {
   tmphack = krad_opus_encoder_create (2, 48000,
                                       128000, OPUS_APPLICATION_AUDIO); 
 
-  udp_recvr->krad_opus = krad_opus_decoder_create (tmphack->krad_codec_header.header[0],
-                                                   tmphack->krad_codec_header.header_size[0],
-                                                   48000);
+  udp_recvr->krad_opus = krad_opus_decoder_create (&tmphack->krad_codec_header);
 
   krad_opus_encoder_destroy (tmphack);
   

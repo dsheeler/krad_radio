@@ -242,7 +242,7 @@ void krad_theora_encoder_quality_set (krad_theora_encoder_t *krad_theora,
 }
 
 int krad_theora_encoder_write (krad_theora_encoder_t *krad_theora,
-                               unsigned char **packet, int *keyframe) {
+                               uint8_t **packet, int *keyframe) {
   
   int ret;
   int key;
@@ -361,9 +361,7 @@ int krad_theora_test_headers (krad_codec_header_t *hdr) {
   
   theora_dec = NULL;
 
-  theora_dec = krad_theora_decoder_create (hdr->header[0], hdr->header_size[0],
-                                           hdr->header[1], hdr->header_size[1],
-                                           hdr->header[2], hdr->header_size[2]);
+  theora_dec = krad_theora_decoder_create (hdr);
   if (theora_dec != NULL) {
     krad_theora_decoder_destroy (theora_dec);
     return 0;
@@ -379,9 +377,7 @@ void krad_theora_decoder_destroy (krad_theora_decoder_t *krad_theora) {
 }
 
 krad_theora_decoder_t *
-krad_theora_decoder_create (unsigned char *header1, int header1len,
-                            unsigned char *header2, int header2len,
-                            unsigned char *header3, int header3len) {
+krad_theora_decoder_create (krad_codec_header_t *header) {
 
   krad_theora_decoder_t *krad_theora;
   
@@ -392,22 +388,22 @@ krad_theora_decoder_create (unsigned char *header1, int header1len,
   th_comment_init(&krad_theora->comment);
   th_info_init(&krad_theora->info);
 
-  krad_theora->packet.packet = header1;
-  krad_theora->packet.bytes = header1len;
+  krad_theora->packet.packet = header->header[0];
+  krad_theora->packet.bytes = header->header_size[0];
   krad_theora->packet.b_o_s = 1;
   krad_theora->packet.packetno = 1;
   th_decode_headerin (&krad_theora->info, &krad_theora->comment,
                       &krad_theora->setup_info, &krad_theora->packet);
 
-  krad_theora->packet.packet = header2;
-  krad_theora->packet.bytes = header2len;
+  krad_theora->packet.packet = header->header[1];
+  krad_theora->packet.bytes = header->header_size[1];
   krad_theora->packet.b_o_s = 0;
   krad_theora->packet.packetno = 2;
   th_decode_headerin (&krad_theora->info, &krad_theora->comment,
                       &krad_theora->setup_info, &krad_theora->packet);
 
-  krad_theora->packet.packet = header3;
-  krad_theora->packet.bytes = header3len;
+  krad_theora->packet.packet = header->header[2];
+  krad_theora->packet.bytes = header->header_size[2];
   krad_theora->packet.packetno = 3;
   th_decode_headerin (&krad_theora->info, &krad_theora->comment,
                       &krad_theora->setup_info, &krad_theora->packet);

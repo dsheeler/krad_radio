@@ -1,6 +1,8 @@
 #include "krad_decoder.h"
 #include "kr_client.h"
 
+#include "krad_player_common.h"
+
 typedef struct kr_decoder_msg_St kr_decoder_msg_t;
 
 static void kr_decoder_start (void *actual);
@@ -15,15 +17,106 @@ struct kr_decoder_msg_St {
   } param;
 };
 
+typedef union {
+  krad_vhs_t *kvhs;
+	krad_vpx_decoder_t *vpx;
+  krad_theora_decoder_t *theora;
+  krad_flac_t *flac;
+  krad_opus_t *opus;
+  krad_vorbis_t *vorbis;
+} kr_decoder_codec_state;
+
 struct kr_decoder_St {
-  //float speed;
-  //int64_t position;
-  //kr_direction_t direction;
-
   kr_decoder_state_t state;
-
   kr_machine_t *machine;  
+  kr_decoder_codec_state dec;
+  krad_codec_t codec;
 };
+
+void kr_decoder_destroy_instance_decoder (kr_decoder_t *decoder) {
+
+  switch (decoder->codec) {
+    case OPUS:
+      krad_opus_decoder_destroy (decoder->dec.opus);  
+      break;
+    case FLAC:
+      krad_flac_decoder_destroy (decoder->dec.flac);
+      break;
+    case VORBIS:
+      krad_vorbis_decoder_destroy (decoder->dec.vorbis);
+      break;
+    case KVHS:
+      krad_vhs_decoder_destroy (decoder->dec.kvhs);
+      break;
+    case VP8:
+      krad_vpx_decoder_destroy (decoder->dec.vpx);
+      break;
+    case THEORA:
+      krad_theora_decoder_destroy (decoder->dec.theora);
+      break;
+    default:
+      break;
+  }
+  decoder->codec = NOCODEC;
+}
+
+void kr_decoder_create_instance_decoder (kr_decoder_t *decoder,
+                                         krad_codec_header_t *header) {
+  switch (header->codec) {
+    case OPUS:
+      decoder->dec.opus = krad_opus_decoder_create (header);
+      break;
+    case FLAC:
+      decoder->dec.flac = krad_flac_decoder_create (header);
+      break;
+    case VORBIS:
+      decoder->dec.vorbis = krad_vorbis_decoder_create (header);
+      break;
+    case KVHS:
+      krad_vhs_create_decoder ();
+      break;
+    case VP8:
+      krad_vpx_decoder_create ();
+      break;
+    case THEORA:
+      decoder->dec.theora = krad_theora_decoder_create (header);
+      break;
+    default:
+      return;
+  }
+  decoder->codec = header->codec;
+}
+
+static int kr_decoder_check (kr_decoder_t *decoder,
+                             kr_codeme_t *codeme,
+                             kr_medium_t *medium) {
+  if (codeme->codec != decoder->codec) {
+    if (decoder->codec != NOCODEC) {
+      kr_decoder_destroy_instance_decoder (decoder);
+    }
+    if (codeme->codec != NOCODEC) {
+      kr_decoder_create_instance_decoder (decoder, codeme->hdr);
+    } else {
+      return -1;
+    }
+  }
+  
+  return 0;
+}
+static int kr_decoder_decode (kr_decoder_t *decoder,
+                              kr_codeme_t *codeme,
+                              kr_medium_t *medium) {
+  int ret;
+  
+  ret = kr_decoder_check (decoder, codeme, medium);
+  if (ret < 0) {
+    return ret;
+  }
+  
+  
+
+  return 0;
+}
 
 /* Private Functions */
 
@@ -92,6 +185,8 @@ kr_decoder_t *kr_decoder_create () {
   kr_machine_params_t machine_params;
 
   decoder = calloc (1, sizeof(kr_decoder_t));
+
+  decoder->codec = NOCODEC;
 
   machine_params.actual = decoder;
   machine_params.msg_sz = sizeof (kr_decoder_msg_t);

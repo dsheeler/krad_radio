@@ -52,6 +52,10 @@ struct krad_vhs_St {
 };
 
 void krad_vhs_destroy (krad_vhs_t *krad_vhs);
+
+#define krad_vhs_decoder_destroy krad_vhs_destroy
+#define krad_vhs_encoder_destroy krad_vhs_destroy
+
 krad_vhs_t *krad_vhs_create_encoder (int width, int height);
 krad_vhs_t *krad_vhs_create_decoder ();
 int krad_vhs_encode (krad_vhs_t *krad_vhs, unsigned char *pixels);

@@ -76,9 +76,7 @@ int krad_vorbis_test_headers (krad_codec_header_t *hdr);
 
 void krad_vorbis_decoder_destroy (krad_vorbis_t *vorbis);
 krad_vorbis_t *
-krad_vorbis_decoder_create (unsigned char *header1, int header1len,
-                            unsigned char *header2, int header2len,
-                            unsigned char *header3, int header3len);
+krad_vorbis_decoder_create (krad_codec_header_t *header);
 void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
                                  unsigned char *buffer, int bufferlen);
 int krad_vorbis_decoder_read_audio (krad_vorbis_t *vorbis, int channel,

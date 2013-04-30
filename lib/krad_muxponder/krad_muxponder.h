@@ -10,6 +10,7 @@
 #include "krad_player_common.h"
 #include "krad_transmitter.h"
 #include "krad_mkv.h"
+#include "krad_ogg2.h"
 
 #define KR_MUXPONDER_MAX_TRACKS 10
 #define KR_MUXPONDER_MAX_OUTPUTS 10

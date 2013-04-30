@@ -475,7 +475,7 @@ static void kr_player_start (void *actual) {
   kr_videoport_activate (player->videoport);
 
   player->kvhs = krad_vhs_create_decoder ();
-  player->flac = krad_flac_decoder_create (NULL, 0);
+  player->flac = krad_flac_decoder_create (NULL);
   player->vpx = krad_vpx_decoder_create ();
 
   kr_demuxer_params_t demuxer_params;

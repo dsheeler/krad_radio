@@ -83,8 +83,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
       exit (1);
     }
   }
- 
- 
+
   if ((in[0]->tracks[VIDEO_TRACK].width != in[0]->tracks[VIDEO_TRACK].width) ||
       (in[1]->tracks[VIDEO_TRACK].height != in[1]->tracks[VIDEO_TRACK].height)) {
 

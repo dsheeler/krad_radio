@@ -426,8 +426,9 @@ int krad_flac_decode (krad_flac_t *flac,
   return flac->frames;
 }
 
-krad_flac_t *krad_flac_decoder_create (uint8_t *header, int len) {
+krad_flac_t *krad_flac_decoder_create (krad_codec_header_t *header) {
 
+  int h;
   krad_flac_t *flac = calloc (1, sizeof(krad_flac_t));
   FLAC__StreamDecoderInitStatus ret;
     
@@ -451,8 +452,14 @@ krad_flac_t *krad_flac_decoder_create (uint8_t *header, int len) {
     failfast ("Krad FLAC Decoder failure on create");
   }
   
-  if ((len > 0) && (header != NULL)) {
-    krad_flac_decode (flac, header, len, NULL);
+  if (header != NULL) {
+    for (h = 0; h < header->header_count; h++) {
+      if ((header->header_size[h] > 0) && (header->header[h] != NULL)) {
+        krad_flac_decode (flac, header->header[h], header->header_size[h], NULL);
+      } else {
+        break;
+      }
+    }
   }
 
   return flac;
@@ -465,11 +472,16 @@ void krad_flac_decoder_destroy (krad_flac_t *flac) {
   free (flac);
 }
 
-int krad_flac_decoder_test (uint8_t *header, int len) {
+int krad_flac_decoder_test (uint8_t *header_buffer, int len) {
 
   krad_flac_t *flac;
+  krad_codec_header_t header;
 
-  flac = krad_flac_decoder_create (header, len);
+  header.header[0] = header_buffer;
+  header.header_size[0] = len;
+  header.header_count = 1;
+
+  flac = krad_flac_decoder_create (&header);
   
   if (flac != NULL) {
     krad_flac_decoder_destroy (flac);

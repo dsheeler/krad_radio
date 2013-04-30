@@ -6,9 +6,7 @@ int krad_vorbis_test_headers (krad_codec_header_t *hdr) {
   
   vorbis_dec = NULL;
 
-  vorbis_dec = krad_vorbis_decoder_create (hdr->header[0], hdr->header_size[0],
-                                           hdr->header[1], hdr->header_size[1],
-                                           hdr->header[2], hdr->header_size[2]);
+  vorbis_dec = krad_vorbis_decoder_create (hdr);
   if (vorbis_dec != NULL) {
     krad_vorbis_decoder_destroy (vorbis_dec);
     return 0;
@@ -205,9 +203,7 @@ void krad_vorbis_decoder_destroy (krad_vorbis_t *vorbis) {
 }
 
 krad_vorbis_t *
-krad_vorbis_decoder_create (unsigned char *header1, int header1len,
-                            unsigned char *header2, int header2len,
-                            unsigned char *header3, int header3len) {
+krad_vorbis_decoder_create (krad_codec_header_t *header) {
 
   krad_vorbis_t *vorbis = calloc(1, sizeof(krad_vorbis_t));
 
@@ -217,8 +213,8 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
   vorbis_info_init (&vorbis->vinfo);
   vorbis_comment_init (&vorbis->vc);
   
-  vorbis->op.packet = header1;
-  vorbis->op.bytes = header1len;
+  vorbis->op.packet = header->header[0];
+  vorbis->op.bytes = header->header_size[0];
   vorbis->op.b_o_s = 1;
   vorbis->op.packetno = 0;
   ret = vorbis_synthesis_headerin (&vorbis->vinfo, &vorbis->vc, &vorbis->op);
@@ -237,8 +233,8 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
     }
   }
 
-  vorbis->op.packet = header2;
-  vorbis->op.bytes = header2len;
+  vorbis->op.packet = header->header[1];
+  vorbis->op.bytes = header->header_size[1];
   vorbis->op.b_o_s = 0;
   vorbis->op.packetno = 1;
   ret = vorbis_synthesis_headerin(&vorbis->vinfo, &vorbis->vc, &vorbis->op);
@@ -257,8 +253,8 @@ krad_vorbis_decoder_create (unsigned char *header1, int header1len,
     }
   }
 
-  vorbis->op.packet = header3;
-  vorbis->op.bytes = header3len;
+  vorbis->op.packet = header->header[2];
+  vorbis->op.bytes = header->header_size[2];
   vorbis->op.packetno = 2;
   ret = vorbis_synthesis_headerin(&vorbis->vinfo, &vorbis->vc, &vorbis->op);
   if (ret != 0) {

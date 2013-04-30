@@ -39,56 +39,56 @@ typedef struct krad_opus_St krad_opus_t;
 
 struct krad_opus_St {
 
-	OpusMSDecoder *decoder;
-	OpusMSEncoder *encoder;
-	OpusHeader *opus_header;
-	krad_codec_header_t krad_codec_header;
-	unsigned char *opustags_header;
-	int opus_decoder_error;
-		
-	float *resampled_samples[MAX_CHANNELS];
-	float *samples[MAX_CHANNELS];
-	float *read_samples[MAX_CHANNELS];
-	float *interleaved_samples;
-	float interleaved_resampled_samples[MAX_OPUS_FRAME_SIZE * MAX_CHANNELS];
-	krad_ringbuffer_t *resampled_ringbuf[MAX_CHANNELS];
+  OpusMSDecoder *decoder;
+  OpusMSEncoder *encoder;
+  OpusHeader *opus_header;
+  krad_codec_header_t krad_codec_header;
+  uint8_t *opustags_header;
+  int opus_decoder_error;
+    
+  float *resampled_samples[MAX_CHANNELS];
+  float *samples[MAX_CHANNELS];
+  float *read_samples[MAX_CHANNELS];
+  float *interleaved_samples;
+  float interleaved_resampled_samples[MAX_OPUS_FRAME_SIZE * MAX_CHANNELS];
+  krad_ringbuffer_t *resampled_ringbuf[MAX_CHANNELS];
 
-	krad_ringbuffer_t *ringbuf[MAX_CHANNELS];
-	int ret;
-	int channels;
-	
-	int streams;
-	int coupled_streams;
-	
-	int err;
-	int extra_samples;
+  krad_ringbuffer_t *ringbuf[MAX_CHANNELS];
+  int ret;
+  int channels;
+  
+  int streams;
+  int coupled_streams;
+  
+  int err;
+  int extra_samples;
 
-	unsigned char mapping[256];
-	opus_int32 lookahead;
+  unsigned char mapping[256];
+  opus_int32 lookahead;
 
 
-	float input_sample_rate;
-	float output_sample_rate;
+  float input_sample_rate;
+  float output_sample_rate;
 
-	int application;
+  int application;
 
-	opus_int32 frame_size;	
-	int complexity;
-	int bitrate;
-	int signal;
-	int bandwidth;
-		
-	opus_int32 new_frame_size;	
-	int new_complexity;
-	int new_bitrate;
-	int new_signal;
-	int new_bandwidth;
-	
-	unsigned char header_data[100];
-	int header_data_size;
-	SRC_STATE *src_resampler[MAX_CHANNELS];
-	SRC_DATA src_data[MAX_CHANNELS];
-	int src_error[MAX_CHANNELS];
+  opus_int32 frame_size;  
+  int complexity;
+  int bitrate;
+  int signal;
+  int bandwidth;
+    
+  opus_int32 new_frame_size;  
+  int new_complexity;
+  int new_bitrate;
+  int new_signal;
+  int new_bandwidth;
+  
+  unsigned char header_data[100];
+  int header_data_size;
+  SRC_STATE *src_resampler[MAX_CHANNELS];
+  SRC_DATA src_data[MAX_CHANNELS];
+  int src_error[MAX_CHANNELS];
 };
 
 
@@ -107,7 +107,7 @@ void krad_opus_set_signal (krad_opus_t *krad_opus, int signal);
 void krad_opus_set_bandwidth (krad_opus_t *krad_opus, int bandwidth);
 
 int krad_opus_encoder_read (krad_opus_t *krad_opus,
-                            unsigned char *buffer, int *nframes);
+                            uint8_t *buffer, int *nframes);
 int krad_opus_encoder_write (krad_opus_t *krad_opus, int channel,
                              char *buffer, int len);
 void krad_opus_encoder_destroy (krad_opus_t *krad_opus);
@@ -117,11 +117,9 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
 
 /* Decoding */
 
-krad_opus_t *krad_opus_decoder_create (unsigned char *header_data,
-                                       int header_length,
-                                       float output_sample_rate);
+krad_opus_t *krad_opus_decoder_create (krad_codec_header_t *header);
 void krad_opus_decoder_destroy (krad_opus_t *krad_opus);
 int krad_opus_decoder_read (krad_opus_t *krad_opus, int channel,
                             char *buffer, int buffer_length);
 int krad_opus_decoder_write (krad_opus_t *krad_opus,
-                             unsigned char *buffer, int length);
+                             uint8_t *buffer, int length);
