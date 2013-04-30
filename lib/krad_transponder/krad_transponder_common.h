@@ -84,6 +84,9 @@ typedef enum {
 	DECKLINK,
 	X11,
 	NOVIDEO,
+#ifdef KRAD_USE_FLYCAP
+  FLYCAP
+#endif
 } krad_link_video_source_t;
 
 struct krad_transponder_rep_St {

@@ -46,10 +46,16 @@ def options(opt):
   opt.add_option('--with-kplayer', action='store_true', default=False, dest='kplayer',
     help='Build kplayer (requires git libav)')
 
+  opt.add_option('--with-flycap', action='store_true', default=False, dest='flycap',
+    help='Build with flycap')
+
 def check_way(way):
   if way.options.nowayland == False:
     way.env['KRAD_USE_WAYLAND'] = "yes"
     way.env.append_unique('CFLAGS', ['-DKRAD_USE_WAYLAND'])
+  if way.options.flycap == True:
+    way.env['KRAD_USE_FLYCAP'] = "yes"
+    way.env.append_unique('CFLAGS', ['-DKRAD_USE_FLYCAP'])
 
 def check_gif(gif):
   if gif.options.nogif == False:

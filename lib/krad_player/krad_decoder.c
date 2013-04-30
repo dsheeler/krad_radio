@@ -90,6 +90,7 @@ void kr_decoder_create_instance_decoder (kr_decoder_t *decoder,
 static int kr_decoder_check (kr_decoder_t *decoder,
                              kr_codeme_t *codeme,
                              kr_medium_t *medium) {
+
   if (codeme->codec != decoder->codec) {
     if (decoder->codec != NOCODEC) {
       kr_decoder_destroy_instance_decoder (decoder);
@@ -100,7 +101,7 @@ static int kr_decoder_check (kr_decoder_t *decoder,
       return -1;
     }
   }
-  
+
   return 0;
 }
 static int kr_decoder_decode (kr_decoder_t *decoder,

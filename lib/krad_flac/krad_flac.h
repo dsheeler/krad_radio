@@ -80,14 +80,11 @@ void krad_flac_encoder_destroy (krad_flac_t *flac);
 krad_flac_t *krad_flac_encoder_create (int channels,
                                        int sample_rate,
                                        int bit_depth);
-
 /* Decoding */
 
 int krad_flac_decoder_test (uint8_t *header, int len);
 
-int krad_flac_decode (krad_flac_t *flac,
-                      uint8_t *buffer, int len,
-                      float **audio);
+int krad_flac_decode (krad_flac_t *flac, uint8_t *buf, int len, float **audio);
 krad_flac_t *krad_flac_decoder_create (krad_codec_header_t *header);
 void krad_flac_decoder_destroy (krad_flac_t *flac);
 

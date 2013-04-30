@@ -13,6 +13,9 @@
 
 #include "krad_system.h"
 
+#ifndef KRAD_FRAMEPOOL_H
+#define KRAD_FRAMEPOOL_H
+
 typedef struct krad_framepool_St krad_framepool_t;
 typedef struct krad_frame_St krad_frame_t;
 
@@ -62,3 +65,5 @@ void krad_framepool_destroy (krad_framepool_t **krad_framepool);
 krad_framepool_t *krad_framepool_create (int width, int height, int count);
 krad_framepool_t *krad_framepool_create_for_upscale (int width, int height, int count, int upscale_width, int upscale_height);
 krad_framepool_t *krad_framepool_create_for_passthru (int size, int count);
+
+#endif

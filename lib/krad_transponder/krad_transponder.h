@@ -9,6 +9,10 @@ typedef struct krad_transponder_St krad_transponder_t;
 #include "krad_slice.h"
 #include "krad_transponder_interface.h"
 
+#ifdef KRAD_USE_FLYCAP
+#include "krad_fc2.h"
+#endif
+
 #define DEFAULT_VPX_BITRATE 1000
 #define DEFAULT_THEORA_QUALITY 31
 #define DEFAULT_CAPTURE_BUFFER_FRAMES 50
@@ -17,7 +21,7 @@ typedef struct krad_transponder_St krad_transponder_t;
 #define KRAD_DEFAULT_FLAC_BIT_DEPTH 16
 #define DEFAULT_COMPOSITOR_WIDTH 960
 #define DEFAULT_COMPOSITOR_HEIGHT 540
-#define DEFAULT_COMPOSITOR_FPS 30
+#define DEFAULT_COMPOSITOR_FPS 60
 #define DEFAULT_COMPOSITOR_FPS_NUMERATOR DEFAULT_COMPOSITOR_FPS * 1000
 #define DEFAULT_COMPOSITOR_FPS_DENOMINATOR 1 * 1000
 #define DEFAULT_FPS_NUMERATOR DEFAULT_FPS * 1000
@@ -60,6 +64,10 @@ struct krad_link_St {
 	krad_vpx_decoder_t *krad_vpx_decoder;
 	krad_theora_encoder_t *krad_theora_encoder;
 	krad_theora_decoder_t *krad_theora_decoder;
+	
+#ifdef KRAD_USE_FLYCAP
+  kr_fc2_t *fc;
+#endif
 	
 	krad_ticker_t *krad_ticker;
 	

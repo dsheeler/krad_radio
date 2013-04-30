@@ -66,7 +66,6 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
       in[i] = kr_mkv_open_file (filename2);
     }
 
-    
     printf ("File %d: FPS %d/%d RES %dx%d\n",
             i, 
             in[i]->tracks[VIDEO_TRACK].fps_numerator,
