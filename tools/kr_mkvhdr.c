@@ -8,6 +8,7 @@
 #include <krad_theora.h>
 #include <krad_vorbis.h>
 #include <krad_flac.h>
+#include <krad_opus.h>
 
 #include "krad_debug.c"
 
@@ -103,64 +104,59 @@ void ogg_test () {
 
   krad_vorbis_t *vorbis;
   krad_theora_encoder_t *theora;
+  krad_opus_t *opus;
   kr_ogg_t *ogg;
   int track;
   int i;
   int pages;
   size_t page_size;
   size_t total_size;
-  char *data = "0";
+  char *data = "";
   uint8_t page[5000];
+  int64_t granule_position;
 
+  granule_position = 0;
   total_size = 0;
-  pages = 15;
+  pages = 1;
 
   ogg = kr_ogg_create ();
 
-  track = kr_ogg_add_track (ogg);
-
+  opus = krad_opus_encoder_create (2, 48000, 128000, OPUS_APPLICATION_AUDIO);
+  theora = krad_theora_encoder_create (640, 480, 30, 1, 420, 32);
   vorbis = krad_vorbis_encoder_create (2, 48000, 0.5);
 
-  theora = krad_theora_encoder_create (640, 480, 30, 1, 420, 32);
+  track = kr_ogg_add_track (ogg, &theora->krad_codec_header);
+  track = kr_ogg_add_track (ogg, &vorbis->krad_codec_header);
 
+  track = kr_ogg_add_track (ogg, &opus->krad_codec_header);
 
-  for (i = 0; i <= pages; i++) {
-    if (i == pages) {
-      data = "";
-    }
-    if (i < 3) {
-      if (1) {
-        page_size = kr_ogg_add_data (ogg, track,
-                                     theora->krad_codec_header.header[i],
-                                     theora->krad_codec_header.header_size[i],
-                                     page);
-      } else {
-        page_size = kr_ogg_add_data (ogg, track,
-                                     vorbis->krad_codec_header.header[i],
-                                     vorbis->krad_codec_header.header_size[i],
-                                     page);
-      }
-    } else {
-      page_size = kr_ogg_add_data (ogg, track,
-                                   (uint8_t *)data, strlen(data), page);
-    }
+  kr_ogg_generate_header (ogg);
+
+  write (STDOUT_FILENO, ogg->hdr, ogg->hdr_sz);
+
+  for (i = 0; i < pages; i++) {
+    granule_position += 0;
+    page_size = kr_ogg_add_data (ogg, track, granule_position,
+                                (uint8_t *)data, strlen(data), page);
     write (STDOUT_FILENO, page, page_size);
     total_size += page_size;
+
     fprintf (stderr, "Page size was %zu\n", page_size);
   }
 
   fprintf (stderr, "Total size was %zu\n", total_size);
 
   kr_ogg_destroy (&ogg);
+  krad_opus_encoder_destroy (opus);  
   krad_vorbis_encoder_destroy (vorbis);
   krad_theora_encoder_destroy (theora);
 }
 
 int main (int argc, char *argv[]) {
 
-  //ogg_test ();
+  ogg_test ();
 
-  //return 0;
+  return 0;
 
   int32_t ret;
   kr_mkv_t *mkv;

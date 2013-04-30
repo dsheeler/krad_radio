@@ -1,11 +1,33 @@
 #include "krad_ogg2.h"
 
+typedef struct kr_ogg_page_params_St kr_ogg_page_params_t;
+
+struct kr_ogg_track_St {
+  int64_t granule_position;
+  uint32_t bitstream_serial;
+  uint32_t page_sequence_number;
+  krad_codec_header_t *hdr;
+};
+
+struct kr_ogg_page_params_St {
+  int64_t granule_position;
+  uint32_t bitstream_serial;
+  uint32_t page_sequence_number;
+  uint8_t header_type;
+  uint8_t *data;
+  size_t size;
+};
+
+static int kr_ogg_generate_page (kr_ogg_page_params_t *params, uint8_t *page);
+
 int kr_ogg_destroy (kr_ogg_t **ogg) {
 
   if ((ogg == NULL) || (*ogg == NULL)) {
     return -1;
   }
-
+  if ((*ogg)->hdr_sz > 0) {
+    free ((*ogg)->hdr);
+  }
   free ((*ogg)->tracks);
   free (*ogg);
   *ogg = NULL;
@@ -22,17 +44,71 @@ kr_ogg_t *kr_ogg_create () {
   return ogg;
 }
 
-int kr_ogg_add_track (kr_ogg_t *ogg) {
+int kr_ogg_add_track (kr_ogg_t *ogg, krad_codec_header_t *hdr) {
 
   int t;
+  
+  if (ogg->hdr_sz > 0) {
+    return -2;
+  }
   
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial == 0) {
       ogg->tracks[t].bitstream_serial = rand () + time(NULL);
+      ogg->tracks[t].hdr = hdr;
       return t;
     } 
   }
   return -1;
+}
+
+int kr_ogg_generate_header (kr_ogg_t *ogg) {
+
+  int t;
+  int h;
+  size_t sz; 
+  
+  sz = 0;
+  
+  for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
+    if (ogg->tracks[t].bitstream_serial != 0) {
+      for (h = 0; h < ogg->tracks[t].hdr->header_count; h++) {
+        sz += ogg->tracks[t].hdr->header_size[h];
+      }
+    }
+  }
+
+  if (sz == 0) {
+    return -1;
+  }
+
+  sz += 2048;
+  
+  ogg->hdr = malloc (sz);
+  
+  for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
+    if (ogg->tracks[t].bitstream_serial != 0) {
+      for (h = 0; h < 1; h++) {
+        ogg->hdr_sz += kr_ogg_add_data (ogg, t, 0,
+                                        ogg->tracks[t].hdr->header[h],
+                                        ogg->tracks[t].hdr->header_size[h],
+                                        ogg->hdr + ogg->hdr_sz);
+      }
+    }
+  }
+  
+  for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
+    if (ogg->tracks[t].bitstream_serial != 0) {
+      for (h = 1; h < ogg->tracks[t].hdr->header_count; h++) {
+        ogg->hdr_sz += kr_ogg_add_data (ogg, t, 0,
+                                        ogg->tracks[t].hdr->header[h],
+                                        ogg->tracks[t].hdr->header_size[h],
+                                        ogg->hdr + ogg->hdr_sz);
+      }
+    }
+  }
+
+  return ogg->hdr_sz;
 }
 
 void kr_ogg_page_crc_set (uint8_t *page, size_t size) {
@@ -55,7 +131,7 @@ void kr_ogg_page_crc_set (uint8_t *page, size_t size) {
   page[25] = (uint8_t)((crc_reg>>24)&0xff);
 }
 
-int kr_ogg_generate_page (kr_ogg_page_params_t *page_params, uint8_t *page) {
+static int kr_ogg_generate_page (kr_ogg_page_params_t *params, uint8_t *page) {
 
   uint8_t oggs[4] = {0x4f, 0x67, 0x67, 0x53};
   uint8_t ogg_version = 0;
@@ -69,17 +145,22 @@ int kr_ogg_generate_page (kr_ogg_page_params_t *page_params, uint8_t *page) {
 
   memcpy (page, &oggs, 4);
   page[4] = ogg_version;
-  page[5] = page_params->header_type;
-  memcpy (page + 6, &page_params->granule_position, 8);
-  memcpy (page + 14, &page_params->bitstream_serial, 4);
-  memcpy (page + 18, &page_params->page_sequence_number, 4);
+  page[5] = params->header_type;
+  memcpy (page + 6, &params->granule_position, 8);
+  memcpy (page + 14, &params->bitstream_serial, 4);
+  memcpy (page + 18, &params->page_sequence_number, 4);
   memset (page + 22, 0, 4);
-  if (page_params->size < 255) {
-    page[26] = page_segments;
-    page[27] = page_params->size;
-    memcpy (page + 28, page_params->data, page_params->size);
+  if (params->size < 255) {
+    if (params->size == 0) {
+      page[26] = 0;
+      page_segments = 0;
+    } else {
+      page[26] = page_segments;
+      page[27] = params->size;
+      memcpy (page + 28, params->data, params->size);
+    }
   } else {
-    size_rem = page_params->size;
+    size_rem = params->size;
     seg_pos = 27;
     while (size_rem >= 255) {
       page[seg_pos] = 255;
@@ -89,10 +170,10 @@ int kr_ogg_generate_page (kr_ogg_page_params_t *page_params, uint8_t *page) {
     }
     page[26] = page_segments;
     page[seg_pos] = size_rem;
-    memcpy (page + seg_pos + 1, page_params->data, page_params->size);
+    memcpy (page + seg_pos + 1, params->data, params->size);
   }
 
-  page_size = page_params->size + header_size + page_segments;
+  page_size = params->size + header_size + page_segments;
 
   kr_ogg_page_crc_set (page, page_size);
 
@@ -102,38 +183,32 @@ int kr_ogg_generate_page (kr_ogg_page_params_t *page_params, uint8_t *page) {
   return page_size;
 }
 
-int kr_ogg_add_data (kr_ogg_t *ogg, int track,
+int kr_ogg_add_data (kr_ogg_t *ogg, int track, int64_t granule_position,
                      uint8_t *data, size_t size, uint8_t *page) {
 
-  kr_ogg_page_params_t page_params;
+  kr_ogg_page_params_t params;
   size_t page_size;
 
-  page_params.granule_position = ogg->tracks[track].granule_position;
-  page_params.bitstream_serial = ogg->tracks[track].bitstream_serial;
-  page_params.page_sequence_number = ogg->tracks[track].page_sequence_number;
-  page_params.data = data;
-  page_params.size = size;
+  params.granule_position = ogg->tracks[track].granule_position;
+  params.bitstream_serial = ogg->tracks[track].bitstream_serial;
+  params.page_sequence_number = ogg->tracks[track].page_sequence_number;
+  params.granule_position = granule_position;
+  params.data = data;
+  params.size = size;
 
-  if (page_params.page_sequence_number == 0) {
-    page_params.header_type = 0x02;
+  if (params.page_sequence_number == 0) {
+    params.header_type = 0x02;
   } else {
-    if (page_params.size == 0) {
-      page_params.header_type = 0x04;
+    if (params.size == 0) {
+      params.header_type = 0x04;
     } else {
-      page_params.header_type = 0x00;
+      params.header_type = 0x00;
     }
   }
   
-  if (page_params.size == 0) {
-    page_params.granule_position = -1;
-  }
-
-  page_size = kr_ogg_generate_page (&page_params, page);
+  page_size = kr_ogg_generate_page (&params, page);
 
   ogg->tracks[track].page_sequence_number++;
-  if (page_params.page_sequence_number > 3) {
-    ogg->tracks[track].granule_position += 1;
-  }
 
   return page_size;
 }
