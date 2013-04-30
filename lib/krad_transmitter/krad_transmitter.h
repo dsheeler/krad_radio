@@ -36,11 +36,6 @@
 #define KRAD_TRANSMITTER_MAXEVENTS 64
 #define DEFAULT_RING_SIZE 10000000
 
-typedef enum {
-  IS_FILE = 3150,
-  IS_TCP,
-} krad_transmission_receiver_type_t;
-
 typedef struct krad_transmitter_St krad_transmitter_t;
 typedef struct krad_transmission_St krad_transmission_t;
 typedef struct krad_transmitter_St kr_transmitter_t;

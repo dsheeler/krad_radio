@@ -39,6 +39,7 @@ krmkvhdrsources = """
 ../lib/krad_flac/krad_flac.c
 ../lib/krad_opus/krad_opus.c
 ../lib/krad_opus/opus_header.c
+../lib/krad_ogg/krad_ogg2.c
 """.split()
 
 krmuxpdrsources = """

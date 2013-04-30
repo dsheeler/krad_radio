@@ -87,8 +87,6 @@ struct krad_transmission_receiver_St {
   krad_transmitter_t *krad_transmitter;
   krad_transmission_t *krad_transmission;
 
-  krad_transmission_receiver_type_t krad_transmission_receiver_type;
-
   struct epoll_event event;
 
   int fd;

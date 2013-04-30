@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <krad_ogg2.h>
+
 #include <krad_mkv_demux.h>
 
 #include <krad_theora.h>
@@ -95,10 +97,70 @@ void mkv_header_test (kr_mkv_t *mkv) {
       }
     }
   }
+}
 
+void ogg_test () {
+
+  krad_vorbis_t *vorbis;
+  krad_theora_encoder_t *theora;
+  kr_ogg_t *ogg;
+  int track;
+  int i;
+  int pages;
+  size_t page_size;
+  size_t total_size;
+  char *data = "0";
+  uint8_t page[5000];
+
+  total_size = 0;
+  pages = 15;
+
+  ogg = kr_ogg_create ();
+
+  track = kr_ogg_add_track (ogg);
+
+  vorbis = krad_vorbis_encoder_create (2, 48000, 0.5);
+
+  theora = krad_theora_encoder_create (640, 480, 30, 1, 420, 32);
+
+
+  for (i = 0; i <= pages; i++) {
+    if (i == pages) {
+      data = "";
+    }
+    if (i < 3) {
+      if (1) {
+        page_size = kr_ogg_add_data (ogg, track,
+                                     theora->krad_codec_header.header[i],
+                                     theora->krad_codec_header.header_size[i],
+                                     page);
+      } else {
+        page_size = kr_ogg_add_data (ogg, track,
+                                     vorbis->krad_codec_header.header[i],
+                                     vorbis->krad_codec_header.header_size[i],
+                                     page);
+      }
+    } else {
+      page_size = kr_ogg_add_data (ogg, track,
+                                   (uint8_t *)data, strlen(data), page);
+    }
+    write (STDOUT_FILENO, page, page_size);
+    total_size += page_size;
+    fprintf (stderr, "Page size was %zu\n", page_size);
+  }
+
+  fprintf (stderr, "Total size was %zu\n", total_size);
+
+  kr_ogg_destroy (&ogg);
+  krad_vorbis_encoder_destroy (vorbis);
+  krad_theora_encoder_destroy (theora);
 }
 
 int main (int argc, char *argv[]) {
+
+  //ogg_test ();
+
+  //return 0;
 
   int32_t ret;
   kr_mkv_t *mkv;
