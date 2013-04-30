@@ -43,6 +43,8 @@ typedef enum {
 
 typedef struct krad_transmitter_St krad_transmitter_t;
 typedef struct krad_transmission_St krad_transmission_t;
+typedef struct krad_transmitter_St kr_transmitter_t;
+typedef struct krad_transmission_St kr_transmission_t;
 
 krad_transmission_t *krad_transmitter_transmission_create (krad_transmitter_t *transmitter, char *mount, char *content_type);
 void krad_transmitter_transmission_destroy (krad_transmission_t *transmission);

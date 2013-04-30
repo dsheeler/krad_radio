@@ -1270,7 +1270,6 @@ krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *krad_transp
   }
 }
 
-
 krad_transponder_t *krad_transponder_create (krad_radio_t *krad_radio) {
 
   krad_transponder_t *krad_transponder;

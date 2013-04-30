@@ -98,10 +98,18 @@ static int kr_mkv_parse_segment_info (kr_mkv_t *mkv, uint64_t max_pos) {
       case MKV_SEGMENT_FAMILY:
       case MKV_SEGMENT_CHAPTERTRANSLATE:
       case MKV_SEGMENT_TIMECODESCALE:
-        kr_ebml2_unpack_uint64 (mkv->e, &mkv->timecode_scale, size);
+        //kr_ebml2_unpack_uint64 (mkv->e, &mkv->timecode_scale, size);
+        //break;
+        printk ("Skipping TIMECODESCALE: %"PRIu64" bytes",
+                size);
+        kr_ebml2_advance (mkv->e, size);
         break;
       case MKV_SEGMENT_DURATION:
-        kr_ebml2_unpack_double (mkv->e, &mkv->duration, size);
+        //kr_ebml2_unpack_double (mkv->e, &mkv->duration, size);
+        //break;
+        printk ("Skipping duration: %"PRIu64" bytes",
+                size);
+        kr_ebml2_advance (mkv->e, size);
         break;
       case MKV_SEGMENT_DATEUTC:
       case MKV_SEGMENT_MUXINGAPP:

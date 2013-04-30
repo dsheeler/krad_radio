@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <krad_muxponder.h>
 #include <krad_transmitter.h>
 #include <krad_ticker.h>
 #include <krad_mkv_demux.h>
@@ -14,10 +15,13 @@
 #define VIDEO_TRACK 1
 #define AUDIO_TRACK 2
 
-void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
+void krad_muxponder_test (int port, char *filename1, char *filename2) {
 
+  kr_muxponder_t *muxponder;
   krad_transmitter_t *transmitter;
-  kr_mkv_t *mkv_tx;
+  kr_track_info_t track_info;
+  kr_muxer_output_params_t output_params;
+
   kr_mkv_t *in[2];
   krad_ticker_t *ticker;
 
@@ -39,12 +43,14 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
   last_tc = 0;
   packets = 0;
 
+  memset (&track_info, 0, sizeof(kr_track_info_t));
+  memset (&output_params, 0, sizeof(kr_muxer_output_params_t));
+
   char *stream_name = "stream.webm";
   char *content_type = "video/webm";
 
   buffer = malloc (10000000);
 
-  
   for (i = 0; i < 2; i++) {
   
     if (i == 0) {
@@ -89,20 +95,35 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
     exit (1);
   }
 
-  mkv_tx = kr_mkv_create_transmission (transmitter, stream_name, content_type);
+  muxponder = kr_muxponder_create (transmitter);
 
-  if (mkv_tx == NULL) {
-    fprintf (stderr, "Could not create mkv transmission\n");
-    exit (1);
-  }
+  track_info.header.codec = VP8;
+  track_info.params.v.width = in[0]->tracks[VIDEO_TRACK].width;
+  track_info.params.v.height = in[0]->tracks[VIDEO_TRACK].height;
 
-  out_track = kr_mkv_add_video_track (mkv_tx, VP8,
-                                      30,
-                                      1,
-                                      in[0]->tracks[VIDEO_TRACK].width,
-                                      in[0]->tracks[VIDEO_TRACK].height);
+  out_track = kr_muxponder_create_track (muxponder, &track_info);
 
   printf ("Added new track: %d\n", out_track);
+
+  char *host = "europa.kradradio.com";
+  int stream_port = 80;
+  char *password = "firefox";    
+
+  output_params.container = MKV;
+  output_params.transport = STREAM;
+  output_params.transport_params.stream_output_params.host = host;
+  output_params.transport_params.stream_output_params.port = stream_port;
+  output_params.transport_params.stream_output_params.mount = stream_name;
+  output_params.transport_params.stream_output_params.password = password;  
+
+  kr_muxponder_create_output (muxponder, &output_params);
+
+  output_params.container = MKV;
+  output_params.transport = TRANSMISSION;
+  output_params.transport_params.transmission_output_params.mount = stream_name;
+  output_params.transport_params.transmission_output_params.content_type = content_type;
+
+  kr_muxponder_create_output (muxponder, &output_params);
 
   for (i = 0; i < 2; i++) {
     while ((bytes_read = kr_mkv_read_packet (in[i], &track, &timecode, &flags, buffer)) > 0) {
@@ -123,7 +144,7 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
       fflush (stdout);
 
       if (track == 1) {
-        kr_mkv_add_video (mkv_tx, out_track, buffer, bytes_read, keyframe);
+        //kr_mkv_add_video (mkv_tx, out_track, buffer, bytes_read, keyframe);
       }
 
       if ((last_tc) && (last_tc < timecode)) {
@@ -139,7 +160,7 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
   krad_ticker_destroy (ticker);
   kr_mkv_destroy (&in[0]);
   kr_mkv_destroy (&in[1]);
-  kr_mkv_destroy (&mkv_tx);
+  kr_muxponder_destroy (&muxponder);  
   krad_transmitter_destroy (transmitter);
   free (buffer);
 }
@@ -155,7 +176,7 @@ int main (int argc, char *argv[]) {
       if (argc == 3) {
         printf ("Need filename2\n");
       } else {
-        krad_transmitter_mkv_test2 (atoi(argv[1]), argv[2], argv[3]);
+        krad_muxponder_test (atoi(argv[1]), argv[2], argv[3]);
       }
     }
   } else {
