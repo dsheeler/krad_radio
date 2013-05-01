@@ -86,7 +86,7 @@ void kr_fc2_capture_start (kr_fc2_t *fc) {
 
   video_mode = FC2_VIDEOMODE_640x480Y8;
   frame_rate = FC2_FRAMERATE_30;
-  frame_rate = FC2_FRAMERATE_60;
+  //frame_rate = FC2_FRAMERATE_60;
 
   error = fc2SetVideoModeAndFrameRate (fc->context, video_mode, frame_rate);
   if (error != FC2_ERROR_OK) {
