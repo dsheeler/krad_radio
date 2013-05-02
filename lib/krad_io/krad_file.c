@@ -234,6 +234,10 @@ kr_file_t *kr_file_open (char *path) {
   return ofile;
 }
 
+int kr_file_read (kr_file_t *file, void *buffer, size_t len) {
+  return read (file->fd, buffer, len);
+}
+
 int kr_file_close (kr_file_t **file) {
 
   if ((file == NULL) || (*file == NULL)) {
