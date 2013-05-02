@@ -1,7 +1,10 @@
 #include "krad_stream.h"
 
 static void kr_base64_encode (char *dest, char *src, int maxlen);
-static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len);
+static void kr_stream_read_http_headers (krad_stream_t **stream);
+static void kr_stream_send_request_to_stream (krad_stream_t **stream);
+static void kr_stream_send_request_for_stream (krad_stream_t **stream);
+static krad_stream_t *kr_stream_connect (char *host, int port);
 
 static void kr_base64_encode (char *dest, char *src, int maxlen) {
 
@@ -13,7 +16,7 @@ static void kr_base64_encode (char *dest, char *src, int maxlen) {
                     '8', '9', '+', '/' };
   int len;
   int base64_len;
-  int chunk;
+  int slice;
   char *out;
   char *result;
   char buffer[1024];
@@ -28,10 +31,10 @@ static void kr_base64_encode (char *dest, char *src, int maxlen) {
   }
 
   while (len > 0) {
-   chunk = (len > 3) ? 3 : len;
+   slice = (len > 3) ? 3 : len;
     *out++ = b64t[(*src & 0xFC) >> 2];
     *out++ = b64t[((*src & 0x03) << 4) | ((*(src + 1) & 0xF0) >> 4)];
-    switch(chunk) {
+    switch (slice) {
       case 3:
         *out++ = b64t[((*(src + 1) & 0x0F) << 2) | ((*(src + 2) & 0xC0) >> 6)];
         *out++ = b64t[(*(src + 2)) & 0x3F];
@@ -47,14 +50,14 @@ static void kr_base64_encode (char *dest, char *src, int maxlen) {
         *out++ = '=';
         break;
     }
-    src += chunk;
-    len -= chunk;
+    src += slice;
+    len -= slice;
   }
   *out = 0;
   strncpy (dest, result, maxlen);
 }
 
-int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len) {
+int kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
 
   int bytes;
   int ret;
@@ -73,7 +76,7 @@ int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len) {
   return bytes;
 }
 
-static int kr_stream_read (krad_stream_t *stream, void *buffer, size_t len) {
+int kr_stream_recv (krad_stream_t *stream, void *buffer, size_t len) {
   return recv (stream->sd, buffer, len, 0);
 }
 
@@ -127,42 +130,24 @@ int kr_stream_reconnect (krad_stream_t *stream) {
   return -1;
 }
 
-krad_stream_t *kr_stream_create (char *host, int port,
-                                 char *mount, char *password) {
+static krad_stream_t *kr_stream_connect (char *host, int port) {
 
-  krad_stream_t *krad_stream;
-  int http_string_pos;
-  char *content_type;
-  char auth[256];
-  char auth_base64[256];
-  char http_string[512];
+  krad_stream_t *stream;
   int ret;
   char port_string[6];
   struct in6_addr serveraddr;
   struct addrinfo hints;
   struct addrinfo *res;
 
-  krad_stream = NULL;
   res = NULL;  
-  http_string_pos = 0;
 
-  krad_stream = calloc (1, sizeof(krad_stream_t));
-
-  if ((host == NULL) || (mount == NULL) || ((port < 0) || (port > 65535))) {
-    kr_stream_destroy (&krad_stream);
+  if ((host == NULL) || ((port < 0) || (port > 65535))) {
     return NULL;
   }
-  
-  if (mount[0] == '/') {
-    if (strlen(mount) > 1) {
-      mount = mount + 1;
-    } else {
-      kr_stream_destroy (&krad_stream);
-      return NULL;
-    }
-  }
 
-  memset (&hints, 0x00, sizeof (hints));
+  stream = calloc (1, sizeof(krad_stream_t));
+
+  memset (&hints, 0, sizeof(hints));
   hints.ai_flags = AI_NUMERICSERV;
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
@@ -181,83 +166,160 @@ krad_stream_t *kr_stream_create (char *host, int port,
   snprintf (port_string, 6, "%d", port);
   ret = getaddrinfo (host, port_string, &hints, &res);
   if (ret != 0) {
-    kr_stream_destroy (&krad_stream);
+    kr_stream_destroy (&stream);
     return NULL;
   }
 
-  krad_stream->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
-  if (krad_stream->sd < 0) {
-    kr_stream_destroy (&krad_stream);
+  stream->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
+  if (stream->sd < 0) {
+    kr_stream_destroy (&stream);
   } else {
-    if (connect (krad_stream->sd, res->ai_addr, res->ai_addrlen) < 0) {
-      kr_stream_destroy (&krad_stream);
-    } else {
-      if (password == NULL) {
-        snprintf (http_string, sizeof (http_string),
-                  "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n", mount, host);
-        kr_stream_write (krad_stream, http_string, strlen (http_string));
-        int end_http_headers = 0;
-        char buf[8];
-        while (end_http_headers != 4) {
-          kr_stream_read (krad_stream, buf, 1);
-          if ((buf[0] == '\n') || (buf[0] == '\r')) {
-            end_http_headers++;
-          } else {
-            end_http_headers = 0;
-          }
-        }
-      } else {
-        if ((strstr(mount, ".opus")) ||
-            (strstr(mount, ".Opus")) ||
-            (strstr(mount, ".OPUS"))) {
-          content_type = "audio/opus";
-         } else {
-          if ((strstr(mount, ".ogg")) ||
-            (strstr(mount, ".OGG")) ||
-            (strstr(mount, ".Ogg")) ||
-            (strstr(mount, ".oga")) ||
-            (strstr(mount, ".ogv")) ||
-            (strstr(mount, ".Oga")) ||    
-            (strstr(mount, ".OGV"))) {
-              content_type = "application/ogg";
-          } else {
-            content_type = "video/webm";
-          }
-        }
-        snprintf (auth, sizeof (auth), "source:%s", password );
-        kr_base64_encode ( auth_base64, auth, sizeof (auth_base64));
-        http_string_pos = snprintf ( http_string,
-                                     sizeof (http_string) - http_string_pos, 
-                                     "SOURCE /%s ICE/1.0\r\n", mount);
-        http_string_pos += snprintf ( http_string + http_string_pos,
-                                      sizeof (http_string) - http_string_pos,
-                                      "content-type: %s\r\n", content_type);
-        http_string_pos += snprintf ( http_string + http_string_pos,
-                                      sizeof (http_string) - http_string_pos,
-                                      "Authorization: Basic %s\r\n\r\n",
-                                      auth_base64);
-        kr_stream_write (krad_stream, http_string, http_string_pos);
-      }
+    if (connect (stream->sd, res->ai_addr, res->ai_addrlen) < 0) {
+      kr_stream_destroy (&stream);
     }
   }
-  
+
   if (res != NULL) {
     freeaddrinfo (res);
-    res = NULL;
   }
 
-  if (krad_stream != NULL) {
-    krad_stream->host = strdup (host);
-    krad_stream->port = port;
-    krad_stream->mount = strdup (mount);
-    krad_stream->password = strdup (password);
+  return stream;
+}
+
+static void kr_stream_read_http_headers (krad_stream_t **stream) {
+
+  int ret;
+  int end;
+  char buf[8];
+
+  end = 0;
+
+  while (end != 4) {
+    ret = kr_stream_recv (*stream, buf, 1);
+    if (ret != 1) {
+      kr_stream_destroy (stream);
+      return;
+    }    
+    if ((buf[0] == '\n') || (buf[0] == '\r')) {
+      end++;
+    } else {
+      end = 0;
+    }
+  }
+}
+
+static void kr_stream_send_request_to_stream (krad_stream_t **stream) {
+
+  int ret;
+  int len;
+  char http_req[512];
+  char auth[256];
+  char auth_base64[256];
+
+  len = 0;
+
+  snprintf (auth, sizeof (auth), "source:%s", (*stream)->password);
+  kr_base64_encode (auth_base64, auth, sizeof(auth_base64));
+
+  len = snprintf (http_req, sizeof(http_req) - len,
+                  "SOURCE /%s ICE/1.0\r\n",
+                  (*stream)->mount);
+
+  len += snprintf (http_req + len, sizeof(http_req) - len,
+                   "content-type: %s\r\n",
+                   (*stream)->content_type);
+
+  len += snprintf (http_req + len, sizeof(http_req) - len,
+                   "Authorization: Basic %s\r\n\r\n",
+                   auth_base64);
+
+  ret = kr_stream_send (*stream, http_req, len);
+  if (ret != len) {
+    kr_stream_destroy (stream);
+  }
+}
+
+static void kr_stream_send_request_for_stream (krad_stream_t **stream) {
+
+  int ret;
+  int len;
+  char http_req[512];
+
+  len = snprintf (http_req, sizeof (http_req),
+                  "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n",
+                  (*stream)->mount, (*stream)->host);
+
+  ret = kr_stream_send (*stream, http_req, len);
+  if (ret != len) {
+    kr_stream_destroy (stream);
+  }
+}
+
+krad_stream_t *kr_stream_create (char *host, int port,
+                                 char *mount, char *content_type,
+                                 char *password) {
+  krad_stream_t *stream;
+
+  if ((host == NULL) || (mount == NULL) || (password == NULL) ||
+      (content_type == NULL) || ((port < 0) || (port > 65535))) {
+    return NULL;
   }
 
-  return krad_stream;
+  if (mount[0] == '/') {
+    if (strlen(mount) > 1) {
+      mount = mount + 1;
+    } else {
+      return NULL;
+    }
+  }
+
+  stream = kr_stream_connect (host, port);
+  if (stream == NULL) {
+    return NULL;
+  }
+
+  stream->host = strdup (host);
+  stream->port = port;
+  stream->mount = strdup (mount);
+  stream->password = strdup (password);
+  stream->content_type = strdup (content_type);
+
+  /* destroys if write fail */
+  kr_stream_send_request_to_stream (&stream);
+
+  return stream;
 }
 
 krad_stream_t *kr_stream_open (char *host, int port, char *mount) {
-  //FIXME
-  return NULL;
-}
 
+  krad_stream_t *stream;
+
+  if ((host == NULL) || (mount == NULL) || ((port < 0) || (port > 65535))) {
+    return NULL;
+  }
+
+  if (mount[0] == '/') {
+    if (strlen(mount) > 1) {
+      mount = mount + 1;
+    } else {
+      return NULL;
+    }
+  }
+
+  stream = kr_stream_connect (host, port);
+  if (stream == NULL) {
+    return NULL;
+  }
+
+  stream->host = strdup (host);
+  stream->port = port;
+  stream->mount = strdup (mount);
+
+  /* destroys if write fail */
+  kr_stream_send_request_for_stream (&stream);
+
+  /* destroys if read fail */
+  kr_stream_read_http_headers (&stream);
+
+  return stream;
+}

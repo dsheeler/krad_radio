@@ -136,7 +136,7 @@ int muxponder_data_cb (uint8_t *data, size_t size, uint32_t sync, void *ptr) {
       case STREAM:
         if (output->wrote_hdr == 0) {
           if (sync == 1) {
-            kr_stream_write (output->transport.stream, muxponder->mkv_hdr, muxponder->mkv_hdr_size);
+            kr_stream_send (output->transport.stream, muxponder->mkv_hdr, muxponder->mkv_hdr_size);
             output->wrote_hdr = 1;
           } else {
             continue;
@@ -144,7 +144,7 @@ int muxponder_data_cb (uint8_t *data, size_t size, uint32_t sync, void *ptr) {
         }
         if (size > 0) {
           //printf ("sending %zu to %d\n", size, output->transport.stream->sd);
-          kr_stream_write (output->transport.stream, data, size);
+          kr_stream_send (output->transport.stream, data, size);
         }
         break;
       case TRANSMISSION:
@@ -240,14 +240,17 @@ int kr_muxponder_create_output (kr_muxponder_t *muxponder,
       break;
     }
   }
-  
+
   if (o == KR_MUXPONDER_MAX_OUTPUTS) {
     return -1;
   }
-  
+
   muxponder->outputs[o].active = 1;
-  
+
   memcpy (&muxponder->outputs[o].params, output_params, sizeof (kr_muxer_output_params_t));
+
+  /* Temp */
+  char *content_type = "video/webm";
 
   switch (muxponder->outputs[o].params.transport) {
     case LOCAL_FILE:
@@ -257,6 +260,7 @@ int kr_muxponder_create_output (kr_muxponder_t *muxponder,
       muxponder->outputs[o].transport.stream = kr_stream_create (muxponder->outputs[o].params.transport_params.stream_output_params.host,
                                                                  muxponder->outputs[o].params.transport_params.stream_output_params.port,
                                                                  muxponder->outputs[o].params.transport_params.stream_output_params.mount,
+                                                                 content_type,
                                                                  muxponder->outputs[o].params.transport_params.stream_output_params.password);
       if (muxponder->outputs[o].transport.stream == NULL) {
         printf ("fail to create stream\n");

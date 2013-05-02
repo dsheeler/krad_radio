@@ -22,7 +22,9 @@ struct krad_stream_St {
   char *host;
   int32_t port;
   char *mount;
+
   char *password;
+  char *content_type;
 };
 
 /* Close SD only */
@@ -36,10 +38,12 @@ int kr_stream_destroy (krad_stream_t **stream);
 
 int kr_stream_reconnect (krad_stream_t *stream);
 
-int kr_stream_write (krad_stream_t *stream, void *buffer, size_t len);
+int kr_stream_send (krad_stream_t *stream, void *buffer, size_t len);
+int kr_stream_recv (krad_stream_t *stream, void *buffer, size_t len);
 
 krad_stream_t *kr_stream_create (char *host, int port,
-                                 char *mount, char *password);
+                                 char *mount, char *content_type,
+                                 char *password);
 
 krad_stream_t *kr_stream_open (char *host, int port, char *mount);
 

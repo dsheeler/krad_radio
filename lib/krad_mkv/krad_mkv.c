@@ -414,7 +414,10 @@ kr_mkv_t *kr_mkv_create_stream (char *host, int port,
   kr_mkv_t *mkv;
   krad_stream_t *stream;
   
-  stream = kr_stream_create (host, port, mount, password);
+  /* Temp */
+  char *content_type = "video/webm";
+  
+  stream = kr_stream_create (host, port, mount, content_type, password);
   
   if (stream == NULL) {
     return NULL;
