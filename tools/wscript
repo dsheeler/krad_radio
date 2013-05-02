@@ -5,6 +5,7 @@ import os
 programs = """
 sigma_mkv.c
 kr_mkvinfo.c
+kr_pipe.c
 """.split()
 
 programs2 = """

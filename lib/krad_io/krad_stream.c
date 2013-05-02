@@ -246,7 +246,7 @@ static void kr_stream_send_request_for_stream (krad_stream_t **stream) {
   char http_req[512];
 
   len = snprintf (http_req, sizeof (http_req),
-                  "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n",
+                  "GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n",
                   (*stream)->mount, (*stream)->host);
 
   ret = kr_stream_send (*stream, http_req, len);
