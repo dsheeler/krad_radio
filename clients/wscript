@@ -411,13 +411,13 @@ def build(bld):
     use = ["kradradio_client"],
     uselib = shlibs + shlibs4 + stlibs + syslibs)
 
-  for p in programs5:
-    bld(features = 'c cprogram', 
-    source = [p] + depsources5,
-    includes = includedirs, 
-    target = p.replace(".c", ""),
-    use = ["kradradio_client"],
-    uselib = shlibs + stlibs + syslibs + plibs)
+#  for p in programs5:
+#    bld(features = 'c cprogram', 
+#    source = [p] + depsources5,
+#    includes = includedirs, 
+#    target = p.replace(".c", ""),
+#    use = ["kradradio_client"],
+#    uselib = shlibs + stlibs + syslibs + plibs)
     
   if bld.env['KPLAYER'] == "yes":
     for p in programs6:

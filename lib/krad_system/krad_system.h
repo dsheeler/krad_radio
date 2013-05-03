@@ -58,6 +58,7 @@ typedef struct krad_control_St krad_control_t;
 
 #define KRAD_SYSNAME_MIN 4
 #define KRAD_SYSNAME_MAX 32
+#define KRAD_SYSNAME_SZ 64
 
 #define KRAD_BUFLEN_CPUSTAT 128
 #define KRAD_CPU_MONITOR_INTERVAL 4000

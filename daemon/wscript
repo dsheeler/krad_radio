@@ -42,7 +42,6 @@ depsources = """
 ../lib/krad_web/ext/libwebsockets/sha-1.c
 ../lib/krad_web/ext/libwebsockets/libwebsockets.c
 ../lib/krad_web/ext/libwebsockets/parsers.c
-../lib/krad_web/krad_http.c
 ../lib/krad_web/krad_websocket.c
 ../lib/krad_sfx/krad_eq.c
 ../lib/krad_sfx/krad_analog.c
@@ -66,7 +65,7 @@ depsources = """
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_transponder/krad_transponder_interface.c
 ../lib/krad_transponder/krad_transponder.c
-../lib/krad_transponder/krad_receiver.c
+../lib/krad_web/krad_interweb.c
 ../lib/krad_transmitter/krad_transmitter.c
 ../lib/krad_ogg/krad_ogg.c
 ../lib/krad_ogg/krad_ogg2.c

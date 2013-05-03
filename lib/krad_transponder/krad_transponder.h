@@ -5,7 +5,6 @@ typedef struct krad_link_St krad_link_t;
 typedef struct krad_transponder_St krad_transponder_t;
 
 #include "krad_radio.h"
-#include "krad_receiver.h"
 #include "krad_slice.h"
 #include "krad_transponder_interface.h"
 
@@ -36,7 +35,6 @@ struct krad_transponder_St {
   kr_address_t address;
 	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_SUBUNITS];
 	krad_radio_t *krad_radio;
-	krad_receiver_t *krad_receiver;	
 	krad_transmitter_t *krad_transmitter;	
 	kr_xpdr_t *xpdr;
 };

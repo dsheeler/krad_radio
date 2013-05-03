@@ -31,9 +31,9 @@ static void krad_radio_shutdown (krad_radio_t *krad_radio) {
     krad_radio->remote.krad_osc = NULL;
   }
   krad_timer_status (shutdown_timer);
-  if (krad_radio->remote.krad_http != NULL) {
-    krad_http_server_destroy (krad_radio->remote.krad_http);
-    krad_radio->remote.krad_http = NULL;
+  if (krad_radio->remote.interweb != NULL) {
+    krad_interweb_server_destroy (krad_radio->remote.interweb);
+    krad_radio->remote.interweb = NULL;
   }
   krad_timer_status (shutdown_timer);
   if (krad_radio->remote.krad_websocket != NULL) {

@@ -1,7 +1,7 @@
 #include "krad_transponder_interface.h"
 
 void krad_transponder_to_rep ( krad_transponder_t *krad_transponder, kr_transponder_t *transponder_rep ) {
-  transponder_rep->receiver_port = krad_transponder->krad_receiver->port;
+  transponder_rep->receiver_port = 777; // FIXME TEMP krad_transponder->krad_receiver->port;
   transponder_rep->transmitter_port = 666; // FIXME TEMP krad_transponder->krad_transmitter->port;
 }
 
@@ -503,10 +503,10 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_ENABLE:
       kr_ebml2_unpack_element_uint16 (&ebml_in, &element, &port);
-      krad_receiver_listen_on (krad_transponder->krad_receiver, port);
+      //krad_receiver_listen_on (krad_transponder->krad_receiver, port);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_DISABLE:
-      krad_receiver_stop_listening (krad_transponder->krad_receiver);
+      //krad_receiver_stop_listening (krad_transponder->krad_receiver);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_ENABLE:
       kr_ebml2_unpack_element_uint16 (&ebml_in, &element, &port);

@@ -51,7 +51,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_mixer.h"
 #include "krad_mixer_common.h"
 #include "krad_websocket.h"
-#include "krad_http.h"
 #include "krad_udp.h"
 #include "krad_x11.h"
 #include "krad_theora.h"
@@ -73,7 +72,7 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_transponder_common.h"
 #include "krad_transponder_graph.h"
 #include "krad_transponder.h"
-#include "krad_receiver.h"
+#include "krad_interweb.h"
 
 extern krad_system_t krad_system;
 
@@ -81,7 +80,8 @@ struct krad_remote_control_St {
 	krad_ipc_server_t *krad_ipc;
 	krad_osc_t *krad_osc;	
 	krad_websocket_t *krad_websocket;
-	krad_http_t *krad_http;
+	//krad_http_t *krad_http;
+	krad_interweb_t *interweb;
 };
 
 struct krad_log_St {

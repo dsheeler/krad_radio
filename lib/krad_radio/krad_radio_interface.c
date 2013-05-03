@@ -496,21 +496,27 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
       kr_ebml2_unpack_element_string (&ebml_in, &element, string1, sizeof(string1));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string3, sizeof(string3));
-      if (krad_radio->remote.krad_http != NULL) {
-        krad_http_server_destroy (krad_radio->remote.krad_http);
+
+      if (krad_radio->remote.interweb != NULL) {
+        krad_interweb_server_destroy (krad_radio->remote.interweb);
       }
       if (krad_radio->remote.krad_websocket != NULL) {
         krad_websocket_server_destroy (krad_radio->remote.krad_websocket);
       }
-      krad_radio->remote.krad_http = krad_http_server_create (numbers[0], numbers[1],
-                                                              string1, string2, string3 );
+
+      krad_radio->remote.interweb = krad_interweb_server_create (numbers[0], numbers[1],
+                                                                 string1, string2, string3);
+      
       krad_radio->remote.krad_websocket = krad_websocket_server_create ( krad_radio->sysname, numbers[1] );
+
       break;
     case EBML_ID_KRAD_RADIO_CMD_WEB_DISABLE:
-      krad_http_server_destroy (krad_radio->remote.krad_http);
-      krad_websocket_server_destroy (krad_radio->remote.krad_websocket);
-      krad_radio->remote.krad_http = NULL;
-      krad_radio->remote.krad_websocket = NULL;
+      if (krad_radio->remote.interweb != NULL) {
+        krad_interweb_server_destroy (krad_radio->remote.interweb);
+      }
+      if (krad_radio->remote.krad_websocket != NULL) {
+        krad_websocket_server_destroy (krad_radio->remote.krad_websocket);
+      }
       break;
     case EBML_ID_KRAD_RADIO_CMD_SET_DIR:
       kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string1));
