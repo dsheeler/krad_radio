@@ -3,7 +3,7 @@
 #include <sys/utsname.h>
 #include <stddef.h>
 
-/* gcc -o kr_sysinfo kr_sysinfo.c */
+/* gcc -Wall kr_sysinfo.c -o kr_sysinfo */
 
 int main (void) {
 

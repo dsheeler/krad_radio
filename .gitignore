@@ -79,3 +79,5 @@ clients/rust/krad_radio
 tests/krad_pipe
 tests/krad_udp_test
 tests/kr_player
+tests/kr_sysinfo
+tests/kr_terminfo
