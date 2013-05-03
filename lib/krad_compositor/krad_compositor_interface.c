@@ -195,7 +195,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
 
   printk ("comp command");
 
-	switch ( command ) {
+  switch ( command ) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT:
       unit_control.address.path.unit = KR_COMPOSITOR;
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
