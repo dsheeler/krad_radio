@@ -815,6 +815,10 @@ LWS_EXTERN int
 libwebsocket_service_fd(struct libwebsocket_context *context,
 							 struct pollfd *pollfd);
 
+
+LWS_EXTERN void
+libwebsocket_shove_fd(struct libwebsocket_context *context, int fd);
+
 LWS_EXTERN void *
 libwebsocket_context_user(struct libwebsocket_context *context);
 

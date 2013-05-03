@@ -104,6 +104,7 @@ struct krad_interweb_server_client_St {
   kr_io2_t *in;
   kr_io2_t *out;
   int32_t drop_after_flush;
+  int32_t noob;
 };
 
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,

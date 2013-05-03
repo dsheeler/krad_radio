@@ -113,38 +113,58 @@ int krad_interweb_server_listen_on_adapter (krad_iws_t *server,
 }
 #endif
 
+int strmatch (char *string1, char *string2) {
+  
+  int len1;
+  
+  if ((string1 == NULL) || (string2 == NULL)) {
+    if ((string1 == NULL) && (string2 == NULL)) {
+      return 1;
+    }
+    return 0;
+  } 
+
+  len1 = strlen (string1);
+
+  if (len1 == strlen(string2)) {
+    if (strncmp(string1, string2, len1) == 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int krad_interweb_server_listen_off (krad_iws_t *server,
                                      char *interface,
                                      int32_t port) {
 
   //FIXME needs to loop thru clients and disconnect remote ones .. optionally?
 
-  // Note: This removes exactly one at a time in the case of multiple matches..
-
   int r;
   int d;
+  int all_if;
   
-  d = -1;
+  all_if = 0;
+  d = 0;
   
-  if ((interface == NULL) || (strlen(interface) == 0)) {
-    interface = "All";
+  if (strlen(interface) == 0) {
+    all_if = 1;
   }
 
   for (r = 0; r < MAX_REMOTES; r++) {
-    if ((server->tcp_sd[r] != 0) && ((port == 0) ||
-        (server->tcp_port[r] == port))) {
+    if ((server->tcp_sd[r] != 0) &&
+        ((port == 0) || (server->tcp_port[r] == port)) &&
+         ((all_if == 1) || (strmatch(server->tcp_interface[r], interface)))) {
+          
       close (server->tcp_sd[r]);
-      server->tcp_port[r] = 0;
       server->tcp_sd[r] = 0;
-      free (server->tcp_interface[r]);
-      d = r;
-      break;
-    }
-  }
+      d++;
+      printk ("Disabled interweb on %s port %d",
+              server->tcp_interface[r], server->tcp_port[r]);
 
-  if (d > -1) {
-    printk ("Disable remote on interface %s port %d", interface, port);
-    //interweb_server_update_pollfds (interweb_server);
+      server->tcp_port[r] = 0;
+      free (server->tcp_interface[r]);
+    }
   }
 
   return d;
@@ -243,6 +263,7 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
     kr_io2_set_fd (client->in, client->sd);
     kr_io2_set_fd (client->out, client->sd);
     client->server = server;
+    client->noob = 1;
     //client->ptr = server->client_create (server->pointer);
     printk ("Krad INTERWEB Server: Client accepted!");  
     return client;
@@ -253,13 +274,17 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
   return NULL;
 }
 
+static void krad_interweb_abandon_client (kr_interweb_server_t *server, kr_iws_client_t *client) {
+  client->sd = 0;
+  client->noob = 0;  
+  kr_io2_destroy (&client->in);
+  kr_io2_destroy (&client->out);  
+}
+
 static void krad_interweb_disconnect_client (kr_interweb_server_t *server, kr_iws_client_t *client) {
 
   close (client->sd);
-  client->sd = 0;
-  kr_io2_destroy (&client->in);
-  kr_io2_destroy (&client->out);  
-  //krad_interweb_server_update_pollfds (krad_interweb_server);
+  krad_interweb_abandon_client (server, client);
   printk ("Krad INTERWEB Server: Client Disconnected");
 }
 
@@ -562,6 +587,24 @@ void krad_interweb_client_handle (kr_iws_client_t *client) {
   client->drop_after_flush = 1;
 }
 
+int krad_interweb_ws_peek (kr_iws_client_t *client) {
+
+  int ret;
+  char buf[256];
+  ret = 0;
+  
+  memset (buf, 0, sizeof(buf));
+  
+  ret = recv (client->sd, buf, sizeof(buf) - 1, MSG_PEEK);
+
+  if ((ret > 0) && (strstr(buf, "Upgrade: websocket") != NULL)) {
+    printk ("Krad INTERWEB websocket peek is YEAAY after %d bytes", ret);
+    return 1;
+  }
+  printk ("Krad INTERWEB websocket peek is NO after %d bytes", ret);
+  return 0;
+}
+
 static void *krad_interweb_server_loop (void *arg) {
 
   kr_interweb_server_t *server = (kr_interweb_server_t *)arg;
@@ -602,6 +645,16 @@ static void *krad_interweb_server_loop (void *arg) {
         ret--;
         client = server->sockets_clients[s];
         if (server->sockets[s].revents & POLLIN) {
+        
+          if (client->noob == 1) {
+            if (krad_interweb_ws_peek (client)) {
+              //libwebsocket_shove_fd (server->ws, client->sd);
+              krad_interweb_abandon_client (server, client);
+              continue;
+            }
+            client->noob = 0;
+          }
+               
           read_ret = kr_io2_read (client->in);
           if (read_ret > 0) {
             printk ("Krad INTERWEB Server %d: Got %d bytes\n", s, read_ret);
