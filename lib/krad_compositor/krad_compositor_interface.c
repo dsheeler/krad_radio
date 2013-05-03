@@ -35,7 +35,7 @@ void krad_compositor_text_rep_to_ebml2 (krad_text_rep_t *text, kr_ebml2_t *ebml)
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.y);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.z);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.width);
-  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.height);  
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.height);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, text->controls.xscale);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, text->controls.opacity);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, text->controls.rotation);
@@ -46,6 +46,8 @@ void krad_compositor_sprite_rep_to_ebml2 (krad_sprite_rep_t *sprite, kr_ebml2_t 
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, sprite->controls.x);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.y);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.z);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.width);
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.height);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_TICKRATE, sprite->controls.tickrate);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, sprite->controls.xscale);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_SCALE, sprite->controls.yscale);

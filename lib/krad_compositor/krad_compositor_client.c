@@ -2,7 +2,7 @@
 #include "krad_radio_client_internal.h"
 #include "krad_compositor_common.h"
 
-static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *kr_compositor_rep);
+static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *comp);
 static int kr_compositor_crate_get_string_from_subunit (kr_crate_t *crate, char **string);
 
 typedef struct kr_videoport_St kr_videoport_t;
@@ -148,27 +148,29 @@ void kr_compositor_info (kr_client_t *client) {
   kr_client_push (client);
 }
 
-static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *kr_compositor_rep) {
+static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *comp) {
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->height);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->height);
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->fps_numerator);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->fps_denominator);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->fps_numerator);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->fps_denominator);
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->sprites);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->texts);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->vectors);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->inputs);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &kr_compositor_rep->outputs);
-  kr_ebml2_unpack_element_uint64 (ebml, NULL, &kr_compositor_rep->frames);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->sprites);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->texts);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->vectors);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->inputs);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->outputs);
+  kr_ebml2_unpack_element_uint64 (ebml, NULL, &comp->frames);
 
-  kr_ebml2_unpack_element_string (ebml, NULL, kr_compositor_rep->background_filename,
-                                  sizeof(kr_compositor_rep->background_filename));
+  kr_ebml2_unpack_element_string (ebml, NULL,
+                                  comp->background_filename,
+                                  sizeof(comp->background_filename));
 }
 
 static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
-  kr_ebml2_unpack_element_string (ebml, NULL, port->sysname, sizeof(port->sysname));
+  kr_ebml2_unpack_element_string (ebml, NULL,
+                                  port->sysname, sizeof(port->sysname));
   kr_ebml2_unpack_element_int32 (ebml, NULL, &port->direction );
   kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.x);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.y);
@@ -187,17 +189,17 @@ static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
 
 static void kr_ebml_to_sprite_rep (kr_ebml2_t *ebml, kr_sprite_t *sprite) {
 
-  kr_ebml2_unpack_element_string (ebml, NULL, sprite->filename, sizeof(sprite->filename));
+  kr_ebml2_unpack_element_string (ebml, NULL,
+                                  sprite->filename, sizeof(sprite->filename));
 
   kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.x);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.z);
-  
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.height);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.tickrate);
-
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.xscale);
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.yscale);
-
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.opacity);
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.rotation);
 }
