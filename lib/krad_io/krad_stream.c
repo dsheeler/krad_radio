@@ -62,6 +62,15 @@ ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
   ret = send (stream->sd, buffer, len, 0);
   if (ret > 0) {
     stream->position += ret;
+  } else {
+    if ((ret == -1) && (errno != EAGAIN)) {
+      stream->err_no = errno;
+      strerror_r (stream->err_no, stream->error_str, sizeof(stream->error_str));
+      stream->position = 0;
+      stream->half_ready = 0;
+      stream->ready = 0;
+      stream->connected = 0;
+    }
   }
   return ret;
 }
@@ -172,16 +181,12 @@ static krad_stream_t *kr_stream_connect (char *host, int port) {
   } else {
     flags = fcntl (stream->sd, F_GETFL, 0);
     if (flags == -1) {
-      //failfast ("Krad System: error on syscall fcntl F_GETFL");
-      kr_stream_destroy (&stream);
-      return NULL;
+      failfast ("Krad System: error on syscall fcntl F_GETFL");
     } else {
       flags |= O_NONBLOCK;
       ret = fcntl (stream->sd, F_SETFL, flags);
       if (ret == -1) {
-        //failfast ("Krad System: error on syscall fcntl F_SETFL");
-        kr_stream_destroy (&stream);
-        return NULL;
+        failfast ("Krad System: error on syscall fcntl F_SETFL");
       } else {
         ret = connect (stream->sd, res->ai_addr, res->ai_addrlen);
         if ((ret < 0) && (errno != EINPROGRESS)) {
@@ -205,51 +210,34 @@ static void kr_stream_read_http_headers (krad_stream_t *stream) {
   char buf[1024];
 
   while (1) {
-
-    if () {
-            ret = recv (stream->sd, buf, i, 0);
-            if (ret != i) {
-              if (ret < 1) {
-                if (ret == 0) {
-                  stream->position = 0;
-                  stream->half_ready = 0;
-                  stream->ready = 0;
-                  stream->conected = 0;
-                } else {
-                  if ((ret == -1) && (errno != EAGAIN)) {
-                    stream->position = 0;
-                    stream->half_ready = 0;
-                    stream->ready = 0;
-                    stream->conected = 0;
-                  }
-                }
-              } else {
-                stream->drain = i - ret;
-              }
-              return;
-            } else {
-              stream->position = 0;
-              stream->half_ready = 0;
-              stream->ready = 1;
-              return;
-            }
-    } else {
-
-
-      ret = recv (stream->sd, buf, sizeof(buf), MSG_PEEK);
+    if (stream->drain > 0) {
+      ret = recv (stream->sd, buf, stream->drain, 0);
+      //printf ("drain %zd of %d\n", ret, stream->drain);
       if (ret < 1) {
-        if (ret == 0) {
+        if ((ret == 0) || ((ret == -1) && (errno != EAGAIN))) {
           stream->position = 0;
           stream->half_ready = 0;
           stream->ready = 0;
-          stream->conected = 0;
-        } else {
-          if ((ret == -1) && (errno != EAGAIN)) {
-            stream->position = 0;
-            stream->half_ready = 0;
-            stream->ready = 0;
-            stream->conected = 0;
-          }
+          stream->connected = 0;
+        }
+      } else {
+        stream->drain -= ret;
+        if (stream->hle == 2) {
+          stream->position = 0;
+          stream->half_ready = 0;
+          stream->ready = 1;
+          stream->connected = 1;
+          return;
+        }
+      }
+    } else {
+      ret = recv (stream->sd, buf, sizeof(buf), MSG_PEEK);
+      if (ret < 1) {
+        if ((ret == 0) || ((ret == -1) && (errno != EAGAIN))) {
+          stream->position = 0;
+          stream->half_ready = 0;
+          stream->ready = 0;
+          stream->connected = 0;
         }
         return;
       } else {
@@ -257,15 +245,27 @@ static void kr_stream_read_http_headers (krad_stream_t *stream) {
           if ((buf[i] == '\n') || (buf[i] == '\r')) {
             if (stream->hle_pos != ((stream->position + i) - 1)) {
               stream->hle = 0;
+              stream->hler = 0;
             }
             stream->hle_pos = stream->position + i;
             if (buf[i] == '\n') {
               stream->hle += 1;
             }
+            if (buf[i] == '\r') {
+              stream->hler += 1;
+            }
             if (stream->hle == 2) {
-              stream->drain = i;
+              //printf ("%.*s--hle %d hler %d-\n",
+              //        (i + 1) - (stream->hler + stream->hle),
+              //        buf, stream->hle, stream->hler);
+              stream->drain = i + 1;
+              break;
             }
           }
+        }
+        if (stream->drain == 0) {
+          stream->drain = ret;
+          //printf ("drain to %d\n", stream->drain);
         }
       }
     }
@@ -282,28 +282,31 @@ static void kr_stream_send_request_to_stream (krad_stream_t *stream) {
 
   len = 0;
 
-  snprintf (auth, sizeof(auth), "source:%s", (*stream)->password);
+  snprintf (auth, sizeof(auth), "source:%s", stream->password);
   kr_base64_encode (auth_base64, auth, sizeof(auth_base64));
 
   len = snprintf (http_req, sizeof(http_req) - len,
                   "SOURCE %s ICE/1.0\r\n",
-                  (*stream)->mount);
+                  stream->mount);
 
   len += snprintf (http_req + len, sizeof(http_req) - len,
                    "content-type: %s\r\n",
-                   (*stream)->content_type);
+                   stream->content_type);
 
   len += snprintf (http_req + len, sizeof(http_req) - len,
                    "Authorization: Basic %s\r\n\r\n",
                    auth_base64);
 
   ret = kr_stream_send (stream,
-                        stream->http_req + stream->position,
+                        http_req + stream->position,
                         len - stream->position);
-
-  if (stream->position == len) {
-    stream->position = 0;
-    stream->ready = 1;
+  if (ret > 0) {
+    //printf ("RTR!! %.*s--\n", stream->position, http_req);
+    if (stream->position == len) {
+      stream->position = 0;
+      stream->ready = 1;
+      stream->connected = 1;      
+    }
   }
 }
 
@@ -318,11 +321,13 @@ static void kr_stream_send_request_for_stream (krad_stream_t *stream) {
                   stream->mount, stream->host);
 
   ret = kr_stream_send (stream,
-                        stream->http_req + stream->position,
+                        http_req + stream->position,
                         len - stream->position);
-  if (stream->position == len) {
-    stream->position = 0;
-    stream->half_ready = 1;
+  if (ret > 0) {
+    if (stream->position == len) {
+      stream->position = 0;
+      stream->half_ready = 1;
+    }
   }
 }
 

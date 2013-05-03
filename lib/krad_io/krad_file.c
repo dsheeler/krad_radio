@@ -179,9 +179,9 @@ kr_file_t *kr_file_open (char *path) {
   if ((strlen(path) == 1) && (path[0] == '-')) {
     return kr_file_open_stdin ();
   }
-  
+
   memset (&file, 0, sizeof (kr_file_t));
-  
+
   err = stat (path, &file.st);
 
   if (err == -1) {
@@ -236,6 +236,10 @@ kr_file_t *kr_file_open (char *path) {
 
 ssize_t kr_file_read (kr_file_t *file, void *buffer, size_t len) {
   return read (file->fd, buffer, len);
+}
+
+ssize_t kr_file_write (kr_file_t *file, void *buffer, size_t len) {
+  return write (file->fd, buffer, len);
 }
 
 int kr_file_close (kr_file_t **file) {

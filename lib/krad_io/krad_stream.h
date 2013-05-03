@@ -14,15 +14,21 @@
 typedef struct krad_stream_St krad_stream_t;
 
 struct krad_stream_St {
-  int32_t sd;
   uint64_t position;
+  int32_t sd;
+  
   int32_t direction;
   int32_t half_ready;
   int32_t hle_pos;
   int32_t hle;
+  int32_t hler;
   int32_t drain;
   int32_t connected;
   int32_t ready;
+
+  char error_str[1024];
+
+  int32_t err_no;
 
   char *host;
   int32_t port;
@@ -42,9 +48,9 @@ int32_t kr_stream_free (krad_stream_t **stream);
 int32_t kr_stream_destroy (krad_stream_t **stream);
 
 //int32_t kr_stream_reconnect (krad_stream_t *stream);
-
 //int32_t kr_stream_connected (krad_stream_t *stream);
 //int32_t kr_stream_ready (krad_stream_t *stream);
+
 int32_t kr_stream_handle_headers (krad_stream_t *stream);
 
 ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len);

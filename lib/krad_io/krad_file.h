@@ -50,6 +50,7 @@ kr_file_t *kr_file_open (char *path);
 kr_file_t *kr_file_create (char *path);
 
 ssize_t kr_file_read (kr_file_t *file, void *buffer, size_t len);
+ssize_t kr_file_write (kr_file_t *file, void *buffer, size_t len);
 
 int kr_file_close (kr_file_t **file);
 
