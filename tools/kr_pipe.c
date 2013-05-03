@@ -16,12 +16,51 @@ void krad_pipe (char *host, int port, char *mount,
 /* stdin to stream */
 void krad_pipe_to (char *host, int port, char *mount, char *password);
 
+void kr_stream_wait (krad_stream_t *stream) {
+
+  int ret;
+  struct pollfd sp[1];
+  
+  if (stream->direction == 1) {
+    sp[0].events = POLLOUT;
+  } else {
+    sp[0].events = POLLIN;
+  }
+  sp[0].fd = stream->sd;
+  
+  ret = poll (sp, 1, -1);
+
+  if (sp[0].revents & POLLERR) {
+    fprintf (stderr, "Got poll err on %s\n", stream->mount);
+  }
+  if (sp[0].revents & POLLHUP) {
+    fprintf (stderr, "Got poll POLLHUP on %s\n", stream->mount);
+  }
+  
+  if (stream->direction == 1) {
+    if (!(sp[0].revents & POLLOUT)) {
+      fprintf (stderr, "Did NOT get POLLOUT on %s\n", stream->mount);
+    }
+  } else {
+    if (!(sp[0].revents & POLLIN)) {
+      fprintf (stderr, "Did NOT get POLLIN on %s\n", stream->mount);
+    }
+  }  
+
+  if (ret != 1) {
+    fprintf (stderr, "poll failure\n");
+    exit (1);
+  }
+}
+
 void krad_pipe (char *host, int port, char *mount,
                 char *host_out, int port_out, char *mount_out, char *password) {
 
   krad_stream_t *stream_in;
   krad_stream_t *stream_out;
-  int bytes;
+  ssize_t ret;
+  ssize_t sent;
+  ssize_t bytes;
   uint64_t total_bytes;
   uint8_t buffer[4096];
 
@@ -45,20 +84,65 @@ void krad_pipe (char *host, int port, char *mount,
     return;
   }
 
+
+  while ((stream_in->ready != 1) || (stream_out->ready != 1)) {
+    if (stream_in->ready != 1) {
+      kr_stream_handle_headers (stream_in);
+    }
+    if (stream_out->ready != 1) {
+      kr_stream_handle_headers (stream_out);
+    }
+    //fprintf (stderr, "SI: c %d r %d hr %d hle %d pos %"PRIu64" --- SO: c %d r %d  pos %"PRIu64"\n",
+    //         stream_in->connected, stream_in->ready, stream_in->half_ready, stream_in->hle_pos, stream_in->position,
+    //         stream_out->connected, stream_out->ready, stream_out->position);
+  }
+
+  //kr_file_t *file;
+  
+  //file = kr_file_create ("/home/oneman/wtf.webm");
+
   while (1) {
+    kr_stream_wait (stream_in);
     bytes = kr_stream_recv (stream_in, buffer, sizeof(buffer));
     if (bytes < 1) {
+ 
+      printf ("\n\necv few bytes: %zd\n", bytes);
+      fflush (stdout); 
+ 
       break;
     }
-    if (kr_stream_send (stream_out, buffer, bytes) != bytes) {
+
+    sent = 0;
+
+    while (sent != bytes) {
+      kr_stream_wait (stream_out);
+      ret = kr_stream_send (stream_out, buffer + sent, bytes - sent);
+      if (ret > 0) {
+        sent += ret;
+      }
+      if (sent != bytes) {
+        printf ("\nSent to few bytes: ret %zd - sent %zd - total %zd\n",
+                ret, sent, bytes);
+        fflush (stdout);
+      }
+      if (stream_out->connected == 0) {
+        printf ("Failed!: %s\n", stream_out->error_str);
+        break;
+      }
+    }
+    if (stream_out->connected == 0) {
       break;
     }
+    //kr_file_write (file, buffer, bytes);
+    
     total_bytes += bytes;
     if (1) {
-      printf ("Krad Piped: %"PRIu64"K\r", total_bytes / 1000);
+      printf ("\rKrad Piped: %"PRIu64"K %"PRIu64"B", total_bytes / 1000, total_bytes);
       fflush (stdout);
     }
   }
+
+  //kr_file_close (&file);
 
   kr_stream_destroy (&stream_in);
   kr_stream_destroy (&stream_out);
