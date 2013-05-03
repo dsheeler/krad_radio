@@ -88,8 +88,7 @@ static void *krad_receiver_client_thread (void *arg) {
           }
         }
       }
-      
-      
+
       if (client->in_buffer_pos > 1000) {
         printk ("client no good! .. %s", client->in_buffer);
         krad_receiver_destroy_client (client);

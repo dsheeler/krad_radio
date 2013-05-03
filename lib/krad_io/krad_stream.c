@@ -1,9 +1,9 @@
 #include "krad_stream.h"
 
 static void kr_base64_encode (char *dest, char *src, int maxlen);
-static void kr_stream_read_http_headers (krad_stream_t **stream);
-static void kr_stream_send_request_to_stream (krad_stream_t **stream);
-static void kr_stream_send_request_for_stream (krad_stream_t **stream);
+static void kr_stream_read_http_headers (krad_stream_t *stream);
+static void kr_stream_send_request_to_stream (krad_stream_t *stream);
+static void kr_stream_send_request_for_stream (krad_stream_t *stream);
 static krad_stream_t *kr_stream_connect (char *host, int port);
 
 static void kr_base64_encode (char *dest, char *src, int maxlen) {
@@ -57,27 +57,22 @@ static void kr_base64_encode (char *dest, char *src, int maxlen) {
   strncpy (dest, result, maxlen);
 }
 
-int kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
-
-  int bytes;
-  int ret;
-  
-  ret = 0;
-  bytes = 0;
-
-  while (bytes != len) {
-    ret += send (stream->sd, buffer + bytes, len - bytes, 0);
-    if (ret <= 0) {
-      break;
-    } else {
-      bytes += ret;
-    }
+ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
+  ssize_t ret;
+  ret = send (stream->sd, buffer, len, 0);
+  if (ret > 0) {
+    stream->position += ret;
   }
-  return bytes;
+  return ret;
 }
 
-int kr_stream_recv (krad_stream_t *stream, void *buffer, size_t len) {
-  return recv (stream->sd, buffer, len, 0);
+ssize_t kr_stream_recv (krad_stream_t *stream, void *buffer, size_t len) {
+  ssize_t ret;
+  ret = recv (stream->sd, buffer, len, 0);
+  if (ret > 0) {
+    stream->position += ret;
+  }
+  return ret;
 }
 
 int kr_stream_disconnect (krad_stream_t *stream) {
@@ -134,6 +129,7 @@ static krad_stream_t *kr_stream_connect (char *host, int port) {
 
   krad_stream_t *stream;
   int ret;
+  int flags;
   char port_string[6];
   struct in6_addr serveraddr;
   struct addrinfo hints;
@@ -174,8 +170,24 @@ static krad_stream_t *kr_stream_connect (char *host, int port) {
   if (stream->sd < 0) {
     kr_stream_destroy (&stream);
   } else {
-    if (connect (stream->sd, res->ai_addr, res->ai_addrlen) < 0) {
+    flags = fcntl (stream->sd, F_GETFL, 0);
+    if (flags == -1) {
+      //failfast ("Krad System: error on syscall fcntl F_GETFL");
       kr_stream_destroy (&stream);
+      return NULL;
+    } else {
+      flags |= O_NONBLOCK;
+      ret = fcntl (stream->sd, F_SETFL, flags);
+      if (ret == -1) {
+        //failfast ("Krad System: error on syscall fcntl F_SETFL");
+        kr_stream_destroy (&stream);
+        return NULL;
+      } else {
+        ret = connect (stream->sd, res->ai_addr, res->ai_addrlen);
+        if ((ret < 0) && (errno != EINPROGRESS)) {
+          kr_stream_destroy (&stream);
+        }
+      }
     }
   }
 
@@ -186,31 +198,83 @@ static krad_stream_t *kr_stream_connect (char *host, int port) {
   return stream;
 }
 
-static void kr_stream_read_http_headers (krad_stream_t **stream) {
+static void kr_stream_read_http_headers (krad_stream_t *stream) {
 
-  int ret;
-  int end;
-  char buf[8];
+  ssize_t ret;
+  int32_t i;
+  char buf[1024];
 
-  end = 0;
+  while (1) {
 
-  while (end != 4) {
-    ret = kr_stream_recv (*stream, buf, 1);
-    if (ret != 1) {
-      kr_stream_destroy (stream);
-      return;
-    }    
-    if ((buf[0] == '\n') || (buf[0] == '\r')) {
-      end++;
+    if () {
+            ret = recv (stream->sd, buf, i, 0);
+            if (ret != i) {
+              if (ret < 1) {
+                if (ret == 0) {
+                  stream->position = 0;
+                  stream->half_ready = 0;
+                  stream->ready = 0;
+                  stream->conected = 0;
+                } else {
+                  if ((ret == -1) && (errno != EAGAIN)) {
+                    stream->position = 0;
+                    stream->half_ready = 0;
+                    stream->ready = 0;
+                    stream->conected = 0;
+                  }
+                }
+              } else {
+                stream->drain = i - ret;
+              }
+              return;
+            } else {
+              stream->position = 0;
+              stream->half_ready = 0;
+              stream->ready = 1;
+              return;
+            }
     } else {
-      end = 0;
+
+
+      ret = recv (stream->sd, buf, sizeof(buf), MSG_PEEK);
+      if (ret < 1) {
+        if (ret == 0) {
+          stream->position = 0;
+          stream->half_ready = 0;
+          stream->ready = 0;
+          stream->conected = 0;
+        } else {
+          if ((ret == -1) && (errno != EAGAIN)) {
+            stream->position = 0;
+            stream->half_ready = 0;
+            stream->ready = 0;
+            stream->conected = 0;
+          }
+        }
+        return;
+      } else {
+        for (i = 0; i < ret; i++) {
+          if ((buf[i] == '\n') || (buf[i] == '\r')) {
+            if (stream->hle_pos != ((stream->position + i) - 1)) {
+              stream->hle = 0;
+            }
+            stream->hle_pos = stream->position + i;
+            if (buf[i] == '\n') {
+              stream->hle += 1;
+            }
+            if (stream->hle == 2) {
+              stream->drain = i;
+            }
+          }
+        }
+      }
     }
   }
 }
 
-static void kr_stream_send_request_to_stream (krad_stream_t **stream) {
+static void kr_stream_send_request_to_stream (krad_stream_t *stream) {
 
-  int ret;
+  ssize_t ret;
   int len;
   char http_req[512];
   char auth[256];
@@ -218,11 +282,11 @@ static void kr_stream_send_request_to_stream (krad_stream_t **stream) {
 
   len = 0;
 
-  snprintf (auth, sizeof (auth), "source:%s", (*stream)->password);
+  snprintf (auth, sizeof(auth), "source:%s", (*stream)->password);
   kr_base64_encode (auth_base64, auth, sizeof(auth_base64));
 
   len = snprintf (http_req, sizeof(http_req) - len,
-                  "SOURCE /%s ICE/1.0\r\n",
+                  "SOURCE %s ICE/1.0\r\n",
                   (*stream)->mount);
 
   len += snprintf (http_req + len, sizeof(http_req) - len,
@@ -233,25 +297,32 @@ static void kr_stream_send_request_to_stream (krad_stream_t **stream) {
                    "Authorization: Basic %s\r\n\r\n",
                    auth_base64);
 
-  ret = kr_stream_send (*stream, http_req, len);
-  if (ret != len) {
-    kr_stream_destroy (stream);
+  ret = kr_stream_send (stream,
+                        stream->http_req + stream->position,
+                        len - stream->position);
+
+  if (stream->position == len) {
+    stream->position = 0;
+    stream->ready = 1;
   }
 }
 
-static void kr_stream_send_request_for_stream (krad_stream_t **stream) {
+static void kr_stream_send_request_for_stream (krad_stream_t *stream) {
 
-  int ret;
+  ssize_t ret;
   int len;
   char http_req[512];
 
-  len = snprintf (http_req, sizeof (http_req),
-                  "GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n",
-                  (*stream)->mount, (*stream)->host);
+  len = snprintf (http_req, sizeof(http_req),
+                  "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n",
+                  stream->mount, stream->host);
 
-  ret = kr_stream_send (*stream, http_req, len);
-  if (ret != len) {
-    kr_stream_destroy (stream);
+  ret = kr_stream_send (stream,
+                        stream->http_req + stream->position,
+                        len - stream->position);
+  if (stream->position == len) {
+    stream->position = 0;
+    stream->half_ready = 1;
   }
 }
 
@@ -265,12 +336,8 @@ krad_stream_t *kr_stream_create (char *host, int port,
     return NULL;
   }
 
-  if (mount[0] == '/') {
-    if (strlen(mount) > 1) {
-      mount = mount + 1;
-    } else {
-      return NULL;
-    }
+  if (mount[0] != '/') {
+    return NULL;
   }
 
   stream = kr_stream_connect (host, port);
@@ -284,8 +351,7 @@ krad_stream_t *kr_stream_create (char *host, int port,
   stream->password = strdup (password);
   stream->content_type = strdup (content_type);
 
-  /* destroys if write fail */
-  kr_stream_send_request_to_stream (&stream);
+  stream->direction = 1;
 
   return stream;
 }
@@ -298,12 +364,8 @@ krad_stream_t *kr_stream_open (char *host, int port, char *mount) {
     return NULL;
   }
 
-  if (mount[0] == '/') {
-    if (strlen(mount) > 1) {
-      mount = mount + 1;
-    } else {
-      return NULL;
-    }
+  if (mount[0] != '/') {
+    return NULL;
   }
 
   stream = kr_stream_connect (host, port);
@@ -315,11 +377,23 @@ krad_stream_t *kr_stream_open (char *host, int port, char *mount) {
   stream->port = port;
   stream->mount = strdup (mount);
 
-  /* destroys if write fail */
-  kr_stream_send_request_for_stream (&stream);
-
-  /* destroys if read fail */
-  kr_stream_read_http_headers (&stream);
+  stream->direction = 0;
 
   return stream;
+}
+
+int32_t kr_stream_handle_headers (krad_stream_t *stream) {
+  if (stream->ready == 0) {
+    if (stream->direction == 1) {
+      kr_stream_send_request_to_stream (stream);
+    } else {
+      if (stream->half_ready == 0) {
+        kr_stream_send_request_for_stream (stream);
+      }
+      if (stream->half_ready == 1) {
+        kr_stream_read_http_headers (stream);
+      }
+    }
+  }
+  return stream->ready;
 }
