@@ -8,6 +8,8 @@ typedef struct krad_transponder_St krad_transponder_t;
 #include "krad_slice.h"
 #include "krad_transponder_interface.h"
 
+#include "krad_player_common.h"
+
 #ifdef KRAD_USE_FLYCAP
 #include "krad_fc2.h"
 #endif
@@ -207,5 +209,10 @@ krad_transponder_t *krad_transponder_create ();
 void krad_transponder_destroy (krad_transponder_t *krad_transponder);
 void krad_link_audio_samples_callback (int frames, void *userdata, float **samples);
 
+
+int32_t kr_codeme_kludge_destroy (kr_codeme_t **codeme);
+int32_t kr_medium_kludge_destroy (kr_medium_t **medium);
+kr_medium_t *kr_medium_kludge_create ();
+kr_codeme_t *kr_codeme_kludge_create ();
 
 #endif

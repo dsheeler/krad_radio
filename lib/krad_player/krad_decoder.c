@@ -105,7 +105,7 @@ static int kr_decoder_check (kr_decoder_t *decoder,
   return 0;
 }
 
-static int kr_decoder_decode (kr_decoder_t *decoder,
+int kr_decoder_decode_direct (kr_decoder_t *decoder,
                               kr_codeme_t *codeme,
                               kr_medium_t *medium) {
   int ret;
@@ -229,3 +229,18 @@ kr_decoder_t *kr_decoder_create () {
 kr_decoder_state_t kr_decoder_state_get (kr_decoder_t *decoder) {
   return decoder->state;
 }
+
+void kr_decoder_destroy_direct (kr_decoder_t **decoder) {
+  if ((decoder != NULL) && (*decoder != NULL)) {
+    kr_decoder_destroy_instance_decoder (*decoder);
+    free (*decoder);
+    *decoder = NULL;
+  }
+}
+
+kr_decoder_t *kr_decoder_create_direct () {
+  kr_decoder_t *decoder;
+  decoder = calloc (1, sizeof(kr_decoder_t));
+  decoder->codec = NOCODEC;
+  return decoder;
+};
