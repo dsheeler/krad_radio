@@ -74,15 +74,16 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
                                            int sample_rate,
                                            float quality);
 
+int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
+                          kr_codeme_t *codeme,
+                          kr_medium_t *medium);
+
 int krad_vorbis_test_headers (krad_codec_header_t *hdr);
 
 void krad_vorbis_decoder_destroy (krad_vorbis_t *vorbis);
+
 krad_vorbis_t *
 krad_vorbis_decoder_create (krad_codec_header_t *header);
-void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
-                                 unsigned char *buffer, int bufferlen);
-int krad_vorbis_decoder_read_audio (krad_vorbis_t *vorbis, int channel,
-                                    char *buffer, int len);
 
 int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
                           kr_codeme_t *codeme,

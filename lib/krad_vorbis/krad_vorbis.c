@@ -17,11 +17,9 @@ int krad_vorbis_test_headers (krad_codec_header_t *hdr) {
 /* Encoding */
 
 void krad_vorbis_encoder_destroy (krad_vorbis_t *krad_vorbis) {
-
   vorbis_block_clear (&krad_vorbis->vblock);
   vorbis_dsp_clear (&krad_vorbis->vdsp);
   vorbis_info_clear (&krad_vorbis->vinfo);
-
   free (krad_vorbis);
 }
 
@@ -165,7 +163,7 @@ int krad_vorbis_encoder_write (krad_vorbis_t *krad_vorbis,
 }
   
 int krad_vorbis_encoder_read (krad_vorbis_t *krad_vorbis,
-                              int *out_frames, unsigned char **buffer) {
+                              int *out_frames, uint8_t **buffer) {
 
   if (vorbis_analysis_blockout(&krad_vorbis->vdsp, &krad_vorbis->vblock)) {
     vorbis_analysis (&krad_vorbis->vblock, &krad_vorbis->op);
@@ -177,27 +175,32 @@ int krad_vorbis_encoder_read (krad_vorbis_t *krad_vorbis,
   return 0;
 }
 
+int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
+                          kr_codeme_t *codeme,
+                          kr_medium_t *medium) {
+  int c;
+  float **pcm;
+  uint8_t *buffer;
+
+  krad_vorbis_encoder_prepare (vorbis, codeme->count, &pcm);
+  for (c = 0; c < 2; c++) {
+    memcpy (pcm[c], medium->a.samples[c], codeme->count * 4);
+  }
+  krad_vorbis_encoder_wrote (vorbis, codeme->count);
+  codeme->sz = krad_vorbis_encoder_read (vorbis, &codeme->count, &buffer);
+  memcpy (codeme->data, buffer, codeme->sz);
+
+  return 0;                         
+}
+
+
 /* Decoding */
 
 void krad_vorbis_decoder_destroy (krad_vorbis_t *vorbis) {
 
-  int c;
-
-  for (c = 0; c < vorbis->vinfo.channels; c++) {
-    krad_ringbuffer_free (vorbis->ringbuf[c]);
-  }
-  
-  //nasty kludge, discusting
-  if (vorbis->channels == 1) {
-    krad_ringbuffer_free (vorbis->ringbuf[1]);
-  }
-
   vorbis_info_clear (&vorbis->vinfo);
   vorbis_comment_clear (&vorbis->vc);
   vorbis_block_clear (&vorbis->vblock);
-  
-  //ogg_sync_destroy(&vorbis->oy);
-  //ogg_stream_destroy(&vorbis->oggstate);
   
   free (vorbis);
 }
@@ -208,7 +211,6 @@ krad_vorbis_decoder_create (krad_codec_header_t *header) {
   krad_vorbis_t *vorbis = calloc(1, sizeof(krad_vorbis_t));
 
   int ret;
-  int c;
 
   vorbis_info_init (&vorbis->vinfo);
   vorbis_comment_init (&vorbis->vc);
@@ -289,92 +291,8 @@ krad_vorbis_decoder_create (krad_codec_header_t *header) {
   vorbis->channels = vorbis->vinfo.channels;
   vorbis->sample_rate = vorbis->vinfo.rate;
 
-  for (c = 0; c < vorbis->channels; c++) {
-    vorbis->ringbuf[c] = krad_ringbuffer_create (RINGBUFFER_SIZE);
-  }
-  
-  //nasty kludge, discusting
-  if (vorbis->channels == 1) {
-    vorbis->ringbuf[1] = krad_ringbuffer_create (RINGBUFFER_SIZE);
-  }
-
   return vorbis;
 }
-
-int krad_vorbis_decoder_read_audio (krad_vorbis_t *vorbis, int channel,
-                                    char *buffer, int len) {
-  return krad_ringbuffer_read (vorbis->ringbuf[channel], (char *)buffer, len );
-}
-
-void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
-                                 unsigned char *buffer, int bufferlen) {
-
-  int sample_count;
-  float **pcm;
-  int ret;
-
-  vorbis->op.packet = buffer;
-  vorbis->op.bytes = bufferlen;
-  vorbis->op.packetno++;
-
-  //if (vorbis->op.packetno == 4) {
-  //  vorbis->op.granulepos = 576;
-  //}
-  
-  //if (vorbis->op.packetno == 5) {
-  //  vorbis->op.granulepos = 1600;
-  //}
-  
-  //if (vorbis->op.packetno > 5) {
-  //  vorbis->op.granulepos = 1600 + ((vorbis->op.packetno - 5) * 1024);
-  //} 
-
-  ret = vorbis_synthesis (&vorbis->vblock, &vorbis->op);
-  
-  if (ret != 0) {
-    if (ret == OV_ENOTAUDIO) {
-      printke ("KR Vorbis Decoder: not audio packet %llu - %d",
-               vorbis->op.packetno, bufferlen);
-    }
-    if (ret == OV_EBADPACKET) {
-      printke ("KR Vorbis Decoder: bad packet %llu - %d",
-               vorbis->op.packetno, bufferlen);
-    }    
-  }
-  
-  ret = vorbis_synthesis_blockin(&vorbis->vdsp, &vorbis->vblock);
-  
-  if (ret != 0) {
-    if (ret == OV_EINVAL) {
-      printke ("KR Vorbis Decoder: not ready for blockin!");
-    }
-  }  
-  
-  sample_count = vorbis_synthesis_pcmout(&vorbis->vdsp, &pcm);
-  
-  if (sample_count) {
-    printk ("KR Vorbis Decoder: %d samples", sample_count);
-    while((krad_ringbuffer_write_space(vorbis->ringbuf[0]) < sample_count * 4) ||
-    (krad_ringbuffer_write_space(vorbis->ringbuf[1]) < sample_count * 4)) {
-      usleep (15000);
-    }
-  
-    krad_ringbuffer_write (vorbis->ringbuf[0], (char *)pcm[0], sample_count * 4 );
-    if (vorbis->channels == 1) {
-      krad_ringbuffer_write (vorbis->ringbuf[1], (char *)pcm[0], sample_count * 4 );
-    }
-    if (vorbis->channels == 2) {
-      krad_ringbuffer_write (vorbis->ringbuf[1], (char *)pcm[1], sample_count * 4 );
-    }
-    ret = vorbis_synthesis_read(&vorbis->vdsp, sample_count);
-    if (ret != 0) {
-      if (ret == OV_EINVAL) {
-        printke ("KR Vorbis Decoder: synth read more than in buffer!");
-      }
-    }
-  }
-}
-
 
 int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
                           kr_codeme_t *codeme,
