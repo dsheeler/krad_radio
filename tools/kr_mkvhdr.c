@@ -154,9 +154,9 @@ void ogg_test () {
 
 int main (int argc, char *argv[]) {
 
-  ogg_test ();
+  //ogg_test ();
 
-  return 0;
+  //return 0;
 
   int32_t ret;
   kr_mkv_t *mkv;
