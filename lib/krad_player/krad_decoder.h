@@ -46,17 +46,4 @@ kr_decoder_t *kr_decoder_create ();
 
 kr_decoder_state_t kr_decoder_state_get (kr_decoder_t *decoder);
 
-/*
-float kr_decoder_speed_get (kr_decoder_t *decoder);
-void kr_decoder_speed_set (kr_decoder_t *decoder, float speed);
-
-int64_t kr_decoder_position_get (kr_decoder_t *decoder);
-
-
-
-void kr_decoder_seek (kr_decoder_t *decoder, int64_t position);
-void kr_decoder_play (kr_decoder_t *decoder);
-void kr_decoder_pause (kr_decoder_t *decoder);
-void kr_decoder_stop (kr_decoder_t *decoder);
-*/
 #endif

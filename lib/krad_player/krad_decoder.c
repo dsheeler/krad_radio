@@ -128,9 +128,6 @@ static int kr_decoder_decode (kr_decoder_t *decoder,
       break;
     case VORBIS:
       kr_vorbis_decode (decoder->dec.vorbis, codeme, medium);
-      //krad_vorbis_decoder_decode (decoder->dec.vorbis, kr_slice->data, kr_slice->size);
-      //len = krad_vorbis_decoder_read_audio(decoder->dec.vorbis, 0, (char *)krad_link->au_samples[0], 512);
-      //len = krad_vorbis_decoder_read_audio (decoder->dec.vorbis, 1, (char *)krad_link->au_samples[1], 512);
       break;
     case KVHS:
       //kr_vhs_decode (decoder->dec.kvhs, codeme, medium);
@@ -232,56 +229,3 @@ kr_decoder_t *kr_decoder_create () {
 kr_decoder_state_t kr_decoder_state_get (kr_decoder_t *decoder) {
   return decoder->state;
 }
-
-/*
-float kr_decoder_speed_get (kr_decoder_t *decoder) {
-  return decoder->speed;
-}
-
-kr_direction_t kr_decoder_direction_get (kr_decoder_t *decoder) {
-  return decoder->direction;
-}
-
-int64_t kr_decoder_position_get (kr_decoder_t *decoder) {
-  return decoder->position;
-}
-
-void kr_decoder_speed_set (kr_decoder_t *decoder, float speed) {
-  kr_decoder_msg_t msg;
-  msg.cmd = SETSPEED;
-  msg.param.real = roundf (speed*1000.0f)/1000.0f;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_direction_set (kr_decoder_t *decoder, kr_direction_t direction) {
-  kr_decoder_msg_t msg;
-  msg.cmd = SETDIR;
-  msg.param.integer = direction;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_seek (kr_decoder_t *decoder, int64_t position) {
-  kr_decoder_msg_t msg;
-  msg.cmd = SEEK;
-  msg.param.integer = position;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_play (kr_decoder_t *decoder) {
-  kr_decoder_msg_t msg;
-  msg.cmd = PLAY;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_pause (kr_decoder_t *decoder) {
-  kr_decoder_msg_t msg;
-  msg.cmd = PAUSE;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_stop (kr_decoder_t *decoder) {
-  kr_decoder_msg_t msg;
-  msg.cmd = STOP;
-  krad_machine_msg (decoder->machine, &msg);
-}
-*/
