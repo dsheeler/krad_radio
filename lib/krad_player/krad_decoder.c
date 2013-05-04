@@ -73,10 +73,10 @@ void kr_decoder_create_instance_decoder (kr_decoder_t *decoder,
       decoder->dec.vorbis = krad_vorbis_decoder_create (header);
       break;
     case KVHS:
-      krad_vhs_create_decoder ();
+      decoder->dec.kvhs = krad_vhs_create_decoder ();
       break;
     case VP8:
-      krad_vpx_decoder_create ();
+      decoder->dec.vpx = krad_vpx_decoder_create ();
       break;
     case THEORA:
       decoder->dec.theora = krad_theora_decoder_create (header);
@@ -104,6 +104,7 @@ static int kr_decoder_check (kr_decoder_t *decoder,
 
   return 0;
 }
+
 static int kr_decoder_decode (kr_decoder_t *decoder,
                               kr_codeme_t *codeme,
                               kr_medium_t *medium) {
@@ -114,7 +115,35 @@ static int kr_decoder_decode (kr_decoder_t *decoder,
     return ret;
   }
   
-  
+  switch (codeme->codec) {
+    case OPUS:
+      //kr_opus_decode (decoder->dec.opus, codeme, medium);
+      //krad_opus_decoder_write (decoder->dec.opus, kr_slice->data, kr_slice->size);
+      //bytes = krad_opus_decoder_read (krad_link->krad_opus, c + 1, (char *)krad_link->au_audio, 120 * 4);
+      break;
+    case FLAC:
+      //kr_flac_decode (decoder->dec.flac, codeme, medium);
+      //len = krad_flac_decode (decoder->dec.flac, kr_slice->data, kr_slice->size, krad_link->au_samples);
+      //krad_resample_ring_write (krad_link->krad_resample_ring[c], (unsigned char *)krad_link->au_samples[c], len * 4);
+      break;
+    case VORBIS:
+      kr_vorbis_decode (decoder->dec.vorbis, codeme, medium);
+      //krad_vorbis_decoder_decode (decoder->dec.vorbis, kr_slice->data, kr_slice->size);
+      //len = krad_vorbis_decoder_read_audio(decoder->dec.vorbis, 0, (char *)krad_link->au_samples[0], 512);
+      //len = krad_vorbis_decoder_read_audio (decoder->dec.vorbis, 1, (char *)krad_link->au_samples[1], 512);
+      break;
+    case KVHS:
+      //kr_vhs_decode (decoder->dec.kvhs, codeme, medium);
+      break;
+    case VP8:
+      //kr_vpx_decode (decoder->dec.vpx, codeme, medium);
+      break;
+    case THEORA:
+      //kr_theora_decode (decoder->dec.theora, codeme, medium);
+      break;
+    default:
+    return -1;
+  }
 
   return 0;
 }

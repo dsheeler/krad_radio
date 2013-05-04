@@ -374,3 +374,67 @@ void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
     }
   }
 }
+
+
+int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
+                          kr_codeme_t *codeme,
+                          kr_medium_t *medium) {
+ 
+  int32_t c;
+  int32_t sample_count;
+  float **pcm;
+  int32_t ret;
+
+  vorbis->op.packet = codeme->data;
+  vorbis->op.bytes = codeme->sz;
+  vorbis->op.packetno++;
+
+  ret = vorbis_synthesis (&vorbis->vblock, &vorbis->op);
+  
+  if (ret != 0) {
+    if (ret == OV_ENOTAUDIO) {
+      printke ("KR Vorbis Decoder: not audio packet %llu - %d",
+               vorbis->op.packetno, codeme->sz);
+    }
+    if (ret == OV_EBADPACKET) {
+      printke ("KR Vorbis Decoder: bad packet %llu - %d",
+               vorbis->op.packetno, codeme->sz);
+    }
+    return -1;
+  }
+  
+  ret = vorbis_synthesis_blockin (&vorbis->vdsp, &vorbis->vblock);
+  
+  if (ret != 0) {
+    if (ret == OV_EINVAL) {
+      printke ("KR Vorbis Decoder: not ready for blockin!");
+    }
+    return -1;
+  }  
+  
+  sample_count = vorbis_synthesis_pcmout (&vorbis->vdsp, &pcm);
+  
+  if (sample_count) {
+
+    printk ("KR Vorbis Decoder: %d samples", sample_count);
+
+    medium->a.channels = vorbis->channels;
+
+    for (c = 0; c < vorbis->channels; c++) {
+      memcpy (medium->a.samples[c], pcm[c], sample_count * 4);
+    }
+
+    medium->a.count = sample_count;
+
+    ret = vorbis_synthesis_read (&vorbis->vdsp, sample_count);
+
+    if (ret != 0) {
+      if (ret == OV_EINVAL) {
+        printke ("KR Vorbis Decoder: synth read more than in buffer!");
+      }
+      /* What ?? */
+    }
+  }
+ 
+  return 0;                     
+}

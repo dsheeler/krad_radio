@@ -13,6 +13,8 @@
 #include "krad_ring.h"
 #include "krad_codec_header.h"
 
+#include "krad_player_common.h"
+
 #define KRAD_DEFAULT_VORBIS_FRAME_SIZE 1024
 
 #define MAX_CHANNELS 8
@@ -81,3 +83,7 @@ void krad_vorbis_decoder_decode (krad_vorbis_t *vorbis,
                                  unsigned char *buffer, int bufferlen);
 int krad_vorbis_decoder_read_audio (krad_vorbis_t *vorbis, int channel,
                                     char *buffer, int len);
+
+int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
+                          kr_codeme_t *codeme,
+                          kr_medium_t *medium);
