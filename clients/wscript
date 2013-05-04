@@ -125,6 +125,7 @@ includedirs = """
 ../lib/krad_vhs/ext
 ../lib/krad_vhs/ext/imagezero
 ../lib/krad_sfx/
+../lib/krad_coder/
 ../lib/krad_tone/
 ../lib/krad_app/
 ../lib/krad_tags/

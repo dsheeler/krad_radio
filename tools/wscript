@@ -76,6 +76,7 @@ includedirs = """
 ../lib/krad_vpx/
 ../lib/krad_v4l2/
 ../lib/krad_flac/
+../lib/krad_coder/
 ../lib/krad_vorbis/
 ../lib/krad_opus/
 ../lib/krad_radio/
