@@ -36,18 +36,6 @@
 #define MAX_REMOTES 16
 #define KR_IWS_MAX_CLIENTS 64
 
-/*
-krad server
-
-  http page(html/css/js), file (image,etc),
-  http upload
-  http stream out
-  http stream in
-  
-  pass to websocket?
-  generated playlist/dash?
-*/
-
 enum krad_interweb_shutdown {
   KRAD_INTERWEB_STARTING = -1,
   KRAD_INTERWEB_RUNNING,
@@ -79,8 +67,7 @@ struct krad_interweb_server_St {
 
   struct pollfd sockets[KR_IWS_MAX_CLIENTS + MAX_REMOTES + 1];
   kr_iws_client_t *sockets_clients[KR_IWS_MAX_CLIENTS + MAX_REMOTES + 1];
-  
-  
+
   int32_t ws_port;
   char *headcode_source;
   char *htmlheader_source;
