@@ -235,9 +235,9 @@ int krad_radio_destroy (char *sysname) {
     if (pid != 0) {
       kill (pid, 9);
 #ifdef FRAK_MACOSX
-  char ipc_filename[256];
-  sprintf (ipc_filename, "/tmp/krad_radio_%s_ipc", sysname);
-  unlink (ipc_filename);
+  char api_filename[256];
+  sprintf (api_filename, "/tmp/krad_radio_%s_api", sysname);
+  unlink (api_filename);
 #endif
       return 1;
     } else {

@@ -67,7 +67,7 @@ libsources = """
 ../lib/krad_ebml/krad_ebml2w.c
 ../lib/krad_io/krad_io2.c
 ../lib/krad_system/krad_system.c
-../lib/krad_ipc/krad_ipc_client.c
+../lib/krad_app/krad_app_client.c
 ../lib/krad_radio/krad_radio_client.c
 ../lib/krad_radio/krad_radio_client_ctl.c
 ../lib/krad_mixer/krad_mixer_client.c
@@ -126,7 +126,7 @@ includedirs = """
 ../lib/krad_vhs/ext/imagezero
 ../lib/krad_sfx/
 ../lib/krad_tone/
-../lib/krad_ipc/
+../lib/krad_app/
 ../lib/krad_tags/
 ../lib/krad_audio/
 ../lib/krad_theora/

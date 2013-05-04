@@ -685,12 +685,12 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client) {
   //printf ("sockets %d and %d\n", sockets[0], sockets[1]);
   krad_system_set_socket_nonblocking (videoport->sd);
     
-  krad_system_set_socket_blocking (videoport->client->krad_ipc_client->sd);
+  krad_system_set_socket_blocking (videoport->client->krad_app_client->sd);
   kr_videoport_create_cmd (videoport->client);
   usleep (5000);
   kr_send_fd (videoport->client, videoport->kr_shm->fd);
   kr_send_fd (videoport->client, sockets[1]);
-  krad_system_set_socket_nonblocking (videoport->client->krad_ipc_client->sd);
+  krad_system_set_socket_nonblocking (videoport->client->krad_app_client->sd);
 
   return videoport;
 }

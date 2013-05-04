@@ -254,7 +254,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   krad_transponder_t *krad_transponder;
   kr_address_t address;
   kr_transponder_subunit_t transponder_subunit_rep;
-  krad_ipc_server_t *kr_ipc;
+  krad_app_server_t *app;
   unsigned char *response;
   unsigned char *payload;
   kr_ebml2_t ebml_in;
@@ -274,7 +274,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   port = 0;
   krad_radio = client->krad_radio;
   krad_transponder = krad_radio->krad_transponder;
-  kr_ipc = krad_radio->remote.krad_ipc;
+  app = krad_radio->app;
 
   if (!(kr_io2_has_in (in))) {
     return 0;
@@ -520,7 +520,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   }
 
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST)) &&
-       (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
+       (!krad_app_server_current_client_is_subscriber (app))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   }
 

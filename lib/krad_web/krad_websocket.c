@@ -198,7 +198,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
   }
 }
 
-/* callbacks from ipc handler to add JSON to websocket message */
+/* callbacks from api handler to add JSON to websocket message */
 
 void krad_websocket_set_tag (kr_ws_client_t *kr_ws_client, char *tag_item, char *tag_name, char *tag_value) {
 
@@ -511,7 +511,7 @@ static void add_poll_fd (krad_websocket_t *krad_websocket, int fd, short events,
                          kr_ws_client_t *kr_ws_client, void *bspointer) {
 
   krad_websocket->fdof[krad_websocket->count_pollfds] = fd_is;
-  if (fd_is == KRAD_IPC) {
+  if (fd_is == KRAD_APP) {
     krad_websocket->sessions[krad_websocket->count_pollfds] = kr_ws_client;
   }
   krad_websocket->pollfds[krad_websocket->count_pollfds].fd = fd;
@@ -688,7 +688,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       //kr_transponder_list (kr_ws_client->kr_client);
       //kr_tags (kr_ws_client->kr_client, NULL);
       kr_subscribe_all (kr_ws_client->kr_client);
-      add_poll_fd (krad_websocket, kr_client_get_fd (kr_ws_client->kr_client), POLLIN, KRAD_IPC, kr_ws_client, NULL);
+      add_poll_fd (krad_websocket, kr_client_get_fd (kr_ws_client->kr_client), POLLIN, KRAD_APP, kr_ws_client, NULL);
       break;
 
     case LWS_CALLBACK_CLOSED:
@@ -714,7 +714,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
         //ret = libwebsocket_write (wsi, (unsigned char *)kr_ws_client->msgstext, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
         ret = libwebsocket_write (wsi, (unsigned char *)kr_ws_client->msgz, kr_ws_client->msgstextlen, LWS_WRITE_TEXT);
         if (ret < 0) {
-          printke ("krad_ipc ERROR writing to socket");
+          printke ("krad ws ERROR writing to socket");
           return 1;
         }
         kr_ws_client->kr_client_info = 0;
@@ -851,7 +851,7 @@ static void *krad_websocket_server_run (void *arg) {
             }
             
             switch ( krad_websocket->fdof[n] ) {
-              case KRAD_IPC:
+              case KRAD_APP:
               case KRAD_CONTROLLER:
               case MYSTERY:
                 break;
@@ -862,7 +862,7 @@ static void *krad_websocket_server_run (void *arg) {
             if (krad_websocket->pollfds[n].revents & POLLIN) {
 
               switch ( krad_websocket->fdof[n] ) {
-                case KRAD_IPC:
+                case KRAD_APP:
 
                   kr_ws_client = krad_websocket->sessions[n];
 
@@ -923,7 +923,7 @@ static void *krad_websocket_server_run (void *arg) {
             
             if (krad_websocket->pollfds[n].revents & POLLOUT) {
               switch ( krad_websocket->fdof[n] ) {
-                case KRAD_IPC:
+                case KRAD_APP:
                 case KRAD_CONTROLLER:
                 case MYSTERY:
                   break;

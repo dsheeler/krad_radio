@@ -48,7 +48,7 @@ depsources = """
 ../lib/krad_sfx/krad_pass.c
 ../lib/krad_sfx/krad_hardlimiter.c
 ../lib/krad_sfx/krad_sfx.c
-../lib/krad_ipc/krad_ipc_server.c
+../lib/krad_app/krad_app_server.c
 ../lib/krad_tags/krad_tags.c
 ../lib/krad_mixer/krad_mixer_interface.c
 ../lib/krad_mixer/krad_mixer.c
@@ -91,7 +91,7 @@ includedirs = """
 ../lib/krad_sfx/
 ../lib/krad_vhs/
 ../lib/krad_tone/
-../lib/krad_ipc/
+../lib/krad_app/
 ../lib/krad_tags/
 ../lib/krad_audio/
 ../lib/krad_fc2/

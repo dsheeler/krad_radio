@@ -14,7 +14,7 @@ static int kr_interweb_server_socket_setup (char *interface, int port) {
   
   interface_actual = interface;
   
-  printk ("Krad INTERWEB Server: interface: %s port %d", interface, port);
+  printk ("Krad Interweb Server: interface: %s port %d", interface, port);
 
   snprintf (port_string, 6, "%d", port);
 
@@ -184,7 +184,7 @@ int krad_interweb_server_listen_on (kr_interweb_server_t *server,
   } else {
     #ifdef KR_LINUX
     if (krad_system_is_adapter (interface)) {
-      //printk ("Krad INTERWEB Server: its an adapter,
+      //printk ("Krad Interweb Server: its an adapter,
       //we should probably bind to all ips of this adapter");
       return krad_interweb_server_listen_on_adapter (server, interface, port);
     }
@@ -247,7 +247,7 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
       }
     }
     if (client == NULL) {
-      //printk ("Krad INTERWEB Server: Overloaded with clients!\n");
+      //printk ("Krad Interweb Server: Overloaded with clients!\n");
       return NULL;
     }
   }
@@ -265,10 +265,10 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
     client->server = server;
     client->noob = 1;
     //client->ptr = server->client_create (server->pointer);
-    printk ("Krad INTERWEB Server: Client accepted!");  
+    printk ("Krad Interweb Server: Client accepted!");  
     return client;
   } else {
-    printke ("Krad INTERWEB Server: Client NOT accepted!");  
+    printke ("Krad Interweb Server: Client NOT accepted!");  
   }
 
   return NULL;
@@ -285,7 +285,7 @@ static void krad_interweb_disconnect_client (kr_interweb_server_t *server, kr_iw
 
   close (client->sd);
   krad_interweb_abandon_client (server, client);
-  printk ("Krad INTERWEB Server: Client Disconnected");
+  printk ("Krad Interweb Server: Client Disconnected");
 }
 
 static void krad_interweb_server_update_pollfds (kr_interweb_server_t *server) {
@@ -323,7 +323,7 @@ static void krad_interweb_server_update_pollfds (kr_interweb_server_t *server) {
   
   server->socket_count = s;
 
-  //printk ("Krad INTERWEB Server: sockets rejiggerd!\n");  
+  //printk ("Krad Interweb Server: sockets rejiggerd!\n");  
 }
 
 char *kr_interweb_server_load_file_or_string (char *input) {
@@ -395,7 +395,7 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   total_len = 0;
   
   memset (string, 0, sizeof(string));
-  snprintf (string, 7, "%d", server->websocket_port);
+  snprintf (string, 7, "%d", server->ws_port);
   total_len += strlen(string);
   server->js = (char *)lib_krad_web_res_krad_radio_js;
   server->js_len = lib_krad_web_res_krad_radio_js_len;
@@ -558,7 +558,7 @@ void krad_interweb_client_handle (kr_iws_client_t *client) {
   
   buffer = (char *)client->in->rd_buf;  
   ret = client->in->len;
-           // printk ("Krad INTERWEB reerer Server %s: Got %d bytes\n", buffer, ret);
+           // printk ("Krad Interweb reerer Server %s: Got %d bytes\n", buffer, ret);
   while (pos < ret) {
     if (strncmp(buffer, "GET /", 5) == 0) {
       getlen = strcspn (buffer + pos + 5, "\r ?");
@@ -598,10 +598,10 @@ int krad_interweb_ws_peek (kr_iws_client_t *client) {
   ret = recv (client->sd, buf, sizeof(buf) - 1, MSG_PEEK);
 
   if ((ret > 0) && (strstr(buf, "Upgrade: websocket") != NULL)) {
-    printk ("Krad INTERWEB websocket peek is YEAAY after %d bytes", ret);
+    printk ("Krad Interweb websocket peek is YEAAY after %d bytes", ret);
     return 1;
   }
-  printk ("Krad INTERWEB websocket peek is NO after %d bytes", ret);
+  printk ("Krad Interweb websocket peek is NO after %d bytes", ret);
   return 0;
 }
 
@@ -657,7 +657,7 @@ static void *krad_interweb_server_loop (void *arg) {
                
           read_ret = kr_io2_read (client->in);
           if (read_ret > 0) {
-            printk ("Krad INTERWEB Server %d: Got %d bytes\n", s, read_ret);
+            printk ("Krad Interweb Server %d: Got %d bytes\n", s, read_ret);
             //server->current_client = client;
             //hret = server->client_handler (client->in, client->out, client->ptr);
             //FIXME do important interwebing here
@@ -677,12 +677,12 @@ static void *krad_interweb_server_loop (void *arg) {
             }
           } else {
             if (read_ret == 0) {
-              //printk ("Krad INTERWEB Server: Client EOF\n");
+              //printk ("Krad Interweb Server: Client EOF\n");
               krad_interweb_disconnect_client (server, client);
               continue;
             }
             if (read_ret == -1) {
-              printke ("Krad INTERWEB Server: Client Socket Error");
+              printke ("Krad Interweb Server: Client Socket Error");
               krad_interweb_disconnect_client (server, client);
               continue;
             }
@@ -700,13 +700,13 @@ static void *krad_interweb_server_loop (void *arg) {
           }
         } else {
           if (server->sockets[s].revents & POLLHUP) {
-            //printk ("Krad INTERWEB Server %d : POLLHUP\n", s);
+            //printk ("Krad Interweb Server %d : POLLHUP\n", s);
             krad_interweb_disconnect_client (server, client);
             continue;
           }
         }
         if (server->sockets[s].revents & POLLERR) {
-          printke ("Krad INTERWEB Server: POLLERR\n");
+          printke ("Krad Interweb Server: POLLERR\n");
           krad_interweb_disconnect_client (server, client);
           continue;
         }
@@ -721,9 +721,9 @@ static void *krad_interweb_server_loop (void *arg) {
   return NULL;
 }
 
-void krad_interweb_server_disable (kr_interweb_server_t *server) {
+void krad_interweb_server_disable (kr_interweb_t *server) {
 
-  printk ("Krad INTERWEB Server: Disable Started");
+  printk ("Krad Interweb Server: Disable Started");
 
   if (!krad_controller_shutdown (&server->krad_control, &server->server_thread, 30)) {
     krad_controller_destroy (&server->krad_control, &server->server_thread);
@@ -731,29 +731,33 @@ void krad_interweb_server_disable (kr_interweb_server_t *server) {
 
   krad_interweb_server_listen_off (server, "", 0);
   
-  printk ("Krad INTERWEB Server: Disable Complete");
+  if (server->ws != NULL) {
+    krad_websocket_server_destroy (server->ws);
+  }  
+  
+  printk ("Krad Interweb Server: Disable Complete");
 }
 
-void krad_interweb_server_destroy (kr_interweb_server_t *interweb_server) {
+void krad_interweb_server_destroy (kr_interweb_t *server) {
 
   int i;
 
-  printk ("Krad INTERWEB Server: Destroy Started");
+  printk ("Krad Interweb Server: Destroy Started");
 
-  if (interweb_server->shutdown != KRAD_INTERWEB_SHUTINGDOWN) {
-    krad_interweb_server_disable (interweb_server);
+  if (server->shutdown != KRAD_INTERWEB_SHUTINGDOWN) {
+    krad_interweb_server_disable (server);
   }
   
   for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
-    if (interweb_server->clients[i].sd > 0) {
-      krad_interweb_disconnect_client (interweb_server, &interweb_server->clients[i]);
+    if (server->clients[i].sd > 0) {
+      krad_interweb_disconnect_client (server, &server->clients[i]);
     }
   }
   
-  free (interweb_server->clients);
-  free (interweb_server);
+  free (server->clients);
+  free (server);
   
-  printk ("Krad INTERWEB Server: Destroy Completed");
+  printk ("Krad Interweb Server: Destroy Completed");
 }
 
 void krad_interweb_server_run (kr_interweb_server_t *server) {
@@ -763,7 +767,7 @@ void krad_interweb_server_run (kr_interweb_server_t *server) {
                   (void *)server);
 }
 
-kr_interweb_server_t * krad_interweb_server_create (int32_t port, int32_t websocket_port,
+kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port, int32_t websocket_port,
                                       char *headcode, char *htmlheader, char *htmlfooter) {
 
   kr_interweb_server_t *server;
@@ -774,7 +778,9 @@ kr_interweb_server_t * krad_interweb_server_create (int32_t port, int32_t websoc
     return NULL;
   }
 
-  server->websocket_port = websocket_port;
+  strcpy (server->sysname, sysname);
+
+  server->ws_port = websocket_port;
   server->headcode_source = headcode;
   server->htmlheader_source = htmlheader;
   server->htmlfooter_source = htmlfooter;
@@ -786,6 +792,8 @@ kr_interweb_server_t * krad_interweb_server_create (int32_t port, int32_t websoc
   kr_interweb_server_setup_html (server);
   
   krad_interweb_server_listen_on (server, NULL, port);
+
+  server->ws = krad_websocket_server_create (server->sysname, server->ws_port);
 
   krad_interweb_server_run (server);
   
