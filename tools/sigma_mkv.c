@@ -6,6 +6,7 @@
 #include <krad_vorbis.h>
 #include <krad_coder_common.h>
 
+#include "krad_debug.c"
 
 #define VIDEO_TRACK 1
 #define AUDIO_TRACK 2
@@ -59,12 +60,12 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
 
   vorbis_dec = krad_vorbis_decoder_create (&header);
 
-  vorbis_enc = krad_vorbis_encoder_create (2, 44100, 0.4);
+  vorbis_enc = krad_vorbis_encoder_create (2, 48000, 0.4);
 
   kr_mkv_add_audio_track (new_mkv, VORBIS,
-                            44100, 2,
-                            mkv->tracks[AUDIO_TRACK].codec_data,
-                            mkv->tracks[AUDIO_TRACK].codec_data_size);
+                            48000, 2,
+                            vorbis_enc->krad_codec_header.header_combined,
+                            vorbis_enc->krad_codec_header.header_combined_size);
 
   printf ("\n");
 
@@ -429,6 +430,8 @@ static void other_thing (char *file1, char *file2) {
 }
  
 int main (int argc, char *argv[])  {
+
+  krad_debug_init ("kr_sigmamkv");
 
   if (argc > 3) {
     if (argc == 5) {
