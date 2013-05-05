@@ -384,7 +384,7 @@ static void kr_player_destroy_actual (void *actual) {
 
   krad_vhs_destroy (player->kvhs);
   krad_flac_decoder_destroy (player->flac);
-  krad_vpx_decoder_destroy (player->vpx);
+  krad_vpx_decoder_destroy (&player->vpx);
 
   sws_freeContext (player->scaler);
 

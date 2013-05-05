@@ -114,7 +114,7 @@ void kr_udp_sendr (kr_udp_sendr_t *udp_sendr, char *host, int port) {
 	  }
 	}
 
-  krad_vpx_encoder_destroy (udp_sendr->vpxenc);
+  krad_vpx_encoder_destroy (&udp_sendr->vpxenc);
   krad_v4l2_stop_capturing (udp_sendr->krad_v4l2);
   krad_v4l2_close(udp_sendr->krad_v4l2);
   krad_v4l2_destroy(udp_sendr->krad_v4l2);

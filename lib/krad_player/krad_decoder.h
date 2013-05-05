@@ -42,8 +42,8 @@ typedef enum {
 typedef struct kr_decoder_St kr_decoder_t;
 
 int kr_decoder_decode_direct (kr_decoder_t *decoder,
-                              kr_codeme_t *codeme,
-                              kr_medium_t *medium);
+                              kr_medium_t *medium,
+                              kr_codeme_t *codeme);
 
 kr_decoder_t *kr_decoder_create_direct ();
 void kr_decoder_destroy_direct (kr_decoder_t **decoder);

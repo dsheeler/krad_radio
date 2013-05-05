@@ -15,61 +15,37 @@
 
 #include "krad_player_common.h"
 
-#define KRAD_DEFAULT_VORBIS_FRAME_SIZE 1024
-
-#define MAX_CHANNELS 8
-#ifndef RINGBUFFER_SIZE
-#define RINGBUFFER_SIZE 2000000
-#endif
-
 typedef struct krad_vorbis_St krad_vorbis_t;
 
 struct krad_vorbis_St {
+  uint32_t channels;
+  uint32_t sample_rate;
 
-  int channels;
-  float sample_rate;
   float quality;
 
-  krad_ringbuffer_t *ringbuf[MAX_CHANNELS];
+  uint64_t frames;
 
-  uint64_t frames_encoded;
-
-  ogg_sync_state oy;
-
-  ogg_stream_state oggstate;
   vorbis_dsp_state vdsp;
   vorbis_block vblock;
   vorbis_info vinfo;
   vorbis_comment vc;
-  int eos;
-  int bytes;
-  ogg_packet op;
-  ogg_page og;
-  int samples_since_flush;
-  int last_flush_samples;
-  float **buffer;
-  krad_codec_header_t krad_codec_header;
-  ogg_packet header_main;
-  ogg_packet header_comments;
-  ogg_packet header_codebooks;
-  float samples[2048];
-  unsigned char header[8192];
-  int headerpos;
-  int head_count;
+
+  int32_t small_blocksz;
+  int32_t large_blocksz;
+
+  krad_codec_header_t header;
+
+  uint8_t hdrdata[8192];
+
+  char state_str_custom[256];
+  char *state_str;
+  int error;
 };
 
-int krad_vorbis_encoder_read (krad_vorbis_t *krad_vorbis,
-                              int *out_frames,
-                              unsigned char **buffer);
-void krad_vorbis_encoder_prepare (krad_vorbis_t *krad_vorbis,
-                                  int frames,
-                                  float ***buffer);
-int krad_vorbis_encoder_wrote (krad_vorbis_t *krad_vorbis, int frames);
-int krad_vorbis_encoder_write (krad_vorbis_t *krad_vorbis,
-                               float **samples,
-                               int frames);
-int krad_vorbis_encoder_finish (krad_vorbis_t *krad_vorbis);
-void krad_vorbis_encoder_destroy (krad_vorbis_t *krad_vorbis);
+int krad_vorbis_encoder_finish (krad_vorbis_t *vorbis);
+
+int32_t krad_vorbis_encoder_destroy (krad_vorbis_t **vorbis);
+
 krad_vorbis_t *krad_vorbis_encoder_create (int channels,
                                            int sample_rate,
                                            float quality);
@@ -80,11 +56,10 @@ int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
 
 int krad_vorbis_test_headers (krad_codec_header_t *hdr);
 
-void krad_vorbis_decoder_destroy (krad_vorbis_t *vorbis);
+int32_t krad_vorbis_decoder_destroy (krad_vorbis_t **vorbis);
 
-krad_vorbis_t *
-krad_vorbis_decoder_create (krad_codec_header_t *header);
+krad_vorbis_t *krad_vorbis_decoder_create (kr_codec_hdr_t *header);
 
 int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
-                          kr_codeme_t *codeme,
-                          kr_medium_t *medium);
+                          kr_medium_t *medium,
+                          kr_codeme_t *codeme);

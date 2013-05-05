@@ -43,13 +43,13 @@ void kr_decoder_destroy_instance_decoder (kr_decoder_t *decoder) {
       krad_flac_decoder_destroy (decoder->dec.flac);
       break;
     case VORBIS:
-      krad_vorbis_decoder_destroy (decoder->dec.vorbis);
+      krad_vorbis_decoder_destroy (&decoder->dec.vorbis);
       break;
     case KVHS:
       krad_vhs_decoder_destroy (decoder->dec.kvhs);
       break;
     case VP8:
-      krad_vpx_decoder_destroy (decoder->dec.vpx);
+      krad_vpx_decoder_destroy (&decoder->dec.vpx);
       break;
     case THEORA:
       krad_theora_decoder_destroy (decoder->dec.theora);
@@ -88,8 +88,7 @@ void kr_decoder_create_instance_decoder (kr_decoder_t *decoder,
 }
 
 static int kr_decoder_check (kr_decoder_t *decoder,
-                             kr_codeme_t *codeme,
-                             kr_medium_t *medium) {
+                             kr_codeme_t *codeme) {
 
   if (codeme->codec != decoder->codec) {
     if (decoder->codec != NOCODEC) {
@@ -106,37 +105,37 @@ static int kr_decoder_check (kr_decoder_t *decoder,
 }
 
 int kr_decoder_decode_direct (kr_decoder_t *decoder,
-                              kr_codeme_t *codeme,
-                              kr_medium_t *medium) {
+                              kr_medium_t *medium,
+                              kr_codeme_t *codeme) {
   int ret;
   
-  ret = kr_decoder_check (decoder, codeme, medium);
+  ret = kr_decoder_check (decoder, codeme);
   if (ret < 0) {
     return ret;
   }
   
   switch (codeme->codec) {
     case OPUS:
-      //kr_opus_decode (decoder->dec.opus, codeme, medium);
+      //kr_opus_decode (decoder->dec.opus, medium, codeme);
       //krad_opus_decoder_write (decoder->dec.opus, kr_slice->data, kr_slice->size);
       //bytes = krad_opus_decoder_read (krad_link->krad_opus, c + 1, (char *)krad_link->au_audio, 120 * 4);
       break;
     case FLAC:
-      //kr_flac_decode (decoder->dec.flac, codeme, medium);
+      //kr_flac_decode (decoder->dec.flac, medium, codeme);
       //len = krad_flac_decode (decoder->dec.flac, kr_slice->data, kr_slice->size, krad_link->au_samples);
       //krad_resample_ring_write (krad_link->krad_resample_ring[c], (unsigned char *)krad_link->au_samples[c], len * 4);
       break;
     case VORBIS:
-      kr_vorbis_decode (decoder->dec.vorbis, codeme, medium);
+      kr_vorbis_decode (decoder->dec.vorbis, medium, codeme);
       break;
     case KVHS:
-      //kr_vhs_decode (decoder->dec.kvhs, codeme, medium);
+      //kr_vhs_decode (decoder->dec.kvhs, medium, codeme);
       break;
     case VP8:
-      //kr_vpx_decode (decoder->dec.vpx, codeme, medium);
+      kr_vpx_decode (decoder->dec.vpx, medium, codeme);
       break;
     case THEORA:
-      //kr_theora_decode (decoder->dec.theora, codeme, medium);
+      //kr_theora_decode (decoder->dec.theora, medium, codeme);
       break;
     default:
     return -1;

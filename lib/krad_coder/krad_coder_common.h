@@ -58,6 +58,8 @@ struct kr_audio_St {
 };
 
 struct kr_medium_St {
+  uint8_t *data;
+  size_t sz;  
   kr_audio_t a;
   kr_image_t v;
   kr_mtype_t mt;

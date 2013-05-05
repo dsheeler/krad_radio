@@ -43,58 +43,58 @@ void mkv_header_test (kr_mkv_t *mkv) {
 
     if (codec == FLAC) {
       printf ("Testing Track %d header with FLAC decoder\n", t);
-      header.header_count = headers;
+      header.count = headers;
       header.codec = codec;
 
-      header.header_size[0] = kr_mkv_track_header_size (mkv, t, 0);
-      header.header[0] = malloc (header.header_size[0]);
-      ret = kr_mkv_read_track_header (mkv, header.header[0], t, 0);
-      if (ret != header.header_size[0]) {
+      header.sz[0] = kr_mkv_track_header_size (mkv, t, 0);
+      header.data[0] = malloc (header.sz[0]);
+      ret = kr_mkv_read_track_header (mkv, header.data[0], t, 0);
+      if (ret != header.sz[0]) {
         printf ("Header read fail\n");  
         exit (1);
       }
-      krad_flac_decoder_test (header.header[0], header.header_size[0]);
-      header.header_size[0] = 0;
-      free (header.header[0]);
+      krad_flac_decoder_test (header.data[0], header.sz[0]);
+      header.sz[0] = 0;
+      free (header.data[0]);
     }
 
     if (codec == VORBIS) {
       printf ("Testing Track %d headers with Vorbis decoder\n", t);
-      header.header_count = headers;
+      header.count = headers;
       header.codec = codec;
       for (h = 0; h < headers; h++) {
-        header.header_size[h] = kr_mkv_track_header_size (mkv, t, h);
-        header.header[h] = malloc (header.header_size[h]);
-        ret = kr_mkv_read_track_header (mkv, header.header[h], t, h);
-        if (ret != header.header_size[h]) {
+        header.sz[h] = kr_mkv_track_header_size (mkv, t, h);
+        header.data[h] = malloc (header.sz[h]);
+        ret = kr_mkv_read_track_header (mkv, header.data[h], t, h);
+        if (ret != header.sz[h]) {
           printf ("Header read fail\n");  
           exit (1);
         }
       }
       krad_vorbis_test_headers (&header);
       for (h = 0; h < headers; h++) {
-        header.header_size[h] = 0;
-        free (header.header[h]);
+        header.sz[h] = 0;
+        free (header.data[h]);
       }
     }
 
     if (codec == THEORA) {
       printf ("Testing Track %d headers with Theora decoder\n", t);
-      header.header_count = headers;
+      header.count = headers;
       header.codec = codec;
       for (h = 0; h < headers; h++) {
-        header.header_size[h] = kr_mkv_track_header_size (mkv, t, h);
-        header.header[h] = malloc (header.header_size[h]);
-        ret = kr_mkv_read_track_header (mkv, header.header[h], t, h);
-        if (ret != header.header_size[h]) {
+        header.sz[h] = kr_mkv_track_header_size (mkv, t, h);
+        header.data[h] = malloc (header.sz[h]);
+        ret = kr_mkv_read_track_header (mkv, header.data[h], t, h);
+        if (ret != header.sz[h]) {
           printf ("Header read fail\n");  
           exit (1);
         }
       }
       krad_theora_test_headers (&header);
       for (h = 0; h < headers; h++) {
-        header.header_size[h] = 0;
-        free (header.header[h]);
+        header.sz[h] = 0;
+        free (header.data[h]);
       }
     }
   }
@@ -126,7 +126,7 @@ void ogg_test () {
   vorbis = krad_vorbis_encoder_create (2, 48000, 0.5);
 
   track = kr_ogg_add_track (ogg, &theora->krad_codec_header);
-  track = kr_ogg_add_track (ogg, &vorbis->krad_codec_header);
+  track = kr_ogg_add_track (ogg, &vorbis->header);
 
   track = kr_ogg_add_track (ogg, &opus->krad_codec_header);
 
@@ -148,7 +148,7 @@ void ogg_test () {
 
   kr_ogg_destroy (&ogg);
   krad_opus_encoder_destroy (opus);  
-  krad_vorbis_encoder_destroy (vorbis);
+  krad_vorbis_encoder_destroy (&vorbis);
   krad_theora_encoder_destroy (theora);
 }
 
@@ -161,7 +161,7 @@ int main (int argc, char *argv[]) {
   int32_t ret;
   kr_mkv_t *mkv;
 
-  krad_debug_init ("kr_mkvhdrtest");
+  krad_debug_init ("mkvhdrtest");
  
   mkv = kr_mkv_open_file (argv[1]);
  

@@ -153,7 +153,7 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
               opus_strerror (krad_opus->err));
   }
   
-
+/*
   opus_multistream_encoder_ctl (krad_opus->encoder,
                                 OPUS_GET_LOOKAHEAD (&krad_opus->lookahead));
   krad_opus->opus_header->preskip = krad_opus->lookahead;
@@ -208,7 +208,7 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
           strlen (APPVERSION));  
   
   krad_opus->krad_codec_header.header[1] = krad_opus->opustags_header;
-
+*/
   return krad_opus;
 }
 
@@ -402,9 +402,9 @@ krad_opus_t *krad_opus_decoder_create (krad_codec_header_t *header) {
 
   krad_opus->opus_header = calloc (1, sizeof(OpusHeader));
   
-  if (opus_header_parse (header->header[0], header->header_size[0], krad_opus->opus_header) != 1) {
-    failfast ("krad_opus_decoder_create problem reading opus header");  
-  }
+  //if (opus_header_parse (header->header[0], header->header_size[0], krad_opus->opus_header) != 1) {
+  //  failfast ("krad_opus_decoder_create problem reading opus header");  
+  //}
 
   // oops
   //krad_opus->input_sample_rate = krad_opus->opus_header->input_sample_rate;

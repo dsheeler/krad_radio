@@ -45,13 +45,13 @@ void kr_encoder_destroy_instance_encoder (kr_encoder2_t *encoder) {
       //krad_flac_encoder_destroy (encoder->enc.flac);
       break;
     case VORBIS:
-      krad_vorbis_encoder_destroy (encoder->enc.vorbis);
+      krad_vorbis_encoder_destroy (&encoder->enc.vorbis);
       break;
     case KVHS:
       //krad_vhs_encoder_destroy (encoder->enc.kvhs);
       break;
     case VP8:
-      //krad_vpx_encoder_destroy (encoder->enc.vpx);
+      krad_vpx_encoder_destroy (&encoder->enc.vpx);
       break;
     case THEORA:
       //krad_theora_encoder_destroy (encoder->enc.theora);
@@ -80,7 +80,7 @@ void kr_encoder_create_instance_encoder (kr_encoder2_t *encoder) {
       //encoder->enc.kvhs = krad_vhs_create_encoder ();
       break;
     case VP8:
-      //encoder->enc.vpx = krad_vpx_encoder_create ();
+      encoder->enc.vpx = krad_vpx_encoder_create (640, 360, 30, 1, 1000);
       break;
     case THEORA:
       //encoder->enc.theora = krad_theora_encoder_create (header);
@@ -136,7 +136,7 @@ int kr_encoder_encode_direct (kr_encoder2_t *encoder,
       //kr_vhs_encode (encoder->enc.kvhs, codeme, medium);
       break;
     case VP8:
-      //kr_vpx_encode (encoder->enc.vpx, codeme, medium);
+      kr_vpx_encode (encoder->enc.vpx, codeme, medium);
       break;
     case THEORA:
       //kr_theora_encode (encoder->enc.theora, codeme, medium);

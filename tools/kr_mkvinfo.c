@@ -53,7 +53,7 @@ int main (int argc, char *argv[]) {
   int32_t ret;
   kr_mkv_t *mkv;
 
-  krad_debug_init ("kr_mkvinfo");
+  krad_debug_init ("mkvinfo");
  
   mkv = kr_mkv_open_file (argv[1]);
  

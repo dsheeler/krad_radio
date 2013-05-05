@@ -89,6 +89,8 @@ struct kr_mkv_St {
   double duration;
   uint64_t timecode_scale;
   
+  int32_t audio_init_cluster;
+  
   /* krad mkv transmitter */
   krad_transmission_t *transmission;
 

@@ -39,12 +39,11 @@ typedef struct krad_codec_header_St kr_codec_hdr_t;
 
 struct krad_codec_header_St {
   krad_codec_t codec;
-  uint8_t *header_combined;
-  uint32_t header_combined_size;
-  
-  uint8_t *header[10];
-  uint32_t header_size[10];
-  uint32_t header_count;
+  uint8_t *lacing;
+  size_t lacing_len;
+  uint8_t *data[4];
+  size_t sz[4];
+  uint32_t count;
 };
 
 #endif

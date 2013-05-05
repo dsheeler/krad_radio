@@ -226,10 +226,10 @@ kr_xpdr_output_set_header (kr_xpdr_output_t *outport,
 
   h = 0;
   if ((header != NULL) && (outport->headers == 0)) { 
-    for (h = 0; h < MIN(4, header->header_count); h++) {
+    for (h = 0; h < MIN(4, header->count); h++) {
       outport->slice[h] =
-        kr_slice_create_with_data (header->header[h],
-                                   header->header_size[h]);
+        kr_slice_create_with_data (header->data[h],
+                                   header->sz[h]);
       outport->slice[h]->header = h + 1;
       outport->headers++;
     }

@@ -34,6 +34,7 @@ krmkvlibsources = """
 ../lib/krad_mkv/krad_mkv_demux.c
 ../lib/krad_vorbis/krad_vorbis.c
 ../lib/krad_coder/krad_coder_common.c
+../lib/krad_vpx/krad_vpx.c
 """.split()
 
 krmkvhdrsources = """
@@ -100,9 +101,9 @@ includedirs = """
 /usr/include
 """.split()
 
-kmkvshlibs = []
+kmkvshlibs = ["vpx"]
 
-kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac",
+kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac", "vpx"
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
 
 krtxpndrlibs = []

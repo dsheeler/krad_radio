@@ -768,7 +768,7 @@ void video_encoding_unit_destroy (void *arg) {
       }
     } while (packet_size);
     */
-    krad_vpx_encoder_destroy (krad_link->krad_vpx_encoder);
+    krad_vpx_encoder_destroy (&krad_link->krad_vpx_encoder);
   }
 
   if (krad_link->codec == THEORA) {
@@ -823,7 +823,7 @@ void audio_encoding_unit_create (void *arg) {
       krad_link->krad_vorbis = krad_vorbis_encoder_create (krad_link->channels,
                                  krad_link->krad_radio->krad_mixer->sample_rate,
                                  krad_link->vorbis_quality);
-      krad_link->au_framecnt = KRAD_DEFAULT_VORBIS_FRAME_SIZE;
+      //krad_link->au_framecnt = KRAD_DEFAULT_VORBIS_FRAME_SIZE;
       break;
     case FLAC:
       krad_link->krad_flac = krad_flac_encoder_create (krad_link->channels,
@@ -850,7 +850,7 @@ krad_codec_header_t *audio_encoding_unit_get_header (void *arg) {
 
   switch (krad_link->codec) {
     case VORBIS:
-      return &krad_link->krad_vorbis->krad_codec_header;
+      return &krad_link->krad_vorbis->header;
       break;
     case FLAC:
       return &krad_link->krad_flac->krad_codec_header;
@@ -869,8 +869,6 @@ int audio_encoding_unit_process (void *arg) {
   krad_link_t *krad_link = (krad_link_t *)arg;
 
   int c;
-  //unsigned char *vorbis_buffer;
-  float **float_buffer;
   int s;
   int bytes;
   int frames;
@@ -970,8 +968,7 @@ void audio_encoding_unit_destroy (void *arg) {
       bytes = krad_vorbis_encoder_read (krad_link->krad_vorbis, &frames, &vorbis_buffer);
     }
 */
-    krad_vorbis_encoder_destroy (krad_link->krad_vorbis);
-    krad_link->krad_vorbis = NULL;
+    krad_vorbis_encoder_destroy (&krad_link->krad_vorbis);
   }
   
   if (krad_link->krad_flac != NULL) {

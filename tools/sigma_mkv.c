@@ -6,24 +6,67 @@
 #include <krad_vorbis.h>
 #include <krad_coder_common.h>
 
+#include <krad_vpx.h>
+
 #include "krad_debug.c"
 
 #define VIDEO_TRACK 1
 #define AUDIO_TRACK 2
- 
-static void remuxcode (kr_mkv_t *mkv, char *file) {
 
-  int ret;
-  int bytes_read;
+void vpxtest () {
+
+  int32_t ret;
+  krad_vpx_encoder_t *vpx_enc;
+  krad_vpx_decoder_t *vpx_dec;
+  kr_medium_t *medium;
+  kr_codeme_t *codeme;
+
+  vpx_dec = krad_vpx_decoder_create ();
+
+  vpx_enc = krad_vpx_encoder_create (1280, 720,
+                                     30,
+                                     1,
+                                     2300);
+
+  medium = kr_medium_kludge_create ();
+  codeme = kr_codeme_kludge_create ();
+  
+  ret = kr_vpx_encode (vpx_enc, codeme, medium);
+  printf ("Vpx test enc ret was %d", ret);
+
+  ret = kr_vpx_decode (vpx_dec, medium, codeme);
+  printf ("Vpx test dec ret was %d", ret);
+
+  kr_codeme_kludge_destroy (&codeme);
+  kr_medium_kludge_destroy (&medium);
+
+  krad_vpx_encoder_destroy (&vpx_enc);
+  krad_vpx_decoder_destroy (&vpx_dec);
+}
+
+static void remuxcode (kr_mkv_t *mkv, char *file, char *file2) {
+
+  int32_t ret;
+  int32_t bytes_read;
   uint32_t track;
   uint64_t timecode;
   uint8_t *buffer;
+  uint8_t *vbuffer;
+  uint8_t *vbuffer2;
   uint32_t out_track;
   kr_mkv_t *new_mkv;
-  int keyframe;
+  int32_t keyframe;
   uint8_t flags;
-  int packets;
+  int32_t packets;
   
+  int32_t vbufsz2;
+  int32_t vkeyframe2;
+  int32_t vbufsz;
+  int32_t vkeyframe;
+  int32_t firstframe;
+  int32_t audiopackets;
+  krad_vpx_decoder_t *vpx_dec;
+  krad_vpx_encoder_t *vpx_enc;
   kr_codec_hdr_t header;
   
   kr_medium_t *medium;
@@ -31,10 +74,20 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
   krad_vorbis_t *vorbis_dec;
   krad_vorbis_t *vorbis_enc;
 
+  audiopackets = 0;
+  firstframe = 1;
   packets = 0;
+  vbufsz2 = 0;
+  vkeyframe2 = 0;
+  vbufsz = 0;
+  vkeyframe = 0;
+  
+  //vpxtest ();
 
-  buffer = malloc (10000000);
- 
+  buffer = malloc (20000000);
+  vbuffer = malloc (20000000);
+  vbuffer2 = malloc (20000000);
+
   new_mkv = kr_mkv_create_file (file);
 
   if (new_mkv == NULL) {
@@ -44,36 +97,45 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
 
   printf ("Created file: %s\n", file);
 
+  vpx_dec = krad_vpx_decoder_create ();
+  vpx_enc = krad_vpx_encoder_create (1280, 720,
+                                 30000,
+                                 1000,
+                                 2200);
+
+
   out_track = kr_mkv_add_video_track (new_mkv, VP8,
-                                     30,
-                                     1,
+                                     30000,
+                                     1000,
                                      mkv->tracks[VIDEO_TRACK].width,
                                      mkv->tracks[VIDEO_TRACK].height);
 
 
-  header.header_count = mkv->tracks[AUDIO_TRACK].headers;
-  header.header[0] = mkv->tracks[AUDIO_TRACK].header[0];
-  header.header_size[0] = mkv->tracks[AUDIO_TRACK].header_len[0];
-  header.header[1] = mkv->tracks[AUDIO_TRACK].header[1];
-  header.header_size[1] = mkv->tracks[AUDIO_TRACK].header_len[1];
-  header.header[2] = mkv->tracks[AUDIO_TRACK].header[2];
-  header.header_size[2] = mkv->tracks[AUDIO_TRACK].header_len[2];
+  header.count = mkv->tracks[AUDIO_TRACK].headers;
+  header.data[0] = mkv->tracks[AUDIO_TRACK].header[0];
+  header.sz[0] = mkv->tracks[AUDIO_TRACK].header_len[0];
+  header.data[1] = mkv->tracks[AUDIO_TRACK].header[1];
+  header.sz[1] = mkv->tracks[AUDIO_TRACK].header_len[1];
+  header.data[2] = mkv->tracks[AUDIO_TRACK].header[2];
+  header.sz[2] = mkv->tracks[AUDIO_TRACK].header_len[2];
 
   vorbis_dec = krad_vorbis_decoder_create (&header);
 
-  vorbis_enc = krad_vorbis_encoder_create (2, 44100, 0.4);
+  vorbis_enc = krad_vorbis_encoder_create (2, 48000, 0.4);
 
-  kr_mkv_add_audio_track (new_mkv, VORBIS,
-                            44100, 2,
-                            vorbis_enc->krad_codec_header.header_combined,
-                            vorbis_enc->krad_codec_header.header_combined_size);
+  kr_mkv_add_audio_track (new_mkv, VORBIS, 48000, 2,
+                          vorbis_enc->hdrdata,
+                          3 +
+                          vorbis_enc->header.sz[0] +
+                          vorbis_enc->header.sz[1] +
+                          vorbis_enc->header.sz[2]);
 
   printf ("\n");
 
   while ((bytes_read = kr_mkv_read_packet (mkv, &track, &timecode, &flags, buffer)) > 0) {
     
-    printf ("Read packet %d track %d %d bytes\n", packets++, track, bytes_read);
-    fflush (stdout);
+    printk ("Read packet %d track %d %d bytes", packets++, track, bytes_read);
+    //fflush (stdout);
 
     if (flags == 0x80) {
       keyframe = 1;
@@ -81,54 +143,189 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
       keyframe = 0;
     }
 
+
+
     if (track == 1) {
+
+/*
+      medium = kr_medium_kludge_create ();
+      codeme = kr_codeme_kludge_create ();
+      codeme->sz = bytes_read;
+      memcpy (codeme->data, buffer, codeme->sz);
+      ret = kr_vpx_decode (vpx_dec, medium, codeme);
+      //printf ("Vpx dec ret was %d", ret);
+      kr_codeme_kludge_destroy (&codeme);
+
+      codeme = kr_codeme_kludge_create ();
+      ret = kr_vpx_encode (vpx_enc, codeme, medium);
+      //printf ("Vpx enc ret was %d", ret);
+      kr_medium_kludge_destroy (&medium);
+      bytes_read = codeme->sz;
+      memcpy (buffer, codeme->data, codeme->sz);
+      kr_codeme_kludge_destroy (&codeme);
+    */
       kr_mkv_add_video (new_mkv, out_track, buffer, bytes_read, keyframe);
-    }
+      
+   }
     
     if (track == 2) {
 
       medium = kr_medium_kludge_create ();
       codeme = kr_codeme_kludge_create ();
-      
       codeme->sz = bytes_read;
       memcpy (codeme->data, buffer, codeme->sz);
-
-      kr_vorbis_decode (vorbis_dec, codeme, medium);
-
+      kr_vorbis_decode (vorbis_dec, medium, codeme);
+      kr_codeme_kludge_destroy (&codeme);
+      
       if (medium->a.count > 0) {
-        kr_codeme_kludge_destroy (&codeme);
-        codeme = kr_codeme_kludge_create ();
-
-        ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
-
-        if (codeme->sz > 0) {
-          kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
-
-          kr_codeme_kludge_destroy (&codeme);
+        do {
           codeme = kr_codeme_kludge_create ();
-
-          while (ret > 0) {
-            ret = kr_vorbis_encode (vorbis_enc, codeme, NULL);
-            if (codeme->sz == 0) {
-              break;
-            }
-            printk ("Got another sized %d with %d samples",
-                    codeme->sz, codeme->count);
+          ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
+          if (ret == 1) {
             kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
           }
-        }
+          kr_medium_kludge_destroy (&medium);
+          kr_codeme_kludge_destroy (&codeme);
+        } while (ret == 1);
       }
+    //}
+    }
+    
+  }
+  
 
-      kr_codeme_kludge_destroy (&codeme);
-      kr_medium_kludge_destroy (&medium);
-    }    
+
+
+//-----------------------------
+
+
+
+  krad_vorbis_decoder_destroy (&vorbis_dec);  
+
+  //new_mkv->tracks[VIDEO_TRACK].fps_numerator = 30000;
+
+  kr_mkv_destroy (&mkv);
+  mkv = kr_mkv_open_file (file2);
+  
+  printf ("FPS %d/%d RES: %dx%d\n", 
+          mkv->tracks[VIDEO_TRACK].fps_numerator,
+          mkv->tracks[VIDEO_TRACK].fps_denominator,
+          mkv->tracks[VIDEO_TRACK].width,
+          mkv->tracks[VIDEO_TRACK].height);
+
+  if (mkv == NULL) {
+    fprintf (stderr, "Could not open %s\n", file2);
+    exit (1);
   }
 
+
+  header.count = mkv->tracks[AUDIO_TRACK].headers;
+  header.data[0] = mkv->tracks[AUDIO_TRACK].header[0];
+  header.sz[0] = mkv->tracks[AUDIO_TRACK].header_len[0];
+  header.data[1] = mkv->tracks[AUDIO_TRACK].header[1];
+  header.sz[1] = mkv->tracks[AUDIO_TRACK].header_len[1];
+  header.data[2] = mkv->tracks[AUDIO_TRACK].header[2];
+  header.sz[2] = mkv->tracks[AUDIO_TRACK].header_len[2];
+
+  vorbis_dec = krad_vorbis_decoder_create (&header);
+
+
+  while ((bytes_read = kr_mkv_read_packet (mkv, &track, &timecode, &flags, buffer)) > 0) {
+    
+    printk ("Read packet %d track %d %d bytes", packets++, track, bytes_read);
+    //fflush (stdout);
+
+    if (flags == 0x80) {
+      keyframe = 1;
+    } else {
+      keyframe = 0;
+    }
+
+
+
+    if (track == 1) {
+
+/*
+      medium = kr_medium_kludge_create ();
+      codeme = kr_codeme_kludge_create ();
+      codeme->sz = bytes_read;
+      memcpy (codeme->data, buffer, codeme->sz);
+      ret = kr_vpx_decode (vpx_dec, medium, codeme);
+      //printf ("Vpx dec ret was %d", ret);
+      kr_codeme_kludge_destroy (&codeme);
+
+      codeme = kr_codeme_kludge_create ();
+      ret = kr_vpx_encode (vpx_enc, codeme, medium);
+      //printf ("Vpx enc ret was %d", ret);
+      kr_medium_kludge_destroy (&medium);
+      bytes_read = codeme->sz;
+      memcpy (buffer, codeme->data, codeme->sz);
+      kr_codeme_kludge_destroy (&codeme);
+    */
+      kr_mkv_add_video (new_mkv, out_track, buffer, bytes_read, keyframe);
+      
+   }
+    
+    if (track == 2) {
+
+      medium = kr_medium_kludge_create ();
+      codeme = kr_codeme_kludge_create ();
+      codeme->sz = bytes_read;
+      memcpy (codeme->data, buffer, codeme->sz);
+      kr_vorbis_decode (vorbis_dec, medium, codeme);
+      kr_codeme_kludge_destroy (&codeme);
+      
+      if (medium->a.count > 0) {
+        do {
+          codeme = kr_codeme_kludge_create ();
+          ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
+          if (ret == 1) {
+            kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+          }
+          kr_medium_kludge_destroy (&medium);
+          kr_codeme_kludge_destroy (&codeme);
+        } while (ret == 1);
+      }
+    //}
+    }
+    
+  }
+  
+  medium = kr_medium_kludge_create ();
+  codeme = kr_codeme_kludge_create ();
+  ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
+  if (codeme->sz > 0) {
+    printk ("Got 1 another sized %zu with %d samples",
+          codeme->sz, codeme->count);
+    kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+  }
+  kr_codeme_kludge_destroy (&codeme);
+  kr_medium_kludge_destroy (&medium);
+
+  do {
+    codeme = kr_codeme_kludge_create ();
+    ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
+    if (ret == 1) {
+      kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+    }
+    kr_codeme_kludge_destroy (&codeme);
+  } while (ret == 1);
+  
+  
+//----------------------------
+
+
   printf ("\nDone.\n");
-  krad_vorbis_decoder_destroy (vorbis_dec);  
-  krad_vorbis_encoder_destroy (vorbis_enc);
+
+  krad_vpx_encoder_destroy (&vpx_enc);  
+  krad_vpx_decoder_destroy (&vpx_dec);
+  krad_vorbis_decoder_destroy (&vorbis_dec);  
+  krad_vorbis_encoder_destroy (&vorbis_enc);
   kr_mkv_destroy (&new_mkv);
+  kr_mkv_destroy (&mkv);  
   free (buffer);
+  free (vbuffer);
+  free (vbuffer2);
 }
 
 static void remux (kr_mkv_t *mkv, char *file) {
@@ -423,7 +620,7 @@ static void kraise_splice (char *file1, char *file2, char *fileout) {
 
 }
 
-static void other_thing (char *file1, char *file2) {
+static void other_thing (char *file1, char *file2, char *file3) {
 
   kr_mkv_t *mkv;
 
@@ -440,29 +637,32 @@ static void other_thing (char *file1, char *file2) {
     exit (1);
   }
   
-//  remux (mkv, file2);
+  if (0) {
+    remux (mkv, file2);
+  }
 
-  remuxcode (mkv, file2);
+  remuxcode (mkv, file3, file2);
 
-  kr_mkv_destroy (&mkv);
+
 }
  
 int main (int argc, char *argv[])  {
 
-  krad_debug_init ("kr_sigmamkv");
+  krad_debug_init ("sigmamkv");
 
-  if (argc > 3) {
-    if (argc == 5) {
-      kraise_splice (argv[1], argv[2], argv[3]);
-    }
-    if (argc == 4) {
-      splice (argv[1], argv[2], argv[3]);
-    }
+  if (argc == 4) {
+    other_thing (argv[1], argv[2], argv[3]);
   } else {
-    if (argc == 3) {
-      other_thing (argv[1], argv[2]);
+
+    if (argc > 3) {
+      if (argc == 5) {
+        kraise_splice (argv[1], argv[2], argv[3]);
+      }
+      if (argc == 4) {
+        splice (argv[1], argv[2], argv[3]);
+      }
     }
   }
-
+  
   return 0;
 }
