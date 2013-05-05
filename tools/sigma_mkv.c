@@ -13,6 +13,7 @@
  
 static void remuxcode (kr_mkv_t *mkv, char *file) {
 
+  int ret;
   int bytes_read;
   uint32_t track;
   uint64_t timecode;
@@ -60,10 +61,10 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
 
   vorbis_dec = krad_vorbis_decoder_create (&header);
 
-  vorbis_enc = krad_vorbis_encoder_create (2, 48000, 0.4);
+  vorbis_enc = krad_vorbis_encoder_create (2, 44100, 0.4);
 
   kr_mkv_add_audio_track (new_mkv, VORBIS,
-                            48000, 2,
+                            44100, 2,
                             vorbis_enc->krad_codec_header.header_combined,
                             vorbis_enc->krad_codec_header.header_combined_size);
 
@@ -71,7 +72,7 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
 
   while ((bytes_read = kr_mkv_read_packet (mkv, &track, &timecode, &flags, buffer)) > 0) {
     
-    printf ("\rRead packet %d track %d %d bytes\t\t", packets++, track, bytes_read);
+    printf ("Read packet %d track %d %d bytes\n", packets++, track, bytes_read);
     fflush (stdout);
 
     if (flags == 0x80) {
@@ -94,12 +95,29 @@ static void remuxcode (kr_mkv_t *mkv, char *file) {
 
       kr_vorbis_decode (vorbis_dec, codeme, medium);
 
-      kr_codeme_kludge_destroy (&codeme);
-      codeme = kr_codeme_kludge_create ();
+      if (medium->a.count > 0) {
+        kr_codeme_kludge_destroy (&codeme);
+        codeme = kr_codeme_kludge_create ();
 
-      kr_vorbis_encode (vorbis_enc, codeme, medium);
+        ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
 
-      kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+        if (codeme->sz > 0) {
+          kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+
+          kr_codeme_kludge_destroy (&codeme);
+          codeme = kr_codeme_kludge_create ();
+
+          while (ret > 0) {
+            ret = kr_vorbis_encode (vorbis_enc, codeme, NULL);
+            if (codeme->sz == 0) {
+              break;
+            }
+            printk ("Got another sized %d with %d samples",
+                    codeme->sz, codeme->count);
+            kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+          }
+        }
+      }
 
       kr_codeme_kludge_destroy (&codeme);
       kr_medium_kludge_destroy (&medium);

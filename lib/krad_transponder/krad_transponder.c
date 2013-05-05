@@ -915,12 +915,14 @@ int audio_encoding_unit_process (void *arg) {
       bytes = krad_flac_encode (krad_link->krad_flac, krad_link->au_interleaved_samples, krad_link->au_framecnt, krad_link->au_buffer);
     }
     if (krad_link->codec == VORBIS) {
+    /*
       krad_vorbis_encoder_prepare (krad_link->krad_vorbis, krad_link->au_framecnt, &float_buffer);
       for (c = 0; c < krad_link->channels; c++) {
         krad_ringbuffer_read (krad_link->audio_input_ringbuffer[c], (char *)float_buffer[c], krad_link->au_framecnt * 4);
       }      
       krad_vorbis_encoder_wrote (krad_link->krad_vorbis, krad_link->au_framecnt);
       bytes = krad_vorbis_encoder_read (krad_link->krad_vorbis, &frames, &krad_link->au_buffer);
+    */
     }
 
     while (bytes > 0) {
@@ -933,7 +935,7 @@ int audio_encoding_unit_process (void *arg) {
       }
       bytes = 0;
       if (krad_link->codec == VORBIS) {
-        bytes = krad_vorbis_encoder_read (krad_link->krad_vorbis, &frames, &krad_link->au_buffer);
+      //  bytes = krad_vorbis_encoder_read (krad_link->krad_vorbis, &frames, &krad_link->au_buffer);
       }
       if (krad_link->codec == OPUS) {
         bytes = krad_opus_encoder_read (krad_link->krad_opus, krad_link->au_buffer, &krad_link->au_framecnt);
@@ -957,7 +959,7 @@ void audio_encoding_unit_destroy (void *arg) {
   
   if (krad_link->krad_vorbis != NULL) {
   
-    krad_vorbis_encoder_finish (krad_link->krad_vorbis);
+//    krad_vorbis_encoder_finish (krad_link->krad_vorbis);
 /*
     // DUPEY
     bytes = krad_vorbis_encoder_read (krad_link->krad_vorbis, &frames, &vorbis_buffer);

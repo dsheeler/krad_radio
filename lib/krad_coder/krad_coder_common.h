@@ -31,7 +31,7 @@ typedef struct kr_audio_St kr_audio_t;
 struct kr_codeme_St {
   uint8_t *data;
   size_t sz;
-  int32_t count;  
+  int32_t count;
   uint64_t tc;
   kr_codec_t codec;
   kr_codec_hdr_t *hdr;

@@ -16,37 +16,35 @@ int krad_vorbis_test_headers (krad_codec_header_t *hdr) {
 
 /* Encoding */
 
-void krad_vorbis_encoder_destroy (krad_vorbis_t *krad_vorbis) {
-  vorbis_block_clear (&krad_vorbis->vblock);
-  vorbis_dsp_clear (&krad_vorbis->vdsp);
-  vorbis_info_clear (&krad_vorbis->vinfo);
-  free (krad_vorbis);
+void krad_vorbis_encoder_destroy (krad_vorbis_t *vorbis) {
+  vorbis_block_clear (&vorbis->vblock);
+  vorbis_dsp_clear (&vorbis->vdsp);
+  vorbis_info_clear (&vorbis->vinfo);
+  free (vorbis);
 }
 
 krad_vorbis_t *krad_vorbis_encoder_create (int channels,
                                            int sample_rate,
                                            float quality) {
 
-  krad_vorbis_t *krad_vorbis = calloc (1, sizeof(krad_vorbis_t));
   int ret;
 
-  krad_vorbis->channels = channels;
-  krad_vorbis->sample_rate = sample_rate;
-  krad_vorbis->quality = quality;  
+  krad_vorbis_t *vorbis;
   
-  vorbis_info_init (&krad_vorbis->vinfo);
+  vorbis = calloc (1, sizeof(krad_vorbis_t));
 
-  //printk ("KR Vorbis: Version: %d", krad_vorbis->vinfo.version);
+  vorbis->channels = channels;
+  vorbis->sample_rate = sample_rate;
+  vorbis->quality = quality;  
+  
+  vorbis_info_init (&vorbis->vinfo);
 
-  //printk ("KR Vorbis: params: c%d sr%f q%f\n",
-  //        krad_vorbis->channels,
-  //        krad_vorbis->sample_rate,
-  //        krad_vorbis->quality);
+  //printk ("KR Vorbis: Version: %d", vorbis->vinfo.version);
 
-  ret = vorbis_encode_init_vbr (&krad_vorbis->vinfo,
-                                krad_vorbis->channels,
-                                krad_vorbis->sample_rate,
-                                krad_vorbis->quality);
+  ret = vorbis_encode_init_vbr (&vorbis->vinfo,
+                                vorbis->channels,
+                                vorbis->sample_rate,
+                                vorbis->quality);
 
   if (ret == OV_EIMPL) {
     failfast ("Krad Vorbis Encoder: vorbis mode is not supported currently...");
@@ -56,141 +54,119 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
     failfast ("Krad Vorbis Encoder: illegal vorbis mode...");
   }
 
-  ret = vorbis_analysis_init (&krad_vorbis->vdsp, &krad_vorbis->vinfo);
-  ret = vorbis_block_init (&krad_vorbis->vdsp, &krad_vorbis->vblock);
+  ret = vorbis_analysis_init (&vorbis->vdsp, &vorbis->vinfo);
+  ret = vorbis_block_init (&vorbis->vdsp, &vorbis->vblock);
   
-  vorbis_comment_init (&krad_vorbis->vc);
+  vorbis_comment_init (&vorbis->vc);
 
-  vorbis_comment_add_tag (&krad_vorbis->vc, "ENCODER", APPVERSION);
+  vorbis_comment_add_tag (&vorbis->vc, "ENCODER", APPVERSION);
 
-  krad_vorbis->krad_codec_header.codec = VORBIS;
+  vorbis->krad_codec_header.codec = VORBIS;
 
-  vorbis_analysis_headerout (&krad_vorbis->vdsp,
-                             &krad_vorbis->vc, 
-                             &krad_vorbis->header_main,
-                             &krad_vorbis->header_comments,
-                             &krad_vorbis->header_codebooks);
+  vorbis_analysis_headerout (&vorbis->vdsp,
+                             &vorbis->vc, 
+                             &vorbis->header_main,
+                             &vorbis->header_comments,
+                             &vorbis->header_codebooks);
 
-  krad_vorbis->header[0] = 0x02;
-  krad_vorbis->headerpos++;
+  vorbis->header[0] = 0x02;
+  vorbis->headerpos++;
 
-  if (krad_vorbis->header_main.bytes > 255) {
+  if (vorbis->header_main.bytes > 255) {
     failfast ("Krad Vorbis Encoder: mainheader to long for code");
   }
   
-  krad_vorbis->head_count = krad_vorbis->header_main.bytes;
-  krad_vorbis->header[1] = (char)krad_vorbis->head_count;
-  krad_vorbis->headerpos++;
+  vorbis->head_count = vorbis->header_main.bytes;
+  vorbis->header[1] = (char)vorbis->head_count;
+  vorbis->headerpos++;
   
-  if (krad_vorbis->header_comments.bytes > 255) {
+  if (vorbis->header_comments.bytes > 255) {
     failfast ("Krad Vorbis Encoder: comments header to long for code..");
   }
   
-  krad_vorbis->head_count = krad_vorbis->header_comments.bytes;
-  krad_vorbis->header[2] = (char)krad_vorbis->head_count;
-  krad_vorbis->headerpos++;
+  vorbis->head_count = vorbis->header_comments.bytes;
+  vorbis->header[2] = (char)vorbis->head_count;
+  vorbis->headerpos++;
   
-  //printk ("Vorbis header sizes: %ld %ld %ld\n",
-  //        krad_vorbis->header_main.bytes,
-  //       krad_vorbis->header_comments.bytes,
-  //        krad_vorbis->header_codebooks.bytes);
-  
-  memcpy (krad_vorbis->header + krad_vorbis->headerpos,
-          krad_vorbis->header_main.packet,
-          krad_vorbis->header_main.bytes);
-  krad_vorbis->krad_codec_header.header[0] =
-    krad_vorbis->header + krad_vorbis->headerpos;
-  krad_vorbis->headerpos += krad_vorbis->header_main.bytes;
-  krad_vorbis->krad_codec_header.header_size[0] =
-    krad_vorbis->header_main.bytes;
-    
-  memcpy (krad_vorbis->header + krad_vorbis->headerpos,
-          krad_vorbis->header_comments.packet,
-          krad_vorbis->header_comments.bytes);
-  krad_vorbis->krad_codec_header.header[1] =
-    krad_vorbis->header + krad_vorbis->headerpos;
-    
-  krad_vorbis->headerpos += krad_vorbis->header_comments.bytes;
-  
-  krad_vorbis->krad_codec_header.header_size[1] =
-    krad_vorbis->header_comments.bytes;
-    
-  memcpy (krad_vorbis->header + krad_vorbis->headerpos,
-          krad_vorbis->header_codebooks.packet,
-          krad_vorbis->header_codebooks.bytes);
-          
-  krad_vorbis->krad_codec_header.header[2] =
-    krad_vorbis->header + krad_vorbis->headerpos;
-    
-  krad_vorbis->headerpos += krad_vorbis->header_codebooks.bytes;
-  
-  krad_vorbis->krad_codec_header.header_size[2] =
-    krad_vorbis->header_codebooks.bytes;
+  memcpy (vorbis->header + vorbis->headerpos,
+          vorbis->header_main.packet,
+          vorbis->header_main.bytes);
 
-  krad_vorbis->krad_codec_header.header_combined = krad_vorbis->header;
-  krad_vorbis->krad_codec_header.header_combined_size = krad_vorbis->headerpos;
-  krad_vorbis->krad_codec_header.header_count = 3;
+  vorbis->krad_codec_header.header[0] =
+    vorbis->header + vorbis->headerpos;
+  vorbis->headerpos += vorbis->header_main.bytes;
+  vorbis->krad_codec_header.header_size[0] =
+    vorbis->header_main.bytes;
+    
+  memcpy (vorbis->header + vorbis->headerpos,
+          vorbis->header_comments.packet,
+          vorbis->header_comments.bytes);
+  vorbis->krad_codec_header.header[1] =
+    vorbis->header + vorbis->headerpos;
+    
+  vorbis->headerpos += vorbis->header_comments.bytes;
+  
+  vorbis->krad_codec_header.header_size[1] =
+    vorbis->header_comments.bytes;
+    
+  memcpy (vorbis->header + vorbis->headerpos,
+          vorbis->header_codebooks.packet,
+          vorbis->header_codebooks.bytes);
+          
+  vorbis->krad_codec_header.header[2] =
+    vorbis->header + vorbis->headerpos;
+    
+  vorbis->headerpos += vorbis->header_codebooks.bytes;
+  
+  vorbis->krad_codec_header.header_size[2] =
+    vorbis->header_codebooks.bytes;
+
+  vorbis->krad_codec_header.header_combined = vorbis->header;
+  vorbis->krad_codec_header.header_combined_size = vorbis->headerpos;
+  vorbis->krad_codec_header.header_count = 3;
 
   if (0) {
-    krad_vorbis_test_headers (&krad_vorbis->krad_codec_header);
+    krad_vorbis_test_headers (&vorbis->krad_codec_header);
   }
   
-  return krad_vorbis;
-}
-
-void krad_vorbis_encoder_prepare (krad_vorbis_t *krad_vorbis,
-                                  int frames, float ***buffer) {
-  *buffer = vorbis_analysis_buffer (&krad_vorbis->vdsp, frames);
-}
-
-int krad_vorbis_encoder_wrote (krad_vorbis_t *krad_vorbis, int frames) {
-  return vorbis_analysis_wrote (&krad_vorbis->vdsp, frames);
-}
-
-int krad_vorbis_encoder_finish (krad_vorbis_t *krad_vorbis) {
-  return vorbis_analysis_wrote (&krad_vorbis->vdsp, 0);
-}
-
-int krad_vorbis_encoder_write (krad_vorbis_t *krad_vorbis,
-                               float **samples, int frames) {
-  int c;
-
-  krad_vorbis_encoder_prepare (krad_vorbis, frames, &krad_vorbis->buffer);
-  for (c = 0; c < krad_vorbis->channels; c++) {
-    memcpy (krad_vorbis->buffer[c], (unsigned char *)samples[c], frames * 4);
-  }
-  return krad_vorbis_encoder_wrote (krad_vorbis, frames);
-}
-  
-int krad_vorbis_encoder_read (krad_vorbis_t *krad_vorbis,
-                              int *out_frames, uint8_t **buffer) {
-
-  if (vorbis_analysis_blockout(&krad_vorbis->vdsp, &krad_vorbis->vblock)) {
-    vorbis_analysis (&krad_vorbis->vblock, &krad_vorbis->op);
-    *out_frames = krad_vorbis->op.granulepos - krad_vorbis->frames_encoded;
-    krad_vorbis->frames_encoded = krad_vorbis->op.granulepos;    
-    *buffer = krad_vorbis->op.packet;
-    return krad_vorbis->op.bytes;
-  }
-  return 0;
+  return vorbis;
 }
 
 int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
                           kr_codeme_t *codeme,
                           kr_medium_t *medium) {
+  int32_t ret;
   int c;
   float **pcm;
-  uint8_t *buffer;
+  ogg_packet op;
 
-  krad_vorbis_encoder_prepare (vorbis, codeme->count, &pcm);
-  for (c = 0; c < 2; c++) {
-    memcpy (pcm[c], medium->a.samples[c], codeme->count * 4);
+  if (medium != NULL) {
+    pcm = vorbis_analysis_buffer (&vorbis->vdsp, medium->a.count);
+    for (c = 0; c < 2; c++) {
+      memcpy (pcm[c], medium->a.samples[c], medium->a.count * 4);
+    }
+    vorbis_analysis_wrote (&vorbis->vdsp, medium->a.count);
+
+    printk ("KR Vorbis Encoder: wrote %d samples", medium->a.count);
   }
-  krad_vorbis_encoder_wrote (vorbis, codeme->count);
-  codeme->sz = krad_vorbis_encoder_read (vorbis, &codeme->count, &buffer);
-  memcpy (codeme->data, buffer, codeme->sz);
 
-  return 0;                         
+  ret = vorbis_analysis_blockout (&vorbis->vdsp, &vorbis->vblock);
+  
+  if (ret > 0) {
+    vorbis_analysis (&vorbis->vblock, &op);
+    printk ("KR Vorbis encoder: op gpos: %"PRIi64" size %ld",
+            op.granulepos, op.bytes);
+    codeme->sz = op.bytes;
+    codeme->count = op.granulepos - vorbis->frames_encoded;
+    vorbis->frames_encoded = op.granulepos;
+    
+    memcpy (codeme->data, op.packet, codeme->sz);
+    
+    printk ("KR Vorbis Encoder: codeme size: %zu Count: %d",
+            codeme->sz, codeme->count);
+  }
+
+  return ret;                         
 }
 
 
