@@ -64,4 +64,6 @@ krad_stream_t *kr_stream_open (char *host, int32_t port, char *mount);
 
 //krad_stream_t *kr_stream_accept (int32_t sd);
 
+void kr_stream_i_am_a_blocking_subscripter (krad_stream_t *stream);
+
 #endif

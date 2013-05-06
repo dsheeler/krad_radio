@@ -58,13 +58,7 @@ static void remuxcode (kr_mkv_t *mkv, char *file, char *file2) {
   int32_t keyframe;
   uint8_t flags;
   int32_t packets;
-  
-  int32_t vbufsz2;
-  int32_t vkeyframe2;
-  int32_t vbufsz;
-  int32_t vkeyframe;
-  int32_t firstframe;
-  int32_t audiopackets;
+
   krad_vpx_decoder_t *vpx_dec;
   krad_vpx_encoder_t *vpx_enc;
   kr_codec_hdr_t header;
@@ -74,13 +68,7 @@ static void remuxcode (kr_mkv_t *mkv, char *file, char *file2) {
   krad_vorbis_t *vorbis_dec;
   krad_vorbis_t *vorbis_enc;
 
-  audiopackets = 0;
-  firstframe = 1;
   packets = 0;
-  vbufsz2 = 0;
-  vkeyframe2 = 0;
-  vbufsz = 0;
-  vkeyframe = 0;
   
   //vpxtest ();
 

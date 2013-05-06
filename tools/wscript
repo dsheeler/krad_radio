@@ -20,6 +20,10 @@ programs4 = """
 kr_muxpndr.c
 """.split()
 
+programs5 = """
+kr_dl_stream.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -50,7 +54,15 @@ krmuxpdrsources = """
 ../lib/krad_muxponder/krad_muxponder.c
 """.split()
 
+krdlcapsrces = """
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_decklink/krad_decklink.c
+../lib/krad_decklink/krad_decklink_capture.cpp
+../lib/krad_decklink/vendor/linux/DeckLinkAPIDispatch.cpp
+""".split()
+
 includedirs = """
+../lib/krad_decklink/vendor/linux
 ../lib/krad_muxponder/
 ../lib/krad_compositor/
 ../lib/krad_chronometer/
@@ -101,15 +113,15 @@ includedirs = """
 /usr/include
 """.split()
 
-kmkvshlibs = ["vpx"]
+kmkvshlibs = ["vpx", "cairo"]
 
-kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac", "vpx"
+kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac", "vpx",
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
 
 krtxpndrlibs = []
 
 stlibs = []
-syslibs = ['m', 'dl', 'z']
+syslibs = ['m', 'dl', 'z', 'rt']
 
 syslibs2 = ['pthread']
 syslibs3 = ['turbojpeg']
@@ -200,6 +212,14 @@ def build(bld):
   for p in programs4:
     bld(features = 'c cprogram',
     source = krmuxpdrsources + krmkvhdrsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+  for p in programs5:
+    bld(features = 'c cprogram cxx cxxprogram',
+    source = krdlcapsrces + krmuxpdrsources + krmkvhdrsources + [p],
     includes = includedirs, 
     target = p.replace(".c", ""),
     use = ["krad_mkv"],

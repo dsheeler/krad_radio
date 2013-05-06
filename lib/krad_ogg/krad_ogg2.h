@@ -16,7 +16,9 @@
 
 #include "krad_ogg_crc.h"
 
+#ifndef KRAD_OGG_MAX_TRACKS
 #define KRAD_OGG_MAX_TRACKS 10
+#endif
 
 typedef struct kr_ogg_St kr_ogg_t;
 typedef struct kr_ogg_track_St kr_ogg_track_t;

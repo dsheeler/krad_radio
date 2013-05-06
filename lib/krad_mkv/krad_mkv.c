@@ -101,7 +101,39 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
                                                   splicepoint);
       kr_io2_restart (mkv->io);
     } else {
-      kr_io2_sync (mkv->io);
+      if (mkv->stream != NULL) {
+ 
+        ssize_t ret;
+        ssize_t sent;
+        ssize_t bytes;
+        uint8_t *buffer;
+
+        sent = 0;
+        buffer = mkv->io->buffer;
+        bytes = mkv->io->len;
+          
+        while (sent != bytes) {
+          kr_stream_i_am_a_blocking_subscripter (mkv->stream);
+          ret = kr_stream_send (mkv->stream, buffer + sent, bytes - sent);
+          if (ret > 0) {
+            sent += ret;
+          }
+          if (sent != bytes) {
+            printf ("\nSent to few bytes: ret %zd - sent %zd - total %zd\n",
+                    ret, sent, bytes);
+            fflush (stdout);
+          }
+          if (mkv->stream->connected == 0) {
+            printf ("Failed!: %s\n", mkv->stream->error_str);
+            break;
+          }
+        }
+        if (mkv->stream->connected == 1) {
+          kr_io2_restart (mkv->io);
+        }
+      } else {    
+        kr_io2_sync (mkv->io);
+      }
     }
   }
   kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
@@ -428,10 +460,14 @@ kr_mkv_t *kr_mkv_create_stream (char *host, int port,
   if (stream == NULL) {
     return NULL;
   }
+  
+  while (stream->ready != 1) {
+    kr_stream_handle_headers (stream);
+  }
 
-  printk ("Krad MKV: %s %d %s %s - SD %s",
-          host, port, mount, password, stream->sd);
-  printk ("Krad MKV: SD %d", stream->sd);
+  //printk ("Krad MKV: %s %d %s %s - SD %s",
+  //        host, port, mount, password, stream->sd);
+  //printk ("Krad MKV: SD %d", stream->sd);
   
   mkv = kr_mkv_create ();
   mkv->stream = stream;

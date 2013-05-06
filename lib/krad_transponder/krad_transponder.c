@@ -914,12 +914,24 @@ int audio_encoding_unit_process (void *arg) {
     }
     if (krad_link->codec == VORBIS) {
     /*
-      krad_vorbis_encoder_prepare (krad_link->krad_vorbis, krad_link->au_framecnt, &float_buffer);
+
+
+      medium = kr_medium_kludge_create ();
+      codeme = kr_codeme_kludge_create ();
+
+
       for (c = 0; c < krad_link->channels; c++) {
         krad_ringbuffer_read (krad_link->audio_input_ringbuffer[c], (char *)float_buffer[c], krad_link->au_framecnt * 4);
       }      
-      krad_vorbis_encoder_wrote (krad_link->krad_vorbis, krad_link->au_framecnt);
-      bytes = krad_vorbis_encoder_read (krad_link->krad_vorbis, &frames, &krad_link->au_buffer);
+      
+                ret = kr_vorbis_encode (vorbis_enc, codeme, medium);
+          if (ret == 1) {
+            kr_mkv_add_audio (new_mkv, 2, codeme->data, codeme->sz, codeme->count);
+          }
+          kr_medium_kludge_destroy (&medium);
+          kr_codeme_kludge_destroy (&codeme);
+
+      bytes = 
     */
     }
 
