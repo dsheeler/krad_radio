@@ -10,6 +10,7 @@
 #include <krad_v4l2.h>
 #include <krad_ring.h>
 #include <krad_framepool.h>
+#include <krad_timer.h>
 
 #include <libswscale/swscale.h>
 
@@ -34,6 +35,7 @@ struct kr_v4l2s_params_St {
 struct kr_v4l2s_St {
   kr_v4l2s_params_t *params;
   krad_v4l2_t *v4l2;
+  krad_timer_t *timer;
   krad_ringbuffer_t *frame_ring;
   krad_framepool_t *framepool;
   krad_vpx_encoder_t *vpx_enc;
@@ -132,6 +134,7 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
   struct SwsContext *converter;
   int sws_algo;
   int32_t ret;
+  uint64_t timecode;
 
   signal (SIGINT, term_handler);
   signal (SIGTERM, term_handler);    
@@ -145,6 +148,7 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
   vcodeme = kr_codeme_kludge_create ();
 
   krad_v4l2_start_capturing (v4l2s->v4l2);
+  v4l2s->timer = krad_timer_create ();
 
   while (!destruct) {
 
@@ -156,6 +160,12 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
     if (captured_frame == NULL) {
       continue;
     }
+    
+    timecode = krad_timer_current_ms (v4l2s->timer);
+    if (!krad_timer_started (v4l2s->timer)) {
+      krad_timer_start (v4l2s->timer);
+    }
+    
     frame = krad_framepool_getframe (v4l2s->framepool);
     if (frame == NULL) {
       continue;
@@ -205,8 +215,8 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
     krad_v4l2_frame_done (v4l2s->v4l2);
     ret = kr_vpx_encode (v4l2s->vpx_enc, vcodeme, vmedium);
     if (ret == 1) {
-      kr_mkv_add_video (v4l2s->mkv, 1,
-                        vcodeme->data, vcodeme->sz, vcodeme->key);      
+      kr_mkv_add_video_tc (v4l2s->mkv, 1,
+                           vcodeme->data, vcodeme->sz, vcodeme->key, timecode);      
     }
     
     printf ("\rKrad V4L2 Stream Frame# %12"PRIu64"",
@@ -237,23 +247,32 @@ void kr_v4l2s (kr_v4l2s_params_t *params) {
 int main (int argc, char *argv[]) {
 
   kr_v4l2s_params_t params;
-
+  char mount[256];
   krad_debug_init ("v4l2_stream");
 
   memset (&params, 0, sizeof(kr_v4l2s_params_t));
 
   params.width = 640;
   params.height = 360;
-  params.fps_numerator = 10;
+  params.fps_numerator = 30;
   params.fps_denominator = 1;
   params.device = "/dev/video0";
   params.video_bitrate = 450;
   
   params.host = "europa.kradradio.com";
   params.port = 8008;
-  params.mount = "/kr_v4l2s.webm";
-  params.password = "firefox";
 
+  snprintf (mount, sizeof(mount),
+            "/kr_v4l2s_%"PRIu64".webm",
+            krad_unixtime ());
+
+  params.mount = mount;
+  params.password = "firefox";
+  printf ("Streaming with: %s at %ux%u %u fps (max)\n",
+          params.device, params.width, params.height,
+          params.fps_numerator/params.fps_denominator);
+  printf ("To: %s:%u%s\n", params.host, params.port, params.mount);
+  printf ("VP8 Bitrate: %uk\n", params.video_bitrate);
   kr_v4l2s (&params);
 
   krad_debug_shutdown ();

@@ -253,9 +253,7 @@ int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
   vpx->pkt = vpx_codec_get_cx_data (&vpx->encoder, &iter);
   
   if (vpx->pkt != NULL) {
-    printk ("Got packet");
     if (vpx->pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-    printk ("Got frame packet");
       codeme->sz = vpx->pkt->data.frame.sz;
       memcpy (codeme->data, vpx->pkt->data.frame.buf, codeme->sz);
       codeme->key = vpx->pkt->data.frame.flags & VPX_FRAME_IS_KEY;

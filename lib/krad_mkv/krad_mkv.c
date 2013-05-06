@@ -298,8 +298,8 @@ int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id) {
   return t;
 }
 
-void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
-                       int buffer_len, int keyframe) {
+void kr_mkv_add_video_tc (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
+                          int len, int keyframe, int64_t tc) {
 
   kr_mkv_track_t *track;
   uint32_t block_length;
@@ -311,7 +311,7 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   flags = 0;
   timecode = 0;
   block_timecode = 0;
-  block_length = buffer_len + 4;
+  block_length = len + 4;
   block_length |= 0x10000000;
   track_number = track_num;
   track_number |= 0x80;
@@ -330,10 +330,14 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
     }
   }
 
-  timecode = round (1000000000 *
-                    track->total_video_frames /
-                    track->fps_numerator *
-                    track->fps_denominator / mkv->timecode_scale);
+  if (tc > -1) {
+    timecode = tc;
+  } else {
+    timecode = round (1000000000 *
+                      track->total_video_frames /
+                      track->fps_numerator *
+                      track->fps_denominator / mkv->timecode_scale);
+  }
 
   if (keyframe) {
     if (mkv->audio_init_cluster == 1) {
@@ -358,9 +362,14 @@ void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_ebml2_pack (mkv->e, &track_number, 1);
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
   kr_ebml2_pack (mkv->e, &flags, 1);
-  kr_ebml2_pack (mkv->e, buffer, buffer_len);
+  kr_ebml2_pack (mkv->e, buffer, len);
     
   kr_mkv_sync (mkv, 0);
+}
+
+void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
+                       int len, int keyframe) {
+  kr_mkv_add_video_tc (mkv, track_num, buffer, len, keyframe, -1);
 }
 
 void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,

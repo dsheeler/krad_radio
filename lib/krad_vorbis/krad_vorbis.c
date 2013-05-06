@@ -169,7 +169,7 @@ int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
       printke (vorbis->state_str);
       return -1;
     }
-    printk ("KR Vorbis Encoder: wrote %d samples", medium->a.count);
+    //printk ("KR Vorbis Encoder: wrote %d samples", medium->a.count);
   }
 
   bo_ret = vorbis_analysis_blockout (&vorbis->vdsp, &vorbis->vblock);
@@ -187,16 +187,16 @@ int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
       printke (vorbis->state_str);
       return -1;
     }
-    printk ("KR Vorbis Encoder: op gpos: %"PRIi64" size %ld",
-            op.granulepos, op.bytes);
+    //printk ("KR Vorbis Encoder: op gpos: %"PRIi64" size %ld",
+    //        op.granulepos, op.bytes);
     codeme->sz = op.bytes;
     codeme->count = op.granulepos - vorbis->frames;
     vorbis->frames = op.granulepos;
     
     memcpy (codeme->data, op.packet, codeme->sz);
     
-    printk ("KR Vorbis Encoder: codeme size: %zu Count: %d",
-            codeme->sz, codeme->count);
+    //printk ("KR Vorbis Encoder: codeme size: %zu Count: %d",
+    //        codeme->sz, codeme->count);
   }
 
   return bo_ret;                         
@@ -334,7 +334,7 @@ int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
   op.bytes = codeme->sz;
   op.packetno++;
 
-  printk ("KR Vorbis Decoder: packet size %zu", codeme->sz);
+  //printk ("KR Vorbis Decoder: packet size %zu", codeme->sz);
 
   ret = vorbis_synthesis (&vorbis->vblock, &op);
   if (ret != 0) {
@@ -374,10 +374,8 @@ int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
 
     vorbis->frames += sample_count;
 
-    printk ("KR Vorbis Decoder: %d samples total %"PRIu64"",
-            sample_count, vorbis->frames);
-
-    
+    //printk ("KR Vorbis Decoder: %d samples total %"PRIu64"",
+    //        sample_count, vorbis->frames);
 
     medium->a.channels = vorbis->channels;
 
