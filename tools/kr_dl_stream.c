@@ -272,6 +272,7 @@ void kr_dlstream_run (kr_dlstream_t *dlstream) {
   signal (SIGINT, term_handler);
   signal (SIGTERM, term_handler);    
 
+  converter = NULL;
   sws_algo = SWS_BILINEAR;
 
   amedium = kr_medium_kludge_create ();
