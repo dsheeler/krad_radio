@@ -99,10 +99,10 @@ kr_v4l2s_t *kr_v4l2s_create (kr_v4l2s_params_t *params) {
   }
 
   v4l2s->vpx_enc = krad_vpx_encoder_create (v4l2s->params->width,
-                                               v4l2s->params->height,
-                                               v4l2s->params->fps_numerator,
-                                               v4l2s->params->fps_denominator,
-                                               v4l2s->params->video_bitrate);
+                                            v4l2s->params->height,
+                                            v4l2s->params->fps_numerator,
+                                            v4l2s->params->fps_denominator,
+                                            v4l2s->params->video_bitrate);
 
   kr_mkv_add_video_track (v4l2s->mkv, VP8,
                           v4l2s->params->fps_numerator,
@@ -112,9 +112,9 @@ kr_v4l2s_t *kr_v4l2s_create (kr_v4l2s_params_t *params) {
 
   v4l2s->frame_ring = krad_ringbuffer_create (90 * sizeof(krad_frame_t *));
 
-  v4l2s->framepool = krad_framepool_create ( v4l2s->params->width,
-                                             v4l2s->params->height,
-                                             10);
+  v4l2s->framepool = krad_framepool_create (v4l2s->params->width,
+                                            v4l2s->params->height,
+                                            10);
   v4l2s->v4l2 = krad_v4l2_create ();
 
   krad_v4l2_open (v4l2s->v4l2, v4l2s->params->device,
@@ -127,8 +127,6 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
 
   krad_frame_t *frame;
   uint8_t *captured_frame;
-  kr_medium_t *amedium;
-  kr_codeme_t *acodeme;
   kr_medium_t *vmedium;
   kr_codeme_t *vcodeme;
   struct SwsContext *converter;
@@ -142,8 +140,6 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
   converter = NULL;
   sws_algo = SWS_BILINEAR;
 
-  amedium = kr_medium_kludge_create ();
-  acodeme = kr_codeme_kludge_create ();
   vmedium = kr_medium_kludge_create ();
   vcodeme = kr_codeme_kludge_create ();
 
@@ -199,7 +195,7 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
     vmedium->v.pps[2] = v4l2s->params->width/2;
     vmedium->v.ppx[0] = vmedium->data;
     vmedium->v.ppx[1] = vmedium->data +
-                        v4l2s->params->width * (v4l2s->params->height);  
+                        v4l2s->params->width * (v4l2s->params->height);
     vmedium->v.ppx[2] = vmedium->data + v4l2s->params->width *
                         (v4l2s->params->height) +
                         ((v4l2s->params->width * (v4l2s->params->height)) /4);
@@ -211,12 +207,15 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
               v4l2s->params->height,
               vmedium->v.ppx,
               vmedium->v.pps);
+
     krad_framepool_unref_frame (frame);
     krad_v4l2_frame_done (v4l2s->v4l2);
+
     ret = kr_vpx_encode (v4l2s->vpx_enc, vcodeme, vmedium);
     if (ret == 1) {
       kr_mkv_add_video_tc (v4l2s->mkv, 1,
-                           vcodeme->data, vcodeme->sz, vcodeme->key, timecode);      
+                           vcodeme->data, vcodeme->sz,
+                           vcodeme->key, timecode);      
     }
     
     printf ("\rKrad V4L2 Stream Frame# %12"PRIu64"",
@@ -224,13 +223,11 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
     fflush (stdout);
   }
 
-  kr_medium_kludge_destroy (&amedium);
-  kr_codeme_kludge_destroy (&acodeme);
   kr_medium_kludge_destroy (&vmedium);
   kr_codeme_kludge_destroy (&vcodeme);
 
   if (converter != NULL) {
-    sws_freeContext ( converter );
+    sws_freeContext (converter);
     converter = NULL;
   }
 }
@@ -258,7 +255,6 @@ int main (int argc, char *argv[]) {
   params.fps_denominator = 1;
   params.device = "/dev/video0";
   params.video_bitrate = 450;
-  
   params.host = "europa.kradradio.com";
   params.port = 8008;
 
@@ -268,11 +264,13 @@ int main (int argc, char *argv[]) {
 
   params.mount = mount;
   params.password = "firefox";
+
   printf ("Streaming with: %s at %ux%u %u fps (max)\n",
           params.device, params.width, params.height,
           params.fps_numerator/params.fps_denominator);
   printf ("To: %s:%u%s\n", params.host, params.port, params.mount);
   printf ("VP8 Bitrate: %uk\n", params.video_bitrate);
+
   kr_v4l2s (&params);
 
   krad_debug_shutdown ();
