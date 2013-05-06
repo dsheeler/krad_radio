@@ -24,6 +24,10 @@ programs5 = """
 kr_dl_stream.c
 """.split()
 
+programs6 = """
+kr_v4l2_stream.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -59,6 +63,11 @@ krdlcapsrces = """
 ../lib/krad_decklink/krad_decklink.c
 ../lib/krad_decklink/krad_decklink_capture.cpp
 ../lib/krad_decklink/vendor/linux/DeckLinkAPIDispatch.cpp
+""".split()
+
+krv4l2capsrces = """
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_v4l2/krad_v4l2.c
 """.split()
 
 includedirs = """
@@ -224,6 +233,14 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["krad_mkv"],
     uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+  for p in programs6:
+    bld(features = 'c cprogram',
+    source = krv4l2capsrces + krmuxpdrsources + krmkvhdrsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
 
   bld.shlib(
     source = krmkvlibsources, 

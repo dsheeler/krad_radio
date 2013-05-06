@@ -119,12 +119,12 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
             sent += ret;
           }
           if (sent != bytes) {
-            printf ("\nSent to few bytes: ret %zd - sent %zd - total %zd\n",
-                    ret, sent, bytes);
-            fflush (stdout);
+            //printf ("\nSent to few bytes: ret %zd - sent %zd - total %zd\n",
+            //        ret, sent, bytes);
+            //fflush (stdout);
           }
           if (mkv->stream->connected == 0) {
-            printf ("Failed!: %s\n", mkv->stream->error_str);
+            printke ("Failed!: %s\n", mkv->stream->error_str);
             break;
           }
         }

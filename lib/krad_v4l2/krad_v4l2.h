@@ -19,7 +19,11 @@
 #include <dirent.h>
 #include <linux/videodev2.h>
 #include <linux/uvcvideo.h>
+
+#ifndef KRAD_NO_TURBOJPEG
+#define KRAD_TURBOJPEG
 #include <turbojpeg.h>
+#endif
 
 #include "uvch264.h"
 #include "krad_system.h"
@@ -57,7 +61,9 @@ struct krad_v4l2_St {
 	unsigned int n_buffers;
 	struct v4l2_buffer buf;
   char device[512];
+#ifdef KRAD_TURBOJPEG
 	tjhandle jpeg_dec;
+#endif
 	unsigned int encoded_size;
 	unsigned char *codec_buffer;
 };
