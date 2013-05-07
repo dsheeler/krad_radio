@@ -28,6 +28,10 @@ programs6 = """
 kr_v4l2_stream.c
 """.split()
 
+programs7 = """
+kr_x11_stream.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -69,6 +73,13 @@ krv4l2capsrces = """
 ../lib/krad_framepool/krad_framepool.c
 ../lib/krad_v4l2/krad_v4l2.c
 ../lib/krad_chronometer/krad_timer.c
+""".split()
+
+krx11capsrces = """
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_x11/krad_x11.c
+../lib/krad_chronometer/krad_timer.c
+../lib/krad_chronometer/krad_ticker.c
 """.split()
 
 includedirs = """
@@ -129,13 +140,18 @@ kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac", "vpx",
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
 
 krtxpndrlibs = []
-
+shlibs = []
 stlibs = []
 syslibs = ['m', 'dl', 'z', 'rt']
-
+shlibsx11 = ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
 syslibs2 = ['pthread']
 syslibs3 = ['turbojpeg']
 plibs = ['rt', 'pthread']
+
+def check_x11(x11):
+  if x11.options.nox11 == False:
+    x11.env['KRAD_USE_X11'] = "yes"
+    x11.env.append_unique('CFLAGS', ['-DKRAD_USE_X11'])
 
 def check_system(systm):
 
@@ -143,6 +159,7 @@ def check_system(systm):
   global programs
   global kmkvshlibs
   global syslibs
+  global shlibs
   global syslibs2
 
   if systm.env['KR_LINUX']:
@@ -154,13 +171,19 @@ def check_system(systm):
     includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
     kmkvshlibs = kmkvshlibs + ['turbojpeg']
 
+  if systm.env['KRAD_USE_X11']:
+    #depsources += ["../lib/krad_x11/krad_x11.c"]
+    shlibs += ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
+
 def configure(conf):
 
   global libav_dir
   global programs
   global kmkvshlibs
   global syslibs
+  global shlibs
   check_system(conf)
+  check_x11(conf)
 
   for l in syslibs:
     conf.check(lib = l, cflags='-Wall', uselib_store = l)
@@ -173,13 +196,20 @@ def configure(conf):
                    uselib_store = l,
                    args='--cflags --libs --static')
 
+  if conf.env['KRAD_USE_X11']:
+    #depsources += ["../lib/krad_x11/krad_x11.c"]
+    shlibs += ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
+
 def build(bld):
 
   global libav_dir
   global programs
   global kmkvshlibs
   global syslibs
+  global shlibs
+  global shlibsx11
   check_system(bld)
+  check_x11(bld)
 
   # read version number to be used for the shared library
   f = open("lib/krad_radio/krad_radio_version.h", "r")
@@ -242,6 +272,14 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["krad_mkv"],
     uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
+
+  for p in programs7:
+    bld(features = 'c cprogram',
+    source = krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
 
   bld.shlib(
     source = krmkvlibsources, 

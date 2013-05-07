@@ -230,6 +230,8 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
     sws_freeContext (converter);
     converter = NULL;
   }
+
+  krad_timer_destroy (v4l2s->timer);
 }
 
 void kr_v4l2s (kr_v4l2s_params_t *params) {

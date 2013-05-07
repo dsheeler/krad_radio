@@ -21,7 +21,7 @@ kr_medium_t *kr_medium_kludge_create () {
   kr_medium_t *medium;
   int32_t c;
   medium = calloc (1, sizeof(kr_medium_t));
-  medium->sz = 1280 * 720 * 4;
+  medium->sz = 1920 * 1200 * 4;
   medium->data = calloc (1, medium->sz);
   medium->v.px = medium->data;
   for (c = 0; c < 6; c++) {

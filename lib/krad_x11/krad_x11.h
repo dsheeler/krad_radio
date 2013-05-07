@@ -19,13 +19,11 @@
 
 #endif
 
-
 #include <cairo.h>
 
 #include "krad_system.h"
 
 #define KRAD_X11_XCB_ONLY 0
-
 
 typedef struct krad_x11_St krad_x11_t;
 
@@ -71,14 +69,10 @@ struct krad_x11_St {
 
 };
 
-
-
-
 krad_x11_t *krad_x11_create();
 void krad_x11_destroy(krad_x11_t *krad_x11);
 
-
-int krad_x11_capture(krad_x11_t *krad_x11, unsigned char *buffer);
-void krad_x11_disable_capture(krad_x11_t *krad_x11);
-void krad_x11_enable_capture(krad_x11_t *krad_x11, int width, int height);
+int krad_x11_capture (krad_x11_t *krad_x11, unsigned char *buffer);
+void krad_x11_disable_capture (krad_x11_t *krad_x11);
+void krad_x11_enable_capture (krad_x11_t *krad_x11, int width, int height);
 

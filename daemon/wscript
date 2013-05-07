@@ -228,7 +228,7 @@ def check_x11(x11):
 
   if x11.env['KRAD_USE_X11']:
     #depsources += ["../lib/krad_x11/krad_x11.c"]
-    shlibs += ["x11-xcb", "xcb-image", "xcb", "x11"]
+    shlibs += ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
 
 def check_gif(conf):
   global syslibs

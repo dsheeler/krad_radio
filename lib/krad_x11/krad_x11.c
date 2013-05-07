@@ -13,7 +13,7 @@ krad_x11_t *krad_x11_create () {
 	if ((krad_x11 = calloc (1, sizeof (krad_x11_t))) == NULL) {
 		failfast ("krad_x11 mem alloc fail");
 	}
-	
+	printke ("x11 is disabled and fake");
 	return krad_x11;
 
 }
@@ -82,6 +82,9 @@ krad_x11_t *krad_x11_create () {
 		}
 	}
 
+	printke ("Krad X11 created for %d x %d",
+            krad_x11->screen_width, krad_x11->screen_height);
+
 	return krad_x11;
 
 }
@@ -132,7 +135,7 @@ void krad_x11_disable_capture(krad_x11_t *krad_x11) {
 }
 
 
-int krad_x11_capture(krad_x11_t *krad_x11, unsigned char *buffer) {
+int krad_x11_capture (krad_x11_t *krad_x11, unsigned char *buffer) {
 
 	//char filename[512];
 	
