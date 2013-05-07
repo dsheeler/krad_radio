@@ -155,6 +155,16 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
       if ((part != NULL) && (strcmp(part->valuestring, "snap") == 0)) {
         kr_compositor_snapshot (kr_ws_client->kr_client);
       }
+      if ((part != NULL) && (strcmp(part->valuestring, "display") == 0)) {
+         kr_transponder_subunit_create (kr_ws_client->kr_client, "rawout", "");
+      }
+      if ((part != NULL) && (strcmp(part->valuestring, "addsprite") == 0)) {
+	part = cJSON_GetObjectItem (cmd, "sprite_name");
+	if (part != NULL) {
+	  
+	  kr_compositor_subunit_create (kr_ws_client->kr_client, KR_SPRITE, part->valuestring, NULL);
+	}
+      }
       if ((part != NULL) && (strcmp(part->valuestring, "update_sprite") == 0)) {
         part = cJSON_GetObjectItem (cmd, "sprite_num");
         part2 = cJSON_GetObjectItem (cmd, "control_name");
@@ -385,7 +395,8 @@ void krad_websocket_add_sprite ( kr_ws_client_t *kr_ws_client, kr_sprite_t *spri
   cJSON_AddNumberToObject (msg, "y", sprite->controls.y);
   cJSON_AddNumberToObject (msg, "r", sprite->controls.rotation);
   cJSON_AddNumberToObject (msg, "o", sprite->controls.opacity);
-
+  cJSON_AddNumberToObject (msg, "w", sprite->controls.width);
+  cJSON_AddNumberToObject (msg, "h", sprite->controls.height);
   kr_ws_client->sprite_num++;
   
 }

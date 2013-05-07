@@ -10,8 +10,8 @@
   <style>
     
     @font-face {
-      font-family: "TradeGothicLTComBoldCondensed";
-      src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
+    font-family: "TradeGothicLTComBoldCondensed";
+    src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
     }
     
     body {
@@ -34,6 +34,24 @@
     h1, h2, h3, h4, h5, h6 {
       cursor: default;
     }
+
+
+    .kradcompositor_sprite_position_control {
+      border: 1px solid black;
+      width: 960px;
+      height: 540px;
+      background-color: #ffffff;
+      float: left;
+      margin: 14px;
+    }
+
+    .kradcompositor_sprite {
+      
+      width: 20px;
+      height: 40px;
+      background-color: #3060a0;
+    }
+    
 
     .kradlink_link h3 {
             color: #919191;
@@ -59,6 +77,7 @@
 
     .kradmixer_control {
       margin-top: 24px;
+      
     }
 
      .kradradio_station { margin-top: 20px; }
@@ -67,8 +86,8 @@
 
     .kradmixer_control h2, .kradlink_control h2, .kradlink_control h3, .masterbus h2 {
             position: relative;
-            right: 46px;
-            bottom: 68px;
+            right: 120px;
+            bottom: 120px;
             -webkit-transform: rotate(-90deg);
             -moz-transform: rotate(-90deg);
             -o-transform: rotate(-90deg);
@@ -89,7 +108,7 @@
     
     .crossfade_control h2 {
             position: static;
-            text-align: center;
+            text-align: left;
             margin-top: 4px;
             -webkit-transform: none;
             -moz-transform: none;
@@ -109,18 +128,19 @@
     }
     
     .meter_wrapper {
+      text-align: center;
       height: 200px; float: left; margin-top: 0px;
       padding-left: 28px; margin-left: 20px; margin-right: 20px; padding-right: 20px; width: 50px;
     }
     
-    .volume_control, .kradlink_param_control { padding-left: 78px; margin-right: 40px; padding-right: 20px; width: 50px; }
+    .volume_control, .kradlink_param_control { border: 10px solid white; border-radius: 10px; padding-left: 78px; margin-right: 40px; padding-right: 20px; }
     .crossfade_control { width: 200px; }
     .kradmixer_tools, .kradcompositor_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }    
     .kradlink_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
     .kradlink_info, .kradmixer_info, .kradcompositor_info { display: none; width: 80%; margin: 2px; margin-bottom: 4px; padding: 2px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }
     .kradlink_link { width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
     .dtmf_pad { width: 254px; height: 230px; padding: 2px; }
-    .effect_area { margin: 20px; padding: 12px; }
+    .effect_area { border: 10px solid white; margin: 20px; padding: 12px; }
     .dtmf_button { color: #FFFFFF; 
              background-color: #0000FF; text-align: center; width: 22px; height: 22px; margin: 2px;
              border: 1px solid grey; cursor: pointer; float: left; }
