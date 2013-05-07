@@ -124,7 +124,7 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
 
   x11s->framepool = krad_framepool_create (x11s->params->width,
                                            x11s->params->height,
-                                           10);
+                                           1);
 
   return x11s;
 }
@@ -136,6 +136,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   kr_codeme_t *vcodeme;
   struct SwsContext *converter;
   int sws_algo;
+  uint8_t *image;
   int32_t ret;
   uint64_t timecode;
 
@@ -162,7 +163,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
 
     frame = NULL;
 
-    if (!krad_x11_capture (x11s->x11, vmedium->v.px)) {
+    if (!krad_x11_capture_getptr (x11s->x11, &image)) {
       continue;
     }
     
@@ -177,7 +178,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     }
 
     frame->format = PIX_FMT_RGB32;
-    frame->yuv_pixels[0] = vmedium->v.px;
+    frame->yuv_pixels[0] = image;
     frame->yuv_pixels[1] = NULL;
     frame->yuv_pixels[2] = NULL;
     frame->yuv_strides[0] = x11s->x11->screen_width * 4;
