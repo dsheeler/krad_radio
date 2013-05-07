@@ -1,8 +1,8 @@
-#include "krad_ipc_client.h"
+#include "krad_app_client.h"
 
-static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms);
+static int krad_app_client_init (krad_app_client_t *client, int timeout_ms);
 
-void krad_ipc_disconnect (krad_ipc_client_t *client) {
+void krad_app_disconnect (krad_app_client_t *client) {
   if (client != NULL) {
     if (client->sd != 0) {
       close (client->sd);
@@ -11,12 +11,12 @@ void krad_ipc_disconnect (krad_ipc_client_t *client) {
   }
 }
 
-krad_ipc_client_t *krad_ipc_connect (char *sysname, int timeout_ms) {
+krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms) {
   
-  krad_ipc_client_t *client = calloc (1, sizeof (krad_ipc_client_t));
+  krad_app_client_t *client = calloc (1, sizeof (krad_app_client_t));
   
   if (client == NULL) {
-    failfast ("Krad IPC Client mem alloc fail");
+    failfast ("Krad APP Client mem alloc fail");
     return NULL;
   }
   
@@ -30,30 +30,30 @@ krad_ipc_client_t *krad_ipc_connect (char *sysname, int timeout_ms) {
     strncpy (client->sysname, sysname, sizeof (client->sysname));
     if (strncmp(client->unixname.sysname, "Linux", 5) == 0) {
       client->on_linux = 1;
-      client->ipc_path_pos = sprintf(client->ipc_path, "@krad_radio_%s_ipc", sysname);
+      client->api_path_pos = sprintf(client->api_path, "@krad_radio_%s_api", sysname);
     } else {
-      client->ipc_path_pos = sprintf(client->ipc_path, "%s/krad_radio_%s_ipc", "/tmp", sysname);
+      client->api_path_pos = sprintf(client->api_path, "%s/krad_radio_%s_api", "/tmp", sysname);
     }
   
     if (!client->on_linux) {
-      if(stat(client->ipc_path, &client->info) != 0) {
-        krad_ipc_disconnect(client);
-        failfast ("Krad IPC Client: IPC PATH Failure\n");
+      if(stat(client->api_path, &client->info) != 0) {
+        krad_app_disconnect(client);
+        failfast ("Krad APP Client: API PATH Failure\n");
         return NULL;
       }
     }
   }
   
-  if (krad_ipc_client_init (client, timeout_ms) == 0) {
-    printke ("Krad IPC Client: Failed to init!");
-    krad_ipc_disconnect (client);
+  if (krad_app_client_init (client, timeout_ms) == 0) {
+    printke ("Krad APP Client: Failed to init!");
+    krad_app_disconnect (client);
     return NULL;
   }
 
   return client;
 }
 
-static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
+static int krad_app_client_init (krad_app_client_t *client, int timeout_ms) {
 
   int rc;
   char port_string[6];
@@ -70,7 +70,7 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
   if (client->tcp_port != 0) {
 
     //FIXME hrm we don't know the sysname of a remote connect! crazy ?
-    //printf ("Krad IPC Client: Connecting to remote %s:%d", client->host, client->tcp_port);
+    //printf ("Krad APP Client: Connecting to remote %s:%d", client->host, client->tcp_port);
 
     memset(&hints, 0x00, sizeof(hints));
     hints.ai_flags = AI_NUMERICSERV;
@@ -93,13 +93,13 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
 
     rc = getaddrinfo (client->host, port_string, &hints, &res);
     if (rc != 0) {
-       printf ("Krad IPC Client: Host not found --> %s\n", gai_strerror(rc));
+       printf ("Krad APP Client: Host not found --> %s\n", gai_strerror(rc));
        return 0;
     }
     
     client->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
     if (client->sd < 0) {
-      printf ("Krad IPC Client: Socket Error");
+      printf ("Krad APP Client: Socket Error");
       if (res != NULL) {
         freeaddrinfo (res);
         res = NULL;
@@ -109,7 +109,7 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
 
     rc = connect (client->sd, res->ai_addr, res->ai_addrlen);
     if (rc < 0) {
-      printf ("Krad IPC Client: Remote Connect Error\n");
+      printf ("Krad APP Client: Remote Connect Error\n");
       if (res != NULL) {
         freeaddrinfo (res);
         res = NULL;
@@ -126,13 +126,13 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
 
     client->sd = socket (AF_UNIX, SOCK_STREAM, 0);
     if (client->sd == -1) {
-      failfast ("Krad IPC Client: socket fail");
+      failfast ("Krad APP Client: socket fail");
       return 0;
     }
 
     memset(&unix_saddr, 0x00, sizeof(unix_saddr));
     unix_saddr.sun_family = AF_UNIX;
-    snprintf (unix_saddr.sun_path, sizeof(unix_saddr.sun_path), "%s", client->ipc_path);
+    snprintf (unix_saddr.sun_path, sizeof(unix_saddr.sun_path), "%s", client->api_path);
     if (client->on_linux) {
       unix_saddr.sun_path[0] = '\0';
     }
@@ -140,7 +140,7 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
     if (connect (client->sd, (struct sockaddr *) &unix_saddr, sizeof (unix_saddr)) == -1) {
       close (client->sd);
       client->sd = 0;
-      printke ("Krad IPC Client: Can't connect to socket %s", client->ipc_path);
+      printke ("Krad APP Client: Can't connect to socket %s", client->api_path);
       return 0;
     }
   }
@@ -150,7 +150,7 @@ static int krad_ipc_client_init (krad_ipc_client_t *client, int timeout_ms) {
   return client->sd;
 }
 
-int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd) {
+int krad_app_client_send_fd (krad_app_client_t *client, int fd) {
 
   krad_system_set_socket_blocking (client->sd);
 

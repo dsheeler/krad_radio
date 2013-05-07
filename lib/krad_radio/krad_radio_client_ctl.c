@@ -32,18 +32,18 @@ char *krad_radio_running_stations () {
   while ((ep = readdir(dp))) {
     if (strlen(ep->d_name) > prelen) {
       if (strncmp (prefix, ep->d_name, prelen) == 0) {
-		len = strcspn (ep->d_name + prelen, "_");
-		if (len + 2 < LISTMAX - pos) {
-		  if (pos > 0) {
-			format = "\n%s";
-			len += 2;
-		  } else {
-			format = "%s";
-			len += 1;
-		  }
-		  snprintf (list + pos, len, format, ep->d_name + prelen);
-		  pos += len - 1;
-		}
+        len = strcspn (ep->d_name + prelen, "_");
+        if (len + 2 < LISTMAX - pos) {
+          if (pos > 0) {
+            format = "\n%s";
+            len += 2;
+          } else {
+            format = "%s";
+            len += 1;
+          }
+          snprintf (list + pos, len, format, ep->d_name + prelen);
+          pos += len - 1;
+        }
       }
     }
   }
@@ -235,9 +235,9 @@ int krad_radio_destroy (char *sysname) {
     if (pid != 0) {
       kill (pid, 9);
 #ifdef FRAK_MACOSX
-	char ipc_filename[256];
-	sprintf (ipc_filename, "/tmp/krad_radio_%s_ipc", sysname);
-	unlink (ipc_filename);
+  char api_filename[256];
+  sprintf (api_filename, "/tmp/krad_radio_%s_api", sysname);
+  unlink (api_filename);
 #endif
       return 1;
     } else {

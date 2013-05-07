@@ -45,7 +45,9 @@ typedef struct krad_ogg_track_St krad_ogg_track_t;
 #include "krad_transponder_common.h"
 
 #define KRAD_OGG_DEFAULT_MAX_PACKETS_PER_PAGE 7
-#define KRAD_OGG_MAX_TRACKS 16
+#ifndef KRAD_OGG_MAX_TRACKS
+#define KRAD_OGG_MAX_TRACKS 10
+#endif
 
 #define KRAD_OGG_NO_SERIAL -420
 

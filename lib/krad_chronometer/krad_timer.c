@@ -22,6 +22,11 @@ void krad_timer_status (krad_timer_t *krad_timer) {
 
 void krad_timer_start (krad_timer_t *krad_timer) {
   clock_gettime ( CLOCK_MONOTONIC, &krad_timer->start);
+  krad_timer->started = 1;
+}
+
+int32_t krad_timer_started (krad_timer_t *timer) {
+  return timer->started;
 }
 
 void krad_timer_finish (krad_timer_t *krad_timer) {
@@ -31,6 +36,13 @@ void krad_timer_finish (krad_timer_t *krad_timer) {
 uint64_t krad_timer_sample_duration_ms (krad_timer_t *krad_timer) {
   clock_gettime ( CLOCK_MONOTONIC, &krad_timer->sample );
   return ts_to_ms (krad_timer->sample) - ts_to_ms (krad_timer->start);
+}
+
+uint64_t krad_timer_current_ms (krad_timer_t *krad_timer) {
+  if (krad_timer->started == 0) {
+    return 0;
+  }
+  return krad_timer_sample_duration_ms (krad_timer);
 }
 
 uint64_t krad_timer_duration_ms (krad_timer_t *krad_timer) {

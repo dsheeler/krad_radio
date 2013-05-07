@@ -11,13 +11,16 @@
 #include <libwebsockets.h>
 #include "cJSON.h"
 
+#ifndef KRAD_WEBSOCKET_H
+#define KRAD_WEBSOCKET_H
+
 #define KRAD_WEBSOCKET_MAX_POLL_FDS 200
 
 #define KR_WS_BUFSIZE 4096 * 8
 
 enum fdclass {
   MYSTERY = 0,
-  KRAD_IPC = 1,
+  KRAD_APP = 1,
   KRAD_CONTROLLER,
 };
 
@@ -64,3 +67,5 @@ struct krad_websocket_St {
 
 void krad_websocket_server_destroy (krad_websocket_t *krad_websocket);
 krad_websocket_t *krad_websocket_server_create (char *sysname, int port);
+
+#endif

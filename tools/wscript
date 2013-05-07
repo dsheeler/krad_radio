@@ -20,6 +20,18 @@ programs4 = """
 kr_muxpndr.c
 """.split()
 
+programs5 = """
+kr_dl_stream.c
+""".split()
+
+programs6 = """
+kr_v4l2_stream.c
+""".split()
+
+programs7 = """
+kr_x11_stream.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -32,6 +44,9 @@ krmkvlibsources = """
 ../lib/krad_chronometer/krad_ticker.c
 ../lib/krad_mkv/krad_mkv.c
 ../lib/krad_mkv/krad_mkv_demux.c
+../lib/krad_vorbis/krad_vorbis.c
+../lib/krad_coder/krad_coder_common.c
+../lib/krad_vpx/krad_vpx.c
 """.split()
 
 krmkvhdrsources = """
@@ -47,7 +62,28 @@ krmuxpdrsources = """
 ../lib/krad_muxponder/krad_muxponder.c
 """.split()
 
+krdlcapsrces = """
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_decklink/krad_decklink.c
+../lib/krad_decklink/krad_decklink_capture.cpp
+../lib/krad_decklink/vendor/linux/DeckLinkAPIDispatch.cpp
+""".split()
+
+krv4l2capsrces = """
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_v4l2/krad_v4l2.c
+../lib/krad_chronometer/krad_timer.c
+""".split()
+
+krx11capsrces = """
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_x11/krad_x11.c
+../lib/krad_chronometer/krad_timer.c
+../lib/krad_chronometer/krad_ticker.c
+""".split()
+
 includedirs = """
+../lib/krad_decklink/vendor/linux
 ../lib/krad_muxponder/
 ../lib/krad_compositor/
 ../lib/krad_chronometer/
@@ -76,6 +112,7 @@ includedirs = """
 ../lib/krad_vpx/
 ../lib/krad_v4l2/
 ../lib/krad_flac/
+../lib/krad_coder/
 ../lib/krad_vorbis/
 ../lib/krad_opus/
 ../lib/krad_radio/
@@ -97,19 +134,24 @@ includedirs = """
 /usr/include
 """.split()
 
-kmkvshlibs = []
+kmkvshlibs = ["vpx", "cairo"]
 
-kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac",
+kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac", "vpx",
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
 
 krtxpndrlibs = []
-
+shlibs = []
 stlibs = []
-syslibs = ['m', 'dl', 'z']
-
+syslibs = ['m', 'dl', 'z', 'rt']
+shlibsx11 = ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
 syslibs2 = ['pthread']
 syslibs3 = ['turbojpeg']
 plibs = ['rt', 'pthread']
+
+def check_x11(x11):
+  if x11.options.nox11 == False:
+    x11.env['KRAD_USE_X11'] = "yes"
+    x11.env.append_unique('CFLAGS', ['-DKRAD_USE_X11'])
 
 def check_system(systm):
 
@@ -117,6 +159,7 @@ def check_system(systm):
   global programs
   global kmkvshlibs
   global syslibs
+  global shlibs
   global syslibs2
 
   if systm.env['KR_LINUX']:
@@ -128,13 +171,19 @@ def check_system(systm):
     includedirs = ["/opt/libjpeg-turbo/include"] + includedirs
     kmkvshlibs = kmkvshlibs + ['turbojpeg']
 
+  if systm.env['KRAD_USE_X11']:
+    #depsources += ["../lib/krad_x11/krad_x11.c"]
+    shlibs += ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
+
 def configure(conf):
 
   global libav_dir
   global programs
   global kmkvshlibs
   global syslibs
+  global shlibs
   check_system(conf)
+  check_x11(conf)
 
   for l in syslibs:
     conf.check(lib = l, cflags='-Wall', uselib_store = l)
@@ -147,13 +196,20 @@ def configure(conf):
                    uselib_store = l,
                    args='--cflags --libs --static')
 
+  if conf.env['KRAD_USE_X11']:
+    #depsources += ["../lib/krad_x11/krad_x11.c"]
+    shlibs += ["x11-xcb", "xcb-image", "xcb-shm", "xcb", "x11"]
+
 def build(bld):
 
   global libav_dir
   global programs
   global kmkvshlibs
   global syslibs
+  global shlibs
+  global shlibsx11
   check_system(bld)
+  check_x11(bld)
 
   # read version number to be used for the shared library
   f = open("lib/krad_radio/krad_radio_version.h", "r")
@@ -175,7 +231,7 @@ def build(bld):
     includes = includedirs, 
     target = p.replace(".c", ""),
     use = ["krad_mkv"],
-    uselib = kmkvshlibs + stlibs + syslibs + plibs)
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
 
   for p in programs2:
     bld(features = 'c cprogram', 
@@ -200,6 +256,30 @@ def build(bld):
     target = p.replace(".c", ""),
     use = ["krad_mkv"],
     uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+  for p in programs5:
+    bld(features = 'c cprogram cxx cxxprogram',
+    source = krdlcapsrces + krmuxpdrsources + krmkvhdrsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+  for p in programs6:
+    bld(features = 'c cprogram',
+    source = krv4l2capsrces + krmuxpdrsources + krmkvhdrsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
+
+  for p in programs7:
+    bld(features = 'c cprogram',
+    source = krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = ["krad_mkv"],
+    uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
 
   bld.shlib(
     source = krmkvlibsources, 

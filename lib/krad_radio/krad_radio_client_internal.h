@@ -1,11 +1,11 @@
 //#ifndef KRAD_CLIENT_INTERNAL_H
 //#define KRAD_CLIENT_INTERNAL_H
 
-#include "krad_ipc_client.h"
+#include "krad_app_client.h"
 #include "krad_radio_client.h"
 
 struct kr_client_St {
-  krad_ipc_client_t *krad_ipc_client;
+  krad_app_client_t *krad_app_client;
   char *name;
   int autosync;
   int subscriber;

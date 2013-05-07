@@ -21,6 +21,8 @@
 
 #include "krad_system.h"
 
+#include "krad_coder_common.h"
+
 typedef struct krad_vpx_encoder_St krad_vpx_encoder_t;
 typedef struct krad_vpx_decoder_St krad_vpx_decoder_t;
 
@@ -93,13 +95,23 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
                                              int fps_numerator,
                                              int fps_denominator,
                                              int bitrate);
-void krad_vpx_encoder_destroy (krad_vpx_encoder_t *vpx);
+int32_t krad_vpx_encoder_destroy (krad_vpx_encoder_t **vpx);
+
 int krad_vpx_encoder_write (krad_vpx_encoder_t *vpx,
                             unsigned char **packet,
                             int *keyframe);
 void krad_vpx_encoder_want_keyframe (krad_vpx_encoder_t *vpx);
+
+int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
+                       kr_codeme_t *codeme,
+                       kr_medium_t *medium);
+
+int32_t kr_vpx_decode (krad_vpx_decoder_t *vpx,
+                       kr_medium_t *medium,
+                       kr_codeme_t *codeme);
+
 krad_vpx_decoder_t *krad_vpx_decoder_create ();
-void krad_vpx_decoder_destroy (krad_vpx_decoder_t *vpx);
+int32_t krad_vpx_decoder_destroy (krad_vpx_decoder_t **vpx);
 void krad_vpx_decoder_decode (krad_vpx_decoder_t *vpx,
                               void *buffer,
                               int len);

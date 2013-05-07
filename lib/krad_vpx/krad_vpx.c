@@ -20,12 +20,6 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   printk ("Krad Radio using libvpx version: %s",
           vpx_codec_version_str ());
 
-  if ((vpx->image = vpx_img_alloc (NULL, VPX_IMG_FMT_YV12,
-                                   vpx->width,
-                                   vpx->height, 1)) == NULL) {
-    failfast ("Failed to allocate vpx image\n");
-  }
-
   vpx->res = vpx_codec_enc_config_default (vpx_codec_vp8_cx(),
                                            &vpx->cfg, 0);
 
@@ -67,7 +61,7 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
 
   krad_vpx_encoder_print_config (vpx);
 
-  vpx_codec_control (&vpx->encoder, VP8E_SET_ENABLEAUTOALTREF, 1);
+  //vpx_codec_control (&vpx->encoder, VP8E_SET_ENABLEAUTOALTREF, 1);
 
   return vpx;
 }
@@ -141,14 +135,14 @@ void krad_vpx_encoder_config_set (krad_vpx_encoder_t *vpx,
   }
 }
 
-void krad_vpx_encoder_destroy (krad_vpx_encoder_t *vpx) {
-
-  if (vpx->image != NULL) {
-    vpx_img_free (vpx->image);
-    vpx->image = NULL;
+int32_t krad_vpx_encoder_destroy (krad_vpx_encoder_t **vpx) {
+  if ((vpx != NULL) && (*vpx != NULL)) {
+    vpx_codec_destroy (&(*vpx)->encoder);
+    free (*vpx);
+    *vpx = NULL;
+    return 0;
   }
-  vpx_codec_destroy (&vpx->encoder);
-  free (vpx);
+  return -1;
 }
 
 void krad_vpx_encoder_finish (krad_vpx_encoder_t *vpx) {
@@ -202,7 +196,138 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *vpx,
   return 0;
 }
 
+int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
+                       kr_codeme_t *codeme,
+                       kr_medium_t *medium) {
+
+  int ret;
+  vpx_image_t image;
+  memset (&image, 0, sizeof(vpx_image_t));
+  vpx_codec_iter_t iter;  
+  //vpx_codec_err_t err;
+  //vpx_codec_cx_pkt_t *pkt;
+
+  ret = 0;
+
+  if (vpx->update_config == 1) {
+    krad_vpx_encoder_config_set (vpx, &vpx->cfg);
+    vpx->update_config = 0;
+    //krad_vpx_encoder_print_config (vpx);
+  }
+
+  if (medium == NULL) {
+    ret = vpx_codec_encode (&vpx->encoder, NULL, vpx->frames,
+                            1, vpx->flags, vpx->deadline);
+  } else {
+
+    vpx_img_wrap (&image, VPX_IMG_FMT_I420,
+                  vpx->width, vpx->height, 1,
+                  medium->data);
+
+    //image.w = vpx->width;
+    //image.h = vpx->height;
+
+    //image.d_w = vpx->width;
+    //image.d_h = vpx->height;
+
+    //image.planes[0] = medium->v.ppx[0];
+    //image.planes[1] = medium->v.ppx[1];
+    //image.planes[2] = medium->v.ppx[2];
+    
+    image.stride[0] = medium->v.pps[0];
+    image.stride[1] = medium->v.pps[1];
+    image.stride[2] = medium->v.pps[2];
+    
+    ret = vpx_codec_encode (&vpx->encoder, &image, vpx->frames,
+                            1, vpx->flags, vpx->deadline);
+  }
+
+  if (ret != 0) {
+    printke ("oh shit");
+  }
+
+  vpx->frames++;
+  vpx->flags = 0;
+  
+  iter = NULL;
+  vpx->pkt = vpx_codec_get_cx_data (&vpx->encoder, &iter);
+  
+  if (vpx->pkt != NULL) {
+    if (vpx->pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
+      codeme->sz = vpx->pkt->data.frame.sz;
+      memcpy (codeme->data, vpx->pkt->data.frame.buf, codeme->sz);
+      codeme->key = vpx->pkt->data.frame.flags & VPX_FRAME_IS_KEY;
+      if (codeme->key == 0) {
+        vpx->frames_since_keyframe++;
+      } else {
+        vpx->frames_since_keyframe = 0;
+      }
+      return 1;
+    }
+  }
+  return ret;
+}
+
 /* decoder */
+
+int32_t kr_vpx_decode (krad_vpx_decoder_t *vpx,
+                       kr_medium_t *medium,
+                       kr_codeme_t *codeme) {
+
+  if (vpx_codec_decode (&vpx->decoder, codeme->data, codeme->sz, 0, 0)) {
+    printf ("Failed to decode %zu byte frame: %s\n",
+              codeme->sz, vpx_codec_error (&vpx->decoder));
+  }
+
+  if (vpx->width == 0) {
+
+    vpx_codec_get_stream_info (&vpx->decoder, &vpx->stream_info);
+
+    printk ("VPX Stream Info: W:%d H:%d KF:%d\n",
+            vpx->stream_info.w,
+            vpx->stream_info.h, 
+            vpx->stream_info.is_kf);
+
+    vpx->width = vpx->stream_info.w;
+    vpx->height = vpx->stream_info.h;
+  }
+
+  vpx->iter = NULL;
+  vpx->img = vpx_codec_get_frame (&vpx->decoder, &vpx->iter);
+
+  if (vpx->img != NULL) {
+  
+    medium->v.pps[0] = vpx->width;
+    medium->v.pps[1] = vpx->width/2;  
+    medium->v.pps[2] = vpx->width/2;
+      
+  //printf ("VPXDEC: s %u %u %u", vpx->img->stride[0], vpx->img->stride[1], vpx->img->stride[2]);
+  //memcpy (medium->data, vpx->img->img_data, vpx->img->stride[0] * vpx->height + (vpx->img->stride[1] * vpx->height * 2));
+  int r;
+  for (r = 0; r< vpx->height; r++) {
+    memcpy (medium->data + (r * vpx->width), vpx->img->planes[0] + (r * vpx->img->stride[0]), vpx->width);
+  }
+  for (r = 0; r< vpx->height/2; r++) {
+    memcpy (medium->data + (vpx->width * (vpx->height)) + (r * vpx->width/2), vpx->img->planes[1] + (r * vpx->img->stride[1]), vpx->width / 2);
+  }
+  for (r = 0; r< vpx->height/2; r++) {
+    memcpy (medium->data + (vpx->width * (vpx->height)) + ((vpx->width * (vpx->height))/4) + (r * vpx->width/2),
+            vpx->img->planes[2] + (r * vpx->img->stride[2]), vpx->width / 2);
+  }  
+
+      //memcpy (medium->data + vpx->img->stride[0] * vpx->height, vpx->img->planes[1], vpx->img->stride[1] * vpx->height / 2);
+      //memcpy (medium->data + (vpx->img->stride[0] * vpx->height) + (vpx->img->stride[1] * (vpx->height /2)), vpx->img->planes[2], vpx->img->stride[2] * vpx->height / 2);    
+
+    medium->v.ppx[0] = medium->data;
+    medium->v.ppx[1] = medium->data + vpx->width * (vpx->height);  
+    medium->v.ppx[2] = medium->data + vpx->width * (vpx->height) + ((vpx->width * (vpx->height)) /4);
+
+
+    return 1;
+  }
+
+  return 0;
+}
 
 void krad_vpx_decoder_decode (krad_vpx_decoder_t *vpx,
                               void *buffer,
@@ -235,9 +360,14 @@ void krad_vpx_decoder_decode_again (krad_vpx_decoder_t *vpx) {
 }
 
 
-void krad_vpx_decoder_destroy (krad_vpx_decoder_t *vpx) {
-  vpx_codec_destroy (&vpx->decoder);
-  free (vpx);
+int32_t krad_vpx_decoder_destroy (krad_vpx_decoder_t **vpx) {
+  if ((vpx != NULL) && (*vpx != NULL)) {
+    vpx_codec_destroy (&(*vpx)->decoder);
+    free (*vpx);
+    *vpx = NULL;
+    return 0;
+  }
+  return -1;
 }
 
 krad_vpx_decoder_t *krad_vpx_decoder_create () {

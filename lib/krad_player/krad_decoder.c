@@ -43,13 +43,13 @@ void kr_decoder_destroy_instance_decoder (kr_decoder_t *decoder) {
       krad_flac_decoder_destroy (decoder->dec.flac);
       break;
     case VORBIS:
-      krad_vorbis_decoder_destroy (decoder->dec.vorbis);
+      krad_vorbis_decoder_destroy (&decoder->dec.vorbis);
       break;
     case KVHS:
       krad_vhs_decoder_destroy (decoder->dec.kvhs);
       break;
     case VP8:
-      krad_vpx_decoder_destroy (decoder->dec.vpx);
+      krad_vpx_decoder_destroy (&decoder->dec.vpx);
       break;
     case THEORA:
       krad_theora_decoder_destroy (decoder->dec.theora);
@@ -73,10 +73,10 @@ void kr_decoder_create_instance_decoder (kr_decoder_t *decoder,
       decoder->dec.vorbis = krad_vorbis_decoder_create (header);
       break;
     case KVHS:
-      krad_vhs_create_decoder ();
+      decoder->dec.kvhs = krad_vhs_create_decoder ();
       break;
     case VP8:
-      krad_vpx_decoder_create ();
+      decoder->dec.vpx = krad_vpx_decoder_create ();
       break;
     case THEORA:
       decoder->dec.theora = krad_theora_decoder_create (header);
@@ -88,8 +88,7 @@ void kr_decoder_create_instance_decoder (kr_decoder_t *decoder,
 }
 
 static int kr_decoder_check (kr_decoder_t *decoder,
-                             kr_codeme_t *codeme,
-                             kr_medium_t *medium) {
+                             kr_codeme_t *codeme) {
 
   if (codeme->codec != decoder->codec) {
     if (decoder->codec != NOCODEC) {
@@ -104,17 +103,43 @@ static int kr_decoder_check (kr_decoder_t *decoder,
 
   return 0;
 }
-static int kr_decoder_decode (kr_decoder_t *decoder,
-                              kr_codeme_t *codeme,
-                              kr_medium_t *medium) {
+
+int kr_decoder_decode_direct (kr_decoder_t *decoder,
+                              kr_medium_t *medium,
+                              kr_codeme_t *codeme) {
   int ret;
   
-  ret = kr_decoder_check (decoder, codeme, medium);
+  ret = kr_decoder_check (decoder, codeme);
   if (ret < 0) {
     return ret;
   }
   
-  
+  switch (codeme->codec) {
+    case OPUS:
+      //kr_opus_decode (decoder->dec.opus, medium, codeme);
+      //krad_opus_decoder_write (decoder->dec.opus, kr_slice->data, kr_slice->size);
+      //bytes = krad_opus_decoder_read (krad_link->krad_opus, c + 1, (char *)krad_link->au_audio, 120 * 4);
+      break;
+    case FLAC:
+      //kr_flac_decode (decoder->dec.flac, medium, codeme);
+      //len = krad_flac_decode (decoder->dec.flac, kr_slice->data, kr_slice->size, krad_link->au_samples);
+      //krad_resample_ring_write (krad_link->krad_resample_ring[c], (unsigned char *)krad_link->au_samples[c], len * 4);
+      break;
+    case VORBIS:
+      kr_vorbis_decode (decoder->dec.vorbis, medium, codeme);
+      break;
+    case KVHS:
+      //kr_vhs_decode (decoder->dec.kvhs, medium, codeme);
+      break;
+    case VP8:
+      kr_vpx_decode (decoder->dec.vpx, medium, codeme);
+      break;
+    case THEORA:
+      //kr_theora_decode (decoder->dec.theora, medium, codeme);
+      break;
+    default:
+    return -1;
+  }
 
   return 0;
 }
@@ -204,55 +229,17 @@ kr_decoder_state_t kr_decoder_state_get (kr_decoder_t *decoder) {
   return decoder->state;
 }
 
-/*
-float kr_decoder_speed_get (kr_decoder_t *decoder) {
-  return decoder->speed;
+void kr_decoder_destroy_direct (kr_decoder_t **decoder) {
+  if ((decoder != NULL) && (*decoder != NULL)) {
+    kr_decoder_destroy_instance_decoder (*decoder);
+    free (*decoder);
+    *decoder = NULL;
+  }
 }
 
-kr_direction_t kr_decoder_direction_get (kr_decoder_t *decoder) {
-  return decoder->direction;
-}
-
-int64_t kr_decoder_position_get (kr_decoder_t *decoder) {
-  return decoder->position;
-}
-
-void kr_decoder_speed_set (kr_decoder_t *decoder, float speed) {
-  kr_decoder_msg_t msg;
-  msg.cmd = SETSPEED;
-  msg.param.real = roundf (speed*1000.0f)/1000.0f;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_direction_set (kr_decoder_t *decoder, kr_direction_t direction) {
-  kr_decoder_msg_t msg;
-  msg.cmd = SETDIR;
-  msg.param.integer = direction;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_seek (kr_decoder_t *decoder, int64_t position) {
-  kr_decoder_msg_t msg;
-  msg.cmd = SEEK;
-  msg.param.integer = position;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_play (kr_decoder_t *decoder) {
-  kr_decoder_msg_t msg;
-  msg.cmd = PLAY;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_pause (kr_decoder_t *decoder) {
-  kr_decoder_msg_t msg;
-  msg.cmd = PAUSE;
-  krad_machine_msg (decoder->machine, &msg);
-}
-
-void kr_decoder_stop (kr_decoder_t *decoder) {
-  kr_decoder_msg_t msg;
-  msg.cmd = STOP;
-  krad_machine_msg (decoder->machine, &msg);
-}
-*/
+kr_decoder_t *kr_decoder_create_direct () {
+  kr_decoder_t *decoder;
+  decoder = calloc (1, sizeof(kr_decoder_t));
+  decoder->codec = NOCODEC;
+  return decoder;
+};

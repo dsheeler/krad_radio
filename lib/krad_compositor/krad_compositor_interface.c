@@ -164,11 +164,11 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   char string[512];
   char string2[512];
   uint32_t numbers[10];
-  krad_ipc_server_t *kr_ipc;
+  krad_app_server_t *app;
 
   krad_radio = client->krad_radio;
   krad_compositor = krad_radio->krad_compositor;
-  kr_ipc = krad_radio->remote.krad_ipc;
+  app = krad_radio->app;
   s = 0;
   string[0] = '\0';
   string2[0] = '\0';
@@ -195,7 +195,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
 
   printk ("comp command");
 
-	switch ( command ) {
+  switch ( command ) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT:
       unit_control.address.path.unit = KR_COMPOSITOR;
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
@@ -220,12 +220,12 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       //        a phantom subunit
       krad_compositor_subunit_update (krad_compositor, &unit_control);
       if (unit_control.data_type == KR_FLOAT) {
-        krad_radio_broadcast_subunit_update ( kr_ipc->ipc_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
-                                              unit_control.data_type, (void *)&unit_control.value.real, kr_ipc->current_client );
+        krad_radio_broadcast_subunit_update ( app->app_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
+                                              unit_control.data_type, (void *)&unit_control.value.real, app->current_client );
       }
       if (unit_control.data_type == KR_INT32) {
-        krad_radio_broadcast_subunit_update ( kr_ipc->ipc_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
-                                              unit_control.data_type, (void *)&unit_control.value.integer, kr_ipc->current_client );
+        krad_radio_broadcast_subunit_update ( app->app_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
+                                              unit_control.data_type, (void *)&unit_control.value.integer, app->current_client );
       }
       break;  
     case EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT:
@@ -235,7 +235,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
       address.id.number = numbers[0];
       if (krad_compositor_subunit_destroy (krad_compositor, &address)) {
-        krad_radio_broadcast_subunit_destroyed (kr_ipc->ipc_broadcaster, &address);
+        krad_radio_broadcast_subunit_destroyed (app->app_broadcaster, &address);
       }
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT:
@@ -246,17 +246,17 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       s = krad_compositor_subunit_create (krad_compositor, type, string, string2);
       if (s > -1) {
         if (type == KR_SPRITE) {
-          krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster,
+          krad_radio_broadcast_subunit_created ( app->app_broadcaster,
                                                  &krad_compositor->sprite[s].subunit.address,
                                                  (void *)&krad_compositor->sprite[s]);        
         }
         if (type == KR_TEXT) {
-          krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster,
+          krad_radio_broadcast_subunit_created ( app->app_broadcaster,
                                                  &krad_compositor->text[s].subunit.address,
                                                  (void *)&krad_compositor->text[s]);
         }
         if (type == KR_VECTOR) {
-          krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster,
+          krad_radio_broadcast_subunit_created ( app->app_broadcaster,
                                                  &krad_compositor->vector[s].subunit.address,
                                                  (void *)&krad_compositor->vector[s]);        
         }
@@ -353,14 +353,14 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE:
     printk ("VID command!!");
-      krad_system_set_socket_blocking (kr_ipc->current_client->sd);
+      krad_system_set_socket_blocking (app->current_client->sd);
     
-      sd1 = krad_ipc_server_recvfd (kr_ipc->current_client);
-      sd2 = krad_ipc_server_recvfd (kr_ipc->current_client);
+      sd1 = krad_app_server_recvfd (app->current_client);
+      sd2 = krad_app_server_recvfd (app->current_client);
       printk ("VIDEOPORT_CREATE Got FD's %d and %d\n", sd1, sd2);
       krad_compositor_local_port_create (krad_compositor, "localport", INPUT, sd1, sd2);
       
-      krad_system_set_socket_nonblocking (kr_ipc->current_client->sd);
+      krad_system_set_socket_nonblocking (app->current_client->sd);
       
       break;
       
@@ -371,7 +371,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   }
 
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS)) &&
-       (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
+       (!krad_app_server_current_client_is_subscriber (app))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   }
 

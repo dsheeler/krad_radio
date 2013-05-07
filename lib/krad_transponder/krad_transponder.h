@@ -5,9 +5,10 @@ typedef struct krad_link_St krad_link_t;
 typedef struct krad_transponder_St krad_transponder_t;
 
 #include "krad_radio.h"
-#include "krad_receiver.h"
 #include "krad_slice.h"
 #include "krad_transponder_interface.h"
+
+#include "krad_player_common.h"
 
 #ifdef KRAD_USE_FLYCAP
 #include "krad_fc2.h"
@@ -36,7 +37,6 @@ struct krad_transponder_St {
   kr_address_t address;
 	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_SUBUNITS];
 	krad_radio_t *krad_radio;
-	krad_receiver_t *krad_receiver;	
 	krad_transmitter_t *krad_transmitter;	
 	kr_xpdr_t *xpdr;
 };
@@ -208,6 +208,5 @@ void krad_link_start (krad_link_t *krad_link);
 krad_transponder_t *krad_transponder_create ();
 void krad_transponder_destroy (krad_transponder_t *krad_transponder);
 void krad_link_audio_samples_callback (int frames, void *userdata, float **samples);
-
 
 #endif

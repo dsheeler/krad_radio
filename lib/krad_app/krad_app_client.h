@@ -29,31 +29,31 @@
 #include "krad_ebml2.h"
 #include "krad_io2.h"
 
-#ifndef KRAD_IPC_CLIENT_H
-#define KRAD_IPC_CLIENT_H
+#ifndef KRAD_APP_CLIENT_H
+#define KRAD_APP_CLIENT_H
 
-#define KRAD_IPC_CLIENT_DOCTYPE "krad_ipc_client"
-#define KRAD_IPC_SERVER_DOCTYPE "krad_ipc_server"
-#define KRAD_IPC_DOCTYPE_VERSION KRAD_VERSION
-#define KRAD_IPC_DOCTYPE_READ_VERSION KRAD_VERSION
-#define EBML_ID_KRAD_IPC_CMD 0x4444
+#define KRAD_APP_CLIENT_DOCTYPE "krad_app_client"
+#define KRAD_APP_SERVER_DOCTYPE "krad_app_server"
+#define KRAD_APP_DOCTYPE_VERSION KRAD_VERSION
+#define KRAD_APP_DOCTYPE_READ_VERSION KRAD_VERSION
+#define EBML_ID_KRAD_APP_CMD 0x4444
 
-typedef struct krad_ipc_client_St krad_ipc_client_t;
+typedef struct krad_app_client_St krad_app_client_t;
 
-struct krad_ipc_client_St {
+struct krad_app_client_St {
 	char sysname[64];
 	int sd;
 	int tcp_port;
 	char host[256];
-	char ipc_path[256];
-	int ipc_path_pos;
+	char api_path[256];
+	int api_path_pos;
 	int on_linux;
 	struct stat info;
 	struct utsname unixname;
 };
 
-krad_ipc_client_t *krad_ipc_connect (char *sysname, int timeout_ms);
-void krad_ipc_disconnect (krad_ipc_client_t *client);
-int krad_ipc_client_send_fd (krad_ipc_client_t *client, int fd);
+krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms);
+void krad_app_disconnect (krad_app_client_t *client);
+int krad_app_client_send_fd (krad_app_client_t *client, int fd);
 
 #endif

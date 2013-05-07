@@ -464,7 +464,7 @@ static void krad_xmms_stop_handler (krad_xmms_t *krad_xmms) {
   }
 }
 
-/* The following are called from Krad IPC */
+/* The following are called from Krad APP */
 
 void krad_xmms_playback_cmd (krad_xmms_t *krad_xmms, krad_xmms_playback_cmd_t cmd) {
 

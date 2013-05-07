@@ -766,7 +766,7 @@ void krad_mixer_crossfade_group_create (krad_mixer_t *krad_mixer, krad_mixer_por
   portgroup1->crossfade_group = crossfade_group;
   portgroup2->crossfade_group = crossfade_group;
 
-  krad_radio_broadcast_subunit_update ( krad_mixer->krad_ipc->ipc_broadcaster, &portgroup1->address, KR_CROSSFADE_GROUP, 
+  krad_radio_broadcast_subunit_update ( krad_mixer->app->app_broadcaster, &portgroup1->address, KR_CROSSFADE_GROUP, 
                                         KR_STRING, portgroup2->sysname, NULL );
 
   krad_mixer_set_portgroup_control (krad_mixer, portgroup1->sysname, "crossfade", -100.0f, 0, NULL );
@@ -796,7 +796,7 @@ void krad_mixer_crossfade_group_destroy (krad_mixer_t *krad_mixer, krad_mixer_cr
     krad_mixer_set_portgroup_control (krad_mixer, portgroup[0]->sysname, "volume", portgroup[0]->volume[0], 0, NULL );
     krad_mixer_set_portgroup_control (krad_mixer, portgroup[1]->sysname, "volume", portgroup[1]->volume[0], 0, NULL );
 
-    krad_radio_broadcast_subunit_update ( krad_mixer->krad_ipc->ipc_broadcaster, &portgroup[0]->address, KR_CROSSFADE_GROUP, 
+    krad_radio_broadcast_subunit_update ( krad_mixer->app->app_broadcaster, &portgroup[0]->address, KR_CROSSFADE_GROUP, 
                                           KR_STRING, "", NULL );
   
   }
@@ -873,7 +873,7 @@ krad_mixer_portgroup_t *krad_mixer_portgroup_create (krad_mixer_t *krad_mixer, c
     }
   }
   
-  //FIXME race here if portgroup being created via ipc and transponder at same moment
+  //FIXME race here if portgroup being created via app and transponder at same moment
   for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
     if (krad_mixer->portgroup[p]->active == 0) {
       portgroup = krad_mixer->portgroup[p];
@@ -965,9 +965,9 @@ krad_mixer_portgroup_t *krad_mixer_portgroup_create (krad_mixer_t *krad_mixer, c
   
   if (portgroup->io_type != KRAD_LINK) {
     portgroup->krad_tags = krad_tags_create (portgroup->sysname);
-    //if ((portgroup->krad_tags != NULL) && (krad_mixer->krad_ipc != NULL)) {
-    //  krad_tags_set_set_tag_callback (portgroup->krad_tags, krad_mixer->krad_ipc, 
-    //                  (void (*)(void *, char *, char *, char *, int))krad_ipc_server_broadcast_tag);
+    //if ((portgroup->krad_tags != NULL) && (krad_mixer->app != NULL)) {
+    //  krad_tags_set_set_tag_callback (portgroup->krad_tags, krad_mixer->app, 
+    //                  (void (*)(void *, char *, char *, char *, int))krad_app_server_broadcast_tag);
     //}
   } else {
     portgroup->krad_tags = krad_link_get_tags (portgroup->io_ptr);
@@ -1183,7 +1183,7 @@ void krad_mixer_portgroup_xmms2_cmd (krad_mixer_t *krad_mixer, char *portgroupna
   }
 }
 
-void krad_mixer_portgroup_bind_xmms2 (krad_mixer_t *krad_mixer, char *portgroupname, char *ipc_path) {
+void krad_mixer_portgroup_bind_xmms2 (krad_mixer_t *krad_mixer, char *portgroupname, char *app_path) {
 
   krad_mixer_portgroup_t *portgroup;
 
@@ -1191,9 +1191,9 @@ void krad_mixer_portgroup_bind_xmms2 (krad_mixer_t *krad_mixer, char *portgroupn
 
   if (portgroup != NULL) {
     krad_mixer_portgroup_unbind_xmms2 (krad_mixer, portgroupname);
-    portgroup->krad_xmms = krad_xmms_create (krad_mixer->name, ipc_path, portgroup->krad_tags);
-    krad_radio_broadcast_subunit_update ( krad_mixer->krad_ipc->ipc_broadcaster, &portgroup->address, KR_XMMS2_IPC_PATH, 
-                                          KR_STRING, ipc_path, NULL );
+    portgroup->krad_xmms = krad_xmms_create (krad_mixer->name, app_path, portgroup->krad_tags);
+    krad_radio_broadcast_subunit_update ( krad_mixer->app->app_broadcaster, &portgroup->address, KR_XMMS2_IPC_PATH, 
+                                          KR_STRING, app_path, NULL );
   }
 }
 
@@ -1206,7 +1206,7 @@ void krad_mixer_portgroup_unbind_xmms2 (krad_mixer_t *krad_mixer, char *portgrou
   if ((portgroup != NULL) && (portgroup->krad_xmms != NULL)) {
     krad_xmms_destroy (portgroup->krad_xmms);
     portgroup->krad_xmms = NULL;
-    krad_radio_broadcast_subunit_update ( krad_mixer->krad_ipc->ipc_broadcaster, &portgroup->address, KR_XMMS2_IPC_PATH, 
+    krad_radio_broadcast_subunit_update ( krad_mixer->app->app_broadcaster, &portgroup->address, KR_XMMS2_IPC_PATH, 
                                           KR_STRING, "", NULL );
   }
 }
@@ -1334,10 +1334,10 @@ int krad_mixer_mix (uint32_t nframes, krad_mixer_t *krad_mixer) {
   return krad_mixer_process (nframes, krad_mixer);
 }
 
-void krad_mixer_set_ipc (krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc) {
-  krad_mixer->krad_ipc = krad_ipc;
+void krad_mixer_set_app (krad_mixer_t *krad_mixer, krad_app_server_t *krad_app) {
+  krad_mixer->app = krad_app;
   krad_mixer->broadcaster =
-    krad_ipc_server_broadcaster_register ( krad_mixer->krad_ipc );
+    krad_app_server_broadcaster_register ( krad_mixer->app );
 }
 
 void krad_mixer_destroy (krad_mixer_t *krad_mixer) {

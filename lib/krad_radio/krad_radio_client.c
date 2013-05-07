@@ -40,7 +40,7 @@ int kr_poll_out (kr_client_t *client, uint32_t timeout_ms) {
   int ret;
   struct pollfd pollfds[1];
 
-  pollfds[0].fd = client->krad_ipc_client->sd;
+  pollfds[0].fd = client->krad_app_client->sd;
   pollfds[0].events = POLLOUT;
 
   ret = poll (pollfds, 1, timeout_ms);
@@ -113,7 +113,7 @@ int kr_check_connection (kr_client_t *client) {
   uint32_t version;
   uint32_t read_version;
 
-  kr_ebml2_pack_header (client->ebml2, KRAD_IPC_CLIENT_DOCTYPE, KRAD_IPC_DOCTYPE_VERSION, KRAD_IPC_DOCTYPE_READ_VERSION);
+  kr_ebml2_pack_header (client->ebml2, KRAD_APP_CLIENT_DOCTYPE, KRAD_APP_DOCTYPE_VERSION, KRAD_APP_DOCTYPE_READ_VERSION);
   kr_client_push (client);
 
   kr_poll (client, 25);
@@ -126,9 +126,9 @@ int kr_check_connection (kr_client_t *client) {
   ret = kr_ebml2_unpack_header (client->ebml_in, doctype, sizeof(doctype),
                                 &version, &read_version);
   if (ret > 0) {
-    if ((version == KRAD_IPC_DOCTYPE_VERSION) && (read_version == KRAD_IPC_DOCTYPE_READ_VERSION) &&
-        (strlen(KRAD_IPC_SERVER_DOCTYPE) == strlen(doctype)) &&
-        (strncmp(doctype, KRAD_IPC_SERVER_DOCTYPE, strlen(KRAD_IPC_SERVER_DOCTYPE)) == 0)) {
+    if ((version == KRAD_APP_DOCTYPE_VERSION) && (read_version == KRAD_APP_DOCTYPE_READ_VERSION) &&
+        (strlen(KRAD_APP_SERVER_DOCTYPE) == strlen(doctype)) &&
+        (strncmp(doctype, KRAD_APP_SERVER_DOCTYPE, strlen(KRAD_APP_SERVER_DOCTYPE)) == 0)) {
 
         kr_io2_pulled (client->io_in, client->io_in->len);  
         kr_ebml2_set_buffer ( client->ebml_in, client->io_in->rd_buf, client->io_in->len );
@@ -156,20 +156,20 @@ int kr_connect_full (kr_client_t *client, char *sysname, int timeout_ms) {
   if (kr_connected (client)) {
     kr_disconnect (client);
   }
-  client->krad_ipc_client = krad_ipc_connect (sysname, timeout_ms);
-  if (client->krad_ipc_client != NULL) {
+  client->krad_app_client = krad_app_connect (sysname, timeout_ms);
+  if (client->krad_app_client != NULL) {
 
 
     client->io = kr_io2_create ();
     client->ebml2 = kr_ebml2_create ();
 
-    kr_io2_set_fd ( client->io, client->krad_ipc_client->sd );
+    kr_io2_set_fd ( client->io, client->krad_app_client->sd );
     kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
 
     client->io_in = kr_io2_create ();
     client->ebml_in = kr_ebml2_create ();
 
-    kr_io2_set_fd ( client->io_in, client->krad_ipc_client->sd );
+    kr_io2_set_fd ( client->io_in, client->krad_app_client->sd );
     kr_ebml2_set_buffer ( client->ebml_in, client->io_in->buf, client->io_in->space );
 
     if (kr_check_connection (client) > 0) {
@@ -183,7 +183,7 @@ int kr_connect_full (kr_client_t *client, char *sysname, int timeout_ms) {
 }
 
 int kr_connected (kr_client_t *client) {
-  if (client->krad_ipc_client != NULL) {
+  if (client->krad_app_client != NULL) {
     return 1; 
   }
   return 0;
@@ -192,8 +192,8 @@ int kr_connected (kr_client_t *client) {
 int kr_disconnect (kr_client_t *client) {
   if (client != NULL) {
     if (kr_connected (client)) {
-      krad_ipc_disconnect (client->krad_ipc_client);
-      client->krad_ipc_client = NULL;
+      krad_app_disconnect (client->krad_app_client);
+      client->krad_app_client = NULL;
       if (client->io != NULL) {
         kr_io2_destroy (&client->io);
       }
@@ -236,7 +236,7 @@ int kr_client_destroy (kr_client_t **client) {
 int kr_client_local (kr_client_t *client) {
   if (client != NULL) {
     if (kr_connected (client)) {
-      if (client->krad_ipc_client->tcp_port == 0) {
+      if (client->krad_app_client->tcp_port == 0) {
         return 1;
       }
       return 0;
@@ -248,7 +248,7 @@ int kr_client_local (kr_client_t *client) {
 int kr_client_get_fd (kr_client_t *client) {
   if (client != NULL) {
     if (kr_connected (client)) {
-      return client->krad_ipc_client->sd;
+      return client->krad_app_client->sd;
     }
   }
   return -1;
@@ -327,7 +327,7 @@ kr_shm_t *kr_shm_create (kr_client_t *client) {
 }
 
 int kr_send_fd (kr_client_t *client, int fd) {
-  return krad_ipc_client_send_fd (client->krad_ipc_client, fd);
+  return krad_app_client_send_fd (client->krad_app_client, fd);
 }
 
 void kr_response_free_string (char **string) {
@@ -343,7 +343,7 @@ int kr_poll (kr_client_t *client, uint32_t timeout_ms) {
   int ret;
   struct pollfd pollfds[1];
 
-  pollfds[0].fd = client->krad_ipc_client->sd;
+  pollfds[0].fd = client->krad_app_client->sd;
 
   if ((kr_client_want_out (client)) && (client->autosync == 1)) {
     pollfds[0].events = POLLIN | POLLOUT;

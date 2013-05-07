@@ -89,6 +89,8 @@ struct kr_mkv_St {
   double duration;
   uint64_t timecode_scale;
   
+  int32_t audio_init_cluster;
+  
   /* krad mkv transmitter */
   krad_transmission_t *transmission;
 
@@ -130,6 +132,9 @@ int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id);
 
 void kr_mkv_add_video (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
                        int buffer_len, int keyframe);
+
+void kr_mkv_add_video_tc (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
+                          int len, int keyframe, int64_t tc);
 
 void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
                        int buffer_len, int frames);

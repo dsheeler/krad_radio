@@ -1,7 +1,5 @@
 #include "krad_v4l2.h"
 
-#define KRAD_TURBOJPEG
-
 krad_v4l2_t *krad_v4l2_create() {
 
 	krad_v4l2_t *krad_v4l2;

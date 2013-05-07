@@ -808,6 +808,23 @@ libwebsocket_service_timeout_check(struct libwebsocket_context *context,
 	return 0;
 }
 
+
+void
+libwebsocket_shove_fd(struct libwebsocket_context *context, int fd) {
+
+	struct libwebsocket *new_wsi;
+
+  lws_set_socket_options (context, fd);
+
+  new_wsi = libwebsocket_create_new_server_wsi(context);
+  if (new_wsi == NULL) {
+	  compatible_close (fd);
+	  return;
+  }
+
+  new_wsi->sock = fd;
+}
+
 /**
  * libwebsocket_service_fd() - Service polled socket with something waiting
  * @context:	Websocket context

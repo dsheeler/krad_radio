@@ -81,3 +81,4 @@ tests/krad_udp_test
 tests/kr_player
 tests/kr_sysinfo
 tests/kr_terminfo
+tests/kr_launcher

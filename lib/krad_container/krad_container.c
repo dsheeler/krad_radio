@@ -286,17 +286,20 @@ int krad_container_raw_add_data (krad_container_t *container,
 }
 
 int krad_container_add_video_track_with_private_data (krad_container_t *container,
-                                                      krad_codec_header_t *krad_codec_header,
-                                                      int fps_numerator, int fps_denominator,
+                                                      kr_codec_hdr_t *header,
+                                                      int fps_numerator,
+                                                      int fps_denominator,
                                                       int width, int height) {
-
+/*
   if (container->type == OGG) {
     return krad_ogg_add_video_track_with_private_data (container->ogg,
-                                                       krad_codec_header->codec,
-                                                       fps_numerator, fps_denominator,
-                                                       width, height, krad_codec_header->header,
-                                                       krad_codec_header->header_size,
-                                                       krad_codec_header->header_count);
+                                                       header->codec,
+                                                       fps_numerator,
+                                                       fps_denominator,
+                                                       width, height,
+                                                       header->data[0],
+                                                       header->sz[0],
+                                                       header->count);
   } 
 
   if (container->type == MKV) {
@@ -305,6 +308,7 @@ int krad_container_add_video_track_with_private_data (krad_container_t *containe
                                                      krad_codec_header->header_combined,
                                                      krad_codec_header->header_combined_size);
   }
+  */
   return -1;
 }
 
@@ -330,7 +334,7 @@ int krad_container_add_audio_track (krad_container_t *container,
                                     krad_codec_t codec,
                                     int sample_rate, int channels, 
                                     krad_codec_header_t *krad_codec_header) {
-
+/*
   if (container->type == OGG) {
     return krad_ogg_add_audio_track (container->ogg, codec,
                                      sample_rate, channels, 
@@ -345,6 +349,7 @@ int krad_container_add_audio_track (krad_container_t *container,
                                    krad_codec_header->header_combined,
                                    krad_codec_header->header_combined_size);
   }
+  */
   return -1;
 }
 

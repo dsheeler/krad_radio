@@ -19,8 +19,9 @@ void krad_debug_init (char *name) {
 
   krad_system_init ();
 
-  sprintf (logfile, "%s/kr_%s_%"PRIu64".log",
-           getenv ("HOME"), name, krad_unixtime ());
+  snprintf (logfile, sizeof(logfile),
+            "%s/kr_%s_%"PRIu64".log",
+            getenv ("HOME"), name, krad_unixtime ());
 
   krad_system_log_on (logfile);
 

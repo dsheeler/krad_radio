@@ -70,24 +70,24 @@ krad_flac_encoder_write_callback (const FLAC__StreamEncoder *encoder,
     flac->krad_codec_header.codec = FLAC;
     // combined header just has fLaC + streaminfo and is
     // marked as final metadata
-    flac->krad_codec_header.header_combined = flac->min_header;
-    flac->krad_codec_header.header_combined_size =
-    KRAD_FLAC_MINIMAL_HEADER_SIZE;    
+    //flac->krad_codec_header.header_combined = flac->min_header;
+    //flac->krad_codec_header.header_combined_size =
+    //KRAD_FLAC_MINIMAL_HEADER_SIZE;    
     
     // split headers are 1 = fLaC + streaminfo not marked as final
     // and 2 = a vorbis comment
-    flac->krad_codec_header.header[0] = flac->header;
-    flac->krad_codec_header.header_size[0] = KRAD_FLAC_MINIMAL_HEADER_SIZE;
+    flac->krad_codec_header.data[0] = flac->header;
+    flac->krad_codec_header.sz[0] = KRAD_FLAC_MINIMAL_HEADER_SIZE;
 
-    flac->krad_codec_header.header_size[1] = 
+    flac->krad_codec_header.sz[1] = 
     4 + 4 + strlen (FLAC__VENDOR_STRING) + 4 + 4 +
     strlen ("ENCODER=") + strlen (APPVERSION);
   
-    flac->comment_header = calloc (1, flac->krad_codec_header.header_size[1]);
+    flac->comment_header = calloc (1, flac->krad_codec_header.sz[1]);
   
     memcpy (flac->comment_header, "\x84\x00\x00", 3);
   
-    flac->comment_header[3] = flac->krad_codec_header.header_size[1] - 4;
+    flac->comment_header[3] = flac->krad_codec_header.sz[1] - 4;
     
     flac->comment_header[4] = strlen (FLAC__VENDOR_STRING);
   
@@ -108,8 +108,8 @@ krad_flac_encoder_write_callback (const FLAC__StreamEncoder *encoder,
             4 + 4 + strlen ("ENCODER="),
             APPVERSION,
             strlen (APPVERSION));
-    flac->krad_codec_header.header[1] = flac->comment_header;
-    flac->krad_codec_header.header_count = 2;
+    flac->krad_codec_header.data[1] = flac->comment_header;
+    flac->krad_codec_header.count = 2;
   }
   
   // needs to be above the below
@@ -453,9 +453,9 @@ krad_flac_t *krad_flac_decoder_create (krad_codec_header_t *header) {
   }
   
   if (header != NULL) {
-    for (h = 0; h < header->header_count; h++) {
-      if ((header->header_size[h] > 0) && (header->header[h] != NULL)) {
-        krad_flac_decode (flac, header->header[h], header->header_size[h], NULL);
+    for (h = 0; h < header->count; h++) {
+      if ((header->sz[h] > 0) && (header->data[h] != NULL)) {
+        krad_flac_decode (flac, header->data[h], header->sz[h], NULL);
       } else {
         break;
       }
@@ -477,9 +477,9 @@ int krad_flac_decoder_test (uint8_t *header_buffer, int len) {
   krad_flac_t *flac;
   krad_codec_header_t header;
 
-  header.header[0] = header_buffer;
-  header.header_size[0] = len;
-  header.header_count = 1;
+  header.data[0] = header_buffer;
+  header.sz[0] = len;
+  header.count = 1;
 
   flac = krad_flac_decoder_create (&header);
   

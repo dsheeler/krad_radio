@@ -106,9 +106,9 @@ struct krad_mixer_St {
 
   struct timespec start_time;
 
-  krad_ipc_broadcaster_t *broadcaster;
+  krad_app_broadcaster_t *broadcaster;
 
-  krad_ipc_server_t *krad_ipc;
+  krad_app_server_t *app;
 
   int destroying;
 };
@@ -141,7 +141,7 @@ void krad_mixer_set_period_size (krad_mixer_t *krad_mixer, uint32_t period_size)
 
 krad_mixer_t *krad_mixer_create (char *name);
 void krad_mixer_destroy (krad_mixer_t *krad_mixer);
-void krad_mixer_set_ipc (krad_mixer_t *krad_mixer, krad_ipc_server_t *krad_ipc);
+void krad_mixer_set_app (krad_mixer_t *krad_mixer, krad_app_server_t *app);
 
 int krad_mixer_set_portgroup_control (krad_mixer_t *krad_mixer, char *sysname, char *control, float value, int duration, void *ptr);
 

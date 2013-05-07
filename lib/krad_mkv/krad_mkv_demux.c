@@ -581,7 +581,7 @@ int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
   uint32_t id;
   uint64_t size;
 
-  printk ("kr_mkv_read_packet");
+  //printk ("kr_mkv_read_packet");
 
   while (1) {
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);

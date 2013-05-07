@@ -85,7 +85,7 @@ krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
                    TH_ENCCTL_SET_SPLEVEL,
                    &krad_theora->speed, sizeof(int));
   }
-
+/*
   while (th_encode_flushheader ( krad_theora->encoder,
                                  &krad_theora->comment,
                                  &krad_theora->packet) > 0) {
@@ -205,7 +205,7 @@ krad_theora_encoder_t *krad_theora_encoder_create (int width, int height,
     krad_theora->ycbcr[1].data = calloc(1, krad_theora->info.frame_width * krad_theora->info.frame_height);
     krad_theora->ycbcr[2].data = calloc(1, krad_theora->info.frame_width * krad_theora->info.frame_height);    
   }
-
+*/
   return krad_theora;
 
 }
@@ -387,7 +387,7 @@ krad_theora_decoder_create (krad_codec_header_t *header) {
 
   th_comment_init(&krad_theora->comment);
   th_info_init(&krad_theora->info);
-
+/*
   krad_theora->packet.packet = header->header[0];
   krad_theora->packet.bytes = header->header_size[0];
   krad_theora->packet.b_o_s = 1;
@@ -417,7 +417,7 @@ krad_theora_decoder_create (krad_codec_header_t *header) {
     krad_theora->color_depth = PIX_FMT_YUV444P;
     printk ("Theora color depth 444");    
   }
-
+*/
   printk ("Theora %dx%d %.02f fps video\n Encoded frame content is %dx%d with %dx%d offset",
           krad_theora->info.frame_width, krad_theora->info.frame_height, 
           (double)krad_theora->info.fps_numerator/krad_theora->info.fps_denominator,

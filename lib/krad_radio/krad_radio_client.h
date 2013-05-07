@@ -11,7 +11,7 @@
  * @mainpage Krad Radio Client API
  *
  * These documents contain all types and functions needed to to 
- * IPC conmmunication to manage, control and modify krad radio stations.
+ * API conmmunication to manage, control and modify krad radio stations.
  * 
  * Sections:
  * @li @ref krad_radio_client_ctl
@@ -30,8 +30,8 @@
 
 
 /** @defgroup krad_radio_client Krad Radio Client API
- * @brief Get and Manage general client functions like IPC-connection, 
- * IPC-responses, system information, uptime, enable or disbale remote 
+ * @brief Get and Manage general client functions like API-connection, 
+ * API-responses, system information, uptime, enable or disbale remote 
  * control and list / manage tags for one station
  * @{
  */
@@ -42,7 +42,7 @@
  */
 
 /** Krad Radio Client connection handle.
-  * @brief Type to identify a single IPC-connection to a station
+  * @brief Type to identify a single API-connection to a station
   * @see kr_connect,kr_disconnect
   */
 typedef struct kr_client_St kr_client_t;
@@ -246,7 +246,7 @@ int kr_connect_remote (kr_client_t *client, char *host, int port, int timeout_ms
 int kr_connected (kr_client_t *client);
 
 /**
- * @brief disconnect an open IPC-connection
+ * @brief disconnect an open API-connection
  * @param kr_client pointer to handle of the connection to be closed
  */
 int kr_disconnect (kr_client_t *client);
@@ -256,7 +256,7 @@ int kr_client_destroy (kr_client_t **client);
 
 /**
  * @brief determines if a connection is local or remote
- * @param kr_client handle of the IPC-connection to the station
+ * @param kr_client handle of the API-connection to the station
  * @return 1 if local, 0 otherwise
  */
 int kr_client_local (kr_client_t *client);
@@ -271,7 +271,7 @@ int kr_client_want_out (kr_client_t *client);
 
 /**
  * @brief subscribe to broadcast messages of a specific type on one station
- * @param kr_client handle of the IPC-connection to the station
+ * @param kr_client handle of the API-connection to the station
  * @param broadcast_id type of the broadcast messages
  * @see kr_poll
  */
@@ -282,7 +282,7 @@ void kr_subscribe_all (kr_client_t *client);
 
 /**
  * @brief check for new broadcast messages after having subscribed to them
- * @param kr_client handle of the IPC-connection to the station
+ * @param kr_client handle of the API-connection to the station
  * @param timeout_ms timeout on checking
  * @return > 0 if there are new messages, 0 otherwise
  * @see kr_broadcast_subscribe
@@ -307,7 +307,7 @@ void kr_client_response_wait_print (kr_client_t *client);
 
 /**
  * @brief get a response
- * @param kr_client handle of the IPC-connection to the station
+ * @param kr_client handle of the API-connection to the station
  */
 int kr_delivery_get (kr_client_t *client, kr_crate_t **crate);
 #define kr_crate_loaded kr_uncrate_rep
@@ -350,7 +350,7 @@ int kr_delivery_final (kr_client_t *client);
 
 /**
  * @brief waits for a response
- * @param kr_client handle of the IPC-connection to the station
+ * @param kr_client handle of the API-connection to the station
  */
 void kr_client_response_wait (kr_client_t *client, kr_response_t **kr_response);
 
@@ -364,7 +364,7 @@ void kr_client_response_wait (kr_client_t *client, kr_response_t **kr_response);
 
 /**
  * @brief creates and allocates a shared memory buffer
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @return handle for the shared memory buffer, NULL on error
  * @todo currently, this size is fixed for resolution 960x540. this needs to be changed!
  */
@@ -385,20 +385,20 @@ void kr_shm_destroy (kr_shm_t *kr_shm);
 
 /**
  * @brief Prints out the uptime of the station
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  */
 //void kr_uptime (kr_client_t *client);
 
 /**
  * @brief Prints out system information (hostname, architecture and kernel 
  * version) from where the station is running on
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  */
 void kr_system_info (kr_client_t *client);
 
 /**
  * @brief Prints out the current CPU usage of the station
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  */
 //void kr_system_cpu_usage (kr_client_t *client);
 
@@ -406,14 +406,14 @@ void kr_system_info (kr_client_t *client);
  * @brief Sets the "working directory" for the station where logfiles and 
  * snaphots are stored. The directory must exist, it will not be created 
  * for you!
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param dir
  */
 void kr_set_dir (kr_client_t *client, char *dir);
 
 /**
  * @brief Prints out the currently used logfile of the station
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  */
 //void kr_logname (kr_client_t *client);
 
@@ -427,24 +427,24 @@ void kr_set_dir (kr_client_t *client, char *dir);
 void kr_remote_list (kr_client_t *client);
 
 /**
- * @brief Enable IPC remote control on a specifed port. You can use 
+ * @brief Enable API remote control on a specifed port. You can use 
  * "hostname:port" as sysname to specify this station from another machine. 
  * This can only be enabled once per station.
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param port TCP-port on which to listen for incoming connections
  */
 int kr_remote_on (kr_client_t *client, char *interface, int port);
 
 /**
- * @brief Disable the previously enabled IPC remote control
- * @param client handle of the IPC-connection to the station
+ * @brief Disable the previously enabled API remote control
+ * @param client handle of the API-connection to the station
  */
 int kr_remote_off (kr_client_t *client, char *interface, int port);
 
 /**
  * @brief Enable web UI remote control on a specifed port. This can only be 
  * enabled once per station.
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param http_port port on which to listen for incoming HTTP-connections
  * @param websocket_port port used for communication between the web-page
  * and the station. Must not be the same as http_port!
@@ -457,21 +457,21 @@ void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_
 
 /**
  * @brief Disable the previously enabled web UI remote control
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  */
 void kr_web_disable (kr_client_t *client);
 
 /**
  * @brief Enable Open Sound Control (OSC) remote control on a specifed port.
  * This can only be enabled once per station.
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param port port on which to listen for incoming connections
  */
 void kr_osc_enable (kr_client_t *client, int port);
 
 /**
  * @brief Disable the previously enabled OSC remote control
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  */
 void kr_osc_disable (kr_client_t *client);
 
@@ -494,14 +494,14 @@ void kr_osc_disable (kr_client_t *client);
 
 /**
  * @brief prints out a list of all tags in a group
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param item item to print the tags of
  */
 void kr_tags (kr_client_t *client, char *item);
 
 /**
  * @brief prints out the value of one specified tag
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param item item the tag is grouped under
  * @param tag_name name of the tag to be printed
  */
@@ -509,7 +509,7 @@ void kr_tag (kr_client_t *client, char *item, char *tag_name);
 
 /**
  * @brief sets the value for a specified tag
- * @param client handle of the IPC-connection to the station
+ * @param client handle of the API-connection to the station
  * @param item item the tag is grouped under
  * @param tag_name name of the tag to be set
  * @param tag_value value to set the tag to

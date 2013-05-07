@@ -72,8 +72,8 @@ int kr_ogg_generate_header (kr_ogg_t *ogg) {
   
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial != 0) {
-      for (h = 0; h < ogg->tracks[t].hdr->header_count; h++) {
-        sz += ogg->tracks[t].hdr->header_size[h];
+      for (h = 0; h < ogg->tracks[t].hdr->count; h++) {
+        sz += ogg->tracks[t].hdr->sz[h];
       }
     }
   }
@@ -90,8 +90,8 @@ int kr_ogg_generate_header (kr_ogg_t *ogg) {
     if (ogg->tracks[t].bitstream_serial != 0) {
       for (h = 0; h < 1; h++) {
         ogg->hdr_sz += kr_ogg_add_data (ogg, t, 0,
-                                        ogg->tracks[t].hdr->header[h],
-                                        ogg->tracks[t].hdr->header_size[h],
+                                        ogg->tracks[t].hdr->data[h],
+                                        ogg->tracks[t].hdr->sz[h],
                                         ogg->hdr + ogg->hdr_sz);
       }
     }
@@ -99,10 +99,10 @@ int kr_ogg_generate_header (kr_ogg_t *ogg) {
   
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial != 0) {
-      for (h = 1; h < ogg->tracks[t].hdr->header_count; h++) {
+      for (h = 1; h < ogg->tracks[t].hdr->count; h++) {
         ogg->hdr_sz += kr_ogg_add_data (ogg, t, 0,
-                                        ogg->tracks[t].hdr->header[h],
-                                        ogg->tracks[t].hdr->header_size[h],
+                                        ogg->tracks[t].hdr->data[h],
+                                        ogg->tracks[t].hdr->sz[h],
                                         ogg->hdr + ogg->hdr_sz);
       }
     }

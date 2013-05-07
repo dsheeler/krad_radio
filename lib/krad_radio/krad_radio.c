@@ -19,27 +19,27 @@ static void krad_radio_shutdown (krad_radio_t *krad_radio) {
   krad_timer_status (shutdown_timer);
   
   if (krad_radio->system_broadcaster != NULL) {
-    krad_ipc_server_broadcaster_unregister ( &krad_radio->system_broadcaster );
+    krad_app_server_broadcaster_unregister ( &krad_radio->system_broadcaster );
   }
   
-  if (krad_radio->remote.krad_ipc != NULL) {
-    krad_ipc_server_disable (krad_radio->remote.krad_ipc);
+  if (krad_radio->app != NULL) {
+    krad_app_server_disable (krad_radio->app);
   }
   krad_timer_status (shutdown_timer);
-  if (krad_radio->remote.krad_osc != NULL) {
-    krad_osc_destroy (krad_radio->remote.krad_osc);
-    krad_radio->remote.krad_osc = NULL;
+  if (krad_radio->remote.osc != NULL) {
+    krad_osc_destroy (krad_radio->remote.osc);
+    krad_radio->remote.osc = NULL;
   }
   krad_timer_status (shutdown_timer);
-  if (krad_radio->remote.krad_http != NULL) {
-    krad_http_server_destroy (krad_radio->remote.krad_http);
-    krad_radio->remote.krad_http = NULL;
+  if (krad_radio->remote.interweb != NULL) {
+    krad_interweb_server_destroy (krad_radio->remote.interweb);
+    krad_radio->remote.interweb = NULL;
   }
   krad_timer_status (shutdown_timer);
-  if (krad_radio->remote.krad_websocket != NULL) {
-    krad_websocket_server_destroy (krad_radio->remote.krad_websocket);
-    krad_radio->remote.krad_websocket = NULL;
-  }
+  //if (krad_radio->remote.krad_websocket != NULL) {
+  //  krad_websocket_server_destroy (krad_radio->remote.krad_websocket);
+  //  krad_radio->remote.krad_websocket = NULL;
+  //}
   krad_timer_status (shutdown_timer);
   if (krad_radio->krad_transponder != NULL) {
     krad_transponder_destroy (krad_radio->krad_transponder);
@@ -61,9 +61,9 @@ static void krad_radio_shutdown (krad_radio_t *krad_radio) {
     krad_radio->krad_tags = NULL;
   }  
 
-  if (krad_radio->remote.krad_ipc != NULL) {
-    krad_ipc_server_destroy (krad_radio->remote.krad_ipc);
-    krad_radio->remote.krad_ipc = NULL;
+  if (krad_radio->app != NULL) {
+    krad_app_server_destroy (krad_radio->app);
+    krad_radio->app = NULL;
   }
   
   if (krad_radio->log.startup_timer != NULL) {
@@ -129,36 +129,36 @@ static krad_radio_t *krad_radio_create (char *sysname) {
     return NULL;
   }
 
-  krad_radio->remote.krad_osc = krad_osc_create (krad_radio->sysname);
+  krad_radio->remote.osc = krad_osc_create (krad_radio->sysname);
   
-  if (krad_radio->remote.krad_osc == NULL) {
+  if (krad_radio->remote.osc == NULL) {
     krad_radio_shutdown (krad_radio);
     return NULL;
   }  
   
-  krad_radio->remote.krad_ipc = krad_ipc_server_create ( "krad_radio", sysname,
-                                                         krad_radio_client_create,
-                                                         krad_radio_client_destroy,
-                                                         krad_radio_client_handler,
-                                                         krad_radio );
+  krad_radio->app = krad_app_server_create ("krad_radio", sysname,
+                                             krad_radio_client_create,
+                                             krad_radio_client_destroy,
+                                             krad_radio_client_handler,
+                                             krad_radio);
   
-  if (krad_radio->remote.krad_ipc == NULL) {
+  if (krad_radio->app == NULL) {
     krad_radio_shutdown (krad_radio);
     return NULL;
   }
   
-  krad_radio->system_broadcaster = krad_ipc_server_broadcaster_register ( krad_radio->remote.krad_ipc );
+  krad_radio->system_broadcaster = krad_app_server_broadcaster_register ( krad_radio->app );
   
   if (krad_radio->system_broadcaster == NULL) {
     krad_radio_shutdown (krad_radio);
     return NULL;
   }
   
-  krad_ipc_server_broadcaster_register_broadcast ( krad_radio->system_broadcaster, EBML_ID_KRAD_SYSTEM_BROADCAST );
+  krad_app_server_broadcaster_register_broadcast ( krad_radio->system_broadcaster, EBML_ID_KRAD_SYSTEM_BROADCAST );
 
-  krad_mixer_set_ipc (krad_radio->krad_mixer, krad_radio->remote.krad_ipc);
-  //krad_tags_set_set_tag_callback (krad_radio->krad_tags, krad_radio->remote.krad_ipc, 
-  //                (void (*)(void *, char *, char *, char *, int))krad_ipc_server_broadcast_tag);
+  krad_mixer_set_app (krad_radio->krad_mixer, krad_radio->app);
+  //krad_tags_set_set_tag_callback (krad_radio->krad_tags, krad_radio->app, 
+  //                (void (*)(void *, char *, char *, char *, int))krad_app_server_broadcast_tag);
 
   return krad_radio;
 }
@@ -215,7 +215,7 @@ void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) 
   broadcast_msg = krad_broadcast_msg_create (krad_radio->system_broadcaster, buffer, ebml.pos);
 
   if (broadcast_msg != NULL) {
-    krad_ipc_server_broadcaster_broadcast ( krad_radio->system_broadcaster, &broadcast_msg );
+    krad_app_server_broadcaster_broadcast ( krad_radio->system_broadcaster, &broadcast_msg );
   }
 }
 
@@ -234,7 +234,7 @@ static void krad_radio_start (krad_radio_t *krad_radio) {
   krad_compositor_start_ticker_at (krad_radio->krad_compositor, start_sync);
   krad_mixer_start_ticker_at (krad_radio->krad_mixer, start_sync);    
 
-  krad_ipc_server_run (krad_radio->remote.krad_ipc);
+  krad_app_server_run (krad_radio->app);
 
   if (krad_radio->log.startup_timer != NULL) {
     krad_timer_finish (krad_radio->log.startup_timer);  

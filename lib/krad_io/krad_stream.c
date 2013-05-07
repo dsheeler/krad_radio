@@ -402,3 +402,40 @@ int32_t kr_stream_handle_headers (krad_stream_t *stream) {
   }
   return stream->ready;
 }
+
+void kr_stream_i_am_a_blocking_subscripter (krad_stream_t *stream) {
+
+  int ret;
+  struct pollfd sp[1];
+  
+  if (stream->direction == 1) {
+    sp[0].events = POLLOUT;
+  } else {
+    sp[0].events = POLLIN;
+  }
+  sp[0].fd = stream->sd;
+  
+  ret = poll (sp, 1, -1);
+
+  if (sp[0].revents & POLLERR) {
+    fprintf (stderr, "Got poll err on %s\n", stream->mount);
+  }
+  if (sp[0].revents & POLLHUP) {
+    fprintf (stderr, "Got poll POLLHUP on %s\n", stream->mount);
+  }
+  
+  if (stream->direction == 1) {
+    if (!(sp[0].revents & POLLOUT)) {
+      fprintf (stderr, "Did NOT get POLLOUT on %s\n", stream->mount);
+    }
+  } else {
+    if (!(sp[0].revents & POLLIN)) {
+      fprintf (stderr, "Did NOT get POLLIN on %s\n", stream->mount);
+    }
+  }  
+
+  if (ret != 1) {
+    fprintf (stderr, "poll failure\n");
+    exit (1);
+  }
+}

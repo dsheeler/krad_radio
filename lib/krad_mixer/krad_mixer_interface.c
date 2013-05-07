@@ -163,12 +163,12 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   int ret;
   char string[512];
   uint32_t numbers[10];
-  krad_ipc_server_t *kr_ipc;
+  krad_app_server_t *app;
 
   ptr = NULL;
   krad_radio = client->krad_radio;
   krad_mixer = krad_radio->krad_mixer;
-  kr_ipc = krad_radio->remote.krad_ipc;
+  app = krad_radio->app;
   direction = 0;
   portgroupname[0] = '\0';
   portgroupname2[0] = '\0';
@@ -201,8 +201,8 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       kr_ebml2_unpack_element_string (&ebml_in, &element, controlname, sizeof(controlname));
       kr_ebml2_unpack_element_float (&ebml_in, &element, &floatval);
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
-      if ((numbers[0] == 0) && (krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
-        ptr = kr_ipc->current_client;
+      if ((numbers[0] == 0) && (krad_app_server_current_client_is_subscriber (app))) {
+        ptr = app->current_client;
       }
       krad_mixer_set_portgroup_control ( krad_mixer, portgroupname, controlname, floatval, numbers[0], ptr );
       break;
@@ -290,7 +290,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       portgroup = krad_mixer_portgroup_create (krad_mixer, portgroupname, direction, output_type, numbers[0],
                   0.0f, krad_mixer->master_mix, KRAD_AUDIO, NULL, JACK);
       if (portgroup != NULL) {
-        krad_radio_broadcast_subunit_created ( kr_ipc->ipc_broadcaster, &portgroup->address, (void *)portgroup);
+        krad_radio_broadcast_subunit_created ( app->app_broadcaster, &portgroup->address, (void *)portgroup);
         krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);
       } else {
         printke ("Krad Mixer: Failed to create portgroup: %s", portgroupname);
@@ -304,7 +304,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
         address.path.unit = KR_MIXER;
         address.path.subunit.mixer_subunit = KR_PORTGROUP;
         strncpy (address.id.name, portgroupname, sizeof (address.id.name));
-        krad_radio_broadcast_subunit_destroyed (kr_ipc->ipc_broadcaster, &address);
+        krad_radio_broadcast_subunit_destroyed (app->app_broadcaster, &address);
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PORTGROUP_INFO:
@@ -399,22 +399,22 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
         direction = INPUT;
       }
       
-      krad_system_set_socket_blocking (kr_ipc->current_client->sd);
+      krad_system_set_socket_blocking (app->current_client->sd);
       
-      sd1 = krad_ipc_server_recvfd (kr_ipc->current_client);
-      sd2 = krad_ipc_server_recvfd (kr_ipc->current_client);
+      sd1 = krad_app_server_recvfd (app->current_client);
+      sd2 = krad_app_server_recvfd (app->current_client);
       printk ("AUDIOPORT_CREATE %s Got FD's %d and %d\n", string, sd1, sd2);
       
       krad_mixer_local_portgroup_create (krad_mixer, "localport", direction, sd1, sd2);
 
-      krad_system_set_socket_nonblocking (kr_ipc->current_client->sd);
+      krad_system_set_socket_nonblocking (app->current_client->sd);
 
       break;
       
     /*
     case EBML_ID_KRAD_MIXER_CMD_SET_SAMPLE_RATE:
-      krad_ebml_read_element (krad_ipc->current_client->krad_ebml, &ebml_id, &ebml_data_size);
-      number = krad_ebml_read_number (krad_ipc->current_client->krad_ebml, ebml_data_size);
+      krad_ebml_read_element (app->current_client->krad_ebml, &ebml_id, &ebml_data_size);
+      number = krad_ebml_read_number (app->current_client->krad_ebml, ebml_data_size);
       if (krad_mixer_has_pusher (krad_mixer) == 0) {
         krad_mixer_set_sample_rate (krad_mixer, number);
       }
@@ -425,7 +425,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   }
   
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS)) &&
-       (!krad_ipc_server_current_client_is_subscriber (kr_ipc))) {
+       (!krad_app_server_current_client_is_subscriber (app))) {
     krad_radio_pack_shipment_terminator (&ebml_out);
   }
 

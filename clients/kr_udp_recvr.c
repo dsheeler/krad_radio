@@ -285,7 +285,7 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 	  }
 	}
 
-  krad_vpx_decoder_destroy (udp_recvr->vpxdec);
+  krad_vpx_decoder_destroy (&udp_recvr->vpxdec);
 
   kr_udp_recvr_free_framebuf (udp_recvr);
 

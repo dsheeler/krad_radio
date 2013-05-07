@@ -31,7 +31,7 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_tags.h"
 #include "krad_container.h"
 #include "krad_ebml2.h"
-#include "krad_ipc_server.h"
+#include "krad_app_server.h"
 #include "krad_radio_ipc.h"
 #include "krad_transmitter.h"
 #include "krad_osc.h"
@@ -51,7 +51,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_mixer.h"
 #include "krad_mixer_common.h"
 #include "krad_websocket.h"
-#include "krad_http.h"
 #include "krad_udp.h"
 #include "krad_x11.h"
 #include "krad_theora.h"
@@ -73,15 +72,13 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #include "krad_transponder_common.h"
 #include "krad_transponder_graph.h"
 #include "krad_transponder.h"
-#include "krad_receiver.h"
+#include "krad_interweb.h"
 
 extern krad_system_t krad_system;
 
 struct krad_remote_control_St {
-	krad_ipc_server_t *krad_ipc;
-	krad_osc_t *krad_osc;	
-	krad_websocket_t *krad_websocket;
-	krad_http_t *krad_http;
+	krad_osc_t *osc;	
+	krad_interweb_t *interweb;
 };
 
 struct krad_log_St {
@@ -91,8 +88,9 @@ struct krad_log_St {
 };
 
 struct krad_radio_St {
-	char sysname[KRAD_SYSNAME_MAX + 1];
-	krad_ipc_broadcaster_t *system_broadcaster;
+	char sysname[KRAD_SYSNAME_SZ];
+	krad_app_server_t *app;	
+	krad_app_broadcaster_t *system_broadcaster;
 	krad_log_t log;
 	krad_tags_t *krad_tags;
 	krad_remote_control_t remote;

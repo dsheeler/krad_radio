@@ -31,7 +31,7 @@ def options(opt):
   opt.add_option('--optimize', action='store_true', default=False,
     help='Compile with -O3 rather than -g')  
 
-  opt.add_option('--without-x11', action='store_true', default=True, dest='nox11', 
+  opt.add_option('--without-x11', action='store_true', default=False, dest='nox11', 
     help='Don\'t build anything depending on X11 (X11 capture)')
     
   opt.add_option('--without-wayland', action='store_true', default=False, dest='nowayland', 
