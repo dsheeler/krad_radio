@@ -114,6 +114,10 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
                                            x11s->params->fps_denominator,
                                            x11s->params->video_bitrate);
 
+
+  //krad_vpx_encoder_set_kf_max_dist (x11s->vpx_enc, 300);
+
+
   kr_mkv_add_video_track (x11s->mkv, VP8,
                           x11s->params->fps_numerator,
                           x11s->params->fps_denominator,
@@ -263,10 +267,13 @@ int main (int argc, char *argv[]) {
 
   memset (&params, 0, sizeof(kr_x11s_params_t));
 
+  //params.width = 1920;
+  //params.height = 1080;
   params.width = 640;
   params.height = 360;
   params.fps_numerator = 30;
   params.fps_denominator = 1;
+  //params.video_bitrate = 1450;
   params.video_bitrate = 450;
   params.host = "europa.kradradio.com";
   params.port = 8008;

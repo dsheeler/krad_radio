@@ -73,6 +73,9 @@ struct krad_vpx_decoder_St {
   unsigned char *frame_data;
 };
 
+void krad_vpx_encoder_set_kf_max_dist (krad_vpx_encoder_t *vpx,
+                                       uint32_t max_dist);
+
 int krad_vpx_encoder_min_quantizer_get (krad_vpx_encoder_t *vpx);
 void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *vpx,
                                          int min_quantizer);

@@ -82,8 +82,8 @@ krad_x11_t *krad_x11_create () {
     }
   }
 
-  printke ("Krad X11 created for %d x %d",
-            krad_x11->screen_width, krad_x11->screen_height);
+  printk ("Krad X11 created for %d x %d",
+           krad_x11->screen_width, krad_x11->screen_height);
 
   return krad_x11;
 

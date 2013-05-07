@@ -44,7 +44,7 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   vpx->cfg.kf_mode = VPX_KF_AUTO;
   vpx->cfg.rc_end_usage = VPX_VBR;
   
-  vpx->cfg.kf_max_dist = 90;
+  vpx->cfg.kf_max_dist = 120;
   
   vpx->deadline = 15 * 1000;
 
@@ -102,6 +102,12 @@ void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *vpx,
                                          int min_quantizer) {
   vpx->min_quantizer = min_quantizer;
   vpx->cfg.rc_min_quantizer = vpx->min_quantizer;
+  vpx->update_config = 1;
+}
+
+void krad_vpx_encoder_set_kf_max_dist (krad_vpx_encoder_t *vpx,
+                                       uint32_t max_dist) {
+  vpx->cfg.kf_max_dist = max_dist;
   vpx->update_config = 1;
 }
 
@@ -163,7 +169,7 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *vpx,
   if (vpx->update_config == 1) {
     krad_vpx_encoder_config_set (vpx, &vpx->cfg);
     vpx->update_config = 0;
-    //krad_vpx_encoder_print_config (vpx);
+    krad_vpx_encoder_print_config (vpx);
   }
 
   if (vpx_codec_encode (&vpx->encoder, vpx->image, vpx->frames,
@@ -212,7 +218,7 @@ int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
   if (vpx->update_config == 1) {
     krad_vpx_encoder_config_set (vpx, &vpx->cfg);
     vpx->update_config = 0;
-    //krad_vpx_encoder_print_config (vpx);
+    krad_vpx_encoder_print_config (vpx);
   }
 
   if (medium == NULL) {
