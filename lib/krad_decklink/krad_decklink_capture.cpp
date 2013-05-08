@@ -45,17 +45,12 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFram
   timecodeString = NULL;
   timecodeFormat = 0;
   frame_data_size = 0;
-  
-  if (((!audio_frame) || ((!video_frame)) && (!(video_frame->GetFlags() & bmdFrameHasNoInputSource)))) {
+
+  if ((audio_frame == NULL) || (video_frame == NULL) || (video_frame->GetFlags() & bmdFrameHasNoInputSource)) {
     if (krad_decklink_capture->skipped_frames == 0) {
       printke ("Decklink A/V Capture skipped a frame!");
     }
     krad_decklink_capture->skipped_frames++;
-    return S_OK;
-  }
-
-  if ((audio_frame == NULL) || (video_frame == NULL)) {
-	return S_OK;
   }
   
   if (krad_decklink_capture->skipped_frames > 0) {
@@ -66,9 +61,6 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFram
   if (audio_frame) {
     audio_frame->GetBytes(&audio_data);
     audio_frames = audio_frame->GetSampleFrameCount();
-    if (krad_decklink_capture->verbose) {
-      printk ("Audio Frame received %d frames\n", audio_frames);
-    }
     if (krad_decklink_capture->audio_frames_callback != NULL) {
       krad_decklink_capture->audio_frames_callback (krad_decklink_capture->callback_pointer, audio_data, audio_frames);
     }
@@ -91,40 +83,23 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFram
   }
 
   if (video_frame) {
-
-    if (video_frame->GetFlags() & bmdFrameHasNoInputSource) {
-      printke ("Frame received %lu - No input signal detected\n", krad_decklink_capture->video_frames);
-    } else {
-
-      if (timecodeFormat != 0) {
-        if (video_frame->GetTimecode(timecodeFormat, &timecode) == S_OK) {
-          timecode->GetString(&timecodeString);
-        }
+    if (timecodeFormat != 0) {
+      if (video_frame->GetTimecode(timecodeFormat, &timecode) == S_OK) {
+        timecode->GetString(&timecodeString);
       }
-
-      frame_data_size = video_frame->GetRowBytes() * video_frame->GetHeight();
-
-      if (krad_decklink_capture->verbose) {
-        //printkd ("Frame received %lu [%s] - Size: %li bytes ", 
-        //    krad_decklink_capture->video_frames, 
-        //    timecodeString != NULL ? timecodeString : "No timecode",
-        //    frame_data_size);
-      }
-
-      if (timecodeString) {
+    }
+    frame_data_size = video_frame->GetRowBytes() * video_frame->GetHeight();
+    if (timecodeString) {
 #ifdef KR_LINUX
-        free ((void*)timecodeString);
+      free ((void*)timecodeString);
 #endif
 #ifdef FRAK_MACOSX
-        CFRelease(timecodeString);
+      CFRelease(timecodeString);
 #endif
-      }
-
-      video_frame->GetBytes(&frame_data);
-
-      if (krad_decklink_capture->video_frame_callback != NULL) {
-        krad_decklink_capture->video_frame_callback (krad_decklink_capture->callback_pointer, frame_data, frame_data_size);
-      }
+    }
+    video_frame->GetBytes(&frame_data);
+    if (krad_decklink_capture->video_frame_callback != NULL) {
+      krad_decklink_capture->video_frame_callback (krad_decklink_capture->callback_pointer, frame_data, frame_data_size);
     }
     krad_decklink_capture->video_frames++;
   }
