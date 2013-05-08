@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#ifdef FRAK_MACOSX
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreFoundation/CFstring.h>
+#include <CoreFoundation/CFbundle.h>
+#include "krad_mach.h"
+#endif
+
 #include <krad_muxponder.h>
 #include <krad_transmitter.h>
 #include <krad_ticker.h>
@@ -9,6 +16,7 @@
 #include <krad_vpx.h>
 #include <krad_vorbis.h>
 #include <krad_decklink.h>
+#include <krad_decklink_capture.h>
 
 #include <krad_ring.h>
 #include <krad_framepool.h>

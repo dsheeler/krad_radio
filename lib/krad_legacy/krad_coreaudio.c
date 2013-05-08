@@ -32,9 +32,9 @@ int coreaudio_process (void *user_ptr,
                        UInt32 inNumberFrames,
                        AudioBufferList *ioData) {
 
-  int b;
+  //int b;
 
-  coreaudio_t *coreaudio = (coreaudio_t *)user_ptr;
+  //coreaudio_t *coreaudio = (coreaudio_t *)user_ptr;
 
   printf ("got a coreaudio process callback! %u\n", inNumberFrames);
 
@@ -181,6 +181,6 @@ void coreaudio_test () {
 		usleep (100000);
 	}
 
-	return 0;
+	//return 0;
 }
 

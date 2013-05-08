@@ -222,17 +222,17 @@ static krad_vorbis_t *krad_vorbis_decoder_hdr_error (krad_vorbis_t *vorbis,
   vorbis->state_str = "KR Vorbis Decoder: header error";
   if (vorbis->error == OV_ENOTVORBIS) {
     snprintf (vorbis->state_str_custom, sizeof(vorbis->state_str_custom),
-              "KR Vorbis Decoder: Not a vorbis on packet %ld",
+              "KR Vorbis Decoder: Not a vorbis on packet %"PRIi64"",
               op->packetno);
   }
   if (vorbis->error == OV_EBADHEADER) {
     snprintf (vorbis->state_str_custom, sizeof(vorbis->state_str_custom),
-              "KR Vorbis Decoder: bad header on packet %ld",
+              "KR Vorbis Decoder: bad header on packet %"PRIi64"",
               op->packetno);
   }
   if (vorbis->error == OV_EFAULT) {
     snprintf (vorbis->state_str_custom, sizeof(vorbis->state_str_custom),
-              "KR Vorbis Decoder: fault on packet %ld",
+              "KR Vorbis Decoder: fault on packet %"PRIi64"",
               op->packetno);
   }
   vorbis->state_str = vorbis->state_str_custom;
@@ -342,13 +342,13 @@ int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
     vorbis->state_str = "KR Vorbis Decoder: vorbis_synthesis fail";
     if (vorbis->error == OV_ENOTAUDIO) {
       snprintf (vorbis->state_str_custom, sizeof(vorbis->state_str_custom),
-                "KR Vorbis Decoder: Not audio packet %ld Gpos %"PRIi64""
+                "KR Vorbis Decoder: Not audio packet %"PRIi64" Gpos %"PRIi64""
                 "packet size: %zu",
                 op.packetno, op.granulepos, codeme->sz);
     }
     if (vorbis->error == OV_EBADPACKET) {
       snprintf (vorbis->state_str_custom, sizeof(vorbis->state_str_custom),
-                "KR Vorbis Decoder: Bad packet %ld Gpos %"PRIi64""
+                "KR Vorbis Decoder: Bad packet %"PRIi64" Gpos %"PRIi64""
                 "packet size: %zu",
                 op.packetno, op.granulepos, codeme->sz);
     }

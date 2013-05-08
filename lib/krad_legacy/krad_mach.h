@@ -2,6 +2,11 @@
 #ifndef KRAD_MACH_H
 #define KRAD_MACH_H
 
+#include <CoreServices/CoreServices.h>
+#include <CoreAudio/CoreAudio.h>
+#include <AudioUnit/AudioUnit.h>
+#include <AudioUnit/AudioComponent.h>
+
 #include <time.h>
 #include <sys/time.h>
 #include <stdio.h>

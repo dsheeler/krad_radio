@@ -251,6 +251,8 @@ void v4l2_capture_unit_destroy (void *arg) {
 
 #endif
 
+#ifdef KR_LINUX
+#ifdef KRAD_USE_X11
 void x11_capture_unit_create (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
@@ -313,6 +315,9 @@ void x11_capture_unit_destroy (void *arg) {
 
   printk ("X11 capture thread exited");
 }
+
+#endif
+#endif
 
 #ifdef KRAD_USE_FLYCAP
 void flycap_capture_unit_create (void *arg) {
@@ -1298,13 +1303,15 @@ void krad_link_start (krad_link_t *link) {
         case NOVIDEO:
           return;
         case X11:
+#ifdef KR_LINUX
           x11_capture_unit_create (link);
           spec.idle_callback_interval = 5;
           spec.readable_callback = x11_capture_unit_process;
           spec.destroy_callback = x11_capture_unit_destroy;
           break;
-#ifdef KR_LINUX
+#endif
         case V4L2:
+#ifdef KR_LINUX
           v4l2_capture_unit_create (link);
           spec.fd = link->krad_v4l2->fd;
           spec.readable_callback = v4l2_capture_unit_process;
