@@ -180,7 +180,7 @@ def check_system2(systm):
 
   if systm.env['KR_LINUX']:
     krdlcapsrces = krdlcapsrces + ["../lib/krad_decklink/vendor/linux/DeckLinkAPIDispatch.cpp"]
-    includedirs = includedirs + ["./lib/krad_decklink/vendor/linux/"]
+    includedirs = includedirs + ["../lib/krad_decklink/vendor/linux/"]
 
   if systm.env['FRAK_MACOSX']:
     systm.check_cxx(framework_name='CoreAudio')
@@ -285,14 +285,24 @@ def build(bld):
     use = ["krad_mkv"],
     uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
 
-  for p in programs5:
-    bld(features = 'c cprogram cxx cxxprogram',
-    source = krdlcapsrces + [p] + krmuxpdrsources + krmkvhdrsources,
-    includes = includedirs,
-    target = p.replace(".c", ""),
-    use = ["krad_mkv"],
-    framework = ["CoreFoundation", "CoreServices"], 
-    uselib = syslibs + kmkvshlibs + kmkvhdrshlibs + shlibs + stlibs + plibs)
+  if bld.env['KR_LINUX']:
+    for p in programs5:
+      bld(features = 'c cprogram cxx cxxprogram',
+      source = krdlcapsrces + [p] + krmuxpdrsources + krmkvhdrsources,
+      includes = includedirs,
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      uselib = syslibs + kmkvshlibs + kmkvhdrshlibs + shlibs + stlibs + plibs)
+
+  if bld.env['FRAK_MACOSX']:
+    for p in programs5:
+      bld(features = 'c cprogram cxx cxxprogram',
+      source = krdlcapsrces + [p] + krmuxpdrsources + krmkvhdrsources,
+      includes = includedirs,
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      framework = ["CoreFoundation", "CoreServices"], 
+      uselib = syslibs + kmkvshlibs + kmkvhdrshlibs + shlibs + stlibs + plibs)
 
   if bld.env['KR_LINUX']:
     for p in programs6:
