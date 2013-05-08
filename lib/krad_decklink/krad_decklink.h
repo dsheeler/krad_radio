@@ -35,10 +35,10 @@ struct krad_decklink_St {
 };
 
 
-void krad_decklink_set_verbose(krad_decklink_t *krad_decklink, int verbose);
+void krad_decklink_set_verbose (krad_decklink_t *krad_decklink, int verbose);
 
 void krad_decklink_destroy(krad_decklink_t *decklink);
-krad_decklink_t *krad_decklink_create(char *device);
+krad_decklink_t *krad_decklink_create (char *device);
 
 void krad_decklink_set_video_mode (krad_decklink_t *krad_decklink, int width, int height,
 								   int fps_numerator, int fps_denominator);

@@ -8,27 +8,25 @@
 #include "DeckLinkAPI.h"
 #include "krad_decklink_capture.h"
 
-
 DeckLinkCaptureDelegate::DeckLinkCaptureDelegate() : refs(0) {}
 DeckLinkCaptureDelegate::~DeckLinkCaptureDelegate() {}
 
-ULONG DeckLinkCaptureDelegate::AddRef(void) {
-  __sync_fetch_and_add( &refs, 1 );
+ULONG DeckLinkCaptureDelegate::AddRef (void) {
+  __sync_fetch_and_add ( &refs, 1 );
   return refs;
 }
 
-ULONG DeckLinkCaptureDelegate::Release(void) {
+ULONG DeckLinkCaptureDelegate::Release (void) {
   __sync_fetch_and_sub( &refs, 1 );
-  if (refs == 0)
-  {
+  if (refs == 0) {
     delete this;
     return 0;
   }
-
   return refs;
 }
 
-HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(IDeckLinkVideoInputFrame* video_frame, IDeckLinkAudioInputPacket* audio_frame) {
+HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFrame *video_frame,
+                                                         IDeckLinkAudioInputPacket *audio_frame) {
 
   void *frame_data;
   long int frame_data_size;
@@ -48,12 +46,16 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(IDeckLinkVideoInputFrame
   timecodeFormat = 0;
   frame_data_size = 0;
   
-  if (!((audio_frame) && ((video_frame) && (!(video_frame->GetFlags() & bmdFrameHasNoInputSource))))) {
+  if (((!audio_frame) || ((!video_frame)) && (!(video_frame->GetFlags() & bmdFrameHasNoInputSource)))) {
     if (krad_decklink_capture->skipped_frames == 0) {
       printke ("Decklink A/V Capture skipped a frame!");
     }
     krad_decklink_capture->skipped_frames++;
     return S_OK;
+  }
+
+  if ((audio_frame == NULL) || (video_frame == NULL)) {
+	return S_OK;
   }
   
   if (krad_decklink_capture->skipped_frames > 0) {
@@ -65,27 +67,25 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(IDeckLinkVideoInputFrame
     audio_frame->GetBytes(&audio_data);
     audio_frames = audio_frame->GetSampleFrameCount();
     if (krad_decklink_capture->verbose) {
-      //printkd ("Audio Frame received %d frames\r", audio_frames);
+      printk ("Audio Frame received %d frames\n", audio_frames);
     }
     if (krad_decklink_capture->audio_frames_callback != NULL) {
       krad_decklink_capture->audio_frames_callback (krad_decklink_capture->callback_pointer, audio_data, audio_frames);
     }
     krad_decklink_capture->audio_frames += audio_frames;
   }
-  
-  
+
   if (krad_decklink_capture->skip_frame == 1) {
     krad_decklink_capture->skip_frame = 0;
-      return S_OK;
+    return S_OK;
   }
 
   if (krad_decklink_capture->skip_frame == 0) {
-  
     if ((krad_decklink_capture->display_mode == bmdModeHD720p60) ||
       (krad_decklink_capture->display_mode == bmdModeHD720p5994) ||
       (krad_decklink_capture->display_mode == bmdModeHD1080p5994) ||
       (krad_decklink_capture->display_mode == bmdModeHD1080p6000)) {
-  
+
       krad_decklink_capture->skip_frame = 1;
     }
   }
@@ -125,26 +125,22 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(IDeckLinkVideoInputFrame
       if (krad_decklink_capture->video_frame_callback != NULL) {
         krad_decklink_capture->video_frame_callback (krad_decklink_capture->callback_pointer, frame_data, frame_data_size);
       }
-
     }
-
     krad_decklink_capture->video_frames++;
-
   }
-
-    return S_OK;
+  return S_OK;
 }
 
-HRESULT DeckLinkCaptureDelegate::VideoInputFormatChanged(BMDVideoInputFormatChangedEvents events, IDeckLinkDisplayMode *mode, BMDDetectedVideoInputFormatFlags) {
-
+HRESULT DeckLinkCaptureDelegate::VideoInputFormatChanged (BMDVideoInputFormatChangedEvents events,
+                                                          IDeckLinkDisplayMode *mode,
+                                                          BMDDetectedVideoInputFormatFlags) {
   printke ("ruh oh! video format changed?!?\n");
-
-    return S_OK;
+  return S_OK;
 }
 
 extern "C" {
 
-krad_decklink_capture_t *krad_decklink_capture_create(int device) {
+krad_decklink_capture_t *krad_decklink_capture_create (int device) {
 
   int d;
   krad_decklink_capture_t *krad_decklink_capture = (krad_decklink_capture_t *)calloc(1, sizeof(krad_decklink_capture_t));
@@ -179,67 +175,60 @@ krad_decklink_capture_t *krad_decklink_capture_create(int device) {
     }
     
   }
-
   return krad_decklink_capture;
-  
 }
 
-void krad_decklink_capture_set_audio_input(krad_decklink_capture_t *krad_decklink_capture, char *audio_input) {
+void krad_decklink_capture_set_audio_input (krad_decklink_capture_t *krad_decklink_capture, char *audio_input) {
 
   krad_decklink_capture->audio_input = bmdAudioConnectionEmbedded;
 
   if (strlen(audio_input)) {
-
-    if ((strstr(audio_input, "Analog") == 0) || (strstr(audio_input, "analog") == 0)) {
+    if ((strstr(audio_input, "Analog") != NULL) || (strstr(audio_input, "analog") != NULL)) {
       printk ("Krad Decklink: Selected Analog Audio Input");
       krad_decklink_capture->audio_input = bmdAudioConnectionAnalog;
       return;
     }
-
-    if ((strstr(audio_input, "AESEBU") == 0) || (strstr(audio_input, "aesebu") == 0) || 
-      (strstr(audio_input, "SPDIF") == 0) || (strstr(audio_input, "spdif") == 0)) {
+    if ((strstr(audio_input, "AESEBU") != NULL) || (strstr(audio_input, "aesebu") != NULL) || 
+      (strstr(audio_input, "SPDIF") != NULL) || (strstr(audio_input, "spdif") != NULL)) {
       printk ("Krad Decklink: Selected AESEBU Audio Input");    
       krad_decklink_capture->audio_input = bmdAudioConnectionAESEBU;
       return;
     }
-  
   }
-
   printk ("Krad Decklink: Selected Embedded Audio Input");
-  
 }
 
-void krad_decklink_capture_set_video_input(krad_decklink_capture_t *krad_decklink_capture, char *video_input) {
+void krad_decklink_capture_set_video_input (krad_decklink_capture_t *krad_decklink_capture, char *video_input) {
 
   krad_decklink_capture->video_input = bmdVideoConnectionSDI;
 
   if (strlen(video_input)) {
 
-    if ((strstr(video_input, "HDMI") == 0) || (strstr(video_input, "hdmi") == 0)) {
+    if ((strstr(video_input, "HDMI") != NULL) || (strstr(video_input, "hdmi") != NULL)) {
       printk ("Krad Decklink: Selected HDMI Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionHDMI;
       return;
     }
 
-    if ((strstr(video_input, "OpticalSDI") == 0) || (strstr(video_input, "opticalsdi") == 0)) {
+    if ((strstr(video_input, "OpticalSDI") != NULL) || (strstr(video_input, "opticalsdi") != NULL)) {
       printk ("Krad Decklink: Selected OpticalSDI Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionOpticalSDI;
       return;
     }
     
-    if ((strstr(video_input, "Component") == 0) || (strstr(video_input, "component") == 0)) {
+    if ((strstr(video_input, "Component") != NULL) || (strstr(video_input, "component") != NULL)) {
       printk ("Krad Decklink: Selected Component Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionComponent;
       return;
     }
     
-    if ((strstr(video_input, "Composite") == 0) || (strstr(video_input, "composite") == 0)) {
+    if ((strstr(video_input, "Composite") != NULL) || (strstr(video_input, "composite") != NULL)) {
       printk ("Krad Decklink: Selected Composite Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionComposite;
       return;
     }
     
-    if ((strstr(video_input, "svideo") == 0) || (strstr(video_input, "Svideo") == 0)) {
+    if ((strstr(video_input, "svideo") != NULL) || (strstr(video_input, "Svideo") != NULL)) {
       printk ("Krad Decklink: Selected svideo Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionSVideo;
       return;
@@ -247,12 +236,10 @@ void krad_decklink_capture_set_video_input(krad_decklink_capture_t *krad_decklin
   }
 
   printk ("Krad Decklink: Selected SDI Video Input");
-  
 }
 
-
-void krad_decklink_capture_set_video_mode(krad_decklink_capture_t *krad_decklink_capture, int width, int height,
-                      int fps_numerator, int fps_denominator) {
+void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklink_capture, int width, int height,
+                                           int fps_numerator, int fps_denominator) {
 
 
   krad_decklink_capture->width = width;
@@ -344,25 +331,24 @@ void krad_decklink_capture_set_video_mode(krad_decklink_capture_t *krad_decklink
     }
   }
 }
-  
 
-void krad_decklink_capture_set_video_callback(krad_decklink_capture_t *krad_decklink_capture, int video_frame_callback(void *, void *, int)) {
+void krad_decklink_capture_set_video_callback (krad_decklink_capture_t *krad_decklink_capture, int video_frame_callback(void *, void *, int)) {
   krad_decklink_capture->video_frame_callback = video_frame_callback;
 }
 
-void krad_decklink_capture_set_audio_callback(krad_decklink_capture_t *krad_decklink_capture, int audio_frames_callback(void *, void *, int)) {
+void krad_decklink_capture_set_audio_callback (krad_decklink_capture_t *krad_decklink_capture, int audio_frames_callback(void *, void *, int)) {
   krad_decklink_capture->audio_frames_callback = audio_frames_callback;
 }
 
-void krad_decklink_capture_set_callback_pointer(krad_decklink_capture_t *krad_decklink_capture, void *callback_pointer) {
+void krad_decklink_capture_set_callback_pointer (krad_decklink_capture_t *krad_decklink_capture, void *callback_pointer) {
   krad_decklink_capture->callback_pointer = callback_pointer;
 }
 
-void krad_decklink_capture_set_verbose(krad_decklink_capture_t *krad_decklink_capture, int verbose) {
+void krad_decklink_capture_set_verbose (krad_decklink_capture_t *krad_decklink_capture, int verbose) {
   krad_decklink_capture->verbose = verbose;
 }
 
-void krad_decklink_capture_start(krad_decklink_capture_t *krad_decklink_capture) {
+void krad_decklink_capture_start (krad_decklink_capture_t *krad_decklink_capture) {
     
   krad_decklink_capture->result = krad_decklink_capture->deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&krad_decklink_capture->deckLinkInput);
   if (krad_decklink_capture->result != S_OK) {
@@ -403,10 +389,9 @@ void krad_decklink_capture_start(krad_decklink_capture_t *krad_decklink_capture)
   if (krad_decklink_capture->result != S_OK) {
     printke ("Krad Decklink: Fail StartStreams\n");
   }
-  
 }
 
-void krad_decklink_capture_stop(krad_decklink_capture_t *krad_decklink_capture) {
+void krad_decklink_capture_stop (krad_decklink_capture_t *krad_decklink_capture) {
 
     if (krad_decklink_capture->deckLinkInput != NULL) {
     
@@ -444,12 +429,10 @@ void krad_decklink_capture_stop(krad_decklink_capture_t *krad_decklink_capture) 
   if (krad_decklink_capture->deckLinkIterator != NULL) {
     krad_decklink_capture->deckLinkIterator->Release();
   }
-  
-  //printf("\n");
 
-  free(krad_decklink_capture);
-
+  free (krad_decklink_capture);
 }
+
 #ifdef KR_LINUX
 void krad_decklink_capture_info () {
 
@@ -488,17 +471,16 @@ void krad_decklink_capture_info () {
     printke ("Krad Decklink: Could not obtain the video output display mode iterator - result = %08x\n", result);
   }
 
+  while (displayModeIterator->Next(&displayMode) == S_OK) {
 
-    while (displayModeIterator->Next(&displayMode) == S_OK) {
-
-        result = displayMode->GetName((const char **) &displayModeString);
+    result = displayMode->GetName((const char **) &displayModeString);
         
-        if (result == S_OK) {
+    if (result == S_OK) {
       
       BMDTimeValue frameRateDuration, frameRateScale;
       displayMode->GetFrameRate(&frameRateDuration, &frameRateScale);
 
-      printkd ("%2d:  %-20s \t %li x %li \t %g FPS\n", 
+      printk ("%2d:  %-20s \t %li x %li \t %g FPS\n", 
         displayModeCount, displayModeString, displayMode->GetWidth(), displayMode->GetHeight(), 
         (double)frameRateScale / (double)frameRateDuration);
       
@@ -547,18 +529,14 @@ int krad_decklink_cpp_detect_devices () {
   }
   
   while (deckLinkIterator->Next(&deckLink) == S_OK) {
-
     device_count++;
-    
     deckLink->Release();
   }
-  
+
   deckLinkIterator->Release();
   
   return device_count;
-
 }
-
 
 int krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
 
@@ -620,4 +598,3 @@ int krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
     return ret;
   }
 }
-

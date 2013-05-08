@@ -68,6 +68,28 @@ krdlcapsrces = """
 ../lib/krad_framepool/krad_framepool.c
 """.split()
 
+krdlcapmacsrces = """
+../lib/krad_system/krad_system.c
+../lib/krad_legacy/krad_mach.c
+../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_file.c
+../lib/krad_io/krad_stream.c
+../lib/krad_ebml/krad_ebml2.c
+../lib/krad_ebml/krad_ebml2w.c
+../lib/krad_ring/krad_ring.c
+../lib/krad_transmitter/krad_transmitter.c
+../lib/krad_chronometer/krad_ticker.c
+../lib/krad_mkv/krad_mkv.c
+../lib/krad_mkv/krad_mkv_demux.c
+../lib/krad_vorbis/krad_vorbis.c
+../lib/krad_coder/krad_coder_common.c
+../lib/krad_vpx/krad_vpx.c
+../lib/krad_decklink/krad_decklink.c
+../lib/krad_decklink/krad_decklink_capture.cpp
+../lib/krad_decklink/vendor/osx/DeckLinkAPIDispatch.cpp
+../lib/krad_framepool/krad_framepool_nc.c
+""".split()
+
 krv4l2capsrces = """
 ../lib/krad_framepool/krad_framepool.c
 ../lib/krad_v4l2/krad_v4l2.c
@@ -132,11 +154,13 @@ includedirs = """
 /usr/include
 """.split()
 
-kmkvshlibs = ["vpx", "cairo", "opus", "vorbis", "vorbisenc", "flac", "vpx",
+kmkvshlibs = ["vpx", "cairo", "opus", "vorbis", "vorbisenc", "flac",
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
 
 kmkvhdrshlibs = ["opus", "vorbis", "vorbisenc", "flac", "vpx",
                  "theoradec", "theoraenc", "samplerate", "libswscale"]
+
+krdlcapmaclibs = ["vpx", "vorbis", "vorbisenc", "swscale", "avutil", "ogg"]
 
 krtxpndrlibs = []
 shlibs = []
@@ -188,10 +212,11 @@ def check_system2(systm):
     systm.check_cxx(framework_name='CoreServices')
     includedirs = ["../lib/krad_decklink/vendor/osx/", "../lib/krad_legacy/"] + includedirs
     krmkvlibsources = ["../lib/krad_legacy/krad_mach.c"] + krmkvlibsources
-    krdlcapsrces = ["../lib/krad_decklink/vendor/osx/DeckLinkAPIDispatch.cpp"] + krdlcapsrces
+    syslibs = ['m', 'dl']
 
 def configure(conf):
 
+  global krdlcapmaclibs
   global krdlcapsrces
   global includedirs
   global libav_dir
@@ -203,19 +228,24 @@ def configure(conf):
   check_system2(conf)
   check_x11(conf)
 
-  for l in syslibs:
-    conf.check(lib = l, cflags='-Wall', uselib_store = l)
+  if conf.env['KR_LINUX']:
+    for l in syslibs:
+      conf.check(lib = l, cflags='-Wall', uselib_store = l)
 
-  for l in shlibs:
-    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+    for l in shlibs:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
-  for l in kmkvshlibs:
-    conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
+    for l in kmkvshlibs:
+      conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
-  for l in stlibs:
-    conf.check_cfg(package = l,
-                   uselib_store = l,
-                   args='--cflags --libs --static')
+    for l in stlibs:
+      conf.check_cfg(package = l,
+                     uselib_store = l,
+                     args='--cflags --libs --static')
+
+  if conf.env['FRAK_MACOSX']:
+    for l in krdlcapmaclibs:
+      conf.check(lib = l, cflags='-Wall', uselib_store = l, args='--cflags --libs --static')
 
   if conf.env['KRAD_USE_X11']:
     #depsources += ["../lib/krad_x11/krad_x11.c"]
@@ -223,6 +253,7 @@ def configure(conf):
 
 def build(bld):
 
+  global krdlcapmaclibs
   global krdlcapsrces
   global includedirs
   global libav_dir
@@ -253,58 +284,56 @@ def build(bld):
   # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only 
   # needed when we _really_ break the API
 
-  for p in programs:
-    bld(features = 'c cprogram', 
-    source = [p],
-    includes = includedirs, 
-    target = p.replace(".c", ""),
-    use = ["krad_mkv"],
-    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
-
-  for p in programs2:
-    bld(features = 'c cprogram', 
-    source = [p] + krmkvhdrsources,
-    includes = includedirs, 
-    target = p.replace(".c", ""),
-    use = ["krad_mkv"],
-    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
-
-  for p in programs3:
-    bld(features = 'c cprogram',
-    source = krmkvhdrsources + [p],
-    includes = includedirs, 
-    target = p.replace(".c", ""),
-    use = ["krad_mkv"],
-    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
-
-  for p in programs4:
-    bld(features = 'c cprogram',
-    source = krmuxpdrsources + krmkvhdrsources + [p],
-    includes = includedirs, 
-    target = p.replace(".c", ""),
-    use = ["krad_mkv"],
-    uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
-
-  if bld.env['KR_LINUX']:
-    for p in programs5:
-      bld(features = 'c cprogram cxx cxxprogram',
-      source = krdlcapsrces + [p] + krmuxpdrsources + krmkvhdrsources,
-      includes = includedirs,
-      target = p.replace(".c", ""),
-      use = ["krad_mkv"],
-      uselib = syslibs + kmkvshlibs + kmkvhdrshlibs + shlibs + stlibs + plibs)
-
   if bld.env['FRAK_MACOSX']:
     for p in programs5:
       bld(features = 'c cprogram cxx cxxprogram',
+      source = [p] + krdlcapmacsrces,
+      includes = includedirs,
+      target = p.replace(".c", ""),
+      framework = ["CoreFoundation", "CoreServices"], 
+      uselib = krdlcapmaclibs)
+
+  if bld.env['KR_LINUX']:
+    for p in programs:
+      bld(features = 'c cprogram', 
+      source = [p],
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+    for p in programs2:
+      bld(features = 'c cprogram', 
+      source = [p] + krmkvhdrsources,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+    for p in programs3:
+      bld(features = 'c cprogram',
+      source = krmkvhdrsources + [p],
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+    for p in programs4:
+      bld(features = 'c cprogram',
+      source = krmuxpdrsources + krmkvhdrsources + [p],
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
+
+    for p in programs5:
+      bld(features = 'c cprogram cxx cxxprogram',
       source = krdlcapsrces + [p] + krmuxpdrsources + krmkvhdrsources,
       includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
-      framework = ["CoreFoundation", "CoreServices"], 
       uselib = syslibs + kmkvshlibs + kmkvhdrshlibs + shlibs + stlibs + plibs)
 
-  if bld.env['KR_LINUX']:
     for p in programs6:
       bld(features = 'c cprogram',
       source = krv4l2capsrces + krmuxpdrsources + krmkvhdrsources + [p],
@@ -313,7 +342,6 @@ def build(bld):
       use = ["krad_mkv"],
       uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
 
-  if bld.env['KR_LINUX']:
     for p in programs7:
       bld(features = 'c cprogram',
       source = krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
@@ -322,9 +350,9 @@ def build(bld):
       use = ["krad_mkv"],
       uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
 
-  bld.shlib(
-    source = krmkvlibsources, 
-    includes = includedirs, 
-    target = "krad_mkv",
-    vnum = krad_version + ".0.0",
-    uselib = kmkvshlibs + stlibs + syslibs)
+    bld.shlib(
+      source = krmkvlibsources, 
+      includes = includedirs, 
+      target = "krad_mkv",
+      vnum = krad_version + ".0.0",
+      uselib = kmkvshlibs + stlibs + syslibs)
