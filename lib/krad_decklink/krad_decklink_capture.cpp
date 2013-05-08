@@ -213,7 +213,8 @@ void krad_decklink_capture_set_video_input (krad_decklink_capture_t *krad_deckli
   printk ("Krad Decklink: Selected SDI Video Input");
 }
 
-void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklink_capture, int width, int height,
+void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklink_capture,
+                                           int width, int height,
                                            int fps_numerator, int fps_denominator) {
 
 
@@ -233,7 +234,6 @@ void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklin
       krad_decklink_capture->display_mode = bmdModeNTSCp;
     }
   }
-  
 
   if ((krad_decklink_capture->width == 720) && (krad_decklink_capture->height == 576)) {
     if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) || 
