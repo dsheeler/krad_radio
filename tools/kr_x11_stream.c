@@ -29,7 +29,7 @@ struct kr_x11s_params_St {
   int32_t port;
   char *mount;
   char *password;
-  //char *device;
+  uint32_t window_id;
 };
 
 struct kr_x11s_St {
@@ -153,9 +153,8 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   vmedium = kr_medium_kludge_create ();
   vcodeme = kr_codeme_kludge_create ();
 
-  krad_x11_enable_capture (x11s->x11,
-                           x11s->x11->screen_width,
-                           x11s->x11->screen_height);
+  krad_x11_enable_capture (x11s->x11, x11s->params->window_id);
+
   x11s->ticker = krad_ticker_create (x11s->params->fps_numerator,
                                      x11s->params->fps_denominator);
 
@@ -185,14 +184,14 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     frame->yuv_pixels[0] = image;
     frame->yuv_pixels[1] = NULL;
     frame->yuv_pixels[2] = NULL;
-    frame->yuv_strides[0] = x11s->x11->screen_width * 4;
+    frame->yuv_strides[0] = x11s->x11->stride;
     frame->yuv_strides[1] = 0;
     frame->yuv_strides[2] = 0;
     frame->yuv_strides[3] = 0;
     
     converter = sws_getCachedContext ( converter,
-                                       x11s->x11->screen_width,
-                                       x11s->x11->screen_height,
+                                       x11s->x11->width,
+                                       x11s->x11->height,
                                        frame->format,
                                        x11s->params->width,
                                        x11s->params->height,
@@ -277,6 +276,9 @@ int main (int argc, char *argv[]) {
   params.video_bitrate = 450;
   params.host = "europa.kradradio.com";
   params.port = 8008;
+  params.window_id = 0;
+
+  params.window_id = 0x2409f5c;
 
   snprintf (mount, sizeof(mount),
             "/kr_x11s_%"PRIu64".webm",

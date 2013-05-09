@@ -89,39 +89,89 @@ krad_x11_t *krad_x11_create () {
 
 }
 
-void krad_x11_enable_capture(krad_x11_t *krad_x11, int width, int height) {
-  
-  if (width == 0) {
-    width = krad_x11->screen_width;
-  }
-  
-  if (height == 0) {
-    height = krad_x11->screen_height;
-  }
-  
-  krad_x11->img = xcb_image_create_native(krad_x11->connection, width, height, XCB_IMAGE_FORMAT_Z_PIXMAP, krad_x11->screen_bit_depth, 0, ~0, 0);
-  if (!krad_x11->img) {
-    exit(15);
-  }
-  
-  krad_x11->shminfo.shmid = shmget(IPC_PRIVATE, krad_x11->img->stride * krad_x11->img->height, (IPC_CREAT | 0666));
+void krad_x11_enable_capture (krad_x11_t *x11, uint32_t window_id) {
 
-  if (krad_x11->shminfo.shmid == (uint32_t)-1) {
-    xcb_image_destroy(krad_x11->img);
+  xcb_get_geometry_reply_t *geo;
+  xcb_query_tree_reply_t *tree;
+  xcb_translate_coordinates_cookie_t translateCookie;
+  xcb_translate_coordinates_reply_t *trans;
+
+  geo = xcb_get_geometry_reply (x11->connection,
+        xcb_get_geometry (x11->connection, window_id), NULL);
+  if (geo == NULL) {
+    window_id = 0;
+  } else {
+    tree = xcb_query_tree_reply (x11->connection,
+                                 xcb_query_tree (x11->connection, window_id), NULL);
+    if (tree == NULL) {
+      window_id = 0;
+      free (geo);
+    } else {
+
+      translateCookie = xcb_translate_coordinates (x11->connection,
+                                                  window_id,
+                                                  x11->screen->root,
+                                                  geo->x, geo->y);
+
+      trans = xcb_translate_coordinates_reply (x11->connection,
+                                               translateCookie,
+                                               NULL);    
+
+      if (trans == NULL) {
+        window_id = 0;
+        free (tree);
+        free (geo);
+      } else {
+        x11->width = geo->width;
+        x11->height = geo->height;
+        x11->x = trans->dst_x - geo->x;
+        x11->y = trans->dst_y - geo->y;
+        free (trans);
+        free (tree);
+        free (geo);
+      }
+    }
+  }
+
+  printf ("width %d height %d x %d y %d\n",
+         x11->width, x11->height, x11->x, x11->y);
+
+  if (window_id == 0) {
+    x11->width = x11->screen_width;
+    x11->height = x11->screen_height;
+    x11->window = x11->screen->root;
+  }
+  
+  x11->img = xcb_image_create_native (x11->connection,
+                                      x11->width, x11->height,
+                                      XCB_IMAGE_FORMAT_Z_PIXMAP,
+                                      x11->screen_bit_depth, 0, ~0, 0);
+  if (!x11->img) {
+    exit (15);
+  }
+  
+  x11->stride = x11->img->stride;
+
+  x11->shminfo.shmid = shmget (IPC_PRIVATE,
+                               x11->img->stride * x11->img->height,
+                               (IPC_CREAT | 0666));
+
+  if (x11->shminfo.shmid == (uint32_t)-1) {
+    xcb_image_destroy (x11->img);
     failfast ("shminfo fail");
   }
 
-  krad_x11->shminfo.shmaddr = shmat(krad_x11->shminfo.shmid, 0, 0);
-  krad_x11->img->data = krad_x11->shminfo.shmaddr;
+  x11->shminfo.shmaddr = shmat (x11->shminfo.shmid, 0, 0);
+  x11->img->data = x11->shminfo.shmaddr;
 
-  if (krad_x11->img->data == (uint8_t *)-1) {
-    xcb_image_destroy(krad_x11->img);
+  if (x11->img->data == (uint8_t *)-1) {
+    xcb_image_destroy (x11->img);
     failfast ("xcb image fail");
   }
 
-  krad_x11->shminfo.shmseg = xcb_generate_id(krad_x11->connection);
-  xcb_shm_attach(krad_x11->connection, krad_x11->shminfo.shmseg, krad_x11->shminfo.shmid, 0);
-  krad_x11->capture_enabled = 1;
+  x11->shminfo.shmseg = xcb_generate_id (x11->connection);
+  xcb_shm_attach (x11->connection, x11->shminfo.shmseg, x11->shminfo.shmid, 0);
+  x11->capture_enabled = 1;
 }
 
 
@@ -145,7 +195,9 @@ int krad_x11_capture_getptr (krad_x11_t *x11, uint8_t **buffer) {
                                    x11->screen->root,
                                    x11->img,
                                    x11->shminfo,
-                                   0, 0, 0xffffffff);
+                                   x11->x,
+                                   x11->y,
+                                   0xffffffff);
 
   x11->reply = xcb_shm_get_image_reply (x11->connection,
                                         x11->cookie,

@@ -269,7 +269,7 @@ void x11_capture_unit_create (void *arg) {
                               DEFAULT_CAPTURE_BUFFER_FRAMES);
   }
   
-  krad_x11_enable_capture (krad_link->krad_x11, krad_link->krad_x11->screen_width, krad_link->krad_x11->screen_height);
+  krad_x11_enable_capture (krad_link->krad_x11, 0);
   
   krad_link->krad_compositor_port = krad_compositor_port_create (krad_link->krad_radio->krad_compositor,
                                    "X11In",
