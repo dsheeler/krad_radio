@@ -29,7 +29,7 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   }
 
   // print default config
-  //krad_vpx_encoder_print_config (vpx);
+  krad_vpx_encoder_print_config (vpx);
 
   //TEMP
   //vpx->cfg.g_lag_in_frames = 1;
@@ -79,8 +79,9 @@ void krad_vpx_encoder_print_config (krad_vpx_encoder_t *vpx) {
   printk ("rc_buf_optimal_sz: %d", vpx->cfg.rc_buf_optimal_sz);
   printk ("rc_dropframe_thresh: %d", vpx->cfg.rc_dropframe_thresh);
   printk ("g_lag_in_frames: %d", vpx->cfg.g_lag_in_frames);
-  printk ("rc_min_quantizer: %d", vpx->cfg.rc_min_quantizer);
-  printk ("rc_max_quantizer: %d", vpx->cfg.rc_max_quantizer);
+  printk ("g_timebase.num: %d", vpx->cfg.g_timebase.num);
+  printk ("g_timebase.den: %d", vpx->cfg.g_timebase.den);
+
   printk ("END Krad VP8 Encoder config");
 }
 
