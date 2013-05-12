@@ -286,7 +286,7 @@ def build(bld):
 
   if bld.env['FRAK_MACOSX']:
     for p in programs5:
-      bld(features = 'c cprogram cxx cxxprogram',
+      bld.stlib(features = "c cxx",
       source = [p] + krdlcapmacsrces,
       includes = includedirs,
       target = p.replace(".c", ""),
