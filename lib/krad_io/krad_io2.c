@@ -73,30 +73,21 @@ int kr_io2_restart (kr_io2_t *io) {
 }
 
 int kr_io2_sync (kr_io2_t *io) {
- // FILES ONLY blocking or failing!
-
-  int bytes;
-  int ret;
-  int len;
-  uint8_t *buffer;
+  // FILES ONLY blocking or failing!
+  ssize_t ret;
   
-  buffer = io->buffer;
-  len = io->len;
-  ret = 0;
-  bytes = 0;
-
   if (!kr_io2_want_out (io)) {
     return 0;
   }
   ret = kr_io2_write (io);
-  if (ret != len) {
+  if (ret != io->len) {
     printk ("Could not write all we wanted to: %d of %d",
             ret, len);
     printke ("Failing here a, this should not happen as a file only func");
     exit (77);
   }
   kr_io2_restart (io);
-  return bytes;
+  return 0;
 }
 
 int kr_io2_output (kr_io2_t *io) {
