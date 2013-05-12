@@ -81,8 +81,8 @@ int kr_io2_sync (kr_io2_t *io) {
   }
   ret = kr_io2_write (io);
   if (ret != io->len) {
-    printk ("Could not write all we wanted to: %d of %d",
-            ret, len);
+    printk ("Could not write all we wanted to: %zd of %zu",
+            ret, io->len);
     printke ("Failing here a, this should not happen as a file only func");
     exit (77);
   }
