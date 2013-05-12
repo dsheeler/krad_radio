@@ -33,22 +33,31 @@
 #include "krad_debug.c"
 
 typedef struct kr_dlstream_St kr_dlstream_t;
+typedef struct kr_dlstream_params_St kr_dlstream_params_t;
 
-struct kr_dlstream_St {
-  uint32_t width;
-  uint32_t height;
-  uint32_t fps_numerator;
-  uint32_t fps_denominator;
+struct kr_dlstream_params_St {
+  uint32_t input_width;
+  uint32_t input_height;
+  uint32_t input_fps_numerator;
+  uint32_t input_fps_denominator;
+  char *input_device;
+  char *video_input_connector;
+  char *audio_input_connector;
+  uint32_t encoding_width;
+  uint32_t encoding_height;
+  uint32_t encoding_fps_numerator;
+  uint32_t encoding_fps_denominator;
   uint32_t video_bitrate;
   float audio_quality;
   char *host;
   int32_t port;
   char *mount;
   char *password;
+};
+
+struct kr_dlstream_St {
+  kr_dlstream_params_t *params;
   uint32_t channels;
-  char *device;
-  char *video_input;
-  char *audio_input;  
   krad_decklink_t *decklink;
   krad_ringbuffer_t *audio_ring[2];
   krad_ringbuffer_t *frame_ring;
@@ -87,7 +96,7 @@ int dlstream_video_callback (void *arg, void *buffer, int length) {
 
   memset (&dlframe, 0, sizeof(krad_frame_t));
 
-  stride = dlstream->width + ((dlstream->width/2) * 2);
+  stride = dlstream->params->input_width + ((dlstream->params->input_width/2) * 2);
   
   frame = krad_framepool_getframe (dlstream->framepool);
 
@@ -104,15 +113,15 @@ int dlstream_video_callback (void *arg, void *buffer, int length) {
     dlframe.yuv_strides[2] = 0;
     dlframe.yuv_strides[3] = 0;
 
-	lumasize = dlstream->width * dlstream->height;
+	lumasize = dlstream->params->encoding_width * dlstream->params->encoding_height;
 	lumasize += lumasize % 16;
-	chromasize = ((dlstream->width * dlstream->height) / 4);
+	chromasize = ((dlstream->params->encoding_width * dlstream->params->encoding_height) / 4);
 	chromasize += chromasize % 16;
 
 	frame->format = PIX_FMT_YUV420P;
-    frame->yuv_strides[0] = dlstream->width;
-    frame->yuv_strides[1] = dlstream->width/2;  
-    frame->yuv_strides[2] = dlstream->width/2;
+    frame->yuv_strides[0] = dlstream->params->encoding_width;
+    frame->yuv_strides[1] = dlstream->params->encoding_width/2;  
+    frame->yuv_strides[2] = dlstream->params->encoding_width/2;
     frame->yuv_pixels[0] = frame->pixels;
     frame->yuv_pixels[1] = frame->pixels + lumasize;  
     frame->yuv_pixels[2] = frame->pixels + (lumasize + chromasize);
@@ -120,11 +129,11 @@ int dlstream_video_callback (void *arg, void *buffer, int length) {
 	dlstream->sws_algo = dlstream->new_sws_algo;
 
 	dlstream->converter = sws_getCachedContext ( dlstream->converter,
-	                                             dlstream->width,
-	                                             dlstream->height,
+	                                             dlstream->params->input_width,
+	                                             dlstream->params->input_height,
 	                                             dlframe.format,
-	                                             dlstream->width,
-	                                             dlstream->height,
+	                                             dlstream->params->encoding_width,
+	                                             dlstream->params->encoding_height,
 	                                             frame->format,
 	                                             dlstream->sws_algo,
 	                                             NULL, NULL, NULL);
@@ -137,7 +146,7 @@ int dlstream_video_callback (void *arg, void *buffer, int length) {
 	          (const uint8_t * const*)dlframe.yuv_pixels,
 	          dlframe.yuv_strides,
 	          0,
-	          dlstream->height,
+	          dlstream->params->input_height,
 	          frame->yuv_pixels,
 	          frame->yuv_strides);
 
@@ -226,7 +235,7 @@ int kr_dlstream_destroy (kr_dlstream_t **dlstream) {
   return 0;
 }
 
-kr_dlstream_t *kr_dlstream_create () {
+kr_dlstream_t *kr_dlstream_create (kr_dlstream_params_t *params) {
 
   kr_dlstream_t *dlstream;
 
@@ -234,22 +243,10 @@ kr_dlstream_t *kr_dlstream_create () {
 
   int c;
   
-  dlstream->width = 1280;
-  dlstream->height = 720;
-  dlstream->fps_numerator = 60000;
-  dlstream->fps_denominator = 1000;
-  dlstream->device = "0";
+  dlstream->params = params;
+
   dlstream->channels = 2;
-  dlstream->video_input = "hdmi";
-  dlstream->audio_input = "hdmi";
-  dlstream->video_bitrate = 1500;
-  dlstream->audio_quality = 0.4;
   dlstream->skipsamples = 0;
-  dlstream->host = "europa.kradradio.com";
-  dlstream->port = 8008;
-  dlstream->mount = "/kr_decklink_mac.webm";
-  dlstream->password = "firefox";
-  
   dlstream->converter = NULL;
   dlstream->sws_algo = SWS_BILINEAR;
   dlstream->new_sws_algo = dlstream->sws_algo;
@@ -262,10 +259,10 @@ kr_dlstream_t *kr_dlstream_create () {
   
   //dlstream->mkv = kr_mkv_create_file (file);
 
-  dlstream->mkv = kr_mkv_create_stream (dlstream->host,
-                                        dlstream->port,
-                                        dlstream->mount,
-                                        dlstream->password);
+  dlstream->mkv = kr_mkv_create_stream (dlstream->params->host,
+                                        dlstream->params->port,
+                                        dlstream->params->mount,
+                                        dlstream->params->password);
 
   if (dlstream->mkv == NULL) {
     fprintf (stderr, "Could not create %s\n", file);
@@ -274,21 +271,21 @@ kr_dlstream_t *kr_dlstream_create () {
 
   //printf ("Created file: %s\n", file);
 
-  dlstream->vpx_enc = krad_vpx_encoder_create (dlstream->width,
-                                               dlstream->height,
-                                               dlstream->fps_numerator / 2,
-                                               dlstream->fps_denominator,
-                                               dlstream->video_bitrate);
+  dlstream->vpx_enc = krad_vpx_encoder_create (dlstream->params->encoding_width,
+                                               dlstream->params->encoding_height,
+                                               dlstream->params->encoding_fps_numerator,
+                                               dlstream->params->encoding_fps_denominator,
+                                               dlstream->params->video_bitrate);
 
   kr_mkv_add_video_track (dlstream->mkv, VP8,
-                          dlstream->fps_numerator / 2,
-                          dlstream->fps_denominator,
-                          dlstream->width,
-                          dlstream->height);
+                          dlstream->params->encoding_fps_numerator,
+                          dlstream->params->encoding_fps_denominator,
+                          dlstream->params->encoding_width,
+                          dlstream->params->encoding_height);
 
   dlstream->vorbis_enc = krad_vorbis_encoder_create (2,
                                                      48000,
-                                                     dlstream->audio_quality);
+                                                     dlstream->params->audio_quality);
 
   kr_mkv_add_audio_track (dlstream->mkv, VORBIS, 48000, 2,
                           dlstream->vorbis_enc->hdrdata,
@@ -299,25 +296,25 @@ kr_dlstream_t *kr_dlstream_create () {
 
   dlstream->frame_ring = krad_ringbuffer_create (120 * sizeof(krad_frame_t *));
 
-  dlstream->framepool = krad_framepool_create ( dlstream->width,
-                                                dlstream->height,
+  dlstream->framepool = krad_framepool_create ( dlstream->params->encoding_width,
+                                                dlstream->params->encoding_height,
                                                 120);
 
   for (c = 0; c < 2; c++) {
     dlstream->audio_ring[c] = krad_ringbuffer_create (2200000);    
   }
 
-  dlstream->decklink = krad_decklink_create (dlstream->device);
+  dlstream->decklink = krad_decklink_create (dlstream->params->input_device);
 
   krad_decklink_set_video_mode (dlstream->decklink,
-                                dlstream->width,
-                                dlstream->height,
-                                dlstream->fps_numerator,
-                                dlstream->fps_denominator);
+                                dlstream->params->input_width,
+                                dlstream->params->input_height,
+                                dlstream->params->input_fps_numerator,
+                                dlstream->params->input_fps_denominator);
 
 
-  krad_decklink_set_audio_input (dlstream->decklink, dlstream->audio_input);
-  krad_decklink_set_video_input (dlstream->decklink, dlstream->video_input);
+  krad_decklink_set_audio_input (dlstream->decklink, dlstream->params->audio_input_connector);
+  krad_decklink_set_video_input (dlstream->decklink, dlstream->params->video_input_connector);
 
   dlstream->decklink->callback_pointer = dlstream;
   dlstream->decklink->audio_frames_callback = dlstream_audio_callback;
@@ -456,26 +453,97 @@ void kr_dlstream_check () {
   }
 }
 
-void kr_dlstream () {
+void kr_dlstream (kr_dlstream_params_t *params) {
 
   kr_dlstream_t *dlstream;
   
   kr_dlstream_check ();
 
-  dlstream = kr_dlstream_create ();
+  dlstream = kr_dlstream_create (params);
 
   kr_dlstream_run (dlstream);
 
   kr_dlstream_destroy (&dlstream);
 }
-  
+
+static pthread_t dl_stream_thread_var;
+
+void *kr_dlstream_thread (void *arg) {
+	
+	kr_dlstream_params_t *params;
+	kr_dlstream_params_t myparams;
+
+	params = (kr_dlstream_params_t *)arg;
+
+	memcpy (&myparams, params, sizeof(kr_dlstream_params_t));
+	
+	kr_dlstream (&myparams);
+	return NULL;
+}
+
+void kr_dlstream_thread_stop () {
+	destruct = 1;
+	pthread_join (dl_stream_thread_var, NULL);
+	destruct = 0;
+}
+
+void kr_dlstream_thread_start (kr_dlstream_params_t *params) {
+  pthread_create (&dl_stream_thread_var, NULL, kr_dlstream_thread, params);
+}
+
+int kr_dlstream_device_count (int device_num, char *device_name) {
+  return krad_decklink_detect_devices ();
+}
+
+int kr_dlstream_device_name (int device_num, char *device_name) {
+  return krad_decklink_get_device_name (device_num, device_name);
+}
+
+
+#ifdef MONKEYHEAD
 int main (int argc, char *argv[]) {
 
   krad_debug_init ("dl_stream");
 
-  kr_dlstream ();
+  kr_dlstream_params_t params;
+  char mount[256];
+
+  memset (&params, 0, sizeof(kr_dlstream_params_t));
+  snprintf (mount, sizeof(mount),
+            "/kr_x11s_%"PRIu64".webm",
+            krad_unixtime ());
+
+  params.input_device = "0";
+  params.input_width = 1280;
+  params.input_height = 720;
+  params.input_fps_numerator = 60000;
+  params.input_fps_denominator = 1000;
+  params.video_bitrate = 450;
+  params.video_input_connector = "hdmi";
+  params.audio_input_connector = "hdmi";
+  params.video_bitrate = 800;
+  params.audio_quality = 0.4;
+
+  params.host = "europa.kradradio.com";
+  params.port = 8008;
+  params.mount = mount;
+  params.password = "firefox";
+
+  printf ("Streaming with: %s at %ux%u %u fps (max)\n",
+          params.input_device, params.input_width, params.input_height,
+          params.input_fps_numerator/params.input_fps_denominator);
+  printf ("To: %s:%u%s\n", params.host, params.port, params.mount);
+  printf ("Encoding Resolution: %dx%d FPS: %d/%d\n",
+          params.encoding_width, params.encoding_height,
+          params.encoding_fps_numerator, params.encoding_fps_denominator);
+  printf ("VP8 Bitrate: %uk Vorbis Quality: %.2f\n",
+		  params.video_bitrate, params.audio_quality);
+
+
+  kr_dlstream (&params);
 
   krad_debug_shutdown ();
 
   return 0;
 }
+#endif
