@@ -278,7 +278,7 @@ int main (int argc, char *argv[]) {
   params.port = 8008;
   params.window_id = 0;
 
-  params.window_id = 0x2409f5c;
+  //params.window_id = 0x2409f5c;
 
   snprintf (mount, sizeof(mount),
             "/kr_x11s_%"PRIu64".webm",
