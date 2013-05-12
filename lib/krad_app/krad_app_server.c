@@ -706,7 +706,7 @@ static void *krad_app_server_run_thread (void *arg) {
             }
           }
           if (krad_app_server->sockets[s].revents & POLLOUT) {
-            kr_io2_flush (client->out);
+            kr_io2_output (client->out);
             if (!(kr_io2_want_out (client->out))) {
               krad_app_server->sockets[s].events = POLLIN;
             }

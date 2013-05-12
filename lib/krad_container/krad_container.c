@@ -278,7 +278,7 @@ int krad_container_raw_add_data (krad_container_t *container,
                                  int len) {
   if ((container->type == NATIVEFLAC) || (container->type == Y4MFILE)) {
     kr_io2_pack (container->rawio, buffer, len);
-    kr_io2_flush (container->rawio);
+    kr_io2_sync (container->rawio);
     return 0;
   } else {
     return -1;

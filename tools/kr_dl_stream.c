@@ -510,7 +510,7 @@ int main (int argc, char *argv[]) {
 
   memset (&params, 0, sizeof(kr_dlstream_params_t));
   snprintf (mount, sizeof(mount),
-            "/kr_x11s_%"PRIu64".webm",
+            "/kr_dl_%"PRIu64".webm",
             krad_unixtime ());
 
   params.input_device = "0";

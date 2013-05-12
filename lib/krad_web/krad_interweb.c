@@ -689,7 +689,7 @@ static void *krad_interweb_server_loop (void *arg) {
           }
         }
         if (server->sockets[s].revents & POLLOUT) {
-          kr_io2_flush (client->out);
+          kr_io2_output (client->out);
           if (!(kr_io2_want_out (client->out))) {
             if (client->drop_after_flush == 1) {
               client->drop_after_flush = 0;
