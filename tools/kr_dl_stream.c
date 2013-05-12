@@ -520,6 +520,8 @@ int main (int argc, char *argv[]) {
   params.encoding_height = 720;
   params.input_fps_numerator = 60000;
   params.input_fps_denominator = 1000;
+  params.encoding_fps_numerator = 30000;
+  params.encoding_fps_denominator = 1000;
   params.video_bitrate = 450;
   params.video_input_connector = "hdmi";
   params.audio_input_connector = "hdmi";
