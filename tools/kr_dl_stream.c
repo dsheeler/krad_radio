@@ -500,7 +500,7 @@ int kr_dlstream_device_name (int device_num, char *device_name) {
 }
 
 
-#ifdef MONKEYHEAD
+#ifdef KR_LINUX
 int main (int argc, char *argv[]) {
 
   krad_debug_init ("dl_stream");
