@@ -516,6 +516,8 @@ int main (int argc, char *argv[]) {
   params.input_device = "0";
   params.input_width = 1280;
   params.input_height = 720;
+  params.encoding_width = 1280;
+  params.encoding_height = 720;
   params.input_fps_numerator = 60000;
   params.input_fps_denominator = 1000;
   params.video_bitrate = 450;
