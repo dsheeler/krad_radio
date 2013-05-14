@@ -144,6 +144,7 @@ typedef union {
 } kr_subunit_t;
 
 typedef union {
+  uint32_t unit_control;
   kr_mixer_portgroup_control_t portgroup_control;
   kr_mixer_effect_control_t effect_control;
   kr_compositor_control_t compositor_control;
@@ -221,11 +222,14 @@ struct kr_crate_St {
   int has_float;
 };
 
+int32_t kr_address_has_control (kr_address_t *address);
 int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type);
 uint32_t kr_response_get_event (kr_response_t *response);
 int kr_string_to_address (char *string, kr_address_t *addr);
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc);
+int kr_unit_control_get (kr_client_t *client, kr_unit_control_t *uc);
 void kr_unit_destroy (kr_client_t *client, kr_address_t *address);
+void kr_unit_info (kr_client_t *client, kr_address_t *address);
 int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml2, unsigned char **element_loc, kr_address_t *address);
 
 kr_client_t *kr_client_create (char *client_name);

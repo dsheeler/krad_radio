@@ -31,6 +31,10 @@ struct krad_x11_St {
 
   uint64_t frames;
   
+  int16_t x;
+  int16_t y;
+
+  int stride;
   int width;
   int height;
 
@@ -45,7 +49,8 @@ struct krad_x11_St {
   Display *display;
   xcb_screen_t *screen;
   xcb_screen_iterator_t iter;  
-  xcb_connection_t *connection;  
+  xcb_connection_t *connection;
+  xcb_window_t window; 
   xcb_shm_segment_info_t shminfo;
   xcb_shm_get_image_cookie_t cookie;
   xcb_shm_get_image_reply_t *reply;
@@ -67,5 +72,5 @@ void krad_x11_destroy(krad_x11_t *x11);
 int krad_x11_capture_getptr (krad_x11_t *x11, uint8_t **buffer);
 int krad_x11_capture (krad_x11_t *x11, uint8_t *buffer);
 void krad_x11_disable_capture (krad_x11_t *x11);
-void krad_x11_enable_capture (krad_x11_t *x11, int width, int height);
+void krad_x11_enable_capture (krad_x11_t *x11, uint32_t window_id);
 

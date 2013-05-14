@@ -37,7 +37,7 @@ struct krad_rc_sdl_joy_St {
 
 	pthread_t joy_thread;
 	
-	int axis[16];
+	int axis[64];
 	
 	int run;
 

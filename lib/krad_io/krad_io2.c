@@ -1,5 +1,7 @@
 #include "krad_io2.h"
 
+static ssize_t kr_io2_write (kr_io2_t *io);
+
 kr_io2_t *kr_io2_create_size (size_t size) {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
@@ -47,10 +49,8 @@ int kr_io2_has_in (kr_io2_t *io) {
 }
 
 void kr_io2_advance (kr_io2_t *io, size_t bytes) {
-  //io->pos += bytes;
   io->len += bytes;
   io->space -= bytes;
-  //io->buf += io->pos;
   io->buf += bytes;
 }
 
@@ -59,71 +59,56 @@ void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
   kr_io2_advance (io, len);
 }
 
-size_t kr_io2_write (kr_io2_t *io) {
-  return write (io->fd, io->buffer, io->len);
+static ssize_t kr_io2_write (kr_io2_t *io) {
+  return write (io->fd, io->wr_buf, io->len);
 }
 
 int kr_io2_restart (kr_io2_t *io) {
   io->buf = io->buffer;
   io->rd_buf = io->buffer;
-  //io->pos = 0;
+  io->wr_buf = io->buffer;
   io->len = 0;
   io->space = io->size;
   return 0;
 }
 
 int kr_io2_sync (kr_io2_t *io) {
-
-  int bytes;
-  int ret;
-  int len;
-  uint8_t *buffer;
+  // FILES ONLY blocking or failing!
+  ssize_t ret;
   
-  buffer = io->buffer;
-  len = io->len;
-  ret = 0;
-  bytes = 0;
-
   if (!kr_io2_want_out (io)) {
     return 0;
   }
-
-  while (bytes != len) {
-    ret += write (io->fd, buffer + bytes, len - bytes);
-    if (ret <= 0) {
-      break;
-    } else {
-      bytes += ret;
-    }
-  }
-  
-  kr_io2_restart (io);
-  
-  return bytes;
-}
-
-int kr_io2_flush (kr_io2_t *io) {
-
-  int ret;
-  int len;
-
-  if (!kr_io2_want_out (io)) {
-    return 0;
-  }
-
-  len = io->len;
-
   ret = kr_io2_write (io);
-  if (ret != len) {
-    
-    printk ("Could not write all we wanted to: %d of %d",
-            ret, len);
-    printke ("Failing here a temporary test");
+  if (ret != io->len) {
+    printk ("Could not write all we wanted to: %zd of %zu",
+            ret, io->len);
+    printke ("Failing here a, this should not happen as a file only func");
     exit (77);
   }
-
   kr_io2_restart (io);
+  return 0;
+}
 
+int kr_io2_output (kr_io2_t *io) {
+
+  ssize_t ret;
+
+  if (!kr_io2_want_out (io)) {
+    return 0;
+  }
+  ret = kr_io2_write (io);
+  if (ret != io->len) {
+	if (ret < 1) {
+    	printke ("its bad we should certainly fail");
+    	exit (77);
+	} else {
+	  io->len -= ret;
+	  io->wr_buf += ret;		
+	}
+	return 0;
+  }
+  kr_io2_restart (io);
   return 0;
 }
 
@@ -146,4 +131,3 @@ size_t kr_io2_read (kr_io2_t *io) {
   }
   return ret;
 }
-

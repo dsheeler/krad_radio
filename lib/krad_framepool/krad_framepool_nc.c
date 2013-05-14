@@ -1,4 +1,4 @@
-#include "krad_framepool.h"
+#include "krad_framepool_nc.h"
 
 krad_frame_t *krad_framepool_getframe (krad_framepool_t *krad_framepool) {
 
@@ -31,8 +31,6 @@ void krad_framepool_destroy (krad_framepool_t **krad_framepool) {
       munlock (framepool->frames[f].pixels, framepool->frame_byte_size);
       free (framepool->frames[f].pixels);
       if (framepool->passthru == 0) {
-        cairo_destroy (framepool->frames[f].cr);
-        cairo_surface_destroy (framepool->frames[f].cst);
       }
     }
 
@@ -68,7 +66,7 @@ krad_framepool_t *krad_framepool_create_for_upscale (int width, int height, int 
     krad_framepool->upscale_height = height;
   }
 
-  krad_framepool->stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, krad_framepool->upscale_width);
+  krad_framepool->stride = 4 * krad_framepool->upscale_width;
 
   krad_framepool->frame_byte_size = krad_framepool->stride * krad_framepool->upscale_height;
   
@@ -81,39 +79,6 @@ krad_framepool_t *krad_framepool_create_for_upscale (int width, int height, int 
     }
     mlock (krad_framepool->frames[f].pixels, krad_framepool->frame_byte_size);
 
-    krad_framepool->frames[f].cst =
-      cairo_image_surface_create_for_data ((unsigned char *)krad_framepool->frames[f].pixels,
-                         CAIRO_FORMAT_ARGB32,
-                         krad_framepool->upscale_width,
-                         krad_framepool->upscale_height,
-                         krad_framepool->stride);
-  
-    krad_framepool->frames[f].cr = cairo_create (krad_framepool->frames[f].cst);
   }
-  
-  return krad_framepool;
-
-}
-
-krad_framepool_t *krad_framepool_create_for_passthru (int size, int count) {
-
-  krad_framepool_t *krad_framepool = calloc (1, sizeof(krad_framepool_t));
-
-  int f;
-
-  krad_framepool->count = count;
-  krad_framepool->frame_byte_size = size;
-  krad_framepool->passthru = 1;
-  
-  krad_framepool->frames = calloc (krad_framepool->count, sizeof(krad_frame_t));
-  
-  for (f = 0; f < krad_framepool->count; f++ ) {
-    krad_framepool->frames[f].pixels = malloc (krad_framepool->frame_byte_size);
-    if (krad_framepool->frames[f].pixels == NULL) {
-      failfast ("Krad Framepool: Out of memory");
-    }
-    mlock (krad_framepool->frames[f].pixels, krad_framepool->frame_byte_size);
-  }
-
   return krad_framepool;
 }

@@ -487,13 +487,14 @@ def build(bld):
     use = ["kradradio_client"],
     uselib = shlibs + stlibs + syslibs + kr_mixer_libs)
 
-  for p in kr_gnmc:
-    bld(features = 'c cprogram', 
-    source = [p] + kr_gnmc_dep,
-    includes = includedirs, 
-    target = 'kr_gnmc',
-    use = ["kradradio_client"],
-    uselib = shlibs + stlibs + syslibs + kr_gnmc_libs)
+  if bld.env['KR_LINUX']:
+    for p in kr_gnmc:
+      bld(features = 'c cprogram', 
+      source = [p] + kr_gnmc_dep,
+      includes = includedirs, 
+      target = 'kr_gnmc',
+      use = ["kradradio_client"],
+      uselib = shlibs + stlibs + syslibs + kr_gnmc_libs)
 
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:

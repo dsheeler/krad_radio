@@ -30,7 +30,7 @@ void frak_print_raw_ebml (unsigned char *buffer, int len) {
 }
 
 int kr_client_sync (kr_client_t *client) {
-  kr_io2_flush (client->io);
+  kr_io2_output (client->io);
   kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
   return 0;
 }
@@ -1802,6 +1802,14 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
   }
 }
 
+int32_t kr_address_has_control (kr_address_t *address) {
+
+  if ((address != NULL) && (address->control.unit_control > 0)) {
+    return 1;
+  }
+  return 0;
+}
+
 int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type) {
 
   switch (address->path.unit) {
@@ -1838,6 +1846,23 @@ void kr_print_ebml (unsigned char *buffer, int len) {
     printf ("%02X", buffer[i]);
   }
   printf ("\nEnd Raw EBML\n");
+}
+
+void kr_unit_info (kr_client_t *client, kr_address_t *address) {
+  if ((client == NULL) || (address == NULL)) {
+    return;
+  }
+  if (address->path.unit == KR_COMPOSITOR) {
+    kr_compositor_subunit_info (client, address);
+  }
+  if (address->path.unit == KR_MIXER) {
+    kr_mixer_portgroup_info (client, address->id.name);
+  }
+}
+
+int kr_unit_control_get (kr_client_t *client, kr_unit_control_t *uc) {
+  /* FIXME not implemented */
+  return 0;
 }
 
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {

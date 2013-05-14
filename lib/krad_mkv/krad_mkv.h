@@ -1,6 +1,7 @@
 #include <time.h>
 #include <math.h>
 
+#include "krad_system.h"
 #include "krad_transmitter.h"
 
 #include "krad_mkv_ids.h"

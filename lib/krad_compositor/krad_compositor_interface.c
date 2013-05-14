@@ -312,6 +312,64 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
         }
       }
       break;
+    case EBML_ID_KRAD_COMPOSITOR_CMD_SUBUNIT_INFO:
+      address.path.unit = KR_COMPOSITOR;
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
+      address.path.subunit.compositor_subunit = numbers[0];
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
+      address.id.number = numbers[0];
+      s = address.id.number;
+      switch (address.path.subunit.compositor_subunit) {
+        case KR_VIDEOPORT:
+          if (krad_compositor->port[s].subunit.active == 1) {
+            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->port[s].subunit.address);
+            kr_ebml2_pack_uint32 ( &ebml_out,
+                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+                                   EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            krad_compositor_videoport_to_ebml2 ( &ebml_out, &krad_compositor->port[s]);
+            kr_ebml2_finish_element (&ebml_out, payload);
+            kr_ebml2_finish_element (&ebml_out, response);
+          }
+          break;
+        case KR_SPRITE:
+          if (krad_compositor->sprite[s].subunit.active == 1) {
+            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->sprite[s].subunit.address);
+            kr_ebml2_pack_uint32 ( &ebml_out,
+                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+                                   EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            krad_compositor_sprite_to_ebml2 ( &ebml_out, &krad_compositor->sprite[s]);
+            kr_ebml2_finish_element (&ebml_out, payload);
+            kr_ebml2_finish_element (&ebml_out, response);
+          }
+          break;
+        case KR_TEXT:
+          if (krad_compositor->text[s].subunit.active == 1) {
+            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->text[s].subunit.address);
+            kr_ebml2_pack_uint32 ( &ebml_out,
+                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+                                   EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            krad_compositor_text_to_ebml2 ( &ebml_out, &krad_compositor->text[s]);
+            kr_ebml2_finish_element (&ebml_out, payload);
+            kr_ebml2_finish_element (&ebml_out, response);
+          }
+          break;
+        case KR_VECTOR:
+          if (krad_compositor->vector[s].subunit.active == 1) {
+            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->vector[s].subunit.address);
+            kr_ebml2_pack_uint32 ( &ebml_out,
+                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+                                   EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            krad_compositor_vector_to_ebml2 ( &ebml_out, &krad_compositor->vector[s]);
+            kr_ebml2_finish_element (&ebml_out, payload);
+            kr_ebml2_finish_element (&ebml_out, response);
+          }
+          break;
+      }
+      break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_INFO:
     
       krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->address);

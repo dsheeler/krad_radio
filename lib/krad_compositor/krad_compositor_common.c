@@ -85,6 +85,43 @@ krad_vector_type_t krad_string_to_vector_type (char *string) {
   return NOTHING;
 }
 
+char *kr_compositor_control_to_string (kr_compositor_control_t control) {
+  switch ( control ) {
+    case KR_NO:
+      break;
+    case KR_X:
+      return "x";
+    case KR_Y:
+      return "y";
+    case KR_Z:
+      return "z";
+    case KR_WIDTH:
+      return "width";
+    case KR_HEIGHT:
+      return "height";
+    case KR_ROTATION:
+      return "rotation";
+    case KR_OPACITY:
+      return "opacity";
+    case KR_XSCALE:
+      return "xscale";
+    case KR_YSCALE:
+      return "yscale";
+    case KR_RED:
+      return "red";
+    case KR_GREEN:
+      return "green";
+    case KR_BLUE:
+      return "blue";
+    case KR_ALPHA:
+      return "alpha";
+    case KR_TICKRATE:
+      return "tickrate";   
+  }
+
+  return "Unknown";
+}
+
 char *krad_vector_type_to_string (krad_vector_type_t type) {
 
   switch ( type ) {
