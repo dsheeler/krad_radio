@@ -1802,6 +1802,14 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
   }
 }
 
+int32_t kr_address_has_control (kr_address_t *address) {
+
+  if ((address != NULL) && (address->control.unit_control > 0)) {
+    return 1;
+  }
+  return 0;
+}
+
 int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type) {
 
   switch (address->path.unit) {
@@ -1850,6 +1858,11 @@ void kr_unit_info (kr_client_t *client, kr_address_t *address) {
   if (address->path.unit == KR_MIXER) {
     kr_mixer_portgroup_info (client, address->id.name);
   }
+}
+
+int kr_unit_control_get (kr_client_t *client, kr_unit_control_t *uc) {
+  /* FIXME not implemented */
+  return 0;
 }
 
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {

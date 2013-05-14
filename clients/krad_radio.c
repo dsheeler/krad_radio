@@ -504,27 +504,35 @@ int main (int argc, char *argv[]) {
 
     if (kr_string_to_address (argv[2], &uc.address)) {
       if (argc == 3) {
-        kr_unit_info (client, &uc.address);
+        if (kr_address_has_control (&uc.address)) {
+          /* FIXME not implemented */
+          /* kr_unit_control_get (client, &uc); */
+          kr_unit_info (client, &uc.address);
+        } else {
+          kr_unit_info (client, &uc.address);
+        }
         kr_delivery_accept_and_report (client);
       }
       if ((argc == 4) || (argc == 5)) {
-        kr_unit_control_data_type_from_address (&uc.address, &uc.data_type);
-        if (uc.data_type == KR_FLOAT) {
-          uc.value.real = atof(argv[3]);
+        if (kr_address_has_control (&uc.address)) {
+          kr_unit_control_data_type_from_address (&uc.address, &uc.data_type);
+          if (uc.data_type == KR_FLOAT) {
+            uc.value.real = atof(argv[3]);
+          }
+          if (uc.data_type == KR_INT32) {
+            uc.value.integer = atoi(argv[3]);
+          }
+          if (uc.data_type == KR_STRING) {
+            uc.value.string = argv[3];
+          }
+          if (argc == 4) {
+            uc.duration = 0;
+          }
+          if (argc == 5) {
+            uc.duration = atoi(argv[4]);
+          }
+          kr_unit_control_set (client, &uc);
         }
-        if (uc.data_type == KR_INT32) {
-          uc.value.integer = atoi(argv[3]);
-        }
-        if (uc.data_type == KR_STRING) {
-          uc.value.string = argv[3];
-        }
-        if (argc == 4) {
-          uc.duration = 0;
-        }
-        if (argc == 5) {
-          uc.duration = atoi(argv[4]);
-        }
-        kr_unit_control_set (client, &uc);
       }
     }
   }
