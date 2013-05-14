@@ -119,7 +119,7 @@ struct krad_compositor_rep_St {
   uint64_t frames;
   char background_filename[256];
 };
-
+char *kr_compositor_control_to_string (kr_compositor_control_t control);
 char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 krad_vector_type_t krad_string_to_vector_type (char *string);
 kr_compositor_control_t krad_string_to_compositor_control (char *string);
