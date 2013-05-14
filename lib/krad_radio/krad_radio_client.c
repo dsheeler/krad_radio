@@ -1840,6 +1840,18 @@ void kr_print_ebml (unsigned char *buffer, int len) {
   printf ("\nEnd Raw EBML\n");
 }
 
+void kr_unit_info (kr_client_t *client, kr_address_t *address) {
+  if ((client == NULL) || (address == NULL)) {
+    return;
+  }
+  if (address->path.unit == KR_COMPOSITOR) {
+    kr_compositor_subunit_info (client, address);
+  }
+  if (address->path.unit == KR_MIXER) {
+    kr_mixer_portgroup_info (client, address->id.name);
+  }
+}
+
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
 
   unsigned char *my_command;

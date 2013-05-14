@@ -494,6 +494,21 @@ void kr_compositor_subunit_list (kr_client_t *client) {
   kr_client_push (client);
 }
 
+void kr_compositor_subunit_info (kr_client_t *client, kr_address_t *address) {
+
+  unsigned char *command;
+  unsigned char *getinfo;
+  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SUBUNIT_INFO, &getinfo);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
+  kr_ebml2_finish_element (client->ebml2, getinfo);
+  kr_ebml2_finish_element (client->ebml2, command);
+    
+  kr_client_push (client);
+}
+
 void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address) {
 
   unsigned char *command;

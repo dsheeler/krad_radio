@@ -226,6 +226,7 @@ uint32_t kr_response_get_event (kr_response_t *response);
 int kr_string_to_address (char *string, kr_address_t *addr);
 int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc);
 void kr_unit_destroy (kr_client_t *client, kr_address_t *address);
+void kr_unit_info (kr_client_t *client, kr_address_t *address);
 int krad_radio_address_to_ebml2 (kr_ebml2_t *ebml2, unsigned char **element_loc, kr_address_t *address);
 
 kr_client_t *kr_client_create (char *client_name);
