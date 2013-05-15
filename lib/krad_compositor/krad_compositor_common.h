@@ -124,5 +124,5 @@ char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 krad_vector_type_t krad_string_to_vector_type (char *string);
 kr_compositor_control_t krad_string_to_compositor_control (char *string);
 char *krad_vector_type_to_string (krad_vector_type_t type);
-
+kr_compositor_subunit_t kr_string_to_comp_subunit_type (char *string);
 #endif // KRAD_COMPOSITOR_COMMON_H

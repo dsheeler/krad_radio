@@ -171,3 +171,21 @@ char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type) {
 
   return "Unknown";
 }
+
+kr_compositor_subunit_t kr_string_to_comp_subunit_type (char *string) {
+
+  if (strncmp (string, "sprite", 6) == 0) {
+    return KR_SPRITE;
+  }
+  if (strncmp (string, "text", 4) == 0) {
+    return KR_TEXT;
+  }
+  if (strncmp (string, "vector", 6) == 0) {
+    return KR_VECTOR;
+  }
+  if (strncmp (string, "videoport", 9) == 0) {
+    return KR_VIDEOPORT;
+  }
+
+  return 0;
+}
