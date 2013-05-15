@@ -155,25 +155,24 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
       if ((part != NULL) && (strcmp(part->valuestring, "snap") == 0)) {
         kr_compositor_snapshot (kr_ws_client->kr_client);
       }
-      if ((part != NULL) && (strcmp(part->valuestring, "update_sprite") == 0)) {
-        part = cJSON_GetObjectItem (cmd, "sprite_num");
-        part2 = cJSON_GetObjectItem (cmd, "control_name");
-        part3 = cJSON_GetObjectItem (cmd, "value");
-        if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {
-            //floatval = part3->valuefloat;
-            //kr_mixer_set_control (kr_ws_client->kr_client, part->valuestring, part2->valuestring, floatval, 0);
-            //printk ("ahha sprite to %d mofuker", part3->valueint);
+      if ((part != NULL) && (strcmp(part->valuestring, "update_subunit") == 0)) {
+        part = cJSON_GetObjectItem (cmd, "subunit_id");
+        part2 = cJSON_GetObjectItem (cmd, "subunit_type");
+        part3 = cJSON_GetObjectItem (cmd, "control_name");
+        part4 = cJSON_GetObjectItem (cmd, "value");
+        if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
+
             memset (&uc, 0, sizeof(uc));
             
             uc.address.path.unit = KR_COMPOSITOR;
-            uc.address.path.subunit.compositor_subunit = KR_SPRITE;
-            uc.address.id.number = atoi(part->valuestring);
-            uc.address.control.compositor_control = krad_string_to_compositor_control (part2->valuestring);
+            uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
+            uc.address.id.number = part->valueint;
+            uc.address.control.compositor_control = krad_string_to_compositor_control (part3->valuestring);
             if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
                 (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
-              uc.value.real = part3->valuefloat;
+              uc.value.real = part4->valuefloat;
             } else {
-              uc.value.integer = part3->valueint;
+              uc.value.integer = part4->valueint;
             }
             
             kr_unit_control_set (kr_ws_client->kr_client, &uc);
