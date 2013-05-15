@@ -18,16 +18,19 @@
 
 int main (int argc, char *argv[]) {
 
-  krad_debug_init ("machine_test");
+//  krad_debug_init ("machine_test");
   
   kr_encoder_machine_t *encoder_machine;
   int ret;
+
+usleep (250000);
   
   encoder_machine = kr_encoder_machine_create ();
   
   kr_encoder_machine_encode (encoder_machine);
   kr_encoder_machine_encode (encoder_machine);
   kr_encoder_machine_encode (encoder_machine);
+usleep (1000000);
   kr_encoder_machine_encode (encoder_machine);
   kr_encoder_machine_encode (encoder_machine);
   kr_encoder_machine_encode (encoder_machine);
@@ -39,7 +42,7 @@ int main (int argc, char *argv[]) {
     printf ("Encoder machine destroy problemo!\n");
   }
 
-  krad_debug_shutdown ();
+ // krad_debug_shutdown ();
 
   return 0;
 }

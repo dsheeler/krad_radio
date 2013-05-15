@@ -51,6 +51,8 @@ int kr_encoder_machine_destroy (kr_encoder_machine_t **encoder_machine) {
   krad_machine_msg ((*encoder_machine)->machine, &msg);
   krad_machine_destroy (&(*encoder_machine)->machine);
   kr_encoder_destroy_direct (&(*encoder_machine)->encoder);
+  free (*encoder_machine);
+  *encoder_machine = NULL;
   return 0;
 }
 

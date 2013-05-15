@@ -43,6 +43,8 @@ krmachinetestsources = """
 ../lib/krad_coder/krad_coder_common.c
 ../lib/krad_coder/krad_encoder.c
 ../lib/krad_coder/krad_encoder_machine.c
+../lib/krad_vorbis/krad_vorbis.c
+../lib/krad_vpx/krad_vpx.c
 ../lib/krad_system/krad_system.c
 """.split()
 
@@ -369,8 +371,8 @@ def build(bld):
     source = krmachinetestsources + [p],
     includes = includedirs, 
     target = p.replace(".c", ""),
-    use = ["krad_mkv"],
-    uselib = syslibs + plibs)
+    use = [""],
+    uselib = kmkvshlibs + syslibs + plibs)
 
     bld.shlib(
       source = krmkvlibsources, 
