@@ -161,22 +161,37 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
         part3 = cJSON_GetObjectItem (cmd, "control_name");
         part4 = cJSON_GetObjectItem (cmd, "value");
         if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
-
-            memset (&uc, 0, sizeof(uc));
-            
-            uc.address.path.unit = KR_COMPOSITOR;
-            uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
-            uc.address.id.number = part->valueint;
-            uc.address.control.compositor_control = krad_string_to_compositor_control (part3->valuestring);
-            if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
-                (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
-              uc.value.real = part4->valuefloat;
-            } else {
-              uc.value.integer = part4->valueint;
-            }
-            
-            kr_unit_control_set (kr_ws_client->kr_client, &uc);
-            
+          memset (&uc, 0, sizeof(uc));
+          uc.address.path.unit = KR_COMPOSITOR;
+          uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
+          uc.address.id.number = part->valueint;
+          uc.address.control.compositor_control = krad_string_to_compositor_control (part3->valuestring);
+          if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
+              (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
+            uc.value.real = part4->valuefloat;
+          } else {
+            uc.value.integer = part4->valueint;
+          }
+          kr_unit_control_set (kr_ws_client->kr_client, &uc);
+        }
+      }
+      if ((part != NULL) && (strcmp(part->valuestring, "add_subunit") == 0)) {
+        part2 = cJSON_GetObjectItem (cmd, "subunit_type");
+        memset (&uc, 0, sizeof(uc));
+        uc.address.path.unit = KR_COMPOSITOR;
+        uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
+        if (uc.address.path.subunit.compositor_subunit == KR_SPRITE) {
+          part3 = cJSON_GetObjectItem (cmd, "filename");
+          kr_compositor_subunit_create (kr_ws_client->kr_client, KR_SPRITE, part3->valuestring, NULL);
+        }
+        if (uc.address.path.subunit.compositor_subunit == KR_TEXT) {
+          part3 = cJSON_GetObjectItem (cmd, "text");
+          part4 = cJSON_GetObjectItem (cmd, "font");
+          kr_compositor_subunit_create (kr_ws_client->kr_client, KR_TEXT, part3->valuestring, part4->valuestring);
+        }
+        if (uc.address.path.subunit.compositor_subunit == KR_VECTOR) {
+          part3 = cJSON_GetObjectItem (cmd, "vector_type");
+          kr_compositor_subunit_create (kr_ws_client->kr_client, KR_VECTOR, part3->valuestring, NULL);
         }
       }
     }
