@@ -430,7 +430,7 @@ void krad_websocket_add_comp_subunit ( kr_ws_client_t *kr_ws_client, kr_crate_t 
   switch (address->path.subunit.compositor_subunit) {
     case KR_SPRITE:
       controls = crate->inside.sprite->controls;
-      cJSON_AddStringToObject (msg, "text", crate->inside.sprite->filename);
+      cJSON_AddStringToObject (msg, "filename", crate->inside.sprite->filename);
       cJSON_AddNumberToObject (msg, "rate", controls.tickrate);
       break;
     case KR_TEXT:
