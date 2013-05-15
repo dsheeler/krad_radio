@@ -1,23 +1,4 @@
 #include "krad_encoder.h"
-#include "kr_client.h"
-
-#include "krad_player_common.h"
-
-typedef struct kr_encoder_msg_St kr_encoder_msg_t;
-
-/*
-static void kr_encoder_start (void *actual);
-static int kr_encoder_process (void *msgin, void *actual);
-static void kr_encoder_destroy_actual (void *actual);
-*/
-
-struct kr_encoder_msg_St {
-  kr_encoder_cmd_t cmd;
-  union {
-    float real;
-    int64_t integer;
-  } param;
-};
 
 typedef union {
   krad_vhs_t *kvhs;
@@ -29,8 +10,6 @@ typedef union {
 } kr_encoder_codec_state;
 
 struct kr_encoder2_St {
-  kr_encoder_state_t state;
-  kr_machine_t *machine;  
   kr_encoder_codec_state enc;
   krad_codec_t codec;
 };
@@ -148,98 +127,14 @@ int kr_encoder_encode_direct (kr_encoder2_t *encoder,
   return 0;
 }
 
-/* Private Functions */
-/*
-static int kr_encoder_process (void *msgin, void *actual) {
-
-  kr_encoder2_t *encoder;
-  kr_encoder_msg_t *msg;
-
-  msg = (kr_encoder_msg_t *)msgin;
-  encoder = (kr_encoder2_t *)actual;
-
-  printf ("kr_encoder_process cmd %p\n", encoder);
-
-  //printf ("kr_encoder_process cmd %d\n", msg->cmd);
-
-  switch (msg->cmd) {
-    case DOENCODE:
-      printf ("Got ENCODE command!\n");
-      break;
-    case ENCODERDESTROY:
-      printf ("Got ENCODERDESTROY command!\n");
-      return 0;
-  }
-  
-  //printf ("kr_encoder_process done\n");  
-  
-  return 1;
-}
-
-static void kr_encoder_destroy_actual (void *actual) {
-
-  kr_encoder2_t *encoder;
-
-  encoder = (kr_encoder2_t *)actual;
-
-  printf ("kr_encoder_destroy_actual cmd %p\n", encoder);
-}
-
-static void kr_encoder_start (void *actual) {
-
-  kr_encoder2_t *encoder;
-
-  encoder = (kr_encoder2_t *)actual;
-
-  encoder->state = ENIDLE;
-  printf ("kr_encoder_start()!\n");
-}
-*/
-/* Public Functions */
-/*
-void kr_encoder_destroy (kr_encoder_t **encoder) {
-//  kr_encoder_msg_t msg;
-  if ((encoder != NULL) && (*encoder != NULL)) {
-    printf ("kr_encoder_destroy()!\n");
-//   msg.cmd = ENCODERDESTROY;
-//    krad_machine_msg ((*encoder)->machine, &msg);
-//    krad_machine_destroy (&(*encoder)->machine);
-    free (*encoder);
-    *encoder = NULL;
-  }
-}
-
-kr_encoder_t *kr_encoder_create () {
-  
-  kr_encoder_t *encoder;
-  //kr_machine_params_t machine_params;
-
-  encoder = calloc (1, sizeof(kr_encoder2_t));
-
-  encoder->codec = NOCODEC;
-
-  machine_params.actual = encoder;
-  machine_params.msg_sz = sizeof (kr_encoder_msg_t);
-  machine_params.start = kr_encoder_start;
-  machine_params.process = kr_encoder_process;
-  machine_params.destroy = kr_encoder_destroy_actual;
-
-  encoder->machine = krad_machine_create (&machine_params);
-
-  return encoder;
-};
-
-kr_encoder_state_t kr_encoder_state_get (kr_encoder2_t *encoder) {
-  return encoder->state;
-}
-*/
-
-void kr_encoder_destroy_direct (kr_encoder2_t **encoder) {
+int kr_encoder_destroy_direct (kr_encoder2_t **encoder) {
   if ((encoder != NULL) && (*encoder != NULL)) {
     kr_encoder_destroy_instance_encoder (*encoder);
     free (*encoder);
     *encoder = NULL;
+    return 0;
   }
+  return -1;
 }
 
 kr_encoder2_t *kr_encoder_create_direct () {

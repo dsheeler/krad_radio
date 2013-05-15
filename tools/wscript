@@ -32,6 +32,22 @@ programs7 = """
 kr_x11_stream.c
 """.split()
 
+programs8 = """
+kr_machine_test.c
+""".split()
+
+krmachinetestsources = """
+../lib/krad_ring/krad_ring.c
+../lib/krad_player/krad_msg.c
+../lib/krad_player/krad_machine.c
+../lib/krad_coder/krad_coder_common.c
+../lib/krad_coder/krad_encoder.c
+../lib/krad_coder/krad_encoder_machine.c
+../lib/krad_vorbis/krad_vorbis.c
+../lib/krad_vpx/krad_vpx.c
+../lib/krad_system/krad_system.c
+""".split()
+
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
@@ -187,6 +203,7 @@ def check_system2(systm):
   global syslibs
   global shlibs
   global syslibs2
+  global krmachinetestsources
 
   if systm.env['KR_LINUX']:
     syslibs = syslibs + syslibs2
@@ -212,6 +229,7 @@ def check_system2(systm):
     systm.check_cxx(framework_name='CoreServices')
     includedirs = ["../lib/krad_decklink/vendor/osx/", "../lib/krad_legacy/"] + includedirs
     krmkvlibsources = ["../lib/krad_legacy/krad_mach.c"] + krmkvlibsources
+    krmachinetestsources = ["../lib/krad_legacy/krad_mach.c"] + krmachinetestsources
     syslibs = ['m', 'dl']
 
 def configure(conf):
@@ -349,6 +367,14 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
+
+  for p in programs8:
+    bld(features = 'c cprogram',
+    source = krmachinetestsources + [p],
+    includes = includedirs, 
+    target = p.replace(".c", ""),
+    use = [""],
+    uselib = kmkvshlibs + syslibs + plibs)
 
     bld.shlib(
       source = krmkvlibsources, 

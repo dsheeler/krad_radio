@@ -12,8 +12,10 @@ static void *krad_machine_run (void *arg) {
   krad_system_set_thread_name ("kr_machine");
 
   msg = calloc (1, machine->params.msg_sz);
-  //printf ("kr_msg size %zu\n", machine->params.msg_sz);    
-  machine->params.start (machine->params.actual);
+  //printf ("kr_msg size %zu\n", machine->params.msg_sz);
+  if (machine->params.start != NULL) {  
+    machine->params.start (machine->params.actual);
+  }
 
   while (1) {
     ret = kr_msgsys_wait (machine->msgsys, msg);
@@ -30,7 +32,9 @@ static void *krad_machine_run (void *arg) {
 
   free (msg);
 
-  machine->params.destroy (machine->params.actual);
+  if (machine->params.destroy != NULL) {
+    machine->params.destroy (machine->params.actual);
+  }
 
   return NULL;
 }
