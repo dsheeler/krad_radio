@@ -68,7 +68,20 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
     part = cJSON_GetObjectItem (cmd, "com");
     
     if ((part != NULL) && (strcmp(part->valuestring, "kradmixer") == 0)) {
-      part = cJSON_GetObjectItem (cmd, "cmd");    
+      part = cJSON_GetObjectItem (cmd, "cmd");
+      if ((part != NULL) && (strcmp(part->valuestring, "remove_portgroup") == 0)) {
+        part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
+        memset (&uc, 0, sizeof (uc));
+        uc.address.path.unit = KR_MIXER;
+        uc.address.path.subunit.mixer_subunit = KR_PORTGROUP;
+        strncpy (uc.address.id.name, part2->valuestring, sizeof(uc.address.id.name));
+        kr_unit_destroy (kr_ws_client->kr_client, &uc.address);
+      }      
+      if ((part != NULL) && (strcmp(part->valuestring, "add_portgroup") == 0)) {
+        part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
+        part3 = cJSON_GetObjectItem (cmd, "portgroup_direction");
+        kr_mixer_create_portgroup (kr_ws_client->kr_client, part2->valuestring, part3->valuestring, 2);
+      }
       if ((part != NULL) && (strcmp(part->valuestring, "update_portgroup") == 0)) {
         part = cJSON_GetObjectItem (cmd, "portgroup_name");
         part2 = cJSON_GetObjectItem (cmd, "control_name");
@@ -155,6 +168,15 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
       if ((part != NULL) && (strcmp(part->valuestring, "snap") == 0)) {
         kr_compositor_snapshot (kr_ws_client->kr_client);
       }
+      if ((part != NULL) && (strcmp(part->valuestring, "remove_subunit") == 0)) {
+        memset (&uc, 0, sizeof (uc));
+        part2 = cJSON_GetObjectItem (cmd, "subunit_id");
+        part3 = cJSON_GetObjectItem (cmd, "subunit_type");
+        uc.address.path.unit = KR_COMPOSITOR;
+        uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part3->valuestring);
+        uc.address.id.number = part2->valueint;
+        kr_unit_destroy (kr_ws_client->kr_client, &uc.address);
+      }      
       if ((part != NULL) && (strcmp(part->valuestring, "update_subunit") == 0)) {
         part = cJSON_GetObjectItem (cmd, "subunit_id");
         part2 = cJSON_GetObjectItem (cmd, "subunit_type");
