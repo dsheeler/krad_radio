@@ -410,56 +410,56 @@ void krad_websocket_set_mixer ( kr_ws_client_t *kr_ws_client, kr_mixer_t *mixer)
   cJSON_AddNumberToObject (msg, "sample_rate", mixer->sample_rate);
 }
 
-void krad_websocket_add_sprite ( kr_ws_client_t *kr_ws_client, kr_sprite_t *sprite) {
+void krad_websocket_add_comp_subunit ( kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
 
   cJSON *msg;
-  char spritenumstr[32];
-  
-  sprintf (spritenumstr, "%d", kr_ws_client->sprite_num);
+  kr_address_t *address;
+  kr_compositor_subunit_controls_t controls;
 
-  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  address = crate->addr;
+  
+  cJSON_AddItemToArray (kr_ws_client->msgs, msg = cJSON_CreateObject());
   
   cJSON_AddStringToObject (msg, "com", "kradcompositor");
   
-  cJSON_AddStringToObject (msg, "cmd", "add_sprite");
-  cJSON_AddStringToObject (msg, "sprite_num", spritenumstr);
-  cJSON_AddNumberToObject (msg, "x", sprite->controls.x);
-  cJSON_AddNumberToObject (msg, "y", sprite->controls.y);
-  cJSON_AddNumberToObject (msg, "r", sprite->controls.rotation);
-  cJSON_AddNumberToObject (msg, "o", sprite->controls.opacity);
+  cJSON_AddStringToObject (msg, "cmd", "add_subunit");
+  cJSON_AddStringToObject (msg, "subunit_type",
+    kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit));  
+  cJSON_AddNumberToObject (msg, "id", address->id.number);
 
-  kr_ws_client->sprite_num++;
-  
-}
+  switch (address->path.subunit.compositor_subunit) {
+    case KR_SPRITE:
+      controls = crate->inside.sprite->controls;
+      cJSON_AddStringToObject (msg, "text", crate->inside.sprite->filename);
+      cJSON_AddNumberToObject (msg, "rate", controls.tickrate);
+      break;
+    case KR_TEXT:
+      controls = crate->inside.text->controls;
+      cJSON_AddStringToObject (msg, "text", crate->inside.text->text);
+      cJSON_AddStringToObject (msg, "font", crate->inside.text->font);
+      cJSON_AddNumberToObject (msg, "red", crate->inside.text->red);
+      cJSON_AddNumberToObject (msg, "green", crate->inside.text->green);
+      cJSON_AddNumberToObject (msg, "blue", crate->inside.text->blue);
+      break;  
+    case KR_VIDEOPORT:
+      controls = crate->inside.videoport->controls;
+      break;
+    case KR_VECTOR:
+      controls = crate->inside.vector->controls;
+      cJSON_AddStringToObject (msg, "type",
+                               krad_vector_type_to_string(crate->inside.vector->type));
+      break;
+  }
 
-void krad_websocket_add_vector ( kr_ws_client_t *kr_ws_client, kr_vector_t *vector ) {
-
-  /*
-  int i;
-  cJSON *msg;
-
-  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  */
-}
-
-void krad_websocket_add_text ( kr_ws_client_t *kr_ws_client, kr_text_t *text ) {
-
-  /*
-  int i;
-  cJSON *msg;
-
-  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  */  
-}
-
-void krad_websocket_add_videoport ( kr_ws_client_t *kr_ws_client, kr_port_t *videoport ) {
-
-  /*
-  int i;
-  cJSON *msg;
-
-  //cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
-  */  
+  cJSON_AddNumberToObject (msg, "xscale", controls.xscale);
+  cJSON_AddNumberToObject (msg, "yscale", controls.yscale);
+  cJSON_AddNumberToObject (msg, "x", controls.x);
+  cJSON_AddNumberToObject (msg, "y", controls.y);
+  cJSON_AddNumberToObject (msg, "z", controls.z);
+  cJSON_AddNumberToObject (msg, "r", controls.rotation);
+  cJSON_AddNumberToObject (msg, "o", controls.opacity);
+  cJSON_AddNumberToObject (msg, "width", controls.width);
+  cJSON_AddNumberToObject (msg, "height", controls.height);
 }
 
 /* Krad API Handler */
@@ -473,16 +473,10 @@ static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
       krad_websocket_add_portgroup (kr_ws_client, crate->inside.portgroup);
       return;
     case KR_SPRITE:
-      krad_websocket_add_sprite (kr_ws_client, crate->inside.sprite);
-      return;
     case KR_VECTOR:
-      krad_websocket_add_vector (kr_ws_client, crate->inside.vector);
-      return;
     case KR_TEXT:
-      krad_websocket_add_text (kr_ws_client, crate->inside.text);
-      return;
     case KR_VIDEOPORT:
-      krad_websocket_add_videoport (kr_ws_client, crate->inside.videoport);
+      krad_websocket_add_comp_subunit (kr_ws_client, crate);
       return;
   }
 }
@@ -733,7 +727,7 @@ static int callback_kr_client (struct libwebsocket_context *this,
       kr_mixer_info (kr_ws_client->kr_client);
       //kr_compositor_info (kr_ws_client->kr_client);
       kr_mixer_portgroup_list (kr_ws_client->kr_client);
-      //kr_compositor_subunit_list (kr_ws_client->kr_client);
+      kr_compositor_subunit_list (kr_ws_client->kr_client);
       //kr_transponder_decklink_list (kr_ws_client->kr_client);
       //kr_transponder_list (kr_ws_client->kr_client);
       //kr_tags (kr_ws_client->kr_client, NULL);
