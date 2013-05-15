@@ -203,6 +203,7 @@ def check_system2(systm):
   global syslibs
   global shlibs
   global syslibs2
+  global krmachinetestsources
 
   if systm.env['KR_LINUX']:
     syslibs = syslibs + syslibs2
@@ -228,6 +229,7 @@ def check_system2(systm):
     systm.check_cxx(framework_name='CoreServices')
     includedirs = ["../lib/krad_decklink/vendor/osx/", "../lib/krad_legacy/"] + includedirs
     krmkvlibsources = ["../lib/krad_legacy/krad_mach.c"] + krmkvlibsources
+    krmachinetestsources = ["../lib/krad_legacy/krad_mach.c"] + krmachinetestsources
     syslibs = ['m', 'dl']
 
 def configure(conf):

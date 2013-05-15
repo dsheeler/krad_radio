@@ -9,30 +9,34 @@ typedef enum {
 
 struct kr_encoder_msg_St {
   kr_encoder_cmd_t cmd;
-  union {
-    float real;
-    int64_t integer;
-  } param;
+  kr_em_sector_t sector;
 };
 
 struct kr_encoder_machine_St {
   kr_encoder2_t *encoder;
   kr_machine_t *machine;
+  kr_encoder_machine_process_cb process_cb;
+  void *user;
 };
 
 static int kr_encoder_machine_process (void *msgin, void *actual) {
 
-  kr_encoder2_t *encoder;
+  kr_encoder_machine_t *encoder_machine;
   kr_encoder_msg_t *msg;
 
   msg = (kr_encoder_msg_t *)msgin;
-  encoder = (kr_encoder2_t *)actual;
-
-  printf ("kr_encoder_process cmd %p\n", encoder);
+  encoder_machine = (kr_encoder_machine_t *)actual;
 
   switch (msg->cmd) {
     case DOENCODE:
       printf ("Got ENCODE command!\n");
+      
+      //kr_encoder_encode_direct (encoder_machine->encoder,
+      //                          msg->sector.medium,
+      //                          msg->sector.codeme);
+      
+      encoder_machine->process_cb (encoder_machine, &msg->sector, encoder_machine->user);
+      
       return 1;
     case ENCODERDESTROY:
       printf ("Got ENCODERDESTROY command!\n");
@@ -56,17 +60,23 @@ int kr_encoder_machine_destroy (kr_encoder_machine_t **encoder_machine) {
   return 0;
 }
 
-kr_encoder_machine_t *kr_encoder_machine_create () {
+kr_encoder_machine_t *kr_encoder_machine_create (kr_encoder_machine_process_cb process_callback, void *user) {
   
   kr_encoder_machine_t *encoder_machine;
   kr_machine_params_t machine_params;
 
+  if ((process_callback == NULL) || (user == NULL)) {
+    return NULL;
+  }
+
   encoder_machine = calloc (1, sizeof(kr_encoder_machine_t));
   memset (&machine_params, 0, sizeof(kr_machine_params_t));
 
+  encoder_machine->process_cb = process_callback;
+  encoder_machine->user = user;
   encoder_machine->encoder = kr_encoder_create_direct ();
 
-  machine_params.actual = encoder_machine->encoder;
+  machine_params.actual = encoder_machine;
   machine_params.msg_sz = sizeof (kr_encoder_msg_t);
   machine_params.process = kr_encoder_machine_process;
 
@@ -75,13 +85,15 @@ kr_encoder_machine_t *kr_encoder_machine_create () {
   return encoder_machine;
 };
 
-int kr_encoder_machine_encode (kr_encoder_machine_t *encoder_machine) {
+int kr_encoder_machine_encode (kr_encoder_machine_t *encoder_machine,
+                               kr_em_sector_t *sector) {
   kr_encoder_msg_t msg;
   if (encoder_machine == NULL) {
     return -1;
   }
   printf ("kr_encoder_machine_encode()!\n");
   msg.cmd = DOENCODE;
+  memcpy (&msg.sector, sector, sizeof(kr_em_sector_t));
   krad_machine_msg (encoder_machine->machine, &msg);
   return 0;
 }
