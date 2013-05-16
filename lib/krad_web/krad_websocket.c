@@ -68,7 +68,20 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
     part = cJSON_GetObjectItem (cmd, "com");
     
     if ((part != NULL) && (strcmp(part->valuestring, "kradmixer") == 0)) {
-      part = cJSON_GetObjectItem (cmd, "cmd");    
+      part = cJSON_GetObjectItem (cmd, "cmd");
+      if ((part != NULL) && (strcmp(part->valuestring, "remove_portgroup") == 0)) {
+        part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
+        memset (&uc, 0, sizeof (uc));
+        uc.address.path.unit = KR_MIXER;
+        uc.address.path.subunit.mixer_subunit = KR_PORTGROUP;
+        strncpy (uc.address.id.name, part2->valuestring, sizeof(uc.address.id.name));
+        kr_unit_destroy (kr_ws_client->kr_client, &uc.address);
+      }      
+      if ((part != NULL) && (strcmp(part->valuestring, "add_portgroup") == 0)) {
+        part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
+        part3 = cJSON_GetObjectItem (cmd, "portgroup_direction");
+        kr_mixer_create_portgroup (kr_ws_client->kr_client, part2->valuestring, part3->valuestring, 2);
+      }
       if ((part != NULL) && (strcmp(part->valuestring, "update_portgroup") == 0)) {
         part = cJSON_GetObjectItem (cmd, "portgroup_name");
         part2 = cJSON_GetObjectItem (cmd, "control_name");
@@ -77,8 +90,12 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
           if (strcmp(part2->valuestring, "xmms2") == 0) {
             kr_mixer_portgroup_xmms2_cmd (kr_ws_client->kr_client, part->valuestring, part3->valuestring);
           } else {
-            floatval = part3->valuefloat;
-            kr_mixer_set_control (kr_ws_client->kr_client, part->valuestring, part2->valuestring, floatval, 0);
+            if (strcmp(part2->valuestring, "crossfade") == 0) {
+              kr_mixer_set_portgroup_crossfade_group (kr_ws_client->kr_client, part->valuestring, part3->valuestring);
+            } else {
+              floatval = part3->valuefloat;
+              kr_mixer_set_control (kr_ws_client->kr_client, part->valuestring, part2->valuestring, floatval, 0);
+            }
           }
         }
       }
@@ -159,6 +176,17 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
       if ((part != NULL) && (strcmp(part->valuestring, "display") == 0)) {
          kr_transponder_subunit_create (kr_ws_client->kr_client, "rawout", "");
       }
+
+      if ((part != NULL) && (strcmp(part->valuestring, "remove_subunit") == 0)) {
+        memset (&uc, 0, sizeof (uc));
+        part2 = cJSON_GetObjectItem (cmd, "subunit_id");
+        part3 = cJSON_GetObjectItem (cmd, "subunit_type");
+        uc.address.path.unit = KR_COMPOSITOR;
+        uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part3->valuestring);
+        uc.address.id.number = part2->valueint;
+        kr_unit_destroy (kr_ws_client->kr_client, &uc.address);
+      }      
+
       if ((part != NULL) && (strcmp(part->valuestring, "update_subunit") == 0)) {
         part = cJSON_GetObjectItem (cmd, "subunit_id");
         part2 = cJSON_GetObjectItem (cmd, "subunit_type");
@@ -443,7 +471,7 @@ void krad_websocket_add_comp_subunit ( kr_ws_client_t *kr_ws_client, kr_crate_t 
   cJSON_AddStringToObject (msg, "cmd", "add_subunit");
   cJSON_AddStringToObject (msg, "subunit_type",
     kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit));  
-  cJSON_AddNumberToObject (msg, "id", address->id.number);
+  cJSON_AddNumberToObject (msg, "subunit_id", address->id.number);
 
   switch (address->path.subunit.compositor_subunit) {
     case KR_SPRITE:
