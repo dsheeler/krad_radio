@@ -92,7 +92,7 @@ static void json_to_cmd (kr_ws_client_t *kr_ws_client, char *value, int len) {
           if (strcmp(part2->valuestring, "xmms2") == 0) {
             kr_mixer_portgroup_xmms2_cmd (kr_ws_client->kr_client, part->valuestring, part3->valuestring);
           } else {
-            if (strcmp(part2->valuestring, "crossfade") == 0) {
+            if (strcmp(part2->valuestring, "set_crossfade_group") == 0) {
               kr_mixer_set_portgroup_crossfade_group (kr_ws_client->kr_client, part->valuestring, part3->valuestring);
             } else {
               floatval = part3->valuefloat;
