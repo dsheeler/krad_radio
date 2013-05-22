@@ -10,8 +10,8 @@
   <style>
     
     @font-face {
-      font-family: "TradeGothicLTComBoldCondensed";
-      src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
+    font-family: "TradeGothicLTComBoldCondensed";
+    src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
     }
     
     body {
@@ -35,16 +35,64 @@
       cursor: default;
     }
 
+
+    .kradcompositor_control {
+      border: 1px solid black;
+      width: 960px;
+      height: 540px;
+      background-color: #ffffff;
+      float: left;
+      margin: 14px;
+      box-shadow: 0px 0px 10px #000;
+    }
+    
+
+    .kradcompositor_subunit_list {
+      width: 960px;
+      float: left;
+      margin: 14px;
+    }
+
+    ul {
+      list-style:none;
+      border-radius: 6px;
+      background-color: #383838
+    }
+
+    li {
+
+      border-radius: 6px;
+      color: white;
+      background-color: #2A2A2A; 
+      padding: 20px;
+    }
+
+    li.alt {
+      background-color: #282828;
+    }
+    
+    .alt.selected {
+      background-color: #475b7e;
+    }
+
+    .selected {
+      color: white;
+      background-color: #43587A;
+      font-weight: bold;
+    }
+
+    
+
     .kradlink_link h3 {
-            color: #919191;
-            text-shadow: 0px 0px 0px #444;
-            font-weight: bold; 
-            font-size: 26px;
+      color: #919191;
+      text-shadow: 0px 0px 0px #444;
+      font-weight: bold; 
+      font-size: 26px;
     }
     
     .prepare_link_server_info label, .prepare_link_file_info label {
-         font-weight: bold;
-         position: absolute;
+      font-weight: bold;
+      position: absolute;
       width: 110px;
       padding-top: 7px;
     }
@@ -59,6 +107,7 @@
 
     .kradmixer_control {
       margin-top: 24px;
+      
     }
 
      .kradradio_station { margin-top: 20px; }
@@ -67,8 +116,8 @@
 
     .kradmixer_control h2, .kradlink_control h2, .kradlink_control h3, .masterbus h2 {
             position: relative;
-            right: 46px;
-            bottom: 68px;
+            right: 120px;
+            bottom: 120px;
             -webkit-transform: rotate(-90deg);
             -moz-transform: rotate(-90deg);
             -o-transform: rotate(-90deg);
@@ -89,7 +138,7 @@
     
     .crossfade_control h2 {
             position: static;
-            text-align: center;
+            text-align: left;
             margin-top: 4px;
             -webkit-transform: none;
             -moz-transform: none;
@@ -109,6 +158,7 @@
     }
     
     .meter_wrapper {
+      text-align: center;
       height: 200px; float: left; margin-top: 0px;
       padding-left: 28px; margin-left: 20px; margin-right: 20px; padding-right: 20px; width: 50px;
     }
