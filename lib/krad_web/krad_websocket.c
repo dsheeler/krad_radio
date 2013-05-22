@@ -367,6 +367,22 @@ void krad_websocket_set_portgroup_eff ( kr_ws_client_t *kr_ws_client, kr_address
   cJSON_AddNumberToObject (msg, "value", value);
 }
 
+void krad_websocket_remove_subunit ( kr_ws_client_t *kr_ws_client, kr_address_t *address) {
+
+  cJSON *msg;
+  
+  cJSON_AddItemToArray(kr_ws_client->msgs, msg = cJSON_CreateObject());
+  
+  cJSON_AddStringToObject (msg, "com", "kradcompositor");
+  
+  cJSON_AddStringToObject (msg, "cmd", "remove_subunit");
+
+  cJSON_AddStringToObject (msg, "subunit_type",
+    kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit));
+
+  cJSON_AddNumberToObject (msg, "subunit_id", address->id.number);
+}
+
 void krad_websocket_update_subunit (kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
 
   cJSON *msg;  
@@ -586,11 +602,16 @@ static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
     }
 
     /* Subunit Destroyed */
-    if ((kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) &&
-        (crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
+    if (kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) {
+      if ((crate->addr->path.unit == KR_MIXER) &&
+          (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
         krad_websocket_remove_portgroup (kr_ws_client, crate->addr);
-        kr_crate_recycle (&crate);
-        continue;
+      }
+      if (crate->addr->path.unit == KR_COMPOSITOR) {
+        krad_websocket_remove_subunit (kr_ws_client, crate->addr);
+      }
+      kr_crate_recycle (&crate);
+      continue;
     }
 
     /* Initial list of subunits or subunit created */
