@@ -582,15 +582,101 @@ void krad_compositor_port_push_frame (krad_compositor_port_t *port, krad_frame_t
 
   int wrote;
 
-  krad_framepool_ref_frame (krad_frame);
-  krad_ringbuffer_write (port->frame_ring, (char *)&krad_frame, sizeof(krad_frame_t *));
-
   if (port->direction == OUTPUT) {
-    wrote = write (port->socketpair[0], "0", 1);
-    if (wrote != 1) {
-      printk ("Krad Compositor: port write unexpected write return value %d", wrote);
+    if (port->local != 1) {
+      krad_framepool_ref_frame (krad_frame);
+      krad_ringbuffer_write (port->frame_ring, (char *)&krad_frame, sizeof(krad_frame_t *));      
+      wrote = write (port->socketpair[0], "0", 1);
+      if (wrote != 1) {
+        printk ("Krad Compositor: port write unexpected write return value %d", wrote);
+      }
+    } else {
+
+
+      memcpy (port->local_frame->pixels,
+              krad_frame->pixels, 
+              port->krad_compositor->width * port->krad_compositor->height * 4);
+
+      int ret;
+      char buf[1];
+      struct pollfd pollfds[1];
+      
+      ret = 0;
+      buf[0] = 0;
+
+      pollfds[0].events = POLLOUT;
+      pollfds[0].fd = port->msg_sd;
+      
+      ret = poll (pollfds, 1, 3);
+
+      if (ret < 0) {
+        printke ("krad compositor poll failure %d", ret);
+        //return -1;
+      }
+      
+      if (ret == 0) {
+        printke ("krad compositor : videoport poll write timeout", ret);
+        //return -1;
+      }
+
+      if (ret == 1) {
+        if (pollfds[0].revents & POLLHUP) {
+          printke ("krad compositor: videoport poll hangup", ret);
+          //return -1;
+        }
+        if (pollfds[0].revents & POLLERR) {
+          printke ("krad compositor: videoport poll error", ret);
+          //return -1;
+        }  
+        if (pollfds[0].revents & POLLOUT) {
+          ret = write (port->msg_sd, buf, 1);
+          if (ret == 1) {
+            // good
+            //return 0;
+          }
+        }
+      }
+
+      ret = 0;
+      buf[0] = 0;
+
+      pollfds[0].events = POLLIN;
+      pollfds[0].fd = port->msg_sd;
+      
+      ret = poll (pollfds, 1, 0);
+
+      if (ret < 0) {
+        printke ("krad compositor poll failure %d", ret);
+        //return -1;
+      }
+      
+      if (ret == 0) {
+        printke ("krad compositor : videoport poll readr timeout", ret);
+        //return -1;
+      }
+
+      if (ret == 1) {
+        if (pollfds[0].revents & POLLHUP) {
+          printke ("krad compositor: videoport poll hangup", ret);
+          //return -1;
+        }
+        if (pollfds[0].revents & POLLERR) {
+          printke ("krad compositor: videoport poll error", ret);
+          //return -1;
+        }  
+        if (pollfds[0].revents & POLLIN) {
+          ret = read (port->msg_sd, buf, 1);
+          if (ret == 1) {
+            // good
+            //return 0;
+          }
+        }
+      }
     }
   }
+  
+  // not good
+  //return -2;
 }
 
 static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port) {
@@ -622,7 +708,7 @@ static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port)
   }
   
   if (ret == 0) {
-    printke ("krad compositor : videoport poll write timeout", ret);
+    printke ("krad compositor : videoport poll write2 timeout", ret);
     return -1;
   }
 
@@ -822,10 +908,13 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
       
   } else {
   
-    //OUTPUT
-    if (socketpair(AF_UNIX, SOCK_STREAM, 0, port->socketpair)) {
-      printk ("Krad Compositor: subunit could not create socketpair errno: %d", errno);
-      return NULL;
+    if (port->local != 1) {
+      //OUTPUT
+      if (socketpair(AF_UNIX, SOCK_STREAM, 0, port->socketpair)) {
+        printk ("Krad Compositor: subunit could not create socketpair errno: %d", errno);
+        return NULL;
+      }
+      port->yuv_color_depth = PIX_FMT_YUV420P;
     }
   
     port->source_width = krad_compositor->width;
@@ -834,7 +923,6 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
     port->subunit.height = height;
     port->crop_width = krad_compositor->width;
     port->crop_height = krad_compositor->height;
-    port->yuv_color_depth = PIX_FMT_YUV420P;
   }
 
   port->frame_ring = 
@@ -898,9 +986,7 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
                          krad_compositor->width * 4);
   
     port->local_frame->cr = cairo_create (port->local_frame->cst);    
-    
-    
-    
+
     port->subunit.active = 1;
   } else {
     printke ("Krad Compositor: failed to create local port");
@@ -924,8 +1010,10 @@ static void krad_compositor_port_destroy_actual (krad_compositor_t *krad_composi
   }
   if (port->direction == OUTPUT) {
     krad_compositor->active_output_ports--;
-    close (port->socketpair[0]);
-    close (port->socketpair[1]);      
+    if (port->local != 1) {
+      close (port->socketpair[0]);
+      close (port->socketpair[1]);
+    }  
   }
    
    if (port->local == 1) {

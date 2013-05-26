@@ -50,6 +50,10 @@ programs11 = """
 krplayer.c
 """.split()
 
+programs12 = """
+kr_display.c
+""".split()
+
 kr_shell = """
 ./krad_shell/krad_shell.c
 """.split()
@@ -235,6 +239,10 @@ depsources11 = """
 ../lib/krad_flac/krad_flac.c
 ../lib/krad_opus/krad_opus.c
 ../lib/krad_opus/opus_header.c
+""".split()
+
+depsources12 = """
+../lib/krad_wayland/krad_wayland.c
 """.split()
 
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
@@ -448,6 +456,14 @@ def build(bld):
 
   if bld.env['KR_LINUX'] and bld.env['KRAD_USE_WAYLAND']:
     for p in programs9:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs9 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs12:
       bld(features = 'c cprogram', 
       source = [p] + depsources9,
       includes = includedirs, 

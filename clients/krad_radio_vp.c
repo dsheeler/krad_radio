@@ -1,9 +1,9 @@
 #include <cairo.h>
 #include "kr_client.h"
 
-#define GREY  0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255   * 1.0
+#define GREY  0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255 * 1.0
 #define BLUE 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0
-#define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255   * 1.0, 0.255 / 0.255   * 1.0
+#define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.255 / 0.255   * 1.0
 #define ORANGE  0.255 / 0.255 * 1.0, 0.080 / 0.255 * 1.0, 0.0
 
 typedef struct videoport_demo_St videoport_demo_t;
@@ -195,7 +195,7 @@ int main (int argc, char *argv[]) {
 	
 	kr_videoport_activate (videoport);
 	
-	for (i = 0; i < 300; i++) {
+	for (i = 0; i < 3000; i++) {
 	  usleep (30000);
 	  if (destroy == 1) {
 		  printf ("Got signal!\n");
