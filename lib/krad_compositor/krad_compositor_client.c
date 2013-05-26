@@ -539,7 +539,7 @@ void kr_videoport_destroy_cmd (kr_client_t *client) {
   kr_client_push (client);
 }
 
-void kr_videoport_create_cmd (kr_client_t *client) {
+void kr_videoport_create_cmd (kr_client_t *client, int32_t direction) {
 
   unsigned char *compositor_command;
   unsigned char *create_videoport;
@@ -548,6 +548,7 @@ void kr_videoport_create_cmd (kr_client_t *client) {
   kr_ebml2_start_element (client->ebml2,
                           EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE,
                           &create_videoport);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_PORT_DIRECTION, direction);
   kr_ebml2_finish_element (client->ebml2, create_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
     
@@ -662,7 +663,7 @@ int kr_videoport_error (kr_videoport_t *videoport) {
   return -1;
 }
 
-kr_videoport_t *kr_videoport_create (kr_client_t *client) {
+kr_videoport_t *kr_videoport_create (kr_client_t *client, int32_t direction) {
 
   kr_videoport_t *videoport;
   int sockets[2];
@@ -701,7 +702,7 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client) {
   krad_system_set_socket_nonblocking (videoport->sd);
     
   krad_system_set_socket_blocking (videoport->client->krad_app_client->sd);
-  kr_videoport_create_cmd (videoport->client);
+  kr_videoport_create_cmd (videoport->client, direction);
   usleep (5000);
   kr_send_fd (videoport->client, videoport->kr_shm->fd);
   kr_send_fd (videoport->client, sockets[1]);

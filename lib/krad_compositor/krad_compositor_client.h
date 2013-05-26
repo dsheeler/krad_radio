@@ -49,7 +49,7 @@ int kr_videoport_error (kr_videoport_t *videoport);
 void kr_videoport_set_callback (kr_videoport_t *kr_videoport, int callback (void *, void *), void *pointer);
 void kr_videoport_activate (kr_videoport_t *kr_videoport);
 void kr_videoport_deactivate (kr_videoport_t *kr_videoport);
-kr_videoport_t *kr_videoport_create (kr_client_t *client);
+kr_videoport_t *kr_videoport_create (kr_client_t *client, int32_t direction);
 void kr_videoport_destroy (kr_videoport_t *kr_videoport);
 
 /**@}*/

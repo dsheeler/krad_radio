@@ -22,16 +22,16 @@ void signal_recv (int sig) {
 
 void render_hex (cairo_t *cr, int x, int y, int w) {
 
-	cairo_pattern_t *pat;
+	//cairo_pattern_t *pat;
 	static float hexrot = 0;
 	int r1;
-	float scale;
+	//float scale;
 		
 	cairo_save(cr);
 	cairo_set_line_width(cr, 1);
 	cairo_set_source_rgb(cr, ORANGE);
 
-	scale = 2.5;
+	//scale = 2.5;
 	r1 = ((w)/2 * sqrt(3));
 
 	cairo_translate (cr, x, y);
@@ -54,6 +54,8 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_fill (cr);
 	
 	cairo_restore(cr);
+
+/*
 	cairo_save(cr);
 		
 	cairo_set_line_width(cr, 1.5);
@@ -90,7 +92,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_fill (cr);
 	cairo_pattern_destroy (pat);
 	cairo_restore(cr);
-
+*/
 }
 
 
@@ -171,7 +173,7 @@ int main (int argc, char *argv[]) {
 	  return 1;
   }
 
-	videoport = kr_videoport_create (client);
+	videoport = kr_videoport_create (client, INPUT);
 
 	if (videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");

@@ -164,6 +164,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   char string[512];
   char string2[512];
   uint32_t numbers[10];
+  int32_t direction;
   krad_app_server_t *app;
 
   krad_radio = client->krad_radio;
@@ -411,12 +412,17 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE:
     printk ("VID command!!");
+
+      kr_ebml2_unpack_element_int32 (&ebml_in, &element, &direction);
+
       krad_system_set_socket_blocking (app->current_client->sd);
     
       sd1 = krad_app_server_recvfd (app->current_client);
       sd2 = krad_app_server_recvfd (app->current_client);
       printk ("VIDEOPORT_CREATE Got FD's %d and %d\n", sd1, sd2);
-      krad_compositor_local_port_create (krad_compositor, "localport", INPUT, sd1, sd2);
+      krad_compositor_local_port_create (krad_compositor,
+                                         "localport",
+                                         direction, sd1, sd2);
       
       krad_system_set_socket_nonblocking (app->current_client->sd);
       

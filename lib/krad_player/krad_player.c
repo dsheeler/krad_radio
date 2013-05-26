@@ -465,7 +465,7 @@ static void kr_player_start (void *actual) {
   kr_audioport_set_callback (player->audioport, audioport_process, player);
   kr_audioport_activate (player->audioport);
 
-  player->videoport = kr_videoport_create (player->client);
+  player->videoport = kr_videoport_create (player->client, INPUT);
   if (player->videoport == NULL) {
     fprintf (stderr, "could not setup videoport\n");
     exit (1);

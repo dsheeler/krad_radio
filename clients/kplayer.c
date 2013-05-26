@@ -425,7 +425,7 @@ int krad_player_open (krad_player_t *player, char *input) {
       fprintf (stderr, "Krad Player: Could not find open the needed codec\n");
     }
     
-    player->videoport = kr_videoport_create (player->client);
+    player->videoport = kr_videoport_create (player->client, INPUT);
     
     if (player->videoport == NULL) {
       fprintf (stderr, "could not setup videoport\n");

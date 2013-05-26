@@ -427,7 +427,7 @@ int main (int argc, char *argv[]) {
   }
 
 
-  videoport = kr_videoport_create (client);
+  videoport = kr_videoport_create (client, INPUT);
 
 	if (videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");
