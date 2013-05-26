@@ -47,6 +47,8 @@ static void perspective_map (kr_perspective_t *perspective) {
   int32_t w;
   int32_t h;
 
+  krad_timer_start (perspective->map_timer);
+
   w = perspective->width;
   h = perspective->height;  
   map = perspective->map;
@@ -68,6 +70,8 @@ static void perspective_map (kr_perspective_t *perspective) {
       map[x + w * y] = rx + w * ry;
     }
   }
+
+  krad_timer_status (perspective->map_timer);
 }
 
 int32_t kr_perspective_set (kr_perspective_t *perspective,
@@ -185,6 +189,9 @@ kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height) {
 
   perspective->map = calloc (1, perspective->width * perspective->height * 4);
 
+  perspective->map_timer = krad_timer_create_with_name ("Perspective Map");
+  perspective->run_timer = krad_timer_create_with_name ("Perspective Run");
+
   kr_perspective_set_default (perspective);
 
   return perspective;
@@ -196,26 +203,66 @@ int32_t kr_perspective_destroy (kr_perspective_t **perspective) {
     return -1;
   }
 
+  krad_timer_destroy ((*perspective)->map_timer);
+  krad_timer_destroy ((*perspective)->run_timer);
+
   free ((*perspective)->map);
   free (*perspective);
   return 0;
 }
 
-void kr_perspective (kr_perspective_t *perspective,
-                     uint32_t *out,
-                     uint32_t *in) {
+int32_t kr_perspective_argb (kr_perspective_t *perspective,
+                             uint8_t *out,
+                             uint8_t *in) {
 
   uint32_t w;
   uint32_t h;
   uint32_t x;
   uint32_t y;
+  uint32_t *outpx;
+  uint32_t *inpx;
+
+  if ((perspective == NULL) || (out == NULL) || (in == NULL)) {
+    return -1;
+  }
 
   w = perspective->width;
   h = perspective->height; 
-  
+  inpx = (uint32_t *)in;
+  outpx = (uint32_t *)out;  
+
+  krad_timer_start (perspective->run_timer);
+
   for (y = 0; y < h; y++) {
     for (x = 0; x < w; x++) {
-      out[x + w * y] = in[perspective->map[x + w * y]];
+      outpx[x + w * y] = inpx[perspective->map[x + w * y]];
     }
   }
+
+  krad_timer_status (perspective->run_timer);
+
+  return 0;
+}
+
+int32_t kr_perspective (kr_perspective_t *perspective,
+                        kr_image_t *out,
+                        kr_image_t *in) {
+
+  if ((perspective == NULL) || (out == NULL) || (in == NULL)) {
+    return -1;
+  }
+
+  if ((out->px == NULL) || (in->px == NULL)) {
+    return -2;
+  }
+
+  if ((in->w != perspective->width) || (in->h != perspective->height)) {
+    return -3;
+  }
+
+  if ((out->w != perspective->width) || (out->h != perspective->height)) {
+    return -4;
+  }
+
+  return kr_perspective_argb (perspective, out->px, in->px);
 }

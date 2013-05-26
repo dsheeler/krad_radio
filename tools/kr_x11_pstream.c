@@ -159,7 +159,6 @@ void random_perspective (kr_x11s_t *x11s) {
   view.top_left.y = rand() % hheight;
   view.top_right.x = (rand() % hwidth) + hwidth;
   view.top_right.y = (rand() % hheight);
-
   view.bottom_left.x = rand() % hwidth;
   view.bottom_left.y = (rand() % hheight) + hheight;
   view.bottom_right.x = (rand() % hwidth) + hwidth;
@@ -224,7 +223,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     }
 
     if (1) {
-      kr_perspective (x11s->perspective, (uint32_t *)pframe->pixels, (uint32_t *)image);
+      kr_perspective_argb (x11s->perspective, (uint8_t *)pframe->pixels, image);
       frame->yuv_pixels[0] = (uint8_t *)pframe->pixels;
     } else {  
       frame->yuv_pixels[0] = image;
@@ -284,7 +283,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
             x11s->frames++);
     fflush (stdout);
   
-    if (rand() % 100 > 95) {
+    if (rand() % 100 > 98) {
       random_perspective (x11s);
     }
 

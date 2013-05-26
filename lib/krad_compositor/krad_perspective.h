@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+#include <krad_timer.h>
+#include <krad_coder_common.h>
+
 typedef struct krad_perspective_St krad_perspective_t;
 typedef struct krad_perspective_St kr_perspective_t;
 typedef struct krad_perspective_view_St krad_perspective_view_t;
@@ -41,12 +44,20 @@ struct krad_perspective_St {
   krad_position_t tr;
   krad_position_t bl;
   krad_position_t br;
-  int32_t *map;  
+  int32_t *map;
+
+  krad_timer_t *map_timer;
+  krad_timer_t *run_timer;
+
 };
 
-void kr_perspective (kr_perspective_t *perspective,
-                     uint32_t *out,
-                     uint32_t *in);
+int32_t kr_perspective_argb (kr_perspective_t *perspective,
+                             uint8_t *out,
+                             uint8_t *in);
+
+int32_t kr_perspective (kr_perspective_t *perspective,
+                        kr_image_t *out,
+                        kr_image_t *in);
 
 int32_t kr_perspective_set (kr_perspective_t *perspective,
                             kr_perspective_view_t *view);

@@ -24,10 +24,14 @@ struct kr_test_machine_St {
 
 int encoded_callback (kr_encoder_machine_t *encoder_machine, kr_em_sector_t *sector, void *user) {
   
+  /*
+
   kr_test_machine_t *test_machine;
   
   test_machine = (kr_test_machine_t *)user;
   
+  */
+
   printf ("Encoded callback!\n");
   
   kr_medium_kludge_destroy (&sector->medium);
