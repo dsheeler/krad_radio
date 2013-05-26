@@ -1,5 +1,26 @@
 #include "krad_perspective.h"
 
+typedef struct krad_perspective_priv_St kr_perspective_priv_t;
+typedef struct krad_position_St krad_position_t;
+typedef struct krad_position_St kr_coord_t;
+
+struct krad_position_St {
+  double x;
+  double y;
+};
+
+struct krad_perspective_priv_St {
+  int32_t *map;
+  krad_position_t tl;
+  krad_position_t tr;
+  krad_position_t bl;
+  krad_position_t br;
+  uint32_t width;
+  uint32_t height;
+  krad_timer_t *map_timer;
+  krad_timer_t *run_timer;
+};
+
 static void sub_vec2 (kr_coord_t *r, kr_coord_t *a, kr_coord_t *b) {
   r->x = a->x - b->x;
   r->y = a->y - b->y;
@@ -35,6 +56,8 @@ static void get_pixel_position (kr_coord_t* r, kr_coord_t* t,
 static void perspective_map (kr_perspective_t *perspective) {
 
   int32_t *map;
+  kr_coord_t tl;
+  kr_coord_t bl;
   kr_coord_t top;
   kr_coord_t bot;
   kr_coord_t r;
@@ -47,23 +70,25 @@ static void perspective_map (kr_perspective_t *perspective) {
   int32_t w;
   int32_t h;
 
-  krad_timer_start (perspective->map_timer);
+  //krad_timer_start (perspective->priv->map_timer);
 
-  w = perspective->width;
-  h = perspective->height;  
-  map = perspective->map;
+  w = perspective->priv->width;
+  h = perspective->priv->height;
+  tl = perspective->priv->tl;
+  bl = perspective->priv->bl;
+  map = perspective->priv->map;
   
-  sub_vec2 (&top, &perspective->tr, &perspective->tl);
-  sub_vec2 (&bot, &perspective->br, &perspective->bl);
+  sub_vec2 (&top, &perspective->priv->tr, &tl);
+  sub_vec2 (&bot, &perspective->priv->br, &bl);
 
   for (y = 0; y < h; y++) {
     for (x = 0; x < w; x++) {
       in.x = (double)x / (double)w;
       in.y = (double)y / (double)h;
       get_pixel_position (&r, &top, &bot,
-                          &perspective->tl, &perspective->bl, &in );
-      rx = lrint(r.x * (float)w);
-      ry = lrint(r.y * (float)h);
+                          &tl, &bl, &in );
+      rx = lrint (r.x * (float)w);
+      ry = lrint (r.y * (float)h);
       if (rx < 0 || rx >= w || ry < 0 || ry >= h) {
         continue;
       }
@@ -71,7 +96,7 @@ static void perspective_map (kr_perspective_t *perspective) {
     }
   }
 
-  krad_timer_status (perspective->map_timer);
+  //krad_timer_status (perspective->priv->map_timer);
 }
 
 int32_t kr_perspective_set (kr_perspective_t *perspective,
@@ -121,41 +146,41 @@ int32_t kr_perspective_set (kr_perspective_t *perspective,
   memcpy (&perspective->view, view, sizeof(kr_perspective_view_t));
 
   if (view->top_left.x == 0) {
-    perspective->tl.x = 0;
+    perspective->priv->tl.x = 0;
   } else {
-    perspective->tl.x = view->top_left.x/(double)(perspective->width - 1);
+    perspective->priv->tl.x = view->top_left.x/(double)(perspective->width - 1);
   }
 
   if (view->top_left.y == 0) {
-    perspective->tl.y = 0;
+    perspective->priv->tl.y = 0;
   } else {
-    perspective->tl.y = view->top_left.y/(double)(perspective->height - 1);
+    perspective->priv->tl.y = view->top_left.y/(double)(perspective->height - 1);
   }
 
-  perspective->tr.x = view->top_right.x/(double)(perspective->width - 1);
+  perspective->priv->tr.x = view->top_right.x/(double)(perspective->width - 1);
 
   if (view->top_right.y == 0) {
-    perspective->tr.y = 0;
+    perspective->priv->tr.y = 0;
   } else {
-    perspective->tr.y = view->top_right.y/(double)(perspective->height - 1);
+    perspective->priv->tr.y = view->top_right.y/(double)(perspective->height - 1);
   }
 
   if (view->bottom_left.x == 0) {
-    perspective->bl.x = 0;
+    perspective->priv->bl.x = 0;
   } else {
-    perspective->bl.x = view->bottom_left.x/(double)(perspective->width - 1);
+    perspective->priv->bl.x = view->bottom_left.x/(double)(perspective->width - 1);
   }
 
-  perspective->bl.y = view->bottom_left.y/(double)(perspective->height - 1);
+  perspective->priv->bl.y = view->bottom_left.y/(double)(perspective->height - 1);
 
-  perspective->br.x = view->bottom_right.x/(double)(perspective->width - 1);
-  perspective->br.y = view->bottom_right.y/(double)(perspective->height - 1);
+  perspective->priv->br.x = view->bottom_right.x/(double)(perspective->width - 1);
+  perspective->priv->br.y = view->bottom_right.y/(double)(perspective->height - 1);
 
 
-  printf ("%f-%f\n", perspective->tl.x, perspective->tl.y);
-  printf ("%f-%f\n", perspective->tr.x, perspective->tr.y);
-  printf ("%f-%f\n", perspective->bl.x, perspective->bl.y);
-  printf ("%f-%f\n", perspective->br.x, perspective->br.y);
+  printf ("%f-%f\n", perspective->priv->tl.x, perspective->priv->tl.y);
+  printf ("%f-%f\n", perspective->priv->tr.x, perspective->priv->tr.y);
+  printf ("%f-%f\n", perspective->priv->bl.x, perspective->priv->bl.y);
+  printf ("%f-%f\n", perspective->priv->br.x, perspective->priv->br.y);
 
   perspective_map (perspective);
 
@@ -186,11 +211,14 @@ kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height) {
 
   perspective->width = width;
   perspective->height = height;
+  perspective->priv = calloc (1, sizeof(kr_perspective_priv_t));
+  perspective->priv->map = calloc (1, perspective->width * perspective->height * 4);
 
-  perspective->map = calloc (1, perspective->width * perspective->height * 4);
+  perspective->priv->width = perspective->width;
+  perspective->priv->height = perspective->height;
 
-  perspective->map_timer = krad_timer_create_with_name ("Perspective Map");
-  perspective->run_timer = krad_timer_create_with_name ("Perspective Run");
+  perspective->priv->map_timer = krad_timer_create_with_name ("Perspective Map");
+  perspective->priv->run_timer = krad_timer_create_with_name ("Perspective Run");
 
   kr_perspective_set_default (perspective);
 
@@ -203,10 +231,11 @@ int32_t kr_perspective_destroy (kr_perspective_t **perspective) {
     return -1;
   }
 
-  krad_timer_destroy ((*perspective)->map_timer);
-  krad_timer_destroy ((*perspective)->run_timer);
+  krad_timer_destroy ((*perspective)->priv->map_timer);
+  krad_timer_destroy ((*perspective)->priv->run_timer);
 
-  free ((*perspective)->map);
+  free ((*perspective)->priv->map);
+  free ((*perspective)->priv);
   free (*perspective);
   return 0;
 }
@@ -221,25 +250,27 @@ int32_t kr_perspective_argb (kr_perspective_t *perspective,
   uint32_t y;
   uint32_t *outpx;
   uint32_t *inpx;
+  int32_t *map;
 
   if ((perspective == NULL) || (out == NULL) || (in == NULL)) {
     return -1;
   }
 
-  w = perspective->width;
-  h = perspective->height; 
+  //krad_timer_start (perspective->priv->run_timer);
+
+  w = perspective->priv->width;
+  h = perspective->priv->height; 
   inpx = (uint32_t *)in;
   outpx = (uint32_t *)out;  
-
-  krad_timer_start (perspective->run_timer);
+  map = perspective->priv->map;
 
   for (y = 0; y < h; y++) {
     for (x = 0; x < w; x++) {
-      outpx[x + w * y] = inpx[perspective->map[x + w * y]];
+      outpx[x + w * y] = inpx[map[x + w * y]];
     }
   }
 
-  krad_timer_status (perspective->run_timer);
+  //krad_timer_status (perspective->priv->run_timer);
 
   return 0;
 }

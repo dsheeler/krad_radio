@@ -11,16 +11,8 @@ typedef struct krad_perspective_St krad_perspective_t;
 typedef struct krad_perspective_St kr_perspective_t;
 typedef struct krad_perspective_view_St krad_perspective_view_t;
 typedef struct krad_perspective_view_St kr_perspective_view_t;
-//typedef struct krad_perspective_priv_St kr_perspective_priv_t;
-typedef struct krad_position_St krad_position_t;
-typedef struct krad_position_St kr_coord_t;
-
+typedef struct krad_perspective_priv_St kr_perspective_priv_t;
 typedef struct krad_pixel_position_St kr_px_pos_t;
-
-struct krad_position_St {
-  double x;
-  double y;
-};
 
 struct krad_pixel_position_St {
   uint32_t x;
@@ -35,20 +27,10 @@ struct krad_perspective_view_St {
 };
 
 struct krad_perspective_St {
+  kr_perspective_priv_t *priv;
   uint32_t width;
   uint32_t height;
-
   kr_perspective_view_t view;
-
-  krad_position_t tl;
-  krad_position_t tr;
-  krad_position_t bl;
-  krad_position_t br;
-  int32_t *map;
-
-  krad_timer_t *map_timer;
-  krad_timer_t *run_timer;
-
 };
 
 int32_t kr_perspective_argb (kr_perspective_t *perspective,
