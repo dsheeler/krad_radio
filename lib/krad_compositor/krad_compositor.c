@@ -580,15 +580,18 @@ void krad_compositor_port_push_rgba_frame (krad_compositor_port_t *port, krad_fr
 
 void krad_compositor_port_push_frame (krad_compositor_port_t *port, krad_frame_t *krad_frame) {
 
-  int wrote;
+  int ret;
+  char buf[8];
+  struct pollfd pollfds[1];
 
   if (port->direction == OUTPUT) {
     if (port->local != 1) {
       krad_framepool_ref_frame (krad_frame);
       krad_ringbuffer_write (port->frame_ring, (char *)&krad_frame, sizeof(krad_frame_t *));      
-      wrote = write (port->socketpair[0], "0", 1);
-      if (wrote != 1) {
-        printk ("Krad Compositor: port write unexpected write return value %d", wrote);
+      ret = write (port->socketpair[0], "0", 1);
+      if (ret != 1) {
+        printk ("Krad Compositor: port write unexpected write return value %d",
+                ret);
       }
     } else {
 
@@ -596,10 +599,6 @@ void krad_compositor_port_push_frame (krad_compositor_port_t *port, krad_frame_t
       memcpy (port->local_frame->pixels,
               krad_frame->pixels, 
               port->krad_compositor->width * port->krad_compositor->height * 4);
-
-      int ret;
-      char buf[1];
-      struct pollfd pollfds[1];
       
       ret = 0;
       buf[0] = 0;
@@ -622,11 +621,11 @@ void krad_compositor_port_push_frame (krad_compositor_port_t *port, krad_frame_t
       if (ret == 1) {
         if (pollfds[0].revents & POLLHUP) {
           printke ("krad compositor: videoport poll hangup", ret);
-          //return -1;
+          ret = -4;
         }
         if (pollfds[0].revents & POLLERR) {
           printke ("krad compositor: videoport poll error", ret);
-          //return -1;
+          ret = -5;
         }  
         if (pollfds[0].revents & POLLOUT) {
           ret = write (port->msg_sd, buf, 1);
@@ -658,25 +657,31 @@ void krad_compositor_port_push_frame (krad_compositor_port_t *port, krad_frame_t
       if (ret == 1) {
         if (pollfds[0].revents & POLLHUP) {
           printke ("krad compositor: videoport poll hangup", ret);
-          //return -1;
+          ret = -7;
         }
         if (pollfds[0].revents & POLLERR) {
           printke ("krad compositor: videoport poll error", ret);
-          //return -1;
+          ret = -6;
         }  
         if (pollfds[0].revents & POLLIN) {
-          ret = read (port->msg_sd, buf, 1);
-          if (ret == 1) {
+          ret = read (port->msg_sd, buf, 8);
+          if (ret > 0) {
             // good
             //return 0;
+          }
+          if (ret == 0) {
+            //close connection so drop teh port
+            ret = -9;
           }
         }
       }
     }
   }
   
-  // not good
-  //return -2;
+  // not good, not that bad tho
+  if (ret < 0) {
+    krad_compositor_port_destroy (port->krad_compositor, port);
+  }
 }
 
 static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port) {

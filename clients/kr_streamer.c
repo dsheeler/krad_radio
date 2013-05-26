@@ -36,6 +36,8 @@ struct kr_streamer_St {
   kr_streamer_params_t *params;
   uint32_t width;
   uint32_t height;
+  uint32_t fps_numerator;
+  uint32_t fps_denominator;
   uint32_t frame_size;
 	kr_videoport_t *videoport;
 	kr_client_t *client;
@@ -122,7 +124,9 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 	  exit (1);
   }
   
-  if (kr_compositor_get_info_wait (streamer->client, &streamer->width, &streamer->height, NULL, NULL) != 1) {
+  if (kr_compositor_get_info_wait (streamer->client,
+                                   &streamer->width, &streamer->height,
+                                   &streamer->fps_numerator, &streamer->fps_denominator) != 1) {
     fprintf (stderr, "Could not get compositor info!\n");
 	  kr_client_destroy (&streamer->client);
 	  exit (1);
@@ -158,8 +162,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 
   streamer->vpx_enc = krad_vpx_encoder_create (streamer->params->width,
                                            streamer->params->height,
-                                           1000,
-                                           1,
+                                           streamer->fps_numerator,
+                                           streamer->fps_denominator,
                                            streamer->params->video_bitrate);
 
   if (params->file != NULL) {
@@ -167,8 +171,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
   }
 
   kr_mkv_add_video_track (streamer->mkv, VP8,
-                          streamer->params->fps_numerator,
-                          streamer->params->fps_denominator,
+                          streamer->fps_numerator,
+                          streamer->fps_denominator,
                           streamer->params->width,
                           streamer->params->height);
 
