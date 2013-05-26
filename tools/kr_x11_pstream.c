@@ -279,7 +279,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
                            vcodeme->key, vcodeme->tc);      
     }
     
-    printf ("\nKrad X11 Stream Frame# %12"PRIu64"\n",
+    printf ("\rKrad X11 Stream Frame# %12"PRIu64"",
             x11s->frames++);
     fflush (stdout);
   
