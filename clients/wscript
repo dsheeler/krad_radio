@@ -54,6 +54,10 @@ programs12 = """
 kr_display.c
 """.split()
 
+programs13 = """
+kr_streamer.c
+""".split()
+
 kr_shell = """
 ./krad_shell/krad_shell.c
 """.split()
@@ -243,6 +247,24 @@ depsources11 = """
 
 depsources12 = """
 ../lib/krad_wayland/krad_wayland.c
+""".split()
+
+depsources13 = """
+../lib/krad_system/krad_system.c
+../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_file.c
+../lib/krad_io/krad_stream.c
+../lib/krad_ebml/krad_ebml2.c
+../lib/krad_ebml/krad_ebml2w.c
+../lib/krad_ring/krad_ring.c
+../lib/krad_transmitter/krad_transmitter.c
+../lib/krad_chronometer/krad_ticker.c
+../lib/krad_mkv/krad_mkv.c
+../lib/krad_mkv/krad_mkv_demux.c
+../lib/krad_vorbis/krad_vorbis.c
+../lib/krad_coder/krad_coder_common.c
+../lib/krad_framepool/krad_framepool.c
+../lib/krad_chronometer/krad_timer.c
 """.split()
 
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
@@ -470,6 +492,14 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs9 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs13:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9 + depsources13,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs10:
     bld(features = 'c cprogram', 
