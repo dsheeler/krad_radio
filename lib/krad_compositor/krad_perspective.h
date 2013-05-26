@@ -50,4 +50,7 @@ int32_t kr_perspective_set (kr_perspective_t *perspective,
 int32_t kr_perspective_destroy (kr_perspective_t **krad_perspective);
 kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height);
 
+
+void kr_perspective_random (kr_perspective_t *perspective);
+
 #endif

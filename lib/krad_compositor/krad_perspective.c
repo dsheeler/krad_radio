@@ -203,6 +203,27 @@ static void kr_perspective_set_default (kr_perspective_t *perspective) {
   kr_perspective_set (perspective, &view);
 }
 
+void kr_perspective_random (kr_perspective_t *perspective) {
+
+  kr_perspective_view_t view;
+  uint32_t hwidth;
+  uint32_t hheight;
+
+  hwidth = (perspective->width / 2) - 1;
+  hheight = (perspective->height / 2) - 1;
+
+  view.top_left.x = rand() % hwidth;
+  view.top_left.y = rand() % hheight;
+  view.top_right.x = (rand() % hwidth) + hwidth;
+  view.top_right.y = (rand() % hheight);
+  view.bottom_left.x = rand() % hwidth;
+  view.bottom_left.y = (rand() % hheight) + hheight;
+  view.bottom_right.x = (rand() % hwidth) + hwidth;
+  view.bottom_right.y = (rand() % hheight) + hheight;
+
+  kr_perspective_set (perspective, &view);
+}
+
 kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height) {
 
   kr_perspective_t *perspective;
