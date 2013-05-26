@@ -46,7 +46,7 @@ struct kr_image_St {
   uint32_t w;
   uint32_t h;
   int32_t fmt;
-  uint64_t ptc;
+  uint64_t tc;
 };
 
 struct kr_audio_St {

@@ -50,18 +50,6 @@ static void perspective_map (kr_perspective_t *perspective) {
   w = perspective->width;
   h = perspective->height;  
   map = perspective->map;
-
-  perspective->tl.x = 0.0;
-  perspective->tl.y = 0.0;
-
-  perspective->tr.x = 1.0;
-  perspective->tr.y = 0.0;
-
-  perspective->bl.x = 0.0;
-  perspective->bl.y = 1.0;
-
-  perspective->br.x = 1.0;
-  perspective->br.y = 1.0;
   
   sub_vec2 (&top, &perspective->tr, &perspective->tl);
   sub_vec2 (&bot, &perspective->br, &perspective->bl);
@@ -82,6 +70,110 @@ static void perspective_map (kr_perspective_t *perspective) {
   }
 }
 
+int32_t kr_perspective_set (kr_perspective_t *perspective,
+                            kr_perspective_view_t *view) {
+
+  if ((perspective == NULL) || (view == NULL)) {
+    return -1;
+  }
+
+  printf ("%u-%u\n", view->top_left.x, view->top_left.y);
+  printf ("%u-%u\n", view->top_right.x, view->top_right.y);
+  printf ("%u-%u\n", view->bottom_left.x, view->bottom_left.y);
+  printf ("%u-%u\n", view->bottom_right.x, view->bottom_right.y);
+
+  if (view->top_left.x >= perspective->width) {
+    return -2;
+  }
+  if (view->top_left.y >= perspective->height) {
+    return -2;
+  }
+  if (view->top_right.x >= perspective->width) {
+    return -2;
+  }
+  if (view->top_right.y >= perspective->height) {
+    return -2;
+  }
+  if (view->bottom_left.x >= perspective->width) {
+    return -2;
+  }
+  if (view->bottom_left.y >= perspective->height) {
+    return -2;
+  }
+  if (view->bottom_right.x >= perspective->width) {
+    return -2;
+  }
+  if (view->bottom_right.y >= perspective->height) {
+    return -2;
+  }
+
+  if (view->top_left.x >= view->top_right.x) {
+    return -3;
+  }
+  if (view->top_left.y >= view->bottom_left.y) {
+    return -3;
+  }
+
+  memcpy (&perspective->view, view, sizeof(kr_perspective_view_t));
+
+  if (view->top_left.x == 0) {
+    perspective->tl.x = 0;
+  } else {
+    perspective->tl.x = view->top_left.x/(double)(perspective->width - 1);
+  }
+
+  if (view->top_left.y == 0) {
+    perspective->tl.y = 0;
+  } else {
+    perspective->tl.y = view->top_left.y/(double)(perspective->height - 1);
+  }
+
+  perspective->tr.x = view->top_right.x/(double)(perspective->width - 1);
+
+  if (view->top_right.y == 0) {
+    perspective->tr.y = 0;
+  } else {
+    perspective->tr.y = view->top_right.y/(double)(perspective->height - 1);
+  }
+
+  if (view->bottom_left.x == 0) {
+    perspective->bl.x = 0;
+  } else {
+    perspective->bl.x = view->bottom_left.x/(double)(perspective->width - 1);
+  }
+
+  perspective->bl.y = view->bottom_left.y/(double)(perspective->height - 1);
+
+  perspective->br.x = view->bottom_right.x/(double)(perspective->width - 1);
+  perspective->br.y = view->bottom_right.y/(double)(perspective->height - 1);
+
+
+  printf ("%f-%f\n", perspective->tl.x, perspective->tl.y);
+  printf ("%f-%f\n", perspective->tr.x, perspective->tr.y);
+  printf ("%f-%f\n", perspective->bl.x, perspective->bl.y);
+  printf ("%f-%f\n", perspective->br.x, perspective->br.y);
+
+  perspective_map (perspective);
+
+  return 0;
+}
+
+static void kr_perspective_set_default (kr_perspective_t *perspective) {
+
+  kr_perspective_view_t view;
+
+  view.top_left.x = 0;
+  view.top_left.y = 0;
+  view.top_right.x = perspective->width - 1;
+  view.top_right.y = 0;
+  view.bottom_left.x = 0;
+  view.bottom_left.y = perspective->height - 1;
+  view.bottom_right.x = perspective->width - 1;
+  view.bottom_right.y = perspective->height - 1;
+
+  kr_perspective_set (perspective, &view);
+}
+
 kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height) {
 
   kr_perspective_t *perspective;
@@ -93,7 +185,7 @@ kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height) {
 
   perspective->map = calloc (1, perspective->width * perspective->height * 4);
 
-  perspective_map (perspective);
+  kr_perspective_set_default (perspective);
 
   return perspective;
 }

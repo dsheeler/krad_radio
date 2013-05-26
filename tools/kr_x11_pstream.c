@@ -26,6 +26,7 @@ struct kr_x11s_params_St {
   uint32_t fps_numerator;
   uint32_t fps_denominator;
   uint32_t video_bitrate;
+  char *file;
   char *host;
   int32_t port;
   char *mount;
@@ -99,19 +100,16 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
 
   x11s->perspective = kr_perspective_create (x11s->x11->screen_width,
                                              x11s->x11->screen_height);
-
-  char file[512];
   
-  snprintf (file, sizeof(file),
-            "%s/%s_%"PRIu64".webm",
-            getenv ("HOME"), "x11s", krad_unixtime ());
-  
-  //x11s->mkv = kr_mkv_create_file (file);
 
-  x11s->mkv = kr_mkv_create_stream (x11s->params->host,
-                                    x11s->params->port,
-                                    x11s->params->mount,
-                                    x11s->params->password);
+  if (params->file != NULL) {
+    x11s->mkv = kr_mkv_create_file (params->file);
+  } else {
+    x11s->mkv = kr_mkv_create_stream (x11s->params->host,
+                                      x11s->params->port,
+                                      x11s->params->mount,
+                                      x11s->params->password);
+  }
 
   if (x11s->mkv == NULL) {
     fprintf (stderr, "failed to stream :/ \n");
@@ -120,13 +118,13 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
 
   x11s->vpx_enc = krad_vpx_encoder_create (x11s->params->width,
                                            x11s->params->height,
-                                           x11s->params->fps_numerator,
-                                           x11s->params->fps_denominator,
+                                           1000,
+                                           1,
                                            x11s->params->video_bitrate);
 
-
-  //krad_vpx_encoder_set_kf_max_dist (x11s->vpx_enc, 300);
-
+  if (params->file != NULL) {
+    krad_vpx_encoder_set_kf_max_dist (x11s->vpx_enc, 600);
+  }
 
   kr_mkv_add_video_track (x11s->mkv, VP8,
                           x11s->params->fps_numerator,
@@ -148,6 +146,28 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
   return x11s;
 }
 
+void random_perspective (kr_x11s_t *x11s) {
+
+  kr_perspective_view_t view;
+  uint32_t hwidth;
+  uint32_t hheight;
+
+  hwidth = (x11s->perspective->width / 2) - 1;
+  hheight = (x11s->perspective->height / 2) - 1;
+
+  view.top_left.x = rand() % hwidth;
+  view.top_left.y = rand() % hheight;
+  view.top_right.x = (rand() % hwidth) + hwidth;
+  view.top_right.y = (rand() % hheight);
+
+  view.bottom_left.x = rand() % hwidth;
+  view.bottom_left.y = (rand() % hheight) + hheight;
+  view.bottom_right.x = (rand() % hwidth) + hwidth;
+  view.bottom_right.y = (rand() % hheight) + hheight;
+
+  kr_perspective_set (x11s->perspective, &view);
+}
+
 void kr_x11s_run (kr_x11s_t *x11s) {
 
   krad_frame_t *frame;
@@ -158,7 +178,6 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   int sws_algo;
   uint8_t *image;
   int32_t ret;
-  uint64_t timecode;
 
   signal (SIGINT, term_handler);
   signal (SIGTERM, term_handler);    
@@ -188,7 +207,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
       continue;
     }
     
-    timecode = krad_timer_current_ms (x11s->timer);
+    vmedium->v.tc = krad_timer_current_ms (x11s->timer);
     if (!krad_timer_started (x11s->timer)) {
       krad_timer_start (x11s->timer);
     }
@@ -258,13 +277,17 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     if (ret == 1) {
       kr_mkv_add_video_tc (x11s->mkv, 1,
                            vcodeme->data, vcodeme->sz,
-                           vcodeme->key, timecode);      
+                           vcodeme->key, vcodeme->tc);      
     }
     
-    printf ("\rKrad X11 Stream Frame# %12"PRIu64"",
+    printf ("\nKrad X11 Stream Frame# %12"PRIu64"\n",
             x11s->frames++);
     fflush (stdout);
   
+    if (rand() % 100 > 95) {
+      random_perspective (x11s);
+    }
+
     krad_ticker_wait (x11s->ticker);
   }
 
@@ -293,18 +316,19 @@ int main (int argc, char *argv[]) {
 
   kr_x11s_params_t params;
   char mount[256];
+  char file[256];
   krad_debug_init ("v4l2_stream");
 
   memset (&params, 0, sizeof(kr_x11s_params_t));
 
   //params.width = 1920;
   //params.height = 1080;
-  params.width = 640;
-  params.height = 360;
+  params.width = 960;
+  params.height = 540;
   params.fps_numerator = 30;
   params.fps_denominator = 1;
   //params.video_bitrate = 1450;
-  params.video_bitrate = 450;
+  params.video_bitrate = 2450;
   params.host = "europa.kradradio.com";
   params.port = 8008;
   params.window_id = 0;
@@ -318,10 +342,24 @@ int main (int argc, char *argv[]) {
   params.mount = mount;
   params.password = "firefox";
 
-  printf ("Streaming with: %s at %ux%u %u fps (max)\n",
+  if (argc == 2) {
+    snprintf (file, sizeof(file),
+              "%s/%s_%"PRIu64".webm",
+              getenv ("HOME"), "x11s", krad_unixtime ());
+    params.file = file;
+  } else {
+    params.file = NULL;
+  }
+
+  printf ("Encoding: %s at %ux%u %u fps (max)\n",
           "x11", params.width, params.height,
           params.fps_numerator/params.fps_denominator);
-  printf ("To: %s:%u%s\n", params.host, params.port, params.mount);
+
+  if (params.file != NULL) {
+    printf ("Recording to: %s\n", params.file);
+  } else {
+    printf ("Streaming to: %s:%u%s\n", params.host, params.port, params.mount);
+  }
   printf ("VP8 Bitrate: %uk\n", params.video_bitrate);
 
   kr_x11s (&params);

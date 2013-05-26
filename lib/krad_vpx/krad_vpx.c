@@ -2,6 +2,16 @@
 
 static void krad_vpx_fail (vpx_codec_ctx_t *ctx, const char *s);
 
+int32_t krad_vpx_encoder_destroy (krad_vpx_encoder_t **vpx) {
+  if ((vpx != NULL) && (*vpx != NULL)) {
+    vpx_codec_destroy (&(*vpx)->encoder);
+    free (*vpx);
+    *vpx = NULL;
+    return 0;
+  }
+  return -1;
+}
+
 krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
                                              int fps_numerator,
                                              int fps_denominator,
@@ -28,17 +38,16 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
               vpx_codec_err_to_string(vpx->res));
   }
 
-  // print default config
+  printk ("For reference the default config is:");
   krad_vpx_encoder_print_config (vpx);
-
-  //TEMP
-  //vpx->cfg.g_lag_in_frames = 1;
 
   vpx->cfg.g_w = vpx->width;
   vpx->cfg.g_h = vpx->height;
+
   /* Next two lines are really right */
   vpx->cfg.g_timebase.num = vpx->fps_denominator;
   vpx->cfg.g_timebase.den = vpx->fps_numerator;
+
   vpx->cfg.rc_target_bitrate = bitrate;  
   vpx->cfg.g_threads = 4;
   vpx->cfg.kf_mode = VPX_KF_AUTO;
@@ -51,8 +60,6 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
   vpx->min_quantizer = vpx->cfg.rc_min_quantizer;
   vpx->max_quantizer = vpx->cfg.rc_max_quantizer;
 
-  //krad_vpx_encoder_print_config (vpx);
-
   if (vpx_codec_enc_init (&vpx->encoder,
                           vpx_codec_vp8_cx(),
                           &vpx->cfg, 0)) {
@@ -61,9 +68,20 @@ krad_vpx_encoder_t *krad_vpx_encoder_create (int width, int height,
 
   krad_vpx_encoder_print_config (vpx);
 
-  //vpx_codec_control (&vpx->encoder, VP8E_SET_ENABLEAUTOALTREF, 1);
-
   return vpx;
+}
+
+void krad_vpx_encoder_config_set (krad_vpx_encoder_t *vpx,
+                                  vpx_codec_enc_cfg_t *cfg) {
+  int ret;
+
+  ret = vpx_codec_enc_config_set (&vpx->encoder, cfg);
+
+  if (ret != VPX_CODEC_OK) {
+    printke ("VPX Config problem: %s\n%s\n",
+             vpx_codec_err_to_string (ret),
+             vpx_codec_error_detail(&vpx->encoder));
+  }
 }
 
 void krad_vpx_encoder_print_config (krad_vpx_encoder_t *vpx) {
@@ -89,14 +107,22 @@ int krad_vpx_encoder_bitrate_get (krad_vpx_encoder_t *vpx) {
   return vpx->bitrate;
 }
 
+int krad_vpx_encoder_min_quantizer_get (krad_vpx_encoder_t *vpx) {
+  return vpx->min_quantizer;
+}
+
+int krad_vpx_encoder_max_quantizer_get (krad_vpx_encoder_t *vpx) {
+  return vpx->max_quantizer;
+}
+
+int krad_vpx_encoder_deadline_get (krad_vpx_encoder_t *vpx) {
+  return vpx->deadline;
+}
+
 void krad_vpx_encoder_bitrate_set (krad_vpx_encoder_t *vpx, int bitrate) {
   vpx->bitrate = bitrate;
   vpx->cfg.rc_target_bitrate = vpx->bitrate;
   vpx->update_config = 1;
-}
-
-int krad_vpx_encoder_min_quantizer_get (krad_vpx_encoder_t *vpx) {
-  return vpx->min_quantizer;
 }
 
 void krad_vpx_encoder_min_quantizer_set (krad_vpx_encoder_t *vpx,
@@ -112,10 +138,6 @@ void krad_vpx_encoder_set_kf_max_dist (krad_vpx_encoder_t *vpx,
   vpx->update_config = 1;
 }
 
-int krad_vpx_encoder_max_quantizer_get (krad_vpx_encoder_t *vpx) {
-  return vpx->max_quantizer;
-}
-
 void krad_vpx_encoder_max_quantizer_set (krad_vpx_encoder_t *vpx,
                                          int max_quantizer) {
   vpx->max_quantizer = max_quantizer;
@@ -125,31 +147,6 @@ void krad_vpx_encoder_max_quantizer_set (krad_vpx_encoder_t *vpx,
 
 void krad_vpx_encoder_deadline_set (krad_vpx_encoder_t *vpx, int deadline) {
   vpx->deadline = deadline;
-}
-
-int krad_vpx_encoder_deadline_get (krad_vpx_encoder_t *vpx) {
-  return vpx->deadline;
-}
-
-void krad_vpx_encoder_config_set (krad_vpx_encoder_t *vpx,
-                                  vpx_codec_enc_cfg_t *cfg) {
-  int ret;
-
-  ret = vpx_codec_enc_config_set (&vpx->encoder, cfg);
-
-  if (ret != VPX_CODEC_OK) {
-    printke ("VPX Config problem: %s\n", vpx_codec_err_to_string (ret));
-  }
-}
-
-int32_t krad_vpx_encoder_destroy (krad_vpx_encoder_t **vpx) {
-  if ((vpx != NULL) && (*vpx != NULL)) {
-    vpx_codec_destroy (&(*vpx)->encoder);
-    free (*vpx);
-    *vpx = NULL;
-    return 0;
-  }
-  return -1;
 }
 
 void krad_vpx_encoder_finish (krad_vpx_encoder_t *vpx) {
@@ -208,6 +205,7 @@ int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
                        kr_medium_t *medium) {
 
   int ret;
+  int64_t pts;
   vpx_image_t image;
   memset (&image, 0, sizeof(vpx_image_t));
   vpx_codec_iter_t iter;  
@@ -216,14 +214,26 @@ int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
 
   ret = 0;
 
+  if ((vpx == NULL) || (codeme == NULL)) {
+    return -1;
+  }
+
   if (vpx->update_config == 1) {
     krad_vpx_encoder_config_set (vpx, &vpx->cfg);
     vpx->update_config = 0;
     krad_vpx_encoder_print_config (vpx);
   }
 
+  if (medium->v.tc != 0) {
+    pts = medium->v.tc;
+    codeme->tc = medium->v.tc;
+  } else {
+    pts = vpx->frames;
+    codeme->tc = (vpx->frames / vpx->fps_numerator) * vpx->fps_denominator;
+  }
+
   if (medium == NULL) {
-    ret = vpx_codec_encode (&vpx->encoder, NULL, vpx->frames,
+    ret = vpx_codec_encode (&vpx->encoder, NULL, pts,
                             1, vpx->flags, vpx->deadline);
   } else {
 
@@ -245,12 +255,12 @@ int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
     image.stride[1] = medium->v.pps[1];
     image.stride[2] = medium->v.pps[2];
     
-    ret = vpx_codec_encode (&vpx->encoder, &image, vpx->frames,
+    ret = vpx_codec_encode (&vpx->encoder, &image, pts,
                             1, vpx->flags, vpx->deadline);
   }
 
   if (ret != 0) {
-    printke ("oh shit");
+    printke ("oh shit pts %"PRIu64"", pts);
   }
 
   vpx->frames++;

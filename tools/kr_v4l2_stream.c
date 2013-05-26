@@ -100,8 +100,8 @@ kr_v4l2s_t *kr_v4l2s_create (kr_v4l2s_params_t *params) {
 
   v4l2s->vpx_enc = krad_vpx_encoder_create (v4l2s->params->width,
                                             v4l2s->params->height,
-                                            v4l2s->params->fps_numerator,
-                                            v4l2s->params->fps_denominator,
+                                            1000,
+                                            1,
                                             v4l2s->params->video_bitrate);
 
   kr_mkv_add_video_track (v4l2s->mkv, VP8,
@@ -132,7 +132,6 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
   struct SwsContext *converter;
   int sws_algo;
   int32_t ret;
-  uint64_t timecode;
 
   signal (SIGINT, term_handler);
   signal (SIGTERM, term_handler);    
@@ -157,7 +156,7 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
       continue;
     }
     
-    timecode = krad_timer_current_ms (v4l2s->timer);
+    vmedium->v.tc = krad_timer_current_ms (v4l2s->timer);
     if (!krad_timer_started (v4l2s->timer)) {
       krad_timer_start (v4l2s->timer);
     }
@@ -215,7 +214,7 @@ void kr_v4l2s_run (kr_v4l2s_t *v4l2s) {
     if (ret == 1) {
       kr_mkv_add_video_tc (v4l2s->mkv, 1,
                            vcodeme->data, vcodeme->sz,
-                           vcodeme->key, timecode);      
+                           vcodeme->key, vcodeme->tc);      
     }
     
     printf ("\rKrad V4L2 Stream Frame# %12"PRIu64"",

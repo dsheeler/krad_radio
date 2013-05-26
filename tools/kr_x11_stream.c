@@ -110,8 +110,8 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
 
   x11s->vpx_enc = krad_vpx_encoder_create (x11s->params->width,
                                            x11s->params->height,
-                                           x11s->params->fps_numerator,
-                                           x11s->params->fps_denominator,
+                                           1000,
+                                           1,
                                            x11s->params->video_bitrate);
 
 
@@ -142,7 +142,6 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   int sws_algo;
   uint8_t *image;
   int32_t ret;
-  uint64_t timecode;
 
   signal (SIGINT, term_handler);
   signal (SIGTERM, term_handler);    
@@ -171,7 +170,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
       continue;
     }
     
-    timecode = krad_timer_current_ms (x11s->timer);
+    vmedium->v.tc = krad_timer_current_ms (x11s->timer);
     if (!krad_timer_started (x11s->timer)) {
       krad_timer_start (x11s->timer);
     }
@@ -228,7 +227,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     if (ret == 1) {
       kr_mkv_add_video_tc (x11s->mkv, 1,
                            vcodeme->data, vcodeme->sz,
-                           vcodeme->key, timecode);      
+                           vcodeme->key, vcodeme->tc);      
     }
     
     printf ("\rKrad X11 Stream Frame# %12"PRIu64"",
