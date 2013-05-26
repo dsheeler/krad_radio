@@ -178,9 +178,9 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 
   streamer->frame_ring = krad_ringbuffer_create (90 * sizeof(krad_frame_t *));
 
-  streamer->framepool = krad_framepool_create (streamer->params->width,
-                                           streamer->params->height,
-                                           6);
+  streamer->framepool = krad_framepool_create (streamer->width,
+                                               streamer->height,
+                                               8);
 
   return streamer;
 }
@@ -321,7 +321,7 @@ int main (int argc, char *argv[]) {
 
   memset (&params, 0, sizeof(kr_streamer_params_t));
 
-  if (argc != 2) {
+  if (argc < 2) {
     fprintf (stderr, "Need station name.\n");
     exit (1);
   }
@@ -335,7 +335,7 @@ int main (int argc, char *argv[]) {
   params.fps_numerator = 30;
   params.fps_denominator = 1;
   //params.video_bitrate = 1450;
-  params.video_bitrate = 2450;
+  params.video_bitrate = 850;
   params.host = "europa.kradradio.com";
   params.port = 8008;
 
