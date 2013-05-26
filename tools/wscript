@@ -32,6 +32,10 @@ programs7 = """
 kr_x11_stream.c
 """.split()
 
+programs7p = """
+kr_x11_pstream.c
+""".split()
+
 programs8 = """
 kr_machine_test.c
 """.split()
@@ -117,6 +121,10 @@ krx11capsrces = """
 ../lib/krad_x11/krad_x11.c
 ../lib/krad_chronometer/krad_timer.c
 ../lib/krad_chronometer/krad_ticker.c
+""".split()
+
+krperspsrces = """
+../lib/krad_compositor/krad_perspective.c
 """.split()
 
 includedirs = """
@@ -284,6 +292,7 @@ def build(bld):
   global shlibs2
   global shlibsx11
   global krdlcapsrces
+  global krperspsrces
   global includedirs
   check_x11(bld)
   check_system2(bld)
@@ -363,6 +372,14 @@ def build(bld):
     for p in programs7:
       bld(features = 'c cprogram',
       source = krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["krad_mkv"],
+      uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
+
+    for p in programs7p:
+      bld(features = 'c cprogram',
+      source = krperspsrces + krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["krad_mkv"],

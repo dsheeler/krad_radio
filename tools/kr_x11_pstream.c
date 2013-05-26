@@ -11,6 +11,7 @@
 #include <krad_ring.h>
 #include <krad_framepool.h>
 #include <krad_timer.h>
+#include <krad_perspective.h>
 
 #include <libswscale/swscale.h>
 
@@ -38,11 +39,14 @@ struct kr_x11s_St {
   krad_timer_t *timer;
   krad_ticker_t *ticker;
   krad_ringbuffer_t *frame_ring;
+  krad_ringbuffer_t *frame_ring2;
   krad_framepool_t *framepool;
+  krad_framepool_t *framepool2;
   krad_vpx_encoder_t *vpx_enc;
   kr_codec_hdr_t header;
   kr_mkv_t *mkv;
-  uint64_t frames;  
+  kr_perspective_t *perspective;
+  uint64_t frames;
 };
 
 static int destruct = 0;
@@ -63,10 +67,13 @@ int kr_x11s_destroy (kr_x11s_t **x11s) {
     (*x11s)->x11 = NULL;
   }
 
+  kr_perspective_destroy (&(*x11s)->perspective);
   krad_vpx_encoder_destroy (&(*x11s)->vpx_enc);
   kr_mkv_destroy (&(*x11s)->mkv);
   krad_ringbuffer_free ((*x11s)->frame_ring);
   krad_framepool_destroy (&(*x11s)->framepool);
+  krad_ringbuffer_free ((*x11s)->frame_ring2);
+  krad_framepool_destroy (&(*x11s)->framepool2);
   free (*x11s);
   *x11s = NULL;
   return 0;
@@ -89,6 +96,9 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
     printf ("X11 Resolution: %dx%d\n",
             x11s->x11->screen_width, x11s->x11->screen_height);
   }
+
+  x11s->perspective = kr_perspective_create (x11s->x11->screen_width,
+                                             x11s->x11->screen_height);
 
   char file[512];
   
@@ -125,10 +135,15 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
                           x11s->params->height);
 
   x11s->frame_ring = krad_ringbuffer_create (90 * sizeof(krad_frame_t *));
+  x11s->frame_ring2 = krad_ringbuffer_create (90 * sizeof(krad_frame_t *));
 
   x11s->framepool = krad_framepool_create (x11s->params->width,
                                            x11s->params->height,
                                            1);
+
+  x11s->framepool2 = krad_framepool_create (x11s->x11->screen_width,
+                                            x11s->x11->screen_height,
+                                            1);
 
   return x11s;
 }
@@ -136,6 +151,7 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
 void kr_x11s_run (kr_x11s_t *x11s) {
 
   krad_frame_t *frame;
+  krad_frame_t *pframe;
   kr_medium_t *vmedium;
   kr_codeme_t *vcodeme;
   struct SwsContext *converter;
@@ -166,6 +182,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   while (!destruct) {
 
     frame = NULL;
+    pframe = NULL;
 
     if (!krad_x11_capture_getptr (x11s->x11, &image)) {
       continue;
@@ -181,8 +198,20 @@ void kr_x11s_run (kr_x11s_t *x11s) {
       continue;
     }
 
+    pframe = krad_framepool_getframe (x11s->framepool2);
+    if (pframe == NULL) {
+      krad_framepool_unref_frame (frame);
+      continue;
+    }
+
+    if (1) {
+      kr_perspective (x11s->perspective, (uint32_t *)pframe->pixels, (uint32_t *)image);
+      frame->yuv_pixels[0] = (uint8_t *)pframe->pixels;
+    } else {  
+      frame->yuv_pixels[0] = image;
+    }
+
     frame->format = PIX_FMT_RGB32;
-    frame->yuv_pixels[0] = image;
     frame->yuv_pixels[1] = NULL;
     frame->yuv_pixels[2] = NULL;
     frame->yuv_strides[0] = x11s->x11->stride;
@@ -223,6 +252,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
               vmedium->v.pps);
 
     krad_framepool_unref_frame (frame);
+    krad_framepool_unref_frame (pframe);
 
     ret = kr_vpx_encode (x11s->vpx_enc, vcodeme, vmedium);
     if (ret == 1) {
@@ -279,7 +309,7 @@ int main (int argc, char *argv[]) {
   params.port = 8008;
   params.window_id = 0;
 
-  //params.window_id = 0x2409f5c;
+  //params.window_id = 0x0000004;
 
   snprintf (mount, sizeof(mount),
             "/kr_x11s_%"PRIu64".webm",

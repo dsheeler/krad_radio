@@ -133,15 +133,15 @@ void krad_x11_enable_capture (krad_x11_t *x11, uint32_t window_id) {
     }
   }
 
-  printf ("width %d height %d x %d y %d\n",
-         x11->width, x11->height, x11->x, x11->y);
-
   if (window_id == 0) {
     x11->width = x11->screen_width;
     x11->height = x11->screen_height;
     x11->window = x11->screen->root;
   }
-  
+
+  //printf ("capture width %d height %d x %d y %d\n",
+  //       x11->width, x11->height, x11->x, x11->y);
+
   x11->img = xcb_image_create_native (x11->connection,
                                       x11->width, x11->height,
                                       XCB_IMAGE_FORMAT_Z_PIXMAP,
@@ -187,7 +187,7 @@ int krad_x11_capture_getptr (krad_x11_t *x11, uint8_t **buffer) {
 
   int32_t size;
 
-  if ((buffer == NULL) || (*buffer == NULL)) {
+  if (buffer == NULL) {
     return 0;
   }
   

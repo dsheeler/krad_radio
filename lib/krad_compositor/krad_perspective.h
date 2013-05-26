@@ -3,7 +3,9 @@
 #include <inttypes.h>
 
 typedef struct krad_perspective_St krad_perspective_t;
+typedef struct krad_perspective_St kr_perspective_t;
 typedef struct krad_position_St krad_position_t;
+typedef struct krad_position_St kr_coord_t;
 
 struct krad_position_St {
   double x;
@@ -11,15 +13,18 @@ struct krad_position_St {
 };
 
 struct krad_perspective_St {
-  int w, h;
+  uint32_t width;
+  uint32_t height;
   krad_position_t tl;
   krad_position_t tr;
   krad_position_t bl;
   krad_position_t br;
-  int *map;  
+  int32_t *map;  
 };
 
-void krad_perspective_process (krad_perspective_t *krad_perspective, uint32_t *inframe, uint32_t *outframe);
+void kr_perspective (kr_perspective_t *perspective,
+                     uint32_t *out,
+                     uint32_t *in);
 
-void perspective_destroy (krad_perspective_t *krad_perspective);
-krad_perspective_t *krad_perspective_create (int width, int height);
+int32_t kr_perspective_destroy (kr_perspective_t **krad_perspective);
+kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height);
