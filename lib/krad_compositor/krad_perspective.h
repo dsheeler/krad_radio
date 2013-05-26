@@ -1,11 +1,14 @@
+#ifndef KRAD_PERSPECTIVE_H
+#define KRAD_PERSPECTIVE_H
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <inttypes.h>
 
-#include <krad_timer.h>
-#include <krad_coder_common.h>
+#include "krad_timer.h"
+#include "krad_coder_common.h"
 
 typedef struct krad_perspective_St krad_perspective_t;
 typedef struct krad_perspective_St kr_perspective_t;
@@ -46,3 +49,5 @@ int32_t kr_perspective_set (kr_perspective_t *perspective,
 
 int32_t kr_perspective_destroy (kr_perspective_t **krad_perspective);
 kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height);
+
+#endif

@@ -12,6 +12,17 @@ void krad_compositor_videoport_rep_to_ebml2 (kr_port_t *port, kr_ebml2_t *ebml) 
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_y);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_width);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->crop_height);
+
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.top_left.x);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.top_left.y);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.top_right.x);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.top_right.y);
+
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.bottom_left.x);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.bottom_left.y);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.bottom_right.x);
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.bottom_right.y);
+
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.width);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.height);  
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, port->controls.opacity);
@@ -85,6 +96,14 @@ int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videopo
   videoport_rep->crop_y = videoport->crop_y;
   videoport_rep->crop_width = videoport->crop_width;
   videoport_rep->crop_height = videoport->crop_height;
+  videoport_rep->view.top_left.x = videoport->view.top_left.x;
+  videoport_rep->view.top_left.y = videoport->view.top_left.y;
+  videoport_rep->view.top_right.x = videoport->view.top_right.x;
+  videoport_rep->view.top_right.y = videoport->view.top_right.y;
+  videoport_rep->view.bottom_left.x = videoport->view.bottom_left.x;
+  videoport_rep->view.bottom_left.y = videoport->view.bottom_left.y;
+  videoport_rep->view.bottom_right.x = videoport->view.bottom_right.x;
+  videoport_rep->view.bottom_right.y = videoport->view.bottom_right.y;
   videoport_rep->controls.width = videoport->subunit.width;
   videoport_rep->controls.height = videoport->subunit.height;
   videoport_rep->controls.rotation = videoport->subunit.rotation;

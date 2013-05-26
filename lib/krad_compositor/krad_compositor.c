@@ -894,6 +894,16 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
   if (port->direction == INPUT) {
     port->source_width = width;
     port->source_height = height;
+
+    port->view.top_left.x = 0;
+    port->view.top_left.y = 0;
+    port->view.top_right.x = port->source_width - 1;
+    port->view.top_right.y = 0;
+    port->view.bottom_left.x = 0;
+    port->view.bottom_left.y = port->source_width - 1;
+    port->view.bottom_right.x = port->source_width - 1;
+    port->view.bottom_right.y = port->source_height - 1;
+
     krad_compositor_aspect_scale (port->source_width, port->source_height,
                                   krad_compositor->width, krad_compositor->height,
                                   &port->subunit.width, &port->subunit.height);

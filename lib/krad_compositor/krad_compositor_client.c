@@ -181,6 +181,14 @@ static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_height);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_left.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_left.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_right.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_right.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_left.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_left.y);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_right.x);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_right.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.height);
   kr_ebml2_unpack_element_float (ebml, NULL, &port->controls.opacity);
@@ -359,6 +367,14 @@ int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **stri
     pos += sprintf (*string + pos, "Crop Y: %d\n", port.crop_y);
     pos += sprintf (*string + pos, "Crop Width: %d\n", port.crop_width);
     pos += sprintf (*string + pos, "Crop Height: %d\n", port.crop_height);
+
+    pos += sprintf (*string + pos, "PC View: %u,%u, %u,%u\n",
+                    port.view.top_left.x, port.view.top_left.y,
+                    port.view.top_right.x, port.view.top_right.y);
+    pos += sprintf (*string + pos, "         %u,%u, %u,%u\n",
+                    port.view.bottom_left.x, port.view.bottom_left.y,
+                    port.view.bottom_right.x, port.view.bottom_right.y);
+
     pos += sprintf (*string + pos, "Width: %d\n", port.controls.width);
     pos += sprintf (*string + pos, "Height: %d\n", port.controls.height);
     pos += sprintf (*string + pos, "Opacity: %4.2f\n", port.controls.opacity);

@@ -6,6 +6,8 @@
 #include "krad_radio_ipc.h"
 #include "krad_system.h"
 
+#include "krad_perspective.h"
+
 typedef enum {
   KR_VIDEOPORT = 31,
   KR_SPRITE,
@@ -103,6 +105,7 @@ struct krad_port_rep_St {
   uint32_t crop_y;
   uint32_t crop_width;
   uint32_t crop_height;
+  krad_perspective_view_t view;
   kr_comp_controls_t controls;
 };
 

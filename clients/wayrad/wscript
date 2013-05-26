@@ -9,6 +9,8 @@ wayrad.c
 includedirs = """
 ../../lib/krad_compositor/
 ../../lib/krad_chronometer/
+../../lib/krad_coder/
+../../lib/krad_player/
 ../../lib/krad_xmms2/
 ../../lib/krad_y4m/
 ../../lib/krad_framepool/

@@ -2,6 +2,7 @@
 #define KRAD_COMPOSITOR_PORT_H
 
 #include "krad_compositor_subunit.h"
+#include "krad_perspective.h"
 #include "krad_radio.h"
 
 struct krad_compositor_port_St {
@@ -47,7 +48,10 @@ struct krad_compositor_port_St {
   krad_frame_t *local_frame;  
   
   krad_compositor_subunit_t subunit;
-  
+
+  krad_perspective_t *perspective;
+  kr_perspective_view_t view;
+
   int socketpair[2];
 };
 
