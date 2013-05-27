@@ -339,9 +339,9 @@ int main (int argc, char *argv[]) {
   params.host = "europa.kradradio.com";
   params.port = 8008;
 
-  snprintf (mount, sizeof(mount),
-            "/kr_streamer_%"PRIu64".webm",
-            krad_unixtime ());
+  if (argc == 3) {
+    snprintf (mount, sizeof(mount), "/%s.webm", argv[2]);
+  }
 
   params.mount = mount;
   params.password = "firefox";
