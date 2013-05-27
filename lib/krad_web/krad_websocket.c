@@ -514,6 +514,12 @@ void krad_websocket_add_comp_subunit ( kr_ws_client_t *kr_ws_client, kr_crate_t 
       break;  
     case KR_VIDEOPORT:
       controls = crate->inside.videoport->controls;
+      cJSON_AddStringToObject (msg, "port_name", crate->inside.videoport->sysname);
+      if (crate->inside.videoport->direction == OUTPUT) {
+        cJSON_AddStringToObject (msg, "direction", "output");
+      } else {
+        cJSON_AddStringToObject (msg, "direction", "input");
+      }
       break;
     case KR_VECTOR:
       controls = crate->inside.vector->controls;
