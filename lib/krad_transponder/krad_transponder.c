@@ -206,12 +206,12 @@ int v4l2_capture_unit_process (void *arg) {
   krad_frame = NULL;
 
 
-  if (rand() % 100 > 98) {
-    kr_perspective_random (krad_link->krad_compositor_port->perspective);
-    memcpy (&krad_link->krad_compositor_port->view,
-            &krad_link->krad_compositor_port->perspective->view,
-            sizeof(kr_perspective_view_t));
-  }
+  //    if (rand() % 100 > 98) {
+  //  kr_perspective_random (krad_link->krad_compositor_port->perspective);
+  //  memcpy (&krad_link->krad_compositor_port->view,
+  //          &krad_link->krad_compositor_port->perspective->view,
+  //          sizeof(kr_perspective_view_t));
+  //}
 
   captured_frame = krad_v4l2_read (krad_link->krad_v4l2);    
 

@@ -465,7 +465,7 @@ void inport_push_with_perspective (krad_compositor_port_t *port,
   frame->timecode = inframe->timecode;
   frame->format = inframe->format;
 
-  //printk("the answer here is %u - %u\n", frame->width, frame->height);
+  printk("the answer here is %u - %u\n", frame->width, frame->height);
 
   kr_perspective_argb (port->perspective,
                       (uint8_t *)frame->pixels,
@@ -507,7 +507,7 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *port, krad_fra
     failfast ("Krad Compositor: could not sws_getCachedContext");
   }
 
-  /*    
+    
   printk ("compositor port scaling now: %dx%d [%dx%d]-> %dx%d",
           port->source_width,
           port->source_height,
@@ -515,7 +515,7 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *port, krad_fra
           port->crop_height,        
           port->subunit.width,
           port->subunit.height);         
-  */
+  
   dst[0] = (unsigned char *)krad_frame->pixels;
   sws_scale (port->sws_converter,
         (const uint8_t * const*)krad_frame->yuv_pixels,
@@ -526,6 +526,7 @@ void krad_compositor_port_push_yuv_frame (krad_compositor_port_t *port, krad_fra
   krad_frame->height = port->subunit.height;
 
   if (port->perspective != NULL) {
+    printk("we are pushing with perspective");
     inport_push_with_perspective (port, krad_frame);
   } else {
     krad_compositor_port_push_frame (port, krad_frame);
@@ -932,7 +933,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
     port->view.top_right.x = port->source_width - 1;
     port->view.top_right.y = 0;
     port->view.bottom_left.x = 0;
-    port->view.bottom_left.y = port->source_width - 1;
+    port->view.bottom_left.y = port->source_height - 1;
     port->view.bottom_right.x = port->source_width - 1;
     port->view.bottom_right.y = port->source_height - 1;
 
@@ -1494,12 +1495,53 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                 krad_compositor_subunit_set_alpha (&compositor->port[uc->address.id.number].subunit,
                                                    uc->value.real, uc->duration);
                 break;
+
+              case KR_VIEW_TOP_LEFT_X:
+                krad_compositor_subunit_set_view_top_left_x (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_TOP_LEFT_Y:
+                krad_compositor_subunit_set_view_top_left_y (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_TOP_RIGHT_X:
+                krad_compositor_subunit_set_view_top_right_x (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_TOP_RIGHT_Y:
+                krad_compositor_subunit_set_view_top_right_y (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_BOTTOM_LEFT_X:
+                krad_compositor_subunit_set_view_bottom_left_x (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_BOTTOM_LEFT_Y:
+                krad_compositor_subunit_set_view_bottom_left_y (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_BOTTOM_RIGHT_X:
+                krad_compositor_subunit_set_view_bottom_right_x (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+
+              case KR_VIEW_BOTTOM_RIGHT_Y:
+                krad_compositor_subunit_set_view_bottom_right_y (&compositor->port[uc->address.id.number].subunit,
+                                                             uc->value.integer, uc->duration);
+                break;
+            
             }
           }
         }
         return;
-      default:
-        return;
+    default:
+      return;
     }
   }
 }

@@ -102,14 +102,16 @@ static void perspective_map (kr_perspective_t *perspective) {
 int32_t kr_perspective_set (kr_perspective_t *perspective,
                             kr_perspective_view_t *view) {
 
+  //  perspective->width = 960;
+  //perspective->height = 540;
   if ((perspective == NULL) || (view == NULL)) {
     return -1;
   }
-
-  printf ("%u-%u\n", view->top_left.x, view->top_left.y);
-  printf ("%u-%u\n", view->top_right.x, view->top_right.y);
-  printf ("%u-%u\n", view->bottom_left.x, view->bottom_left.y);
-  printf ("%u-%u\n", view->bottom_right.x, view->bottom_right.y);
+  
+  printk ("%u-%u\n", view->top_left.x, view->top_left.y);
+  printk ("%u-%u\n", view->top_right.x, view->top_right.y);
+  printk ("%u-%u\n", view->bottom_left.x, view->bottom_left.y);
+  printk ("%u-%u\n", view->bottom_right.x, view->bottom_right.y);
 
   if (view->top_left.x >= perspective->width) {
     return -2;
@@ -177,10 +179,10 @@ int32_t kr_perspective_set (kr_perspective_t *perspective,
   perspective->priv->br.y = view->bottom_right.y/(double)(perspective->height - 1);
 
 
-  printf ("%f-%f\n", perspective->priv->tl.x, perspective->priv->tl.y);
-  printf ("%f-%f\n", perspective->priv->tr.x, perspective->priv->tr.y);
-  printf ("%f-%f\n", perspective->priv->bl.x, perspective->priv->bl.y);
-  printf ("%f-%f\n", perspective->priv->br.x, perspective->priv->br.y);
+  printk ("%f-%f\n", perspective->priv->tl.x, perspective->priv->tl.y);
+  printk ("%f-%f\n", perspective->priv->tr.x, perspective->priv->tr.y);
+  printk ("%f-%f\n", perspective->priv->bl.x, perspective->priv->bl.y);
+  printk ("%f-%f\n", perspective->priv->br.x, perspective->priv->br.y);
 
   perspective_map (perspective);
 

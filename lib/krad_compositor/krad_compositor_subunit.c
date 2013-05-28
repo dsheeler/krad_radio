@@ -1,4 +1,5 @@
 #include "krad_compositor_subunit.h"
+#include "krad_compositor_port.h"
 
 void krad_compositor_subunit_reset (krad_compositor_subunit_t *subunit) {
 
@@ -80,6 +81,88 @@ void krad_compositor_subunit_set_blue (krad_compositor_subunit_t *subunit, float
 
 void krad_compositor_subunit_set_alpha (krad_compositor_subunit_t *subunit, float alpha, int duration) {
   krad_easing_set_new_value (&subunit->alpha_easing, alpha, duration, EASEINOUTSINE, NULL);
+}
+
+void krad_compositor_subunit_set_view_top_left_x (krad_compositor_port_t *subunit, int view_top_left_x, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+  subunit->view.top_left.x = view_top_left_x;
+  printk("hello x %d", subunit->view.top_left.x);
+
+  printk("output of kr_perspective %d", kr_perspective_set(subunit->perspective, &subunit->view));
+}
+
+void krad_compositor_subunit_set_view_top_left_y (krad_compositor_port_t *subunit, int view_top_left_y, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.top_left.y = view_top_left_y;
+  printk("hello y %d", subunit->view.top_left.y);
+  kr_perspective_set(subunit->perspective, &subunit->view);
+}
+
+void krad_compositor_subunit_set_view_top_right_x (krad_compositor_port_t *subunit, int view_top_right_x, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.top_right.x = view_top_right_x;
+  kr_perspective_set(subunit->perspective, &subunit->view);
+}
+
+void krad_compositor_subunit_set_view_top_right_y (krad_compositor_port_t *subunit, int view_top_right_y, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.top_right.y = view_top_right_y;
+  kr_perspective_set(subunit->perspective, &subunit->view);
+}
+
+void krad_compositor_subunit_set_view_bottom_left_x (krad_compositor_port_t *subunit, int view_bottom_left_x, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.bottom_left.x = view_bottom_left_x;
+  kr_perspective_set(subunit->perspective, &subunit->view);
+}
+
+void krad_compositor_subunit_set_view_bottom_left_y (krad_compositor_port_t *subunit, int view_bottom_left_y, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.bottom_left.y = view_bottom_left_y;
+  kr_perspective_set(subunit->perspective, &subunit->view);
+}
+
+void krad_compositor_subunit_set_view_bottom_right_x (krad_compositor_port_t *subunit, int view_bottom_right_x, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.bottom_right.x = view_bottom_right_x;
+  kr_perspective_set(subunit->perspective, &subunit->view);
+}
+
+void krad_compositor_subunit_set_view_bottom_right_y (krad_compositor_port_t *subunit, int view_bottom_right_y, int duration) {
+
+  if (subunit->perspective == NULL) {
+      subunit->perspective = kr_perspective_create (960,540);
+  }
+
+  subunit->view.bottom_right.y = view_bottom_right_y;
+  kr_perspective_set(subunit->perspective, &subunit->view);
 }
 
 void krad_compositor_subunit_tick (krad_compositor_subunit_t *subunit) {

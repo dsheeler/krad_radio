@@ -44,6 +44,32 @@ kr_compositor_control_t krad_string_to_compositor_control (char *string) {
   if (strncmp (string, "tickrate", 1) == 0) {
     return KR_TICKRATE;
   }
+
+  if (strncmp (string, "view_top_left_x", 15) == 0) {
+    return KR_VIEW_TOP_LEFT_X;
+  }
+  if (strncmp (string, "view_top_left_y", 15) == 0) {
+    return KR_VIEW_TOP_LEFT_Y;
+  }
+  if (strncmp (string, "view_top_right_x", 16) == 0) {
+    return KR_VIEW_TOP_RIGHT_X;
+  }
+  if (strncmp (string, "view_top_right_y", 16) == 0) {
+    return KR_VIEW_TOP_RIGHT_Y;
+  }
+  if (strncmp (string, "view_bottom_left_x", 18) == 0) {
+    return KR_VIEW_BOTTOM_LEFT_X;
+  }
+  if (strncmp (string, "view_bottom_left_y", 18) == 0) {
+    return KR_VIEW_BOTTOM_LEFT_Y;
+  }
+  if (strncmp (string, "view_bottom_right_x", 19) == 0) {
+    return KR_VIEW_BOTTOM_RIGHT_X;
+  }
+  if (strncmp (string, "view_bottom_right_y", 19) == 0) {
+    return KR_VIEW_BOTTOM_RIGHT_Y;
+  }
+
   return 0;
 }
 
@@ -117,6 +143,22 @@ char *kr_compositor_control_to_string (kr_compositor_control_t control) {
       return "alpha";
     case KR_TICKRATE:
       return "tickrate";   
+    case KR_VIEW_TOP_LEFT_X:
+      return "view_top_left_x";   
+    case KR_VIEW_TOP_LEFT_Y:
+      return "view_top_left_y";   
+    case KR_VIEW_TOP_RIGHT_X:
+      return "view_top_right_x";   
+    case KR_VIEW_TOP_RIGHT_Y:
+      return "view_top_right_y";   
+    case KR_VIEW_BOTTOM_LEFT_X:
+      return "view_bottom_left_x";   
+    case KR_VIEW_BOTTOM_LEFT_Y:
+      return "view_bottom_left_y";   
+    case KR_VIEW_BOTTOM_RIGHT_X:
+      return "view_bottom_right_x";   
+    case KR_VIEW_BOTTOM_RIGHT_Y:
+      return "view_bottom_right_y";   
   }
 
   return "Unknown";

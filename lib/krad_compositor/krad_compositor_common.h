@@ -46,6 +46,14 @@ typedef enum {
   KR_BLUE,
   KR_ALPHA,
   KR_TICKRATE,
+  KR_VIEW_TOP_LEFT_X,
+  KR_VIEW_TOP_LEFT_Y,
+  KR_VIEW_TOP_RIGHT_X,
+  KR_VIEW_TOP_RIGHT_Y,
+  KR_VIEW_BOTTOM_LEFT_X,
+  KR_VIEW_BOTTOM_LEFT_Y,
+  KR_VIEW_BOTTOM_RIGHT_X,
+  KR_VIEW_BOTTOM_RIGHT_Y,
 } kr_compositor_control_t;
 
 typedef struct krad_text_rep_St krad_text_rep_t;

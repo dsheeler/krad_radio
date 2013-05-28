@@ -1822,6 +1822,14 @@ int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_contr
           (address->control.compositor_control == KR_Z) ||
           (address->control.compositor_control == KR_WIDTH) ||
           (address->control.compositor_control == KR_HEIGHT) ||
+          (address->control.compositor_control == KR_VIEW_TOP_LEFT_X) ||
+          (address->control.compositor_control == KR_VIEW_TOP_LEFT_Y) ||
+          (address->control.compositor_control == KR_VIEW_TOP_RIGHT_X) ||
+          (address->control.compositor_control == KR_VIEW_TOP_RIGHT_Y) ||
+          (address->control.compositor_control == KR_VIEW_BOTTOM_LEFT_X) ||
+          (address->control.compositor_control == KR_VIEW_BOTTOM_LEFT_Y) ||
+          (address->control.compositor_control == KR_VIEW_BOTTOM_RIGHT_X) ||
+          (address->control.compositor_control == KR_VIEW_BOTTOM_RIGHT_Y) ||
           (address->control.compositor_control == KR_TICKRATE)) {
           *data_type = KR_INT32;
       } else {
