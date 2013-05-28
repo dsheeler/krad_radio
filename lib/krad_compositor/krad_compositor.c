@@ -1497,43 +1497,43 @@ void krad_compositor_subunit_update (krad_compositor_t *compositor, kr_unit_cont
                 break;
 
               case KR_VIEW_TOP_LEFT_X:
-                krad_compositor_subunit_set_view_top_left_x (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_top_left_x (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_TOP_LEFT_Y:
-                krad_compositor_subunit_set_view_top_left_y (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_top_left_y (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_TOP_RIGHT_X:
-                krad_compositor_subunit_set_view_top_right_x (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_top_right_x (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_TOP_RIGHT_Y:
-                krad_compositor_subunit_set_view_top_right_y (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_top_right_y (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_BOTTOM_LEFT_X:
-                krad_compositor_subunit_set_view_bottom_left_x (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_bottom_left_x (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_BOTTOM_LEFT_Y:
-                krad_compositor_subunit_set_view_bottom_left_y (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_bottom_left_y (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_BOTTOM_RIGHT_X:
-                krad_compositor_subunit_set_view_bottom_right_x (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_bottom_right_x (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
 
               case KR_VIEW_BOTTOM_RIGHT_Y:
-                krad_compositor_subunit_set_view_bottom_right_y (&compositor->port[uc->address.id.number].subunit,
-                                                             uc->value.integer, uc->duration);
+                krad_compositor_videoport_set_view_bottom_right_y (&compositor->port[uc->address.id.number],
+                                                             uc->value.integer);
                 break;
             
             }
