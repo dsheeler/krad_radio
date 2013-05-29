@@ -520,6 +520,20 @@ void krad_websocket_add_comp_subunit ( kr_ws_client_t *kr_ws_client, kr_crate_t 
       } else {
         cJSON_AddStringToObject (msg, "direction", "input");
       }
+
+      cJSON_AddNumberToObject (msg, "view_top_left_x", crate->inside.videoport->view.top_left.x);
+      cJSON_AddNumberToObject (msg, "view_top_left_y", crate->inside.videoport->view.top_left.y);
+
+      cJSON_AddNumberToObject (msg, "view_top_right_x", crate->inside.videoport->view.top_right.x);
+      cJSON_AddNumberToObject (msg, "view_top_right_y", crate->inside.videoport->view.top_right.y);
+
+      cJSON_AddNumberToObject (msg, "view_bottom_left_x", crate->inside.videoport->view.bottom_left.x);
+      cJSON_AddNumberToObject (msg, "view_bottom_left_y", crate->inside.videoport->view.bottom_left.y);
+
+      cJSON_AddNumberToObject (msg, "view_bottom_right_x", crate->inside.videoport->view.bottom_right.x);
+      cJSON_AddNumberToObject (msg, "view_bottom_right_y", crate->inside.videoport->view.bottom_right.y);
+
+
       break;
     case KR_VECTOR:
       controls = crate->inside.vector->controls;
@@ -558,7 +572,8 @@ static void crate_to_json (kr_ws_client_t *kr_ws_client, kr_crate_t *crate) {
   }
 }
 
-static int krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
+static int
+ krad_delivery_handler (kr_ws_client_t *kr_ws_client) {
 
   kr_crate_t *crate;
   char *string;
