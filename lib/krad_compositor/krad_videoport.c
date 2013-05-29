@@ -6,10 +6,14 @@ void krad_compositor_videoport_set_view_top_left_x (krad_compositor_port_t *vide
       videoport->perspective = kr_perspective_create (960,540);
       videoport->view = videoport->perspective->view;
   }
-  videoport->view.top_left.x = view_top_left_x;
-  printk("hello x %d", videoport->view.top_left.x);
 
-  printk("output of kr_perspective %d", kr_perspective_set(videoport->perspective, &videoport->view));
+  videoport->view.top_left.x = view_top_left_x;
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view = videoport->perspective->view;
+    videoport->view.top_left.x = videoport->perspective->view.top_left.x;
+  }
+
 }
 
 void krad_compositor_videoport_set_view_top_left_y (krad_compositor_port_t *videoport, int view_top_left_y) {
@@ -20,8 +24,11 @@ void krad_compositor_videoport_set_view_top_left_y (krad_compositor_port_t *vide
   }
 
   videoport->view.top_left.y = view_top_left_y;
-  printk("hello y %d", videoport->view.top_left.y);
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.top_left.y = videoport->perspective->view.top_left.y;
+  }
+
 }
 
 void krad_compositor_videoport_set_view_top_right_x (krad_compositor_port_t *videoport, int view_top_right_x) {
@@ -32,7 +39,11 @@ void krad_compositor_videoport_set_view_top_right_x (krad_compositor_port_t *vid
   }
 
   videoport->view.top_right.x = view_top_right_x;
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.top_right.x = videoport->perspective->view.top_right.x;
+  }
+
 }
 
 void krad_compositor_videoport_set_view_top_right_y (krad_compositor_port_t *videoport, int view_top_right_y) {
@@ -43,7 +54,10 @@ void krad_compositor_videoport_set_view_top_right_y (krad_compositor_port_t *vid
   }
 
   videoport->view.top_right.y = view_top_right_y;
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.top_right.y = videoport->perspective->view.top_right.y;
+  }
 }
 
 void krad_compositor_videoport_set_view_bottom_left_x (krad_compositor_port_t *videoport, int view_bottom_left_x) {
@@ -54,7 +68,11 @@ void krad_compositor_videoport_set_view_bottom_left_x (krad_compositor_port_t *v
   }
 
   videoport->view.bottom_left.x = view_bottom_left_x;
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.bottom_left.x = videoport->perspective->view.bottom_left.x;
+  }
+
 }
 
 void krad_compositor_videoport_set_view_bottom_left_y (krad_compositor_port_t *videoport, int view_bottom_left_y) {
@@ -65,7 +83,11 @@ void krad_compositor_videoport_set_view_bottom_left_y (krad_compositor_port_t *v
   }
 
   videoport->view.bottom_left.y = view_bottom_left_y;
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.bottom_left.y = videoport->perspective->view.bottom_left.y;
+  }
+
 }
 
 void krad_compositor_videoport_set_view_bottom_right_x (krad_compositor_port_t *videoport, int view_bottom_right_x) {
@@ -76,7 +98,11 @@ void krad_compositor_videoport_set_view_bottom_right_x (krad_compositor_port_t *
   }
 
   videoport->view.bottom_right.x = view_bottom_right_x;
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.bottom_right.x = videoport->perspective->view.bottom_right.x;
+  }
+
 }
 
 void krad_compositor_videoport_set_view_bottom_right_y (krad_compositor_port_t *videoport, int view_bottom_right_y) {
@@ -87,5 +113,9 @@ void krad_compositor_videoport_set_view_bottom_right_y (krad_compositor_port_t *
   }
 
   videoport->view.bottom_right.y = view_bottom_right_y;
-  kr_perspective_set(videoport->perspective, &videoport->view);
+
+  if (kr_perspective_set(videoport->perspective, &videoport->view) < 0) {
+    videoport->view.bottom_right.y = videoport->perspective->view.bottom_right.y;
+  }
+
 }
