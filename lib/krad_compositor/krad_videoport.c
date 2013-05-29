@@ -4,6 +4,7 @@ void krad_compositor_videoport_set_view_top_left_x (krad_compositor_port_t *vide
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
   videoport->view.top_left.x = view_top_left_x;
   printk("hello x %d", videoport->view.top_left.x);
@@ -15,6 +16,7 @@ void krad_compositor_videoport_set_view_top_left_y (krad_compositor_port_t *vide
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.top_left.y = view_top_left_y;
@@ -26,6 +28,7 @@ void krad_compositor_videoport_set_view_top_right_x (krad_compositor_port_t *vid
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.top_right.x = view_top_right_x;
@@ -36,6 +39,7 @@ void krad_compositor_videoport_set_view_top_right_y (krad_compositor_port_t *vid
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.top_right.y = view_top_right_y;
@@ -46,6 +50,7 @@ void krad_compositor_videoport_set_view_bottom_left_x (krad_compositor_port_t *v
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.bottom_left.x = view_bottom_left_x;
@@ -56,6 +61,7 @@ void krad_compositor_videoport_set_view_bottom_left_y (krad_compositor_port_t *v
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.bottom_left.y = view_bottom_left_y;
@@ -66,6 +72,7 @@ void krad_compositor_videoport_set_view_bottom_right_x (krad_compositor_port_t *
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.bottom_right.x = view_bottom_right_x;
@@ -76,6 +83,7 @@ void krad_compositor_videoport_set_view_bottom_right_y (krad_compositor_port_t *
 
   if (videoport->perspective == NULL) {
       videoport->perspective = kr_perspective_create (960,540);
+      videoport->view = videoport->perspective->view;
   }
 
   videoport->view.bottom_right.y = view_bottom_right_y;

@@ -522,6 +522,15 @@ static int kr_compositor_crate_to_int (kr_crate_t *crate, int *integer) {
     case KR_WIDTH:
     case KR_HEIGHT:                
     case KR_TICKRATE:
+    case KR_VIEW_TOP_LEFT_X:
+    case KR_VIEW_TOP_LEFT_Y:
+    case KR_VIEW_TOP_RIGHT_X:
+    case KR_VIEW_TOP_RIGHT_Y:
+    case KR_VIEW_BOTTOM_LEFT_X:
+    case KR_VIEW_BOTTOM_LEFT_Y:
+    case KR_VIEW_BOTTOM_RIGHT_X:
+    case KR_VIEW_BOTTOM_RIGHT_Y:
+
       kr_ebml2_unpack_uint32 (&crate->payload_ebml, &unsigned_integer, size);
       *integer = unsigned_integer;
       return 1;
