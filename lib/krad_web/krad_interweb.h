@@ -38,6 +38,15 @@
 #define MAX_REMOTES 16
 #define KR_IWS_MAX_CLIENTS 64
 
+#define WS_MASK_BIT 0x80  // 10000000
+#define WS_FIN_FRM 0x80   // 10000000
+#define WS_CONT_FRM 0x00  // 00000000
+#define WS_TEXT_FRM 0x01  // 00000001
+#define WS_BIN_FRM 0x02   // 00000010
+#define WS_CLOSE_FRM 0x08 // 00001000
+#define WS_PING_FRM 0x09  // 00001001
+#define WS_PONG_FRM 0x0a  // 00001010
+
 enum krad_interweb_shutdown {
   KRAD_INTERWEB_STARTING = -1,
   KRAD_INTERWEB_RUNNING,
