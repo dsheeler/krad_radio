@@ -587,6 +587,28 @@ void krad_interweb_client_handle (kr_iws_client_t *client) {
   client->drop_after_flush = 1;
 }
 
+int interweb_ws_gen_accept_header (char *resp, char *key) {
+
+  static char *ws_guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+  char string[128];
+  char hash[21];
+
+  hash[20] = '\0';
+
+  if ((resp == NULL) || (key == NULL)) {
+    return -1;
+  }
+
+  snprintf(string, sizeof(string), "%s%s", key, ws_guid);
+  string[127] = '\0';
+
+  kr_sha1(string, strlen(string), hash);
+
+  kr_base64(resp, hash, 20, 64);
+
+  return 0;
+}
+
 int krad_interweb_ws_peek (kr_iws_client_t *client) {
 
   int ret;
@@ -797,6 +819,13 @@ kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port,
 
   krad_interweb_server_run (server);
   
+
+  char resp[128];
+
+  interweb_ws_gen_accept_header (resp, "dGhlIHNhbXBsZSBub25jZQ==");
+
+  printk ("the resp was %s", resp);
+
   return server;
 }
 
