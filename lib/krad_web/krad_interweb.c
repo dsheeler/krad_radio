@@ -587,21 +587,31 @@ void krad_interweb_client_handle (kr_iws_client_t *client) {
   client->drop_after_flush = 1;
 }
 
-int32_t interweb_ws_parse_frame_header(uint8_t *in, uint32_t maxlen, uint8_t *mask) {
+typedef struct interwebs_St interwebs_t;
+
+struct interwebs_St {
+  uint8_t mask[4];
+  uint32_t pos;
+  uint64_t len;
+  uint8_t *input;
+  uint32_t input_len;
+};
+
+int32_t interweb_ws_parse_frame_header(interwebs_t *ws) {
 
   uint8_t *size_bytes;
+  uint8_t payload_sz_8;
   uint64_t payload_sz_64;
   uint16_t payload_sz_16;
   int32_t bytes_read;
   uint8_t frame_type;
-  uint8_t masking_key[4];
 
   bytes_read = 0;
-  if (maxlen < 6) {
-    return -1;
+  if (ws->input_len < 6) {
+    return 0;
   }
 
-  frame_type = in[0];
+  frame_type = ws->input[0];
 
   if (frame_type & WS_FIN_FRM) {
     printk ("We have a fin frame!");
@@ -622,73 +632,139 @@ int32_t interweb_ws_parse_frame_header(uint8_t *in, uint32_t maxlen, uint8_t *ma
         } else {
           if (frame_type == WS_CONT_FRM) {
             printk ("We have a CONT frame!");
+          } else {
+            printke ("Unknown frame type!");
+            return -9;
           }
         }
       }
     }
   }
 
-  if (in[1] & WS_MASK_BIT) {
-    printk("Mask Bit is set");
-    in[1] ^= WS_MASK_BIT;
+  payload_sz_8 = ws->input[1];
+
+  if (payload_sz_8 & WS_MASK_BIT) {
+    payload_sz_8 ^= WS_MASK_BIT;
   } else {
-    printk("Mask Bit is NOT set");
+    printke("Mask Bit is NOT set");
     return -4;
   }
 
-  if (in[1] < 126) {
-    payload_sz_16 = in[1];
+  if (payload_sz_8 < 126) {
+    payload_sz_16 = ws->input[1];
     printk("payload size is %u", payload_sz_16);
-    masking_key[0] = in[2];
-    masking_key[1] = in[3];
-    masking_key[2] = in[4];
-    masking_key[3] = in[5];
+    ws->mask[0] = ws->input[2];
+    ws->mask[1] = ws->input[3];
+    ws->mask[2] = ws->input[4];
+    ws->mask[3] = ws->input[5];
     bytes_read = 6;
   } else {
-    if (maxlen < 8) {
-      return -2;
+    if (ws->input_len < 8) {
+      return 0;
     }
-    if (in[1] == 126) {
+    if (payload_sz_8 == 126) {
       size_bytes = (uint8_t *)&payload_sz_16;
-      size_bytes[1] = in[2];
-      size_bytes[0] = in[3];
-      masking_key[0] = in[4];
-      masking_key[1] = in[5];
-      masking_key[2] = in[6];
-      masking_key[3] = in[7];
-      printk("payload size is %u", payload_sz_16);
+      size_bytes[1] = ws->input[2];
+      size_bytes[0] = ws->input[3];
+      ws->mask[0] = ws->input[4];
+      ws->mask[1] = ws->input[5];
+      ws->mask[2] = ws->input[6];
+      ws->mask[3] = ws->input[7];
+      ws->len = payload_sz_16;
       bytes_read = 8;
     } else {
-      if (maxlen < 14) {
-        return -3;
+      if (ws->input_len < 14) {
+        return 0;
       }
       size_bytes = (uint8_t *)&payload_sz_64;
-      size_bytes[7] = in[2];
-      size_bytes[6] = in[3];
-      size_bytes[5] = in[4];
-      size_bytes[4] = in[5];
-      size_bytes[3] = in[6];
-      size_bytes[2] = in[7];
-      size_bytes[1] = in[8];
-      size_bytes[0] = in[9];
-      masking_key[0] = in[10];
-      masking_key[1] = in[11];
-      masking_key[2] = in[12];
-      masking_key[3] = in[13];
-      printk("payload size is %"PRIu64"", payload_sz_64);
+      size_bytes[7] = ws->input[2];
+      size_bytes[6] = ws->input[3];
+      size_bytes[5] = ws->input[4];
+      size_bytes[4] = ws->input[5];
+      size_bytes[3] = ws->input[6];
+      size_bytes[2] = ws->input[7];
+      size_bytes[1] = ws->input[8];
+      size_bytes[0] = ws->input[9];
+      ws->mask[0] = ws->input[10];
+      ws->mask[1] = ws->input[11];
+      ws->mask[2] = ws->input[12];
+      ws->mask[3] = ws->input[13];
+      ws->len = payload_sz_64;
       bytes_read = 14;
     }
   }
 
-  printk("Masking key is %2X%2X%2X%2X",
-         masking_key[0], masking_key[1], masking_key[2], masking_key[3]);
+  //printk("Masking key is %2X%2X%2X%2X",
+  //       ws->mask[0], ws->mask[1], ws->mask[2], ws->mask[3]);
 
-  mask[0] = masking_key[0];
-  mask[1] = masking_key[1];
-  mask[2] = masking_key[2];
-  mask[3] = masking_key[3];
+  if (ws->len > 100000) {
+    printke("input ws frame size too big");
+    ws->len = 0;
+    ws->pos = 0;
+    return -10;
+  }
+
+  ws->pos = 0;
+  printk("payload size is %"PRIu64"", ws->len);
 
   return bytes_read;
+}
+
+int32_t interweb_ws_parse_frame_data (interwebs_t *ws) {
+
+  int32_t bytes_read;
+
+  bytes_read = 0;
+
+  if ((ws->len == 0) || (ws->len == ws->pos - 1)) {
+    return 0;
+  }
+
+/*
+  int32_t pos;
+  int32_t ppos;
+  int32_t mb;
+
+  ppos = 0;
+  pos = ret;
+  len = 11 - ret;
+
+  uint8_t *bytes;
+  char decoded[255];
+
+  bytes = wsframe;
+
+  printk("ret is %d len is %d", ret, len);
+
+  for (pos = ret; pos < len + ret; pos++) {
+    mb = ppos % 4;
+    decoded[ppos] = bytes[pos] ^ mask[mb];
+    ppos++;
+  }
+  decoded[ppos] = '\0';
+
+  printk("and the decoded result is %s", decoded);
+*/
+
+  return bytes_read;
+}
+
+int32_t interweb_ws_parse (interwebs_t *ws) {
+  
+  if (ws == NULL) {
+    return -1;
+  }
+
+  if (ws->len > 0) {
+    interweb_ws_parse_frame_data(ws);
+  } else {
+    interweb_ws_parse_frame_header(ws);
+    if (ws->len > 0) {
+      interweb_ws_parse_frame_data(ws);
+    }
+  }
+
+  return 0;
 }
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size) {
@@ -956,44 +1032,6 @@ kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port,
   server->ws = krad_websocket_server_create (server->sysname, server->ws_port);
 
   krad_interweb_server_run (server);
-  
-
-  char resp[128];
-
-  interweb_ws_gen_accept_header (resp, "dGhlIHNhbXBsZSBub25jZQ==");
-
-  printk ("the resp was %s", resp);
-
-  uint8_t wsframe[] = { 0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58 };
-
-  int32_t ret;
-  int32_t len;
-  uint8_t mask[4];
-  ret = interweb_ws_parse_frame_header(wsframe, 11, mask);
-
-  int32_t pos;
-  int32_t ppos;
-  int32_t mb;
-
-  ppos = 0;
-  pos = ret;
-  len = 11 - ret;
-
-  uint8_t *bytes;
-  char decoded[255];
-
-  bytes = wsframe;
-
-  printk("ret is %d len is %d", ret, len);
-
-  for (pos = ret; pos < len + ret; pos++) {
-    mb = ppos % 4;
-    decoded[ppos] = bytes[pos] ^ mask[mb];
-    ppos++;
-  }
-  decoded[ppos] = '\0';
-
-  printk("and the decoded result is %s", decoded);
 
   return server;
 }
