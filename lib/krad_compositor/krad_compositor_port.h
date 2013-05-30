@@ -41,6 +41,7 @@ struct krad_compositor_port_St {
   uint64_t start_timecode;
   
   int local;
+  int localframe_state;
   int shm_sd;
   int msg_sd;
   char *local_buffer;

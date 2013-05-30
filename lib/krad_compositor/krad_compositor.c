@@ -173,32 +173,20 @@ void krad_compositor_videoport_render (krad_compositor_port_t *port,
       cairo_restore (cr);
     }
 
-    krad_framepool_unref_frame (frame);
+    if (port->local != 1) {
+      krad_framepool_unref_frame (frame);
+    }
     frame = NULL;
   }
 }
 
 static void krad_compositor_prepare (krad_compositor_t *compositor) {
 
-  int i;
-  int ret;
-
   while (compositor->frame == NULL) {
     compositor->frame = krad_framepool_getframe (compositor->framepool);
     if (compositor->frame == NULL) {
       printke ("Compositor wanted a frame but could not get one right away!");
       usleep (5000);
-    }
-  }
-  
-  for (i = 0; i < KC_MAX_PORTS; i++) {
-    if ((compositor->port[i].subunit.active == 1) &&
-        (compositor->port[i].direction == INPUT) &&
-        (compositor->port[i].local == 1)) {
-      ret = krad_compositor_local_videoport_notify (&compositor->port[i]);
-      if (ret == -2) {
-        krad_compositor_port_destroy (compositor, &compositor->port[i]);
-      }
     }
   }
   
@@ -307,7 +295,26 @@ static void krad_compositor_deactivate_subunits (krad_compositor_t *compositor) 
   }
 }
 
+static void krad_compositor_notify_local_ports (krad_compositor_t *compositor) {
+
+  int i;
+  int ret;
+
+  for (i = 0; i < KC_MAX_PORTS; i++) {
+    if ((compositor->port[i].subunit.active == 1) &&
+        (compositor->port[i].direction == INPUT) &&
+        (compositor->port[i].local == 1)) {
+      ret = krad_compositor_local_videoport_notify (&compositor->port[i]);
+      if (ret == -2) {
+        krad_compositor_port_destroy (compositor, &compositor->port[i]);
+      }
+    }
+  }
+}
+
 static void krad_compositor_finish (krad_compositor_t *compositor) {
+
+  krad_compositor_notify_local_ports (compositor);
 
   krad_framepool_unref_frame (compositor->frame);
 
@@ -317,7 +324,7 @@ static void krad_compositor_finish (krad_compositor_t *compositor) {
   
   compositor->frame = NULL;
   
-  krad_compositor_deactivate_subunits (compositor); 
+  krad_compositor_deactivate_subunits (compositor);
 }
 
 static inline void krad_compositor_tick (krad_compositor_t *compositor) {
@@ -730,6 +737,10 @@ static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port)
 
   krad_compositor_port_tick (port);
 
+  if (port->localframe_state == 1) {
+    return 0;
+  }
+
   port->local_frame->width = port->source_width;
   port->local_frame->height = port->source_height;
 
@@ -761,6 +772,9 @@ static int krad_compositor_local_videoport_notify (krad_compositor_port_t *port)
     }  
     if (pollfds[0].revents & POLLOUT) {
       wrote = write (port->msg_sd, buf, 1);
+      if (wrote == 1) {
+        port->localframe_state = 1;
+      }
       return wrote;
     }
   }
@@ -777,10 +791,14 @@ krad_frame_t *krad_compositor_port_pull_frame_local (krad_compositor_port_t *por
   ret = 0;
   buf[0] = 0;
 
+  if (port->localframe_state == 0) {
+    return NULL;
+  }
+
   pollfds[0].events = POLLIN;
   pollfds[0].fd = port->msg_sd;
   
-  ret = poll (pollfds, 1, 3);
+  ret = poll (pollfds, 1, 0);
 
   if (ret < 0) {
     printke ("krad compositor poll failure %d", ret);
@@ -804,6 +822,7 @@ krad_frame_t *krad_compositor_port_pull_frame_local (krad_compositor_port_t *por
     if (pollfds[0].revents & POLLIN) {
       ret = read (port->msg_sd, buf, 1);
       if (ret == 1) {
+        port->localframe_state = 0;
         cairo_surface_mark_dirty (port->local_frame->cst);
         return port->local_frame;
       }
@@ -1002,6 +1021,7 @@ krad_compositor_port_t *krad_compositor_local_port_create (krad_compositor_t *kr
   port = krad_compositor_port_create_full (krad_compositor, sysname, direction,
                             krad_compositor->width, krad_compositor->height, 1, 1);
 
+  port->localframe_state = 0;  
   port->shm_sd = 0;
   port->msg_sd = 0;  
   port->local_buffer = NULL;

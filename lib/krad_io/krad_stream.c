@@ -1,61 +1,9 @@
 #include "krad_stream.h"
 
-static void kr_base64_encode (char *dest, char *src, int maxlen);
 static void kr_stream_read_http_headers (krad_stream_t *stream);
 static void kr_stream_send_request_to_stream (krad_stream_t *stream);
 static void kr_stream_send_request_for_stream (krad_stream_t *stream);
 static krad_stream_t *kr_stream_connect (char *host, int port);
-
-static void kr_base64_encode (char *dest, char *src, int maxlen) {
-
-  char b64t[64] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-                    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-                    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                    'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-                    '8', '9', '+', '/' };
-  int len;
-  int base64_len;
-  int slice;
-  char *out;
-  char *result;
-  char buffer[1024];
-
-  len = strlen (src);
-  base64_len = len * 4 / 3 + 4;
-  out = buffer;
-  result = out;
-  
-  if ((dest == NULL) || (base64_len > 1024) || (base64_len > maxlen)) {
-    return;
-  }
-
-  while (len > 0) {
-   slice = (len > 3) ? 3 : len;
-    *out++ = b64t[(*src & 0xFC) >> 2];
-    *out++ = b64t[((*src & 0x03) << 4) | ((*(src + 1) & 0xF0) >> 4)];
-    switch (slice) {
-      case 3:
-        *out++ = b64t[((*(src + 1) & 0x0F) << 2) | ((*(src + 2) & 0xC0) >> 6)];
-        *out++ = b64t[(*(src + 2)) & 0x3F];
-        break;
-
-      case 2:
-        *out++ = b64t[((*(src + 1) & 0x0F) << 2)];
-        *out++ = '=';
-        break;
-
-      case 1:
-        *out++ = '=';
-        *out++ = '=';
-        break;
-    }
-    src += slice;
-    len -= slice;
-  }
-  *out = 0;
-  strncpy (dest, result, maxlen);
-}
 
 ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
   ssize_t ret;

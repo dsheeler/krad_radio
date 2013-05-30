@@ -7,6 +7,7 @@ import sys
 daemon = "krad_radio_daemon.c"
 
 depsources = """
+../lib/krad_web/krad_base64.c
 ../lib/krad_container/krad_container.c
 ../lib/krad_radio/krad_radio_interface.c
 ../lib/krad_radio/krad_radio.c
@@ -42,7 +43,7 @@ depsources = """
 ../lib/krad_web/ext/libwebsockets/handshake.c
 ../lib/krad_web/ext/libwebsockets/server.c
 ../lib/krad_web/ext/libwebsockets/server-handshake.c
-../lib/krad_web/ext/libwebsockets/sha-1.c
+../lib/krad_web/krad_sha1.c
 ../lib/krad_web/ext/libwebsockets/libwebsockets.c
 ../lib/krad_web/ext/libwebsockets/parsers.c
 ../lib/krad_web/krad_websocket.c
