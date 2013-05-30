@@ -99,13 +99,43 @@ struct krad_interweb_server_St {
   
 };
 
+enum interweb_client_type {
+  INTERWEB_UNKNOWN = 0,
+  WS,
+  HTTP1,
+  HTTP11,
+  HTTP2,
+  STREAMIN,
+  STREAMOUT,
+};
+
+typedef struct interwebs_St interwebs_t;
+
+struct interwebs_St {
+  uint8_t mask[4];
+  uint32_t pos;
+  uint64_t len;
+  uint8_t *input;
+  uint32_t input_len;
+  uint8_t *output;
+  uint32_t output_len;
+  uint64_t frames;
+  uint32_t shaked;
+};
+
 struct krad_interweb_server_client_St {
   int32_t sd;
   krad_interweb_t *server;
   kr_io2_t *in;
   kr_io2_t *out;
   int32_t drop_after_flush;
-  int32_t noob;
+  int32_t type;
+
+  uint32_t hle;
+  uint32_t hle_pos;
+  uint32_t got_headers;
+  char get[96];
+  interwebs_t ws;
 };
 
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,
