@@ -1,70 +1,9 @@
-/*
- * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the project nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE PROJECT OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-/*
- * FIPS pub 180-1: Secure Hash Algorithm (SHA-1)
- * based on: http://csrc.nist.gov/fips/fip180-1.txt
- * implemented by Jun-ichiro itojun Itoh <itojun@itojun.org>
- */
-
 #include <sys/types.h>
-#ifdef WIN32
-
-#ifndef BIG_ENDIAN
-#define BIG_ENDIAN    4321  /* to show byte order (taken from gcc) */
-#endif
-#ifndef LITTLE_ENDIAN
-#define LITTLE_ENDIAN 1234
-#endif
-#ifndef BYTE_ORDER
-#define BYTE_ORDER LITTLE_ENDIAN
-#endif
-
-typedef unsigned __int64 u_int64_t;
-
-#undef __P
-#ifndef __P
-#if __STDC__
-#define __P(protos) protos
-#else
-#define __P(protos) ()
-#endif
-#endif
-
-#define bzero(b, len) (memset((b), '\0', (len)), (void) 0)
-
-#else
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 #include <sys/time.h>
-#endif
-
 #include <string.h>
+#include <inttypes.h>
 
 struct sha1_ctxt {
 	union {
@@ -322,6 +261,10 @@ SHA1(const unsigned char *d, size_t n, unsigned char *md)
 	sha1_result(&ctx, (void *)md);
 
 	return md;
+}
+
+void kr_sha1(uint8_t *data, size_t sz, uint8_t *hash) {
+  SHA1(data, sz, hash);
 }
 
 #endif /*unsupported*/

@@ -41,7 +41,7 @@ depsources = """
 ../lib/krad_web/ext/libwebsockets/handshake.c
 ../lib/krad_web/ext/libwebsockets/server.c
 ../lib/krad_web/ext/libwebsockets/server-handshake.c
-../lib/krad_web/ext/libwebsockets/sha-1.c
+../lib/krad_web/krad_sha1.c
 ../lib/krad_web/ext/libwebsockets/libwebsockets.c
 ../lib/krad_web/ext/libwebsockets/parsers.c
 ../lib/krad_web/krad_websocket.c
