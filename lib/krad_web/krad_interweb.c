@@ -591,9 +591,7 @@ int interweb_ws_gen_accept_header (char *resp, char *key) {
 
   static char *ws_guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
   char string[128];
-  char hash[21];
-
-  hash[20] = '\0';
+  uint8_t hash[20];
 
   if ((resp == NULL) || (key == NULL)) {
     return -1;
@@ -602,9 +600,9 @@ int interweb_ws_gen_accept_header (char *resp, char *key) {
   snprintf(string, sizeof(string), "%s%s", key, ws_guid);
   string[127] = '\0';
 
-  kr_sha1(string, strlen(string), hash);
+  kr_sha1((uint8_t *)string, strlen(string), hash);
 
-  kr_base64(resp, hash, 20, 64);
+  kr_base64((uint8_t *)resp, hash, 20, 64);
 
   return 0;
 }

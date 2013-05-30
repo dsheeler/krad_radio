@@ -30,6 +30,7 @@
 #include "krad_websocket.h"
 #include "krad_radio_client.h"
 #include "krad_sha1.h"
+#include "krad_base64.h"
 
 #ifndef KRAD_INTERWEB_SERVER_H
 #define KRAD_INTERWEB_SERVER_H
