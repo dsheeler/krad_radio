@@ -392,7 +392,7 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   total_len = 0;
   
   memset (string, 0, sizeof(string));
-  snprintf (string, 7, "%d", server->ws_port);
+  snprintf (string, 7, "%d", server->uberport);
   total_len += strlen(string);
   server->js = (char *)lib_krad_web_res_krad_radio_js;
   server->js_len = lib_krad_web_res_krad_radio_js_len;
@@ -534,16 +534,22 @@ static void krad_interweb_pack_404 (kr_iws_client_t *client) {
 
 void krad_interweb_http_client_handle (kr_iws_client_t *client) {
 
-  int32_t getlen;
-  
-  getlen = strlen(client->get);
+  int32_t len;
+  char *get;
 
-  if ((getlen > -1) && (getlen < 32)) {
-    if (strncmp("krad_radio.js", client->get, 13) == 0) {
+  get = client->get;
+
+  if (get[0] == '/') {
+    get = client->get + 1;
+  }
+  len = strlen(get);
+
+  if ((len > -1) && (len < 32)) {
+    if (strncmp("krad_radio.js", get, 13) == 0) {
       krad_interweb_pack_headers(client, "text/javascript");
       krad_interweb_pack_buffer(client, client->server->js, client->server->js_len);
     } else {
-      if ((getlen == 0) || ((getlen == 15) && (strncmp("krad_radio.html", client->get, 15) == 0))) {
+      if ((len == 0) || ((len == 15) && (strncmp("krad_radio.html", get, 15) == 0))) {
         krad_interweb_pack_headers(client, "text/html");
         krad_interweb_pack_buffer(client, client->server->html, client->server->html_len);
       } else {
@@ -666,8 +672,10 @@ int32_t interweb_ws_parse_frame_header(interwebs_t *ws) {
   return bytes_read;
 }
 
-int32_t interweb_ws_parse_frame_data (interwebs_t *ws) {
+int32_t interweb_ws_parse_frame_data (kr_iws_client_t *client) {
 
+  return 0;
+/*
   int32_t pos;
   int32_t max;
 
@@ -691,6 +699,7 @@ int32_t interweb_ws_parse_frame_data (interwebs_t *ws) {
   }
 
   return pos;
+*/
 }
 
 int32_t interweb_ws_pack_gen_accept_resp (char *resp, char *key) {
@@ -749,26 +758,43 @@ uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size) {
   }
 }
 
-int32_t interweb_ws_shake (interwebs_t *ws) {
+int32_t interweb_ws_shake (kr_iws_client_t *client) {
+
+  int32_t pos;
+  char *buffer;
+  char acceptkey[64];
+
+  pos = 0;
+  buffer = (char *)client->out->buf;
+  memset(acceptkey, 0, sizeof(acceptkey));
+
+  interweb_ws_pack_gen_accept_resp (acceptkey, client->ws.key);
+
+  pos += sprintf (buffer + pos, "HTTP/1.1 101 Switching Protocols\r\n");
+  pos += sprintf (buffer + pos, "Upgrade: websocket\r\n");
+  pos += sprintf (buffer + pos, "Connection: Upgrade\r\n");
+  pos += sprintf (buffer + pos, "Sec-WebSocket-Protocol: krad-ws-api\r\n");
+  pos += sprintf (buffer + pos, "Sec-WebSocket-Accept: %s\r\n", acceptkey);
+  pos += sprintf (buffer + pos, "\r\n");
+
+  kr_io2_advance (client->out, pos);
+
+  client->ws.shaked = 1;
 
   return 0;
 }
 
-int32_t krad_interweb_ws_client_handle (interwebs_t *ws) {
+int32_t krad_interweb_ws_client_handle (kr_iws_client_t *client) {
   
-  if (ws == NULL) {
-    return -1;
-  }
-
-  if (!ws->shaked) {
-    interweb_ws_shake(ws);
+  if (!client->ws.shaked) {
+    interweb_ws_shake(client);
   } else {
-    if (ws->len > 0) {
-      interweb_ws_parse_frame_data(ws);
+    if (client->ws.len > 0) {
+      interweb_ws_parse_frame_data(client);
     } else {
-      interweb_ws_parse_frame_header(ws);
-      if (ws->len > 0) {
-        interweb_ws_parse_frame_data(ws);
+      interweb_ws_parse_frame_header(&client->ws);
+      if (client->ws.len > 0) {
+        interweb_ws_parse_frame_data(client);
       }
     }
   }
@@ -801,32 +827,68 @@ int32_t krad_interweb_client_find_end_of_headers (kr_iws_client_t *client) {
   return 0;
 }
 
+int32_t interweb_get_header (char *buf, char *out, uint32_t max, char *header) {
+
+  char *pos;
+  int32_t len;
+  int32_t hdr_len;
+  
+  hdr_len = strlen(header);
+
+  pos = strstr(buf, header) + hdr_len;
+  if (pos == NULL) {
+    return -1;
+  }
+
+  len = strcspn(pos, " \n\r?");
+  len = MIN(len, max - 1);
+  memcpy(out, pos, len);
+  out[len] = '\0';
+
+  return 0;
+}
+
 int32_t krad_interweb_client_handle_headers (kr_iws_client_t *client) {
+
+  char *buf;
+
+  buf = (char *)client->in->rd_buf;
 
   if (client->got_headers == 0) {
     if (krad_interweb_client_find_end_of_headers (client)) {
-      client->in->rd_buf[client->hle_pos] = '\0';
+      buf[client->hle_pos] = '\0';
 
-      if (strstr((char *)client->in->rd_buf, "Upgrade: websocket") != NULL) {
+      if (strstr(buf, "Upgrade: websocket") != NULL) {
         printk ("Krad Interweb websocket is YEAAY after %zu bytes",
          client->in->len);
         client->type = WS;
-        // copy in proto and sec key
+
+          interweb_get_header (buf, client->get,
+            sizeof(client->get), "GET ");
+
+          printk ("WS GET IS %s", client->get);
+
+          interweb_get_header (buf, client->ws.key,
+            sizeof(client->ws.key), "Sec-WebSocket-Key: ");
+
+          printk ("KEY IS %s", client->ws.key);
+
+          interweb_get_header (buf, client->ws.proto,
+            sizeof(client->ws.proto), "Sec-WebSocket-Protocol: ");
+
+          printk ("PROTO IS %s", client->ws.proto);
 
         kr_io2_pulled (client->in, client->hle_pos);
         return 0;
       } else {
-        if ((strstr((char *)client->in->rd_buf, "GET ") != NULL) &&
-            (strstr((char *)client->in->rd_buf, " HTTP/1") != NULL)) {
+        if ((strstr(buf, "GET ") != NULL) &&
+            (strstr(buf, " HTTP/1") != NULL)) {
           client->type = HTTP1;
 
-          char *getpos = strstr((char *)client->in->rd_buf, "GET ") + 5;
-          int getlen = strcspn(getpos, "\r ?");
-          getlen = MIN(getlen, sizeof(client->get) - 1);
-          memcpy(client->get, getpos, getlen);
-          client->get[getlen] = '\0';
+          interweb_get_header (buf, client->get,
+            sizeof(client->get), "GET ");
 
-      printk ("GET IS %s", client->get);
+          printk ("GET IS %s", client->get);
 
           kr_io2_pulled (client->in, client->hle_pos);
           return 0;
@@ -848,7 +910,7 @@ int32_t krad_interweb_client_handle_headers (kr_iws_client_t *client) {
 
 void krad_interweb_client_handle (kr_iws_client_t *client) {
   if (client->type == WS) {
-    krad_interweb_ws_client_handle (&client->ws);
+    krad_interweb_ws_client_handle (client);
   } else {
     if (client->type == HTTP1) {
       krad_interweb_http_client_handle (client);
@@ -1017,6 +1079,7 @@ kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port,
   strcpy (server->sysname, sysname);
 
   server->ws_port = websocket_port;
+  server->uberport = port;
   server->headcode_source = headcode;
   server->htmlheader_source = htmlheader;
   server->htmlfooter_source = htmlfooter;

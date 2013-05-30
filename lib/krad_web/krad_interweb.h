@@ -79,6 +79,7 @@ struct krad_interweb_server_St {
   struct pollfd sockets[KR_IWS_MAX_CLIENTS + MAX_REMOTES + 1];
   kr_iws_client_t *sockets_clients[KR_IWS_MAX_CLIENTS + MAX_REMOTES + 1];
 
+  int32_t uberport;
   int32_t ws_port;
   char *headcode_source;
   char *htmlheader_source;
@@ -121,6 +122,8 @@ struct interwebs_St {
   uint32_t output_len;
   uint64_t frames;
   uint32_t shaked;
+  char key[96];
+  char proto[96];
 };
 
 struct krad_interweb_server_client_St {
