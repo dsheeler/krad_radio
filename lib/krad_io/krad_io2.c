@@ -55,10 +55,6 @@ void kr_io2_advance (kr_io2_t *io, size_t bytes) {
 }
 
 void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
-  if (len > io->space) {
-    printke ("oh dear its too much to pack, I am worried");
-    return;
-  }
   memcpy (io->buf, buffer, len);
   kr_io2_advance (io, len);
 }
