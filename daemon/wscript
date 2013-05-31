@@ -35,18 +35,7 @@ depsources = """
 ../lib/krad_framepool/krad_framepool.c
 ../lib/krad_osc/krad_osc.c
 ../lib/krad_web/ext/cJSON.c
-../lib/krad_web/ext/libwebsockets/base64-decode.c
-../lib/krad_web/ext/libwebsockets/output.c
-../lib/krad_web/ext/libwebsockets/extension.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-stream.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-frame.c
-../lib/krad_web/ext/libwebsockets/handshake.c
-../lib/krad_web/ext/libwebsockets/server.c
-../lib/krad_web/ext/libwebsockets/server-handshake.c
 ../lib/krad_web/krad_sha1.c
-../lib/krad_web/ext/libwebsockets/libwebsockets.c
-../lib/krad_web/ext/libwebsockets/parsers.c
-../lib/krad_web/krad_websocket.c
 ../lib/krad_sfx/krad_eq.c
 ../lib/krad_sfx/krad_analog.c
 ../lib/krad_sfx/krad_pass.c
@@ -90,7 +79,6 @@ includedirs = """
 ../lib/krad_framepool/
 ../lib/krad_web/
 ../lib/krad_web/ext/
-../lib/krad_web/ext/libwebsockets/
 ../lib/krad_web/res/
 ../lib/krad_sfx/
 ../lib/krad_vhs/

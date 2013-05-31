@@ -29,7 +29,7 @@
 #ifndef KR_IO2_H
 #define KR_IO2_H
 
-#define KR_IO2_BUF_SZ 8192
+#define KR_IO2_BUF_SZ 8192 * 8
 
 typedef struct kr_io2_St kr_io2_t;
 

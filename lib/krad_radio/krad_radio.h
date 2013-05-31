@@ -50,7 +50,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #endif
 #include "krad_mixer.h"
 #include "krad_mixer_common.h"
-#include "krad_websocket.h"
 #include "krad_udp.h"
 #include "krad_x11.h"
 #include "krad_theora.h"

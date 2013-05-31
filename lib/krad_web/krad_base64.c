@@ -1,10 +1,10 @@
 #include "krad_base64.h"
 
 void kr_base64_encode (char *dest, char *src, int maxlen) {
-  kr_base64 (dest, src, strlen(src), maxlen);
+  kr_base64 ((uint8_t *)dest, (uint8_t *)src, strlen(src), maxlen);
 }
 
-void kr_base64 (char *dest, char *src, int len, int maxlen) {
+int32_t kr_base64 (uint8_t *dest, uint8_t *src, int len, int maxlen) {
 
   char b64t[64] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -12,8 +12,8 @@ void kr_base64 (char *dest, char *src, int len, int maxlen) {
                     'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
                     'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
                     '8', '9', '+', '/' };
-  int base64_len;
-  int slice;
+  int32_t base64_len;
+  int32_t slice;
   char *out;
   char *result;
   char buffer[1024];
@@ -22,8 +22,8 @@ void kr_base64 (char *dest, char *src, int len, int maxlen) {
   out = buffer;
   result = out;
   
-  if ((dest == NULL) || (base64_len > 1024) || (base64_len > maxlen)) {
-    return;
+  if ((dest == NULL) || (base64_len >= 1024) || (base64_len >= maxlen)) {
+    return -1;
   }
 
   while (len > 0) {
@@ -50,5 +50,6 @@ void kr_base64 (char *dest, char *src, int len, int maxlen) {
     len -= slice;
   }
   *out = 0;
-  strncpy (dest, result, maxlen);
+  memcpy(dest, result, base64_len);
+  return base64_len;
 }
