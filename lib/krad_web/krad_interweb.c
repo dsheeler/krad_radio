@@ -562,7 +562,7 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
   while ((kr_delivery_get (client->ws.krclient, &crate) > 0) &&
          (crate != NULL)) {
 
-    printk("got a delivery!");
+    //printk("got a delivery!");
 
     /* Subunit updated */
     if (kr_crate_notice (crate) == EBML_ID_KRAD_SUBUNIT_CONTROL) {
@@ -888,7 +888,7 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
   sin_len = sizeof (sin);
   client->sd = accept (sd, (struct sockaddr *)&sin, &sin_len);
 
-  if (client->sd > 0) {
+  if (client->sd > -1) {
     krad_system_set_socket_nonblocking (client->sd);
     client->in = kr_io2_create ();
     client->out = kr_io2_create_size (128000);
@@ -1235,28 +1235,28 @@ int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
 
   frame_type = ws->input[0];
 
-  printk("pframe type = %2X", frame_type);
+  //printk("pframe type = %2X", frame_type);
 
   if (frame_type & WS_FIN_FRM) {
-    printk ("We have a fin frame!");
+    //printk ("We have a fin frame!");
     frame_type ^= WS_FIN_FRM;
   }
-  printk("poframe type = %2X", frame_type);
+  //printk("poframe type = %2X", frame_type);
 
   if (frame_type == WS_PING_FRM) {
-    printk ("We have a ping frame!");
+    //printk ("We have a ping frame!");
   } else {
     if (frame_type == WS_CLOSE_FRM) {
-      printk ("We have a close frame!");
+      //printk ("We have a close frame!");
     } else {
       if (frame_type == WS_BIN_FRM) {
-        printk ("We have a bin frame!");
+        //printk ("We have a bin frame!");
       } else {
         if (frame_type == WS_TEXT_FRM) {
-          printk ("We have a text frame!");
+          //printk ("We have a text frame!");
         } else {
           if (frame_type == WS_CONT_FRM) {
-            printk ("We have a CONT frame!");
+            //printk ("We have a CONT frame!");
           } else {
             printke ("Unknown frame type!");
             return -9;
@@ -1276,7 +1276,7 @@ int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
   }
 
   if (payload_sz_8 < 126) {
-    printk("payload size is %u", payload_sz_8);
+    //printk("payload size is %u", payload_sz_8);
     ws->mask[0] = ws->input[2];
     ws->mask[1] = ws->input[3];
     ws->mask[2] = ws->input[4];
@@ -1328,7 +1328,7 @@ int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
 
   ws->pos = 0;
   ws->frames++;
-  printk("payload size is %"PRIu64"", ws->len);
+  //printk("payload size is %"PRIu64"", ws->len);
 
   kr_io2_pulled (client->in, bytes_read);
 
@@ -1364,7 +1364,7 @@ int32_t interweb_ws_parse_frame_data (kr_iws_client_t *client) {
 
   max = MIN(MIN((ws->len - ws->pos), ws->input_len), ws->output_len);
 
-  printk ("max is %d", max);
+  //printk ("max is %d", max);
 
   for (pos = 0; pos < max; pos++) {
     ws->output[pos] = ws->input[ws->pos] ^ ws->mask[ws->pos % 4];
@@ -1372,7 +1372,7 @@ int32_t interweb_ws_parse_frame_data (kr_iws_client_t *client) {
   }
 
   output[pos] = '\0';
-  printk("unmasked %d bytes %s", pos, (char *)output);
+  //printk("unmasked %d bytes %s", pos, (char *)output);
 
   json_to_cmd (client, (char *)output);
 
@@ -1696,7 +1696,7 @@ static void *krad_interweb_server_loop (void *arg) {
         if (server->sockets[s].revents & POLLIN) {
           read_ret = kr_io2_read (client->in);
           if (read_ret > 0) {
-            printk ("Krad Interweb Server %d: Got %d bytes\n", s, read_ret);
+            //printk ("Krad Interweb Server %d: Got %d bytes\n", s, read_ret);
             if (client->type == 0) {
               if (krad_interweb_client_handle_headers (client)) {
                 krad_interweb_disconnect_client (server, client);
