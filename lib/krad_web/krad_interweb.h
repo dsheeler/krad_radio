@@ -85,7 +85,6 @@ struct krad_interweb_server_St {
   kr_iws_client_t *sockets_clients[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
 
   int32_t uberport;
-  int32_t ws_port;
   char *headcode_source;
   char *htmlheader_source;
   char *htmlfooter_source;
@@ -157,6 +156,6 @@ int32_t krad_interweb_server_listen_on (kr_interweb_server_t *server,
 void krad_interweb_server_disable (kr_interweb_server_t *server);
 void krad_interweb_server_destroy (kr_interweb_server_t *server);
 void krad_interweb_server_run (kr_interweb_server_t *server);
-kr_interweb_server_t *krad_interweb_server_create (char *sysname, int32_t port, int32_t websocket_port,
+kr_interweb_server_t *krad_interweb_server_create (char *sysname, int32_t port,
                                       char *headcode, char *htmlheader, char *htmlfooter);
 #endif

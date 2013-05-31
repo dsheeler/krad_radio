@@ -1801,7 +1801,7 @@ void krad_interweb_server_run (kr_interweb_server_t *server) {
                   (void *)server);
 }
 
-kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port, int32_t websocket_port,
+kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port,
                                       char *headcode, char *htmlheader, char *htmlfooter) {
 
   kr_interweb_server_t *server;
@@ -1814,7 +1814,6 @@ kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port,
 
   strcpy (server->sysname, sysname);
 
-  server->ws_port = websocket_port;
   server->uberport = port;
   server->headcode_source = headcode;
   server->htmlheader_source = htmlheader;

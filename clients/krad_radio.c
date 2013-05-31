@@ -320,18 +320,18 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (strncmp(argv[2], "webon", 5) == 0) {
+  if ((strncmp(argv[2], "webon", 5) == 0) || (strncmp(argv[2], "interweb", 5))) {
+    if (argc == 4) {
+      kr_web_enable (client, atoi(argv[3]), "", "", "");
+    }
     if (argc == 5) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), "", "", "");
+      kr_web_enable (client, atoi(argv[3]), argv[4], "", "");
     }
     if (argc == 6) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), argv[5], "", "");
+      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], "");
     }
     if (argc == 7) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), argv[5], argv[6], "");
-    }
-    if (argc == 8) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), argv[5], argv[6], argv[7]);
+      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], argv[6]);
     }
   }      
 

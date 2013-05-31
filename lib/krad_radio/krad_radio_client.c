@@ -1263,7 +1263,7 @@ int kr_remote_off (kr_client_t *client, char *interface, int port) {
   return 1;
 }
 
-void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_port,
+void kr_web_enable (kr_client_t *client, uint32_t port,
                     char *headcode, char *header, char *footer) {
 
   unsigned char *radio_command;
@@ -1271,8 +1271,7 @@ void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_WEB_ENABLE, &webon);
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_HTTP_PORT, http_port);
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_WEBSOCKET_PORT, websocket_port);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_HTTP_PORT, port);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_HEADCODE, headcode);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_HEADER, header);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_FOOTER, footer);

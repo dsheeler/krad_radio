@@ -456,7 +456,7 @@ int kr_remote_off (kr_client_t *client, char *interface, int port);
  * @param header override the header delivered to HTTP-clients
  * @param footer override the footer delivered to HTTP-clients
  */
-void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_port,
+void kr_web_enable (kr_client_t *client, uint32_t port,
                     char *headcode, char *header, char *footer);
 
 /**
