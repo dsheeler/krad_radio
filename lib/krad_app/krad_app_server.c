@@ -636,6 +636,7 @@ static void *krad_app_server_run_thread (void *arg) {
   krad_app_server_t *krad_app_server = (krad_app_server_t *)arg;
   krad_app_server_client_t *client;
   int ret, s, r, read_ret, hret;
+  int32_t oret;
 
   krad_system_set_thread_name ("kr_station");
   krad_app_server->shutdown = KRAD_APP_RUNNING;
@@ -706,7 +707,12 @@ static void *krad_app_server_run_thread (void *arg) {
             }
           }
           if (krad_app_server->sockets[s].revents & POLLOUT) {
-            kr_io2_output (client->out);
+            oret = kr_io2_output (client->out);
+            if (oret != 0) {
+              printke ("Krad APP Server: panic drop");
+              krad_app_disconnect_client (krad_app_server, client);
+              continue;
+            }
             if (!(kr_io2_want_out (client->out))) {
               krad_app_server->sockets[s].events = POLLIN;
             }
@@ -718,7 +724,7 @@ static void *krad_app_server_run_thread (void *arg) {
             }
           }
           if (krad_app_server->sockets[s].revents & POLLERR) {
-            printke ("Krad APP Server: POLLERR\n");
+            printke ("Krad APP Server: POLLERR");
             krad_app_disconnect_client (krad_app_server, client);
             continue;
           }

@@ -27,16 +27,20 @@
 #include "krad_system.h"
 #include "krad_ring.h"
 #include "krad_io2.h"
-#include "krad_websocket.h"
 #include "krad_radio_client.h"
 #include "krad_sha1.h"
 #include "krad_base64.h"
+
+#include "kr_client.h"
+
+#include "cJSON.h"
 
 #ifndef KRAD_INTERWEB_SERVER_H
 #define KRAD_INTERWEB_SERVER_H
 
 #define MAX_REMOTES 16
 #define KR_IWS_MAX_CLIENTS 64
+#define KR_IWS_MAX_KRCLIENTS 64
 
 #define WS_MASK_BIT 0x80  // 10000000
 #define WS_FIN_FRM 0x80   // 10000000
@@ -76,8 +80,9 @@ struct krad_interweb_server_St {
 
   pthread_t server_thread;
 
-  struct pollfd sockets[KR_IWS_MAX_CLIENTS + MAX_REMOTES + 1];
-  kr_iws_client_t *sockets_clients[KR_IWS_MAX_CLIENTS + MAX_REMOTES + 1];
+  struct pollfd sockets[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
+  int32_t socket_type[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
+  kr_iws_client_t *sockets_clients[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
 
   int32_t uberport;
   int32_t ws_port;
@@ -94,10 +99,7 @@ struct krad_interweb_server_St {
   char *htmlheader;
   char *htmlfooter;
   
-	krad_websocket_t *ws;
-  
   char sysname[64];
-  
 };
 
 enum interweb_client_type {
@@ -108,6 +110,8 @@ enum interweb_client_type {
   HTTP2,
   STREAMIN,
   STREAMOUT,
+  KR_APP,
+  KR_REMOTE_LISTEN,
 };
 
 typedef struct interwebs_St interwebs_t;
@@ -124,6 +128,8 @@ struct interwebs_St {
   uint32_t shaked;
   char key[96];
   char proto[96];
+  cJSON *json;
+  kr_client_t *krclient;
 };
 
 struct krad_interweb_server_client_St {

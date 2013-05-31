@@ -22,10 +22,6 @@ krad_radio_vp.c
 krad_radio_ap.c
 """.split()
 
-programs5 = """
-krad_radio_web.c
-""".split()
-
 programs6 = """
 kplayer.c
 """.split()
@@ -131,7 +127,6 @@ includedirs = """
 ../lib/krad_framepool/
 ../lib/krad_web/
 ../lib/krad_web/ext/
-../lib/krad_web/ext/libwebsockets/
 ../lib/krad_web/res/
 ../lib/krad_vhs/
 ../lib/krad_vhs/ext
@@ -171,23 +166,6 @@ includedirs = """
 ../lib/krad_legacy/
 /usr/local/include
 /usr/include
-""".split()
-
-depsources5 = """
-../lib/krad_web/ext/cJSON.c
-../lib/krad_web/ext/libwebsockets/base64-decode.c
-../lib/krad_web/ext/libwebsockets/output.c
-../lib/krad_web/ext/libwebsockets/extension.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-stream.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-frame.c
-../lib/krad_web/ext/libwebsockets/handshake.c
-../lib/krad_web/ext/libwebsockets/server.c
-../lib/krad_web/ext/libwebsockets/server-handshake.c
-../lib/krad_web/krad_sha1.c
-../lib/krad_web/ext/libwebsockets/libwebsockets.c
-../lib/krad_web/ext/libwebsockets/parsers.c
-../lib/krad_web/krad_http.c
-../lib/krad_web/krad_websocket.c
 """.split()
 
 depsources4 = """
@@ -448,14 +426,6 @@ def build(bld):
     use = ["kradradio_client"],
     uselib = shlibs + shlibs4 + stlibs + syslibs)
 
-#  for p in programs5:
-#    bld(features = 'c cprogram', 
-#    source = [p] + depsources5,
-#    includes = includedirs, 
-#    target = p.replace(".c", ""),
-#    use = ["kradradio_client"],
-#    uselib = shlibs + stlibs + syslibs + plibs)
-    
   if bld.env['KPLAYER'] == "yes":
     for p in programs6:
       bld(features = 'c cprogram', 

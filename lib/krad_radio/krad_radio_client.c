@@ -30,7 +30,11 @@ void frak_print_raw_ebml (unsigned char *buffer, int len) {
 }
 
 int kr_client_sync (kr_client_t *client) {
-  kr_io2_output (client->io);
+  int32_t ret;
+  ret = kr_io2_output (client->io);
+  if (ret != 0) {
+    printke ("oh i am so sad I could not do it all!");
+  }
   kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
   return 0;
 }
