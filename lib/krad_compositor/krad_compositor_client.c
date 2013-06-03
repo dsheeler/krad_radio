@@ -584,7 +584,7 @@ void *kr_videoport_process_thread (void *arg) {
   int timeout_ms;
   struct pollfd pollfds[1];
 
-  timeout_ms = 300;
+  timeout_ms = 45;
 
   pollfds[0].fd = videoport->sd;
 
@@ -601,16 +601,18 @@ void *kr_videoport_process_thread (void *arg) {
     }
     
     if (ret == 0) {
-      printke ("krad compositor client: audioport poll read timeout", ret);
-      break;
+      if (videoport->active == 1) {
+        printke ("krad compositor client: videoport poll read timeout", ret);
+      }
+      continue;
     }
     
     if (pollfds[0].revents & POLLHUP) {
-      printke ("krad compositor client: audioport poll hangup", ret);
+      printke ("krad compositor client: videoport poll hangup", ret);
       break;
     }
     if (pollfds[0].revents & POLLERR) {
-      printke ("krad compositor client: audioport poll error", ret);
+      printke ("krad compositor client: videoport poll error", ret);
       break;
     }
     if (!(pollfds[0].revents & POLLIN)) {
@@ -644,7 +646,7 @@ void *kr_videoport_process_thread (void *arg) {
     
     ret = write (videoport->sd, buf, 1);
     if (ret != 1) {
-      printke ("krad mixer client: unexpected write return value %d in kr_audioport_process_thread", ret);
+      printke ("krad videoport client: unexpected write return value %d in kr_videoport_process_thread", ret);
       break;
     }
   }

@@ -1,6 +1,5 @@
 #include "krad_perspective.h"
 
-typedef struct krad_perspective_priv_St kr_perspective_priv_t;
 typedef struct krad_position_St krad_position_t;
 typedef struct krad_position_St kr_coord_t;
 

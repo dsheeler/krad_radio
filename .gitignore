@@ -83,3 +83,4 @@ tests/kr_sysinfo
 tests/kr_terminfo
 tests/kr_launcher
 lib/krad_rc/krad_rc_sdl_joy_control
+tests/kr_scaletest

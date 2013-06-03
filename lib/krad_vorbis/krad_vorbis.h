@@ -43,13 +43,10 @@ struct krad_vorbis_St {
 };
 
 int krad_vorbis_encoder_finish (krad_vorbis_t *vorbis);
-
 int32_t krad_vorbis_encoder_destroy (krad_vorbis_t **vorbis);
 
-krad_vorbis_t *krad_vorbis_encoder_create (int channels,
-                                           int sample_rate,
-                                           float quality);
-
+krad_vorbis_t *krad_vorbis_encoder_create (int channels, int sample_rate,
+ float quality);
 int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
                           kr_codeme_t *codeme,
                           kr_medium_t *medium);
@@ -57,9 +54,6 @@ int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
 int krad_vorbis_test_headers (krad_codec_header_t *hdr);
 
 int32_t krad_vorbis_decoder_destroy (krad_vorbis_t **vorbis);
-
 krad_vorbis_t *krad_vorbis_decoder_create (kr_codec_hdr_t *header);
-
-int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
-                          kr_medium_t *medium,
-                          kr_codeme_t *codeme);
+int32_t kr_vorbis_decode (krad_vorbis_t *vorbis, kr_medium_t *medium,
+         kr_codeme_t *codeme);
