@@ -42,7 +42,8 @@ struct kr_codeme_St {
 struct kr_image_St {
   uint8_t *px;
   uint8_t *ppx[4];
-  int32_t pps[4];  
+  int32_t pps[4];
+  int32_t size[4];
   uint32_t w;
   uint32_t h;
   int32_t fmt;

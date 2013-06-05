@@ -58,6 +58,10 @@ programs14 = """
 kr_streamer2.c
 """.split()
 
+programs15 = """
+kr_streamer_yuv.c
+""".split()
+
 kr_shell = """
 ./krad_shell/krad_shell.c
 """.split()
@@ -184,6 +188,7 @@ depsources8 = """
 """.split()
 
 depsources9 = """
+../lib/krad_ogg/krad_ogg2.c
 ../lib/krad_udp/krad_udp.c
 ../lib/krad_vpx/krad_vpx.c
 ../lib/krad_wayland/krad_wayland.c
@@ -251,6 +256,10 @@ depsources13 = """
 ../lib/krad_chronometer/krad_timer.c
 """.split()
 
+depsources15 = """
+../lib/krad_y4m/krad_y4m.c
+""".split()
+
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
 shlibs = ["opus"]
 
@@ -277,6 +286,9 @@ shlibs11 = ["cairo", "cairo-ft", "samplerate",
           "vorbis", "vorbisenc", "opus", "flac",
           "vpx", "libswscale", "libavutil", 'freetype2']
 
+shlibd = ["daalaenc", "daalabase"]
+shlibd = []
+
 stlibs = []
 syslibs = ['m', 'dl', 'z']
 
@@ -290,6 +302,7 @@ kr_gnmc_libs = ['ncursesw','panel','form']
 
 def check_system(systm):
 
+  global shlibd
   global programs
   global includedirs
   global libsources
@@ -321,6 +334,7 @@ def configure(conf):
 
   global programs
   global shlibs
+  global shlibd
   global shlibs2
   global shlibs4
   global shlibs6
@@ -369,10 +383,14 @@ def configure(conf):
   for l in kr_gnmc_libs:
     conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
+  for l in shlibd:
+    conf.check(lib = l, cflags='-Wall', uselib_store = l)
+
 def build(bld):
 
   global libav_dir
   global programs
+  global shlibd
   global shlibs
   global shlibs2
   global shlibs4
@@ -483,7 +501,15 @@ def build(bld):
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
-      uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+      uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs15:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9 + depsources13 + depsources15,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs10:
     bld(features = 'c cprogram', 

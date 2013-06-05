@@ -5,7 +5,7 @@
 
 /* gcc -Wall kr_sysinfo.c -o kr_sysinfo */
 
-int main (void) {
+int main (int argc, char **argv) {
 
   struct utsname unix_info;
 
