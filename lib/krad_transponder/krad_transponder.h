@@ -187,7 +187,7 @@ struct krad_link_St {
   int muxer_initial_passthu_frames_skipped;
 
 #ifdef KRAD_USE_WAYLAND
-  krad_wayland_t *krad_wayland;
+  kr_wayland *wayland;
   void *wl_buffer;
 #endif
 };

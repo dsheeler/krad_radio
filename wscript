@@ -12,6 +12,7 @@ libdir = "lib"
 clientsdir = "clients"
 wayraddir = "clients/wayrad"
 toolsdir = "tools"
+testsdir = "tests"
 daemondir = "daemon"
 subdirs = os.listdir('./' + libdir)
 
@@ -21,6 +22,7 @@ for s in subdirs:
 subdirs += [os.getcwd() + "/" + clientsdir]
 subdirs += [os.getcwd() + "/" + wayraddir]
 subdirs += [os.getcwd() + "/" + toolsdir]
+subdirs += [os.getcwd() + "/" + testsdir]
 subdirs += [os.getcwd() + "/" + daemondir]
 
 def options(opt):
@@ -112,8 +114,8 @@ def configure(conf):
     conf.env.append_unique('CXXFLAGS', ['-g', '-Wall', '-Wno-write-strings'])
     conf.env.append_unique('CFLAGS', ['-g', '-Wall'])
   else:
-    #conf.env.append_unique('CXXFLAGS', ['-O3', '-Wno-write-strings', '-march=core-avx-i', '-ffast-math', '-ftree-vectorizer-verbose=5'])
-    #conf.env.append_unique('CFLAGS', ['-O3', '-march=core-avx-i', '-ffast-math', '-ftree-vectorizer-verbose=5'])
+    #conf.env.append_unique('CXXFLAGS', ['-O3', '-Wno-write-strings', '-march=core-avx-i'])
+    #conf.env.append_unique('CFLAGS', ['-O3', '-march=core-avx-i', '-mavx'])
     conf.env.append_unique('CXXFLAGS', ['-O3', '-Wno-write-strings'])
     conf.env.append_unique('CFLAGS', ['-O3', '-Wall'])
 

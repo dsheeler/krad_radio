@@ -18,7 +18,7 @@ typedef struct kr_display_St kr_display_t;
 struct kr_display_St {
   uint32_t width;
   uint32_t height;
-	krad_wayland_t *krad_wayland;
+	kr_wayland *wayland;
 	kr_videoport_t *videoport;
 	kr_client_t *client;
   char *station;
@@ -36,7 +36,7 @@ void signal_recv (int sig) {
   destroy = 1;
 }
 
-int display_cb (void *user, uint32_t time) {
+int display_cb(void *user, uint32_t time) {
 
   kr_display_t *display;
   int32_t pos;
@@ -54,20 +54,20 @@ int display_cb (void *user, uint32_t time) {
 	return 0;
 }
 
-void kr_display_free_framebuf (kr_display_t *display) {
+void kr_display_free_framebuf(kr_display_t *display) {
   if (display->rgba != NULL) {
     free (display->rgba);
     display->rgba = NULL;
   }
 }
 
-void kr_display_alloc_framebuf (kr_display_t *display) {
+void kr_display_alloc_framebuf(kr_display_t *display) {
   display->framebufsize = DEFAULT_FBUFSIZE;
   display->frame_size = display->width * display->height * 4;
   display->rgba = malloc (display->frame_size * display->framebufsize);
 }
 
-int new_frame (void *buffer, void *user) {
+int new_frame(void *buffer, void *user) {
 
   int32_t pos;
   kr_display_t *display;
@@ -85,7 +85,7 @@ int new_frame (void *buffer, void *user) {
 	return 0;
 }
 
-void kr_display (kr_display_t *display) {
+void kr_display(kr_display_t *display) {
 
   int32_t ret;
   struct pollfd pollfds[4];
@@ -97,7 +97,7 @@ void kr_display (kr_display_t *display) {
 	    break;
 	  }
 	  
-    pollfds[0].fd = display->krad_wayland->display_fd;
+    pollfds[0].fd = kr_wayland_get_fd(display->wayland);
     pollfds[0].events = POLLIN;
 
     //pollfds[1].fd = sd;
@@ -111,7 +111,7 @@ void kr_display (kr_display_t *display) {
 	  }
 
     if (pollfds[0].revents == POLLIN) { 
-      krad_wayland_iterate (display->krad_wayland);
+      kr_wayland_process (display->wayland);
     }
 	}
 
@@ -120,7 +120,7 @@ void kr_display (kr_display_t *display) {
 
 }
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
   kr_display_t *display;
   
@@ -180,38 +180,31 @@ int main (int argc, char *argv[]) {
 
   kr_display_alloc_framebuf (display);
 
-	display->krad_wayland = krad_wayland_create ();
+	display->wayland = kr_wayland_create();
 
-	//display->krad_wayland->render_test_pattern = 1;
+	kr_wayland_window_create(display->wayland, display->width, display->height, &display->buffer);
 
-	krad_wayland_prepare_window (display->krad_wayland, display->width, display->height, &display->buffer);
-
-  krad_wayland_set_frame_callback (display->krad_wayland, display_cb, display);
-
-  krad_wayland_prepare_window (display->krad_wayland,
-                 display->width,
-                 display->height,
-                 &display->buffer);
+  kr_wayland_set_frame_callback (display->wayland, display_cb, display);
 
   printk("Wayland display prepared");
 
-  krad_wayland_open_window (display->krad_wayland);
+  kr_wayland_open_window(display->wayland);
 	
-  kr_videoport_set_callback (display->videoport, new_frame, display);
+  kr_videoport_set_callback(display->videoport, new_frame, display);
 	
-  kr_videoport_activate (display->videoport);
+  kr_videoport_activate(display->videoport);
 
-  kr_display (display);
+  kr_display(display);
 
-	kr_videoport_deactivate (display->videoport);
+	kr_videoport_deactivate(display->videoport);
 	
-	kr_videoport_destroy (display->videoport);
+	kr_videoport_destroy(display->videoport);
 
-	kr_client_destroy (&display->client);
+	kr_client_destroy(&display->client);
 
-  krad_wayland_close_window (display->krad_wayland);
+  kr_wayland_close_window(display->wayland);
 
-	krad_wayland_destroy (display->krad_wayland);
+	kr_wayland_destroy(display->wayland);
 
   kr_display_free_framebuf (display);
 

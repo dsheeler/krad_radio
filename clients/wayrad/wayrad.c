@@ -5,16 +5,16 @@ static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer);
 
 int wayrad_frame (void *pointer, uint32_t time) {
 
-	int updated;
+  int updated;
 
-	updated = 0;
-	
-	wayrad_t *wayrad = (wayrad_t *)pointer;
-	
-	//hexagon (wayrad->width, wayrad->height,
-	//         wayrad->krad_wayland->display->pointer_x,
-	//         wayrad->krad_wayland->display->pointer_y,
-	//         time, wayrad->buffer);
+  updated = 0;
+  
+  wayrad_t *wayrad = (wayrad_t *)pointer;
+  
+  //hexagon (wayrad->width, wayrad->height,
+  //         wayrad->krad_wayland->display->pointer_x,
+  //         wayrad->krad_wayland->display->pointer_y,
+  //         time, wayrad->buffer);
 
   if (0) {
     if (wayrad->cratezone.crates != wayrad->cratezone.crates_last) {
@@ -26,31 +26,31 @@ int wayrad_frame (void *pointer, uint32_t time) {
 
   render_peak_meter (wayrad, time, wayrad->buffer);
   updated = 1;
-	//printf ("frame callback time is %u\r", time);
-	//fflush (stdout);
+  //printf ("frame callback time is %u\r", time);
+  //fflush (stdout);
 
-	return updated;
+  return updated;
 }
 
 static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer) {
 
-	cairo_surface_t *cst;
-	cairo_t *cr;
+  cairo_surface_t *cst;
+  cairo_t *cr;
   float fall_rate;
   
-	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
-												 CAIRO_FORMAT_ARGB32,
-												 wayrad->width,
-												 wayrad->height,
-												 wayrad->width * 4);
-	
-	cr = cairo_create (cst);
+  cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
+                         CAIRO_FORMAT_ARGB32,
+                         wayrad->width,
+                         wayrad->height,
+                         wayrad->width * 4);
+  
+  cr = cairo_create (cst);
 
   cairo_save (cr);
-	cairo_set_source_rgba (cr, BGCOLOR_CLR);
-	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
-	cairo_paint (cr);
-	cairo_restore (cr);
+  cairo_set_source_rgba (cr, BGCOLOR_CLR);
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);  
+  cairo_paint (cr);
+  cairo_restore (cr);
 
   fall_rate = 0.4f;
 
@@ -65,31 +65,31 @@ static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer) {
   //printf ("frame callback time is %f\r", wayrad->master_peak);
   //fflush (stdout);
 
-	cairo_surface_flush (cst);
-	cairo_destroy (cr);
-	cairo_surface_destroy (cst);
+  cairo_surface_flush (cst);
+  cairo_destroy (cr);
+  cairo_surface_destroy (cst);
 
 }
 
 static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer) {
 
-	cairo_surface_t *cst;
-	cairo_t *cr;
-	char text[256];
+  cairo_surface_t *cst;
+  cairo_t *cr;
+  char text[256];
 
-	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
-												 CAIRO_FORMAT_ARGB32,
-												 wayrad->width,
-												 wayrad->height,
-												 wayrad->width * 4);
-	
-	cr = cairo_create (cst);
+  cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
+                         CAIRO_FORMAT_ARGB32,
+                         wayrad->width,
+                         wayrad->height,
+                         wayrad->width * 4);
+  
+  cr = cairo_create (cst);
 
   cairo_save (cr);
-	cairo_set_source_rgba (cr, BGCOLOR_CLR);
-	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
-	cairo_paint (cr);
-	cairo_restore (cr);
+  cairo_set_source_rgba (cr, BGCOLOR_CLR);
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);  
+  cairo_paint (cr);
+  cairo_restore (cr);
 
 
   sprintf (text, "Crates: %"PRIu64"", wayrad->cratezone.crates);
@@ -102,9 +102,9 @@ static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer) {
   cairo_show_text (cr, text);
   cairo_stroke (cr);
 
-	cairo_surface_flush (cst);
-	cairo_destroy (cr);
-	cairo_surface_destroy (cst);
+  cairo_surface_flush (cst);
+  cairo_destroy (cr);
+  cairo_surface_destroy (cst);
 }
 
 void get_delivery (wayrad_t *wayrad) {
@@ -170,8 +170,8 @@ void *deliveries_thread (void *arg) {
 void wayrad_run (wayrad_t *wayrad) {
   
   int count;
-  kr_unit_control_t uc;
-  char address[128];
+  //kr_unit_control_t uc;
+  //char address[128];
   
   count = 0;
 
@@ -184,14 +184,15 @@ void wayrad_run (wayrad_t *wayrad) {
   pthread_detach (wayrad->deliveries_thread);
 
   while (!wayrad->done) {
-    krad_wayland_iterate (wayrad->krad_wayland);
+    kr_wayland_process (wayrad->wayland);
     
-    if ((wayrad->krad_wayland->mousein) && (wayrad->krad_wayland->click)) {
+/*
+    if ((wayrad->wayland->mousein) && (wayrad->wayland->click)) {
       memset (&uc, 0, sizeof (uc));
       strcpy (address, "m/Music/c");
       if (kr_string_to_address (address, &uc.address)) {
         kr_unit_control_data_type_from_address (&uc.address, &uc.data_type);
-        uc.value.real = (wayrad->krad_wayland->display->pointer_x / (float)wayrad->width);
+        //uc.value.real = (wayrad->wayland->pointer_x / (float)wayrad->width);
         //vol
         //uc.value.real = ((uc.value.real * 100.0f) - 0.0f);
         //cross
@@ -200,7 +201,7 @@ void wayrad_run (wayrad_t *wayrad) {
         kr_unit_control_set (wayrad->client, &uc);
       }
     }
-
+*/
     count++;
   }
     
@@ -210,15 +211,15 @@ void wayrad_run (wayrad_t *wayrad) {
 
 void wayrad_destroy (wayrad_t *wayrad) {
 
-  krad_wayland_close_window (wayrad->krad_wayland);
+  kr_wayland_close_window(wayrad->wayland);
 
-	krad_wayland_destroy (wayrad->krad_wayland);
-  
+  kr_wayland_destroy(wayrad->wayland);
+
   printf ("Disconnecting from %s..\n", wayrad->sysname);
-  kr_disconnect (wayrad->client);
+  kr_disconnect(wayrad->client);
   printf ("Disconnected from %s.\n", wayrad->sysname);
   printf ("Destroying client..\n");
-  kr_client_destroy (&wayrad->client);
+  kr_client_destroy(&wayrad->client);
 
   free (wayrad);
 }
@@ -230,10 +231,10 @@ wayrad_t *wayrad_create (char *sysname) {
   wayrad = calloc (1, sizeof (wayrad_t));
   
   strncpy (wayrad->sysname, sysname, sizeof(wayrad->sysname));
-	wayrad->width = 1280;
-	wayrad->height = 720;
+  wayrad->width = 1280;
+  wayrad->height = 720;
 
-	wayrad->client = kr_client_create ("wayrad");
+  wayrad->client = kr_client_create("wayrad");
 
   if (wayrad->client == NULL) {
     fprintf (stderr, "Could create client\n");
@@ -248,41 +249,32 @@ wayrad_t *wayrad_create (char *sysname) {
 
   printf ("Connected to %s!\n", wayrad->sysname);
 
-	wayrad->krad_wayland = krad_wayland_create ();
+  wayrad->wayland = kr_wayland_create();
 
-	//wayrad->krad_wayland->render_test_pattern = 1;
+  kr_wayland_window_create(wayrad->wayland, wayrad->width, wayrad->height, &wayrad->buffer);
 
-	krad_wayland_prepare_window (wayrad->krad_wayland, wayrad->width, wayrad->height, &wayrad->buffer);
-
-  krad_wayland_set_frame_callback (wayrad->krad_wayland, wayrad_frame, wayrad);
-
-  krad_wayland_prepare_window (wayrad->krad_wayland,
-                 wayrad->width,
-                 wayrad->height,
-                 &wayrad->buffer);
+  kr_wayland_set_frame_callback(wayrad->wayland, wayrad_frame, wayrad);
 
   printk("Wayland display prepared");
 
-  krad_wayland_open_window (wayrad->krad_wayland);
+  kr_wayland_open_window(wayrad->wayland);
 
   printk("Wayland display running");
 
-  return wayrad;  
-  
+  return wayrad;
 }
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
   wayrad_t *wayrad;
 
   if (argc == 2) {
-    wayrad = wayrad_create (argv[1]);
-    wayrad_run (wayrad);
-    wayrad_destroy (wayrad);
+    wayrad = wayrad_create(argv[1]);
+    wayrad_run(wayrad);
+    wayrad_destroy(wayrad);
   } else {
     printf ("need station name\n");
   }
 
-	return 0;
-
+  return 0;
 }

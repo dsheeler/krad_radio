@@ -67,15 +67,16 @@ typedef struct krad_interweb_server_client_St krad_interweb_server_client_t;
 typedef struct krad_interweb_server_client_St kr_iws_client_t;
 
 struct krad_interweb_server_St {
+  char sysname[64];
   int32_t tcp_sd[MAX_REMOTES];
   int32_t tcp_port[MAX_REMOTES];
   char *tcp_interface[MAX_REMOTES];
   int32_t shutdown;
 
   int32_t socket_count;
-  
+
   krad_control_t krad_control;
-  
+
   krad_interweb_server_client_t *clients;
 
   pthread_t server_thread;
@@ -91,14 +92,16 @@ struct krad_interweb_server_St {
 
   char *html;
   int32_t html_len;
-  char *js;
-  int32_t js_len;
+  char *api_js;
+  int32_t api_js_len;
+  char *iface_js;
+  int32_t iface_js_len;
+  char *deviface_js;
+  int32_t deviface_js_len;
   
   char *headcode;
   char *htmlheader;
   char *htmlfooter;
-  
-  char sysname[64];
 };
 
 enum interweb_client_type {
@@ -136,7 +139,7 @@ struct krad_interweb_server_client_St {
   krad_interweb_t *server;
   kr_io2_t *in;
   kr_io2_t *out;
-  int32_t drop_after_flush;
+  int32_t drop_after_sync;
   int32_t type;
 
   uint32_t hle;

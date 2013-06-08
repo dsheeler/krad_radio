@@ -44,25 +44,23 @@ void wayland_display_unit_create (void *arg) {
   
   printk ("Wayland display thread begins");
   
-  krad_link->krad_wayland = krad_wayland_create ();
+  krad_link->wayland = kr_wayland_create();
 
   krad_link->krad_compositor_port2 = krad_compositor_port_create (krad_link->krad_radio->krad_compositor, "WLOut", OUTPUT,
                                                                   krad_link->composite_width,
                                                                   krad_link->composite_height);
-  //krad_link->krad_wayland->render_test_pattern = 1;
-
-  krad_wayland_set_frame_callback (krad_link->krad_wayland,
+  kr_wayland_set_frame_callback (krad_link->wayland,
                    wayland_display_unit_render_callback,
                    krad_link);
 
-  krad_wayland_prepare_window (krad_link->krad_wayland,
+  kr_wayland_window_create (krad_link->wayland,
                  krad_link->composite_width,
                  krad_link->composite_height,
                  &krad_link->wl_buffer);
 
   printk ("Wayland display prepared");
 
-  krad_wayland_open_window (krad_link->krad_wayland);
+  kr_wayland_open_window (krad_link->wayland);
 
   printk("Wayland display running");
 }
@@ -71,7 +69,7 @@ int wayland_display_unit_process (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
   
-  krad_wayland_iterate (krad_link->krad_wayland);
+  kr_wayland_process(krad_link->wayland);
   
   return 0;
 }
@@ -80,8 +78,8 @@ void wayland_display_unit_destroy (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
   
-  krad_wayland_close_window (krad_link->krad_wayland);
-  krad_wayland_destroy (krad_link->krad_wayland);
+  kr_wayland_close_window (krad_link->wayland);
+  kr_wayland_destroy (krad_link->wayland);
   krad_compositor_port_destroy (krad_link->krad_radio->krad_compositor,
                                 krad_link->krad_compositor_port2);
 
@@ -1303,7 +1301,7 @@ void krad_link_start (krad_link_t *link) {
     case RAWOUT:
 #ifdef KRAD_USE_WAYLAND
       wayland_display_unit_create (link);
-      spec.fd = link->krad_wayland->display_fd;
+      spec.fd = kr_wayland_get_fd(link->wayland);
       spec.readable_callback = wayland_display_unit_process;
       spec.destroy_callback = wayland_display_unit_destroy;
       link->graph_id = kr_xpdr_add_raw (link->krad_transponder->xpdr, &spec);

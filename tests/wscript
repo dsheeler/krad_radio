@@ -3,7 +3,7 @@
 import os
 
 programs = """
-wayrad.c
+kr_wayland_test.c
 """.split()
 
 includedirs = """
@@ -54,7 +54,7 @@ includedirs = """
 """.split()
 
 shlibs = ["cairo", "wayland-client", "xkbcommon"]
-depsources = ["hex.c", "../../lib/krad_wayland/krad_wayland.c"]
+depsources = ["../lib/krad_wayland/krad_wayland.c"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']

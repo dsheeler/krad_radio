@@ -5,6 +5,27 @@
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size);
 
+int strmatch (char *string1, char *string2) {
+  
+  int len1;
+  
+  if ((string1 == NULL) || (string2 == NULL)) {
+    if ((string1 == NULL) && (string2 == NULL)) {
+      return 1;
+    }
+    return 0;
+  } 
+
+  len1 = strlen (string1);
+
+  if (len1 == strlen(string2)) {
+    if (strncmp(string1, string2, len1) == 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 void interweb_json_pack (kr_iws_client_t *client) {
 
   int32_t pos;
@@ -748,27 +769,6 @@ int krad_interweb_server_listen_on_adapter (krad_iws_t *server,
 }
 #endif
 
-int strmatch (char *string1, char *string2) {
-  
-  int len1;
-  
-  if ((string1 == NULL) || (string2 == NULL)) {
-    if ((string1 == NULL) && (string2 == NULL)) {
-      return 1;
-    }
-    return 0;
-  } 
-
-  len1 = strlen (string1);
-
-  if (len1 == strlen(string2)) {
-    if (strncmp(string1, string2, len1) == 0) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
 int krad_interweb_server_listen_off (krad_iws_t *server,
                                      char *interface,
                                      int32_t port) {
@@ -908,7 +908,7 @@ static void krad_interweb_disconnect_client (kr_interweb_server_t *server, kr_iw
   close (client->sd);
   client->sd = 0;
   client->type = 0;
-  client->drop_after_flush = 0;
+  client->drop_after_sync = 0;
   client->hle = 0;
   client->hle_pos = 0;
   client->got_headers = 0;
@@ -1046,9 +1046,9 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   memset (string, 0, sizeof(string));
   snprintf (string, 7, "%d", server->uberport);
   total_len += strlen(string);
-  server->js = (char *)lib_krad_web_res_krad_radio_js;
-  server->js_len = lib_krad_web_res_krad_radio_js_len;
-  server->js[server->js_len] = '\0';
+  server->api_js = (char *)lib_krad_web_res_krad_radio_js;
+  server->api_js_len = lib_krad_web_res_krad_radio_js_len;
+  server->api_js[server->api_js_len] = '\0';
   
   html_template = (char *)lib_krad_web_res_krad_radio_html;
   html_template_len = lib_krad_web_res_krad_radio_html_len - 1;
@@ -1188,7 +1188,9 @@ void krad_interweb_http_client_handle (kr_iws_client_t *client) {
 
   int32_t len;
   char *get;
+  krad_interweb_t *s;
 
+  s = client->server;
   get = client->get;
 
   if (get[0] == '/') {
@@ -1196,21 +1198,33 @@ void krad_interweb_http_client_handle (kr_iws_client_t *client) {
   }
   len = strlen(get);
 
-  if ((len > -1) && (len < 32)) {
-    if (strncmp("krad_radio.js", get, 13) == 0) {
-      krad_interweb_pack_headers(client, "text/javascript");
-      krad_interweb_pack_buffer(client, client->server->js, client->server->js_len);
-    } else {
-      if ((len == 0) || ((len == 15) && (strncmp("krad_radio.html", get, 15) == 0))) {
+  for (;;) {
+    if ((len > -1) && (len < 32)) {
+      if (strmatch(get, "kr_api.js")) {
+        krad_interweb_pack_headers(client, "text/javascript");
+        krad_interweb_pack_buffer(client, s->api_js, s->api_js_len);
+        break;
+      }
+      if (strmatch(get, "kr_interface.js")) {
+        krad_interweb_pack_headers(client, "text/javascript");
+        krad_interweb_pack_buffer(client, s->iface_js, s->iface_js_len);
+        break;
+      }
+      if (strmatch(get, "kr_dev_interface.js")) {
+        krad_interweb_pack_headers(client, "text/javascript");
+        krad_interweb_pack_buffer(client, s->deviface_js, s->deviface_js_len);
+        break;
+      }
+      if ((len == 0) || (strmatch(get, "krad_radio.html"))) {
         krad_interweb_pack_headers(client, "text/html");
-        krad_interweb_pack_buffer(client, client->server->html, client->server->html_len);
-      } else {
-        krad_interweb_pack_404(client);
+        krad_interweb_pack_buffer(client, s->html, s->html_len);
+        break;
       }
     }
+    krad_interweb_pack_404(client);
+    break;
   }
-  
-  client->drop_after_flush = 1;
+  client->drop_after_sync = 1;
 }
 
 int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
@@ -1730,7 +1744,7 @@ static void *krad_interweb_server_loop (void *arg) {
             continue;
           }
           if (!(kr_io2_want_out (client->out))) {
-            if (client->drop_after_flush == 1) {
+            if (client->drop_after_sync == 1) {
               krad_interweb_disconnect_client (server, client);
               continue;
             }
