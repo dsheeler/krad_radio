@@ -6,7 +6,8 @@ struct kr_wayland_window_st {
   int pointer_x;
   int pointer_y;
   int click;
-  int mousein;
+  int pointer_in;
+  int pointer_out;
   int active;
   struct wl_surface *surface;
   struct wl_shell_surface *shell_surface;
@@ -26,6 +27,8 @@ struct kr_wayland_window_st {
 struct kr_wayland_st {
   int display_fd;
   kr_wayland_window window[KR_WL_MAX_WINDOWS];
+  kr_wayland_window *key_window;
+  kr_wayland_window *pointer_window;
   struct wl_display *display;
   struct wl_registry *registry;
   struct wl_compositor *compositor;
@@ -159,26 +162,75 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 
 static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
  uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
-  /* Nothing here */
+
+  int i;
+  kr_wayland *wayland;
+
+  wayland = data;
+
+  if (!surface) {
+    return;
+  }
+
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i].active == 1) {
+      if (wayland->window[i].surface == surface) {
+        if (wayland->key_window != &wayland->window[i]) {
+          wayland->key_window = &wayland->window[i];
+          break;
+        }
+      }
+    }
+  }
+  if (i == KR_WL_MAX_WINDOWS) {
+    return;
+  }
 }
 
 static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
  uint32_t serial, struct wl_surface *surface) {
-  /* Nothing here */
+
+  int i;
+  kr_wayland *wayland;
+
+  wayland = data;
+
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i].active == 1) {
+      if (wayland->window[i].surface == surface) {
+        if (wayland->key_window == &wayland->window[i]) {
+          wayland->key_window = NULL;
+          break;
+        }
+      }
+    }
+  }
+  if (i == KR_WL_MAX_WINDOWS) {
+    return;
+  }
 }
 
 static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
  uint32_t serial, uint32_t time, uint32_t key, uint32_t state_w) {
 
-  kr_wayland *wayland = data;
+  kr_wayland *wayland;
+  kr_wayland_event wayland_event;
   //struct window *window = input->keyboard_focus;
   uint32_t code, num_syms;
   enum wl_keyboard_key_state state = state_w;
   const xkb_keysym_t *syms;
   xkb_keysym_t sym;
+  int ret;
   //struct itimerspec its;
 
   //input->display->serial = serial;
+
+  wayland = data;
+
+  if (wayland->key_window == NULL) {
+    return;
+  }
+
   code = key + 8;
   if (!wayland->xkb.state)
     return;
@@ -231,14 +283,20 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
   }
 */
   if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-    if (sym == XKB_KEY_q) {
-      printf("you hit the q key!\n");
-    } else {
-      if (sym == XKB_KEY_f) {
-        printf("you hit the f key!\n");
-      } else {
-        //printf("you hit some other key!\n");
-      }
+    wayland_event.key_event.down = 1;
+  } else {
+    wayland_event.key_event.down = 0;
+  }
+
+  if ((wayland->key_window != NULL)
+      && (wayland->key_window->user_callback != NULL)) {
+    wayland_event.type = KR_WL_KEY;
+    wayland_event.key_event.key = sym;
+    ret =
+     wayland->key_window->user_callback(wayland->key_window->user,
+     &wayland_event);
+    if (ret < 0) {
+
     }
   }
 }
@@ -246,94 +304,172 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
  uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y) {
 
-  kr_wayland_window *window = data;
+  int ret;
+  int i;
+  kr_wayland *wayland;
+  kr_wayland_event wayland_event;
 
-  window->pointer_x = wl_fixed_to_int(x);
-  window->pointer_y = wl_fixed_to_int(y);
-
-  window->mousein = 1;
-
-  wl_pointer_set_cursor(pointer, serial, NULL, 0, 0);
-
-  /*
   if (!surface) {
-    // enter event for a window we've just destroyed 
     return;
   }
 
-  input->display->serial = serial;
-  input->pointer_enter_serial = serial;
-  input->pointer_focus = wl_surface_get_user_data(surface);
-  window = input->pointer_focus;
+  wayland = data;
 
-  if (window->pool) {
-    shm_pool_destroy(window->pool);
-    window->pool = NULL;
-    //Schedule a redraw to free the pool 
-    window_schedule_redraw(window);
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i].active == 1) {
+      if (wayland->window[i].surface == surface) {
+        if (wayland->pointer_window != &wayland->window[i]) {
+          wayland->pointer_window = &wayland->window[i];
+          break;
+        }
+      }
+    }
+  }
+  if (i == KR_WL_MAX_WINDOWS) {
+    return;
   }
 
-  input->sx = sx;
-  input->sy = sy;
+  wayland->pointer_window->pointer_x = wl_fixed_to_int(x);
+  wayland->pointer_window->pointer_y = wl_fixed_to_int(y);
+  wayland->pointer_window->pointer_in = 1;
+  wayland->pointer_window->pointer_out = 0;
 
-  widget = widget_find_widget(window->widget, sx, sy);
-  input_set_focus_widget(input, widget, sx, sy);
-  */
+  wl_pointer_set_cursor(pointer, serial, NULL, 0, 0);
+
+  if (wayland->pointer_window->user_callback != NULL) {
+    wayland_event.type = KR_WL_POINTER;
+    wayland_event.pointer_event.x = wayland->pointer_window->pointer_x;
+    wayland_event.pointer_event.y = wayland->pointer_window->pointer_y;
+    wayland_event.pointer_event.click = wayland->pointer_window->click;
+    wayland_event.pointer_event.pointer_in = wayland->pointer_window->pointer_in;
+    wayland_event.pointer_event.pointer_out = wayland->pointer_window->pointer_out;
+
+    ret =
+     wayland->pointer_window->user_callback(wayland->pointer_window->user,
+      &wayland_event);
+    if (ret < 0) {
+
+    }
+  }
 }
 
 static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
  uint32_t serial, struct wl_surface *surface) {
 
-  kr_wayland_window *window = data;
+  int ret;
+  int i;
+  kr_wayland *wayland;
+  kr_wayland_event wayland_event;
 
-  window->pointer_x = -1;
-  window->pointer_y = -1;
-  window->mousein = 0;
+  wayland = data;
+
+  if (!surface) {
+    return;
+  }
+
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i].active == 1) {
+      if (wayland->window[i].surface == surface) {
+        if (wayland->pointer_window == &wayland->window[i]) {
+          break;
+        }
+      }
+    }
+  }
+  if (i == KR_WL_MAX_WINDOWS) {
+    return;
+  }
+
+  wayland->pointer_window->pointer_x = -1;
+  wayland->pointer_window->pointer_y = -1;
+  wayland->pointer_window->pointer_in = 0;
+  wayland->pointer_window->pointer_out = 1;
+  wayland->pointer_window->click = 0;
+
+  if (wayland->pointer_window->user_callback != NULL) {
+    wayland_event.type = KR_WL_POINTER;
+    wayland_event.pointer_event.x = wayland->pointer_window->pointer_x;
+    wayland_event.pointer_event.y = wayland->pointer_window->pointer_y;
+    wayland_event.pointer_event.click = wayland->pointer_window->click;
+    wayland_event.pointer_event.pointer_in = wayland->pointer_window->pointer_in;
+    wayland_event.pointer_event.pointer_out = wayland->pointer_window->pointer_out;
+    ret =
+     wayland->pointer_window->user_callback(wayland->pointer_window->user,
+     &wayland_event);
+    if (ret < 0) {
+
+    }
+  }
+
+  wayland->pointer_window = NULL;
 }
 
 static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
  uint32_t time, wl_fixed_t x, wl_fixed_t y) {
 
-  kr_wayland_window *window = data;
+  int ret;
+  kr_wayland *wayland;
+  kr_wayland_event wayland_event;
 
-  window->pointer_x = wl_fixed_to_int(x);
-  window->pointer_y = wl_fixed_to_int(y);
+  wayland = data;
 
-  /*
-  input->sx = sx;
-  input->sy = sy;
 
-  if (!(input->grab && input->grab_button)) {
-    widget = widget_find_widget(window->widget, sx, sy);
-    input_set_focus_widget(input, widget, sx, sy);
+
+  wayland->pointer_window->pointer_x = wl_fixed_to_int(x);
+  wayland->pointer_window->pointer_y = wl_fixed_to_int(y);
+  wayland->pointer_window->pointer_in = 0;
+  wayland->pointer_window->pointer_out = 0;
+
+  if ((wayland->pointer_window != NULL)
+      && (wayland->pointer_window->user_callback != NULL)) {
+    wayland_event.type = KR_WL_POINTER;
+    wayland_event.pointer_event.x = wayland->pointer_window->pointer_x;
+    wayland_event.pointer_event.y = wayland->pointer_window->pointer_y;
+    wayland_event.pointer_event.click = wayland->pointer_window->click;
+    wayland_event.pointer_event.pointer_in = 0;
+    wayland_event.pointer_event.pointer_out = 0;
+    ret =
+     wayland->pointer_window->user_callback(wayland->pointer_window->user,
+     &wayland_event);
+    if (ret < 0) {
+
+    }
   }
-
-  if (input->grab)
-    widget = input->grab;
-  else
-    widget = input->focus_widget;
-  if (widget && widget->motion_handler)
-    cursor = widget->motion_handler(input->focus_widget,
-            input, time, sx, sy,
-            widget->user_data);
-
-  input_set_pointer_image(input, cursor);
-  */
 }
 
 static void pointer_handle_button(void *data, struct wl_pointer *pointer,
  uint32_t serial, uint32_t time, uint32_t button, uint32_t state_w) {
 
-  kr_wayland_window *window = data;
-  
+  int ret;
+  kr_wayland *wayland;
+  kr_wayland_event wayland_event;
+
   enum wl_pointer_button_state state = state_w;
 
-  if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-    window->click = 1;
-  }
-  
-  if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-    window->click = 0;    
+  wayland = data;
+
+  if (wayland->pointer_window != NULL) {
+    if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+      wayland->pointer_window->click = 1;
+    }
+    
+    if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+      wayland->pointer_window->click = 0;    
+    }
+    wayland_event.type = KR_WL_POINTER;
+    wayland_event.pointer_event.x = wayland->pointer_window->pointer_x;
+    wayland_event.pointer_event.y = wayland->pointer_window->pointer_y;
+    wayland_event.pointer_event.click = wayland->pointer_window->click;
+    wayland_event.pointer_event.pointer_in = 0;
+    wayland_event.pointer_event.pointer_out = 0;
+    if (wayland->pointer_window->user_callback != NULL) {
+      ret =
+       wayland->pointer_window->user_callback(wayland->pointer_window->user,
+       &wayland_event);
+      if (ret < 0) {
+
+      }
+    }
   }
 }
 
@@ -454,7 +590,7 @@ static void kr_wayland_frame_listener (void *data,
 
   if (window->user_callback != NULL) {
     wayland_event.type = KR_WL_FRAME;
-    wayland_event.buffer = (uint8_t *)window->shm_data;
+    wayland_event.frame_event.buffer = (uint8_t *)window->shm_data;
     updated = window->user_callback(window->user, &wayland_event);
   }
 

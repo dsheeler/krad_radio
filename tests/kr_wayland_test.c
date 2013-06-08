@@ -1,6 +1,6 @@
 #include "krad_wayland.h"
 
-#define TEST_WINDOWS 4
+#define TEST_WINDOWS 2
 
 typedef struct kr_wayland_test kr_wayland_test;
 typedef struct kr_wayland_test_window kr_wayland_test_window;
@@ -10,6 +10,7 @@ struct kr_wayland_test_window {
   int width;
   int height;
   void *buffer;
+  char name[32];
 };
 
 struct kr_wayland_test {
@@ -43,7 +44,7 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
   }  
 
   time = rand();
-  p = (uint32_t *)event->buffer;
+  p = (uint32_t *)event->frame_event.buffer;
   end = wayland_test_window->width * wayland_test_window->height;
   offset = time >> 4;
   for (i = 0; i < end; i++) {
@@ -54,9 +55,55 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
   return updated;
 }
 
+int kr_wl_test_pointer_cb(void *user, kr_wayland_event *event) {
+
+  kr_wayland_test_window *wayland_test_window;
+
+  if (user == NULL) {
+    return -1;
+  }
+
+  wayland_test_window = (kr_wayland_test_window *)user;
+
+  if (event->pointer_event.pointer_in) {
+    printf("pointer in\n");
+  }
+
+  if (event->pointer_event.pointer_out) {
+    printf("pointer out\n");
+    return 0;
+  }
+
+  printf("pointer event: %s: %dx%d - click: %d\n", wayland_test_window->name,
+   event->pointer_event.x, event->pointer_event.y, event->pointer_event.click);
+
+
+  return 0;
+}
+
+int kr_wl_test_key_cb(void *user, kr_wayland_event *event) {
+
+  kr_wayland_test_window *wayland_test_window;
+
+  if (user == NULL) {
+    return -1;
+  }
+
+  wayland_test_window = (kr_wayland_test_window *)user;
+
+  printf("key event: %s: %d - %d %c\n", wayland_test_window->name,
+   event->key_event.down, event->key_event.key, event->key_event.key);
+  return 0;
+}
+
 int kr_wl_test_cb(void *user, kr_wayland_event *event) {
-  if (event->type == KR_WL_FRAME) {
-    return kr_wl_test_frame_cb(user, event);
+  switch (event->type) {
+    case KR_WL_FRAME:
+      return kr_wl_test_frame_cb(user, event);
+    case KR_WL_POINTER:
+      return kr_wl_test_pointer_cb(user, event);
+    case KR_WL_KEY:
+      return kr_wl_test_key_cb(user, event);
   }
   return 0;
 }
@@ -67,7 +114,7 @@ void wayland_test_loop(kr_wayland_test *wayland_test) {
   int ret;
   count = 0;
 
-  while ((!destroy) && (count < 180)) {
+  while ((!destroy) && (count < 2180)) {
     ret = kr_wayland_process(wayland_test->wayland);
     if (ret < 0) {
       break;
@@ -131,6 +178,8 @@ kr_wayland_test *wayland_test_create() {
       fprintf(stderr, "Could not create window %dx%d\n", width, height);
       exit(1);
     }
+    snprintf(wayland_test->windows[i].name,
+     sizeof(wayland_test->windows[i].name), "Window Num %d", i);
     width = width + width;
     height = height + height;
   }

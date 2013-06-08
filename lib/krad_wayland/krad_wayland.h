@@ -24,7 +24,9 @@ typedef struct kr_wayland_st kr_wayland;
 typedef struct kr_wayland_window_st kr_wayland_window;
 typedef struct kr_wayland_window_params_st kr_wayland_window_params;
 typedef struct kr_wayland_event_st kr_wayland_event;
-typedef struct kr_wayland_pointer_st kr_wayland_pointer;
+typedef struct kr_wayland_pointer_event_st kr_wayland_pointer_event;
+typedef struct kr_wayland_key_event_st kr_wayland_key_event;
+typedef struct kr_wayland_frame_event_st kr_wayland_frame_event;
 
 enum kr_wayland_event_type {
   KR_WL_FRAME,
@@ -32,16 +34,28 @@ enum kr_wayland_event_type {
   KR_WL_KEY
 };
 
-struct kr_wayland_pointer_st {
+struct kr_wayland_pointer_event_st {
   int x;
   int y;
   int click;
-  int mousein;
+  int pointer_in;
+  int pointer_out;
+};
+
+struct kr_wayland_key_event_st {
+  int key;
+  int down;
+};
+
+struct kr_wayland_frame_event_st {
+  uint8_t *buffer;
 };
 
 struct kr_wayland_event_st {
   int type;
-  uint8_t *buffer;
+  kr_wayland_pointer_event pointer_event;
+  kr_wayland_key_event key_event;
+  kr_wayland_frame_event frame_event;
 };
 
 struct kr_wayland_window_params_st {
