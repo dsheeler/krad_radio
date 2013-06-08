@@ -2,10 +2,8 @@
 
 #include "krad_radio.html.h"
 #include "kr_api.js.h"
-/*
 #include "kr_dev_interface.js.h"
 #include "kr_interface.js.h"
-*/
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size);
 
@@ -876,8 +874,10 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
   struct sockaddr_un sin;
   socklen_t sin_len;
 
-  outsize = MAX(server->api_js_len, server->html_len) + 4096;
-
+  outsize = MAX(server->api_js_len, server->html_len);
+  outsize = MAX(outsize, server->iface_js_len);
+  outsize = MAX(outsize, server->deviface_js_len);
+  outsize += 1024;
   outsize += outsize % 1024;
 
   while (client == NULL) {
@@ -1051,12 +1051,16 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   len = 0;
   total_len = 0;
   
+  server->api_js = (char *)lib_krad_web_res_kr_api_js;
+  server->api_js_len = lib_krad_web_res_kr_api_js_len;
+  server->iface_js  = (char *)lib_krad_web_res_kr_interface_js;
+  server->iface_js_len = lib_krad_web_res_kr_interface_js_len;
+  server->deviface_js  = (char *)lib_krad_web_res_kr_dev_interface_js;
+  server->deviface_js_len = lib_krad_web_res_kr_dev_interface_js_len;
+
   memset (string, 0, sizeof(string));
   snprintf (string, 7, "%d", server->uberport);
   total_len += strlen(string);
-  server->api_js = (char *)lib_krad_web_res_kr_api_js;
-  server->api_js_len = lib_krad_web_res_kr_api_js_len;
-  //server->api_js[server->api_js_len] = '\0';
   
   html_template = (char *)lib_krad_web_res_krad_radio_html;
   html_template_len = lib_krad_web_res_krad_radio_html_len - 1;
@@ -1207,22 +1211,19 @@ void krad_interweb_http_client_handle (kr_iws_client_t *client) {
 
   for (;;) {
     if ((len > -1) && (len < 32)) {
-      if (strmatch(get, "kr_api.js")) {
+      if (strmatch(get, "krad.js")) {
         krad_interweb_pack_headers(client, "text/javascript");
         krad_interweb_pack_buffer(client, s->api_js, s->api_js_len);
-        break;
-      }
-      if (strmatch(get, "kr_interface.js")) {
-        krad_interweb_pack_headers(client, "text/javascript");
         krad_interweb_pack_buffer(client, s->iface_js, s->iface_js_len);
         break;
       }
-      if (strmatch(get, "kr_dev_interface.js")) {
+      if (strmatch(get, "dev/krad.js")) {
         krad_interweb_pack_headers(client, "text/javascript");
+        krad_interweb_pack_buffer(client, s->api_js, s->api_js_len);
         krad_interweb_pack_buffer(client, s->deviface_js, s->deviface_js_len);
         break;
       }
-      if ((len == 0) || (strmatch(get, "krad_radio.html"))) {
+      if ((len == 0) || (strmatch(get, "dev/"))) {
         krad_interweb_pack_headers(client, "text/html");
         krad_interweb_pack_buffer(client, s->html, s->html_len);
         break;
