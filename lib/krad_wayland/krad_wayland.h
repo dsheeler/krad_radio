@@ -63,7 +63,6 @@ struct kr_wayland_window_params_st {
   uint32_t height;
   int (*callback)(void *, kr_wayland_event *);
   void *user;
-  void *buffer;
 };
 
 kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,

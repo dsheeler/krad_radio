@@ -227,7 +227,9 @@ def check_gif(conf):
 
 def remake_webres(web):
   hexilate_file("lib/krad_web/res/krad_radio.html")
-  hexilate_file("lib/krad_web/res/krad_radio.js")  
+  hexilate_file("lib/krad_web/res/kr_api.js")
+  hexilate_file("lib/krad_web/res/kr_interface.js")
+  hexilate_file("lib/krad_web/res/kr_dev_interface.js")
 
 def configure(conf):
 

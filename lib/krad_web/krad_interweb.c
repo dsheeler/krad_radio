@@ -1,7 +1,11 @@
 #include "krad_interweb.h"
 
 #include "krad_radio.html.h"
-#include "krad_radio.js.h"
+#include "kr_api.js.h"
+/*
+#include "kr_dev_interface.js.h"
+#include "kr_interface.js.h"
+*/
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size);
 
@@ -867,11 +871,15 @@ int krad_interweb_server_listen_on (kr_interweb_server_t *server,
 static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
 
   kr_iws_client_t *client = NULL;
-  
+  int outsize;
   int i;
   struct sockaddr_un sin;
   socklen_t sin_len;
-    
+
+  outsize = MAX(server->api_js_len, server->html_len) + 4096;
+
+  outsize += outsize % 1024;
+
   while (client == NULL) {
     for(i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
       if (server->clients[i].sd == 0) {
@@ -891,7 +899,7 @@ static kr_iws_client_t *kr_iws_accept_client (kr_iws_t *server, int sd) {
   if (client->sd > -1) {
     krad_system_set_socket_nonblocking (client->sd);
     client->in = kr_io2_create ();
-    client->out = kr_io2_create_size (128000);
+    client->out = kr_io2_create_size(outsize);
     kr_io2_set_fd (client->in, client->sd);
     kr_io2_set_fd (client->out, client->sd);
     client->server = server;
@@ -1046,9 +1054,9 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   memset (string, 0, sizeof(string));
   snprintf (string, 7, "%d", server->uberport);
   total_len += strlen(string);
-  server->api_js = (char *)lib_krad_web_res_krad_radio_js;
-  server->api_js_len = lib_krad_web_res_krad_radio_js_len;
-  server->api_js[server->api_js_len] = '\0';
+  server->api_js = (char *)lib_krad_web_res_kr_api_js;
+  server->api_js_len = lib_krad_web_res_kr_api_js_len;
+  //server->api_js[server->api_js_len] = '\0';
   
   html_template = (char *)lib_krad_web_res_krad_radio_html;
   html_template_len = lib_krad_web_res_krad_radio_html_len - 1;
@@ -1068,7 +1076,7 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
     total_len += strlen(server->htmlfooter);    
   }
 
-  server->html_len = total_len + 1;
+  server->html_len = total_len;
   server->html = calloc (1, server->html_len);
   
   len = strcspn (html_template, "~");
@@ -1160,7 +1168,6 @@ static void krad_interweb_pack_headers (kr_iws_client_t *client, char *content_t
   pos += sprintf (buffer + pos, "Server: Krad-Radio\r\n");
   pos += sprintf (buffer + pos, "Content-Type: %s; charset=utf-8\r\n", content_type);
   pos += sprintf (buffer + pos, "\r\n");
-
 
   kr_io2_advance (client->out, pos);
 }
@@ -1815,8 +1822,8 @@ void krad_interweb_server_run (kr_interweb_server_t *server) {
                   (void *)server);
 }
 
-kr_interweb_server_t * krad_interweb_server_create (char *sysname, int32_t port,
-                                      char *headcode, char *htmlheader, char *htmlfooter) {
+kr_interweb_server_t *krad_interweb_server_create (char *sysname, int32_t port,
+ char *headcode, char *htmlheader, char *htmlfooter) {
 
   kr_interweb_server_t *server;
 

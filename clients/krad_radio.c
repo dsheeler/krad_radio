@@ -320,7 +320,8 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if ((strncmp(argv[2], "webon", 5) == 0) || (strncmp(argv[2], "interweb", 5))) {
+  if ((strncmp(argv[2], "webon", 5) == 0) ||
+      (strncmp(argv[2], "interweb", 5) == 0)) {
     if (argc == 4) {
       kr_web_enable (client, atoi(argv[3]), "", "", "");
     }

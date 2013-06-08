@@ -14,11 +14,10 @@ struct cratezone_St {
 struct wayrad_St {
 
   kr_wayland *wayland;
+  kr_wayland_window *window;
 
   int width;
   int height;
-
-  void *buffer;  
 
   char sysname[96];
   kr_client_t *client;

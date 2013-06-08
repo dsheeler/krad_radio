@@ -1,9 +1,9 @@
 #include "wayrad.h"
 
-static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer);
-static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer);
+static void render_cratezone (wayrad_t *wayrad, uint8_t *buffer);
+static void render_peak_meter (wayrad_t *wayrad, uint8_t *buffer);
 
-int wayrad_frame (void *pointer, uint32_t time) {
+int wayrad_frame(void *pointer, kr_wayland_event *event) {
 
   int updated;
 
@@ -18,13 +18,13 @@ int wayrad_frame (void *pointer, uint32_t time) {
 
   if (0) {
     if (wayrad->cratezone.crates != wayrad->cratezone.crates_last) {
-      render_cratezone (wayrad, time, wayrad->buffer);
+      render_cratezone (wayrad, event->frame_event.buffer);
       wayrad->cratezone.crates_last = wayrad->cratezone.crates;
       updated = 1;
     }
   }
 
-  render_peak_meter (wayrad, time, wayrad->buffer);
+  render_peak_meter (wayrad, event->frame_event.buffer);
   updated = 1;
   //printf ("frame callback time is %u\r", time);
   //fflush (stdout);
@@ -32,7 +32,19 @@ int wayrad_frame (void *pointer, uint32_t time) {
   return updated;
 }
 
-static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer) {
+int window_cb(void *user, kr_wayland_event *event) {
+  switch (event->type) {
+    case KR_WL_FRAME:
+      return wayrad_frame(user, event);
+    case KR_WL_POINTER:
+      break;
+    case KR_WL_KEY:
+      break;
+  }
+  return 0;
+}
+
+static void render_peak_meter (wayrad_t *wayrad, uint8_t *buffer) {
 
   cairo_surface_t *cst;
   cairo_t *cr;
@@ -71,7 +83,7 @@ static void render_peak_meter (wayrad_t *wayrad, uint32_t time, void *buffer) {
 
 }
 
-static void render_cratezone (wayrad_t *wayrad, uint32_t time, void *buffer) {
+static void render_cratezone (wayrad_t *wayrad, uint8_t *buffer) {
 
   cairo_surface_t *cst;
   cairo_t *cr;
@@ -211,9 +223,8 @@ void wayrad_run (wayrad_t *wayrad) {
 
 void wayrad_destroy (wayrad_t *wayrad) {
 
-  kr_wayland_close_window(wayrad->wayland);
-
-  kr_wayland_destroy(wayrad->wayland);
+  kr_wayland_window_destroy(&wayrad->window);
+  kr_wayland_destroy(&wayrad->wayland);
 
   printf ("Disconnecting from %s..\n", wayrad->sysname);
   kr_disconnect(wayrad->client);
@@ -227,7 +238,8 @@ void wayrad_destroy (wayrad_t *wayrad) {
 wayrad_t *wayrad_create (char *sysname) {
 
   wayrad_t *wayrad;
-  
+  kr_wayland_window_params window_params;
+
   wayrad = calloc (1, sizeof (wayrad_t));
   
   strncpy (wayrad->sysname, sysname, sizeof(wayrad->sysname));
@@ -251,13 +263,12 @@ wayrad_t *wayrad_create (char *sysname) {
 
   wayrad->wayland = kr_wayland_create();
 
-  kr_wayland_window_create(wayrad->wayland, wayrad->width, wayrad->height, &wayrad->buffer);
+  window_params.width = wayrad->width;
+  window_params.height = wayrad->height;
+  window_params.callback = window_cb;
+  window_params.user = wayrad;
 
-  kr_wayland_set_frame_callback(wayrad->wayland, wayrad_frame, wayrad);
-
-  printk("Wayland display prepared");
-
-  kr_wayland_open_window(wayrad->wayland);
+  wayrad->window = kr_wayland_window_create(wayrad->wayland, &window_params);
 
   printk("Wayland display running");
 

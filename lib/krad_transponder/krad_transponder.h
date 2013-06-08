@@ -188,7 +188,7 @@ struct krad_link_St {
 
 #ifdef KRAD_USE_WAYLAND
   kr_wayland *wayland;
-  void *wl_buffer;
+  kr_wayland_window *window;
 #endif
 };
 

@@ -2,9 +2,9 @@
 
 #ifdef KRAD_USE_WAYLAND
 
-int wayland_display_unit_render_callback (void *pointer, uint32_t time) {
+int wayland_display_unit_render_callback(void *user, kr_wayland_event *event) {
 
-  krad_link_t *krad_link = (krad_link_t *)pointer;
+  krad_link_t *krad_link = (krad_link_t *)user;
 
   int ret;
   char buffer[1];
@@ -26,7 +26,7 @@ int wayland_display_unit_render_callback (void *pointer, uint32_t time) {
       printk ("Krad OTransponder: port read unexpected read return value %d", ret);
     }
 
-    memcpy (krad_link->wl_buffer,
+    memcpy (event->frame_event.buffer,
             krad_frame->pixels,
             krad_link->composite_width * krad_link->composite_height * 4);
 
@@ -36,9 +36,22 @@ int wayland_display_unit_render_callback (void *pointer, uint32_t time) {
   return updated;
 }
 
+int wayland_display_unit_callback(void *user, kr_wayland_event *event) {
+  switch (event->type) {
+    case KR_WL_FRAME:
+      return wayland_display_unit_render_callback(user, event);
+    case KR_WL_POINTER:
+      break;
+    case KR_WL_KEY:
+      break;
+  }
+  return 0;
+}
+
 void wayland_display_unit_create (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
+  kr_wayland_window_params window_params;
 
   krad_system_set_thread_name ("kr_wl_dsp");
   
@@ -49,18 +62,13 @@ void wayland_display_unit_create (void *arg) {
   krad_link->krad_compositor_port2 = krad_compositor_port_create (krad_link->krad_radio->krad_compositor, "WLOut", OUTPUT,
                                                                   krad_link->composite_width,
                                                                   krad_link->composite_height);
-  kr_wayland_set_frame_callback (krad_link->wayland,
-                   wayland_display_unit_render_callback,
-                   krad_link);
 
-  kr_wayland_window_create (krad_link->wayland,
-                 krad_link->composite_width,
-                 krad_link->composite_height,
-                 &krad_link->wl_buffer);
+  window_params.width = krad_link->composite_width;
+  window_params.height = krad_link->composite_height;
+  window_params.callback = wayland_display_unit_callback;
+  window_params.user = krad_link;
 
-  printk ("Wayland display prepared");
-
-  kr_wayland_open_window (krad_link->wayland);
+  krad_link->window = kr_wayland_window_create(krad_link->wayland, &window_params);
 
   printk("Wayland display running");
 }
@@ -78,8 +86,8 @@ void wayland_display_unit_destroy (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
   
-  kr_wayland_close_window (krad_link->wayland);
-  kr_wayland_destroy (krad_link->wayland);
+  kr_wayland_window_destroy(&krad_link->window);
+  kr_wayland_destroy(&krad_link->wayland);
   krad_compositor_port_destroy (krad_link->krad_radio->krad_compositor,
                                 krad_link->krad_compositor_port2);
 

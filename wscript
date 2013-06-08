@@ -19,11 +19,11 @@ subdirs = os.listdir('./' + libdir)
 for s in subdirs:
   subdirs[subdirs.index(s)] = os.getcwd() + "/" + libdir + "/" + s
 
-#subdirs += [os.getcwd() + "/" + clientsdir]
-#subdirs += [os.getcwd() + "/" + wayraddir]
+subdirs += [os.getcwd() + "/" + clientsdir]
+subdirs += [os.getcwd() + "/" + wayraddir]
 subdirs += [os.getcwd() + "/" + toolsdir]
 subdirs += [os.getcwd() + "/" + testsdir]
-#subdirs += [os.getcwd() + "/" + daemondir]
+subdirs += [os.getcwd() + "/" + daemondir]
 
 def options(opt):
 

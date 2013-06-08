@@ -19,13 +19,13 @@ struct kr_display_St {
   uint32_t width;
   uint32_t height;
 	kr_wayland *wayland;
+	kr_wayland_window *window;
 	kr_videoport_t *videoport;
 	kr_client_t *client;
   char *station;
   uint32_t frame_size;
   uint32_t framebufsize;
   uint8_t *rgba;
-  void *buffer;
   uint64_t dframes;
   uint64_t frames;
 };
@@ -36,7 +36,7 @@ void signal_recv (int sig) {
   destroy = 1;
 }
 
-int display_cb(void *user, uint32_t time) {
+int display_cb(void *user, kr_wayland_event *event) {
 
   kr_display_t *display;
   int32_t pos;
@@ -45,13 +45,25 @@ int display_cb(void *user, uint32_t time) {
 
   if (display->frames > display->dframes) {
     pos = (display->dframes % display->framebufsize);
-    memcpy (display->buffer,
+    memcpy (event->frame_event.buffer,
             display->rgba + (pos * display->frame_size),
             display->frame_size);
     display->dframes++;
   	return 1;
   }
 	return 0;
+}
+
+int window_cb(void *user, kr_wayland_event *event) {
+  switch (event->type) {
+    case KR_WL_FRAME:
+      return display_cb(user, event);
+    case KR_WL_POINTER:
+      break;
+    case KR_WL_KEY:
+      break;
+  }
+  return 0;
 }
 
 void kr_display_free_framebuf(kr_display_t *display) {
@@ -123,7 +135,8 @@ void kr_display(kr_display_t *display) {
 int main(int argc, char *argv[]) {
 
   kr_display_t *display;
-  
+  kr_wayland_window_params window_params;
+
   printf ("Options: station width height\n");
 
   display = calloc (1, sizeof (kr_display_t));
@@ -182,14 +195,15 @@ int main(int argc, char *argv[]) {
 
 	display->wayland = kr_wayland_create();
 
-	kr_wayland_window_create(display->wayland, display->width, display->height, &display->buffer);
+  window_params.width = display->width;
+  window_params.height = display->height;
+  window_params.callback = window_cb;
+  window_params.user = display;
 
-  kr_wayland_set_frame_callback (display->wayland, display_cb, display);
+  display->window = kr_wayland_window_create(display->wayland, &window_params);
 
   printk("Wayland display prepared");
 
-  kr_wayland_open_window(display->wayland);
-	
   kr_videoport_set_callback(display->videoport, new_frame, display);
 	
   kr_videoport_activate(display->videoport);
@@ -202,9 +216,9 @@ int main(int argc, char *argv[]) {
 
 	kr_client_destroy(&display->client);
 
-  kr_wayland_close_window(display->wayland);
+  kr_wayland_window_destroy(&display->window);
 
-	kr_wayland_destroy(display->wayland);
+	kr_wayland_destroy(&display->wayland);
 
   kr_display_free_framebuf (display);
 
