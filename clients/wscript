@@ -62,6 +62,10 @@ programs15 = """
 kr_streamer_yuv.c
 """.split()
 
+programs16 = """
+krwplayer.c
+""".split()
+
 kr_shell = """
 ./krad_shell/krad_shell.c
 """.split()
@@ -258,6 +262,10 @@ depsources13 = """
 
 depsources15 = """
 ../lib/krad_y4m/krad_y4m.c
+""".split()
+
+depsources16 = """
+../lib/krad_wayland/krad_wayland.c
 """.split()
 
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
@@ -510,6 +518,14 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs16:
+      bld(features = 'c cprogram cxx cxxprogram', 
+      source = [p] + depsources11 + depsources16,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs11 + shlibs9 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs10:
     bld(features = 'c cprogram', 
