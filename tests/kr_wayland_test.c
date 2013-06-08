@@ -1,32 +1,50 @@
 #include "krad_wayland.h"
 
-typedef struct kr_wayland_test kr_wayland_test;
+#define TEST_WINDOWS 4
 
-struct kr_wayland_test {
-  kr_wayland *wayland;
+typedef struct kr_wayland_test kr_wayland_test;
+typedef struct kr_wayland_test_window kr_wayland_test_window;
+
+struct kr_wayland_test_window {
+  kr_wayland_window *window;
   int width;
   int height;
   void *buffer;
-  int done;
 };
 
-int kr_wl_test_frame_cb(void *pointer, uint32_t time) {
+struct kr_wayland_test {
+  kr_wayland *wayland;
+  kr_wayland_test_window windows[TEST_WINDOWS];
+};
 
-  kr_wayland_test *wayland_test;
+static int destroy = 0;
+
+void signal_recv (int sig) {
+  destroy = 1;
+}
+
+int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
+
+  kr_wayland_test_window *wayland_test_window;
   int updated;
   uint32_t *p;
-  int i, end, offset;
+  int i;
+  int end;
+  int offset;
+  int time;
 
-  wayland_test = (kr_wayland_test *)pointer;
+  wayland_test_window = (kr_wayland_test_window *)user;
 
   updated = 0;
   
-  if (wayland_test == NULL) {
+  if (wayland_test_window == NULL) {
     /* Its bad */
+    return -1;
   }  
 
-  p = wayland_test->buffer;
-  end = wayland_test->width * wayland_test->height;
+  time = rand();
+  p = (uint32_t *)event->buffer;
+  end = wayland_test_window->width * wayland_test_window->height;
   offset = time >> 4;
   for (i = 0; i < end; i++) {
     p[i] = (i + offset) * 0x0080401;
@@ -39,46 +57,101 @@ int kr_wl_test_frame_cb(void *pointer, uint32_t time) {
   return updated;
 }
 
+int kr_wl_test_cb(void *user, kr_wayland_event *event) {
+  if (event->type == KR_WL_FRAME) {
+    return kr_wl_test_frame_cb(user, event);
+  }
+  return 0;
+}
+
 void wayland_test_loop(kr_wayland_test *wayland_test) {
   
   int count;
-
+  int ret;
   count = 0;
 
-  while (!wayland_test->done) {
-    kr_wayland_process(wayland_test->wayland);
+  while ((!destroy) && (count < 180)) {
+    ret = kr_wayland_process(wayland_test->wayland);
+    if (ret < 0) {
+      break;
+    }
     //if ((wayland_test->wayland->mousein) && (wayland_test->wayland->click)) {
 
     //}
+    count++;
   }
-  count++;
-  printf("bye bye now!\n");
 }
 
 void wayland_test_destroy (kr_wayland_test *wayland_test) {
-  kr_wayland_close_window(wayland_test->wayland);
-  kr_wayland_destroy(wayland_test->wayland);
-  free (wayland_test);
+
+  int i;
+  int ret;
+
+  for (i = 0; i < TEST_WINDOWS; i++) {
+    printf("Destroying window %d\n", i);
+    ret = kr_wayland_window_destroy(&wayland_test->windows[i].window);
+    if (ret < 0) {
+      fprintf(stderr, "Could not destroy window %dx%d\n",
+       wayland_test->windows[i].width, wayland_test->windows[i].height);
+      exit(1);
+    }
+    wayland_test_loop(wayland_test);
+  }
+
+  ret = kr_wayland_process(wayland_test->wayland);
+
+  kr_wayland_destroy(&wayland_test->wayland);
+  free(wayland_test);
 }
 
 kr_wayland_test *wayland_test_create() {
 
+  int i;
+  int ret;
+  int width;
+  int height;
   kr_wayland_test *wayland_test;
+  kr_wayland_window_params window_params;
+
+  wayland_test = calloc(1, sizeof(kr_wayland_test));
   
-  wayland_test = calloc (1, sizeof(kr_wayland_test));
-  
-  wayland_test->width = 1280;
-  wayland_test->height = 720;
+  width = 160;
+  height = 120;
 
   wayland_test->wayland = kr_wayland_create();
 
-  kr_wayland_window_create(wayland_test->wayland, wayland_test->width,
-   wayland_test->height, &wayland_test->buffer);
+  if (wayland_test->wayland == NULL) {
+    fprintf(stderr, "Could not connect to wayland\n");
+    exit(1);  
+  }
 
-  kr_wayland_set_frame_callback(wayland_test->wayland, kr_wl_test_frame_cb,
-   wayland_test);
+	signal (SIGINT, signal_recv);
+  signal (SIGTERM, signal_recv);
 
-  kr_wayland_open_window(wayland_test->wayland);
+  for (i = 0; i < TEST_WINDOWS; i++) {
+    wayland_test->windows[i].width = width;
+    wayland_test->windows[i].height = height;
+    window_params.width = wayland_test->windows[i].width;
+    window_params.height = wayland_test->windows[i].height;
+    window_params.user = &wayland_test->windows[i];
+    window_params.callback = kr_wl_test_cb;
+    wayland_test->windows[i].window =
+     kr_wayland_window_create(wayland_test->wayland, &window_params);
+    if (wayland_test->windows[i].window == NULL) {
+      fprintf(stderr, "Could not create window %dx%d\n", width, height);
+      exit(1);
+    }
+
+    ret = kr_wayland_process(wayland_test->wayland);
+    if (ret < 0) {
+      break;
+    }
+
+    width = width + width;
+    height = height + height;
+    wayland_test_loop(wayland_test);
+  }
+
   return wayland_test;
 }
 

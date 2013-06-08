@@ -3,7 +3,10 @@
 struct kr_wayland_window_st {
   int width;
   int height;
-  char title[64];
+  int pointer_x;
+  int pointer_y;
+  int click;
+  int mousein;
   struct wl_surface *surface;
   struct wl_shell_surface *shell_surface;
   struct wl_buffer *buffer;
@@ -11,11 +14,17 @@ struct kr_wayland_window_st {
   struct wl_callback *callback;
   struct wl_shell_surface_listener surface_listener;
   struct wl_callback_listener frame_listener;
+  int current_buffer;
+  int frame_size;
+  struct wl_buffer *buffers[KR_WL_BUFFER_COUNT];
+  int (*user_callback)(void *, kr_wayland_event *);
+  void *user;
+  kr_wayland *wayland;
 };
 
 struct kr_wayland_st {
-  kr_wayland_window *window;
-
+  int display_fd;
+  kr_wayland_window *window[KR_WL_MAX_WINDOWS];
   struct wl_display *display;
   struct wl_registry *registry;
   struct wl_compositor *compositor;
@@ -31,10 +40,6 @@ struct kr_wayland_st {
   struct wl_pointer_listener pointer_listener;
   struct wl_keyboard_listener keyboard_listener;
   struct wl_registry_listener registry_listener;
-  int pointer_x;
-  int pointer_y;
-
-
   struct {
     struct xkb_context *context;
     struct xkb_keymap *keymap;
@@ -43,57 +48,35 @@ struct kr_wayland_st {
     xkb_mod_mask_t alt_mask;
     xkb_mod_mask_t shift_mask;
   } xkb;
-
-  int display_fd;
-  int frame_size;
-  struct wl_buffer *buffer[KR_WL_BUFFER_COUNT];
-  int current_buffer;
-  int (*frame_callback)(void *, uint32_t);
-  void *callback_pointer;
-  int render_test_pattern;
-  int click;
-  int mousein;
 };
 
-static int kr_wayland_create_shm_buffer (kr_wayland *wayland, int width,
- int height, int frames, uint32_t format, void **data_out);
+static int kr_wayland_window_create_shm_buffer (kr_wayland_window *window,
+ int width, int height, int frames, uint32_t format, void **data_out);
 static void kr_wayland_handle_ping (void *data,
  struct wl_shell_surface *shell_surface, uint32_t serial);
 static void kr_wayland_handle_configure (void *data,
  struct wl_shell_surface *shell_surface, uint32_t edges, int32_t width,
  int32_t height);
-
 static void kr_wayland_handle_popup_done (void *data,
  struct wl_shell_surface *shell_surface);
-
 static void pointer_handle_enter(void *data,
  struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface,
  wl_fixed_t sx_w, wl_fixed_t sy_w);
-
 static void pointer_handle_leave(void *data,
  struct wl_pointer *pointer, uint32_t serial, struct wl_surface *surface);
-
 static void pointer_handle_motion(void *data,
  struct wl_pointer *pointer, uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w);
-
 static void pointer_handle_button(void *data,
  struct wl_pointer *pointer, uint32_t serial, uint32_t time, uint32_t button,
  uint32_t state_w);
-
 static void pointer_handle_axis(void *data,
  struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
-
 static void kr_wayland_seat_handle_capabilities (void *data,
  struct wl_seat *seat, enum wl_seat_capability caps);
-
 static void kr_wayland_shm_format (void *data, struct wl_shm *wl_shm,
  uint32_t format);
 static void kr_wayland_handle_global (void *data, struct wl_registry *registry,
  uint32_t id, const char *interface, uint32_t version);
-
-static void kr_wayland_destroy_window (kr_wayland *wayland);
-static int kr_wayland_create_window (kr_wayland *wayland);
-
 static void kr_wayland_frame_listener (void *data,
  struct wl_callback *callback, uint32_t time);
 
@@ -116,6 +99,12 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
 static void kr_wayland_handle_ping(void *data,
  struct wl_shell_surface *shell_surface, uint32_t serial) {
   wl_shell_surface_pong(shell_surface, serial);
+}
+
+static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
+ uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
+ uint32_t mods_locked, uint32_t group) {
+  /* Nothing here */
 }
 
 static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
@@ -253,21 +242,15 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
   }
 }
 
-static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
- uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
- uint32_t mods_locked, uint32_t group) {
-  /* Nothing here */
-}
-
 static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
  uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y) {
 
-  kr_wayland *wayland = data;
+  kr_wayland_window *window = data;
 
-  wayland->pointer_x = wl_fixed_to_int(x);
-  wayland->pointer_y = wl_fixed_to_int(y);
+  window->pointer_x = wl_fixed_to_int(x);
+  window->pointer_y = wl_fixed_to_int(y);
 
-  wayland->mousein = 1;
+  window->mousein = 1;
 
   wl_pointer_set_cursor(pointer, serial, NULL, 0, 0);
 
@@ -300,20 +283,20 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
 static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
  uint32_t serial, struct wl_surface *surface) {
 
-  kr_wayland *wayland = data;
+  kr_wayland_window *window = data;
 
-  wayland->pointer_x = -1;
-  wayland->pointer_y = -1;
-  wayland->mousein = 0;
+  window->pointer_x = -1;
+  window->pointer_y = -1;
+  window->mousein = 0;
 }
 
 static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
  uint32_t time, wl_fixed_t x, wl_fixed_t y) {
 
-  kr_wayland *wayland = data;
+  kr_wayland_window *window = data;
 
-  wayland->pointer_x = wl_fixed_to_int(x);
-  wayland->pointer_y = wl_fixed_to_int(y);
+  window->pointer_x = wl_fixed_to_int(x);
+  window->pointer_y = wl_fixed_to_int(y);
 
   /*
   input->sx = sx;
@@ -340,16 +323,16 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
 static void pointer_handle_button(void *data, struct wl_pointer *pointer,
  uint32_t serial, uint32_t time, uint32_t button, uint32_t state_w) {
 
-  kr_wayland *wayland = data;
+  kr_wayland_window *window = data;
   
   enum wl_pointer_button_state state = state_w;
 
   if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
-    wayland->click = 1;
+    window->click = 1;
   }
   
   if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-    wayland->click = 0;    
+    window->click = 0;    
   }
 }
 
@@ -410,8 +393,8 @@ static void kr_wayland_handle_global(void *data, struct wl_registry *registry,
   }
 }
 
-static int kr_wayland_create_shm_buffer(kr_wayland *wayland, int width,
- int height, int frames, uint32_t format, void **data_out) {
+static int kr_wayland_window_create_shm_buffer(kr_wayland_window *window,
+ int width, int height, int frames, uint32_t format, void **data_out) {
 
   char filename[] = "/tmp/wayland-shm-XXXXXX";
   struct wl_shm_pool *pool;
@@ -426,168 +409,214 @@ static int kr_wayland_create_shm_buffer(kr_wayland *wayland, int width,
   fd = mkstemp(filename);
   if (fd < 0) {
     fprintf(stderr, "open %s failed: %m\n", filename);
-    return 1;
+    return -1;
   }
   stride = width * 4;
-  wayland->frame_size = stride * height;
-  size = wayland->frame_size * frames;
+  window->frame_size = stride * height;
+  size = window->frame_size * frames;
   if (ftruncate(fd, size) < 0) {
     fprintf (stderr, "ftruncate failed: %m\n");
-    close (fd);
-    return 1;
+    close(fd);
+    return -1;
   }
 
   data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   unlink(filename);
 
   if (data == MAP_FAILED) {
-    fprintf (stderr, "mmap failed: %m\n");
-    close (fd);
-    return 1;
+    fprintf(stderr, "mmap failed: %m\n");
+    close(fd);
+    return -1;
   }
 
-  pool = wl_shm_create_pool(wayland->shm, fd, size);
+  pool = wl_shm_create_pool(window->wayland->shm, fd, size);
   for (b = 0; b < KR_WL_BUFFER_COUNT; b++) {
-    wayland->buffer[b] = wl_shm_pool_create_buffer (pool,
-     b * wayland->frame_size, width, height, stride, format);
+    window->buffers[b] = wl_shm_pool_create_buffer(pool,
+     b * window->frame_size, width, height, stride, format);
   }
-  wl_shm_pool_destroy (pool);
-  close (fd);
+  wl_shm_pool_destroy(pool);
+  close(fd);
   *data_out = data;
-  return 0;
-}
-
-static void kr_wayland_destroy_window(kr_wayland *wayland) {
-  if (wayland->window->callback) {
-    wl_callback_destroy(wayland->window->callback);
-  }
-  wl_buffer_destroy(wayland->window->buffer);
-  wl_shell_surface_destroy(wayland->window->shell_surface);
-  wl_surface_destroy(wayland->window->surface);
-  free(wayland->window);
-}
-
-static int kr_wayland_create_window(kr_wayland *wayland) {
-
-  struct wl_region *opaque;
-
-  wayland->current_buffer = 0;
-  wayland->window->buffer = wayland->buffer[wayland->current_buffer];
-  if (!wayland->window->buffer) {
-    free (wayland->window);
-    return 1;
-  }
-  wayland->window->surface_listener.ping = kr_wayland_handle_ping;
-  wayland->window->surface_listener.configure = kr_wayland_handle_configure;
-  wayland->window->surface_listener.popup_done = kr_wayland_handle_popup_done;
-  wayland->window->callback = NULL;
-  wayland->window->surface = wl_compositor_create_surface(wayland->compositor);
-  wayland->window->shell_surface = wl_shell_get_shell_surface(wayland->shell, 
-                                    wayland->window->surface);
-
-  opaque = wl_compositor_create_region(wayland->compositor);
-  wl_region_add(opaque, 0, 0, wayland->window->width, wayland->window->height);
-  wl_surface_set_opaque_region(wayland->window->surface, opaque);
-  wl_region_destroy(opaque);
-
-  /*wl_shell_surface_set_title(wayland->window->shell_surface,
-   wayland->window->title);*/
-
-  if (wayland->window->shell_surface) {
-    wl_shell_surface_add_listener(wayland->window->shell_surface, 
-                     &wayland->window->surface_listener,
-                     wayland);
-  }
-  wl_shell_surface_set_toplevel(wayland->window->shell_surface);
   return 0;
 }
 
 static void kr_wayland_frame_listener (void *data,
  struct wl_callback *callback, uint32_t time) {
 
-  kr_wayland *wayland = data;
+  kr_wayland_window *window;
+  kr_wayland_event wayland_event;
   int updated;
 
+  window = data;
   updated = 0;
-  if (wayland->frame_callback != NULL) {
-    updated = wayland->frame_callback(wayland->callback_pointer, time);
+  memset(&wayland_event, 0, sizeof(kr_wayland_event));
+
+  if (window->user_callback != NULL) {
+    wayland_event.type = KR_WL_FRAME;
+    wayland_event.buffer = (uint8_t *)window->shm_data;
+    updated = window->user_callback(window->user, &wayland_event);
   }
 
-  wl_surface_attach(wayland->window->surface, wayland->window->buffer, 0, 0);
+  wl_surface_attach(window->surface, window->buffer, 0, 0);
 
   if (updated) {
-    wl_surface_damage(wayland->window->surface, 0, 0, wayland->window->width,
-     wayland->window->height);
+    wl_surface_damage(window->surface, 0, 0, window->width, window->height);
   } else {
-    wl_surface_damage(wayland->window->surface, 0, 0, 10, 10);
+    wl_surface_damage(window->surface, 0, 0, 10, 10);
   }
   
   if (callback) {
     wl_callback_destroy(callback);
   }
 
-  wayland->window->callback = wl_surface_frame(wayland->window->surface);
-  wayland->window->frame_listener.done = kr_wayland_frame_listener;
-  wl_callback_add_listener(wayland->window->callback,
-   &wayland->window->frame_listener, wayland);
-  wl_surface_commit(wayland->window->surface);
+  window->callback = wl_surface_frame(window->surface);
+  window->frame_listener.done = kr_wayland_frame_listener;
+  wl_callback_add_listener(window->callback, &window->frame_listener,
+   window);
+  wl_surface_commit(window->surface);
 }
 
-int kr_wayland_window_create(kr_wayland *wayland, int width, int height,
- void **buffer) {
+kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
+ kr_wayland_window_params *params) {
 
+  kr_wayland_window *window;
+  struct wl_region *opaque;
   int ret;
+  int i;
 
-  wayland->window = calloc (1, sizeof(kr_wayland_window));
-
-  if (wayland->window == NULL) {
-    return 1;
+  if ((wayland == NULL) || (params == NULL)) {
+    return NULL;
   }
 
-  wayland->window->width = width;
-  wayland->window->height = height;
-
-  ret = kr_wayland_create_shm_buffer(wayland, width, height,
-   KR_WL_BUFFER_COUNT, WL_SHM_FORMAT_XRGB8888, &wayland->window->shm_data);
-  if (ret == 0) {
-    *buffer = wayland->window->shm_data;
-  } else {
-    free(wayland->window);
+  if ((params->width == 0) || (params->height == 0) ||
+      (params->width > 8192) || (params->height > 8192)
+      || params->callback == NULL) {
+    return NULL;
   }
-  return ret;
+
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i] == NULL) {
+      break;
+    }
+  }
+  if (i == KR_WL_MAX_WINDOWS) {
+    return NULL;
+  }
+
+  window = calloc(1, sizeof(kr_wayland_window));
+  wayland->window[i] = window;
+
+  window->wayland = wayland;
+  window->user_callback = params->callback;
+  window->user = params->user;
+  window->width = params->width;
+  window->height = params->height;
+
+  ret = kr_wayland_window_create_shm_buffer(window, window->width,
+   window->height, KR_WL_BUFFER_COUNT, WL_SHM_FORMAT_XRGB8888,
+   &window->shm_data);
+
+  if (ret != 0) {
+    free(wayland->window[i]);
+    wayland->window[i] = NULL;
+    return NULL;
+  }
+
+  window->current_buffer = 0;
+  window->buffer = window->buffers[window->current_buffer];
+
+  window->surface_listener.ping = kr_wayland_handle_ping;
+  window->surface_listener.configure = kr_wayland_handle_configure;
+  window->surface_listener.popup_done = kr_wayland_handle_popup_done;
+  window->surface = wl_compositor_create_surface(wayland->compositor);
+  window->shell_surface = wl_shell_get_shell_surface(wayland->shell, 
+   window->surface);
+
+  opaque = wl_compositor_create_region(wayland->compositor);
+  wl_region_add(opaque, 0, 0, window->width, window->height);
+  wl_surface_set_opaque_region(window->surface, opaque);
+  wl_region_destroy(opaque);
+
+  /*wl_shell_surface_set_title(wayland->window->shell_surface,
+   wayland->window->title);*/
+
+  if (window->shell_surface) {
+    wl_shell_surface_add_listener(window->shell_surface, 
+     &window->surface_listener, window);
+  }
+  wl_shell_surface_set_toplevel(window->shell_surface);
+
+  kr_wayland_frame_listener(window, NULL, 0);
+  wl_display_roundtrip(wayland->display);
+
+  return window;
 }
 
-int kr_wayland_open_window(kr_wayland *wayland) {
-  kr_wayland_create_window(wayland);
-  if (!wayland->window) {
-    return 1;
+int kr_wayland_window_destroy(kr_wayland_window **win) {
+
+  int i;
+  kr_wayland_window *window;
+  kr_wayland *wayland;
+
+  if ((win == NULL) || (*win == NULL)) {
+    return -1;
   }
-  kr_wayland_frame_listener(wayland, NULL, 0);
+
+  window = *win;
+  wayland = window->wayland;
+
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i] == window) {
+      wayland->window[i] = NULL;
+      break;
+    }
+  }
+  wl_display_sync(wayland->display);
+  if (window->callback) {
+    wl_callback_destroy(window->callback);
+  }
+  wl_display_sync(wayland->display);
+  wl_buffer_destroy(window->buffer);
+  wl_shell_surface_destroy(window->shell_surface);
+  wl_surface_destroy(window->surface);
+  wl_display_sync(wayland->display);
+  free(*win);
+  wayland->window[i] = NULL;
+  *win = NULL;    
+  return 0;
+}
+
+int kr_wayland_get_fd(kr_wayland *wayland) {
+  if (wayland == NULL) {
+    return -1;
+  }
+  return wayland->display_fd;
+}
+
+int kr_wayland_process(kr_wayland *wayland) {
+  /* TODO Check for disconnect etc */
+  wl_display_dispatch(wayland->display);
   wl_display_roundtrip(wayland->display);
   return 0;
 }
 
-void kr_wayland_close_window(kr_wayland *wayland) {
-  printkd ("Krad Wayland: destroy_window..");
-  kr_wayland_destroy_window(wayland);
-}
+int kr_wayland_destroy(kr_wayland **wl) {
 
-void kr_wayland_set_frame_callback(kr_wayland *wayland,
- int cb(void *, uint32_t), void *user) {
-  wayland->frame_callback = cb;
-  wayland->callback_pointer = user;
-}
+  int i;
+  kr_wayland *wayland;
 
-int kr_wayland_get_fd(kr_wayland *wayland) {
-  return wayland->display_fd;
-}
+  if ((wl == NULL) || (*wl == NULL)) {
+    return -1;
+  }
 
-void kr_wayland_process(kr_wayland *wayland) {
-  wl_display_dispatch(wayland->display);
-  wl_display_roundtrip(wayland->display);
-}
+  wayland = *wl;
 
-void kr_wayland_destroy(kr_wayland *wayland) {
+  for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
+    if (wayland->window[i] != NULL) {
+      //kr_wayland_window_destroy(&wayland->window[i]);
+    }
+  }
+
   if (wayland->xkb.state) {
     xkb_state_unref(wayland->xkb.state);
   }
@@ -613,21 +642,24 @@ void kr_wayland_destroy(kr_wayland *wayland) {
   wl_display_flush (wayland->display);
   wl_display_disconnect (wayland->display);
   free(wayland);
+  *wl = NULL;
+  return 0;
 }
 
 kr_wayland *kr_wayland_create() {
+  return kr_wayland_create_for_server(NULL);
+}
+
+kr_wayland *kr_wayland_create_for_server(char *server) {
   kr_wayland *wayland = calloc(1, sizeof(kr_wayland));
-  wayland->display = wl_display_connect(NULL);
+  wayland->display = wl_display_connect(server);
   if (wayland->display == NULL) {
-    printke("Can't connect to wayland\n");
     free(wayland);
     return NULL;
   }
 
   wayland->xkb.context = xkb_context_new(0);
 
-  wayland->pointer_x = -1;
-  wayland->pointer_y = -1;
   wayland->pointer_listener.enter = pointer_handle_enter;
   wayland->pointer_listener.leave = pointer_handle_leave;
   wayland->pointer_listener.motion = pointer_handle_motion;
