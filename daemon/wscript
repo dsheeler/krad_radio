@@ -122,7 +122,7 @@ includedirs = """
 shlibs = ["jack", "cairo", "cairo-ft", "xmms2-client", "samplerate",
           "theora", "theoraenc", "theoradec",
           "vorbis", "vorbisenc", "opus", "flac",
-          "vpx", "libswscale", "libavutil", "freetype2", "xkbcommon"]
+          "vpx", "libswscale", "libavutil", "freetype2"]
 
 stlibs = []
 syslibs = ['m', 'dl', 'z', 'pthread']
@@ -203,7 +203,7 @@ def check_way(way):
 
   if way.env['KRAD_USE_WAYLAND']:
     depsources += ["../lib/krad_wayland/krad_wayland.c"]
-    shlibs += ["wayland-client"]
+    shlibs += ["wayland-client", "xkbcommon"]
 
   if way.env['KRAD_USE_FLYCAP']:
     depsources += ["../lib/krad_fc2/krad_fc2.c"]
