@@ -18,7 +18,7 @@
 #define KRAD_WAYLAND_H
 
 #define KR_WL_MAX_WINDOWS 4
-#define KR_WL_BUFFER_COUNT 2
+#define KR_WL_BUFFER_COUNT 1
 
 typedef struct kr_wayland_st kr_wayland;
 typedef struct kr_wayland_window_st kr_wayland_window;

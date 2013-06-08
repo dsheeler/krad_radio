@@ -51,9 +51,6 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
   }
 
   updated = 1;
-  //printf("frame callback time is %u\r", time);
-  //fflush(stdout);
-
   return updated;
 }
 
@@ -75,9 +72,6 @@ void wayland_test_loop(kr_wayland_test *wayland_test) {
     if (ret < 0) {
       break;
     }
-    //if ((wayland_test->wayland->mousein) && (wayland_test->wayland->click)) {
-
-    //}
     count++;
   }
 }
@@ -87,7 +81,7 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
   int i;
   int ret;
 
-  for (i = 0; i < TEST_WINDOWS; i++) {
+  for (i = 0; i < TEST_WINDOWS/2; i++) {
     printf("Destroying window %d\n", i);
     ret = kr_wayland_window_destroy(&wayland_test->windows[i].window);
     if (ret < 0) {
@@ -95,10 +89,7 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
        wayland_test->windows[i].width, wayland_test->windows[i].height);
       exit(1);
     }
-    wayland_test_loop(wayland_test);
   }
-
-  ret = kr_wayland_process(wayland_test->wayland);
 
   kr_wayland_destroy(&wayland_test->wayland);
   free(wayland_test);
@@ -107,7 +98,6 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
 kr_wayland_test *wayland_test_create() {
 
   int i;
-  int ret;
   int width;
   int height;
   kr_wayland_test *wayland_test;
@@ -141,15 +131,8 @@ kr_wayland_test *wayland_test_create() {
       fprintf(stderr, "Could not create window %dx%d\n", width, height);
       exit(1);
     }
-
-    ret = kr_wayland_process(wayland_test->wayland);
-    if (ret < 0) {
-      break;
-    }
-
     width = width + width;
     height = height + height;
-    wayland_test_loop(wayland_test);
   }
 
   return wayland_test;

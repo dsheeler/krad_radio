@@ -7,6 +7,7 @@ struct kr_wayland_window_st {
   int pointer_y;
   int click;
   int mousein;
+  int active;
   struct wl_surface *surface;
   struct wl_shell_surface *shell_surface;
   struct wl_buffer *buffer;
@@ -24,7 +25,7 @@ struct kr_wayland_window_st {
 
 struct kr_wayland_st {
   int display_fd;
-  kr_wayland_window *window[KR_WL_MAX_WINDOWS];
+  kr_wayland_window window[KR_WL_MAX_WINDOWS];
   struct wl_display *display;
   struct wl_registry *registry;
   struct wl_compositor *compositor;
@@ -495,7 +496,7 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   }
 
   for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
-    if (wayland->window[i] == NULL) {
+    if (wayland->window[i].active == 0) {
       break;
     }
   }
@@ -503,8 +504,7 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
     return NULL;
   }
 
-  window = calloc(1, sizeof(kr_wayland_window));
-  wayland->window[i] = window;
+  window = &wayland->window[i];
 
   window->wayland = wayland;
   window->user_callback = params->callback;
@@ -517,8 +517,7 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
    &window->shm_data);
 
   if (ret != 0) {
-    free(wayland->window[i]);
-    wayland->window[i] = NULL;
+    wayland->window[i].active = 0;
     return NULL;
   }
 
@@ -549,6 +548,8 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   kr_wayland_frame_listener(window, NULL, 0);
   wl_display_roundtrip(wayland->display);
 
+    wayland->window[i].active = 1;
+
   return window;
 }
 
@@ -566,8 +567,7 @@ int kr_wayland_window_destroy(kr_wayland_window **win) {
   wayland = window->wayland;
 
   for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
-    if (wayland->window[i] == window) {
-      wayland->window[i] = NULL;
+    if (&wayland->window[i] == window) {
       break;
     }
   }
@@ -580,8 +580,7 @@ int kr_wayland_window_destroy(kr_wayland_window **win) {
   wl_shell_surface_destroy(window->shell_surface);
   wl_surface_destroy(window->surface);
   wl_display_sync(wayland->display);
-  free(*win);
-  wayland->window[i] = NULL;
+  wayland->window[i].active = 0;
   *win = NULL;    
   return 0;
 }
@@ -612,11 +611,28 @@ int kr_wayland_destroy(kr_wayland **wl) {
   wayland = *wl;
 
   for (i = 0; i < KR_WL_MAX_WINDOWS; i++) {
-    if (wayland->window[i] != NULL) {
-      //kr_wayland_window_destroy(&wayland->window[i]);
+    if (wayland->window[i].active == 1) {
+      wl_display_sync(wayland->display);
+      if (wayland->window[i].callback) {
+        wl_callback_destroy(wayland->window[i].callback);
+      }
+      wl_display_sync(wayland->display);
+      wl_buffer_destroy(wayland->window[i].buffer);
+      wl_shell_surface_destroy(wayland->window[i].shell_surface);
+      wl_surface_destroy(wayland->window[i].surface);
+      wl_display_sync(wayland->display);
+      wayland->window[i].active = 0;
     }
   }
 
+  if (wayland->pointer != NULL) {
+    wl_pointer_destroy(wayland->pointer);
+    wayland->pointer = NULL;
+  }
+  if (wayland->keyboard != NULL) {
+    wl_keyboard_destroy(wayland->keyboard);
+    wayland->keyboard = NULL;
+  }
   if (wayland->xkb.state) {
     xkb_state_unref(wayland->xkb.state);
   }
@@ -638,9 +654,9 @@ int kr_wayland_destroy(kr_wayland **wl) {
   if (wayland->seat) {
     wl_seat_destroy (wayland->seat);
   }
-  wl_registry_destroy (wayland->registry);
-  wl_display_flush (wayland->display);
-  wl_display_disconnect (wayland->display);
+  wl_registry_destroy(wayland->registry);
+  wl_display_flush(wayland->display);
+  wl_display_disconnect(wayland->display);
   free(wayland);
   *wl = NULL;
   return 0;
