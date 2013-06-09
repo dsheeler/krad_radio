@@ -204,7 +204,7 @@ def check_way(way):
 
   if way.env['KRAD_USE_WAYLAND']:
     depsources += ["../lib/krad_wayland/krad_wayland.c"]
-    shlibs += ["wayland-client"]
+    shlibs += ["wayland-client", "xkbcommon"]
 
   if way.env['KRAD_USE_FLYCAP']:
     depsources += ["../lib/krad_fc2/krad_fc2.c"]
@@ -228,7 +228,9 @@ def check_gif(conf):
 
 def remake_webres(web):
   hexilate_file("lib/krad_web/res/krad_radio.html")
-  hexilate_file("lib/krad_web/res/krad_radio.js")  
+  hexilate_file("lib/krad_web/res/kr_api.js")
+  hexilate_file("lib/krad_web/res/kr_interface.js")
+  hexilate_file("lib/krad_web/res/kr_dev_interface.js")
 
 def configure(conf):
 
