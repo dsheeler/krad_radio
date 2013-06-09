@@ -208,6 +208,7 @@ depsources10 = """
 """.split()
 
 depsources11 = """
+../lib/krad_chronometer/krad_timer.c
 ../lib/krad_player/krad_demuxer.c
 ../lib/krad_player/krad_decoder.c
 ../lib/krad_player/krad_machine.c

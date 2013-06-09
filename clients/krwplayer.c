@@ -25,10 +25,14 @@ void signal_recv (int sig) {
 }
 
 int display_cb(void *user, kr_wayland_event *event) {
-/*
+
+  int ret;
+
   kr_player_wl_t *kwp;
 
   kwp = (kr_player_wl_t *)user;
+
+/*
 
   if (kwp->frames > kwp->dframes) {
     pos = (kwp->dframes % kwp->framebufsize);
@@ -38,7 +42,11 @@ int display_cb(void *user, kr_wayland_event *event) {
     kwp->dframes++;
 */
 
-	return 0;
+
+  ret = krad_player_get_frame(kwp->player, event->frame_event.buffer);
+
+
+	return ret;
 }
 
 int window_cb(void *user, kr_wayland_event *event) {
@@ -69,12 +77,6 @@ kr_player_wl_t *kr_player_wl_create (char *input) {
 
 	kwp->wayland = kr_wayland_create();
 
-  window_params.width = 1280;
-  window_params.height = 720;
-  window_params.callback = window_cb;
-  window_params.user = kwp;
-
-  kwp->output_window = kr_wayland_window_create(kwp->wayland, &window_params);
 
   kwp->player = kr_player_create_custom_cb(input);
   if (kwp->player == NULL) {
@@ -82,6 +84,13 @@ kr_player_wl_t *kr_player_wl_create (char *input) {
     free (kwp);
     return NULL;
   }
+
+  window_params.width = 1280;
+  window_params.height = 720;
+  window_params.callback = window_cb;
+  window_params.user = kwp;
+
+  kwp->output_window = kr_wayland_window_create(kwp->wayland, &window_params);
 
 	signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);
@@ -143,22 +152,6 @@ void kr_player_wl_handle_input (kr_player_wl_t *kwp) {
   }
 }
 
-void kr_player_wl_check_input (kr_player_wl_t *kwp) {
-
-  struct pollfd pollfds[1];
-  int n;
-
-  pollfds[0].fd = STDIN_FILENO;
-  pollfds[0].events = POLLIN;
-
-  n = poll (pollfds, 1, 0);
-
-  if (n > 0) {
-    kr_player_wl_handle_input (kwp);
-    kr_player_wl_check_input (kwp);    
-  }
-}
-
 void kr_player_wl_status (kr_player_wl_t *kwp) {
   printf ("\r%s %s ",
           kr_player_playback_state_to_string (kr_player_playback_state_get (kwp->player)),
@@ -169,10 +162,29 @@ void kr_player_wl_status (kr_player_wl_t *kwp) {
 }
 
 void kr_player_wl_run (kr_player_wl_t *kwp) {
+
+  struct pollfd pollfds[2];
+  int n;
+
   while (!destroy) {
-    usleep (100000);
+
+    pollfds[0].fd = STDIN_FILENO;
+    pollfds[0].events = POLLIN;
+    pollfds[1].fd = kr_wayland_get_fd(kwp->wayland);
+    pollfds[1].events = POLLIN;
+
+    n = poll (pollfds, 2, 10);
+
+    if (n > 0) {
+      if (pollfds[0].revents) {
+        kr_player_wl_status (kwp);
+        kr_player_wl_handle_input (kwp);
+      }
+      if (pollfds[1].revents) {
+        kr_wayland_process(kwp->wayland);   
+      }
+    }
     kr_player_wl_status (kwp);
-    kr_player_wl_check_input (kwp);    
   }
   printf ("\n");
 }

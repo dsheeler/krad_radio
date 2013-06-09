@@ -23,6 +23,8 @@
 #include "krad_ring.h"
 #include "krad_resample_ring.h"
 
+#include "krad_timer.h"
+
 #ifndef KRAD_PLAYER_H
 #define KRAD_PLAYER_H
 
@@ -72,5 +74,9 @@ void kr_player_seek (kr_player_t *player, int64_t position);
 void kr_player_play (kr_player_t *player);
 void kr_player_pause (kr_player_t *player);
 void kr_player_stop (kr_player_t *player);
+
+
+int krad_player_get_frame(kr_player_t *player, void *frame);
+
 
 #endif

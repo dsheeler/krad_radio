@@ -42,6 +42,10 @@ struct kr_player_St {
   kr_player_playback_state_t state;
   kr_direction_t direction;
 
+  kr_player_playback_state_t last_state;
+  int64_t rel_ms;
+  krad_timer_t *timer;
+
   kr_demuxer_state_t demuxer_state;  
 
   kr_machine_t *machine;
@@ -83,6 +87,37 @@ struct kr_player_St {
 };
 
 /* Private Functions */
+
+int krad_player_get_frame(kr_player_t *player, void *frame) {
+
+  int pos;
+  
+  if (player->state == PLAYING) {
+    if (player->last_state != PLAYING) {
+      player->rel_ms = 0;
+      krad_timer_start(player->timer);
+    } else {
+      player->rel_ms = krad_timer_current_ms(player->timer);
+    }
+
+    if (player->frames_dec > player->consumed) {
+      pos = (player->consumed % player->framebufsize);
+      player->ms += 1600;
+      //if (player->ms >= player->frame_time[pos]) {
+     //   player->last_frame_time = player->frame_time[pos];
+        memcpy (frame,
+                player->rgba + (pos * player->frame_size),
+                player->width * player->height * 4);
+        player->consumed++;
+      //} else {
+      //  player->repeated++;
+      //}
+      return 1;
+    }
+  }
+  
+  return 0;
+}
 
 int videoport_process (void *buffer, void *arg) {
 
@@ -239,7 +274,7 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
   uint32_t pos;
   player = (kr_player_t *)actual;
 
-  //printf ("Codeme sized %zu track %d!\n", codeme->sz, codeme->trk);
+  printf ("Codeme sized %zu track %d!\n", codeme->sz, codeme->trk);
   
   if (codeme->trk == 1) {
 
@@ -253,8 +288,10 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
 
       if (player->frames_dec - player->consumed + 5 >= player->framebufsize) {
         usleep (100000);
-        if (krad_player_check_av_ports (player)) {
-          return -3;
+        if (player->station != NULL) {
+          if (krad_player_check_av_ports (player)) {
+            return -3;
+          }
         }
         continue;
       }
@@ -416,8 +453,6 @@ void krad_player_alloc_framebuf (kr_player_t *player) {
 
 static void kr_player_station_connect(kr_player_t *player) {
 
-  int c;
-
   player->client = kr_client_create ("Krad player");
 
   if (player->client == NULL) {
@@ -447,12 +482,6 @@ static void kr_player_station_connect(kr_player_t *player) {
 	  kr_client_destroy (&player->client);
     exit (1);
   }
-
-  for (c = 0; c < player->channels; c++) {
-    player->resample_ring[c] = krad_resample_ring_create (1600000, 48000,
-                                                          player->sample_rate);
-    player->samples[c] = malloc(4 * 8192);
-  }
   
   player->audioport = kr_audioport_create (player->client, INPUT);
   if (player->audioport == NULL) {
@@ -475,6 +504,7 @@ static void kr_player_station_connect(kr_player_t *player) {
 static void kr_player_start (void *actual) {
   
   kr_player_t *player;
+  int c;
 
   player = (kr_player_t *)actual;
 
@@ -485,6 +515,12 @@ static void kr_player_start (void *actual) {
   player->channels = 2;
 
   krad_player_alloc_framebuf (player);
+
+  for (c = 0; c < player->channels; c++) {
+    player->resample_ring[c] = krad_resample_ring_create (1600000, 48000,
+                                                          player->sample_rate);
+    player->samples[c] = malloc(4 * 8192);
+  }
 
   if (player->station != NULL) {
     kr_player_station_connect(player);

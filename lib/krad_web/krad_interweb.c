@@ -1367,7 +1367,7 @@ int32_t interweb_ws_parse_frame_data (kr_iws_client_t *client) {
 
   if (ws->input_len < ws->len) {
     printke ("fraak!");
-    return 0;
+    return -1;
   }
 
   int32_t pos;
@@ -1531,7 +1531,9 @@ int32_t interweb_ws_shake (kr_iws_client_t *client) {
 }
 
 int32_t krad_interweb_ws_client_handle (kr_iws_client_t *client) {
-  
+
+  int ret;  
+
   if (!client->ws.shaked) {
     interweb_ws_shake(client);
   } else {
@@ -1540,7 +1542,10 @@ int32_t krad_interweb_ws_client_handle (kr_iws_client_t *client) {
         interweb_ws_parse_frame_header(client);
       }
       if (client->ws.len > 0) {
-        interweb_ws_parse_frame_data(client);
+        ret = interweb_ws_parse_frame_data(client);
+        if (ret == -1) {
+          break;
+        }
       } else {
         break;
       }
