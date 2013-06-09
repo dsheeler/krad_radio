@@ -1367,7 +1367,8 @@ int32_t interweb_ws_parse_frame_data (kr_iws_client_t *client) {
   ws->input = client->in->rd_buf;
 
   if (ws->input_len < ws->len) {
-    printk("Incomplete WS frame: %zu / %zu", ws->input_len, ws->len);
+    printk("Incomplete WS frame: %u / %"PRIu64"", ws->input_len,
+     ws->len);
     return 0;
   }
 
