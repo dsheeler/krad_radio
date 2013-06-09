@@ -1195,7 +1195,7 @@ static void krad_interweb_pack_404 (kr_iws_client_t *client) {
   kr_io2_advance (client->out, pos);  
 }
 
-void krad_interweb_http_client_handle (kr_iws_client_t *client) {
+int32_t krad_interweb_http_client_handle (kr_iws_client_t *client) {
 
   int32_t len;
   char *get;
@@ -1233,6 +1233,7 @@ void krad_interweb_http_client_handle (kr_iws_client_t *client) {
     break;
   }
   client->drop_after_sync = 1;
+  return 0;
 }
 
 int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
@@ -1341,7 +1342,7 @@ int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
     }
   }
 
-  if (ws->len > 100000) {
+  if (ws->len > 8192 * 6) {
     printke("input ws frame size too big");
     ws->len = 0;
     ws->pos = 0;
@@ -1366,8 +1367,8 @@ int32_t interweb_ws_parse_frame_data (kr_iws_client_t *client) {
   ws->input = client->in->rd_buf;
 
   if (ws->input_len < ws->len) {
-    printke ("fraak!");
-    return -1;
+    printk("Incomplete WS frame: %zu / %zu", ws->input_len, ws->len);
+    return 0;
   }
 
   int32_t pos;
@@ -1532,14 +1533,17 @@ int32_t interweb_ws_shake (kr_iws_client_t *client) {
 
 int32_t krad_interweb_ws_client_handle (kr_iws_client_t *client) {
 
-  int ret;  
+  int ret;
 
   if (!client->ws.shaked) {
-    interweb_ws_shake(client);
+    ret = interweb_ws_shake(client);
   } else {
     for (;;) {
       if (client->ws.len == 0) {
-        interweb_ws_parse_frame_header(client);
+        ret = interweb_ws_parse_frame_header(client);
+        if (ret < 0) {
+          break;
+        }
       }
       if (client->ws.len > 0) {
         ret = interweb_ws_parse_frame_data(client);
@@ -1547,12 +1551,13 @@ int32_t krad_interweb_ws_client_handle (kr_iws_client_t *client) {
           break;
         }
       } else {
+        ret = 0;
         break;
       }
     }
   }
 
-  return 0;
+  return ret;
 }
 
 int32_t krad_interweb_client_find_end_of_headers (kr_iws_client_t *client) {
@@ -1661,14 +1666,18 @@ int32_t krad_interweb_client_handle_headers (kr_iws_client_t *client) {
   return 0;
 }
 
-void krad_interweb_client_handle (kr_iws_client_t *client) {
+int32_t krad_interweb_client_handle (kr_iws_client_t *client) {
+
+  int32_t ret;
+
   if (client->type == WS) {
-    krad_interweb_ws_client_handle (client);
+    ret = krad_interweb_ws_client_handle (client);
   } else {
     if (client->type == HTTP1) {
-      krad_interweb_http_client_handle (client);
+      ret = krad_interweb_http_client_handle (client);
     }
   }
+  return ret;
 }
 
 static void *krad_interweb_server_loop (void *arg) {
@@ -1731,7 +1740,10 @@ static void *krad_interweb_server_loop (void *arg) {
               }
             }
             if (client->type != 0) {
-              krad_interweb_client_handle (client);
+              if (krad_interweb_client_handle(client) < 0) {
+                krad_interweb_disconnect_client(server, client);
+                continue;
+              }
               if (kr_io2_want_out (client->out)) {
                 server->sockets[s].events |= POLLOUT;
               }
