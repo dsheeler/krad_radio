@@ -1547,7 +1547,7 @@ int32_t krad_interweb_ws_client_handle (kr_iws_client_t *client) {
       }
       if (client->ws.len > 0) {
         ret = interweb_ws_parse_frame_data(client);
-        if (ret == -1) {
+        if (ret <= 0) {
           break;
         }
       } else {
