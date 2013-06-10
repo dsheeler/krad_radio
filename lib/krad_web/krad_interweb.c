@@ -1126,8 +1126,8 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   
   if (template_pos != html_template_len) {
     failfast("html template miscalculation: %d %d", template_pos, html_template_len);
-  }  
-  
+  }
+
   if (pos != total_len) {
     printke("html miscalculation: %d %d", pos, total_len);
   }
