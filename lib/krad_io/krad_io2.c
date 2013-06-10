@@ -103,17 +103,17 @@ int kr_io2_output (kr_io2_t *io) {
   }
   ret = kr_io2_write (io);
   if (ret != io->len) {
-	if (ret < 1) {
-    	printke ("its bad we should certainly fail, ret %zu len %zu",
-       ret, io->len);
-    	return ret;
-	} else {
-	  io->len -= ret;
-	  io->wr_buf += ret;		
-	}
-	return 0;
+	  if (ret < 1) {
+      	printke ("its bad we should certainly fail, ret %zu len %zu",
+         ret, io->len);
+      	return ret;
+	  } else {
+	    io->len -= ret;
+	    io->wr_buf += ret;		
+	  }
+	  return 0;
   }
-  kr_io2_restart (io);
+  kr_io2_restart(io);
   return 0;
 }
 
