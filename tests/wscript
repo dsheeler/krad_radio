@@ -11,6 +11,7 @@ kr_wayland_test2.c
 """.split()
 
 includedirs = """
+../../lib/krad_calc/
 ../../lib/krad_compositor/
 ../../lib/krad_chronometer/
 ../../lib/krad_coder/

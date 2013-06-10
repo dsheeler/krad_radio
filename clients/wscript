@@ -128,6 +128,7 @@ includedirs = """
 ./krad_shell/
 ./krad_radio_mixer/
 ./krad_radio_gnmc/
+../../lib/krad_calc/
 ../lib/krad_compositor/
 ../lib/krad_chronometer/
 ../lib/krad_xmms2/
@@ -222,7 +223,7 @@ depsources11 = """
 ../lib/krad_ogg/krad_ogg.c
 ../lib/krad_io/krad_io2.c
 ../lib/krad_io/krad_file.c
-../lib/krad_web/krad_base64.c
+../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_ring/krad_resample_ring.c
@@ -246,7 +247,7 @@ depsources13 = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
 ../lib/krad_io/krad_file.c
-../lib/krad_web/krad_base64.c
+../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c

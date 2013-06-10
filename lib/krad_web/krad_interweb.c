@@ -28,6 +28,20 @@ int strmatch (char *string1, char *string2) {
   return 0;
 }
 
+int set_socket_nodelay(int sd) {
+
+  int ret;
+  const int val = 1;
+
+  ret = setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (const void *)&val,
+   (socklen_t)sizeof(int));
+
+  if (ret != 0) {
+    printke("Could not set socket to TCP_NODELAY");
+  }
+  return ret;
+}
+
 void interweb_json_pack (kr_iws_client_t *client) {
 
   int32_t pos;
@@ -1126,8 +1140,8 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   
   if (template_pos != html_template_len) {
     failfast("html template miscalculation: %d %d", template_pos, html_template_len);
-  }  
-  
+  }
+
   if (pos != total_len) {
     printke("html miscalculation: %d %d", pos, total_len);
   }
@@ -1525,7 +1539,7 @@ int32_t interweb_ws_shake (kr_iws_client_t *client) {
 
   kr_io2_advance (client->out, pos);
   client->ws.shaked = 1;
-
+  set_socket_nodelay(client->sd);
   interweb_ws_hello(client);
   interweb_ws_kr_client_connect(client);
 
