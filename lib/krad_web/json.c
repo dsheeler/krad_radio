@@ -103,7 +103,6 @@ void krad_websocket_add_portgroup ( kr_iws_client_t *client,
   pos += snprintf(json + pos, sizeof(json) - pos,
    "\"xmms2\":%d,\"direction\":%d,",
    portgroup->has_xmms2, portgroup->direction);
-
   if (portgroup->direction == INPUT) {
     pos += snprintf(json + pos, sizeof(json) - pos, "\"eq\":{\"bands\":[");
     for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
