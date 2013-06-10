@@ -212,30 +212,6 @@ static void json_to_cmd(kr_iws_client_t *client, char *value) {
   }
 }
 
-static void handle_json_cmd(kr_iws_client_t *client, char *value) {
-  json_to_cmd(client, value);
-  cjson_memreset();
-}
-
-void krad_websocket_set_tag (kr_iws_client_t *client, char *tag_item,
- char *tag_name, char *tag_value) {
-/*
-  cJSON_AddStringToObject (msg, "com", "kradradio");
-  cJSON_AddStringToObject (msg, "info", "tag");
-  cJSON_AddStringToObject (msg, "tag_item", tag_item);
-  cJSON_AddStringToObject (msg, "tag_name", tag_name);
-  cJSON_AddStringToObject (msg, "tag_value", tag_value);
-*/
-}
-
-void krad_websocket_set_cpu_usage (kr_iws_client_t *client, int usage) {
-/*
-  cJSON_AddStringToObject (msg, "com", "kradradio");
-  cJSON_AddStringToObject (msg, "info", "cpu");
-  cJSON_AddNumberToObject (msg, "system_cpu_usage", usage);
-*/
-}
-
 void krad_websocket_add_portgroup ( kr_iws_client_t *client,
  kr_mixer_portgroup_t *portgroup) {
 
@@ -324,50 +300,12 @@ void krad_websocket_remove_subunit(kr_iws_client_t *client,
   char json[192];
 
   snprintf(json, sizeof(json), "[{\"com\":\"kradcompositor\","
-   "\"cmd\":\"remove_subunit\",\"subunit_type\":\"%s\",\"subunit_id\":\"%d\"}]",
-   kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit),
+   "\"cmd\":\"remove_subunit\",\"subunit_type\":\"%s\","
+   "\"subunit_id\":\"%d\"}]",
+   kr_comp_strfsubtype(address->path.subunit.compositor_subunit),
    address->id.number);
 
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-}
-
-void krad_websocket_update_subunit (kr_iws_client_t *client, kr_crate_t *crate) {
-  /*
-  kr_address_t *address;
-  address = crate->addr;
-  */
-  /*
-  if (crate->addr->path.unit == KR_MIXER) {
-    cJSON_AddStringToObject (msg, "com", "kradmixer");
-    cJSON_AddStringToObject (msg, "cmd", "control_portgroup");
-    cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
-    cJSON_AddStringToObject (msg, "control_name",
-               portgroup_control_to_string(address->control.portgroup_control));
-    if (kr_crate_contains_float (crate)) {
-      cJSON_AddNumberToObject (msg, "value", crate->real);
-    }
-  }
-  */
-  /*
-  if (crate->addr->path.unit == KR_COMPOSITOR) {
-    cJSON_AddStringToObject (msg, "com", "kradcompositor");
-    cJSON_AddStringToObject (msg, "cmd", "update_subunit");
-    cJSON_AddStringToObject (msg, "subunit_type",
-      kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit));
-
-    cJSON_AddNumberToObject (msg, "subunit_id", address->id.number);
-    cJSON_AddStringToObject (msg, "control_name",
-               kr_compositor_control_to_string(address->control.compositor_control));
-
-    if (kr_crate_contains_float (crate)) {
-      cJSON_AddNumberToObject (msg, "value", crate->real);
-    } else {
-      if (kr_crate_contains_int (crate)) {
-        cJSON_AddNumberToObject (msg, "value", crate->integer);
-      }
-    }
-  }
-  */
 }
 
 void krad_websocket_set_portgroup_control ( kr_iws_client_t *client,
@@ -423,67 +361,135 @@ void krad_websocket_set_mixer(kr_iws_client_t *client, kr_mixer_t *mixer) {
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
+void krad_websocket_set_tag (kr_iws_client_t *client, char *tag_item,
+ char *tag_name, char *tag_value) {
+
+  char json[1024];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradradio\","
+   "\"info\":\"tag\",\"tag_item\":\"%s\",\"tag_name\":\"%s\","
+   "\"tag_value\":\"%s\"}]",
+   tag_item, tag_name, tag_value);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+}
+
+void krad_websocket_set_cpu_usage (kr_iws_client_t *client, int usage) {
+
+  char json[96];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"cpu\",\"system_cpu_usage\":\"%d\"}]",
+   usage);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+}
+
 void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
  kr_crate_t *crate) {
-/*
-  cJSON *msg;
+
+  int pos;
+  char json[2048];
   kr_address_t *address;
   kr_compositor_subunit_controls_t controls;
 
   address = crate->addr;
-  
-  cJSON_AddItemToArray (client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradcompositor");
-  
-  cJSON_AddStringToObject (msg, "cmd", "add_subunit");
-  cJSON_AddStringToObject (msg, "subunit_type",
-    kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit));  
-  cJSON_AddNumberToObject (msg, "subunit_id", address->id.number);
+  pos = 0;
+
+  pos += snprintf(json, sizeof(json), "[{\"com\":\"kradcompositor\","
+   "\"cmd\":\"add_subunit\",\"subunit_type\":\"%s\","
+   "\"subunit_id\":%d,",
+   kr_comp_strfsubtype(address->path.subunit.compositor_subunit),
+   address->id.number);
 
   switch (address->path.subunit.compositor_subunit) {
     case KR_SPRITE:
       controls = crate->inside.sprite->controls;
-      cJSON_AddStringToObject (msg, "filename", crate->inside.sprite->filename);
-      cJSON_AddNumberToObject (msg, "rate", controls.tickrate);
+      pos += snprintf(json + pos, sizeof(json) - pos,
+       "\"filename\":\"%s\",\"rate\":%d,",
+       crate->inside.sprite->filename, controls.tickrate);
       break;
     case KR_TEXT:
       controls = crate->inside.text->controls;
-      cJSON_AddStringToObject (msg, "text", crate->inside.text->text);
-      cJSON_AddStringToObject (msg, "font", crate->inside.text->font);
-      cJSON_AddNumberToObject (msg, "red", crate->inside.text->red);
-      cJSON_AddNumberToObject (msg, "green", crate->inside.text->green);
-      cJSON_AddNumberToObject (msg, "blue", crate->inside.text->blue);
+      pos += snprintf(json + pos, sizeof(json) - pos,
+       "\"text\":\"%s\",\"font\":\"%s\",",
+       crate->inside.text->text, crate->inside.text->font);
+      pos += snprintf(json + pos, sizeof(json) - pos,
+       "\"red\":%g,\"green\":%g,\"blue\":%g,",
+       crate->inside.text->red, crate->inside.text->green,
+       crate->inside.text->blue);
       break;  
     case KR_VIDEOPORT:
       controls = crate->inside.videoport->controls;
-      cJSON_AddStringToObject (msg, "port_name", crate->inside.videoport->sysname);
       if (crate->inside.videoport->direction == OUTPUT) {
-        cJSON_AddStringToObject (msg, "direction", "output");
+        pos += snprintf(json + pos, sizeof(json) - pos,
+         "\"port_name\":\"%s\",\"direction\":\"%s\",",
+         crate->inside.videoport->sysname, "output");
       } else {
-        cJSON_AddStringToObject (msg, "direction", "input");
+        pos += snprintf(json + pos, sizeof(json) - pos,
+         "\"port_name\":\"%s\",\"direction\":\"%s\",",
+         crate->inside.videoport->sysname, "input");
       }
       break;
     case KR_VECTOR:
       controls = crate->inside.vector->controls;
-      cJSON_AddStringToObject (msg, "type",
-                               krad_vector_type_to_string(crate->inside.vector->type));
+      pos += snprintf(json + pos, sizeof(json) - pos,
+       "\"type\":\"%s\",",
+       krad_vector_type_to_string(crate->inside.vector->type));
       break;
   }
 
-  cJSON_AddNumberToObject (msg, "xscale", controls.xscale);
-  cJSON_AddNumberToObject (msg, "yscale", controls.yscale);
-  cJSON_AddNumberToObject (msg, "x", controls.x);
-  cJSON_AddNumberToObject (msg, "y", controls.y);
-  cJSON_AddNumberToObject (msg, "z", controls.z);
-  cJSON_AddNumberToObject (msg, "r", controls.rotation);
-  cJSON_AddNumberToObject (msg, "o", controls.opacity);
-  cJSON_AddNumberToObject (msg, "width", controls.width);
-  cJSON_AddNumberToObject (msg, "height", controls.height);
-*/
+  pos += snprintf(json + pos, sizeof(json) - pos,
+   "\"xscale\":%g,\"yscale\":%g,\"x\":%d,\"y\":%d,"
+   "\"z\":%d,\"r\":%g,\"o\":%g,\"width\":%d,\"height\":%d",
+   controls.xscale, controls.yscale, controls.x, controls.y, controls.z,
+   controls.rotation, controls.opacity, controls.width, controls.height);
+
+  pos += snprintf(json + pos, sizeof(json) - pos, "}]");
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+}
+
+void krad_websocket_update_subunit(kr_iws_client_t *client,
+ kr_crate_t *crate) {
+
+  int pos;
+  char json[2048];
+  kr_address_t *address;
+
+  address = crate->addr;
+  pos = 0;
+
+  if (crate->addr->path.unit == KR_COMPOSITOR) {
+
+    pos += snprintf(json + pos, sizeof(json) - pos,
+     "[{\"com\":\"kradcompositor\","
+     "\"cmd\":\"update_subunit\",\"subunit_type\":\"%s\",\"subunit_id\":%d,"
+     "\"control_name\":\"%s\",",
+     kr_comp_strfsubtype(address->path.subunit.compositor_subunit),
+     address->id.number,
+     kr_compositor_control_to_string(address->control.compositor_control));
+
+    if (kr_crate_contains_float (crate)) {
+      pos += snprintf(json + pos, sizeof(json) - pos, "\"value\":%g}]",
+       crate->real);
+    } else {
+      if (kr_crate_contains_int (crate)) {
+        pos += snprintf(json + pos, sizeof(json) - pos, "\"value\":%d}]",
+         crate->integer);
+      }
+    }
+
+    pos += snprintf(json + pos, sizeof(json) - pos, "}]");
+    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+  }
 }
 
 /* Krad API Handler */
+
+static void handle_json_cmd(kr_iws_client_t *client, char *value) {
+  json_to_cmd(client, value);
+  cjson_memreset();
+}
 
 static int crate_to_json(kr_iws_client_t *client, kr_crate_t *crate) {
   switch (crate->contains) {
@@ -524,30 +530,30 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
         if (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP) {
           if (kr_crate_contains_float (crate)) {
             if (crate->addr->control.portgroup_control == KR_PEAK) {
-              krad_websocket_set_portgroup_peak (client, crate->addr, crate->real);
+              krad_websocket_set_portgroup_peak(client, crate->addr, crate->real);
             } else {
-              krad_websocket_set_portgroup_control (client, crate->addr, crate->real);
+              krad_websocket_set_portgroup_control(client, crate->addr, crate->real);
             }
           } else {
             if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) ||
                 (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
               if (kr_uncrate_string (crate, &string)) {
-                krad_websocket_update_portgroup (client, crate->addr, string);
+                krad_websocket_update_portgroup(client, crate->addr, string);
                 kr_string_recycle (&string);
               } else {
-                krad_websocket_update_portgroup (client, crate->addr, "");
+                krad_websocket_update_portgroup(client, crate->addr, "");
               }
             }
           }
         }
         if (crate->addr->path.subunit.mixer_subunit == KR_EFFECT) {
           if (kr_crate_contains_float (crate)) {
-            krad_websocket_set_portgroup_eff (client, crate->addr, crate->real);
+            krad_websocket_set_portgroup_eff(client, crate->addr, crate->real);
           }
         }
       }
       if (crate->addr->path.unit == KR_COMPOSITOR) {
-        krad_websocket_update_subunit (client, crate);
+        krad_websocket_update_subunit(client, crate);
       }
       kr_crate_recycle (&crate);
       continue;
@@ -556,10 +562,10 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
     if (kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) {
       if ((crate->addr->path.unit == KR_MIXER) &&
           (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
-        krad_websocket_remove_portgroup (client, crate->addr);
+        krad_websocket_remove_portgroup(client, crate->addr);
       }
       if (crate->addr->path.unit == KR_COMPOSITOR) {
-        krad_websocket_remove_subunit (client, crate->addr);
+        krad_websocket_remove_subunit(client, crate->addr);
       }
       kr_crate_recycle (&crate);
       continue;
