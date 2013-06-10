@@ -48,13 +48,17 @@ int kr_io2_has_in (kr_io2_t *io) {
   return 0;
 }
 
-void kr_io2_advance (kr_io2_t *io, size_t bytes) {
+void kr_io2_advance(kr_io2_t *io, size_t bytes) {
   io->len += bytes;
   io->space -= bytes;
   io->buf += bytes;
 }
 
-void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len) {
+void kr_io2_pack(kr_io2_t *io, void *buffer, size_t len) {
+  if (len + io->len > io->space) {
+    printke("buffer overpack cancelling!");
+    return;
+  }
   memcpy (io->buf, buffer, len);
   kr_io2_advance (io, len);
 }
