@@ -161,7 +161,7 @@ int32_t interweb_ws_parse_frame_data(kr_iws_client_t *client) {
   output[pos] = '\0';
   //printk("unmasked %d bytes %s", pos, (char *)output);
 
-  json_to_cmd (client, (char *)output);
+  handle_json_cmd(client, (char *)output);
 
   kr_io2_pulled (client->in, pos);
 

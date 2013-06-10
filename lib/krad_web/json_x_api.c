@@ -1,28 +1,4 @@
-void interweb_json_pack (kr_iws_client_t *client) {
-
-  int32_t pos;
-  char *buffer;
-  char *str;
-  int32_t json_len;
-
-  pos = 0;
-  buffer = (char *)client->out->buf;
-
-  str = cJSON_Print (client->ws.json);
-  json_len = strlen(str);
-  if (json_len > 0) {
-    pos += interweb_ws_pack_frame_header((uint8_t *)buffer, json_len);
-    memcpy(buffer + pos, str, json_len);
-    pos += json_len;
-    kr_io2_advance (client->out, pos);
-
-    cjson_memreset ();
-
-    client->ws.json = cJSON_CreateArray();
-  }
-}
-
-static void json_to_cmd (kr_iws_client_t *client, char *value) {
+static void json_to_cmd(kr_iws_client_t *client, char *value) {
   
   kr_unit_control_t uc;
   int sub_id;
@@ -46,198 +22,224 @@ static void json_to_cmd (kr_iws_client_t *client, char *value) {
   cmd = cJSON_Parse (value);
   
   if (!cmd) {
-    printke ("Krad WebSocket: JSON Error before: [%s]", cJSON_GetErrorPtr());
-  } else {
+    printke ("Krad Interweb JSON Error: [%s]", cJSON_GetErrorPtr());
+    return;
+  }
 
-    part = cJSON_GetObjectItem (cmd, "com");
-    
-    if ((part != NULL) && (strcmp(part->valuestring, "kradmixer") == 0)) {
-      part = cJSON_GetObjectItem (cmd, "cmd");
-      if ((part != NULL) && (strcmp(part->valuestring, "remove_portgroup") == 0)) {
-        part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
-        memset (&uc, 0, sizeof (uc));
-        uc.address.path.unit = KR_MIXER;
-        uc.address.path.subunit.mixer_subunit = KR_PORTGROUP;
-        strncpy (uc.address.id.name, part2->valuestring, sizeof(uc.address.id.name));
-        kr_unit_destroy (client->ws.krclient, &uc.address);
-        return;
-      }      
-      if ((part != NULL) && (strcmp(part->valuestring, "add_portgroup") == 0)) {
-        part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
-        part3 = cJSON_GetObjectItem (cmd, "portgroup_direction");
-        kr_mixer_create_portgroup (client->ws.krclient, part2->valuestring, part3->valuestring, 2);
-        return;
-      }
-      if ((part != NULL) && (strcmp(part->valuestring, "update_portgroup") == 0)) {
-        part = cJSON_GetObjectItem (cmd, "portgroup_name");
-        part2 = cJSON_GetObjectItem (cmd, "control_name");
-        part3 = cJSON_GetObjectItem (cmd, "value");
-        if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {
-          if (strcmp(part2->valuestring, "xmms2") == 0) {
-            kr_mixer_portgroup_xmms2_cmd (client->ws.krclient, part->valuestring, part3->valuestring);
+  part = cJSON_GetObjectItem (cmd, "com");
+  
+  if ((part != NULL) && (strcmp(part->valuestring, "kradmixer") == 0)) {
+    part = cJSON_GetObjectItem (cmd, "cmd");
+    if ((part != NULL) && (strcmp(part->valuestring, "remove_portgroup") == 0)) {
+      part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
+      memset (&uc, 0, sizeof (uc));
+      uc.address.path.unit = KR_MIXER;
+      uc.address.path.subunit.mixer_subunit = KR_PORTGROUP;
+      strncpy (uc.address.id.name, part2->valuestring, sizeof(uc.address.id.name));
+      kr_unit_destroy (client->ws.krclient, &uc.address);
+      return;
+    }      
+    if ((part != NULL) && (strcmp(part->valuestring, "add_portgroup") == 0)) {
+      part2 = cJSON_GetObjectItem (cmd, "portgroup_name");
+      part3 = cJSON_GetObjectItem (cmd, "portgroup_direction");
+      kr_mixer_create_portgroup (client->ws.krclient, part2->valuestring, part3->valuestring, 2);
+      return;
+    }
+    if ((part != NULL) && (strcmp(part->valuestring, "update_portgroup") == 0)) {
+      part = cJSON_GetObjectItem (cmd, "portgroup_name");
+      part2 = cJSON_GetObjectItem (cmd, "control_name");
+      part3 = cJSON_GetObjectItem (cmd, "value");
+      if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {
+        if (strcmp(part2->valuestring, "xmms2") == 0) {
+          kr_mixer_portgroup_xmms2_cmd (client->ws.krclient, part->valuestring, part3->valuestring);
+        } else {
+          if (strcmp(part2->valuestring, "set_crossfade_group") == 0) {
+            kr_mixer_set_portgroup_crossfade_group (client->ws.krclient, part->valuestring, part3->valuestring);
           } else {
-            if (strcmp(part2->valuestring, "set_crossfade_group") == 0) {
-              kr_mixer_set_portgroup_crossfade_group (client->ws.krclient, part->valuestring, part3->valuestring);
-            } else {
-              floatval = part3->valuefloat;
-              kr_mixer_set_control (client->ws.krclient, part->valuestring, part2->valuestring, floatval, 0);
-            }
+            floatval = part3->valuefloat;
+            kr_mixer_set_control (client->ws.krclient, part->valuestring, part2->valuestring, floatval, 0);
           }
-        }
-        return;
-      }
-      if ((part != NULL) && (strcmp(part->valuestring, "control_effect") == 0)) {
-        part = cJSON_GetObjectItem (cmd, "portgroup_name");
-        part2 = cJSON_GetObjectItem (cmd, "effect_name");
-        part3 = cJSON_GetObjectItem (cmd, "control_name");
-        part4 = cJSON_GetObjectItem (cmd, "value");
-        if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
-          floatval = part4->valuefloat;
-          if (part2->valuestring[0] == 'e') {
-            sub_id = 0;
-          } else {
-            if (part2->valuestring[0] == 'l') {
-              sub_id = 1;
-            } else {
-              if (part2->valuestring[0] == 'h') {
-                sub_id = 2;
-              } else {
-                if (part2->valuestring[0] == 'a') {
-                  sub_id = 3;
-                }
-              }
-            }
-          }
-          kr_mixer_set_effect_control (client->ws.krclient, part->valuestring, sub_id, 0,
-                                       part3->valuestring,
-                                       floatval, 0, EASEINOUTSINE);
-        }
-        return;
-      }
-      
-      if ((part != NULL) && (strcmp(part->valuestring, "control_eq_effect") == 0)) {
-        part = cJSON_GetObjectItem (cmd, "portgroup_name");
-        part2 = cJSON_GetObjectItem (cmd, "effect_name");
-        part3 = cJSON_GetObjectItem (cmd, "effect_num");
-        part4 = cJSON_GetObjectItem (cmd, "control_name");
-        part5 = cJSON_GetObjectItem (cmd, "value");
-        if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL) && (part5 != NULL)) {
-          floatval = part5->valuefloat;
-          if (part2->valuestring[0] == 'e') {
-            sub_id = 0;
-          } else {
-            if (part2->valuestring[0] == 'l') {
-              sub_id = 1;
-            } else {
-              if (part2->valuestring[0] == 'h') {
-                sub_id = 2;
-              } else {
-                if (part2->valuestring[0] == 'a') {
-                  sub_id = 3;
-                }
-              }
-            }
-          }
-          kr_mixer_set_effect_control (client->ws.krclient, part->valuestring, sub_id, part3->valueint,
-                                       part4->valuestring,
-                                       floatval, 0, EASEINOUTSINE);
-        }
-        return;
-      }
-      
-      if ((part != NULL) && (strcmp(part->valuestring, "push_dtmf") == 0)) {
-        part = cJSON_GetObjectItem (cmd, "dtmf");
-        if (part != NULL) {
-          kr_mixer_push_tone (client->ws.krclient, part->valuestring);
         }
       }
       return;
     }
-    
-    if ((part != NULL) && (strcmp(part->valuestring, "kradcompositor") == 0)) {
-      part = cJSON_GetObjectItem (cmd, "cmd");
-      if ((part != NULL) && (strcmp(part->valuestring, "jsnap") == 0)) {
-        kr_compositor_snapshot_jpeg (client->ws.krclient);
-      }  
-      if ((part != NULL) && (strcmp(part->valuestring, "snap") == 0)) {
-        kr_compositor_snapshot (client->ws.krclient);
-      }
-
-      if ((part != NULL) && (strcmp(part->valuestring, "display") == 0)) {
-         kr_transponder_subunit_create (client->ws.krclient, "rawout", "");
-      }
-
-      if ((part != NULL) && (strcmp(part->valuestring, "remove_subunit") == 0)) {
-        memset (&uc, 0, sizeof (uc));
-        part2 = cJSON_GetObjectItem (cmd, "subunit_id");
-        part3 = cJSON_GetObjectItem (cmd, "subunit_type");
-        uc.address.path.unit = KR_COMPOSITOR;
-        uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part3->valuestring);
-        uc.address.id.number = part2->valueint;
-        kr_unit_destroy (client->ws.krclient, &uc.address);
-        return;
-      }      
-
-      if ((part != NULL) && (strcmp(part->valuestring, "update_subunit") == 0)) {
-        part = cJSON_GetObjectItem (cmd, "subunit_id");
-        part2 = cJSON_GetObjectItem (cmd, "subunit_type");
-        part3 = cJSON_GetObjectItem (cmd, "control_name");
-        part4 = cJSON_GetObjectItem (cmd, "value");
-        if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
-          memset (&uc, 0, sizeof(uc));
-          uc.address.path.unit = KR_COMPOSITOR;
-          uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
-          uc.address.id.number = part->valueint;
-          uc.address.control.compositor_control = krad_string_to_compositor_control (part3->valuestring);
-          if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
-              (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
-            uc.value.real = part4->valuefloat;
+    if ((part != NULL) && (strcmp(part->valuestring, "control_effect") == 0)) {
+      part = cJSON_GetObjectItem (cmd, "portgroup_name");
+      part2 = cJSON_GetObjectItem (cmd, "effect_name");
+      part3 = cJSON_GetObjectItem (cmd, "control_name");
+      part4 = cJSON_GetObjectItem (cmd, "value");
+      if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
+        floatval = part4->valuefloat;
+        if (part2->valuestring[0] == 'e') {
+          sub_id = 0;
+        } else {
+          if (part2->valuestring[0] == 'l') {
+            sub_id = 1;
           } else {
-            uc.value.integer = part4->valueint;
+            if (part2->valuestring[0] == 'h') {
+              sub_id = 2;
+            } else {
+              if (part2->valuestring[0] == 'a') {
+                sub_id = 3;
+              }
+            }
           }
-          kr_unit_control_set (client->ws.krclient, &uc);
         }
-        return;
+        kr_mixer_set_effect_control (client->ws.krclient, part->valuestring, sub_id, 0,
+                                     part3->valuestring,
+                                     floatval, 0, EASEINOUTSINE);
       }
-      if ((part != NULL) && (strcmp(part->valuestring, "add_subunit") == 0)) {
-        part2 = cJSON_GetObjectItem (cmd, "subunit_type");
+      return;
+    }
+    
+    if ((part != NULL) && (strcmp(part->valuestring, "control_eq_effect") == 0)) {
+      part = cJSON_GetObjectItem (cmd, "portgroup_name");
+      part2 = cJSON_GetObjectItem (cmd, "effect_name");
+      part3 = cJSON_GetObjectItem (cmd, "effect_num");
+      part4 = cJSON_GetObjectItem (cmd, "control_name");
+      part5 = cJSON_GetObjectItem (cmd, "value");
+      if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL) && (part5 != NULL)) {
+        floatval = part5->valuefloat;
+        if (part2->valuestring[0] == 'e') {
+          sub_id = 0;
+        } else {
+          if (part2->valuestring[0] == 'l') {
+            sub_id = 1;
+          } else {
+            if (part2->valuestring[0] == 'h') {
+              sub_id = 2;
+            } else {
+              if (part2->valuestring[0] == 'a') {
+                sub_id = 3;
+              }
+            }
+          }
+        }
+        kr_mixer_set_effect_control (client->ws.krclient, part->valuestring, sub_id, part3->valueint,
+                                     part4->valuestring,
+                                     floatval, 0, EASEINOUTSINE);
+      }
+      return;
+    }
+    
+    if ((part != NULL) && (strcmp(part->valuestring, "push_dtmf") == 0)) {
+      part = cJSON_GetObjectItem (cmd, "dtmf");
+      if (part != NULL) {
+        kr_mixer_push_tone (client->ws.krclient, part->valuestring);
+      }
+    }
+    return;
+  }
+  
+  if ((part != NULL) && (strcmp(part->valuestring, "kradcompositor") == 0)) {
+    part = cJSON_GetObjectItem (cmd, "cmd");
+    if ((part != NULL) && (strcmp(part->valuestring, "jsnap") == 0)) {
+      kr_compositor_snapshot_jpeg (client->ws.krclient);
+    }  
+    if ((part != NULL) && (strcmp(part->valuestring, "snap") == 0)) {
+      kr_compositor_snapshot (client->ws.krclient);
+    }
+
+    if ((part != NULL) && (strcmp(part->valuestring, "display") == 0)) {
+       kr_transponder_subunit_create (client->ws.krclient, "rawout", "");
+    }
+
+    if ((part != NULL) && (strcmp(part->valuestring, "remove_subunit") == 0)) {
+      memset (&uc, 0, sizeof (uc));
+      part2 = cJSON_GetObjectItem (cmd, "subunit_id");
+      part3 = cJSON_GetObjectItem (cmd, "subunit_type");
+      uc.address.path.unit = KR_COMPOSITOR;
+      uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part3->valuestring);
+      uc.address.id.number = part2->valueint;
+      kr_unit_destroy (client->ws.krclient, &uc.address);
+      return;
+    }      
+
+    if ((part != NULL) && (strcmp(part->valuestring, "update_subunit") == 0)) {
+      part = cJSON_GetObjectItem (cmd, "subunit_id");
+      part2 = cJSON_GetObjectItem (cmd, "subunit_type");
+      part3 = cJSON_GetObjectItem (cmd, "control_name");
+      part4 = cJSON_GetObjectItem (cmd, "value");
+      if ((part != NULL) && (part2 != NULL) && (part3 != NULL) && (part4 != NULL)) {
         memset (&uc, 0, sizeof(uc));
         uc.address.path.unit = KR_COMPOSITOR;
         uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
-        if (uc.address.path.subunit.compositor_subunit == KR_SPRITE) {
-          part3 = cJSON_GetObjectItem (cmd, "filename");
-          kr_compositor_subunit_create (client->ws.krclient, KR_SPRITE, part3->valuestring, NULL);
+        uc.address.id.number = part->valueint;
+        uc.address.control.compositor_control = krad_string_to_compositor_control (part3->valuestring);
+        if ((uc.address.control.compositor_control == KR_OPACITY) || (uc.address.control.compositor_control == KR_ROTATION) ||
+            (uc.address.control.compositor_control == KR_YSCALE) || (uc.address.control.compositor_control == KR_XSCALE)) {
+          uc.value.real = part4->valuefloat;
+        } else {
+          uc.value.integer = part4->valueint;
         }
-        if (uc.address.path.subunit.compositor_subunit == KR_TEXT) {
-          part3 = cJSON_GetObjectItem (cmd, "text");
-          part4 = cJSON_GetObjectItem (cmd, "font");
-          kr_compositor_subunit_create (client->ws.krclient, KR_TEXT, part3->valuestring, part4->valuestring);
-        }
-        if (uc.address.path.subunit.compositor_subunit == KR_VECTOR) {
-          part3 = cJSON_GetObjectItem (cmd, "vector_type");
-          kr_compositor_subunit_create (client->ws.krclient, KR_VECTOR, part3->valuestring, NULL);
-        }
+        kr_unit_control_set (client->ws.krclient, &uc);
       }
       return;
     }
-   
-    if ((part != NULL) && (strcmp(part->valuestring, "kradradio") == 0)) {
-      part = cJSON_GetObjectItem (cmd, "cmd");    
-      if ((part != NULL) && (strcmp(part->valuestring, "stag") == 0)) {
-        part2 = cJSON_GetObjectItem (cmd, "tag_name");
-        part3 = cJSON_GetObjectItem (cmd, "tag_value");
-        if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {      
-          kr_set_tag (client->ws.krclient, NULL, part2->valuestring, part3->valuestring);
-          //printk("aye got %s %s", part2->valuestring, part3->valuestring);
-        }
+    if ((part != NULL) && (strcmp(part->valuestring, "add_subunit") == 0)) {
+      part2 = cJSON_GetObjectItem (cmd, "subunit_type");
+      memset (&uc, 0, sizeof(uc));
+      uc.address.path.unit = KR_COMPOSITOR;
+      uc.address.path.subunit.compositor_subunit = kr_string_to_comp_subunit_type (part2->valuestring);
+      if (uc.address.path.subunit.compositor_subunit == KR_SPRITE) {
+        part3 = cJSON_GetObjectItem (cmd, "filename");
+        kr_compositor_subunit_create (client->ws.krclient, KR_SPRITE, part3->valuestring, NULL);
       }
-      return;
+      if (uc.address.path.subunit.compositor_subunit == KR_TEXT) {
+        part3 = cJSON_GetObjectItem (cmd, "text");
+        part4 = cJSON_GetObjectItem (cmd, "font");
+        kr_compositor_subunit_create (client->ws.krclient, KR_TEXT, part3->valuestring, part4->valuestring);
+      }
+      if (uc.address.path.subunit.compositor_subunit == KR_VECTOR) {
+        part3 = cJSON_GetObjectItem (cmd, "vector_type");
+        kr_compositor_subunit_create (client->ws.krclient, KR_VECTOR, part3->valuestring, NULL);
+      }
     }
-    //cjson_memreset ();
+    return;
+  }
+ 
+  if ((part != NULL) && (strcmp(part->valuestring, "kradradio") == 0)) {
+    part = cJSON_GetObjectItem (cmd, "cmd");    
+    if ((part != NULL) && (strcmp(part->valuestring, "stag") == 0)) {
+      part2 = cJSON_GetObjectItem (cmd, "tag_name");
+      part3 = cJSON_GetObjectItem (cmd, "tag_value");
+      if ((part != NULL) && (part2 != NULL) && (part3 != NULL)) {      
+        kr_set_tag (client->ws.krclient, NULL, part2->valuestring, part3->valuestring);
+        //printk("aye got %s %s", part2->valuestring, part3->valuestring);
+      }
+    }
+    return;
   }
 }
 
+static void handle_json_cmd(kr_iws_client_t *client, char *value) {
+  json_to_cmd(client, value);
+  cjson_memreset();
+}
+
 /* callbacks from api handler to add JSON to websocket message */
+
+void interweb_json_pack(kr_iws_client_t *client) {
+
+  int32_t pos;
+  char *buffer;
+  char *str;
+  int32_t json_len;
+
+  pos = 0;
+  buffer = (char *)client->out->buf;
+
+  str = cJSON_Print(client->ws.json);
+  json_len = strlen(str);
+  if (json_len > 0) {
+    pos += interweb_ws_pack_frame_header((uint8_t *)buffer, json_len);
+    memcpy(buffer + pos, str, json_len);
+    pos += json_len;
+    kr_io2_advance (client->out, pos);
+    cjson_memreset ();
+    client->ws.json = cJSON_CreateArray();
+  }
+}
 
 void krad_websocket_set_tag (kr_iws_client_t *client, char *tag_item, char *tag_name, char *tag_value) {
 
@@ -525,21 +527,24 @@ void krad_websocket_add_comp_subunit ( kr_iws_client_t *client, kr_crate_t *crat
 
 /* Krad API Handler */
 
-static void crate_to_json (kr_iws_client_t *client, kr_crate_t *crate) {
-  switch ( crate->contains ) {
+static int crate_to_json(kr_iws_client_t *client, kr_crate_t *crate) {
+  switch (crate->contains) {
+    case 0:
+      return 0;
     case KR_MIXER:
-      krad_websocket_set_mixer (client, crate->inside.mixer);
-      return;
+      krad_websocket_set_mixer(client, crate->inside.mixer);
+      return 1;
     case KR_PORTGROUP:
-      krad_websocket_add_portgroup (client, crate->inside.portgroup);
-      return;
+      krad_websocket_add_portgroup(client, crate->inside.portgroup);
+      return 1;
     case KR_SPRITE:
     case KR_VECTOR:
     case KR_TEXT:
     case KR_VIDEOPORT:
-      krad_websocket_add_comp_subunit (client, crate);
-      return;
+      krad_websocket_add_comp_subunit(client, crate);
+      return 1;
   }
+  return 0;
 }
 
 static int krad_delivery_handler (kr_iws_client_t *client) {
@@ -591,7 +596,7 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
         krad_websocket_update_subunit (client, crate);
       }
       
-      interweb_json_pack (client);
+      interweb_json_pack(client);
       kr_crate_recycle (&crate);
       continue;
     }
@@ -611,9 +616,10 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
     }
 
     /* Initial list of subunits or subunit created */
-    if (kr_crate_loaded (crate)) {
-      crate_to_json (client, crate);
-      interweb_json_pack (client);
+    if (kr_crate_loaded(crate)) {
+      if (crate_to_json(client, crate)) {
+        interweb_json_pack (client);
+      }
       kr_crate_recycle (&crate);
       continue;
     }
