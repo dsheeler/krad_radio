@@ -19,7 +19,6 @@
 #include <poll.h>
 #include <pthread.h>
 #include <netinet/tcp.h>
-
 #ifdef KR_LINUX
 #include <ifaddrs.h>
 #endif
@@ -31,7 +30,6 @@
 #include "krad_radio_client.h"
 #include "krad_sha1.h"
 #include "krad_base64.h"
-
 #include "kr_client.h"
 
 #include "cJSON.h"
@@ -42,6 +40,7 @@
 #define MAX_REMOTES 16
 #define KR_IWS_MAX_CLIENTS 64
 #define KR_IWS_MAX_KRCLIENTS 64
+#define KR_MAX_SDS KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1
 
 #define WS_MASK_BIT 0x80  // 10000000
 #define WS_FIN_FRM 0x80   // 10000000
@@ -73,24 +72,17 @@ struct krad_interweb_server_St {
   int32_t tcp_port[MAX_REMOTES];
   char *tcp_interface[MAX_REMOTES];
   int32_t shutdown;
-
   int32_t socket_count;
-
   krad_control_t krad_control;
-
   krad_interweb_server_client_t *clients;
-
   pthread_t server_thread;
-
-  struct pollfd sockets[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
-  int32_t socket_type[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
-  kr_iws_client_t *sockets_clients[KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1];
-
+  struct pollfd sockets[KR_MAX_SDS];
+  int32_t socket_type[KR_MAX_SDS];
+  kr_iws_client_t *sockets_clients[KR_MAX_SDS];
   int32_t uberport;
   char *headcode_source;
   char *htmlheader_source;
   char *htmlfooter_source;
-
   char *html;
   int32_t html_len;
   char *api_js;
@@ -99,7 +91,6 @@ struct krad_interweb_server_St {
   int32_t iface_js_len;
   char *deviface_js;
   int32_t deviface_js_len;
-  
   char *headcode;
   char *htmlheader;
   char *htmlfooter;
@@ -151,15 +142,13 @@ struct krad_interweb_server_client_St {
 };
 
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,
-                                         char *interface,
-                                         int32_t port);
+ char *interface, int32_t port);
 int32_t krad_interweb_server_listen_on (kr_interweb_server_t *server,
-                                        char *interface,
-                                        int32_t port);
+ char *interface, int32_t port);
 
 void krad_interweb_server_disable (kr_interweb_server_t *server);
 void krad_interweb_server_destroy (kr_interweb_server_t *server);
 void krad_interweb_server_run (kr_interweb_server_t *server);
 kr_interweb_server_t *krad_interweb_server_create (char *sysname, int32_t port,
-                                      char *headcode, char *htmlheader, char *htmlfooter);
+ char *headcode, char *htmlheader, char *htmlfooter);
 #endif
