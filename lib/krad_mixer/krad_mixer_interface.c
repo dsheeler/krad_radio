@@ -225,7 +225,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       break;
     case EBML_ID_KRAD_MIXER_CMD_PUSH_TONE:
       tone = 0;
-      kr_ebml2_unpack_element_int8(&ebml_in, &element, &tone);
+      kr_ebml2_unpack_element_int8(&ebml_in, &element, (int8_t *)&tone);
       if (krad_mixer->push_tone == -1) {
         krad_mixer->push_tone = tone;
       }
