@@ -125,8 +125,8 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
   client = NULL;
 
   outsize = MAX(server->api_js_len, server->html_len);
-  outsize = MAX(outsize, server->iface_js_len);
-  outsize = MAX(outsize, server->deviface_js_len);
+  outsize = MAX(outsize + server->deviface_js_len,
+   outsize + server->iface_js_len);
   outsize += 1024;
   outsize += outsize % 1024;
 
@@ -162,7 +162,7 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
 
 static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
  kr_iws_client_t *client) {
-  close (client->sd);
+  close(client->sd);
   client->sd = 0;
   client->type = 0;
   client->drop_after_sync = 0;
@@ -171,8 +171,8 @@ static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
   client->got_headers = 0;
   memset(&client->ws, 0, sizeof(interwebs_t));
   memset(client->get, 0, sizeof(client->get));
-  kr_io2_destroy (&client->in);
-  kr_io2_destroy (&client->out);
+  kr_io2_destroy(&client->in);
+  kr_io2_destroy(&client->out);
   if (client->ws.krclient != NULL) {
     kr_client_destroy (&client->ws.krclient);
   }
