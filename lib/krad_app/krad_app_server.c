@@ -351,12 +351,12 @@ static krad_app_server_client_t *krad_app_server_accept_client (krad_app_server_
 
   if (client->sd > 0) {
     //krad_app_server_update_pollfds (krad_app_server);
-    krad_system_set_socket_nonblocking (client->sd);
-    client->in = kr_io2_create ();
-    client->out = kr_io2_create ();
-    kr_io2_set_fd (client->in, client->sd);
-    kr_io2_set_fd (client->out, client->sd);
-    client->ptr = krad_app_server->client_create (krad_app_server->pointer);
+    krad_system_set_socket_nonblocking(client->sd);
+    client->in = kr_io2_create();
+    client->out = kr_io2_create();
+    kr_io2_set_fd(client->in, client->sd);
+    kr_io2_set_fd(client->out, client->sd);
+    client->ptr = krad_app_server->client_create(krad_app_server->pointer);
     //printk ("Krad APP Server: Client accepted!");  
     return client;
   } else {
@@ -366,15 +366,15 @@ static krad_app_server_client_t *krad_app_server_accept_client (krad_app_server_
   return NULL;
 }
 
-static void krad_app_disconnect_client (krad_app_server_t *krad_app_server, krad_app_server_client_t *client) {
+static void krad_app_disconnect_client(krad_app_server_t *krad_app_server, krad_app_server_client_t *client) {
 
-  close (client->sd);
+  close(client->sd);
   client->sd = 0;
   client->broadcasts = 0;
-  krad_app_server->client_destroy (client->ptr);
+  krad_app_server->client_destroy(client->ptr);
   client->ptr = NULL;
-  kr_io2_destroy (&client->in);
-  kr_io2_destroy (&client->out);  
+  kr_io2_destroy(&client->in);
+  kr_io2_destroy(&client->out);  
   //krad_app_server_update_pollfds (krad_app_server);
   //printk ("Krad APP Server: Client Disconnected");
 }

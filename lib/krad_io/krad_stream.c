@@ -13,7 +13,7 @@ ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
   } else {
     if ((ret == -1) && (errno != EAGAIN)) {
       stream->err_no = errno;
-      strerror_r (stream->err_no, stream->error_str, sizeof(stream->error_str));
+      strerror_r(stream->err_no, stream->error_str, sizeof(stream->error_str));
       stream->position = 0;
       stream->half_ready = 0;
       stream->ready = 0;

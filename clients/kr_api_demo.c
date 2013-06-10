@@ -148,7 +148,7 @@ void get_delivery (kr_client_t *client) {
   
   while ((kr_delivery_get (client, &crate) > 0) &&
          (crate != NULL)) {
-  
+    printf ("Time is: %zu\n", time(NULL));
     handle_crate (crate);
     kr_crate_recycle (&crate);
   }
@@ -163,7 +163,7 @@ void take_deliveries_long_time (kr_client_t *client) {
   
   ret = 0;
   b = 0;
-  max = 100;
+  max = 10000000000;
   timeout_ms = 3000;
   
 
