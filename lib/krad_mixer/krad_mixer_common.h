@@ -24,6 +24,7 @@ typedef enum {
   KR_PEAK,
   KR_CROSSFADE_GROUP,
   KR_XMMS2_IPC_PATH,
+  KR_DTMF,
 } kr_mixer_portgroup_control_t;
 
 typedef enum {

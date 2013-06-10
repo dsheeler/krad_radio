@@ -16,7 +16,7 @@ static void krad_interweb_pack_buffer(kr_iws_client_t *client, void *buffer,
 }
 
 void interweb_ws_pack(kr_iws_client_t *client, uint8_t *buffer, size_t len);
-static void handle_json_cmd(kr_iws_client_t *client, char *value);
+static int handle_json(kr_iws_client_t *client, char *json, size_t len);
 
 int strmatch(char *string1, char *string2) {
   
@@ -41,7 +41,7 @@ int strmatch(char *string1, char *string2) {
 
 #include "socket.c"
 #include "websocket.c"
-#include "json_x_api.c"
+#include "json.c"
 #include "setup.c"
 #include "header_out.c"
 #include "request.c"

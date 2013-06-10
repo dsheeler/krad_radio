@@ -1692,8 +1692,13 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
           if (tokens[2][0] == 'v') {
             control->portgroup_control = KR_VOLUME;
           } else {
-            printf ("Invalid Mixer Portgroup Control\n");
-            return -1;
+            if ((tokens[2][0] == 't')
+                && ((memcmp(id->name, "DTMF\0", 5)) == 0)) {
+              control->portgroup_control = KR_DTMF;
+            } else {
+              printf ("Invalid Mixer Portgroup Control\n");
+              return -1;
+            }
           }
         }
       }
@@ -1805,7 +1810,7 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
   }
 }
 
-int32_t kr_address_has_control (kr_address_t *address) {
+int32_t kr_address_has_control(kr_address_t *address) {
 
   if ((address != NULL) && (address->control.unit_control > 0)) {
     return 1;
@@ -1813,12 +1818,17 @@ int32_t kr_address_has_control (kr_address_t *address) {
   return 0;
 }
 
-int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type) {
+int kr_unit_control_data_type_from_address(kr_address_t *address, kr_unit_control_data_t *data_type) {
 
   switch (address->path.unit) {
     case KR_MIXER:
-      *data_type = KR_FLOAT;
-      return 1;
+      if (address->control.portgroup_control == KR_DTMF) {
+        *data_type = KR_INT32;
+        return 1;
+      } else {
+        *data_type = KR_FLOAT;
+        return 1;
+      }
     case KR_COMPOSITOR:
       if ((address->control.compositor_control == KR_X) ||
           (address->control.compositor_control == KR_Y) ||

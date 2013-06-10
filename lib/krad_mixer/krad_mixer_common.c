@@ -116,6 +116,8 @@ char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_contro
       return "crossfade_group";
     case KR_XMMS2_IPC_PATH:
       return "xmms2_ipc_path";
+    case KR_DTMF:
+      return "dtmf";
   }
   return "Unknown";
 }
