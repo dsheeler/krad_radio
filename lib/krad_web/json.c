@@ -333,11 +333,11 @@ void krad_websocket_update_subunit(kr_iws_client_t *client,
      kr_compositor_control_to_string(address->control.compositor_control));
 
     if (kr_crate_contains_float (crate)) {
-      pos += snprintf(json + pos, sizeof(json) - pos, "\"value\":%g}]",
+      pos += snprintf(json + pos, sizeof(json) - pos, "\"value\":%g",
        crate->real);
     } else {
       if (kr_crate_contains_int (crate)) {
-        pos += snprintf(json + pos, sizeof(json) - pos, "\"value\":%d}]",
+        pos += snprintf(json + pos, sizeof(json) - pos, "\"value\":%d",
          crate->integer);
       }
     }
