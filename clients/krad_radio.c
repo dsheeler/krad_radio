@@ -380,7 +380,7 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "tone", 4) == 0) {
     if (argc == 4) {
-      kr_mixer_push_tone (client, argv[3]);
+      kr_mixer_push_tone (client, argv[3][0]);
     }
   }
 

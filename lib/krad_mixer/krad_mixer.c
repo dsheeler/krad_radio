@@ -618,6 +618,7 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
   
   int p, m;
   void *client;
+  char tone_str[2];
   
   client = NULL;
   krad_mixer_portgroup_t *portgroup = NULL;
@@ -626,9 +627,11 @@ static int krad_mixer_process (uint32_t nframes, krad_mixer_t *krad_mixer) {
 
   krad_mixer_update_portgroups (krad_mixer);
 
-  if (krad_mixer->push_tone != NULL) {
-    krad_tone_add_preset (krad_mixer->tone_port->io_ptr, krad_mixer->push_tone);
-    krad_mixer->push_tone = NULL;
+  if (krad_mixer->push_tone != -1) {
+    tone_str[0] = krad_mixer->push_tone;
+    tone_str[1] = '\0';
+    krad_tone_add_preset (krad_mixer->tone_port->io_ptr, tone_str);
+    krad_mixer->push_tone = -1;
   }
   
   // Gets input/output port buffers
@@ -1423,6 +1426,7 @@ krad_mixer_t *krad_mixer_create (char *name) {
                                  NOTOUTPUT, 2, DEFAULT_MASTERBUS_LEVEL,
                                  NULL, MIXBUS, NULL, 0);
   
+  krad_mixer->push_tone = -1;
   krad_mixer->tone_port =
     krad_mixer_portgroup_create (krad_mixer, "DTMF",
                                  INPUT, NOTOUTPUT, 1, 35.0f,

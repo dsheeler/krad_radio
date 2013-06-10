@@ -35,7 +35,7 @@ void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_na
 void kr_mixer_set_portgroup_crossfade_group (kr_client_t *client, char *portgroupname, char *crossfade_group);
 void kr_mixer_update_portgroup_map_channel (kr_client_t *client, char *portgroupname, int in_channel, int out_channel);
 void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgroupname, int in_channel, int out_channel);
-void kr_mixer_push_tone (kr_client_t *client, char *tone);
+void kr_mixer_push_tone (kr_client_t *client, int8_t tone);
 void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, char *ipc_path);
 void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname);
 void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction, int channels);
