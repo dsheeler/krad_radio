@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <pthread.h>
+#include <netinet/tcp.h>
 
 #ifdef KR_LINUX
 #include <ifaddrs.h>
