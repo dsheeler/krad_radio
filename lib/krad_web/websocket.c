@@ -1,4 +1,3 @@
-
 int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
 
   interwebs_t *ws;
@@ -229,6 +228,17 @@ uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size) {
   }
 }
 
+uint32_t interweb_ws_pack_client_frame_header(kr_iws_client_t *client,
+ uint32_t size) {
+
+  int32_t pos;
+
+  pos = interweb_ws_pack_frame_header(client->out->buf, size);
+  kr_io2_advance (client->out, pos);
+
+  return pos;
+}
+
 int32_t interweb_ws_kr_client_connect(kr_iws_client_t *client) {
 
   client->ws.krclient = kr_client_create ("websocket client");
@@ -250,19 +260,21 @@ int32_t interweb_ws_kr_client_connect(kr_iws_client_t *client) {
   return 0;
 }
 
-int32_t interweb_ws_hello(kr_iws_client_t *client) {
+void interweb_ws_pack(kr_iws_client_t *client, uint8_t *buffer, size_t len) {
+  if (len > 0) {
+    interweb_ws_pack_client_frame_header(client, len);
+    krad_interweb_pack_buffer(client, buffer, len);
+  }
+}
 
-  cJSON *msg;
+int32_t interweb_ws_json_hello(kr_iws_client_t *client) {
 
-  //JSON first start
-  client->ws.json = cJSON_CreateArray();
+  char json[128];
 
-  cJSON_AddItemToArray (client->ws.json, msg = cJSON_CreateObject());
-  cJSON_AddStringToObject (msg, "com", "kradradio");
-  cJSON_AddStringToObject (msg, "info", "sysname");
-  cJSON_AddStringToObject (msg, "infoval", client->server->sysname);
+  snprintf(json, sizeof(json), "[{\"com\":\"kradradio\","
+   "\"info\":\"sysname\",\"infoval\":\"%s\"}]", client->server->sysname);
 
-  interweb_json_pack (client);
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 
   return 0;
 }
@@ -289,7 +301,7 @@ int32_t interweb_ws_shake(kr_iws_client_t *client) {
   kr_io2_advance (client->out, pos);
   client->ws.shaked = 1;
   set_socket_nodelay(client->sd);
-  interweb_ws_hello(client);
+  interweb_ws_json_hello(client);
   interweb_ws_kr_client_connect(client);
 
   return 0;

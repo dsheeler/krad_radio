@@ -19,7 +19,7 @@ static void json_to_cmd(kr_iws_client_t *client, char *value) {
   part4 = NULL;
   part5 = NULL;
 
-  cmd = cJSON_Parse (value);
+  cmd = cJSON_Parse(value);
   
   if (!cmd) {
     printke ("Krad Interweb JSON Error: [%s]", cJSON_GetErrorPtr());
@@ -217,167 +217,125 @@ static void handle_json_cmd(kr_iws_client_t *client, char *value) {
   cjson_memreset();
 }
 
-/* callbacks from api handler to add JSON to websocket message */
-
-void interweb_json_pack(kr_iws_client_t *client) {
-
-  int32_t pos;
-  char *buffer;
-  char *str;
-  int32_t json_len;
-
-  pos = 0;
-  buffer = (char *)client->out->buf;
-
-  str = cJSON_Print(client->ws.json);
-  json_len = strlen(str);
-  if (json_len > 0) {
-    pos += interweb_ws_pack_frame_header((uint8_t *)buffer, json_len);
-    memcpy(buffer + pos, str, json_len);
-    pos += json_len;
-    kr_io2_advance (client->out, pos);
-    cjson_memreset ();
-    client->ws.json = cJSON_CreateArray();
-  }
-}
-
-void krad_websocket_set_tag (kr_iws_client_t *client, char *tag_item, char *tag_name, char *tag_value) {
-
-  cJSON *msg;
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
+void krad_websocket_set_tag (kr_iws_client_t *client, char *tag_item,
+ char *tag_name, char *tag_value) {
+/*
   cJSON_AddStringToObject (msg, "com", "kradradio");
   cJSON_AddStringToObject (msg, "info", "tag");
   cJSON_AddStringToObject (msg, "tag_item", tag_item);
   cJSON_AddStringToObject (msg, "tag_name", tag_name);
   cJSON_AddStringToObject (msg, "tag_value", tag_value);
-
+*/
 }
 
 void krad_websocket_set_cpu_usage (kr_iws_client_t *client, int usage) {
-
-  cJSON *msg;
-  
-  cJSON_AddItemToArray (client->ws.json, msg = cJSON_CreateObject());
-  
+/*
   cJSON_AddStringToObject (msg, "com", "kradradio");
   cJSON_AddStringToObject (msg, "info", "cpu");
   cJSON_AddNumberToObject (msg, "system_cpu_usage", usage);
-
+*/
 }
 
-void krad_websocket_add_portgroup ( kr_iws_client_t *client, kr_mixer_portgroup_t *portgroup) {
+void krad_websocket_add_portgroup ( kr_iws_client_t *client,
+ kr_mixer_portgroup_t *portgroup) {
 
   int i;
-  cJSON *msg;
-  cJSON *eq;
-  cJSON *eqbands;
-  cJSON *eqband;
+  int pos;
+  char json[2048];
+
+  pos = 0;
 
   //for the moment will ignore these
   if ((portgroup->direction == OUTPUT) && (portgroup->output_type == DIRECT)) {
     return;
   }
-
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "add_portgroup");
-  cJSON_AddStringToObject (msg, "portgroup_name", portgroup->sysname);
-  cJSON_AddNumberToObject (msg, "volume", portgroup->volume[0]);
-  
+  pos += snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"add_portgroup\",\"portgroup_name\":\"%s\","
+   "\"volume\":%g,", portgroup->sysname, portgroup->volume[0]);
   if (portgroup->crossfade_group[0] != '\0') {
-    cJSON_AddStringToObject (msg, "crossfade_name", portgroup->crossfade_group);
-    cJSON_AddNumberToObject (msg, "crossfade", portgroup->fade);
+    pos += snprintf(json + pos, sizeof(json) - pos,
+     "\"crossfade_name\":\"%s\",\"crossfade\":%g,",
+     portgroup->crossfade_group, portgroup->fade);
   } else {
-    cJSON_AddStringToObject (msg, "crossfade_name", "");
-    cJSON_AddNumberToObject (msg, "crossfade", 0);
+    pos += snprintf(json + pos, sizeof(json) - pos,
+     "\"crossfade_name\":\"\",\"crossfade\":0,");
   }
-  
-  cJSON_AddNumberToObject (msg, "xmms2", portgroup->has_xmms2);
-  cJSON_AddNumberToObject (msg, "direction", portgroup->direction);
+  pos += snprintf(json + pos, sizeof(json) - pos,
+   "\"xmms2\":%d,\"direction\":%d,",
+   portgroup->has_xmms2, portgroup->direction);
 
   if (portgroup->direction == INPUT) {
-  
-    eq = cJSON_CreateObject();
-    eqbands = cJSON_CreateArray();
-    cJSON_AddItemToObject(eq, "bands", eqbands);
-    cJSON_AddItemToObject(msg, "eq", eq);
+    pos += snprintf(json + pos, sizeof(json) - pos, "\"eq\":{\"bands\":[");
     for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-      eqband = cJSON_CreateObject();
-      cJSON_AddNumberToObject (eqband, "hz", portgroup->eq.band[i].hz);
-      cJSON_AddNumberToObject (eqband, "db", portgroup->eq.band[i].db);
-      cJSON_AddNumberToObject (eqband, "bw", portgroup->eq.band[i].bandwidth);
-      cJSON_AddItemToArray(eqbands, eqband);
+      pos += snprintf(json + pos, sizeof(json) - pos,
+       "{\"hz\":%g,\"db\":%g,\"bw\":%g},",
+        portgroup->eq.band[i].hz, portgroup->eq.band[i].db,
+        portgroup->eq.band[i].bandwidth);
     }
-    
-    cJSON_AddNumberToObject (msg, "lowpass_hz", portgroup->lowpass.hz);
-    cJSON_AddNumberToObject (msg, "lowpass_bw", portgroup->lowpass.bandwidth);
-
-    cJSON_AddNumberToObject (msg, "highpass_hz", portgroup->highpass.hz);
-    cJSON_AddNumberToObject (msg, "highpass_bw", portgroup->highpass.bandwidth);
-    
-    cJSON_AddNumberToObject (msg, "analog_drive", portgroup->analog.drive);
-    cJSON_AddNumberToObject (msg, "analog_blend", portgroup->analog.blend);
-
+    pos--;
+    pos += snprintf(json + pos, sizeof(json) - pos, "]},");
+    pos += snprintf(json + pos, sizeof(json) - pos,
+     "\"lowpass_hz\":%g,\"lowpass_bw\":%g,",
+     portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
+    pos += snprintf(json + pos, sizeof(json) - pos,
+     "\"highpass_hz\":%g,\"highpass_bw\":%g,",
+     portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
+    pos += snprintf(json + pos, sizeof(json) - pos,
+     "\"analog_drive\":%g,\"analog_blend\":%g",
+     portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
+  } else {
+    pos--;
   }
+  pos += snprintf(json + pos, sizeof(json) - pos, "}]");
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_remove_portgroup ( kr_iws_client_t *client, kr_address_t *address ) {
+void krad_websocket_remove_portgroup (kr_iws_client_t *client,
+ kr_address_t *address) {
 
-  cJSON *msg;
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "remove_portgroup");
-  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
+  char json[192];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"remove_portgroup\",\"portgroup_name\":\"%s\"}]",
+   address->id.name);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_set_portgroup_eff ( kr_iws_client_t *client, kr_address_t *address, float value) {
+void krad_websocket_set_portgroup_eff(kr_iws_client_t *client,
+ kr_address_t *address, float value) {
 
-  cJSON *msg;  
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "effect_control");
-  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
-  cJSON_AddStringToObject (msg, "effect_name", effect_type_to_string (address->sub_id + 1));
-  cJSON_AddNumberToObject (msg, "effect_num", address->sub_id2);
-  cJSON_AddStringToObject (msg, "control_name", effect_control_to_string(address->control.effect_control));
-  cJSON_AddNumberToObject (msg, "value", value);
+  char json[256];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"effect_control\",\"portgroup_name\":\"%s\","
+   "\"effect_name\":\"%s\",\"effect_num\":%d,"
+   "\"control_name\":\"%s\","
+   "\"value\":%g}]", address->id.name,
+   effect_type_to_string (address->sub_id + 1), address->sub_id2,
+   effect_control_to_string(address->control.effect_control), value);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_remove_subunit ( kr_iws_client_t *client, kr_address_t *address) {
+void krad_websocket_remove_subunit(kr_iws_client_t *client,
+ kr_address_t *address) {
 
-  cJSON *msg;
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradcompositor");
-  
-  cJSON_AddStringToObject (msg, "cmd", "remove_subunit");
+  char json[192];
 
-  cJSON_AddStringToObject (msg, "subunit_type",
-    kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit));
+  snprintf(json, sizeof(json), "[{\"com\":\"kradcompositor\","
+   "\"cmd\":\"remove_subunit\",\"subunit_type\":\"%s\",\"subunit_id\":\"%d\"}]",
+   kr_compositor_subunit_type_to_string(address->path.subunit.compositor_subunit),
+   address->id.number);
 
-  cJSON_AddNumberToObject (msg, "subunit_id", address->id.number);
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
 void krad_websocket_update_subunit (kr_iws_client_t *client, kr_crate_t *crate) {
-
-  cJSON *msg;  
+  /*
   kr_address_t *address;
-
   address = crate->addr;
-
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
+  */
   /*
   if (crate->addr->path.unit == KR_MIXER) {
     cJSON_AddStringToObject (msg, "com", "kradmixer");
@@ -390,7 +348,7 @@ void krad_websocket_update_subunit (kr_iws_client_t *client, kr_crate_t *crate) 
     }
   }
   */
-
+  /*
   if (crate->addr->path.unit == KR_COMPOSITOR) {
     cJSON_AddStringToObject (msg, "com", "kradcompositor");
     cJSON_AddStringToObject (msg, "cmd", "update_subunit");
@@ -409,66 +367,65 @@ void krad_websocket_update_subunit (kr_iws_client_t *client, kr_crate_t *crate) 
       }
     }
   }
+  */
 }
 
-void krad_websocket_set_portgroup_control ( kr_iws_client_t *client, kr_address_t *address, float value) {
+void krad_websocket_set_portgroup_control ( kr_iws_client_t *client,
+ kr_address_t *address, float value) {
 
-  cJSON *msg;  
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "control_portgroup");
-  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
-  cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
-  cJSON_AddNumberToObject (msg, "value", value);
+  char json[192];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"control_portgroup\",\"portgroup_name\":\"%s\",\"control_name\":"
+   "\"%s\", \"value\":%g}]",
+   address->id.name,
+   portgroup_control_to_string(address->control.portgroup_control),
+   value);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_set_portgroup_peak ( kr_iws_client_t *client, kr_address_t *address, float value) {
+void krad_websocket_set_portgroup_peak ( kr_iws_client_t *client,
+ kr_address_t *address, float value) {
 
-  cJSON *msg;  
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "peak_portgroup");
-  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
-  //cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
-  cJSON_AddNumberToObject (msg, "value", value);
+  char json[192];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"peak_portgroup\",\"portgroup_name\":\"%s\", \"value\":%g}]",
+   address->id.name, value);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_update_portgroup ( kr_iws_client_t *client, kr_address_t *address, char *value ) {
+void krad_websocket_update_portgroup ( kr_iws_client_t *client,
+ kr_address_t *address, char *value ) {
 
-  cJSON *msg;
-  
-  cJSON_AddItemToArray (client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "update_portgroup");
-  cJSON_AddStringToObject (msg, "portgroup_name", address->id.name);
-  cJSON_AddStringToObject (msg, "control_name", portgroup_control_to_string(address->control.portgroup_control));
-  cJSON_AddStringToObject (msg, "value", value);
-  
-  //kr_tags (client->ws.krclient, address->id.name);
+  char json[192];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"update_portgroup\",\"portgroup_name\":\"%s\",\"control_name\":"
+   "\"%s\", \"value\":\"%s\"}]",
+   address->id.name,
+   portgroup_control_to_string(address->control.portgroup_control),
+   value);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_set_mixer ( kr_iws_client_t *client, kr_mixer_t *mixer) {
+void krad_websocket_set_mixer(kr_iws_client_t *client, kr_mixer_t *mixer) {
 
-  cJSON *msg;
-  
-  cJSON_AddItemToArray(client->ws.json, msg = cJSON_CreateObject());
-  
-  cJSON_AddStringToObject (msg, "com", "kradmixer");
-  
-  cJSON_AddStringToObject (msg, "cmd", "set_mixer_params");
-  cJSON_AddNumberToObject (msg, "sample_rate", mixer->sample_rate);
+  char json[96];
+
+  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
+   "\"cmd\":\"set_mixer_params\",\"sample_rate\":\"%d\"}]",
+   mixer->sample_rate);
+
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_add_comp_subunit ( kr_iws_client_t *client, kr_crate_t *crate) {
-
+void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
+ kr_crate_t *crate) {
+/*
   cJSON *msg;
   kr_address_t *address;
   kr_compositor_subunit_controls_t controls;
@@ -523,6 +480,7 @@ void krad_websocket_add_comp_subunit ( kr_iws_client_t *client, kr_crate_t *crat
   cJSON_AddNumberToObject (msg, "o", controls.opacity);
   cJSON_AddNumberToObject (msg, "width", controls.width);
   cJSON_AddNumberToObject (msg, "height", controls.height);
+*/
 }
 
 /* Krad API Handler */
@@ -560,8 +518,6 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
   while ((kr_delivery_get (client->ws.krclient, &crate) > 0) &&
          (crate != NULL)) {
 
-    //printk("got a delivery!");
-
     /* Subunit updated */
     if (kr_crate_notice (crate) == EBML_ID_KRAD_SUBUNIT_CONTROL) {
       if (crate->addr->path.unit == KR_MIXER) {
@@ -584,23 +540,18 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
             }
           }
         }
-        
         if (crate->addr->path.subunit.mixer_subunit == KR_EFFECT) {
           if (kr_crate_contains_float (crate)) {
             krad_websocket_set_portgroup_eff (client, crate->addr, crate->real);
           }
         }
       }
-
       if (crate->addr->path.unit == KR_COMPOSITOR) {
         krad_websocket_update_subunit (client, crate);
       }
-      
-      interweb_json_pack(client);
       kr_crate_recycle (&crate);
       continue;
     }
-
     /* Subunit Destroyed */
     if (kr_crate_notice (crate) == EBML_ID_KRAD_RADIO_UNIT_DESTROYED) {
       if ((crate->addr->path.unit == KR_MIXER) &&
@@ -610,16 +561,12 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
       if (crate->addr->path.unit == KR_COMPOSITOR) {
         krad_websocket_remove_subunit (client, crate->addr);
       }
-      interweb_json_pack (client);
       kr_crate_recycle (&crate);
       continue;
     }
-
     /* Initial list of subunits or subunit created */
     if (kr_crate_loaded(crate)) {
-      if (crate_to_json(client, crate)) {
-        interweb_json_pack (client);
-      }
+      crate_to_json(client, crate);
       kr_crate_recycle (&crate);
       continue;
     }

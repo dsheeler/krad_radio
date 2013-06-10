@@ -7,13 +7,16 @@
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size);
 
-static void krad_interweb_pack_buffer(kr_iws_client_t *client, char *buffer,
+static void krad_interweb_pack_buffer(kr_iws_client_t *client, void *buffer,
  size_t length);
 
-static void krad_interweb_pack_buffer(kr_iws_client_t *client, char *buffer,
+static void krad_interweb_pack_buffer(kr_iws_client_t *client, void *buffer,
  size_t length) {
-  kr_io2_pack (client->out, buffer, length);
+  kr_io2_pack(client->out, buffer, length);
 }
+
+void interweb_ws_pack(kr_iws_client_t *client, uint8_t *buffer, size_t len);
+static void handle_json_cmd(kr_iws_client_t *client, char *value);
 
 int strmatch(char *string1, char *string2) {
   
@@ -36,10 +39,10 @@ int strmatch(char *string1, char *string2) {
   return 0;
 }
 
-#include "json_x_api.c"
 #include "socket.c"
-#include "setup.c"
 #include "websocket.c"
+#include "json_x_api.c"
+#include "setup.c"
 #include "header_out.c"
 #include "request.c"
 
