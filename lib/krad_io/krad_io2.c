@@ -56,10 +56,9 @@ void kr_io2_advance(kr_io2_t *io, size_t bytes) {
 
 void kr_io2_pack(kr_io2_t *io, void *buffer, size_t len) {
 
-  //printk("kr_io2_pack len: %zu buf len: %zu new len: %zu",
-  //       len, io->len, len + io->len);
-
-  if (len + io->len > io->space) {
+  if (len > io->space) {
+    printk("io2_pack len: %zu buf len: %zu new len: %zu size: %zu space: %zu",
+            len, io->len, len + io->len, io->size, io->space);
     printke("buffer overpack cancelling!");
     return;
   }

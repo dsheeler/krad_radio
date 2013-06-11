@@ -32,8 +32,6 @@
 #include "krad_base64.h"
 #include "kr_client.h"
 
-#include "cJSON.h"
-
 #ifndef KRAD_INTERWEB_SERVER_H
 #define KRAD_INTERWEB_SERVER_H
 
@@ -122,7 +120,6 @@ struct interwebs_St {
   uint32_t shaked;
   char key[96];
   char proto[96];
-  cJSON *json;
   kr_client_t *krclient;
 };
 
@@ -133,7 +130,6 @@ struct krad_interweb_server_client_St {
   kr_io2_t *out;
   int32_t drop_after_sync;
   int32_t type;
-
   uint32_t hle;
   uint32_t hle_pos;
   uint32_t got_headers;
