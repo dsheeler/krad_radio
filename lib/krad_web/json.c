@@ -7,8 +7,10 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   kr_unit_control_t uc;
   int cmplen;
   size_t addr_len;
+  size_t dur_len;
   char *addr_str;
 
+  dur_len = 0;
   addr_len = 0;
   pos = 0;
 
@@ -43,7 +45,7 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   }
   json[pos + addr_len] = '\0';
   addr_str = json + pos;
-  printk("address string is: %s", addr_str);
+  //printk("address string is: %s", addr_str);
   if (!(kr_string_to_address (addr_str, &uc.address))) {
     printke("Could not parse address");
     return -1;
@@ -58,16 +60,17 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     printke("could not determine data type of control");
     return -1;
   }
-  if ((uc.address.path.unit == KR_MIXER)
-      && (uc.address.control.portgroup_control == KR_DTMF)) {
-    uc.value.integer = json[pos];
-  } else {
-    if (uc.data_type == KR_FLOAT) {
-      uc.value.real = atof(json + pos);
-    }
-    if (uc.data_type == KR_INT32) {
-      uc.value.integer = atoi(json + pos);
-    }
+  if (uc.data_type == KR_FLOAT) {
+    uc.value.real = atof(json + pos);
+  }
+  if (uc.data_type == KR_INT32) {
+    uc.value.integer = atoi(json + pos);
+  }
+  dur_len = strcspn(json + pos + 1, " ");
+  if (dur_len != 0) {
+    //printk("duration found: %s", json + pos + dur_len + 1);
+    uc.duration = atoi(json + pos + dur_len + 1);
+    //printk("duration: %d", uc.duration);
   }
   if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
     printke("could not set control");
