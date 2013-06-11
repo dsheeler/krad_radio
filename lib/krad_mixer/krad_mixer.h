@@ -95,8 +95,7 @@ struct krad_mixer_St {
   krad_mixer_mixbus_t *master_mix;
 
   krad_mixer_portgroup_t *tone_port;
-  char *push_tone;  
-  char push_tone_value[32];
+  char push_tone;  
     
   krad_mixer_portgroup_t *portgroup[KRAD_MIXER_MAX_PORTGROUPS];
   krad_mixer_crossfade_group_t *crossfade_group;

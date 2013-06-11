@@ -1912,7 +1912,13 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
           if (uc->address.control.portgroup_control == KR_VOLUME) {
             kr_mixer_set_control (client, uc->address.id.name, "volume", uc->value.real, uc->duration);
           } else {
-            kr_mixer_set_control (client, uc->address.id.name, "crossfade", uc->value.real, uc->duration);
+            if (uc->address.control.portgroup_control == KR_CROSSFADE) {
+              kr_mixer_set_control (client, uc->address.id.name, "crossfade", uc->value.real, uc->duration);
+            } else {
+              if (uc->address.control.portgroup_control == KR_DTMF) {
+                kr_mixer_push_tone(client, uc->value.integer);
+              }
+            }
           }
           break;
         case KR_EFFECT:

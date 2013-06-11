@@ -164,6 +164,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   char string[512];
   uint32_t numbers[10];
   krad_app_server_t *app;
+  char tone;
 
   ptr = NULL;
   krad_radio = client->krad_radio;
@@ -223,11 +224,10 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PUSH_TONE:
-      if (krad_mixer->push_tone == NULL) {
-        kr_ebml2_unpack_element_string (&ebml_in, &element, krad_mixer->push_tone_value, sizeof(krad_mixer->push_tone_value));
-        krad_mixer->push_tone = krad_mixer->push_tone_value;
-      } else {
-        kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
+      tone = 0;
+      kr_ebml2_unpack_element_int8(&ebml_in, &element, (int8_t *)&tone);
+      if (krad_mixer->push_tone == -1) {
+        krad_mixer->push_tone = tone;
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PORTGROUP_XMMS2_CMD:

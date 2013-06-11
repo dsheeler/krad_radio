@@ -413,7 +413,7 @@ void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction
 }
 
 
-void kr_mixer_push_tone (kr_client_t *client, char *tone) {
+void kr_mixer_push_tone (kr_client_t *client, int8_t tone) {
 
   unsigned char *command;
   unsigned char *push;
@@ -421,7 +421,7 @@ void kr_mixer_push_tone (kr_client_t *client, char *tone) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PUSH_TONE, &push);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
+  kr_ebml2_pack_int8(client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
   
   kr_ebml2_finish_element (client->ebml2, push);
   kr_ebml2_finish_element (client->ebml2, command);

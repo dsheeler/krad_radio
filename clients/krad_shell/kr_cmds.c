@@ -328,7 +328,7 @@ int krad_shell_cmd (kr_shell_t *kr_shell , char *sysname ,int argc , char *argv[
 
   if (strncmp(argv[0], "tone", 4) == 0) {
     if (argc == 2) {
-      kr_mixer_push_tone (client, argv[1]);
+      kr_mixer_push_tone (client, argv[1][0]);
     }
   }
 
