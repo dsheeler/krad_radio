@@ -193,9 +193,6 @@ void v4l2_capture_unit_create (void *arg) {
                    krad_link->capture_width, krad_link->capture_height);
   }
 
-  krad_link->krad_compositor_port->perspective =
-            kr_perspective_create (krad_link->composite_width, krad_link->composite_height);
-
   krad_v4l2_start_capturing (krad_link->krad_v4l2);
 
   printk ("Video capture started..");
@@ -210,14 +207,6 @@ int v4l2_capture_unit_process (void *arg) {
   
   captured_frame = NULL;
   krad_frame = NULL;
-
-
-  if (rand() % 100 > 98) {
-    kr_perspective_random (krad_link->krad_compositor_port->perspective);
-    memcpy (&krad_link->krad_compositor_port->view,
-            &krad_link->krad_compositor_port->perspective->view,
-            sizeof(kr_perspective_view_t));
-  }
 
   captured_frame = krad_v4l2_read (krad_link->krad_v4l2);    
 
