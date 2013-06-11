@@ -348,10 +348,12 @@ int krad_player_open (krad_player_t *player, char *input) {
   int i;
   int pc;
   int err;
+  int last_ms;
   AVPacket packet;
   
   pc = 0;
   err = 0;
+  last_ms = -1000;
   
   player->avc.ctx = avformat_alloc_context ();
   
@@ -439,7 +441,6 @@ int krad_player_open (krad_player_t *player, char *input) {
     kr_videoport_activate (player->videoport);
   }
   printf ("\n");
-  
 
   if (krad_player_check_av_ports (player)) {
     printf ("Error: av ports error\n");
@@ -478,14 +479,17 @@ int krad_player_open (krad_player_t *player, char *input) {
       return -7;
     }     
     
-    pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d "
-                 "VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
-                player->ms, player->last_frame_time,
-                player->repeated, player->skipped,
-                player->avc.video_frames, player->avc.video_packets,
-                (float)player->samples_consumed / (float)player->sample_rate,
-                player->avc.audio_packets);
-    fflush (stdout);
+    if (last_ms < (player->ms - 80)) {
+      pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d "
+                   "VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
+                  player->ms, player->last_frame_time,
+                  player->repeated, player->skipped,
+                  player->avc.video_frames, player->avc.video_packets,
+                  (float)player->samples_consumed / (float)player->sample_rate,
+                  player->avc.audio_packets);
+      fflush (stdout);
+      last_ms = player->ms;
+    }
   }
   printf ("\n");
   
