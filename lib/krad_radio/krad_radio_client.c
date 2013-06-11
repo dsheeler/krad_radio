@@ -1818,7 +1818,8 @@ int32_t kr_address_has_control(kr_address_t *address) {
   return 0;
 }
 
-int kr_unit_control_data_type_from_address(kr_address_t *address, kr_unit_control_data_t *data_type) {
+int kr_unit_control_data_type_from_address(kr_address_t *address,
+ kr_unit_control_data_t *data_type) {
 
   switch (address->path.unit) {
     case KR_MIXER:
