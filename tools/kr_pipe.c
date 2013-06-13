@@ -27,6 +27,7 @@ void krad_pipe (char *host, int port, char *mount,
   uint64_t total_bytes;
   uint8_t buffer[4096];
 
+  total_bytes = 0;
   bytes = 0;
 
   /* Temp */
@@ -121,6 +122,7 @@ void krad_pipe_to (char *host, int port, char *mount, char *password) {
   uint64_t total_bytes;
   uint8_t buffer[1024];
 
+  total_bytes = 0;
   bytes = 0;
 
   /* Temp */
