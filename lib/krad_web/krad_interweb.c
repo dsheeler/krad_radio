@@ -87,6 +87,14 @@ int32_t krad_interweb_http_client_handle(kr_iws_client_t *client) {
   return 0;
 }
 
+int32_t krad_interweb_stream_in_client_handle(kr_iws_client_t *client) {
+
+  printk("fake reading stream in %zu bytes", client->in->len);
+  kr_io2_pulled (client->in, client->in->len);
+
+  return 0;
+}
+
 int32_t krad_interweb_client_handle(kr_iws_client_t *client) {
 
   int32_t ret;
@@ -101,11 +109,14 @@ int32_t krad_interweb_client_handle(kr_iws_client_t *client) {
   }
 
   switch (client->type) {
-    case WS:
+    case KR_IWS_WS:
       ret = krad_interweb_ws_client_handle(client);
       break;
-    case HTTP1:
+    case KR_IWS_HTTP1:
       ret = krad_interweb_http_client_handle(client);
+      break;
+    case KR_IWS_STREAM_IN:
+      ret = krad_interweb_stream_in_client_handle(client);
       break;
     default:
       break;
@@ -162,13 +173,15 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
 
 static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
  kr_iws_client_t *client) {
+
   close(client->sd);
   client->sd = 0;
   client->type = 0;
   client->drop_after_sync = 0;
-  client->hle = 0;
-  client->hle_pos = 0;
-  client->got_headers = 0;
+  client->hdr_le = 0;
+  client->hdr_pos = 0;
+  client->hdrs_recvd = 0;
+  client->verb = 0;
   memset(&client->ws, 0, sizeof(interwebs_t));
   memset(client->get, 0, sizeof(client->get));
   kr_io2_destroy(&client->in);
@@ -217,7 +230,7 @@ static void krad_interweb_server_update_pollfds(kr_interweb_server_t *server) {
         server->sockets[s].events |= POLLOUT;
       }
       server->sockets_clients[s] = &server->clients[c];
-      server->socket_type[s] = WS;
+      server->socket_type[s] = server->clients[c].type;
       s++;
     }
   }
@@ -267,7 +280,7 @@ static void *krad_interweb_server_loop(void *arg) {
           continue;
         }
         if (server->sockets[s].revents & POLLIN) {
-          read_ret = kr_io2_read (client->in);
+          read_ret = kr_io2_read(client->in);
           if (read_ret > 0) {
             if (krad_interweb_client_handle(client) < 0) {
               krad_interweb_disconnect_client(server, client);
@@ -288,15 +301,15 @@ static void *krad_interweb_server_loop(void *arg) {
           }
         }
         if (server->sockets[s].revents & POLLOUT) {
-          oret = kr_io2_output (client->out);
+          oret = kr_io2_output(client->out);
           if (oret != 0) {
             printke ("panic dropping the client");
-            krad_interweb_disconnect_client (server, client);
+            krad_interweb_disconnect_client(server, client);
             continue;
           }
           if (!(kr_io2_want_out (client->out))) {
             if (client->drop_after_sync == 1) {
-              krad_interweb_disconnect_client (server, client);
+              krad_interweb_disconnect_client(server, client);
               continue;
             }
             server->sockets[s].events = POLLIN;
@@ -304,13 +317,13 @@ static void *krad_interweb_server_loop(void *arg) {
         } else {
           if (server->sockets[s].revents & POLLHUP) {
             //printk ("Krad Interweb Server %d : POLLHUP\n", s);
-            krad_interweb_disconnect_client (server, client);
+            krad_interweb_disconnect_client(server, client);
             continue;
           }
         }
         if (server->sockets[s].revents & POLLERR) {
           printke("Krad Interweb Server: POLLERR");
-          krad_interweb_disconnect_client (server, client);
+          krad_interweb_disconnect_client(server, client);
           continue;
         }
       }

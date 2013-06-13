@@ -118,6 +118,7 @@ typedef enum {
 typedef enum {
   KR_FLOAT,
   KR_INT32,
+  KR_CHAR,
   KR_STRING,
 } kr_unit_control_data_t;
 
@@ -125,6 +126,7 @@ typedef union {
   int integer;
   char *string;
   float real;
+  char byte;
 } kr_unit_control_value_t;
 
 /* Control Names */

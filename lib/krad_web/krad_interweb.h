@@ -96,14 +96,25 @@ struct krad_interweb_server_St {
 
 enum interweb_client_type {
   INTERWEB_UNKNOWN = 0,
-  WS,
-  HTTP1,
-  HTTP11,
-  HTTP2,
-  STREAMIN,
-  STREAMOUT,
+  KR_IWS_WS,
+  KR_IWS_HTTP1,
+  KR_IWS_HTTP11,
+  KR_IWS_HTTP2,
+  KR_IWS_STREAM_IN,
+  KR_IWS_STREAM_OUT,
   KR_APP,
   KR_REMOTE_LISTEN,
+};
+
+enum interweb_verb {
+  KR_IWS_INVALID = 0,
+  KR_IWS_GET,
+  KR_IWS_PUT,
+  KR_IWS_SOURCE,
+  KR_IWS_POST,
+  KR_IWS_HEAD,
+  KR_IWS_PATCH,
+  KR_IWS_OPTIONS,
 };
 
 typedef struct interwebs_St interwebs_t;
@@ -130,10 +141,12 @@ struct krad_interweb_server_client_St {
   kr_io2_t *out;
   int32_t drop_after_sync;
   int32_t type;
-  uint32_t hle;
-  uint32_t hle_pos;
-  uint32_t got_headers;
+  uint32_t hdr_le;
+  uint32_t hdr_pos;
+  uint32_t hdrs_recvd;
+  int32_t verb;
   char get[96];
+  char mount[128];
   interwebs_t ws;
 };
 
