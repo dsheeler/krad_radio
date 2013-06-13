@@ -115,7 +115,9 @@ void krad_pipe_to (char *host, int port, char *mount, char *password) {
 
   kr_file_t *stream_in;
   krad_stream_t *stream_out;
-  int bytes;
+  ssize_t ret;
+  ssize_t sent;
+  ssize_t bytes;
   uint64_t total_bytes;
   uint8_t buffer[1024];
 
@@ -124,26 +126,47 @@ void krad_pipe_to (char *host, int port, char *mount, char *password) {
   /* Temp */
   char *content_type = "video/webm";
 
-  stream_in = kr_file_open_stdin ();
+  stream_in = kr_file_open_stdin();
 
   if (stream_in == NULL) {
     fprintf (stderr, "Opening stdin fail, sad story.\n");
     return;
   }
 
-  stream_out = kr_stream_create (host, port, mount, content_type, password);
+  stream_out = kr_stream_create(host, port, mount, content_type, password);
   if (stream_out == NULL) {
     fprintf (stderr, "Connection to %s:%d%s failed.\n", host, port, mount);
     kr_file_close (&stream_in);
     return;
   }
 
+  while (stream_out->ready != 1) {
+    kr_stream_handle_headers(stream_out);
+  }
+
   while (1) {
-    bytes = kr_file_read (stream_in, buffer, sizeof(buffer));
+    bytes = kr_file_read(stream_in, buffer, sizeof(buffer));
     if (bytes < 1) {
       break;
     }
-    if (kr_stream_send (stream_out, buffer, bytes) != bytes) {
+    sent = 0;
+    while (sent != bytes) {
+      kr_stream_i_am_a_blocking_subscripter(stream_out);
+      ret = kr_stream_send(stream_out, buffer + sent, bytes - sent);
+      if (ret > 0) {
+        sent += ret;
+      }
+      if (sent != bytes) {
+        printf ("\nSent to few bytes: ret %zd - sent %zd - total %zd\n",
+                ret, sent, bytes);
+        fflush (stdout);
+      }
+      if (stream_out->connected == 0) {
+        printf ("Failed!: %s\n", stream_out->error_str);
+        break;
+      }
+    }
+    if (stream_out->connected == 0) {
       break;
     }
     total_bytes += bytes;
