@@ -97,9 +97,7 @@ struct krad_interweb_server_St {
 enum interweb_client_type {
   INTERWEB_UNKNOWN = 0,
   KR_IWS_WS,
-  KR_IWS_HTTP1,
-  KR_IWS_HTTP11,
-  KR_IWS_HTTP2,
+  KR_IWS_FILE,
   KR_IWS_STREAM_IN,
   KR_IWS_STREAM_OUT,
   KR_APP,

@@ -24,7 +24,7 @@ int32_t krad_interweb_client_find_end_of_headers(kr_iws_client_t *client) {
   return 0;
 }
 
-int32_t interweb_get_header(char *buf, char *out, uint32_t max, char *header) {
+int32_t interweb_header(char *buf, char *out, uint32_t max, char *header) {
 
   char *pos;
   int32_t len;
@@ -85,35 +85,31 @@ int32_t krad_interweb_client_parse_verb(kr_iws_client_t *client) {
 int32_t krad_interweb_client_parse_get_request(kr_iws_client_t *client) {
 
   char *buf;
+  int32_t ret;
 
   buf = (char *)client->in->rd_buf;
 
   if (strstr(buf, "Upgrade: websocket") != NULL) {
-    printk ("Krad Interweb websocket is YEAAY after %zu bytes",
-     client->in->len);
+    ret = interweb_header(buf, client->get, sizeof(client->get), "GET ");
+    if (ret < 0) return -1;
+    ret = interweb_header(buf, client->ws.key, sizeof(client->ws.key),
+     "Sec-WebSocket-Key: ");
+    if (ret < 0) return -1;
+    ret = interweb_header (buf, client->ws.proto, sizeof(client->ws.proto),
+     "Sec-WebSocket-Protocol: ");
+    if (ret < 0) return -1;
     client->type = KR_IWS_WS;
-    interweb_get_header (buf, client->get,
-      sizeof(client->get), "GET ");
-    printk ("WS GET IS %s", client->get);
-    interweb_get_header (buf, client->ws.key,
-      sizeof(client->ws.key), "Sec-WebSocket-Key: ");
-    printk ("KEY IS %s", client->ws.key);
-    interweb_get_header (buf, client->ws.proto,
-      sizeof(client->ws.proto), "Sec-WebSocket-Protocol: ");
-    printk ("PROTO IS %s", client->ws.proto);
     kr_io2_pulled (client->in, client->hdr_pos + 1);
     return 0;
   } else {
-    if ((strstr(buf, "GET ") != NULL) &&
-        (strstr(buf, " HTTP/1") != NULL)) {
-      client->type = KR_IWS_HTTP1;
-
-      interweb_get_header (buf, client->get,
-        sizeof(client->get), "GET ");
-
-      printk ("GET IS %s", client->get);
-
-      kr_io2_pulled (client->in, client->hdr_pos);
+    if ((strstr(buf, "GET ") != NULL) && (strstr(buf, " HTTP/1") != NULL)) {
+      ret = interweb_header(buf, client->get, sizeof(client->get), "GET ");
+      if (ret < 0) return -1;
+      printk("GET IS %s", client->get);
+      if (!interweb_client_get_stream(client)) {
+        client->type = KR_IWS_FILE;
+      }
+      kr_io2_pulled(client->in, client->hdr_pos);
       return 0;
     }
   }

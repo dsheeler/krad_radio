@@ -6,7 +6,7 @@
 #include "kr_interface.js.h"
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size);
-
+int32_t interweb_client_get_stream(kr_iws_client_t *client);
 static void krad_interweb_pack_buffer(kr_iws_client_t *client, void *buffer,
  size_t length);
 
@@ -45,55 +45,8 @@ int strmatch(char *string1, char *string2) {
 #include "setup.c"
 #include "header_out.c"
 #include "request.c"
-
-int32_t krad_interweb_http_client_handle(kr_iws_client_t *client) {
-
-  int32_t len;
-  char *get;
-  krad_interweb_t *s;
-
-  s = client->server;
-  get = client->get;
-
-  if (get[0] == '/') {
-    get = client->get + 1;
-  }
-  len = strlen(get);
-
-  for (;;) {
-    if ((len > -1) && (len < 32)) {
-      if (strmatch(get, "krad.js")) {
-        krad_interweb_pack_headers(client, "text/javascript");
-        krad_interweb_pack_buffer(client, s->api_js, s->api_js_len);
-        krad_interweb_pack_buffer(client, s->iface_js, s->iface_js_len);
-        break;
-      }
-      if (strmatch(get, "dev/krad.js")) {
-        krad_interweb_pack_headers(client, "text/javascript");
-        krad_interweb_pack_buffer(client, s->api_js, s->api_js_len);
-        krad_interweb_pack_buffer(client, s->deviface_js, s->deviface_js_len);
-        break;
-      }
-      if ((len == 0) || (strmatch(get, "dev/"))) {
-        krad_interweb_pack_headers(client, "text/html");
-        krad_interweb_pack_buffer(client, s->html, s->html_len);
-        break;
-      }
-    }
-    krad_interweb_pack_404(client);
-    break;
-  }
-  client->drop_after_sync = 1;
-  return 0;
-}
-
-int32_t krad_interweb_stream_in_client_handle(kr_iws_client_t *client) {
-
-  printk("fake reading stream in %zu bytes", client->in->len);
-  kr_io2_pulled (client->in, client->in->len);
-
-  return 0;
-}
+#include "stream.c"
+#include "file.c"
 
 int32_t krad_interweb_client_handle(kr_iws_client_t *client) {
 
@@ -112,8 +65,8 @@ int32_t krad_interweb_client_handle(kr_iws_client_t *client) {
     case KR_IWS_WS:
       ret = krad_interweb_ws_client_handle(client);
       break;
-    case KR_IWS_HTTP1:
-      ret = krad_interweb_http_client_handle(client);
+    case KR_IWS_FILE:
+      ret = krad_interweb_file_client_handle(client);
       break;
     case KR_IWS_STREAM_IN:
       ret = krad_interweb_stream_in_client_handle(client);
@@ -165,7 +118,8 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
     printk ("Krad Interweb Server: Client accepted!");  
     return client;
   } else {
-    printke ("Krad Interweb Server: Client NOT accepted!");  
+    printke ("Krad Interweb Server: Client NOT accepted!");
+    client->sd = 0;
   }
 
   return NULL;
@@ -296,7 +250,7 @@ static void *krad_interweb_server_loop(void *arg) {
             if (read_ret == -1) {
               printke("Krad Interweb Server: Client Socket Error");
             }
-            krad_interweb_disconnect_client (server, client);
+            krad_interweb_disconnect_client(server, client);
             continue;
           }
         }
@@ -330,7 +284,7 @@ static void *krad_interweb_server_loop(void *arg) {
     }
   }
   server->shutdown = KRAD_INTERWEB_SHUTINGDOWN;
-  krad_controller_client_close (&server->krad_control);
+  krad_controller_client_close(&server->krad_control);
   return NULL;
 }
 
