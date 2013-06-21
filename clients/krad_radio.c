@@ -526,6 +526,9 @@ int main (int argc, char *argv[]) {
           if (uc.data_type == KR_STRING) {
             uc.value.string = argv[3];
           }
+          if (uc.data_type == KR_CHAR) {
+            uc.value.byte = argv[3][0];
+          }
           if (argc == 4) {
             uc.duration = 0;
           }

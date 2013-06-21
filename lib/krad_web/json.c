@@ -46,7 +46,7 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   json[pos + addr_len] = '\0';
   addr_str = json + pos;
   //printk("address string is: %s", addr_str);
-  if (!(kr_string_to_address (addr_str, &uc.address))) {
+  if (!(kr_string_to_address(addr_str, &uc.address))) {
     printke("Could not parse address");
     return -1;
   }
@@ -65,6 +65,9 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   }
   if (uc.data_type == KR_INT32) {
     uc.value.integer = atoi(json + pos);
+  }
+  if (uc.data_type == KR_CHAR) {
+    uc.value.byte = json[pos];
   }
   dur_len = strcspn(json + pos + 1, " ");
   if (dur_len != 0) {

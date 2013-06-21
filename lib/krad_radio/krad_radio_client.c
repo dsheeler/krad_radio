@@ -1833,7 +1833,7 @@ int kr_unit_control_data_type_from_address(kr_address_t *address,
   switch (address->path.unit) {
     case KR_MIXER:
       if (address->control.portgroup_control == KR_DTMF) {
-        *data_type = KR_INT32;
+        *data_type = KR_CHAR;
         return 1;
       } else {
         *data_type = KR_FLOAT;
@@ -1917,7 +1917,7 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
               kr_mixer_set_control (client, uc->address.id.name, "crossfade", uc->value.real, uc->duration);
             } else {
               if (uc->address.control.portgroup_control == KR_DTMF) {
-                kr_mixer_push_tone(client, uc->value.integer);
+                kr_mixer_push_tone(client, uc->value.byte);
               }
             }
           }
