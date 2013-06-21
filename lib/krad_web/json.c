@@ -3,12 +3,18 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   int pos;
   static const int shortest_json_len = 14;
   static const int longest_json_len = 220;
-  static const char *json_pre = "{\"ctrl\":\"";
+  static const char *json_pre_ctrl = "{\"ctrl\":\"";
+  static const char *json_pre_xmms2 = "{\"xmms2\":\"";
+
   kr_unit_control_t uc;
   int cmplen;
   size_t addr_len;
   size_t dur_len;
   char *addr_str;
+  
+  size_t xmms2_len;
+  char *xmms2_portgroup_name;
+  char *xmms2_cmd;
 
   dur_len = 0;
   addr_len = 0;
@@ -29,56 +35,95 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     printke("JSON json doesn't end well");
     return -1;
   }
-  cmplen = strlen(json_pre);
-  if (strncmp(json, json_pre, cmplen) != 0) {
+
+  if ((strncmp(json, json_pre_ctrl, strlen(json_pre_ctrl)) != 0) 
+ && (strncmp(json, json_pre_xmms2, strlen(json_pre_xmms2)) != 0)) {
     printk("JSON IN is[%zu]: %s", len, json);
     printke("JSON json seems to be in a bad way");
     return -1;
   }
+
   memset (&uc, 0, sizeof (uc));
+  cmplen = strlen(json_pre_ctrl);
   pos = cmplen;
-  addr_len = strcspn(json + pos, " ");
-  if (addr_len == 0) {
-    printk("JSON IN is[%zu]: %s", len, json);
-    printke("JSON json addr err");
-    return -1;
+
+  if (strncmp(json, json_pre_ctrl, cmplen) == 0) {
+    addr_len = strcspn(json + pos, " ");
+    if (addr_len == 0) {
+      printk("JSON IN is[%zu]: %s", len, json);
+      printke("JSON json addr err");
+      return -1;
+    }
+    json[pos + addr_len] = '\0';
+    addr_str = json + pos;
+    //printk("address string is: %s", addr_str);
+    if (!(kr_string_to_address(addr_str, &uc.address))) {
+      printke("Could not parse address");
+      return -1;
+    }
+    pos += addr_len + 1;
+    printk("rest is: %s", json + pos);
+    if ((pos + 3) > len) {
+      printke("could not find value part");
+      return -1;
+    }
+    if (kr_unit_control_data_type_from_address(&uc.address, &uc.data_type) != 1) {
+      printke("could not determine data type of control");
+      return -1;
+    }
+    if (uc.data_type == KR_FLOAT) {
+      uc.value.real = atof(json + pos);
+    }
+    if (uc.data_type == KR_INT32) {
+      uc.value.integer = atoi(json + pos);
+    }
+    if (uc.data_type == KR_CHAR) {
+      uc.value.byte = json[pos];
+    }
+    dur_len = strcspn(json + pos + 1, " ");
+    if (dur_len != 0) {
+      //printk("duration found: %s", json + pos + dur_len + 1);
+      uc.duration = atoi(json + pos + dur_len + 1);
+      //printk("duration: %d", uc.duration);
+    }
+    if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
+      printke("could not set control");
+      return -1;
+    }
+  } else { 
+       
+    cmplen = strlen(json_pre_xmms2);
+    if (strncmp(json, json_pre_xmms2, cmplen) == 0) {
+      pos = cmplen;
+      xmms2_len = strcspn(json + pos, " ");
+      if (xmms2_len == 0) {
+        printk("JSON IN is[%zu]: %s", len, json);
+        printke("JSON json addr err");
+        return -1;
+      }
+      json[pos + xmms2_len] = '\0';
+      xmms2_portgroup_name = json + pos;
+
+      pos += xmms2_len + 1;
+      
+      if ((pos + 3) > len) {
+        printke("could not find xmms2 command");
+        return -1;
+      }
+
+      xmms2_len = strcspn(json + pos, " ");
+      if (xmms2_len == 0) {
+        printk("JSON IN is[%zu]: %s", len, json);
+        printke("JSON json addr err");
+        return -1;
+      }
+      json[pos + xmms2_len] = '\0';
+      xmms2_cmd = json + pos;
+
+      kr_mixer_portgroup_xmms2_cmd (client->ws.krclient, xmms2_portgroup_name, xmms2_cmd);
+    }
   }
-  json[pos + addr_len] = '\0';
-  addr_str = json + pos;
-  //printk("address string is: %s", addr_str);
-  if (!(kr_string_to_address(addr_str, &uc.address))) {
-    printke("Could not parse address");
-    return -1;
-  }
-  pos += addr_len + 1;
-  printk("rest is: %s", json + pos);
-  if ((pos + 3) > len) {
-    printke("could not find value part");
-    return -1;
-  }
-  if (kr_unit_control_data_type_from_address(&uc.address, &uc.data_type) != 1) {
-    printke("could not determine data type of control");
-    return -1;
-  }
-  if (uc.data_type == KR_FLOAT) {
-    uc.value.real = atof(json + pos);
-  }
-  if (uc.data_type == KR_INT32) {
-    uc.value.integer = atoi(json + pos);
-  }
-  if (uc.data_type == KR_CHAR) {
-    uc.value.byte = json[pos];
-  }
-  dur_len = strcspn(json + pos + 1, " ");
-  if (dur_len != 0) {
-    //printk("duration found: %s", json + pos + dur_len + 1);
-    uc.duration = atoi(json + pos + dur_len + 1);
-    //printk("duration: %d", uc.duration);
-  }
-  if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
-    printke("could not set control");
-    return -1;
-  }
+
   return 0;
 }
 
