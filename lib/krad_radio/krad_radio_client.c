@@ -1651,7 +1651,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
         } else {
           if (tokens[0][5] == '\0') {
             if ((tokens[0][0] == 'v') && (tokens[0][1] == 'e') &&
-                (tokens[0][2] == 'c') && (tokens[0][3] == 'o') && (tokens[0][4] == 'r')) {
+                (tokens[0][2] == 'c') && (tokens[0][3] == 't') && (tokens[0][4] == 'o')) {
               *unit = KR_COMPOSITOR;
               subunit->compositor_subunit = KR_VECTOR;
             }
@@ -1661,6 +1661,13 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
             }
           } else {
             if (tokens[0][6] == '\0') {
+              if ((tokens[0][0] == 'v') && (tokens[0][1] == 'e') &&
+                  (tokens[0][2] == 'c') && (tokens[0][3] == 't') && (tokens[0][4] == 'o') &&
+                  (tokens[0][5] == 'r')) {
+                *unit = KR_COMPOSITOR;
+                subunit->compositor_subunit = KR_VECTOR;
+              }
+            
               if ((tokens[0][0] == 's') && (tokens[0][1] == 'p') && (tokens[0][2] == 'r') &&
                   (tokens[0][3] == 'i') && (tokens[0][4] == 't') && (tokens[0][5] == 'e')) {
                 *unit = KR_COMPOSITOR;
