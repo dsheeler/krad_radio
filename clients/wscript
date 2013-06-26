@@ -70,6 +70,10 @@ programs17 = """
 kr_streamer_oggopus.c
 """.split()
 
+programs18 = """
+kr_snapshot.c
+""".split()
+
 kr_shell = """
 ./krad_shell/krad_shell.c
 """.split()
@@ -555,6 +559,14 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs18:
+      bld(features = 'c cprogram', 
+      source = [p],
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs4 + syslibs + plibs)
 
   for p in programs10:
     bld(features = 'c cprogram', 
