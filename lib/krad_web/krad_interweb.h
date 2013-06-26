@@ -154,7 +154,7 @@ int32_t krad_interweb_server_listen_on (kr_interweb_server_t *server,
  char *interface, int32_t port);
 
 void krad_interweb_server_disable (kr_interweb_server_t *server);
-void krad_interweb_server_destroy (kr_interweb_server_t *server);
+void krad_interweb_server_destroy (kr_interweb_server_t **server);
 void krad_interweb_server_run (kr_interweb_server_t *server);
 kr_interweb_server_t *krad_interweb_server_create (char *sysname, int32_t port,
  char *headcode, char *htmlheader, char *htmlfooter);

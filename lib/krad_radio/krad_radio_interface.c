@@ -497,7 +497,7 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
       kr_ebml2_unpack_element_string (&ebml_in, &element, string3, sizeof(string3));
 
       if (krad_radio->remote.interweb != NULL) {
-        krad_interweb_server_destroy (krad_radio->remote.interweb);
+        krad_interweb_server_destroy (&krad_radio->remote.interweb);
       }
 
       krad_radio->remote.interweb = krad_interweb_server_create (krad_radio->sysname, numbers[0],
@@ -505,7 +505,7 @@ int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t
       break;
     case EBML_ID_KRAD_RADIO_CMD_WEB_DISABLE:
       if (krad_radio->remote.interweb != NULL) {
-        krad_interweb_server_destroy (krad_radio->remote.interweb);
+        krad_interweb_server_destroy (&krad_radio->remote.interweb);
       }
       break;
     case EBML_ID_KRAD_RADIO_CMD_SET_DIR:
