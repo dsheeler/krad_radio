@@ -133,6 +133,9 @@ static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
 
   close(client->sd);
   client->sd = 0;
+  if (client->ws.krclient != NULL) {
+    kr_client_destroy (&client->ws.krclient);
+  }
   client->type = 0;
   client->drop_after_sync = 0;
   client->hdr_le = 0;
@@ -143,9 +146,6 @@ static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
   memset(client->get, 0, sizeof(client->get));
   kr_io2_destroy(&client->in);
   kr_io2_destroy(&client->out);
-  if (client->ws.krclient != NULL) {
-    kr_client_destroy (&client->ws.krclient);
-  }
   printk ("Krad Interweb Server: Client Disconnected");
 }
 
@@ -301,9 +301,15 @@ void krad_interweb_server_disable (kr_interweb_t *server) {
   printk ("Krad Interweb Server: Disable Complete");
 }
 
-void krad_interweb_server_destroy(kr_interweb_t *server) {
+void krad_interweb_server_destroy(kr_interweb_t **serv) {
 
   int i;
+  kr_interweb_t *server;
+
+  if ((serv == NULL) || (*serv == NULL)) {
+    return;
+  }
+  server = *serv;
 
   printk("Krad Interweb Server: Destroy Started");
   if (server->shutdown != KRAD_INTERWEB_SHUTINGDOWN) {
@@ -316,6 +322,7 @@ void krad_interweb_server_destroy(kr_interweb_t *server) {
   }
   free(server->clients);
   free(server);
+  *serv = NULL;
   printk ("Krad Interweb Server: Destroy Completed");
 }
 
