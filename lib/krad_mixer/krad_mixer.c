@@ -362,6 +362,7 @@ static void krad_mixer_update_portgroups (krad_mixer_t *krad_mixer) {
 static int krad_mixer_local_audio_samples_callback (int nframes,
                                                      krad_mixer_local_portgroup_t *portgroup,
                                                      float **samples) {
+  int c;  
   int ret;
   int wrote;
   char buf[1];
@@ -372,9 +373,9 @@ static int krad_mixer_local_audio_samples_callback (int nframes,
   buf[0] = 0;
   
   if (portgroup->direction == OUTPUT) {
-    memcpy (portgroup->local_buffer,
-            samples[0],
-            2 * 4 * portgroup->krad_mixer->period_size);
+    for (c = 0; c < portgroup->channels; c++) {
+      memcpy (portgroup->samples[c], samples[c], 4 * nframes);
+    }
   }
   
   pollfds[0].events = POLLOUT;
@@ -815,7 +816,7 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
 
   krad_mixer_local_portgroup = calloc(1, sizeof(krad_mixer_local_portgroup_t));
 
-  krad_mixer_local_portgroup->local_buffer_size = 960 * 540 * 4 * 2;
+  krad_mixer_local_portgroup->local_buffer_size = 8192 * 4 * 4;
   
   krad_mixer_local_portgroup->shm_sd = shm_sd;
   krad_mixer_local_portgroup->msg_sd = msg_sd;
@@ -835,11 +836,17 @@ krad_mixer_portgroup_t *krad_mixer_local_portgroup_create (krad_mixer_t *krad_mi
     output_type = DIRECT;
   }
 
-  krad_mixer_portgroup = krad_mixer_portgroup_create (krad_mixer, sysname, krad_mixer_local_portgroup->direction,
-                          output_type, 2, 100.0f, krad_mixer->master_mix, KLOCALSHM, krad_mixer_local_portgroup, NOAUDIO);
+  krad_mixer_local_portgroup->channels = 2;
 
-  krad_mixer_portgroup->samples[0] = (float *)krad_mixer_local_portgroup->local_buffer;
-  krad_mixer_portgroup->samples[1] = (float *)krad_mixer_local_portgroup->local_buffer + (1 * krad_mixer->period_size);
+  krad_mixer_portgroup = krad_mixer_portgroup_create (krad_mixer, sysname, krad_mixer_local_portgroup->direction,
+                          output_type, krad_mixer_local_portgroup->channels, 100.0f, krad_mixer->master_mix, KLOCALSHM, krad_mixer_local_portgroup, NOAUDIO);
+
+  krad_mixer_local_portgroup->samples[0] = (float *)krad_mixer_local_portgroup->local_buffer;
+  krad_mixer_local_portgroup->samples[1] = (float *)krad_mixer_local_portgroup->local_buffer + (1 * krad_mixer->period_size);
+
+
+  krad_mixer_portgroup->samples[0] = krad_mixer_local_portgroup->samples[0];
+  krad_mixer_portgroup->samples[1] = krad_mixer_local_portgroup->samples[1];
 
   krad_mixer_portgroup->active = 1;
 

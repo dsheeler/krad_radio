@@ -66,6 +66,10 @@ programs16 = """
 krwplayer.c
 """.split()
 
+programs17 = """
+kr_streamer_oggopus.c
+""".split()
+
 kr_shell = """
 ./krad_shell/krad_shell.c
 """.split()
@@ -199,6 +203,16 @@ depsources9 = """
 ../lib/krad_wayland/krad_wayland.c
 """.split()
 
+depsourcesd = """
+../lib/krad_wayland/krad_wayland.c
+""".split()
+
+depsourcesdu = """
+../lib/krad_udp/krad_udp.c
+../lib/krad_vpx/krad_vpx.c
+../lib/krad_wayland/krad_wayland.c
+""".split()
+
 depsources10 = """
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_ring/krad_resample_ring.c
@@ -268,6 +282,11 @@ depsources15 = """
 
 depsources16 = """
 ../lib/krad_wayland/krad_wayland.c
+""".split()
+
+depsources17 = """
+../lib/krad_opus/krad_opus.c
+../lib/krad_opus/opus_header.c
 """.split()
 
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
@@ -483,7 +502,7 @@ def build(bld):
   if bld.env['KR_LINUX'] and bld.env['KRAD_USE_WAYLAND']:
     for p in programs9:
       bld(features = 'c cprogram', 
-      source = [p] + depsources9,
+      source = [p] + depsourcesdu,
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
@@ -491,7 +510,7 @@ def build(bld):
 
     for p in programs12:
       bld(features = 'c cprogram', 
-      source = [p] + depsources9,
+      source = [p] + depsourcesd,
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
@@ -528,6 +547,14 @@ def build(bld):
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs11 + shlibs9 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs17:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9 + depsources13 + depsources17,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs10:
     bld(features = 'c cprogram', 

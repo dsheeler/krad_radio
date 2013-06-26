@@ -1,6 +1,6 @@
 int32_t interweb_client_get_stream(kr_iws_client_t *client) {
 
-  if (strncmp(client->get, "/fakestream.bs", 14)) {
+  if (strncmp(client->get, "/fakestream.bs", 14) == 0) {
     client->type = KR_IWS_STREAM_OUT;
     return 1;
   } else {

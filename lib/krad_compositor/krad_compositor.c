@@ -951,7 +951,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (krad_compositor_t *kra
     port->view.top_right.x = port->source_width - 1;
     port->view.top_right.y = 0;
     port->view.bottom_left.x = 0;
-    port->view.bottom_left.y = port->source_width - 1;
+    port->view.bottom_left.y = port->source_height - 1;
     port->view.bottom_right.x = port->source_width - 1;
     port->view.bottom_right.y = port->source_height - 1;
 
