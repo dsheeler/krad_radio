@@ -21,8 +21,8 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
     portgroup_rep->volume[i] = portgroup->volume[i];
     portgroup_rep->map[i] = portgroup->map[i];
     portgroup_rep->mixmap[i] = portgroup->mixmap[i];
-    portgroup_rep->rms[i] = portgroup->rms[i];
-    portgroup_rep->peak[i] = portgroup->peak[i];
+    portgroup_rep->rms[i] = portgroup->avg[i];
+    portgroup_rep->peak[i] = portgroup->peak_last[i];
   }
   
   if (portgroup->krad_xmms != NULL) {

@@ -335,4 +335,3 @@ int32_t krad_interweb_ws_client_handle(kr_iws_client_t *client) {
 
   return ret;
 }
-

@@ -1,6 +1,8 @@
 #ifndef KRAD_MIXER_H
 #define KRAD_MIXER_H
 
+#define KRAD_MIXER_MAX_MINIWINS 192
+
 typedef struct krad_mixer_St krad_mixer_t;
 typedef struct krad_mixer_portgroup_St krad_mixer_portgroup_t;
 typedef struct krad_mixer_local_portgroup_St krad_mixer_local_portgroup_t;
@@ -53,11 +55,12 @@ struct krad_mixer_portgroup_St {
   float volume_actual[KRAD_MIXER_MAX_CHANNELS];
   float new_volume_actual[KRAD_MIXER_MAX_CHANNELS];
   int last_sign[KRAD_MIXER_MAX_CHANNELS];
-
-  float rms[KRAD_MIXER_MAX_CHANNELS];
+  int win;
+  int winss[KRAD_MIXER_MAX_MINIWINS];
+  float wins[KRAD_MIXER_MAX_CHANNELS][KRAD_MIXER_MAX_MINIWINS];
+  float avg[KRAD_MIXER_MAX_CHANNELS];
   float peak[KRAD_MIXER_MAX_CHANNELS];
-  float running_peak[KRAD_MIXER_MAX_CHANNELS];
-  float last_peak[KRAD_MIXER_MAX_CHANNELS];
+  float peak_last[KRAD_MIXER_MAX_CHANNELS];
   float *samples[KRAD_MIXER_MAX_CHANNELS];
 
   float **mapped_samples[KRAD_MIXER_MAX_CHANNELS];
@@ -92,7 +95,7 @@ struct krad_mixer_St {
   uint32_t period_size;
   uint32_t sample_rate;
     
-  int rms_window_size;
+  int avg_window_size;
 
   krad_mixer_mixbus_t *master_mix;
 
