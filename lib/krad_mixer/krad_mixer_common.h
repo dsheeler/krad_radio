@@ -12,7 +12,7 @@ typedef struct krad_mixer_portgroup_rep_St krad_mixer_portgroup_rep_t;
 #define KRAD_MIXER_DEFAULT_SAMPLE_RATE 48000
 #define KRAD_MIXER_DEFAULT_PERIOD_SIZE 1024
 #define DEFAULT_MASTERBUS_LEVEL 75.0f
-#define KRAD_MIXER_RMS_WINDOW_SIZE_MS 125
+#define KRAD_MIXER_RMS_WINDOW_SIZE_MS 100
 
 #include "krad_sfx_common.h"
 #include "krad_ebml2.h"
