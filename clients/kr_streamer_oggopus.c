@@ -174,7 +174,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
 
   while (!destroy) {
     if (kr_audioport_error(streamer->audioport)) {
-      printf ("\r\nError: %s\n", "Audioport Error");
+      printf ("\r\nError: %s\n", "Audioport Error\n");
       break;
     }
     while (krad_ringbuffer_read_space (streamer->audio_ring[1]) >= frames * 4) {
