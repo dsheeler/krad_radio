@@ -17,7 +17,7 @@ typedef struct krad_compositor_St krad_compositor_t;
 
 #include "krad_radio.h"
 #include "krad_compositor_subunit.h"
-#include "krad_compositor_port.h"
+#include "krad_videoport.h"
 #include "krad_text.h"
 #include "krad_compositor_interface.h"
 

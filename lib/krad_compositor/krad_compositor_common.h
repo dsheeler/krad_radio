@@ -53,7 +53,7 @@ typedef enum {
   KR_VIEW_BOTTOM_LEFT_X,
   KR_VIEW_BOTTOM_LEFT_Y,
   KR_VIEW_BOTTOM_RIGHT_X,
-  KR_VIEW_BOTTOM_RIGHT_Y,
+  KR_VIEW_BOTTOM_RIGHT_Y
 } kr_compositor_control_t;
 
 typedef struct krad_text_rep_St krad_text_rep_t;
@@ -139,4 +139,4 @@ kr_compositor_subunit_t kr_string_to_comp_subunit_type (char *string);
 
 #define kr_comp_strfsubtype kr_compositor_subunit_type_to_string
 
-#endif // KRAD_COMPOSITOR_COMMON_H
+#endif

@@ -68,6 +68,9 @@ int32_t krad_interweb_client_handle(kr_iws_client_t *client) {
     case KR_IWS_FILE:
       ret = krad_interweb_file_client_handle(client);
       break;
+    case KR_IWS_STREAM_OUT:
+      ret = krad_interweb_stream_client_handle(client);
+      break;
     case KR_IWS_STREAM_IN:
       ret = krad_interweb_stream_in_client_handle(client);
       break;

@@ -95,10 +95,14 @@ void *kr_audioport_process_thread (void *arg) {
   kr_audioport_t *audioport = (kr_audioport_t *)arg;
   int ret;
   char buf[1];
+  int max_timeout_ms;
+  int timeout_total_ms;  
   int timeout_ms;
   struct pollfd pollfds[1];
 
   timeout_ms = 30;
+  timeout_total_ms = 0;
+  max_timeout_ms = 1000;
 
   pollfds[0].fd = audioport->sd;
 
@@ -113,9 +117,14 @@ void *kr_audioport_process_thread (void *arg) {
       if (audioport->active == 1) {
         printke ("krad mixer client: audioport poll read timeout", ret);
       }
+      timeout_total_ms += timeout_ms;
+      if (timeout_total_ms > max_timeout_ms) {
+        break;
+      }
       continue;
-    }
-    
+    } else {
+      timeout_total_ms = 0;
+    }    
     if (pollfds[0].revents & POLLHUP) {
       printke ("krad mixer client: audioport poll hangup", ret);
       break;

@@ -19,11 +19,13 @@ struct krad_mixer_crossfade_group_St {
 };
 
 struct krad_mixer_local_portgroup_St {
+  int channels;
   int local;
   int shm_sd;
   int msg_sd;
   char *local_buffer;
   int local_buffer_size;
+  float *samples[KRAD_MIXER_MAX_CHANNELS];
   krad_mixer_portgroup_direction_t direction;
   krad_mixer_t *krad_mixer;
   int last_wrote;

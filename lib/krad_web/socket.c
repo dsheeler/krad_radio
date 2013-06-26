@@ -12,6 +12,21 @@ int set_socket_nodelay(int sd) {
   return ret;
 }
 
+int set_socket_reuseaddr(int sd) {
+
+  int ret;
+  const int val = 1;
+
+  ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (const void *)&val,
+   (socklen_t)sizeof(int));
+
+  if (ret != 0) {
+    printke("Could not set socket to SO_REUSEADDR");
+  }
+  return ret;
+}
+
+
 static int kr_interweb_server_socket_setup(char *interface, int port) {
 
   char port_string[6];
@@ -47,6 +62,7 @@ static int kr_interweb_server_socket_setup(char *interface, int port) {
     if (sfd == -1) {
       continue;
     }
+    set_socket_reuseaddr(sfd);
     s = bind (sfd, rp->ai_addr, rp->ai_addrlen);
     if (s == 0) {
       /* We managed to bind successfully! */

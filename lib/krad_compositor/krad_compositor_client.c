@@ -581,10 +581,14 @@ void *kr_videoport_process_thread (void *arg) {
   kr_videoport_t *videoport = (kr_videoport_t *)arg;
   int ret;
   char buf[1];
+  int max_timeout_ms;
+  int timeout_total_ms;  
   int timeout_ms;
   struct pollfd pollfds[1];
 
   timeout_ms = 45;
+  timeout_total_ms = 0;
+  max_timeout_ms = 1000;
 
   pollfds[0].fd = videoport->sd;
 
@@ -599,14 +603,20 @@ void *kr_videoport_process_thread (void *arg) {
       printke ("krad compositor client: poll failure %d", ret);
       break;
     }
-    
+
     if (ret == 0) {
       if (videoport->active == 1) {
         printke ("krad compositor client: videoport poll read timeout", ret);
       }
+      timeout_total_ms += timeout_ms;
+      if (timeout_total_ms > max_timeout_ms) {
+        break;
+      }
       continue;
+    } else {
+      timeout_total_ms = 0;
     }
-    
+
     if (pollfds[0].revents & POLLHUP) {
       printke ("krad compositor client: videoport poll hangup", ret);
       break;

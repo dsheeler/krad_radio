@@ -153,7 +153,7 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
               opus_strerror (krad_opus->err));
   }
   
-/*
+
   opus_multistream_encoder_ctl (krad_opus->encoder,
                                 OPUS_GET_LOOKAHEAD (&krad_opus->lookahead));
   krad_opus->opus_header->preskip = krad_opus->lookahead;
@@ -171,18 +171,18 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
                                                        krad_opus->header_data,
                                                        100);
   krad_opus->krad_codec_header.codec = OPUS;
-  krad_opus->krad_codec_header.header[0] = krad_opus->header_data;
-  krad_opus->krad_codec_header.header_size[0] = krad_opus->header_data_size;
-  krad_opus->krad_codec_header.header_combined = krad_opus->header_data;
-  krad_opus->krad_codec_header.header_combined_size = krad_opus->header_data_size;
-  krad_opus->krad_codec_header.header_count = 2;
+  krad_opus->krad_codec_header.data[0] = krad_opus->header_data;
+  krad_opus->krad_codec_header.sz[0] = krad_opus->header_data_size;
+  //krad_opus->krad_codec_header.header_combined = krad_opus->header_data;
+  //krad_opus->krad_codec_header.header_combined_size = krad_opus->header_data_size;
+  krad_opus->krad_codec_header.count = 2;
 
-  krad_opus->krad_codec_header.header_size[1] = 
+  krad_opus->krad_codec_header.sz[1] = 
   8 + 4 + strlen (opus_get_version_string ()) + 4 + 4 + strlen ("ENCODER=") +
   strlen (APPVERSION);
   
   krad_opus->opustags_header =
-  calloc (1, krad_opus->krad_codec_header.header_size[1]);
+  calloc (1, krad_opus->krad_codec_header.sz[1]);
   
   memcpy (krad_opus->opustags_header, "OpusTags", 8);
   
@@ -207,8 +207,8 @@ krad_opus_t *krad_opus_encoder_create (int channels, int input_sample_rate,
           APPVERSION,
           strlen (APPVERSION));  
   
-  krad_opus->krad_codec_header.header[1] = krad_opus->opustags_header;
-*/
+  krad_opus->krad_codec_header.data[1] = krad_opus->opustags_header;
+
   return krad_opus;
 }
 
