@@ -1,6 +1,9 @@
 #!/bin/sh
 
-
+rm -f config.guess
+rm -f config.sub
+rm -f libtool
+rm -f ltmain.sh
 rm -f config.status
 rm -f Makefile
 rm -f stamp-h1

@@ -1,91 +1,59 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+# autoconf source script for generating configure
 
-AC_PREREQ([2.69])
-AC_INIT([kradradio], [21], [kradradio@gmail.com])
+#FIXME unify version number nonsense
+AC_INIT([kradradio], [22], [kradradio@gmail.com])
 AC_CONFIG_SRCDIR([tests/krad_webm_dash_vod_test.c])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([1.11 foreign no-define subdir-objects])
+AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
 
-# Checks for programs.
-AC_PROG_CXX
-AC_PROG_CC
-AC_PROG_CPP
-CFLAGS="$CFLAGS -Wall"
-CXXFLAGS="$CXXFLAGS -Wall"
-CPPFLAGS="$CPPFLAGS -Wall"
+AM_MAINTAINER_MODE([enable])
+#LT_INIT
+
+CFLAGS="-g -Wall $CFLAGS"
+CXXFLAGS="-g -Wall $CXXFLAGS"
+
+AC_ARG_ENABLE([optimize],
+  AS_HELP_STRING([--enable-optimize], [Enable -O3]),,
+  enable_optimize=no)
+
+AS_IF([test "$enable_optimize" = "yes"], [
+  CFLAGS="-O3 $CFLAGS"
+  CXXFLAGS="-O3 $CXXFLAGS"
+])
 
 # Checks for libraries.
 AC_CHECK_LIB(m, sin, [], AC_MSG_ERROR([library m not found]))
 AC_CHECK_LIB(dl, dlopen, [], AC_MSG_ERROR([library dl not found]))
 AC_CHECK_LIB(z, compress, [], AC_MSG_ERROR([library z not found]))
-AC_CHECK_LIB(pthread, pthread_create, [], AC_MSG_ERROR([library pthread not found]))
-PKG_CHECK_MODULES([NCURSES], [ncurses])
-PKG_CHECK_MODULES([PANEL], [panel])
-PKG_CHECK_MODULES([MENU], [menu])
-PKG_CHECK_MODULES([FORM], [form])
-PKG_CHECK_MODULES([CAIRO], [cairo])
-PKG_CHECK_MODULES([CAIRO_FT], [cairo-ft])
-PKG_CHECK_MODULES([NCURSES], [ncurses])
-PKG_CHECK_MODULES([WAYLAND_CLIENT], [wayland-client])
-PKG_CHECK_MODULES([XKBCOMMON], [xkbcommon])
+AC_CHECK_LIB(pthread, pthread_create, [], AC_MSG_ERROR([pthread not found]))
+AC_CHECK_LIB(turbojpeg, tjInitDecompress,
+ [], AC_MSG_ERROR([turbojpeg not found]))
+
+PKG_CHECK_MODULES([ncurses], [ncurses,panel,menu,form])
+PKG_CHECK_MODULES([ALSA], [alsa])
 PKG_CHECK_MODULES([JACK], [jack])
-PKG_CHECK_MODULES([NCURSES], [ncurses])
-PKG_CHECK_MODULES([XMMS2_CLIENT], [xmms2-client])
-PKG_CHECK_MODULES([SAMPLERATE], [samplerate])
-PKG_CHECK_MODULES([THEORA], [theora])
-PKG_CHECK_MODULES([THEORAENC], [theoraenc])
-PKG_CHECK_MODULES([THEORADEC], [theoradec])
-PKG_CHECK_MODULES([VORBIS], [vorbis])
-PKG_CHECK_MODULES([VORBISENC], [vorbisenc])
+PKG_CHECK_MODULES([XMMS2], [xmms2-client])
+PKG_CHECK_MODULES([Theora], [theora,theoraenc,theoradec])
+PKG_CHECK_MODULES([Vorbis], [vorbis,vorbisenc])
 PKG_CHECK_MODULES([FLAC], [flac])
 PKG_CHECK_MODULES([VPX], [vpx])
-PKG_CHECK_MODULES([LIBSWSCALE], [libswscale])
-PKG_CHECK_MODULES([LIBAVUTIL], [libavutil])
-PKG_CHECK_MODULES([FREETYPE2], [freetype2])
-PKG_CHECK_MODULES([X11_XCB], [x11-xcb])
-PKG_CHECK_MODULES([XCB_IMAGE], [xcb-image])
-PKG_CHECK_MODULES([XCB_SHM], [xcb-shm])
-PKG_CHECK_MODULES([XCB], [xcb])
-PKG_CHECK_MODULES([X11], [x11])
-PKG_CHECK_MODULES([ALSA], [alsa])
-
-
-# Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h inttypes.h limits.h locale.h mach/mach.h malloc.h memory.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h sys/mount.h sys/param.h sys/socket.h sys/statfs.h sys/time.h termios.h unistd.h wchar.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
-AC_C_INLINE
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT64_T
-AC_TYPE_INT8_T
-AC_TYPE_OFF_T
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_SSIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
-AC_CHECK_TYPES([ptrdiff_t])
-
-# Checks for library functions.
-AC_FUNC_FORK
-AC_FUNC_MALLOC
-AC_FUNC_MMAP
-AC_FUNC_REALLOC
-AC_FUNC_STRERROR_R
-AC_CHECK_FUNCS([bzero clock_gettime floor ftruncate gettimeofday inet_ntoa memmove memset munmap pow setlocale socket sqrt strchr strcspn strdup strerror strndup strrchr strstr strtol strtoul uname])
+PKG_CHECK_MODULES([Secret_Rabbit_Code], [samplerate])
+PKG_CHECK_MODULES([software_scaler], [libswscale])
+PKG_CHECK_MODULES([avutil], [libavutil])
+PKG_CHECK_MODULES([Freetype_2], [freetype2])
+PKG_CHECK_MODULES([Cairo], [cairo,cairo-ft])
+PKG_CHECK_MODULES([Wayland], [wayland-client])
+PKG_CHECK_MODULES([xkbcommon], [xkbcommon])
+PKG_CHECK_MODULES([X11], [x11,x11-xcb,xcb-image,xcb-shm])
 
 # AC_CONFIG_SUBDIRS([lib/krad_vhs/ext/imagezero])
-AC_CONFIG_FILES([Makefile]) 
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT([
 ------------------------------------------------------------------------
-  $PACKAGE_NAME $PACKAGE_VERSION:  Automatic configuration OK.
+  $PACKAGE_NAME $PACKAGE_VERSION: Configuration Valid.
+  CFLAGS: $CFLAGS
 ------------------------------------------------------------------------
 ])
 
