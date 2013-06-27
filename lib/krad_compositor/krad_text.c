@@ -59,7 +59,7 @@ static void krad_text_set_font (krad_text_t *text, char *font) {
   static const cairo_user_data_key_t key;
   int status;
 
-  if ((font == NULL) && (strlen(font) <= 0)) {
+  if ((font == NULL) || (strlen(font) <= 0)) {
     return;
   }
 
