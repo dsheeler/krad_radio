@@ -75,3 +75,23 @@ lib/krad_mixer/krad_mixer_common.c \
 lib/krad_compositor/krad_compositor_common.c \
 lib/krad_transponder/krad_transponder_common.c
 
+kradradioincludedir = $(includedir)/krad
+kradradioinclude_HEADERS = lib/krad_radio/kr_client.h \
+lib/krad_radio/krad_radio_client.h \
+lib/krad_radio/krad_radio_client_internal.h \
+lib/krad_radio/krad_radio_ipc.h \
+lib/krad_radio/krad_radio_client_ctl.h \
+lib/krad_radio/krad_radio_common.h \
+lib/krad_radio/krad_radio_version.h \
+lib/krad_mixer/krad_mixer_client.h \
+lib/krad_mixer/krad_mixer_common.h \
+lib/krad_compositor/krad_compositor_client.h \
+lib/krad_compositor/krad_compositor_common.h \
+lib/krad_transponder/krad_transponder_client.h \
+lib/krad_transponder/krad_transponder_common.h \
+lib/krad_ebml/krad_ebml2.h \
+lib/krad_ebml/krad_ebml2_ids.h \
+lib/krad_ebml/krad_ebml2w.h \
+lib/krad_system/krad_system.h \
+lib/krad_io/krad_io2.h \
+lib/krad_app/krad_app_client.h
