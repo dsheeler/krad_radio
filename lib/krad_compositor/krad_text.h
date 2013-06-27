@@ -19,7 +19,7 @@ struct krad_text_St {
 
   char font[256];
   char text_actual[256];
-
+  int prerendered;
   cairo_font_face_t *cr_face;
   FT_Face ft_face;
 
@@ -32,7 +32,9 @@ void krad_text_destroy_arr (krad_text_t *krad_text, int count);
 krad_text_t *krad_text_create_arr (FT_Library *ft_library, int count);
 void krad_text_reset (krad_text_t *krad_text);
 void krad_text_set_text (krad_text_t *krad_text, char *text, char *font);
-void krad_text_render (krad_text_t *krad_text, cairo_t *cr);
+void krad_text_prerender_cancel(krad_text_t *krad_text, cairo_t *cr);
+void krad_text_prerender(krad_text_t *krad_text, cairo_t *cr);
+void krad_text_render(krad_text_t *krad_text, cairo_t *cr);
 int krad_text_to_rep (krad_text_t *text, krad_text_rep_t *text_rep);
 
 #endif
