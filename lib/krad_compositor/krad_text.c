@@ -120,12 +120,12 @@ void krad_text_prerender(krad_text_t *krad_text, cairo_t *cr) {
     cairo_translate (cr, krad_text->subunit.width / -2,
                      krad_text->subunit.height / 2);    
   }
-  cairo_show_text (cr, krad_text->text_actual);
   krad_text->prerendered = 1;
 }
 
 void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
   krad_text_prerender(krad_text, cr);
+  cairo_show_text(cr, krad_text->text_actual);
   cairo_stroke (cr);
   cairo_restore (cr);
   krad_text->prerendered = 0;
