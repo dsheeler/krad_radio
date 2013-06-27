@@ -1,5 +1,8 @@
 #!/bin/sh
 
+make clean
+
+rm -f depcomp
 rm -f config.guess
 rm -f config.sub
 rm -f libtool

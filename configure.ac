@@ -7,7 +7,23 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
 
 AM_MAINTAINER_MODE([enable])
-#LT_INIT
+LT_INIT
+
+dnl Library versioning for libtool.
+dnl Please update these for releases.
+dnl CURRENT, REVISION, AGE
+dnl - library source changed -> increment REVISION
+dnl - interfaces added/removed/changed -> increment CURRENT, REVISION = 0
+dnl - interfaces added -> increment AGE
+dnl - interfaces removed -> AGE = 0
+
+OD_LT_CURRENT=22
+OD_LT_REVISION=1
+OD_LT_AGE=0
+
+AC_SUBST(OD_LT_CURRENT)
+AC_SUBST(OD_LT_REVISION)
+AC_SUBST(OD_LT_AGE)
 
 CFLAGS="-g -Wall $CFLAGS"
 CXXFLAGS="-g -Wall $CXXFLAGS"
@@ -20,6 +36,12 @@ AS_IF([test "$enable_optimize" = "yes"], [
   CFLAGS="-O3 $CFLAGS"
   CXXFLAGS="-O3 $CXXFLAGS"
 ])
+
+case $host in
+  *-linux*)
+  CFLAGS="-DKR_LINUX $CFLAGS"
+  CXXFLAGS="-DKR_LINUX $CXXFLAGS"
+esac
 
 # Checks for libraries.
 AC_CHECK_LIB(m, sin, [], AC_MSG_ERROR([library m not found]))
