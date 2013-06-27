@@ -1,5 +1,11 @@
 #!/bin/sh
 
+
+rm -f config.status
+rm -f Makefile
+rm -f stamp-h1
+rm -f config.h.in~
+rm -f config.h
 rm -f -rf autom4te.cache
 rm -f config.log
 rm -f missing

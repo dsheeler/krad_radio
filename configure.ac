@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT([kradradio], [21], [kradradio@gmail.com])
 AC_CONFIG_SRCDIR([tests/krad_webm_dash_vod_test.c])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([1.11 foreign no-define subdir-objects])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -20,7 +20,6 @@ AC_CHECK_LIB(m, sin, [], AC_MSG_ERROR([library m not found]))
 AC_CHECK_LIB(dl, dlopen, [], AC_MSG_ERROR([library dl not found]))
 AC_CHECK_LIB(z, compress, [], AC_MSG_ERROR([library z not found]))
 AC_CHECK_LIB(pthread, pthread_create, [], AC_MSG_ERROR([library pthread not found]))
-PKG_CHECK_MODULES([TURBOJPEG], [turbojpeg])
 PKG_CHECK_MODULES([NCURSES], [ncurses])
 PKG_CHECK_MODULES([PANEL], [panel])
 PKG_CHECK_MODULES([MENU], [menu])

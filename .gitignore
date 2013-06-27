@@ -98,3 +98,8 @@ config.log
 configure
 install-sh
 missing
+Makefile
+config.h
+config.status
+stamp-h1
+
