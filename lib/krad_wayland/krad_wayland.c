@@ -675,16 +675,20 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   /*wl_shell_surface_set_title(wayland->window->shell_surface,
    wayland->window->title);*/
 
-  if (window->shell_surface) {
-    wl_shell_surface_add_listener(window->shell_surface, 
-     &window->surface_listener, window);
+   wl_shell_surface_add_listener(window->shell_surface, 
+    &window->surface_listener, window);
+  
+  if ((window->width == 1920) && (window->height == 1080)) {
+    wl_shell_surface_set_fullscreen(window->shell_surface,
+     0, 0, NULL);
+  } else {
+    wl_shell_surface_set_toplevel(window->shell_surface);
   }
-  wl_shell_surface_set_toplevel(window->shell_surface);
 
   kr_wayland_frame_listener(window, NULL, 0);
   wl_display_roundtrip(wayland->display);
 
-    wayland->window[i].active = 1;
+  wayland->window[i].active = 1;
 
   return window;
 }

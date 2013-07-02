@@ -386,41 +386,41 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "portinfo", 8) == 0) {
     if (argc == 4) {
-      kr_mixer_portgroup_info (client, argv[3]);
+      kr_mixer_portgroup_info(client, argv[3]);
       kr_delivery_accept_and_report (client);
     }
   }
 
   if (strncmp(argv[2], "input", 5) == 0) {
     if (argc == 4) {
-      kr_mixer_create_portgroup (client, argv[3], "input", 2);
+      kr_mixer_create_portgroup(client, argv[3], "input", "jack", 2);
     }
     if (argc == 5) {
-      kr_mixer_create_portgroup (client, argv[3], "input", atoi (argv[4]));
+      kr_mixer_create_portgroup(client, argv[3], "input", "jack", atoi(argv[4]));
     }
   }      
 
   if (strncmp(argv[2], "output", 6) == 0) {
     if (argc == 4) {
-      kr_mixer_create_portgroup (client, argv[3], "output", 2);
+      kr_mixer_create_portgroup(client, argv[3], "output", "jack", 2);
     }
     if (argc == 5) {
-      kr_mixer_create_portgroup (client, argv[3], "output", atoi (argv[4]));
+      kr_mixer_create_portgroup(client, argv[3], "output", "jack", atoi(argv[4]));
     }
   }
   
   if (strncmp(argv[2], "auxout", 6) == 0) {
     if (argc == 4) {
-      kr_mixer_create_portgroup (client, argv[3], "auxout", 2);
+      kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", 2);
     }
     if (argc == 5) {
-      kr_mixer_create_portgroup (client, argv[3], "auxout", atoi (argv[4]));
+      kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", atoi(argv[4]));
     }
   }
 
   if (strncmp(argv[2], "plug", 4) == 0) {
     if (argc == 5) {
-      kr_mixer_plug_portgroup (client, argv[3], argv[4]);
+      kr_mixer_plug_portgroup(client, argv[3], argv[4]);
     }
   }
 

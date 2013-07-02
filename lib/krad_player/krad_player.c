@@ -483,13 +483,13 @@ static void kr_player_station_connect(kr_player_t *player) {
     exit (1);
   }
   
-  player->audioport = kr_audioport_create (player->client, INPUT);
+  player->audioport = kr_audioport_create (player->client, "krad player", INPUT);
   if (player->audioport == NULL) {
     fprintf (stderr, "Krad player: could not setup audioport\n");
     exit (1);
   }
   kr_audioport_set_callback (player->audioport, audioport_process, player);
-  kr_audioport_activate (player->audioport);
+  kr_audioport_connect(player->audioport);
 
   player->videoport = kr_videoport_create (player->client, INPUT);
   if (player->videoport == NULL) {

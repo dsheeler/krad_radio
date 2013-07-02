@@ -1278,7 +1278,6 @@ void kr_web_enable (kr_client_t *client, uint32_t port,
   kr_ebml2_finish_element (client->ebml2, webon);
   kr_ebml2_finish_element (client->ebml2, radio_command);
 
-
   kr_client_push (client);
 }
 
