@@ -29,10 +29,11 @@ int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
   //printk("poframe type = %2X", frame_type);
 
   if (frame_type == WS_PING_FRM) {
-    //printk ("We have a ping frame!");
+    printke("We have a ping frame but we are not dealing with it right!");
   } else {
     if (frame_type == WS_CLOSE_FRM) {
-      //printk ("We have a close frame!");
+      printk("Websocket close!");
+      return -1;
     } else {
       if (frame_type == WS_BIN_FRM) {
         //printk ("We have a bin frame!");
@@ -123,6 +124,10 @@ int32_t interweb_ws_parse_frame_header(kr_iws_client_t *client) {
 int32_t interweb_ws_parse_frame_data(kr_iws_client_t *client) {
 
   interwebs_t *ws;
+  int32_t ret;
+  int32_t pos;
+  int32_t max;
+  uint8_t output[1024];
 
   ws = &client->ws;
   ws->input_len = client->in->len;
@@ -133,10 +138,6 @@ int32_t interweb_ws_parse_frame_data(kr_iws_client_t *client) {
      ws->len);
     return 0;
   }
-
-  int32_t pos;
-  int32_t max;
-  uint8_t output[1024];
 
   ws->output = output;
   ws->output_len = sizeof(output);
@@ -160,7 +161,8 @@ int32_t interweb_ws_parse_frame_data(kr_iws_client_t *client) {
   output[pos] = '\0';
   //printk("unmasked %d bytes %s", pos, (char *)output);
 
-  handle_json(client, (char *)output, pos);
+  ret = handle_json(client, (char *)output, pos);
+  if (ret != 0) return -1;
 
   kr_io2_pulled (client->in, pos);
 
@@ -256,6 +258,8 @@ int32_t interweb_ws_kr_client_connect(kr_iws_client_t *client) {
   kr_mixer_portgroup_list (client->ws.krclient);
   kr_compositor_subunit_list (client->ws.krclient);
   kr_subscribe_all (client->ws.krclient);
+  
+  //printk("interweb_ws_kr_client_connect happens");
 
   return 0;
 }
@@ -303,6 +307,8 @@ int32_t interweb_ws_shake(kr_iws_client_t *client) {
   set_socket_nodelay(client->sd);
   interweb_ws_json_hello(client);
   interweb_ws_kr_client_connect(client);
+
+  //printk("interweb_ws_shake happens");
 
   return 0;
 }
