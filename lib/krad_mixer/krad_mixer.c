@@ -1129,27 +1129,6 @@ kr_portgroup *krad_mixer_get_portgroup_from_sysname (kr_mixer *krad_mixer, char 
   return NULL;
 }
 
-static uint32_t ms_to_cycles(int sample_rate, int cycle_frames, int ms) {
-
-  uint32_t cycles;
-  float samples_ms;
-  float cycle_ms;  
-  
-  if ((ms < 1) || (ms > (10 * 60 * 1000))) {
-    return 0;
-  }
-  
-  samples_ms = sample_rate / 1000.0f;
-  cycle_ms = cycle_frames / samples_ms;
-  
-  cycles = (ms / cycle_ms) + 1;
-
-  //printk("MS: %d Cycles: %u samples_ms: %f cycle_ms %f", ms, cycles,
-  // samples_ms, cycle_ms);
-
-  return cycles;
-}
-
 int krad_mixer_set_portgroup_control(kr_mixer *krad_mixer, char *sysname,
  char *control, float value, int duration, void *ptr) {
 
@@ -1162,11 +1141,6 @@ int krad_mixer_set_portgroup_control(kr_mixer *krad_mixer, char *sysname,
     if ((portgroup->direction == OUTPUT) && 
         (portgroup->output_type == DIRECT)) {
       return 1;
-    }
-    
-    if (duration != 0) {
-      duration = ms_to_cycles(krad_mixer->sample_rate, krad_mixer->period_size,
-       duration);
     }
 
     if ((strncmp(control, "volume", 6) == 0) && (strlen(control) == 6)) {
