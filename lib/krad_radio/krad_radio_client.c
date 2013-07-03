@@ -448,8 +448,9 @@ int kr_radio_response_get_string_from_radio (kr_crate_t *crate, char **string) {
   }
   pos += sprintf (*string + pos, "Station Uptime: ");
   pos += kr_radio_uptime_to_string (kr_radio.uptime, *string + pos);
-  pos += sprintf (*string + pos, "\n");  
-  pos += sprintf (*string + pos, "System CPU Usage: %u%%", kr_radio.cpu_usage);  
+  pos += sprintf (*string + pos, "\n");
+  pos += sprintf (*string + pos, "Clients: %u\n", kr_radio.clients);
+  pos += sprintf (*string + pos, "System CPU Usage: %u%%", kr_radio.cpu_usage);
   
   return pos; 
 }
@@ -695,6 +696,7 @@ static int kr_ebml_to_radio_rep (kr_ebml2_t *ebml, kr_radio_t *radio_rep) {
   kr_ebml2_unpack_element_string (ebml, NULL, radio_rep->sysinfo, 666);
   kr_ebml2_unpack_element_string (ebml, NULL, radio_rep->logname, 666);
   kr_ebml2_unpack_element_uint64 (ebml, NULL, &radio_rep->uptime);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &radio_rep->clients);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &radio_rep->cpu_usage);
   return 1;
 }

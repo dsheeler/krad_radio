@@ -15,6 +15,7 @@ typedef struct kr_tag_St kr_tag_t;
 struct krad_radio_rep_St {
   uint64_t uptime;
   uint32_t cpu_usage;
+  uint32_t clients;  
   char sysinfo[256];
   char logname[256];
 };

@@ -274,10 +274,11 @@ uint32_t full_command (kr_io2_t *in) {
 }
 
 void krad_radio_to_ebml ( kr_ebml2_t *ebml, krad_radio_t *krad_radio ) {
-  kr_ebml2_pack_string ( ebml, EBML_ID_KRAD_RADIO_SYSTEM_INFO, krad_system_info());
-  kr_ebml2_pack_string ( ebml, EBML_ID_KRAD_RADIO_LOGNAME, krad_radio->log.filename);
-  kr_ebml2_pack_uint64 ( ebml, EBML_ID_KRAD_RADIO_UPTIME, krad_system_daemon_uptime());
-  kr_ebml2_pack_uint32 ( ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, krad_system_get_cpu_usage());
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_RADIO_SYSTEM_INFO, krad_system_info());
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_RADIO_LOGNAME, krad_radio->log.filename);
+  kr_ebml2_pack_uint64(ebml, EBML_ID_KRAD_RADIO_UPTIME, krad_system_daemon_uptime());
+  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_RADIO_UPTIME, krad_app_server_num_clients(krad_radio->app));  
+  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, krad_system_get_cpu_usage());
 }
 
 int krad_radio_client_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
