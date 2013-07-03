@@ -12,7 +12,8 @@ void krad_mixer_portgroup_to_rep (krad_mixer_portgroup_t *portgroup,
   portgroup_rep->io_type = portgroup->io_type;
   
   if (portgroup->mixbus != NULL) {
-    strncpy (portgroup_rep->mixbus, portgroup->mixbus->sysname, sizeof(portgroup_rep->mixbus));
+    strncpy(portgroup_rep->mixbus, portgroup->mixbus->sysname,
+     sizeof(portgroup_rep->mixbus));
   } else {
     portgroup_rep->mixbus[0] = '\0';
   }
@@ -137,6 +138,27 @@ void krad_mixer_to_ebml ( kr_ebml2_t *ebml, krad_mixer_t *krad_mixer ) {
   krad_mixer_rep_to_ebml (ebml, &mixer_rep);
 }
 
+static uint32_t ms_to_cycles(int sample_rate, int cycle_frames, int ms) {
+
+  uint32_t cycles;
+  float samples_ms;
+  float cycle_ms;  
+  
+  if ((ms < 1) || (ms > (10 * 60 * 1000))) {
+    return 0;
+  }
+  
+  samples_ms = sample_rate / 1000.0f;
+  cycle_ms = cycle_frames / samples_ms;
+  
+  cycles = (ms / cycle_ms) + 1;
+
+  //printk("MS: %d Cycles: %u samples_ms: %f cycle_ms %f", ms, cycles,
+  // samples_ms, cycle_ms);
+
+  return cycles;
+}
+
 int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
 
   krad_mixer_portgroup_t *portgroup;
@@ -162,10 +184,17 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
   uint64_t size;
   int ret;
   char string[512];
+  char string2[256];  
   uint32_t numbers[10];
   krad_app_server_t *app;
   char tone;
-
+  int sd1;
+  int sd2;
+  int duration;
+  
+  duration = 0;
+  sd1 = 0;
+  sd2 = 0;
   ptr = NULL;
   krad_radio = client->krad_radio;
   krad_mixer = krad_radio->krad_mixer;
@@ -202,10 +231,14 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       kr_ebml2_unpack_element_string (&ebml_in, &element, controlname, sizeof(controlname));
       kr_ebml2_unpack_element_float (&ebml_in, &element, &floatval);
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
-      if ((numbers[0] == 0) && (krad_app_server_current_client_is_subscriber (app))) {
+      duration = numbers[0];
+      if ((duration == 0) && (krad_app_server_current_client_is_subscriber(app))) {
         ptr = app->current_client;
+      } else {
+        duration = ms_to_cycles(krad_mixer->sample_rate,
+         krad_mixer->period_size, duration);
       }
-      krad_mixer_set_portgroup_control ( krad_mixer, portgroupname, controlname, floatval, numbers[0], ptr );
+      krad_mixer_set_portgroup_control(krad_mixer, portgroupname, controlname, floatval, duration, ptr);
       break;
     case EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL:
       kr_ebml2_unpack_element_string (&ebml_in, &element, portgroupname, sizeof(portgroupname));
@@ -214,13 +247,20 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       kr_ebml2_unpack_element_string (&ebml_in, &element, controlname, sizeof(controlname));
       kr_ebml2_unpack_element_float (&ebml_in, &element, &floatval);
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[6]);
-      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[7]);;
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[7]);
       portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
       if (portgroup != NULL) {
-        kr_effects_effect_set_control (portgroup->effects, numbers[0], numbers[5],
+        duration = numbers[6];
+        if ((duration == 0) && (krad_app_server_current_client_is_subscriber(app))) {
+          ptr = app->current_client;
+        } else {
+          duration = ms_to_cycles(krad_mixer->sample_rate,
+           krad_mixer->period_size, duration);
+        }
+        kr_effects_effect_set_control(portgroup->effects, numbers[0], numbers[5],
                    kr_effects_string_to_effect_control(portgroup->effects->effect[numbers[0]].effect_type,
                                                         controlname),
-                                       floatval, numbers[6], numbers[7]);
+                                       floatval, duration, numbers[7], ptr);
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PUSH_TONE:
@@ -271,8 +311,9 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_CREATE_PORTGROUP:
-      kr_ebml2_unpack_element_string (&ebml_in, &element, portgroupname, sizeof(portgroupname));
-      kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
+      kr_ebml2_unpack_element_string(&ebml_in, &element, portgroupname, sizeof(portgroupname));
+      kr_ebml2_unpack_element_string(&ebml_in, &element, string, sizeof(string));
+      kr_ebml2_unpack_element_string(&ebml_in, &element, string2, sizeof(string2));
       
       if (strncmp(string, "output", 6) == 0) {
         direction = OUTPUT;
@@ -287,11 +328,28 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
         }
       }
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
-      portgroup = krad_mixer_portgroup_create (krad_mixer, portgroupname, direction, output_type, numbers[0],
-                  0.0f, krad_mixer->master_mix, KRAD_AUDIO, NULL, JACK);
+      
+      if (strncmp(string2, "krad", 4) == 0) {
+        krad_system_set_socket_blocking (app->current_client->sd);
+        
+        sd1 = krad_app_server_recvfd (app->current_client);
+        sd2 = krad_app_server_recvfd (app->current_client);
+        printk ("AUDIOPORT_CREATE %s Got FD's %d and %d\n", string, sd1, sd2);
+        
+        portgroup = krad_mixer_local_portgroup_create(krad_mixer, string,
+         direction, sd1, sd2);
+
+        krad_system_set_socket_nonblocking (app->current_client->sd);
+      } else {
+        portgroup = krad_mixer_portgroup_create (krad_mixer, portgroupname,
+                     direction, output_type, numbers[0],
+                     0.0f, krad_mixer->master_mix, KRAD_AUDIO, NULL, JACK);      
+      }
       if (portgroup != NULL) {
-        krad_radio_broadcast_subunit_created ( app->app_broadcaster, &portgroup->address, (void *)portgroup);
-        krad_mixer_set_portgroup_control (krad_mixer, portgroupname, "volume", 100.0f, 500, NULL);
+        krad_radio_broadcast_subunit_created ( app->app_broadcaster,
+         &portgroup->address, (void *)portgroup);
+        krad_mixer_set_portgroup_control(krad_mixer, portgroupname, "volume",
+         100.0f, 500, NULL);
       } else {
         printke ("Krad Mixer: Failed to create portgroup: %s", portgroupname);
       }
@@ -375,42 +433,6 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       kr_ebml2_finish_element (&ebml_out, payload);
       kr_ebml2_finish_element (&ebml_out, response);
       break;
-      
-      
-    int p;
-    int sd1;
-    int sd2;
-      
-    case EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_DESTROY:
-      for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
-        portgroup = krad_mixer->portgroup[p];
-        if (portgroup->io_type == KLOCALSHM) {
-          krad_mixer_portgroup_destroy (krad_mixer, portgroup);
-        }
-      }
-      break;
-    case EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_CREATE:
-      sd1 = 0;
-      sd2 = 0;
-      kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
-      if (strncmp(string, "output", 6) == 0) {
-        direction = OUTPUT;
-      } else {
-        direction = INPUT;
-      }
-      
-      krad_system_set_socket_blocking (app->current_client->sd);
-      
-      sd1 = krad_app_server_recvfd (app->current_client);
-      sd2 = krad_app_server_recvfd (app->current_client);
-      printk ("AUDIOPORT_CREATE %s Got FD's %d and %d\n", string, sd1, sd2);
-      
-      krad_mixer_local_portgroup_create (krad_mixer, "localport", direction, sd1, sd2);
-
-      krad_system_set_socket_nonblocking (app->current_client->sd);
-
-      break;
-      
     /*
     case EBML_ID_KRAD_MIXER_CMD_SET_SAMPLE_RATE:
       krad_ebml_read_element (app->current_client->krad_ebml, &ebml_id, &ebml_data_size);

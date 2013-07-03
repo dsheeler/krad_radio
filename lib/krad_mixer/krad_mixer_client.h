@@ -38,7 +38,8 @@ void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgr
 void kr_mixer_push_tone (kr_client_t *client, int8_t tone);
 void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, char *ipc_path);
 void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname);
-void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction, int channels);
+void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *type,
+ char *direction, int channels);
 void kr_mixer_remove_portgroup (kr_client_t *client, char *portgroupname);
 void kr_mixer_portgroup_list (kr_client_t *client);
 void kr_mixer_info (kr_client_t *client);
@@ -56,10 +57,11 @@ int kr_mixer_get_info_wait (kr_client_t *client,
 int kr_audioport_error (kr_audioport_t *audioport);
 float *kr_audioport_get_buffer (kr_audioport_t *kr_audioport, int channel);
 void kr_audioport_set_callback (kr_audioport_t *kr_audioport, int callback (uint32_t, void *), void *pointer);
-void kr_audioport_activate (kr_audioport_t *kr_audioport);
-void kr_audioport_deactivate (kr_audioport_t *kr_audioport);
-kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_direction_t direction);
-void kr_audioport_destroy (kr_audioport_t *kr_audioport);
+void kr_audioport_connect(kr_audioport_t *kr_audioport);
+void kr_audioport_disconnect(kr_audioport_t *kr_audioport);
+kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,
+ krad_mixer_portgroup_direction_t direction);
+void kr_audioport_destroy(kr_audioport_t *kr_audioport);
 
 /**@}*/
 #endif

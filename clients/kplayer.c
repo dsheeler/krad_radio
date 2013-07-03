@@ -122,7 +122,7 @@ void krad_player_close (krad_player_t *player) {
     kr_videoport_deactivate (player->videoport);
   }
   if (player->audioport) {
-    kr_audioport_deactivate (player->audioport);
+    kr_audioport_disconnect(player->audioport);
   }
   if (player->avc.aframe != NULL) {  
     av_frame_free (&player->avc.aframe);
@@ -408,16 +408,16 @@ int krad_player_open(krad_player_t *player, char *input) {
       fprintf (stderr, "Krad Player: Could not find open the needed codec\n");
     }
     
-    player->audioport = kr_audioport_create (player->client, INPUT);
+    player->audioport = kr_audioport_create (player->client, "kplayer", INPUT);
 
     if (player->audioport == NULL) {
       fprintf (stderr, "Krad Player: could not setup audioport\n");
       return -4;
     }  
     
-    kr_audioport_set_callback (player->audioport, audioport_process, player);
+    kr_audioport_set_callback(player->audioport, audioport_process, player);
     
-    kr_audioport_activate (player->audioport);
+    kr_audioport_connect(player->audioport);
   }
 
   if (player->avc.vid != -1) {

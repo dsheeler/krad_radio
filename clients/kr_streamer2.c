@@ -116,7 +116,7 @@ int kr_streamer_destroy (kr_streamer_t **streamer) {
 
   krad_vpx_encoder_destroy (&(*streamer)->vpx_enc);
   kr_mkv_destroy (&(*streamer)->mkv);
-	kr_audioport_deactivate ((*streamer)->audioport);	
+	kr_audioport_disconnect((*streamer)->audioport);	
 	kr_audioport_destroy ((*streamer)->audioport);
 	kr_videoport_deactivate ((*streamer)->videoport);
 	kr_videoport_destroy ((*streamer)->videoport);
@@ -234,7 +234,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
                           streamer->vorbis_enc->header.sz[1] +
                           streamer->vorbis_enc->header.sz[2]);
 
-	streamer->audioport = kr_audioport_create (streamer->client, OUTPUT);
+	streamer->audioport = kr_audioport_create (streamer->client, "streamer2",
+	 OUTPUT);
 	kr_audioport_set_callback (streamer->audioport, audioport_process, streamer);
 
   streamer->frame_ring = krad_ringbuffer_create (90 * sizeof(krad_frame_t *));
@@ -275,7 +276,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
 
   streamer->timer = krad_timer_create ();
 
-	kr_audioport_activate (streamer->audioport);
+	kr_audioport_connect(streamer->audioport);
   kr_videoport_activate (streamer->videoport);
 
   while (!destroy) {

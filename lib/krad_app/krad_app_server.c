@@ -357,6 +357,7 @@ static krad_app_server_client_t *krad_app_server_accept_client (krad_app_server_
     kr_io2_set_fd(client->in, client->sd);
     kr_io2_set_fd(client->out, client->sd);
     client->ptr = krad_app_server->client_create(krad_app_server->pointer);
+    krad_app_server->num_clients++;
     //printk ("Krad APP Server: Client accepted!");  
     return client;
   } else {
@@ -374,9 +375,14 @@ static void krad_app_disconnect_client(krad_app_server_t *krad_app_server, krad_
   krad_app_server->client_destroy(client->ptr);
   client->ptr = NULL;
   kr_io2_destroy(&client->in);
-  kr_io2_destroy(&client->out);  
+  kr_io2_destroy(&client->out);
+  krad_app_server->num_clients--;
   //krad_app_server_update_pollfds (krad_app_server);
   //printk ("Krad APP Server: Client Disconnected");
+}
+
+uint32_t krad_app_server_num_clients(krad_app_server_t *app_server) {
+  return app_server->num_clients;
 }
 
 static void krad_app_server_update_pollfds (krad_app_server_t *krad_app_server) {

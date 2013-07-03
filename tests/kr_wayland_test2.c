@@ -196,7 +196,9 @@ int kr_wl_test_key_cb(void *user, kr_wayland_event *event) {
  // printf("key event: %s: %d - %d %c\n", wayland_test_window->name,
  //  event->key_event.down, event->key_event.key, event->key_event.key);
 
-
+  if (event->key_event.key == 'q') {
+    destroy = 1;
+  }
   if (event->key_event.key == 'c') {
     krad_vector_set_type(&wayland_test_window->vector[0], "circle");
   }
@@ -272,19 +274,14 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
   free(wayland_test);
 }
 
-kr_wayland_test *wayland_test_create() {
+kr_wayland_test *wayland_test_create(int width, int height) {
 
   int i;
-  int width;
-  int height;
   kr_wayland_test *wayland_test;
   kr_wayland_window_params window_params;
 
   wayland_test = calloc(1, sizeof(kr_wayland_test));
   
-  width = 1280;
-  height = 720;
-
   wayland_test->wayland = kr_wayland_create();
 
   if (wayland_test->wayland == NULL) {
@@ -332,18 +329,28 @@ kr_wayland_test *wayland_test_create() {
   return wayland_test;
 }
 
-void wayland_test_run() {
+void wayland_test_run(int width, int height) {
 
   kr_wayland_test *wayland_test;
 
-  wayland_test = wayland_test_create();
+  wayland_test = wayland_test_create(width, height);
   wayland_test_loop(wayland_test);
   wayland_test_destroy(wayland_test);
 }
 
 int main (int argc, char *argv[]) {
 
-  wayland_test_run();
+  int width;
+  int height;
+
+  width = 1280;
+  height = 720;
+
+  if (argc == 3) {
+    wayland_test_run(atoi(argv[1]), atoi(argv[2]));
+  } else {
+    wayland_test_run(width, height);
+  }
 
   return 0;
 }

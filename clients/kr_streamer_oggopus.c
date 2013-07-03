@@ -67,7 +67,7 @@ int kr_streamer_destroy (kr_streamer_t **streamer) {
     return -1;
   }
 
- 	kr_audioport_deactivate ((*streamer)->audioport);	
+ 	kr_audioport_disconnect((*streamer)->audioport);	
 	kr_audioport_destroy ((*streamer)->audioport);
 	kr_client_destroy (&(*streamer)->client);
   kr_ogg_io_destroy (&(*streamer)->ogg_io);
@@ -142,7 +142,7 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 
   kr_ogg_add_track (streamer->ogg_io->ogg, &streamer->opus->krad_codec_header);
 
-	streamer->audioport = kr_audioport_create (streamer->client, OUTPUT);
+	streamer->audioport = kr_audioport_create (streamer->client, "opusstreamer", OUTPUT);
 	kr_audioport_set_callback (streamer->audioport, audioport_process, streamer);
 
   return streamer;
@@ -169,7 +169,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
     printf("\r\nFailed to push ogg header!\n");
     destroy = 1;
   } else {
-	  kr_audioport_activate (streamer->audioport);
+	  kr_audioport_connect(streamer->audioport);
   }
 
   while (!destroy) {
