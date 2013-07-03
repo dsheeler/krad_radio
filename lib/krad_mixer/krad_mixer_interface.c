@@ -211,7 +211,7 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       if ((numbers[0] == 0) && (krad_app_server_current_client_is_subscriber (app))) {
         ptr = app->current_client;
       }
-      krad_mixer_set_portgroup_control( krad_mixer, portgroupname, controlname, floatval, numbers[0], ptr );
+      krad_mixer_set_portgroup_control(krad_mixer, portgroupname, controlname, floatval, numbers[0], ptr);
       break;
     case EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL:
       kr_ebml2_unpack_element_string (&ebml_in, &element, portgroupname, sizeof(portgroupname));
@@ -220,13 +220,17 @@ int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *clien
       kr_ebml2_unpack_element_string (&ebml_in, &element, controlname, sizeof(controlname));
       kr_ebml2_unpack_element_float (&ebml_in, &element, &floatval);
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[6]);
-      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[7]);;
+      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[7]);
       portgroup = krad_mixer_get_portgroup_from_sysname (krad_mixer, portgroupname);
       if (portgroup != NULL) {
-        kr_effects_effect_set_control (portgroup->effects, numbers[0], numbers[5],
+        //uh number 6 is duration, strait clear eh
+        if ((numbers[6] == 0) && (krad_app_server_current_client_is_subscriber(app))) {
+          ptr = app->current_client;
+        }
+        kr_effects_effect_set_control(portgroup->effects, numbers[0], numbers[5],
                    kr_effects_string_to_effect_control(portgroup->effects->effect[numbers[0]].effect_type,
                                                         controlname),
-                                       floatval, numbers[6], numbers[7]);
+                                       floatval, numbers[6], numbers[7], ptr);
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PUSH_TONE:

@@ -61,7 +61,7 @@ void kr_pass_set_sample_rate (kr_pass_t *kr_pass, int sample_rate);
 void kr_pass_process2 (kr_pass_t *kr_pass, float *input, float *output, int num_samples, int broadcast);
 /* Controls */
 void kr_pass_set_type (kr_pass_t *kr_pass, kr_effect_type_t type);
-void kr_pass_set_bandwidth (kr_pass_t *kr_pass, float bandwidth, int duration, krad_ease_t ease);
-void kr_pass_set_hz (kr_pass_t *kr_pass, float hz, int duration, krad_ease_t ease);
+void kr_pass_set_bandwidth (kr_pass_t *kr_pass, float bandwidth, int duration, krad_ease_t ease, void *user);
+void kr_pass_set_hz (kr_pass_t *kr_pass, float hz, int duration, krad_ease_t ease, void *user);
 
 #endif

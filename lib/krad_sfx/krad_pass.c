@@ -8,18 +8,18 @@ void kr_pass_set_type (kr_pass_t *kr_pass, kr_effect_type_t type) {
   kr_pass->new_type = type;
 }
 
-void kr_pass_set_bandwidth (kr_pass_t *kr_pass, float bandwidth, int duration, krad_ease_t ease) {
+void kr_pass_set_bandwidth (kr_pass_t *kr_pass, float bandwidth, int duration, krad_ease_t ease, void *user) {
   bandwidth = LIMIT(bandwidth, KRAD_PASS_BANDWIDTH_MIN, KRAD_PASS_BANDWIDTH_MAX);
-  krad_easing_set_new_value(&kr_pass->krad_easing_bandwidth, bandwidth, duration, ease, NULL);
+  krad_easing_set_new_value(&kr_pass->krad_easing_bandwidth, bandwidth, duration, ease, user);
 }
 
-void kr_pass_set_hz (kr_pass_t *kr_pass, float hz, int duration, krad_ease_t ease) {
+void kr_pass_set_hz (kr_pass_t *kr_pass, float hz, int duration, krad_ease_t ease, void *user) {
   if (kr_pass->type == KRAD_LOWPASS) {
     hz = LIMIT(hz, KRAD_PASS_HZ_MIN, KRAD_LOWPASS_HZ_MAX);
   } else {
     hz = LIMIT(hz, KRAD_PASS_HZ_MIN, KRAD_PASS_HZ_MAX);
   }
-  krad_easing_set_new_value(&kr_pass->krad_easing_hz, hz, duration, ease, NULL);
+  krad_easing_set_new_value(&kr_pass->krad_easing_hz, hz, duration, ease, user);
 }
 
 //void kr_pass_process (kr_pass_t *kr_pass, float *input, float *output, int num_samples) {
@@ -47,7 +47,7 @@ void kr_pass_process2 (kr_pass_t *kr_pass, float *input, float *output, int num_
     recompute = 1;
     
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control (kr_pass->krad_mixer->broadcaster, &kr_pass->address, BANDWIDTH, kr_pass->bandwidth, NULL);
+      krad_radio_broadcast_subunit_control (kr_pass->krad_mixer->broadcaster, &kr_pass->address, BANDWIDTH, kr_pass->bandwidth, ptr);
     }
   }
 
@@ -56,7 +56,7 @@ void kr_pass_process2 (kr_pass_t *kr_pass, float *input, float *output, int num_
     recompute = 1;
     
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control (kr_pass->krad_mixer->broadcaster, &kr_pass->address, HZ, kr_pass->hz, NULL);
+      krad_radio_broadcast_subunit_control (kr_pass->krad_mixer->broadcaster, &kr_pass->address, HZ, kr_pass->hz, ptr);
     }
   }
 

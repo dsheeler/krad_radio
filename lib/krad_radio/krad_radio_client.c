@@ -1822,7 +1822,8 @@ int kr_unit_control_data_type_from_address(kr_address_t *address,
 
   switch (address->path.unit) {
     case KR_MIXER:
-      if (address->control.portgroup_control == KR_DTMF) {
+      if ((address->path.subunit.mixer_subunit == KR_PORTGROUP) && 
+          (address->control.portgroup_control == KR_DTMF)) {
         *data_type = KR_CHAR;
         return 1;
       } else {
