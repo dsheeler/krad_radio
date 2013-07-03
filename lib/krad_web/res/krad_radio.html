@@ -15,58 +15,63 @@
    src="//europa.kradradio.com:8040/mootools-more-1.4.0.1.js"></script>
   <script type="text/javascript" src="krad.js"></script>
   
-<style
->body {
-    background-color: #a6c;
+
+<style>
+body {
+  background-color: #333;
 }
+
 .portgroup {
     margin-top: 50px;
     margin-left: 80px;
     float: left;
 }
+
 .crossfade {
     margin-top: 120px;
     margin-left: 80px;
     float: left;
 }
+
 .volume {
-    width: 24px;
-    height: 200px;
+	width: 24px;
+	height: 200px;
     background-color: #4444ff;
-    border-radius: 2px 8px 2px 81px;
-    box-shadow: 1px 1px 5px rgb(101, 82, 2) inset;
+    border-radius: 2px 2px 2px 2px;
+    box-shadow: 1px 1px 25px rgb(180, 180, 180) inset;
 }
+
 .volume .handle {
+    border-radius: 25px 25px 25px 25px;
     background-color: rgb(96, 96, 255);
-    box-shadow: 0px 1px 15px rgb(24, 32, 255);
+    box-shadow: 0px 0px 15px rgb(24, 32, 255) inset, 
+        0px 0px 15px rgb(24, 32, 255) inset,
+        0px 0px 60px rgb(180, 180, 180) ;
     left: -20px;
     width: 64px;
     height: 24px;
-    margin-bottom: 5px;
+    margin-bottom: 5px;  
 }
+
 .fade {
-    width: 200px;
-    height: 24px;
+	width: 200px;
+	height: 24px;
     border-radius: 6px 2px 6px 2px;
     background-color: #ee0000;
     box-shadow: 2px 3px 22px rgb(52, 2, 1) inset;
 }
-.fade .handle {
+
+.fade .handle  {
     background-color: rgb(222, 16, 16);
     box-shadow: 0px 1px 25px rgb(224, 32, 29);
     top: -20px;
     width: 24px;
     height: 64px;
-    margin-bottom: 5px;
+    margin-bottom: 5px;  
 }
-.name {
-    font-family: sans-serif;
-    margin-top: 50px;
-    margin-left: 20px;
-    float: left;
-    color: yellow;
-}
-</style> 
+
+
+</style>
   <style>
     
     @font-face {
