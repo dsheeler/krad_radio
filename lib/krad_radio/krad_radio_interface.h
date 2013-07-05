@@ -14,8 +14,8 @@ int krad_radio_broadcast_subunit_control (krad_app_broadcaster_t *broadcaster, k
 int krad_radio_broadcast_subunit_update (krad_app_broadcaster_t *broadcaster, kr_address_t *address_in, int control, int type, void *value, void *client);
 int krad_radio_broadcast_subunit_destroyed (krad_app_broadcaster_t *broadcaster, kr_address_t *address);
 
-
 typedef struct krad_radio_client_St krad_radio_client_t;
+typedef struct krad_radio_client_St kr_radio_client;
 
 struct krad_radio_client_St {
   krad_radio_t *krad_radio;

@@ -159,7 +159,7 @@ static uint32_t ms_to_cycles(int sample_rate, int cycle_frames, int ms) {
   return cycles;
 }
 
-int krad_mixer_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
+int krad_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   krad_mixer_portgroup_t *portgroup;
   krad_mixer_portgroup_t *portgroup2;
