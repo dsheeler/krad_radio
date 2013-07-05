@@ -1,3 +1,2 @@
-krad_tags_t *krad_radio_find_tags_for_item ( krad_radio_t *krad_radio_station, char *item );
-void krad_radio_set_dir ( krad_radio_t *krad_radio_station, char *dir );
-
+krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item);
+void kr_radio_set_dir(kr_radio *radio, char *dir);

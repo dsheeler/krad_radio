@@ -2,194 +2,168 @@
 #include "krad_radio_interface.h"
 #include "krad_radio_internal.h"
 
-static void krad_radio_shutdown (krad_radio_t *krad_radio);
-static krad_radio_t *krad_radio_create (char *sysname);
-static void krad_radio_start (krad_radio_t *krad_radio);
-static void krad_radio_wait (krad_radio_t *krad_radio);
+static void radio_shutdown(kr_radio *radio);
+static kr_radio *radio_create(char *sysname);
+static void radio_start(kr_radio *radio);
+static void radio_wait(kr_radio *radio);
 
-static void krad_radio_shutdown (krad_radio_t *krad_radio) {
+static void radio_shutdown(kr_radio *radio) {
 
-  krad_timer_t *shutdown_timer;
+  krad_timer_t *timer;
 
-  shutdown_timer = krad_timer_create_with_name ("shutdown");
-  krad_timer_start (shutdown_timer);
-
-  krad_system_monitor_cpu_off ();
-
-  krad_timer_status (shutdown_timer);
-  
-  if (krad_radio->system_broadcaster != NULL) {
-    krad_app_server_broadcaster_unregister ( &krad_radio->system_broadcaster );
+  timer = krad_timer_create_with_name("shutdown");
+  krad_timer_start(timer);
+  krad_system_monitor_cpu_off();
+  krad_timer_status(timer);
+  if (radio->system_broadcaster != NULL) {
+    krad_app_server_broadcaster_unregister(&radio->system_broadcaster);
   }
-  
-  if (krad_radio->app != NULL) {
-    krad_app_server_disable (krad_radio->app);
+  if (radio->app != NULL) {
+    krad_app_server_disable(radio->app);
   }
-  krad_timer_status (shutdown_timer);
-  if (krad_radio->remote.osc != NULL) {
-    krad_osc_destroy (krad_radio->remote.osc);
-    krad_radio->remote.osc = NULL;
+  krad_timer_status(timer);
+  if (radio->remote.osc != NULL) {
+    krad_osc_destroy(radio->remote.osc);
+    radio->remote.osc = NULL;
   }
-  krad_timer_status (shutdown_timer);
-  if (krad_radio->remote.interweb != NULL) {
-    krad_interweb_server_destroy (&krad_radio->remote.interweb);
+  krad_timer_status(timer);
+  if (radio->remote.interweb != NULL) {
+    krad_interweb_server_destroy(&radio->remote.interweb);
   }
-  krad_timer_status (shutdown_timer);
-  krad_timer_status (shutdown_timer);
-  if (krad_radio->krad_transponder != NULL) {
-    krad_transponder_destroy (krad_radio->krad_transponder);
-    krad_radio->krad_transponder = NULL;    
+  krad_timer_status(timer);
+  if (radio->transponder != NULL) {
+    krad_transponder_destroy(radio->transponder);
+    radio->transponder = NULL;
   }
-  krad_timer_status (shutdown_timer);
-  if (krad_radio->krad_mixer != NULL) {
-    krad_mixer_destroy (krad_radio->krad_mixer);
-    krad_radio->krad_mixer = NULL;    
+  krad_timer_status(timer);
+  if (radio->mixer != NULL) {
+    krad_mixer_destroy(radio->mixer);
+    radio->mixer = NULL;
   }
-  krad_timer_status (shutdown_timer);
-  if (krad_radio->krad_compositor != NULL) {
-    krad_compositor_destroy (krad_radio->krad_compositor);
-    krad_radio->krad_compositor = NULL;
+  krad_timer_status(timer);
+  if (radio->compositor != NULL) {
+    krad_compositor_destroy(radio->compositor);
+    radio->compositor = NULL;
   }
-  krad_timer_status (shutdown_timer);
-  if (krad_radio->krad_tags != NULL) {
-    krad_tags_destroy (krad_radio->krad_tags);
-    krad_radio->krad_tags = NULL;
-  }  
-
-  if (krad_radio->app != NULL) {
-    krad_app_server_destroy (krad_radio->app);
-    krad_radio->app = NULL;
+  krad_timer_status(timer);
+  if (radio->tags != NULL) {
+    krad_tags_destroy(radio->tags);
+    radio->tags = NULL;
   }
-  
-  if (krad_radio->log.startup_timer != NULL) {
-    krad_timer_destroy (krad_radio->log.startup_timer);
-    krad_radio->log.startup_timer = NULL;
+  if (radio->app != NULL) {
+    krad_app_server_destroy(radio->app);
+    radio->app = NULL;
   }
-
-  if (shutdown_timer != NULL) {
-    krad_timer_finish (shutdown_timer);  
-    printk ("Krad Radio took %"PRIu64"ms to shutdown",
-            krad_timer_duration_ms (shutdown_timer));
-    krad_timer_destroy (shutdown_timer);
-    shutdown_timer = NULL;
+  if (radio->log.startup_timer != NULL) {
+    krad_timer_destroy(radio->log.startup_timer);
+    radio->log.startup_timer = NULL;
   }
-
-  free (krad_radio);
-
-  printk ("Krad Radio exited cleanly");
-  krad_system_log_off ();
+  if (timer != NULL) {
+    krad_timer_finish(timer);
+    printk("Krad Radio took %"PRIu64"ms to shutdown",
+           krad_timer_duration_ms(timer));
+    krad_timer_destroy(timer);
+    timer = NULL;
+  }
+  free(radio);
+  printk("Krad Radio exited cleanly");
+  krad_system_log_off();
 }
 
-static krad_radio_t *krad_radio_create (char *sysname) {
+static kr_radio *radio_create(char *sysname) {
 
-  krad_radio_t *krad_radio = calloc (1, sizeof(krad_radio_t));
+  kr_radio *radio;
 
-  if (!krad_valid_sysname(sysname)) {
-    return NULL;
-  }
-  
-  krad_radio->log.startup_timer = krad_timer_create_with_name ("startup");
-  krad_timer_start (krad_radio->log.startup_timer);  
-  
-  strncpy (krad_radio->sysname, sysname, sizeof(krad_radio->sysname));
+  radio = calloc(1, sizeof(kr_radio));
 
-  krad_radio->krad_tags = krad_tags_create ("station");
-  
-  if (krad_radio->krad_tags == NULL) {
-    krad_radio_shutdown (krad_radio);
+  radio->log.startup_timer = krad_timer_create_with_name("startup");
+  krad_timer_start(radio->log.startup_timer);
+  strncpy(radio->sysname, sysname, sizeof(radio->sysname));
+  radio->tags = krad_tags_create("station");
+  if (radio->tags == NULL) {
+    radio_shutdown(radio);
     return NULL;
   }
-  
-  krad_radio->krad_mixer = krad_mixer_create (krad_radio->sysname);
-  
-  if (krad_radio->krad_mixer == NULL) {
-    krad_radio_shutdown (krad_radio);
+  radio->mixer = krad_mixer_create(radio->sysname);
+  if (radio->mixer == NULL) {
+    radio_shutdown(radio);
     return NULL;
   }
-  
-  krad_radio->krad_compositor = krad_compositor_create (DEFAULT_COMPOSITOR_WIDTH,
-                                                        DEFAULT_COMPOSITOR_HEIGHT,
-                                                        DEFAULT_COMPOSITOR_FPS_NUMERATOR,
-                                                        DEFAULT_COMPOSITOR_FPS_DENOMINATOR);
-  
-  if (krad_radio->krad_compositor == NULL) {
-    krad_radio_shutdown (krad_radio);
+  radio->compositor = krad_compositor_create(DEFAULT_COMPOSITOR_WIDTH,
+   DEFAULT_COMPOSITOR_HEIGHT, DEFAULT_COMPOSITOR_FPS_NUMERATOR,
+   DEFAULT_COMPOSITOR_FPS_DENOMINATOR);
+  if (radio->compositor == NULL) {
+    radio_shutdown(radio);
     return NULL;
   }
-  
-  krad_radio->krad_transponder = krad_transponder_create (krad_radio);
-  
-  if (krad_radio->krad_transponder == NULL) {
-    krad_radio_shutdown (krad_radio);
+  radio->transponder = krad_transponder_create(radio);
+  if (radio->transponder == NULL) {
+    radio_shutdown(radio);
+    return NULL;
+  }
+  radio->remote.osc = krad_osc_create(radio->sysname);
+  if (radio->remote.osc == NULL) {
+    radio_shutdown(radio);
+    return NULL;
+  }
+  radio->app = krad_app_server_create("krad_radio", radio->sysname,
+   krad_radio_client_create, krad_radio_client_destroy,
+   krad_radio_client_handler, radio);
+
+  if (radio->app == NULL) {
+    radio_shutdown(radio);
     return NULL;
   }
 
-  krad_radio->remote.osc = krad_osc_create (krad_radio->sysname);
-  
-  if (krad_radio->remote.osc == NULL) {
-    krad_radio_shutdown (krad_radio);
-    return NULL;
-  }  
-  
-  krad_radio->app = krad_app_server_create ("krad_radio", sysname,
-                                             krad_radio_client_create,
-                                             krad_radio_client_destroy,
-                                             krad_radio_client_handler,
-                                             krad_radio);
-  
-  if (krad_radio->app == NULL) {
-    krad_radio_shutdown (krad_radio);
+  radio->system_broadcaster = krad_app_server_broadcaster_register(radio->app);
+
+  if (radio->system_broadcaster == NULL) {
+    radio_shutdown(radio);
     return NULL;
   }
-  
-  krad_radio->system_broadcaster = krad_app_server_broadcaster_register ( krad_radio->app );
-  
-  if (krad_radio->system_broadcaster == NULL) {
-    krad_radio_shutdown (krad_radio);
-    return NULL;
-  }
-  
-  krad_app_server_broadcaster_register_broadcast ( krad_radio->system_broadcaster, EBML_ID_KRAD_SYSTEM_BROADCAST );
 
-  krad_mixer_set_app (krad_radio->krad_mixer, krad_radio->app);
-  //krad_tags_set_set_tag_callback (krad_radio->krad_tags, krad_radio->app, 
-  //                (void (*)(void *, char *, char *, char *, int))krad_app_server_broadcast_tag);
+  krad_app_server_broadcaster_register_broadcast(radio->system_broadcaster,
+   EBML_ID_KRAD_SYSTEM_BROADCAST);
 
-  return krad_radio;
+  krad_mixer_set_app(radio->mixer, radio->app);
+
+  return radio;
 }
 
-void krad_radio_daemon (char *sysname) {
+int kr_radio_daemon(char *sysname) {
 
   pid_t pid;
-  krad_radio_t *krad_radio;
+  kr_radio *radio;
+
+  if (!krad_valid_sysname(sysname)) {
+    return -1;
+  }
 
   pid = fork();
 
   if (pid < 0) {
-    exit (12);
+    return -1;
+  } else if (pid > 0) {
+    return 0;
   }
 
-  if (pid > 0) {
-    return;
+  krad_system_daemonize();
+  krad_system_init();
+  radio = radio_create(sysname);
+  if (radio == NULL) {
+    return -1;
   }
-  
-  krad_system_daemonize ();
+  radio_start(radio);
+  radio_wait(radio);
+  radio_shutdown(radio);
 
-  krad_system_init ();
-
-  krad_radio = krad_radio_create (sysname);
-
-  if (krad_radio != NULL) {
-    krad_radio_start ( krad_radio );
-    krad_radio_wait ( krad_radio );
-    krad_radio_shutdown ( krad_radio );
-  }
+  return 0;
 }
 
-void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) {
+void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage) {
 
   unsigned char buffer[128];
-  krad_broadcast_msg_t *broadcast_msg;
+  krad_broadcast_msg_t *msg;
   kr_ebml2_t ebml;
   kr_address_t address;
   unsigned char *message_loc;
@@ -198,76 +172,69 @@ void krad_radio_cpu_monitor_callback (krad_radio_t *krad_radio, uint32_t usage) 
   address.path.unit = KR_STATION;
   address.path.subunit.station_subunit = KR_CPU;
 
-  kr_ebml2_set_buffer ( &ebml, buffer, 128);
+  kr_ebml2_set_buffer(&ebml, buffer, 128);
+  krad_radio_address_to_ebml2(&ebml, &message_loc, &address);
+  kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+   EBML_ID_KRAD_SUBUNIT_INFO);
+  kr_ebml2_start_element(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD,
+   &payload_loc);
+  kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, usage);
+  kr_ebml2_finish_element(&ebml, payload_loc);
+  kr_ebml2_finish_element(&ebml, message_loc);
 
-  krad_radio_address_to_ebml2 (&ebml, &message_loc, &address);
-  kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
-  kr_ebml2_start_element (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
-  kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, usage);
-  kr_ebml2_finish_element (&ebml, payload_loc);
-  kr_ebml2_finish_element (&ebml, message_loc);
+  msg = krad_broadcast_msg_create(radio->system_broadcaster, buffer, ebml.pos);
 
-  broadcast_msg = krad_broadcast_msg_create (krad_radio->system_broadcaster, buffer, ebml.pos);
-
-  if (broadcast_msg != NULL) {
-    krad_app_server_broadcaster_broadcast ( krad_radio->system_broadcaster, &broadcast_msg );
+  if (msg != NULL) {
+    krad_app_server_broadcaster_broadcast(radio->system_broadcaster, &msg);
   }
 }
 
-static void krad_radio_start (krad_radio_t *krad_radio) {
+static void radio_start(kr_radio *radio) {
 
   struct timespec start_sync;
 
-  krad_system_monitor_cpu_on ();
-    
-  krad_system_set_monitor_cpu_callback ((void *)krad_radio, 
-                   (void (*)(void *, uint32_t))krad_radio_cpu_monitor_callback);
-    
-  clock_gettime (CLOCK_MONOTONIC, &start_sync);
-  start_sync = timespec_add_ms (start_sync, 100);
-    
-  krad_compositor_start_ticker_at (krad_radio->krad_compositor, start_sync);
-  krad_mixer_start_ticker_at (krad_radio->krad_mixer, start_sync);    
-
-  krad_app_server_run (krad_radio->app);
-
-  if (krad_radio->log.startup_timer != NULL) {
-    krad_timer_finish (krad_radio->log.startup_timer);  
+  krad_system_monitor_cpu_on();
+  krad_system_set_monitor_cpu_callback((void *)radio,
+   (void (*)(void *, uint32_t))radio_cpu_monitor_callback);
+  clock_gettime(CLOCK_MONOTONIC, &start_sync);
+  start_sync = timespec_add_ms(start_sync, 100);
+  krad_compositor_start_ticker_at(radio->compositor, start_sync);
+  krad_mixer_start_ticker_at(radio->mixer, start_sync);
+  krad_app_server_run(radio->app);
+  if (radio->log.startup_timer != NULL) {
+    krad_timer_finish(radio->log.startup_timer);
   }
 }
 
-static void krad_radio_wait (krad_radio_t *krad_radio) {
-  krad_system_daemon_wait ();
+static void radio_wait(kr_radio *radio) {
+  krad_system_daemon_wait();
 }
 
-krad_tags_t *krad_radio_find_tags_for_item ( krad_radio_t *krad_radio, char *item ) {
+krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {
 
   krad_mixer_portgroup_t *portgroup;
 
-  portgroup = krad_mixer_get_portgroup_from_sysname (krad_radio->krad_mixer, item);
-  
+  portgroup = krad_mixer_get_portgroup_from_sysname(radio->mixer, item);
   if (portgroup != NULL) {
     return portgroup->krad_tags;
   } else {
-    //return krad_transponder_get_tags_for_link (krad_radio->krad_transponder, item);
+    //return krad_transponder_get_tags_for_link(radio->krad_transponder, item);
   }
-
   return NULL;
 }
 
-void krad_radio_set_dir ( krad_radio_t *krad_radio, char *dir ) {
-
-  if ((dir == NULL) || (!dir_exists (dir))) {
+void kr_radio_set_dir(kr_radio *radio, char *dir) {
+  if ((dir == NULL) || (!dir_exists(dir))) {
     return;
   }
-
-  sprintf (krad_radio->log.filename, "%s/%s_%"PRIu64".log", dir, krad_radio->sysname, krad_unixtime ());
-  krad_system_log_on (krad_radio->log.filename);
-  printk (APPVERSION);
-  printk ("Station: %s", krad_radio->sysname);
-  if (krad_radio->log.startup_timer != NULL) {
-    printk ("Krad Radio took %"PRIu64"ms to startup",
-            krad_timer_duration_ms (krad_radio->log.startup_timer));
+  sprintf(radio->log.filename, "%s/%s_%"PRIu64".log", dir, radio->sysname,
+   krad_unixtime());
+  krad_system_log_on(radio->log.filename);
+  printk(APPVERSION);
+  printk("Station: %s", radio->sysname);
+  if (radio->log.startup_timer != NULL) {
+    printk("Krad Radio took %"PRIu64"ms to startup",
+     krad_timer_duration_ms(radio->log.startup_timer));
   }
-  printk ("Current Unix Time: %"PRIu64"", krad_unixtime ());
+  printk("Current Unix Time: %"PRIu64"", krad_unixtime());
 }

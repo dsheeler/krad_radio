@@ -15,7 +15,7 @@
 #ifndef KRAD_RADIO_H
 #define KRAD_RADIO_H
 
-typedef struct krad_radio_St krad_radio_t;
+typedef struct kr_radio kr_radio;
 typedef struct krad_log_St krad_log_t;
 typedef struct krad_remote_control_St krad_remote_control_t;
 
@@ -76,28 +76,28 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 extern krad_system_t krad_system;
 
 struct krad_remote_control_St {
-	krad_osc_t *osc;	
+	krad_osc_t *osc;
 	krad_interweb_t *interweb;
 };
 
 struct krad_log_St {
   krad_timer_t *startup_timer;
-  int verbose;  
+  int verbose;
 	char filename[512];
 };
 
-struct krad_radio_St {
-	char sysname[KRAD_SYSNAME_SZ];
-	krad_app_server_t *app;	
-	krad_app_broadcaster_t *system_broadcaster;
-	krad_log_t log;
-	krad_tags_t *krad_tags;
-	krad_remote_control_t remote;
-	krad_transponder_t *krad_transponder;	
-	krad_mixer_t *krad_mixer;
-	krad_compositor_t *krad_compositor;
+struct kr_radio {
+  char sysname[KRAD_SYSNAME_SZ];
+  krad_app_server_t *app;
+  krad_app_broadcaster_t *system_broadcaster;
+  krad_log_t log;
+  krad_tags_t *tags;
+  krad_remote_control_t remote;
+  krad_transponder_t *transponder;
+  krad_mixer_t *mixer;
+  krad_compositor_t *compositor;
 };
 
-void krad_radio_daemon (char *sysname);
+int kr_radio_daemon(char *sysname);
 
 #endif
