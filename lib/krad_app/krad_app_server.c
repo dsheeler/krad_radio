@@ -690,7 +690,8 @@ static void *krad_app_server_run_thread (void *arg) {
             if (read_ret > 0) {
               //printk ("Krad APP Server %d: Got %d bytes\n", s, read_ret);
               krad_app_server->current_client = client;
-              hret = krad_app_server->client_handler (client->in, client->out, client->ptr);
+              hret = krad_app_server->client_handler(client->in, client->out,
+               client->ptr);
               if (hret != 0) {
                 krad_app_disconnect_client (krad_app_server, client);
                 continue;

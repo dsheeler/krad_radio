@@ -169,16 +169,16 @@ void krad_radio_pack_shipment_terminator (kr_ebml2_t *ebml) {
   kr_ebml2_finish_element (ebml, response);
 }
 
-void *krad_radio_client_create (void *ptr) {
+void *krad_radio_client_create(void *ptr) {
 
-  krad_radio_t *krad_radio;
-  krad_radio_client_t *krad_radio_client;
+  krad_radio_t *station;
+  kr_radio_client *client;
 
-  krad_radio = (krad_radio_t *)ptr;
-  krad_radio_client = calloc (1, sizeof (krad_radio_client));
-  krad_radio_client->krad_radio = krad_radio;
+  station = (krad_radio_t *)ptr;
+  client = calloc (1, sizeof(kr_radio_client));
+  client->krad_radio = station;
 
-  return krad_radio_client;
+  return client;
 }
 
 void krad_radio_client_destroy (void *ptr) {
@@ -539,6 +539,21 @@ int krad_radio_client_handler ( kr_io2_t *in, kr_io2_t *out, void *ptr ) {
   krad_radio_client_t *client;
   int ret;
   uint32_t command;
+
+  if (in == NULL) {
+    printke("krad_radio_client handler called with null input buffer");
+    return -1;
+  }
+
+  if (out == NULL) {
+    printke("krad_radio_client handler called with null output buffer");
+    return -1;
+  }
+
+  if (ptr == NULL) {
+    printke("krad_radio_client handler called with null client pointerr");
+    return -1;
+  }
 
   client = (krad_radio_client_t *)ptr;
 
