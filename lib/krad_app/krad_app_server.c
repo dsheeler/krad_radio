@@ -12,9 +12,12 @@ static int krad_app_server_broadcaster_destroy ( krad_app_broadcaster_t **broadc
 
 static krad_app_server_t *krad_app_server_init (char *appname, char *sysname) {
 
-  krad_app_server_t *krad_app_server = calloc (1, sizeof (krad_app_server_t));
+  krad_app_server_t *krad_app_server;
 
-  if (krad_control_init (&krad_app_server->krad_control)) {
+  krad_app_server = calloc(1, sizeof(krad_app_server_t));
+
+  if (krad_control_init(&krad_app_server->krad_control)) {
+    free(krad_app_server);
     return NULL;
   }
 

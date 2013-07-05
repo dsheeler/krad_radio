@@ -31,7 +31,7 @@ struct krad_sprite_St {
   cairo_pattern_t *sprite_pattern;
   int sheet_width;
   int sheet_height;
-  
+
   krad_compositor_subunit_t subunit;
 };
 
