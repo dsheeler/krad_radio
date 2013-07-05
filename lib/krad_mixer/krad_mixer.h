@@ -2,6 +2,7 @@
 #define KRAD_MIXER_H
 
 typedef struct krad_mixer_St krad_mixer_t;
+typedef struct krad_mixer_St kr_mixer;
 typedef struct krad_mixer_portgroup_St krad_mixer_portgroup_t;
 typedef struct krad_mixer_local_portgroup_St krad_mixer_local_portgroup_t;
 typedef struct krad_mixer_portgroup_St krad_mixer_mixbus_t;
@@ -34,10 +35,10 @@ struct krad_mixer_local_portgroup_St {
 };
 
 struct krad_mixer_portgroup_St {
-  
+
   char sysname[64];
   kr_address_t address;
-  
+
   krad_mixer_portgroup_direction_t direction;
   krad_mixer_portgroup_io_t io_type;
   krad_mixer_output_t output_type;
@@ -45,12 +46,12 @@ struct krad_mixer_portgroup_St {
   channels_t channels;
   krad_mixer_mixbus_t *mixbus;
   krad_mixer_crossfade_group_t *crossfade_group;
-  
+
   krad_easing_t volume_easing;
-  
+
   int map[KRAD_MIXER_MAX_CHANNELS];
-  int mixmap[KRAD_MIXER_MAX_CHANNELS];  
-  
+  int mixmap[KRAD_MIXER_MAX_CHANNELS];
+
   float volume[KRAD_MIXER_MAX_CHANNELS];
   float volume_actual[KRAD_MIXER_MAX_CHANNELS];
   float new_volume_actual[KRAD_MIXER_MAX_CHANNELS];
@@ -70,7 +71,7 @@ struct krad_mixer_portgroup_St {
 
   int destroy_mark;
   int active;
-  
+
   krad_mixer_t *krad_mixer;
   krad_tags_t *krad_tags;
 
@@ -90,18 +91,18 @@ struct krad_mixer_St {
   int ticker_running;
   int ticker_period;
   pthread_t ticker_thread;
-    
+
   char *name;
   uint32_t period_size;
   uint32_t sample_rate;
-    
+
   int avg_window_size;
 
   krad_mixer_mixbus_t *master_mix;
 
   krad_mixer_portgroup_t *tone_port;
-  char push_tone;  
-    
+  char push_tone;
+
   krad_mixer_portgroup_t *portgroup[KRAD_MIXER_MAX_PORTGROUPS];
   krad_mixer_crossfade_group_t *crossfade_group;
 
@@ -166,11 +167,11 @@ void krad_mixer_unplug_portgroup(krad_mixer_t *krad_mixer, char *name,
  char *remote_name);
 void krad_mixer_plug_portgroup(krad_mixer_t *krad_mixer, char *name,
  char *remote_name);
-                               
+
 void krad_mixer_portgroup_xmms2_cmd(krad_mixer_t *krad_mixer, char *name,
  char *cmd);
 void krad_mixer_portgroup_bind_xmms2(krad_mixer_t *krad_mixer, char *name,
  char *ipc_path);
 void krad_mixer_portgroup_unbind_xmms2(krad_mixer_t *krad_mixer, char *name);
-                               
+
 #endif

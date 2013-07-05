@@ -76,8 +76,8 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 extern krad_system_t krad_system;
 
 struct krad_remote_control_St {
-	krad_osc_t *osc;
-	krad_interweb_t *interweb;
+  krad_osc_t *osc;
+  krad_interweb_t *interweb;
 };
 
 struct krad_log_St {
@@ -91,11 +91,11 @@ struct kr_radio {
   krad_app_server_t *app;
   krad_app_broadcaster_t *system_broadcaster;
   krad_log_t log;
-  krad_tags_t *tags;
+  krad_tags *tags;
   krad_remote_control_t remote;
   krad_transponder_t *transponder;
-  krad_mixer_t *mixer;
-  krad_compositor_t *compositor;
+  kr_mixer *mixer;
+  kr_compositor *compositor;
 };
 
 int kr_radio_daemon(char *sysname);
