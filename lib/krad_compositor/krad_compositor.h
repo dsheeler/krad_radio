@@ -14,6 +14,7 @@
 typedef struct krad_compositor_port_St krad_compositor_port_t;
 typedef struct krad_compositor_port_St kr_comp_port_t;
 typedef struct krad_compositor_St krad_compositor_t;
+typedef struct krad_compositor_St kr_compositor;
 
 #include "krad_radio.h"
 #include "krad_compositor_subunit.h"
@@ -49,21 +50,21 @@ struct krad_compositor_St {
   uint64_t timecode;
 
   int frame_byte_size;
-  
+
   krad_sprite_t *sprite;
   int active_sprites;
 
   krad_text_t *text;
   int active_texts;
-  
+
   krad_vector_t *vector;
-  int active_vectors;  
-  
+  int active_vectors;
+
   krad_compositor_port_t *port;
   int active_ports;
   int active_output_ports;
   int active_input_ports;
-  
+
   krad_compositor_subunit_t *subunit[KC_MAX_SUBUNITS];
 
   krad_sprite_t *background;
@@ -75,11 +76,11 @@ struct krad_compositor_St {
 
   struct timespec start_time;
   kr_address_t address;
-  
+
   FT_Library ft_library;
-  
+
   int had_a_subunit;
-  
+
 };
 
 int krad_compositor_subunit_create (krad_compositor_t *compositor,
@@ -117,7 +118,7 @@ kr_comp_port_t *krad_compositor_port_create (krad_compositor_t *compositor,
 kr_comp_port_t *krad_compositor_port_create_full (krad_compositor_t *compositor,
                                                   char *sysname, int direction,
                                                   int width, int height,
-                                                  int holdlock, int local);                           
+                                                  int holdlock, int local);
 krad_compositor_port_t *
 krad_compositor_local_port_create (krad_compositor_t *compositor,
                                    char *sysname, int direction,
@@ -128,7 +129,7 @@ void krad_compositor_port_set_source_size (kr_comp_port_t *port,
 
 void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
                                            int x, int y,
-                                           int width, int height, 
+                                           int width, int height,
                                            int crop_x, int crop_y,
                                            int crop_width, int crop_height,
                                            float opacity, float rotation);

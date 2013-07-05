@@ -99,7 +99,7 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   }
 
   server->html_len = total_len;
-  server->html = calloc (1, server->html_len);
+  server->html = calloc (1, server->html_len + 1);
   
   len = strcspn (html_template, "~");
   strncpy (server->html, html_template, len);
