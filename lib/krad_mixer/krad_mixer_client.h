@@ -48,15 +48,14 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
 void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
                                   int control_id, char *control_name, float control_value, int duration,
                                   krad_ease_t ease);
-
-int kr_mixer_get_info_wait (kr_client_t *client,
-                            uint32_t *sample_rate,
-                            uint32_t *period_size);
+int kr_mixer_get_info_wait(kr_client_t *client, uint32_t *sample_rate,
+ uint32_t *period_size);
 
 /* Mixer Local Audio Ports */
-int kr_audioport_error (kr_audioport_t *audioport);
-float *kr_audioport_get_buffer (kr_audioport_t *kr_audioport, int channel);
-void kr_audioport_set_callback (kr_audioport_t *kr_audioport, int callback (uint32_t, void *), void *pointer);
+int kr_audioport_error(kr_audioport_t *audioport);
+float *kr_audioport_get_buffer(kr_audioport_t *kr_audioport, int channel);
+void kr_audioport_set_callback(kr_audioport_t *kr_audioport,
+ int callback(uint32_t, void *), void *pointer);
 void kr_audioport_connect(kr_audioport_t *kr_audioport);
 void kr_audioport_disconnect(kr_audioport_t *kr_audioport);
 kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,

@@ -19,17 +19,17 @@ struct kr_audioport_St {
   kr_shm_t *kr_shm;
   kr_client_t *client;
   int sd;
-  
+
   krad_mixer_portgroup_direction_t direction;
-  
+
   int (*callback)(uint32_t, void *);
   void *pointer;
-  
+
   int active;
   int error;
-  
-  pthread_t process_thread;  
-  
+
+  pthread_t process_thread;
+
 };
 
 void kr_mixer_portgroup_list (kr_client_t *client) {
@@ -38,11 +38,11 @@ void kr_mixer_portgroup_list (kr_client_t *client) {
   unsigned char *get_portgroups;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS, &get_portgroups);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS, &get_portgroups);
 
   kr_ebml2_finish_element (client->ebml2, get_portgroups);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -61,7 +61,7 @@ void *kr_audioport_process_thread (void *arg) {
   int ret;
   char buf[1];
   int max_timeout_ms;
-  int timeout_total_ms;  
+  int timeout_total_ms;
   int timeout_ms;
   struct pollfd pollfds[1];
 
@@ -75,9 +75,9 @@ void *kr_audioport_process_thread (void *arg) {
 
   while (audioport->active == 1) {
 
-    pollfds[0].events = POLLIN;  
+    pollfds[0].events = POLLIN;
     ret = poll (pollfds, 1, timeout_ms);
-    
+
     if (ret == 0) {
       if (audioport->active == 1) {
         printke ("krad mixer client: audioport poll read timeout", ret);
@@ -89,7 +89,7 @@ void *kr_audioport_process_thread (void *arg) {
       continue;
     } else {
       timeout_total_ms = 0;
-    }    
+    }
     if (pollfds[0].revents & POLLHUP) {
       printke ("krad mixer client: audioport poll hangup", ret);
       break;
@@ -98,7 +98,7 @@ void *kr_audioport_process_thread (void *arg) {
       printke ("krad mixer client: audioport poll error", ret);
       break;
     }
-    
+
     ret = read (audioport->sd, buf, 1);
     if (ret != 1) {
       printke ("krad mixer client: unexpected read return value %d in kr_audioport_process_thread", ret);
@@ -109,12 +109,12 @@ void *kr_audioport_process_thread (void *arg) {
 
     pollfds[0].events = POLLOUT;
     ret = poll (pollfds, 1, timeout_ms);
-    
+
     if (ret == 0) {
       printke ("krad mixer client: audioport poll write timeout", ret);
       break;
     }
-    
+
     if (pollfds[0].revents & POLLHUP) {
       printke ("krad mixer client: audioport poll hangup", ret);
       break;
@@ -123,14 +123,14 @@ void *kr_audioport_process_thread (void *arg) {
       printke ("krad mixer client: audioport poll error", ret);
       break;
     }
-    
+
     ret = write (audioport->sd, buf, 1);
     if (ret != 1) {
       printke ("krad mixer client: unexpected write return value %d in kr_audioport_process_thread", ret);
       break;
     }
   }
-  
+
   if (audioport->active == 1) {
     audioport->error = 1;
   }
@@ -197,7 +197,7 @@ kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,
     }
 
   audioport->sd = sockets[0];
-  
+
   krad_system_set_socket_nonblocking (audioport->sd);
   /*
   krad_system_set_socket_blocking (audioport->client->krad_app_client->sd);
@@ -242,7 +242,7 @@ void kr_mixer_portgroup_xmms2_cmd (kr_client_t *client, char *portgroupname, cha
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_XMMS2_CMD, xmms2_cmd);
   kr_ebml2_finish_element (client->ebml2, bind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -257,7 +257,7 @@ void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, ch
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_XMMS2_IPC_PATH, ipc_path);
   kr_ebml2_finish_element (client->ebml2, bind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -271,7 +271,7 @@ void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname) 
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
   kr_ebml2_finish_element (client->ebml2, unbind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -281,13 +281,13 @@ void kr_mixer_set_sample_rate (kr_client_t *client, int sample_rate) {
   unsigned char *set_sample_rate;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_SET_SAMPLE_RATE, &set_sample_rate);  
+  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_SET_SAMPLE_RATE, &set_sample_rate);
 
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_SAMPLE_RATE, sample_rate);
 
   kr_ebml2_finish_element (client->ebml2, set_sample_rate);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -300,7 +300,7 @@ void kr_mixer_info (kr_client_t *client) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_GET_INFO, &get_info);
   kr_ebml2_finish_element (client->ebml2, get_info);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -334,7 +334,7 @@ int kr_mixer_get_info_wait (kr_client_t *client,
       kr_crate_recycle (&crate);
     }
   }
-  
+
   return ret;
 }
 
@@ -350,7 +350,7 @@ void kr_mixer_plug_portgroup (kr_client_t *client, char *name, char *remote_name
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
   kr_ebml2_finish_element (client->ebml2, plug);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -366,7 +366,7 @@ void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_na
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
   kr_ebml2_finish_element (client->ebml2, unplug);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -385,7 +385,7 @@ void kr_mixer_create_portgroup(kr_client_t *client, char *name, char *type,
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, channels);
   kr_ebml2_finish_element (client->ebml2, create);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -399,10 +399,10 @@ void kr_mixer_push_tone (kr_client_t *client, int8_t tone) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PUSH_TONE, &push);
 
   kr_ebml2_pack_int8(client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
-  
+
   kr_ebml2_finish_element (client->ebml2, push);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -421,10 +421,10 @@ void kr_mixer_update_portgroup_map_channel (kr_client_t *client, char *portgroup
 
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, in_channel);
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, out_channel);
-  
+
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -446,7 +446,7 @@ void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgr
 
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -461,10 +461,10 @@ void kr_mixer_set_portgroup_crossfade_group (kr_client_t *client, char *portgrou
 
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, crossfade_group);
-  
+
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -480,7 +480,7 @@ void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname) {
 
   kr_ebml2_finish_element (client->ebml2, info);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
@@ -496,11 +496,11 @@ void kr_mixer_remove_portgroup (kr_client_t *client, char *name) {
 
   kr_ebml2_finish_element (client->ebml2, destroy);
   kr_ebml2_finish_element (client->ebml2, command);
-    
+
   kr_client_push (client);
 }
 
-void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
+void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num,
                                   int control_id, char *control_name, float control_value, int duration,
                                   krad_ease_t ease) {
 
@@ -519,7 +519,7 @@ void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, ease);
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -538,7 +538,7 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
 
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
-    
+
   kr_client_push (client);
 }
 
@@ -557,17 +557,17 @@ static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_
   if (strncmp (string, "Jack", 4) == 0) {
     portgroup_rep->io_type = 0;
   } else {
-    portgroup_rep->io_type = 1;    
+    portgroup_rep->io_type = 1;
   }
-  
+
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->volume[i]);
   }
-  
+
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->peak[i]);
   }
-  
+
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->rms[i]);
   }
@@ -577,19 +577,19 @@ static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->fade);
 
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->has_xmms2);
-  
+
   if (portgroup_rep->has_xmms2 == 1) {
     kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->xmms2_ipc_path, sizeof(portgroup_rep->xmms2_ipc_path));
   }
-  
+
   kr_ebml2_unpack_element_data (ebml, NULL, &portgroup_rep->eq, sizeof (portgroup_rep->eq));
-  
+
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.hz);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.bandwidth);
-  
+
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.hz);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.bandwidth);
-  
+
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.drive);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.blend);
 
@@ -628,8 +628,8 @@ static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate,
       len += sprintf (*string + len, "%5.2f", real);
     }
   }
-    
-  return len; 
+
+  return len;
 }
 
 static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **string) {
@@ -640,14 +640,14 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
   pos = 0;
 
   kr_ebml_to_mixer_rep (&crate->payload_ebml, &kr_mixer);
-  pos += sprintf (*string + pos, "Mixer Status:\n");  
+  pos += sprintf (*string + pos, "Mixer Status:\n");
   pos += sprintf (*string + pos, "Sample Rate: %u\n", kr_mixer.sample_rate);
   pos += sprintf (*string + pos, "Inputs: %u\n", kr_mixer.inputs);
   pos += sprintf (*string + pos, "Outputs: %u\n", kr_mixer.outputs);
   pos += sprintf (*string + pos, "Buses: %u\n", kr_mixer.buses);
   pos += sprintf (*string + pos, "Time Source: %s", kr_mixer.time_source);
-  
-  return pos; 
+
+  return pos;
 }
 
 static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char **string) {
@@ -658,18 +658,18 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
   krad_mixer_portgroup_rep_t portgroup_rep;
 
   pos = 0;
-  
+
   kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &portgroup_rep);
- 
+
   if ((portgroup_rep.direction == OUTPUT) && (portgroup_rep.output_type == DIRECT)) {
     pos += sprintf (*string + pos, "%d Channel ", portgroup_rep.channels);
   } else {
 
     if ((portgroup_rep.channels == 1) || ((portgroup_rep.channels == 2) &&
          (portgroup_rep.volume[0] == portgroup_rep.volume[1]))) {
-   
+
       pos += sprintf (*string + pos, "Volume: %6.2f%% ",
-                      portgroup_rep.volume[0]); 
+                      portgroup_rep.volume[0]);
     } else {
       for (c = 0; c < portgroup_rep.channels; c++) {
         pos += sprintf (*string + pos, "Chn %d Vol: %6.2f%% ",
@@ -678,7 +678,7 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
       }
     }
   }
-    
+
   if (portgroup_rep.direction == OUTPUT) {
     pos += sprintf (*string + pos, "%s ",
                    portgroup_output_type_to_string (portgroup_rep.output_type));
@@ -701,14 +701,14 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
                     portgroup_rep.sysname,
                     portgroup_rep.channels);
   }
-  
+
   if (portgroup_rep.crossfade_group[0] != '\0') {
     pos += sprintf (*string + pos, "\n*Crossfade: %6.2f",
                     portgroup_rep.fade);
   }
 
   if (portgroup_rep.direction == INPUT) {
-  
+
     if (portgroup_rep.has_xmms2 == 1) {
       pos += sprintf (*string + pos, " [XMMS2] (%s)", portgroup_rep.xmms2_ipc_path);
     }
@@ -716,38 +716,38 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
     pos += sprintf (*string + pos, "\n");
 
     pos += sprintf (*string + pos, " EQ Band \t %6s \t %6s \t %2s\n", "Db", "Hz", "BW");
-    
+
     for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
       pos += sprintf (*string + pos, "     %2d:\t %6.2f \t %6.0f \t %0.2f\n",
-                      i, 
+                      i,
                       portgroup_rep.eq.band[i].db,
                       portgroup_rep.eq.band[i].hz,
                       portgroup_rep.eq.band[i].bandwidth);
     }
-    
+
 
     //if (krad_mixer_portgroup_rep->lowpass.hz != ) {
-      pos += sprintf (*string + pos, "  Lowpass     Hz %8.2f      BW %5.2f\n", 
+      pos += sprintf (*string + pos, "  Lowpass     Hz %8.2f      BW %5.2f\n",
                       portgroup_rep.lowpass.hz,
-                      portgroup_rep.lowpass.bandwidth);  
+                      portgroup_rep.lowpass.bandwidth);
     //}
 
     //if (krad_mixer_portgroup_rep->highpass.hz != ) {
-      pos += sprintf (*string + pos, " Highpass     Hz %8.2f      BW %5.2f\n", 
+      pos += sprintf (*string + pos, " Highpass     Hz %8.2f      BW %5.2f\n",
                       portgroup_rep.highpass.hz,
                       portgroup_rep.highpass.bandwidth);
     //}
-    
+
     //if (krad_mixer_portgroup_rep->analog.drive != ) {
-      pos += sprintf (*string + pos, "   Analog  Drive    %5.2f   Blend %5.2f\n", 
+      pos += sprintf (*string + pos, "   Analog  Drive    %5.2f   Blend %5.2f\n",
                       portgroup_rep.analog.drive,
-                      portgroup_rep.analog.blend);  
+                      portgroup_rep.analog.blend);
     //}
 
     pos += sprintf (*string + pos, "\n");
   }
 
-  return pos; 
+  return pos;
 }
 
 int kr_mixer_crate_to_string (kr_crate_t *crate, char **string) {
@@ -766,18 +766,18 @@ int kr_mixer_crate_to_string (kr_crate_t *crate, char **string) {
       *string = kr_response_alloc_string (crate->size * 4);
       return kr_mixer_response_get_string_from_portgroup (crate, string);
   }
-  
+
   return 0;
 }
 
 
 int kr_mixer_crate_to_rep (kr_crate_t *crate) {
 
-  if ((crate->address.path.subunit.mixer_subunit != KR_PORTGROUP) && 
+  if ((crate->address.path.subunit.mixer_subunit != KR_PORTGROUP) &&
       (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
     crate->contains = KR_MIXER;
     kr_ebml_to_mixer_rep (&crate->payload_ebml, &crate->rep.mixer);
-    
+
     crate->client->sample_rate = crate->rep.mixer.sample_rate;
     crate->client->period_size = crate->rep.mixer.period_size;
 

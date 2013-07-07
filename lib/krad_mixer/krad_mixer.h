@@ -134,27 +134,6 @@ void krad_mixer_crossfade_group_create(krad_mixer_t *mixer,
 void krad_mixer_crossfade_group_destroy(krad_mixer_t *mixer,
  krad_mixer_crossfade_group_t *crossfade_group);
 
-void krad_mixer_start_ticker_at(krad_mixer_t *krad_mixer,
- struct timespec start_time);
-void krad_mixer_start_ticker(krad_mixer_t *krad_mixer);
-
-krad_audio_api_t krad_mixer_get_pusher(krad_mixer_t *krad_mixer);
-int krad_mixer_has_pusher(krad_mixer_t *krad_mixer);
-void krad_mixer_set_pusher(krad_mixer_t *krad_mixer, krad_audio_api_t pusher);
-void krad_mixer_unset_pusher(krad_mixer_t *krad_mixer);
-
-int krad_mixer_mix(uint32_t nframes, krad_mixer_t *mixer);
-
-uint32_t krad_mixer_get_sample_rate(krad_mixer_t *mixer);
-void krad_mixer_set_sample_rate(krad_mixer_t *mixer, uint32_t sample_rate);
-
-uint32_t krad_mixer_get_period_size(krad_mixer_t *krad_mixer);
-void krad_mixer_set_period_size(krad_mixer_t *krad_mixer, uint32_t period_sz);
-
-krad_mixer_t *krad_mixer_create(char *name);
-void krad_mixer_destroy(krad_mixer_t *krad_mixer);
-void krad_mixer_set_app(krad_mixer_t *krad_mixer, krad_app_server_t *app);
-
 int krad_mixer_set_portgroup_control(krad_mixer_t *krad_mixer, char *sysname,
  char *control, float value, int duration, void *ptr);
 
@@ -162,6 +141,11 @@ void krad_mixer_portgroup_mixmap_channel(krad_mixer_portgroup_t *portgroup,
  int in_channel, int out_channel);
 void krad_mixer_portgroup_map_channel(krad_mixer_portgroup_t *portgroup,
  int in_channel, int out_channel);
+
+uint32_t krad_mixer_get_sample_rate(krad_mixer_t *mixer);
+void krad_mixer_set_sample_rate(krad_mixer_t *mixer, uint32_t sample_rate);
+uint32_t krad_mixer_get_period_size(krad_mixer_t *krad_mixer);
+void krad_mixer_set_period_size(krad_mixer_t *krad_mixer, uint32_t period_sz);
 
 void krad_mixer_unplug_portgroup(krad_mixer_t *krad_mixer, char *name,
  char *remote_name);
@@ -173,5 +157,19 @@ void krad_mixer_portgroup_xmms2_cmd(krad_mixer_t *krad_mixer, char *name,
 void krad_mixer_portgroup_bind_xmms2(krad_mixer_t *krad_mixer, char *name,
  char *ipc_path);
 void krad_mixer_portgroup_unbind_xmms2(krad_mixer_t *krad_mixer, char *name);
+
+krad_audio_api_t krad_mixer_get_pusher(krad_mixer_t *krad_mixer);
+int krad_mixer_has_pusher(krad_mixer_t *krad_mixer);
+void krad_mixer_set_pusher(krad_mixer_t *krad_mixer, krad_audio_api_t pusher);
+void krad_mixer_unset_pusher(krad_mixer_t *krad_mixer);
+
+void krad_mixer_start_ticker_at(krad_mixer_t *krad_mixer,
+ struct timespec start_time);
+void krad_mixer_start_ticker(krad_mixer_t *krad_mixer);
+
+int krad_mixer_mix(uint32_t nframes, krad_mixer_t *mixer);
+krad_mixer_t *krad_mixer_create(char *name);
+void krad_mixer_destroy(krad_mixer_t *krad_mixer);
+void krad_mixer_set_app(krad_mixer_t *krad_mixer, krad_app_server_t *app);
 
 #endif
