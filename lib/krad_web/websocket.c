@@ -230,15 +230,20 @@ uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size) {
   }
 }
 
-uint32_t interweb_ws_pack_client_frame_header(kr_iws_client_t *client,
- uint32_t size) {
+void interweb_ws_pack(kr_iws_client_t *client, uint8_t *buffer, size_t len) {
 
-  int32_t pos;
+  uint32_t header_len;
+  uint8_t header[10];
 
-  pos = interweb_ws_pack_frame_header(client->out->buf, size);
-  kr_io2_advance (client->out, pos);
-
-  return pos;
+  if (len > 0) {
+    header_len = interweb_ws_pack_frame_header(header, len);
+    if (client->out->space >= (header_len + len)) {
+      krad_interweb_pack_buffer(client, header, header_len);
+      krad_interweb_pack_buffer(client, buffer, len);
+    } else {
+      printke("ws client: no space to pack client buffer");
+    }
+  }
 }
 
 int32_t interweb_ws_kr_client_connect(kr_iws_client_t *client) {
@@ -262,13 +267,6 @@ int32_t interweb_ws_kr_client_connect(kr_iws_client_t *client) {
   //printk("interweb_ws_kr_client_connect happens");
 
   return 0;
-}
-
-void interweb_ws_pack(kr_iws_client_t *client, uint8_t *buffer, size_t len) {
-  if (len > 0) {
-    interweb_ws_pack_client_frame_header(client, len);
-    krad_interweb_pack_buffer(client, buffer, len);
-  }
 }
 
 int32_t interweb_ws_json_hello(kr_iws_client_t *client) {
