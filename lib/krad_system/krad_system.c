@@ -50,7 +50,8 @@ int krad_controller_client_wait (krad_control_t *krad_control, int timeout) {
   return 0;
 }
 
-int krad_controller_shutdown (krad_control_t *krad_control, pthread_t *thread, int timeout) {
+int krad_controller_shutdown(krad_control_t *krad_control, pthread_t *thread,
+ int timeout) {
 
   struct pollfd pollfds[1];
   int ret;
@@ -76,7 +77,7 @@ int krad_controller_shutdown (krad_control_t *krad_control, pthread_t *thread, i
   return 0;
 }
 
-void krad_controller_destroy (krad_control_t *krad_control, pthread_t *thread) {
+void krad_controller_destroy(krad_control_t *krad_control, pthread_t *thread) {
 
   if (krad_control->sockets[1] != 0) {
     close (krad_control->sockets[1]);
@@ -106,7 +107,8 @@ void krad_system_monitor_cpu_on () {
       return;
     }
     krad_system.kcm.on = 1;
-    pthread_create (&krad_system.kcm.monitor_thread, NULL, krad_system_monitor_cpu_thread, NULL);
+    pthread_create (&krad_system.kcm.monitor_thread, NULL,
+     krad_system_monitor_cpu_thread, NULL);
   }
 }
 
@@ -114,11 +116,13 @@ void krad_system_monitor_cpu_off () {
 
   if (krad_system.kcm.on == 1) {
     krad_system.kcm.on = 2;
-    if (krad_controller_shutdown (&krad_system.kcm.control, &krad_system.kcm.monitor_thread, 2)) {
+    if (krad_controller_shutdown (&krad_system.kcm.control,
+        &krad_system.kcm.monitor_thread, 2)) {
       printk ("Krad System: CPU Monitor exited clean and quick");
     }
     if (krad_system.kcm.on != 0) {
-      krad_controller_destroy (&krad_system.kcm.control, &krad_system.kcm.monitor_thread);
+      krad_controller_destroy(&krad_system.kcm.control,
+       &krad_system.kcm.monitor_thread);
       krad_system.kcm.on = 0;
       if (krad_system.kcm.fd != 0) {
         close (krad_system.kcm.fd);
