@@ -127,7 +127,7 @@ void krad_websocket_add_portgroup ( kr_iws_client_t *client,
      portgroup->highpass.hz, portgroup->highpass.bandwidth);
     pos += snprintf(json + pos, sizeof(json) - pos,
      "\"analog_drive\":%g,\"analog_blend\":%g",
-     portgroup->analog.hz, portgroup->analog.blend);
+     portgroup->analog.drive, portgroup->analog.blend);
   } else {
     pos--;
   }
