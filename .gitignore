@@ -112,3 +112,4 @@ depcomp
 *.dirstamp
 *.lo
 *.la
+tests/cairo_sandbox
