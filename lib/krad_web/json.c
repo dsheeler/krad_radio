@@ -124,10 +124,10 @@ void krad_websocket_add_portgroup ( kr_iws_client_t *client,
      portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
     pos += snprintf(json + pos, sizeof(json) - pos,
      "\"highpass_hz\":%g,\"highpass_bw\":%g,",
-     portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
+     portgroup->highpass.hz, portgroup->highpass.bandwidth);
     pos += snprintf(json + pos, sizeof(json) - pos,
      "\"analog_drive\":%g,\"analog_blend\":%g",
-     portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
+     portgroup->analog.hz, portgroup->analog.blend);
   } else {
     pos--;
   }
@@ -287,7 +287,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
        "\"red\":%g,\"green\":%g,\"blue\":%g,",
        crate->inside.text->red, crate->inside.text->green,
        crate->inside.text->blue);
-      break;  
+      break;
     case KR_VIDEOPORT:
       controls = crate->inside.videoport->controls;
       if (crate->inside.videoport->direction == OUTPUT) {
@@ -377,8 +377,8 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
 
   kr_crate_t *crate;
   char *string;
-  
-  string = NULL;  
+
+  string = NULL;
   crate = NULL;
 
   kr_delivery_recv(client->ws.krclient);
@@ -439,6 +439,6 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
       continue;
     }
   }
-  
+
   return 0;
 }
