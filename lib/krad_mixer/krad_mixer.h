@@ -1,11 +1,17 @@
 #ifndef KRAD_MIXER_H
 #define KRAD_MIXER_H
 
-typedef struct krad_mixer_St krad_mixer_t;
-typedef struct krad_mixer_St kr_mixer;
-typedef struct krad_mixer_portgroup_St krad_mixer_portgroup_t;
+/*
+ *    Bus   - Input is N Tracks      - Output is Bus + Jack and/or KRSHM
+ *    Track - Input is Jack or KRSHM - Output is Bus + Jack and/or KRSHM
+ *
+ */
+
+typedef struct kr_mixer kr_mixer;
+typedef struct kr_mixer krad_mixer_t;
+typedef struct kr_mixer_track krad_mixer_portgroup_t;
+typedef struct kr_mixer_track krad_mixer_mixbus_t;
 typedef struct krad_mixer_local_portgroup_St krad_mixer_local_portgroup_t;
-typedef struct krad_mixer_portgroup_St krad_mixer_mixbus_t;
 typedef struct krad_mixer_crossfade_group_St krad_mixer_crossfade_group_t;
 
 #define KRAD_MIXER_MAX_MINIWINS 192
@@ -34,24 +40,22 @@ struct krad_mixer_local_portgroup_St {
   int last_wrote;
 };
 
-struct krad_mixer_portgroup_St {
+struct kr_mixer_track {
+
+  krad_mixer_portgroup_direction_t direction;
+  krad_mixer_output_t output_type;
+  void *io_ptr;
+  krad_mixer_portgroup_io_t io_type;
+
+  krad_mixer_mixbus_t *mixbus;
 
   char sysname[64];
   kr_address_t address;
-
-  krad_mixer_portgroup_direction_t direction;
-  krad_mixer_portgroup_io_t io_type;
-  krad_mixer_output_t output_type;
-  void *io_ptr;
   channels_t channels;
-  krad_mixer_mixbus_t *mixbus;
   krad_mixer_crossfade_group_t *crossfade_group;
-
   krad_easing_t volume_easing;
-
   int map[KRAD_MIXER_MAX_CHANNELS];
   int mixmap[KRAD_MIXER_MAX_CHANNELS];
-
   float volume[KRAD_MIXER_MAX_CHANNELS];
   float volume_actual[KRAD_MIXER_MAX_CHANNELS];
   float new_volume_actual[KRAD_MIXER_MAX_CHANNELS];
@@ -63,24 +67,18 @@ struct krad_mixer_portgroup_St {
   float peak[KRAD_MIXER_MAX_CHANNELS];
   float peak_last[KRAD_MIXER_MAX_CHANNELS];
   float *samples[KRAD_MIXER_MAX_CHANNELS];
-
   float **mapped_samples[KRAD_MIXER_MAX_CHANNELS];
-
   int delay;
   int delay_actual;
-
   int destroy_mark;
   int active;
-
   krad_mixer_t *krad_mixer;
   krad_tags_t *krad_tags;
-
   krad_xmms_t *krad_xmms;
-
   kr_effects_t *effects;
 };
 
-struct krad_mixer_St {
+struct kr_mixer {
 
   kr_address_t address;
 

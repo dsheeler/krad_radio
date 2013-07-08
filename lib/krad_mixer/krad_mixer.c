@@ -1,7 +1,6 @@
 #include "krad_mixer.h"
 
-typedef struct krad_mixer_portgroup_St kr_portgroup;
-typedef struct krad_mixer_St kr_mixer;
+typedef struct kr_mixer_track kr_portgroup;
 
 static void krad_mixer_ticker_thread_cleanup(void *arg);
 static void *krad_mixer_ticker_thread(void *arg);
