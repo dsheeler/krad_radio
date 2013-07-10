@@ -30,7 +30,7 @@ typedef enum {
 typedef enum {
   DB = 1,
   BANDWIDTH,
-  HZ,  
+  HZ,
   TYPE,
   DRIVE,
   BLEND,
@@ -75,16 +75,16 @@ struct krad_mixer_portgroup_rep_St {
   int io_type;
   krad_mixer_portgroup_direction_t direction;
   krad_mixer_output_t output_type;
-  
+
   char mixbus[64];
   char crossfade_group[64];
   float fade;
-  
+
   float volume[KRAD_MIXER_MAX_CHANNELS];
-  
+
   int map[KRAD_MIXER_MAX_CHANNELS];
-  int mixmap[KRAD_MIXER_MAX_CHANNELS];  
-  
+  int mixmap[KRAD_MIXER_MAX_CHANNELS];
+
   float rms[KRAD_MIXER_MAX_CHANNELS];
   float peak[KRAD_MIXER_MAX_CHANNELS];
   int delay;
@@ -104,7 +104,7 @@ struct krad_mixer_rep_St {
   uint32_t sample_rate;
   uint32_t inputs;
   uint32_t outputs;
-  uint32_t buses;    
+  uint32_t buses;
   char time_source[32];
 //  uint64_t frames;
 //  uint64_t timecode;
@@ -115,12 +115,12 @@ struct krad_effects_rep_St {
   void *effect[KRAD_EFFECTS_MAX_CHANNELS];
 };
 
-char *krad_mixer_channel_number_to_string (int channel);
-char *effect_type_to_string (kr_effect_type_t effect_type);
-char *effect_control_to_string (kr_mixer_effect_control_t effect_control);
-char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_control);
-char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction);
-char *portgroup_output_type_to_string (krad_mixer_output_t output_type);
+char *krad_mixer_channel_number_to_string(int channel);
+char *effect_type_to_string(kr_effect_type_t effect_type);
+char *effect_control_to_string(kr_mixer_effect_control_t effect_control);
+char *portgroup_control_to_string(kr_mixer_portgroup_control_t portgroup_control);
+char *portgroup_direction_to_string(krad_mixer_portgroup_direction_t direction);
+char *portgroup_output_type_to_string(krad_mixer_output_t output_type);
 
-void krad_mixer_portgroup_rep_to_ebml2 (krad_mixer_portgroup_rep_t *krad_mixer_portgroup_rep, kr_ebml2_t *ebml);
+void krad_mixer_portgroup_rep_to_ebml2(krad_mixer_portgroup_rep_t *rep, kr_ebml2_t *ebml);
 #endif

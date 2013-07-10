@@ -10,9 +10,11 @@
 typedef struct kr_mixer kr_mixer;
 typedef struct kr_mixer krad_mixer_t;
 typedef struct kr_mixer_track krad_mixer_portgroup_t;
-typedef struct kr_mixer_track krad_mixer_mixbus_t;
 typedef struct krad_mixer_local_portgroup_St krad_mixer_local_portgroup_t;
-typedef struct krad_mixer_crossfade_group_St krad_mixer_crossfade_group_t;
+typedef struct kr_mixer_track kr_mixer_track;
+typedef struct kr_mixer_track krad_mixer_mixbus_t;
+typedef struct kr_mixer_crossfader krad_mixer_crossfade_group_t;
+typedef struct kr_mixer_io kr_mixer_io;
 
 #define KRAD_MIXER_MAX_MINIWINS 192
 
@@ -21,7 +23,7 @@ typedef struct krad_mixer_crossfade_group_St krad_mixer_crossfade_group_t;
 #include "krad_mixer_interface.h"
 #include "krad_sfx.h"
 
-struct krad_mixer_crossfade_group_St {
+struct kr_mixer_crossfader {
   krad_mixer_portgroup_t *portgroup[2];
   float fade;
   krad_easing_t fade_easing;
@@ -40,12 +42,22 @@ struct krad_mixer_local_portgroup_St {
   int last_wrote;
 };
 
+struct kr_mixer_io {
+  krad_mixer_portgroup_direction_t direction;
+  krad_mixer_output_t output_type;
+  void *io_ptr;
+  krad_mixer_portgroup_io_t io_type;
+};
+
 struct kr_mixer_track {
 
   krad_mixer_portgroup_direction_t direction;
   krad_mixer_output_t output_type;
   void *io_ptr;
   krad_mixer_portgroup_io_t io_type;
+
+  kr_mixer_io output;
+  kr_mixer_io input;
 
   krad_mixer_mixbus_t *mixbus;
 
@@ -79,7 +91,6 @@ struct kr_mixer_track {
 };
 
 struct kr_mixer {
-
   kr_address_t address;
 
   krad_audio_t *krad_audio;
@@ -93,11 +104,9 @@ struct kr_mixer {
   char *name;
   uint32_t period_size;
   uint32_t sample_rate;
-
   int avg_window_size;
 
   krad_mixer_mixbus_t *master_mix;
-
   krad_mixer_portgroup_t *tone_port;
   char push_tone;
 
@@ -106,13 +115,10 @@ struct kr_mixer {
 
   int frames_since_peak_read;
   int frames_per_peak_broadcast;
-
   struct timespec start_time;
 
   krad_app_broadcaster_t *broadcaster;
-
   krad_app_server_t *app;
-
   int destroying;
 };
 
@@ -122,10 +128,8 @@ krad_mixer_portgroup_t *krad_mixer_portgroup_create(krad_mixer_t *krad_mixer,
  char *sysname, int direction, krad_mixer_output_t output_type, int channels,
  float volume, krad_mixer_mixbus_t *mixbus, krad_mixer_portgroup_io_t io_type,
  void *io_ptr, krad_audio_api_t api);
-void krad_mixer_portgroup_destroy(krad_mixer_t *mixer,
- krad_mixer_portgroup_t *portgroup);
-krad_mixer_portgroup_t *krad_mixer_get_portgroup_from_sysname(krad_mixer_t *mixer,
- char *sysname);
+void krad_mixer_portgroup_destroy(kr_mixer *mixer, kr_mixer_track *track);
+kr_mixer_track *krad_mixer_get_portgroup_from_sysname(kr_mixer *mixer, char *name);
 
 void krad_mixer_crossfade_group_create(krad_mixer_t *mixer,
  krad_mixer_portgroup_t *portgroup1, krad_mixer_portgroup_t *portgroup2);
@@ -145,16 +149,12 @@ void krad_mixer_set_sample_rate(krad_mixer_t *mixer, uint32_t sample_rate);
 uint32_t krad_mixer_get_period_size(krad_mixer_t *krad_mixer);
 void krad_mixer_set_period_size(krad_mixer_t *krad_mixer, uint32_t period_sz);
 
-void krad_mixer_unplug_portgroup(krad_mixer_t *krad_mixer, char *name,
- char *remote_name);
-void krad_mixer_plug_portgroup(krad_mixer_t *krad_mixer, char *name,
- char *remote_name);
+void krad_mixer_unplug_portgroup(kr_mixer *mixer, char *name, char *remote_name);
+void krad_mixer_plug_portgroup(kr_mixer *mixer, char *name, char *remote_name);
 
-void krad_mixer_portgroup_xmms2_cmd(krad_mixer_t *krad_mixer, char *name,
- char *cmd);
-void krad_mixer_portgroup_bind_xmms2(krad_mixer_t *krad_mixer, char *name,
- char *ipc_path);
-void krad_mixer_portgroup_unbind_xmms2(krad_mixer_t *krad_mixer, char *name);
+void krad_mixer_portgroup_xmms2_cmd(kr_mixer *mixer, char *name, char *cmd);
+void krad_mixer_portgroup_bind_xmms2(kr_mixer *mixer, char *name, char *path);
+void krad_mixer_portgroup_unbind_xmms2(kr_mixer *mixer, char *name);
 
 krad_audio_api_t krad_mixer_get_pusher(krad_mixer_t *krad_mixer);
 int krad_mixer_has_pusher(krad_mixer_t *krad_mixer);
