@@ -4,6 +4,8 @@
 typedef struct krad_mixer_rep_St krad_mixer_rep_t;
 typedef struct krad_mixer_rep_St kr_mixer_t;
 typedef struct krad_mixer_portgroup_rep_St kr_portgroup_t;
+typedef struct krad_mixer_portgroup_rep_St kr_mxr_unit_rep;
+typedef struct krad_mixer_portgroup_rep_St kr_mxr_unit;
 typedef struct krad_mixer_portgroup_rep_St kr_mixer_portgroup_t;
 typedef struct krad_mixer_portgroup_rep_St krad_mixer_portgroup_rep_t;
 
@@ -25,7 +27,7 @@ typedef enum {
   KR_CROSSFADE_GROUP,
   KR_XMMS2_IPC_PATH,
   KR_DTMF,
-} kr_mixer_portgroup_control_t;
+} kr_mixer_unit_control;
 
 typedef enum {
   DB = 1,
@@ -34,21 +36,7 @@ typedef enum {
   TYPE,
   DRIVE,
   BLEND,
-} kr_mixer_effect_control_t;
-
-typedef enum {
-  KRAD_TONE = 1,
-  KLOCALSHM,
-  KRAD_AUDIO, /* i.e local audio i/o */
-  KRAD_LINK, /* i.e. remote audio i/o */
-  MIXBUS,  /* i.e. mixer internal i/o */
-} krad_mixer_portgroup_io_t;
-
-typedef enum {
-  NOTOUTPUT,
-  DIRECT,
-  AUX,
-} krad_mixer_output_t;
+} kr_mixer_effect_control;
 
 typedef enum {
   NIL,
@@ -63,20 +51,19 @@ typedef enum {
 } channels_t;
 
 typedef enum {
-  OUTPUT,
   INPUT,
-  MIX,
-} krad_mixer_portgroup_direction_t;
+  BUS,
+  DIRECTOUT,
+  AUXOUT,
+} kr_mixer_unit_type;
 
 struct krad_mixer_portgroup_rep_St {
 
-  char sysname[64];
+  char name[64];
   channels_t channels;
-  int io_type;
-  krad_mixer_portgroup_direction_t direction;
-  krad_mixer_output_t output_type;
+  kr_mixer_unit_type type;
 
-  char mixbus[64];
+  char bus[64];
   char crossfade_group[64];
   float fade;
 
@@ -96,7 +83,6 @@ struct krad_mixer_portgroup_rep_St {
 
   uint32_t has_xmms2;
   char xmms2_ipc_path[128];
-
 };
 
 struct krad_mixer_rep_St {
@@ -115,12 +101,10 @@ struct krad_effects_rep_St {
   void *effect[KRAD_EFFECTS_MAX_CHANNELS];
 };
 
-char *krad_mixer_channel_number_to_string(int channel);
-char *effect_type_to_string(kr_effect_type_t effect_type);
-char *effect_control_to_string(kr_mixer_effect_control_t effect_control);
-char *portgroup_control_to_string(kr_mixer_portgroup_control_t portgroup_control);
-char *portgroup_direction_to_string(krad_mixer_portgroup_direction_t direction);
-char *portgroup_output_type_to_string(krad_mixer_output_t output_type);
-
-void krad_mixer_portgroup_rep_to_ebml2(krad_mixer_portgroup_rep_t *rep, kr_ebml2_t *ebml);
+char *kr_mixer_channel_to_str(int channel);
+char *effect_type_to_str(kr_effect_type effect_type);
+char *effect_control_to_str(kr_mixer_effect_control control);
+char *unit_control_to_str(kr_mixer_unit_control control);
+char *kr_mixer_unit_type_to_str(kr_mixer_unit_type type);
+void kr_mixer_unit_rep_to_ebml(kr_mxr_unit_rep *rep, kr_ebml2_t *ebml);
 #endif

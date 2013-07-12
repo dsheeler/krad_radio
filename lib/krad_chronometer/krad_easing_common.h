@@ -6,7 +6,7 @@ typedef enum {
 	FIRSTEASING = LINEAR,
 	EASEINSINE,
 	EASEOUTSINE,
-	EASEINOUTSINE,	
+	EASEINOUTSINE,
 	EASEINCUBIC,
 	EASEOUTCUBIC,
 	EASEINOUTCUBIC,
@@ -37,6 +37,6 @@ typedef enum {
 	EASEOUTQUINT,
 	EASEINOUTQUINT,
 */
-} krad_ease_t;
+} kr_easing;
 
 #endif

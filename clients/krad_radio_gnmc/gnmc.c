@@ -195,32 +195,32 @@ static int32_t gnmc_portgroup_show (port_t *port, screen_t *scr) {
 	box_t *port_box;
 
 	port_box = box_create (scr,NAME,1);
-	box_set_name (port_box,port->sysname);
+	box_set_name (port_box,port->name);
 
 	switch (port->direction) {
 		case INPUT:
 			box_print (port_box,"Input %s , Vol: %0.2f%%",
-      port->sysname,port->volume[0]);
+      port->name,port->volume[0]);
 			box_set_info (port_box,"Input");
       port_box->ro = 1;
 			break;
 		case OUTPUT:
 			if (port->output_type == DIRECT) {
 				box_print (port_box,"Output %s , Vol: %0.2f%%",
-        port->sysname,port->volume[0]);
+        port->name,port->volume[0]);
 				box_set_info (port_box,"Output");
         port_box->ro = 1;
 			}
 			else {
 				box_print (port_box,"Aux Output %s , Vol: %0.2f%%",
-        port->sysname,port->volume[0]);
+        port->name,port->volume[0]);
 				box_set_info (port_box,"Aux Output");
         port_box->ro = 1;
 			}
 			break;
 		case MIX:
 			box_print (port_box,"Bus %s , Vol: %0.2f%%",
-      port->sysname,port->volume[0]);
+      port->name,port->volume[0]);
 			box_set_info (port_box,"Bus");
       port_box->ro = 1;
 			break;

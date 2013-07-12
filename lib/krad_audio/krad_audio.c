@@ -1,13 +1,12 @@
 #include "krad_audio.h"
 
-void krad_audio_portgroup_samples_callback (int frames, void *userdata, float **samples) {
+void krad_audio_portgroup_samples_callback(int frames, void *userdata, float **samples) {
 
 	krad_audio_portgroup_t *portgroup = (krad_audio_portgroup_t *)userdata;
 
 	switch (portgroup->audio_api) {
-
 		case JACK:
-			krad_jack_portgroup_samples_callback ( frames, portgroup->api_portgroup, samples);
+			krad_jack_portgroup_samples_callback(frames, portgroup->api_portgroup, samples);
 			break;
 		case ALSA:
 			break;
@@ -21,9 +20,9 @@ void krad_audio_portgroup_samples_callback (int frames, void *userdata, float **
 }
 
 
-krad_audio_portgroup_t *krad_audio_portgroup_create (krad_audio_t *krad_audio, char *name, krad_audio_portgroup_direction_t direction,
-													 int channels, krad_audio_api_t api) {
-
+krad_audio_portgroup_t *krad_audio_portgroup_create(krad_audio_t *krad_audio,
+ char *name, krad_audio_portgroup_direction_t direction, int channels,
+ krad_audio_api_t api) {
 
 	krad_audio_portgroup_t *portgroup;
 	int p;
@@ -46,18 +45,17 @@ krad_audio_portgroup_t *krad_audio_portgroup_create (krad_audio_t *krad_audio, c
 	portgroup->direction = direction;
 	portgroup->channels = channels;
 
-	strncpy (portgroup->name, name, sizeof(portgroup->name));
+	strncpy(portgroup->name, name, sizeof(portgroup->name));
 
 	switch (portgroup->audio_api) {
-
 		case JACK:
 			if (krad_audio->krad_jack == NULL) {
-				krad_audio->krad_jack = krad_jack_create (krad_audio);
+				krad_audio->krad_jack = krad_jack_create(krad_audio);
         //restore thread name
-        krad_system_set_thread_name ("kr_app_server");
+        krad_system_set_thread_name("kr_app_server");
 			}
-			portgroup->api_portgroup = krad_jack_portgroup_create (krad_audio->krad_jack, portgroup->name,
-																   portgroup->direction, portgroup->channels);
+			portgroup->api_portgroup = krad_jack_portgroup_create(krad_audio->krad_jack, portgroup->name,
+  	   portgroup->direction, portgroup->channels);
 			break;
 		case ALSA:
 			break;
@@ -73,10 +71,9 @@ krad_audio_portgroup_t *krad_audio_portgroup_create (krad_audio_t *krad_audio, c
 	portgroup->active = 1;
 
 	return portgroup;
-
 }
 
-void krad_audio_portgroup_destroy (krad_audio_portgroup_t *portgroup) {
+void krad_audio_portgroup_destroy(krad_audio_portgroup_t *portgroup) {
 
 	int p;
 	int j;
@@ -99,7 +96,7 @@ void krad_audio_portgroup_destroy (krad_audio_portgroup_t *portgroup) {
 			}
 
 			if ((j == 0) && (portgroup->krad_audio->krad_jack != NULL)) {
-				krad_jack_destroy (portgroup->krad_audio->krad_jack);
+				krad_jack_destroy(portgroup->krad_audio->krad_jack);
 				portgroup->krad_audio->krad_jack = NULL;
 			}
 
@@ -115,11 +112,9 @@ void krad_audio_portgroup_destroy (krad_audio_portgroup_t *portgroup) {
 	}
 
 	portgroup->active = 0;
-
 }
 
-
-void krad_audio_destroy (krad_audio_t *krad_audio) {
+void krad_audio_destroy(krad_audio_t *krad_audio) {
 
 	int p;
 
@@ -141,7 +136,7 @@ void krad_audio_destroy (krad_audio_t *krad_audio) {
 	free (krad_audio);
 }
 
-krad_audio_t *krad_audio_create (krad_mixer_t *krad_mixer) {
+krad_audio_t *krad_audio_create(kr_mixer *mixer) {
 
 	krad_audio_t *krad_audio;
 	int p;
@@ -150,12 +145,11 @@ krad_audio_t *krad_audio_create (krad_mixer_t *krad_mixer) {
 		failfast ("Krad Audio memory alloc fail\n");
 	}
 
-	krad_audio->krad_mixer = krad_mixer;
+	krad_audio->mixer = mixer;
 
 	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
 		krad_audio->portgroup[p] = calloc (1, sizeof (krad_audio_portgroup_t));
 	}
 
 	return krad_audio;
-
 }

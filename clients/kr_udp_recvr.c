@@ -21,15 +21,15 @@ struct kr_udp_recvr_St {
 	kr_client_t *client;
 	kr_videoport_t *videoport;
 	krad_vpx_decoder_t *vpxdec;
-	
+
   uint32_t frame_size;
   uint32_t framebufsize;
   unsigned char *rgba;
   uint32_t frames_dec;
   uint32_t consumed;
-	
+
 	uint32_t repeat;
-	
+
 };
 
 static int destroy = 0;
@@ -44,7 +44,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	static float hexrot = 0;
 	int r1;
 	float scale;
-		
+
 	cairo_save(cr);
 	cairo_set_line_width(cr, 1);
 	cairo_set_source_rgb(cr, ORANGE);
@@ -70,10 +70,10 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_rel_line_to (cr, w, 0);
 	hexrot += 1.5;
 	cairo_fill (cr);
-	
+
 	cairo_restore(cr);
 	cairo_save(cr);
-		
+
 	cairo_set_line_width(cr, 1.5);
 	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 	cairo_set_source_rgb(cr, GREY);
@@ -96,7 +96,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_rel_line_to (cr, w, 0);
 	cairo_rotate (cr, 60 * (M_PI/180.0));
 	cairo_rel_line_to (cr, w, 0);
-	
+
 	cairo_rotate (cr, 60 * (M_PI/180.0));
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -104,7 +104,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_pattern_add_color_stop_rgba (pat, 0, 0, 0, 1, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.4, 0, 0, 0, 0);
 	cairo_set_source (cr, pat);
-	
+
 	cairo_fill (cr);
 	cairo_pattern_destroy (pat);
 	cairo_restore(cr);
@@ -128,7 +128,7 @@ int videoport_process (void *buffer, void *user) {
 
   kr_udp_recvr_t *udp_recvr;
   int pos;
-  
+
   udp_recvr = (kr_udp_recvr_t *)user;
 
   /*
@@ -141,11 +141,11 @@ int videoport_process (void *buffer, void *user) {
 												 udp_recvr->width,
 												 udp_recvr->height,
 												 udp_recvr->width * 4);
-	
+
 	cr = cairo_create (cst);
 	cairo_save (cr);
 	cairo_set_source_rgba (cr, BGCOLOR_CLR);
-	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
+	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
 	cairo_paint (cr);
 	cairo_restore (cr);
 	//render_hex (cr, udp_recvr->width / 2, udp_recvr->height / 2, 66);
@@ -161,7 +161,7 @@ int videoport_process (void *buffer, void *user) {
   while (udp_recvr->consumed >= frame) {
     frame++;
   }
-  
+
   if (frame > udp_recvr->frames_dec) {
     frame = udp_recvr->frames_dec;
   }
@@ -190,11 +190,11 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 	struct sockaddr_in local_address;
 	struct sockaddr_in remote_address;
   struct SwsContext *scaler;
-	
+
 	scaler = NULL;
 	started = 0;
 	slen = sizeof (remote_address);
-	
+
 	buffer = calloc (1, 45000);
 	packet_buffer = calloc (1, 2300000);
 	sd = socket (AF_INET, SOCK_DGRAM, 0);
@@ -209,13 +209,13 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 		printf("bind error\n");
 		exit(1);
 	}
-	
+
   kr_udp_recvr_alloc_framebuf (udp_recvr);
-	
+
   udp_recvr->vpxdec = krad_vpx_decoder_create ();
 
 	while (1) {
-	
+
 	  if (destroy == 1) {
 		  printf ("Got signal!\n");
 	    break;
@@ -223,22 +223,22 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
     if (kr_videoport_error (udp_recvr->videoport)) {
       printf ("Error: %s\n", "videoport Error");
       break;
-    }	
-	
+    }
+
 		ret = recvfrom (sd, buffer, 2000, 0, (struct sockaddr *)&remote_address, (socklen_t *)&slen);
-		
+
 		if (ret == -1) {
 			printf("failed recvin udp\n");
 			exit (1);
 		}
-		
-    //printf ("Received packet from %s:%d\n", 
+
+    //printf ("Received packet from %s:%d\n",
   	//	inet_ntoa(remote_address.sin_addr), ntohs(remote_address.sin_port));
 
 
 		krad_rebuilder_write (krad_rebuilder, buffer, ret);
 		ret = krad_rebuilder_read_packet (krad_rebuilder, packet_buffer, 1, &keyframe);
-  
+
     if (ret != 0) {
 
 		  //printf ("read a packet with %d bytes key: %d     \n", ret, keyframe);
@@ -248,21 +248,21 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 			} else {
 			  continue;
 			}
-			
+
       krad_vpx_decoder_decode (udp_recvr->vpxdec, packet_buffer, ret);
-      
+
       while (udp_recvr->vpxdec->img != NULL) {
-     
+
           int rgb_stride_arr[3] = {4*udp_recvr->width, 0, 0};
           uint8_t *dst[4];
-          
+
           scaler = sws_getCachedContext ( scaler,
                                           udp_recvr->vpxdec->width,
                                           udp_recvr->vpxdec->height,
                                           PIX_FMT_YUV420P,
                                           udp_recvr->width,
                                           udp_recvr->height,
-                                          PIX_FMT_RGB32, 
+                                          PIX_FMT_RGB32,
                                           SWS_BICUBIC,
                                           NULL, NULL, NULL);
 
@@ -278,9 +278,9 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 
 
           udp_recvr->frames_dec++;
-          
+
         krad_vpx_decoder_decode_again (udp_recvr->vpxdec);
-          
+
 		  }
 	  }
 	}
@@ -305,7 +305,7 @@ int main (int argc, char *argv[]) {
 	kr_videoport_t *videoport;
   kr_udp_recvr_t *udp_recvr;
   int port;
-  
+
   port = 3777;
   ret = 0;
 
@@ -317,31 +317,31 @@ int main (int argc, char *argv[]) {
 		}
 		return 1;
 	}
-	
+
 	if (argc > 2) {
 	  port = atoi (argv[2]);
-	}	
-	
+	}
+
 	client = kr_client_create ("krad videoport client");
 
 	if (client == NULL) {
 		fprintf (stderr, "Could not create KR client.\n");
 		return 1;
-	}	
+	}
 
   kr_connect (client, argv[1]);
-  
+
   if (!kr_connected (client)) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n", argv[1]);
 	  kr_client_destroy (&client);
 	  return 1;
   }
-	
+
   if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
 	  kr_client_destroy (&client);
 	  return 1;
   }
-  
+
   if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
     fprintf (stderr, "Could not get compositor info!\n");
 	  kr_client_destroy (&client);
@@ -359,24 +359,24 @@ int main (int argc, char *argv[]) {
 	}
 
   udp_recvr = calloc (1, sizeof (kr_udp_recvr_t));
-  
+
   udp_recvr->width = width;
   udp_recvr->height = height;
-	
+
 	udp_recvr->client = client;
 	udp_recvr->videoport = videoport;
-	
+
 	kr_videoport_set_callback (videoport, videoport_process, udp_recvr);
-	
+
   signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);	
-	
+  signal (SIGTERM, signal_recv);
+
 	kr_videoport_activate (videoport);
-	
-  kr_udp_recvr (udp_recvr, port);	
-	
+
+  kr_udp_recvr (udp_recvr, port);
+
 	kr_videoport_deactivate (videoport);
-	
+
 	kr_videoport_destroy (videoport);
 
 	kr_client_destroy (&client);
@@ -391,5 +391,5 @@ int main (int argc, char *argv[]) {
 		printf ("Worked!\n");
 	}
 
-	return ret;	
+	return ret;
 }

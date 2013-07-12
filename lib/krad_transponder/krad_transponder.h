@@ -53,7 +53,7 @@ struct krad_link_St {
 	krad_link_av_mode_t av_mode;
 
 	krad_framepool_t *krad_framepool;
-	krad_mixer_portgroup_t *krad_mixer_portgroup;
+	kr_mixer_unit *krad_mixer_portgroup;
 	krad_compositor_port_t *krad_compositor_port;
 
 	krad_compositor_port_t *krad_compositor_port2;
@@ -153,7 +153,7 @@ struct krad_link_St {
 
 	kr_xpdr_subunit_t *subunit;
 
-	krad_mixer_portgroup_t *mixer_portgroup;
+	kr_mixer_unit *mixer_portgroup;
 	int au_framecnt;
 	float *au_samples[KRAD_MIXER_MAX_CHANNELS];
 	float *au_interleaved_samples;

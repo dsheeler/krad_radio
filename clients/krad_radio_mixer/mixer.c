@@ -4,11 +4,11 @@ static void mix_mute (kr_client_t *client, mix_port_t *port) {
 
   if (!port->mute) {
     port->mute = 1;
-    kr_mixer_set_control (client,port->sysname,"volume",0, 0);
+    kr_mixer_set_control (client,port->name,"volume",0, 0);
   }
   else {
     port->mute = 0;
-    kr_mixer_set_control (client,port->sysname,"volume",port->vol, 0);
+    kr_mixer_set_control (client,port->name,"volume",port->vol, 0);
   }
 
 
@@ -349,7 +349,7 @@ static void mix_item_free (mix_item_t *item) {
 
   /* Port Free */
 
-  free (item->port->sysname);
+  free (item->port->name);
   free (item->port);
   
 
@@ -424,7 +424,7 @@ static void mix_resize_handler (mixer_t *mix) {
 
     item = mix->items[i];
 
-    width = max ((strlen (item->port->sysname) + (strlen (item->port->sysname) % 2)),BAR_WIDTH);
+    width = max ((strlen (item->port->name) + (strlen (item->port->name) % 2)),BAR_WIDTH);
 
     for (j=0;j<item->widget->bar_cell_n;j++) {
       pw = panel_window (item->widget->bar_cell_p[j]);
@@ -490,7 +490,7 @@ static void mix_item_destroy (mixer_t *mix, char *name) {
 
     item = mix->items[i];
 
-    if (!strcmp (name,item->port->sysname)) {
+    if (!strcmp (name,item->port->name)) {
       mix_form_destroy (mix);
       mix_item_free (item);
       mix->items[i] = NULL;
@@ -525,14 +525,14 @@ static mix_widget_t* mix_widget_create (mixer_t *mix, mix_port_t *port) {
   rows = getmaxy (mix_w);
 
   /* we want this to be even for centering things */
-  width = max ((strlen (port->sysname) + (strlen (port->sysname) % 2)),BAR_WIDTH);
+  width = max ((strlen (port->name) + (strlen (port->name) % 2)),BAR_WIDTH);
 
   widget = calloc (1,sizeof (mix_widget_t));
 
   widget->field = new_field (2,width,0,0,0,0);
 
   set_field_just (widget->field, JUSTIFY_CENTER);
-  set_field_buffer (widget->field, 0, port->sysname);
+  set_field_buffer (widget->field, 0, port->name);
   field_opts_off (widget->field, O_AUTOSKIP | O_EDIT); 
 
 
@@ -597,7 +597,7 @@ static void mix_item_create (mixer_t *mix , kr_portgroup_t *krport) {
     item = mix->items[i];
 
     if (item != NULL) {
-      if (!strcmp (krport->sysname,item->port->sysname)) {
+      if (!strcmp (krport->name,item->port->name)) {
         return;
       }
     }
@@ -610,7 +610,7 @@ static void mix_item_create (mixer_t *mix , kr_portgroup_t *krport) {
 
   port = calloc (1,sizeof (mix_port_t));
 
-  port->sysname = strdup (krport->sysname);
+  port->name = strdup (krport->name);
   port->vol = krport->volume[0];
   port->mute = 0;
 
@@ -646,7 +646,7 @@ static mix_item_t* mix_item_from_addr (mixer_t *mix, kr_address_t *addr) {
 
     item = mix->items[i];
 
-    if (!strcmp (item->port->sysname,addr->id.name)) {
+    if (!strcmp (item->port->name,addr->id.name)) {
       return item;
     }
 
@@ -822,7 +822,7 @@ int mixer_run (kr_client_t *client) {
         fieldidx = field_index (current_field (mix->form));
         cport =  mix->items[fieldidx]->port;
         if (!cport->mute) {
-          kr_mixer_set_control (client,cport->sysname,"volume",cport->vol + 3, 0);
+          kr_mixer_set_control (client,cport->name,"volume",cport->vol + 3, 0);
           mix_vol_update (cport->vol + 3,mix->items[fieldidx]);
           mix_txt_set (mix->items[fieldidx]);
         }
@@ -835,7 +835,7 @@ int mixer_run (kr_client_t *client) {
         fieldidx = field_index (current_field (mix->form));
         cport =  mix->items[fieldidx]->port;
         if (!cport->mute) {
-          kr_mixer_set_control (client,cport->sysname,"volume",cport->vol - 3, 0);
+          kr_mixer_set_control (client,cport->name,"volume",cport->vol - 3, 0);
           mix_vol_update (cport->vol - 3,mix->items[fieldidx]);
           mix_txt_set (mix->items[fieldidx]);
         }
@@ -851,7 +851,7 @@ int mixer_run (kr_client_t *client) {
         mix_txt_set (mix->items[fieldidx]);  
         break;
       case 'e':
-        eq_run (client,mix->items[field_index (current_field (mix->form))]->port->sysname);
+        eq_run (client,mix->items[field_index (current_field (mix->form))]->port->name);
         touchwin (panel_window (mix->main_p));
         break;
       default:

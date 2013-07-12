@@ -513,20 +513,17 @@ void decklink_capture_unit_create (void *arg) {
                                                       krad_link->capture_height,
                                                       DEFAULT_CAPTURE_BUFFER_FRAMES);
 
-  krad_link->krad_mixer_portgroup = krad_mixer_portgroup_create (krad_link->krad_radio->mixer,
-                                                                 krad_link->krad_decklink->simplename,
-                                                                 INPUT, NOTOUTPUT, 2, 0.0f,
-                                                                 krad_link->krad_radio->mixer->master_mix,
-                                                                 KRAD_LINK, krad_link, 0);
+  krad_link->krad_mixer_portgroup = kr_mixer_unit_create(krad_link->krad_radio->mixer,
+   krad_link->krad_decklink->simplename, INPUT, NOTOUTPUT, 2, 0.0f,
+   krad_link->krad_radio->mixer->master, KRAD_LINK, krad_link, 0);
 
-  krad_mixer_set_portgroup_control (krad_link->krad_radio->mixer,
-                                    krad_link->krad_decklink->simplename,
-                                    "volume", 100.0f, 500, NULL);
+  kr_mixer_control(krad_link->krad_radio->mixer,
+   krad_link->krad_decklink->simplename, "volume", 100.0f, 500, NULL);
 
-  krad_link->krad_compositor_port = krad_compositor_port_create (krad_link->krad_radio->compositor,
-                                                                 krad_link->krad_decklink->simplename,
-                                                                 INPUT, krad_link->capture_width,
-                                                                 krad_link->capture_height);
+  krad_link->krad_compositor_port = krad_compositor_port_create(krad_link->krad_radio->compositor,
+                                                                krad_link->krad_decklink->simplename,
+                                                                INPUT, krad_link->capture_width,
+                                                                krad_link->capture_height);
 
   krad_link->krad_decklink->callback_pointer = krad_link;
   krad_link->krad_decklink->audio_frames_callback = krad_link_decklink_audio_callback;
@@ -544,7 +541,7 @@ void decklink_capture_unit_destroy (void *arg) {
     krad_link->krad_decklink = NULL;
   }
 
-  krad_mixer_portgroup_destroy (krad_link->krad_radio->mixer, krad_link->krad_mixer_portgroup);
+  kr_mixer_unit_destroy(krad_link->krad_radio->mixer, krad_link->krad_mixer_portgroup);
   krad_compositor_port_destroy (krad_link->krad_radio->compositor, krad_link->krad_compositor_port);
 
   for (c = 0; c < krad_link->channels; c++) {
@@ -824,10 +821,9 @@ void audio_encoding_unit_create (void *arg) {
     return;
   }
 
-  krad_link->mixer_portgroup = krad_mixer_portgroup_create (krad_link->krad_radio->mixer, krad_link->sysname,
-                                                            OUTPUT, DIRECT, krad_link->channels, 0.0f,
-                                                            krad_link->krad_radio->mixer->master_mix,
-                                                            KRAD_LINK, krad_link, 0);
+  krad_link->mixer_portgroup = kr_mixer_unit_create(krad_link->krad_radio->mixer,
+   krad_link->sysname, OUTPUT, DIRECT, krad_link->channels, 0.0f,
+   krad_link->krad_radio->mixer->master, KRAD_LINK, krad_link, 0);
 
   switch (krad_link->codec) {
     case VORBIS:
@@ -971,7 +967,7 @@ void audio_encoding_unit_destroy (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
 
-  krad_mixer_portgroup_destroy (krad_link->krad_radio->mixer, krad_link->mixer_portgroup);
+  kr_mixer_unit_destroy(krad_link->krad_radio->mixer, krad_link->mixer_portgroup);
 
   int c;
   //unsigned char *vorbis_buffer;

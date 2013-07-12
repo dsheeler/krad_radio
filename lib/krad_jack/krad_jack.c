@@ -241,7 +241,7 @@ int krad_jack_process (jack_nframes_t nframes, void *arg) {
     krad_jack->set_thread_name_process = 1;
   }
 
-  return krad_mixer_mix (nframes, krad_jack->krad_audio->krad_mixer);
+  return kr_mixer_mix(krad_jack->krad_audio->mixer, nframes);
 }
 
 void krad_jack_shutdown (void *arg) {
@@ -256,7 +256,7 @@ void krad_jack_destroy (krad_jack_t *krad_jack) {
   int p;
   jack_client_close (krad_jack->client);
 
-  krad_mixer_unset_pusher (krad_jack->krad_audio->krad_mixer);
+  kr_mixer_unset_pusher(krad_jack->krad_audio->mixer);
 
   for (p = 0; p < 256; p++) {
     if (krad_jack->stay_connected[p] != NULL) {
@@ -313,7 +313,7 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
 
   krad_jack->krad_audio = krad_audio;
 
-  if (krad_mixer_has_pusher(krad_jack->krad_audio->krad_mixer)) {
+  if (kr_mixer_has_pusher(krad_jack->krad_audio->mixer)) {
     printke ("Krad Jack: oh no already have a pusher...");
     free(krad_jack);
     return NULL;
@@ -321,7 +321,7 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
 
   krad_system_set_thread_name ("kr_jack");
 
-  krad_jack->name = krad_jack->krad_audio->krad_mixer->name;
+  krad_jack->name = krad_jack->krad_audio->mixer->name;
 
   if (server_name != NULL) {
     krad_jack->options = JackNoStartServer | JackServerName;
@@ -345,18 +345,18 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
     printke ("Krad Jack: unique name `%s' assigned", krad_jack->name);
   }
 
-  krad_mixer_set_pusher (krad_jack->krad_audio->krad_mixer, JACK);
+  kr_mixer_set_pusher(krad_jack->krad_audio->mixer, JACK);
 
-  krad_jack->sample_rate = jack_get_sample_rate ( krad_jack->client );
-  krad_jack->period_size = jack_get_buffer_size ( krad_jack->client );
+  krad_jack->sample_rate = jack_get_sample_rate(krad_jack->client);
+  krad_jack->period_size = jack_get_buffer_size(krad_jack->client);
 
-  if (krad_jack->sample_rate != krad_mixer_get_sample_rate (krad_jack->krad_audio->krad_mixer)) {
-    krad_mixer_set_sample_rate (krad_jack->krad_audio->krad_mixer, krad_jack->sample_rate);
+  if (krad_jack->sample_rate != kr_mixer_sample_rate(krad_jack->krad_audio->mixer)) {
+    kr_mixer_sample_rate_set(krad_jack->krad_audio->mixer, krad_jack->sample_rate);
     printk ("Krad Jack: Set Krad Mixer sample rate to %u", krad_jack->sample_rate);
   }
 
-  if (krad_jack->period_size != krad_mixer_get_period_size (krad_jack->krad_audio->krad_mixer)) {
-    krad_mixer_set_period_size (krad_jack->krad_audio->krad_mixer, krad_jack->period_size);
+  if (krad_jack->period_size != kr_mixer_period(krad_jack->krad_audio->mixer)) {
+    kr_mixer_period_set(krad_jack->krad_audio->mixer, krad_jack->period_size);
     printk ("Krad Jack: Set Krad Mixer period size to %u", krad_jack->period_size);
   }
 

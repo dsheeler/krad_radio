@@ -1,6 +1,6 @@
 #include "krad_compositor_subunit.h"
 
-void krad_compositor_subunit_reset (krad_compositor_subunit_t *subunit) {
+void krad_compositor_subunit_reset(krad_compositor_subunit_t *subunit) {
 
   subunit->width = 0;
   subunit->height = 0;
@@ -20,17 +20,17 @@ void krad_compositor_subunit_reset (krad_compositor_subunit_t *subunit) {
   subunit->rotation = 0.0f;
 }
 
-void krad_compositor_subunit_set_x (krad_compositor_subunit_t *subunit, int x, int duration) {
-  krad_easing_set_new_value (&subunit->x_easing, x, duration, EASEINOUTSINE, NULL);
+void krad_compositor_subunit_set_x(krad_compositor_subunit_t *subunit, int x, int duration) {
+  kr_easer_set(&subunit->x_easer, x, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_y (krad_compositor_subunit_t *subunit, int y, int duration) {
-  krad_easing_set_new_value (&subunit->y_easing, y, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->y_easer, y, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_xy (krad_compositor_subunit_t *subunit, int x, int y, int duration) {
-  krad_easing_set_new_value (&subunit->x_easing, x, duration, EASEINOUTSINE, NULL);
-  krad_easing_set_new_value (&subunit->y_easing, y, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->x_easer, x, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->y_easer, y, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_z (krad_compositor_subunit_t *subunit, int z) {
@@ -38,85 +38,85 @@ void krad_compositor_subunit_set_z (krad_compositor_subunit_t *subunit, int z) {
 }
 
 void krad_compositor_subunit_set_width (krad_compositor_subunit_t *subunit, int width, int duration) {
-  krad_easing_set_new_value (&subunit->width_easing, width, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->width_easer, width, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_height (krad_compositor_subunit_t *subunit, int height, int duration) {
-  krad_easing_set_new_value (&subunit->height_easing, height, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->height_easer, height, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_xscale (krad_compositor_subunit_t *subunit, float xscale, int duration) {
-  krad_easing_set_new_value (&subunit->xscale_easing, xscale, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->xscale_easer, xscale, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_yscale (krad_compositor_subunit_t *subunit, float yscale, int duration) {
-  krad_easing_set_new_value (&subunit->yscale_easing, yscale, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->yscale_easer, yscale, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_scale (krad_compositor_subunit_t *subunit, float scale, int duration) {
-  krad_easing_set_new_value (&subunit->xscale_easing, scale, duration, EASEINOUTSINE, NULL);
-  krad_easing_set_new_value (&subunit->yscale_easing, scale, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->xscale_easer, scale, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->yscale_easer, scale, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_opacity (krad_compositor_subunit_t *subunit, float opacity, int duration) {
-  krad_easing_set_new_value (&subunit->opacity_easing, opacity, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->opacity_easer, opacity, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_rotation (krad_compositor_subunit_t *subunit, float rotation, int duration) {
-  krad_easing_set_new_value (&subunit->rotation_easing, rotation, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->rotation_easer, rotation, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_red (krad_compositor_subunit_t *subunit, float red, int duration) {
-  krad_easing_set_new_value (&subunit->red_easing, red, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->red_easer, red, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_green (krad_compositor_subunit_t *subunit, float green, int duration) {
-  krad_easing_set_new_value (&subunit->green_easing, green, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->green_easer, green, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_blue (krad_compositor_subunit_t *subunit, float blue, int duration) {
-  krad_easing_set_new_value (&subunit->blue_easing, blue, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->blue_easer, blue, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_alpha (krad_compositor_subunit_t *subunit, float alpha, int duration) {
-  krad_easing_set_new_value (&subunit->alpha_easing, alpha, duration, EASEINOUTSINE, NULL);
+  kr_easer_set (&subunit->alpha_easer, alpha, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_tick (krad_compositor_subunit_t *subunit) {
-  if (subunit->x_easing.active) {
-    subunit->x = krad_easing_process (&subunit->x_easing, subunit->x, NULL);
+  if (subunit->x_easer.active) {
+    subunit->x = kr_easer_process(&subunit->x_easer, subunit->x, NULL);
   }
-  if (subunit->y_easing.active) {
-    subunit->y = krad_easing_process (&subunit->y_easing, subunit->y, NULL);
+  if (subunit->y_easer.active) {
+    subunit->y = kr_easer_process(&subunit->y_easer, subunit->y, NULL);
   }
-  if (subunit->width_easing.active) {
-    subunit->width = krad_easing_process (&subunit->width_easing, subunit->width, NULL);
+  if (subunit->width_easer.active) {
+    subunit->width = kr_easer_process(&subunit->width_easer, subunit->width, NULL);
   }
-  if (subunit->height_easing.active) {
-    subunit->height = krad_easing_process (&subunit->height_easing, subunit->height, NULL);
+  if (subunit->height_easer.active) {
+    subunit->height = kr_easer_process(&subunit->height_easer, subunit->height, NULL);
   }
-  if (subunit->xscale_easing.active) {
-    subunit->xscale = krad_easing_process (&subunit->xscale_easing, subunit->xscale, NULL);
+  if (subunit->xscale_easer.active) {
+    subunit->xscale = kr_easer_process(&subunit->xscale_easer, subunit->xscale, NULL);
   }
-  if (subunit->yscale_easing.active) {
-    subunit->yscale = krad_easing_process (&subunit->yscale_easing, subunit->yscale, NULL);
+  if (subunit->yscale_easer.active) {
+    subunit->yscale = kr_easer_process(&subunit->yscale_easer, subunit->yscale, NULL);
   }
-  if (subunit->opacity_easing.active) {
-    subunit->opacity = krad_easing_process (&subunit->opacity_easing, subunit->opacity, NULL);
+  if (subunit->opacity_easer.active) {
+    subunit->opacity = kr_easer_process(&subunit->opacity_easer, subunit->opacity, NULL);
   }
-  if (subunit->rotation_easing.active) {
-    subunit->rotation = krad_easing_process (&subunit->rotation_easing, subunit->rotation, NULL);
+  if (subunit->rotation_easer.active) {
+    subunit->rotation = kr_easer_process(&subunit->rotation_easer, subunit->rotation, NULL);
   }
-  if (subunit->red_easing.active) {
-    subunit->red = krad_easing_process (&subunit->red_easing, subunit->red, NULL);
+  if (subunit->red_easer.active) {
+    subunit->red = kr_easer_process(&subunit->red_easer, subunit->red, NULL);
   }
-  if (subunit->green_easing.active) {
-    subunit->green = krad_easing_process (&subunit->green_easing, subunit->green, NULL);
+  if (subunit->green_easer.active) {
+    subunit->green = kr_easer_process(&subunit->green_easer, subunit->green, NULL);
   }
-  if (subunit->blue_easing.active) {
-    subunit->blue = krad_easing_process (&subunit->blue_easing, subunit->blue, NULL);
+  if (subunit->blue_easer.active) {
+    subunit->blue = kr_easer_process(&subunit->blue_easer, subunit->blue, NULL);
   }
-  if (subunit->alpha_easing.active) {
-    subunit->alpha = krad_easing_process (&subunit->alpha_easing, subunit->alpha, NULL);
+  if (subunit->alpha_easer.active) {
+    subunit->alpha = kr_easer_process(&subunit->alpha_easer, subunit->alpha, NULL);
   }
 }

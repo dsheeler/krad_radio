@@ -18,117 +18,116 @@ static inline float D(float x) {
 		return 0.0f;
 }
 
-void kr_analog_set_blend(kr_analog_t *kr_analog, float blend, int duration,
- krad_ease_t ease, void *user) {
+void kr_analog_set_blend(kr_analog *analog, float blend, int duration,
+ kr_easing easing, void *user) {
 	blend = LIMIT(blend, KRAD_ANALOG_BLEND_MIN, KRAD_ANALOG_BLEND_MAX);
-  krad_easing_set_new_value (&kr_analog->krad_easing_blend, blend, duration,
-   ease, user);
+  kr_easer_set(&analog->blend_easer, blend, duration, easing, user);
 }
 
-void kr_analog_set_drive(kr_analog_t *kr_analog, float drive, int duration,
- krad_ease_t ease, void *user) {
+void kr_analog_set_drive(kr_analog *analog, float drive, int duration,
+ kr_easing easing, void *user) {
 	drive = LIMIT(drive, KRAD_ANALOG_DRIVE_MIN_OFF, KRAD_ANALOG_DRIVE_MAX);
-  krad_easing_set_new_value (&kr_analog->krad_easing_drive, drive, duration,
-   ease, user);
+  kr_easer_set(&analog->drive_easer, drive, duration, easing, user);
 }
 
-void kr_analog_set_sample_rate (kr_analog_t *kr_analog, int sample_rate) {
-  kr_analog->sample_rate = sample_rate;
+void kr_analog_set_sample_rate(kr_analog *analog, int sample_rate) {
+  analog->sample_rate = sample_rate;
 }
 
-kr_analog_t *kr_analog_create (int sample_rate) {
+kr_analog *kr_analog_create(int sample_rate) {
 
-  kr_analog_t *kr_analog = calloc (1, sizeof(kr_analog_t));
+  kr_analog *analog;
 
-  kr_analog->sample_rate = sample_rate;
+  analog = calloc(1, sizeof(kr_analog));
+  analog->sample_rate = sample_rate;
+  analog->prev_drive = -1.0f;
+  analog->prev_blend = -11.0f;
 
-  kr_analog->prev_drive = -1.0f;
-  kr_analog->prev_blend = -11.0f;
-
-  return kr_analog;
+  return analog;
 }
 
-kr_analog_t *kr_analog_create2 (int sample_rate, krad_mixer_t *krad_mixer, char *portgroupname) {
+kr_analog *kr_analog_create2(int sample_rate, kr_mixer *mixer, char *name) {
 
-  kr_analog_t *kr_analog = calloc (1, sizeof(kr_analog_t));
+  kr_analog *analog;
 
-  kr_analog->krad_mixer = krad_mixer;
+  analog = calloc (1, sizeof(kr_analog));
+  analog->mixer = mixer;
+  analog->address.path.unit = KR_MIXER;
+  analog->address.path.subunit.mixer_subunit = KR_EFFECT;
+  strncpy(analog->address.id.name, name, sizeof(analog->address.id.name));
+  analog->address.sub_id = 3;
+  analog->address.sub_id2 = 0;
+  analog->sample_rate = sample_rate;
+  analog->prev_drive = -1.0f;
+  analog->prev_blend = -11.0f;
 
-  kr_analog->address.path.unit = KR_MIXER;
-  kr_analog->address.path.subunit.mixer_subunit = KR_EFFECT;
-  strncpy (kr_analog->address.id.name, portgroupname, sizeof(kr_analog->address.id.name));
-  kr_analog->address.sub_id = 3;
-  kr_analog->address.sub_id2 = 0;
-  
-  kr_analog->sample_rate = sample_rate;
-
-  kr_analog->prev_drive = -1.0f;
-  kr_analog->prev_blend = -11.0f;
-
-  return kr_analog;
+  return analog;
 }
 
-void kr_analog_destroy(kr_analog_t *kr_analog) {
-  free(kr_analog);
+void kr_analog_destroy(kr_analog *analog) {
+  free(analog);
 }
 
-//void kr_analog_process (kr_analog_t *kr_analog, float *input, float *output, int num_samples) {
-void kr_analog_process2 (kr_analog_t *kr_analog, float *input, float *output, int num_samples, int broadcast) {
-  
+//void kr_analog_process (kr_analog_t *kr_analog, float *input, float *output,
+//int num_samples) {
+void kr_analog_process2(kr_analog *analog, float *input, float *output,
+ int num_samples, int broadcast) {
+
   int s;
-  
   void *ptr;
-  
 	float drive;
 	float blend;
-
 	unsigned long sample_rate;
 
-	float rdrive = kr_analog->rdrive;
-	float rbdr = kr_analog->rbdr;
-	float kpa = kr_analog->kpa;
-	float kpb = kr_analog->kpb;
-	float kna = kr_analog->kna;
-	float knb = kr_analog->knb;
-	float ap = kr_analog->ap;
-	float an = kr_analog->an;
-	float imr = kr_analog->imr;
-	float kc = kr_analog->kc;
-	float srct = kr_analog->srct;
-	float sq = kr_analog->sq;
-	float pwrq = kr_analog->pwrq;
+	float rdrive = analog->rdrive;
+	float rbdr = analog->rbdr;
+	float kpa = analog->kpa;
+	float kpb = analog->kpb;
+	float kna = analog->kna;
+	float knb = analog->knb;
+	float ap = analog->ap;
+	float an = analog->an;
+	float imr = analog->imr;
+	float kc = analog->kc;
+	float srct = analog->srct;
+	float sq = analog->sq;
+	float pwrq = analog->pwrq;
 
 	float prev_med;
 	float prev_out;
 	float in;
 	float med;
 	float out;
-	
+
 	ptr = NULL;
-	
-  if (kr_analog->krad_easing_blend.active) {
-    kr_analog->blend = krad_easing_process(&kr_analog->krad_easing_blend, kr_analog->blend, &ptr);
+
+  if (analog->blend_easer.active) {
+    analog->blend = kr_easer_process(&analog->blend_easer, analog->blend,
+     &ptr);
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control(kr_analog->krad_mixer->broadcaster, &kr_analog->address, BLEND, kr_analog->blend, ptr);     
+      krad_radio_broadcast_subunit_control(analog->mixer->broadcaster,
+       &analog->address, BLEND, analog->blend, ptr);
     }
   }
-  if (kr_analog->krad_easing_drive.active) {
-    kr_analog->drive = krad_easing_process(&kr_analog->krad_easing_drive, kr_analog->drive, &ptr);
+  if (analog->drive_easer.active) {
+    analog->drive = kr_easer_process(&analog->drive_easer, analog->drive,
+     &ptr);
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control(kr_analog->krad_mixer->broadcaster, &kr_analog->address, DRIVE, kr_analog->drive, ptr);
+      krad_radio_broadcast_subunit_control(analog->mixer->broadcaster,
+       &analog->address, DRIVE, analog->drive, ptr);
     }
   }
 
-  if (kr_analog->drive < KRAD_ANALOG_DRIVE_MIN) {
-    return; 
+  if (analog->drive < KRAD_ANALOG_DRIVE_MIN) {
+    return;
   }
 
-	drive = LIMIT(kr_analog->drive, KRAD_ANALOG_DRIVE_MIN, KRAD_ANALOG_DRIVE_MAX);
-	blend = LIMIT(kr_analog->blend, KRAD_ANALOG_BLEND_MIN, KRAD_ANALOG_BLEND_MAX);
+	drive = LIMIT(analog->drive, KRAD_ANALOG_DRIVE_MIN, KRAD_ANALOG_DRIVE_MAX);
+	blend = LIMIT(analog->blend, KRAD_ANALOG_BLEND_MIN, KRAD_ANALOG_BLEND_MAX);
 
-  sample_rate = kr_analog->sample_rate;
+  sample_rate = analog->sample_rate;
 
-	if ((kr_analog->prev_drive != drive) || (kr_analog->prev_blend != blend)) {
+	if ((analog->prev_drive != drive) || (analog->prev_blend != blend)) {
 
 		rdrive = 12.0f / drive;
 		rbdr = rdrive / (10.5f - blend) * 780.0f / 33.0f;
@@ -145,15 +144,15 @@ void kr_analog_process2 (kr_analog_t *kr_analog, float *input, float *output, in
 		imr = 2.0f * knb + D(2.0f * kna + 4.0f * an - 1.0f);
 		pwrq = 2.0f / (imr + 1.0f);
 
-		kr_analog->prev_drive = drive;
-		kr_analog->prev_blend = blend;
+		analog->prev_drive = drive;
+		analog->prev_blend = blend;
 	}
 
 	for (s = 0; s < num_samples; s++) {
 
 		in = *(input++);
-		prev_med = kr_analog->prev_med;
-		prev_out = kr_analog->prev_out;
+		prev_med = analog->prev_med;
+		prev_out = analog->prev_out;
 
 		if (in >= 0.0f) {
 			med = (D(ap + in * (kpa - in)) + kpb) * pwrq;
@@ -165,25 +164,25 @@ void kr_analog_process2 (kr_analog_t *kr_analog, float *input, float *output, in
 
 		if (out < -1.0f)
 			out = -1.0f;
-		
+
 		*(output++) = out;
 
-		kr_analog->prev_med = M(med);
-		kr_analog->prev_out = M(out);
+		analog->prev_med = M(med);
+		analog->prev_out = M(out);
 	}
 
-	kr_analog->rdrive = rdrive;
-	kr_analog->rbdr = rbdr;
-	kr_analog->kpa = kpa;
-	kr_analog->kpb = kpb;
-	kr_analog->kna = kna;
-	kr_analog->knb = knb;
-	kr_analog->ap = ap;
-	kr_analog->an = an;
-	kr_analog->imr = imr;
-	kr_analog->kc = kc;
-	kr_analog->srct = srct;
-	kr_analog->sq = sq;
-	kr_analog->pwrq = pwrq;
+	analog->rdrive = rdrive;
+	analog->rbdr = rbdr;
+	analog->kpa = kpa;
+	analog->kpb = kpb;
+	analog->kna = kna;
+	analog->knb = knb;
+	analog->ap = ap;
+	analog->an = an;
+	analog->imr = imr;
+	analog->kc = kc;
+	analog->srct = srct;
+	analog->sq = sq;
+	analog->pwrq = pwrq;
 }
 

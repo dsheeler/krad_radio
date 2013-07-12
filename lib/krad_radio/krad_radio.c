@@ -37,7 +37,7 @@ static void radio_shutdown(kr_radio *radio) {
   }
   krad_timer_status(timer);
   if (radio->mixer != NULL) {
-    krad_mixer_destroy(radio->mixer);
+    kr_mixer_destroy(radio->mixer);
     radio->mixer = NULL;
   }
   krad_timer_status(timer);
@@ -84,7 +84,7 @@ static kr_radio *radio_create(char *sysname) {
     radio_shutdown(radio);
     return NULL;
   }
-  radio->mixer = krad_mixer_create(radio->sysname);
+  radio->mixer = kr_mixer_create(radio->sysname);
   if (radio->mixer == NULL) {
     radio_shutdown(radio);
     return NULL;
@@ -125,7 +125,7 @@ static kr_radio *radio_create(char *sysname) {
   krad_app_server_broadcaster_register_broadcast(radio->system_broadcaster,
    EBML_ID_KRAD_SYSTEM_BROADCAST);
 
-  krad_mixer_set_app(radio->mixer, radio->app);
+  kr_mixer_appserver_set(radio->mixer, radio->app);
 
   return radio;
 }
@@ -199,7 +199,7 @@ static void radio_start(kr_radio *radio) {
   clock_gettime(CLOCK_MONOTONIC, &start_sync);
   start_sync = timespec_add_ms(start_sync, 100);
   krad_compositor_start_ticker_at(radio->compositor, start_sync);
-  krad_mixer_start_ticker_at(radio->mixer, start_sync);
+  kr_mixer_start_ticker_at(radio->mixer, start_sync);
   krad_app_server_run(radio->app);
   if (radio->log.startup_timer != NULL) {
     krad_timer_finish(radio->log.startup_timer);
@@ -212,11 +212,11 @@ static void radio_wait(kr_radio *radio) {
 
 krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {
 
-  krad_mixer_portgroup_t *portgroup;
+  kr_mixer_unit *unit;
 
-  portgroup = krad_mixer_get_portgroup_from_sysname(radio->mixer, item);
-  if (portgroup != NULL) {
-    return portgroup->krad_tags;
+  unit = kr_mixer_unit_from_name(radio->mixer, item);
+  if (unit != NULL) {
+    return unit->tags;
   } else {
     //return krad_transponder_get_tags_for_link(radio->krad_transponder, item);
   }

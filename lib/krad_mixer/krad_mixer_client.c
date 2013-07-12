@@ -20,7 +20,7 @@ struct kr_audioport_St {
   kr_client_t *client;
   int sd;
 
-  krad_mixer_portgroup_direction_t direction;
+  kr_mixer_portgroup_direction_t direction;
 
   int (*callback)(uint32_t, void *);
   void *pointer;
@@ -162,7 +162,7 @@ int kr_audioport_error (kr_audioport_t *audioport) {
 }
 
 kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,
- krad_mixer_portgroup_direction_t direction) {
+ kr_mixer_portgroup_direction_t direction) {
 
   kr_audioport_t *audioport;
   int sockets[2];
@@ -500,23 +500,22 @@ void kr_mixer_remove_portgroup (kr_client_t *client, char *name) {
   kr_client_push (client);
 }
 
-void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num,
-                                  int control_id, char *control_name, float control_value, int duration,
-                                  krad_ease_t ease) {
+void kr_mixer_set_effect_control(kr_client_t *client, char *portgroup_name, int effect_num,
+                                 int control_id, char *control_name, float control_value, int duration,
+                                 kr_easing easing) {
 
   unsigned char *mixer_command;
   unsigned char *set_control;
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL, &set_control);
-
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_EFFECT_NUM, effect_num);
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_SUBUNIT, control_id);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_NAME, control_name);
   kr_ebml2_pack_float (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_VALUE, control_value);
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, duration);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, ease);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, easing);
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
 
@@ -547,7 +546,7 @@ static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_
   int i;
   char string[256];
 
-  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->sysname, sizeof(portgroup_rep->sysname));
+  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->name, sizeof(portgroup_rep->name));
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->channels);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->direction);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->output_type);
@@ -689,16 +688,16 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
 
   if (portgroup_rep.channels == 1) {
     pos += sprintf (*string + pos, "%-8s (Mono)",
-                    portgroup_rep.sysname);
+                    portgroup_rep.name);
   }
   if (portgroup_rep.channels == 2) {
     //pos += sprintf (*string + pos, " Stereo");
     pos += sprintf (*string + pos, "%-12s ",
-                    portgroup_rep.sysname);
+                    portgroup_rep.name);
   }
   if (portgroup_rep.channels > 2) {
     pos += sprintf (*string + pos, "%-12s (%d Channel)",
-                    portgroup_rep.sysname,
+                    portgroup_rep.name,
                     portgroup_rep.channels);
   }
 

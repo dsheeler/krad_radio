@@ -1,62 +1,61 @@
 #include "krad_mixer_common.h"
 
-void krad_mixer_portgroup_rep_to_ebml2 (kr_portgroup_t *portgroup_rep, kr_ebml2_t *ebml) {
+void kr_mixer_unit_rep_to_ebml(kr_mxr_unit_rep *unit, kr_ebml2_t *ebml) {
 
   int i;
 
-  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_rep->sysname);
-  kr_ebml2_pack_int8 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->channels);
-  kr_ebml2_pack_int8 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->direction);
-  kr_ebml2_pack_int8 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, portgroup_rep->output_type);  
-  if (portgroup_rep->io_type == 0) {
-    kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Jack");
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, unit->name);
+  kr_ebml2_pack_int8(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, unit->channels);
+  kr_ebml2_pack_int8(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, unit->direction);
+  kr_ebml2_pack_int8(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, unit->output_type);
+  if (unit->io_type == 0) {
+    kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Jack");
   } else {
-    kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Internal");
+    kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_TYPE, "Internal");
   }
-  for (i = 0; i < portgroup_rep->channels; i++) {
-    kr_ebml2_pack_float (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, portgroup_rep->volume[i]);      
+  for (i = 0; i < unit->channels; i++) {
+    kr_ebml2_pack_float(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, unit->volume[i]);
   }
-  for (i = 0; i < portgroup_rep->channels; i++) {
-    kr_ebml2_pack_float (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, portgroup_rep->peak[i]);
+  for (i = 0; i < unit->channels; i++) {
+    kr_ebml2_pack_float(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, unit->peak[i]);
   }
-  for (i = 0; i < portgroup_rep->channels; i++) {
-    kr_ebml2_pack_float (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, portgroup_rep->rms[i]);      
-  }
- 
-  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_MIXBUS, portgroup_rep->mixbus);      
-
-  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, portgroup_rep->crossfade_group);
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE, portgroup_rep->fade);  
-  
-  kr_ebml2_pack_int8 (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, portgroup_rep->has_xmms2);
-  if (portgroup_rep->has_xmms2 == 1) {
-    kr_ebml2_pack_string (ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, portgroup_rep->xmms2_ipc_path);
+  for (i = 0; i < unit->channels; i++) {
+    kr_ebml2_pack_float(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_VOLUME, unit->rms[i]);
   }
 
- /* 
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_MIXBUS, unit->mixbus);
+
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, unit->crossfade_group);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE, unit->fade);
+
+  kr_ebml2_pack_int8(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, unit->has_xmms2);
+  if (unit->has_xmms2 == 1) {
+    kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_XMMS2, unit->xmms2_ipc_path);
+  }
+
+ /*
   for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-    kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].db);
-    kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].bandwidth);
-    kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, krad_mixer_portgroup_rep->eq.band[i].hz);
-    // ("NOW hz is %f %f\n", krad_mixer_portgroup_rep->eq.band[i].hz); 
+    kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->eq.band[i].db);
+    kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->eq.band[i].bandwidth);
+    kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->eq.band[i].hz);
+    // ("NOW hz is %f %f\n", krad_mixer_unit->eq.band[i].hz);
   }
   */
 
-  kr_ebml2_pack_data (ebml, EBML_ID_KRAD_EFFECT_CONTROL, &portgroup_rep->eq, sizeof(kr_eq_rep_t));
-  
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->lowpass.hz);
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->lowpass.bandwidth);
+  kr_ebml2_pack_data(ebml, EBML_ID_KRAD_EFFECT_CONTROL, &unit->eq, sizeof(kr_eq_rep_t));
 
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->highpass.hz);
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->highpass.bandwidth);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->lowpass.hz);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->lowpass.bandwidth);
 
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->analog.drive);
-  kr_ebml2_pack_float (ebml, EBML_ID_KRAD_EFFECT_CONTROL, portgroup_rep->analog.blend);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->highpass.hz);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->highpass.bandwidth);
+
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->analog.drive);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->analog.blend);
 }
 
-char *krad_mixer_channel_number_to_string (int channel) {
-
-  switch ( channel ) {
+char *kr_mixer_channel_to_str(int channel) {
+  switch (channel) {
     case 0:
       return "Left";
     case 1:
@@ -78,34 +77,22 @@ char *krad_mixer_channel_number_to_string (int channel) {
   }
 }
 
-
-char *portgroup_output_type_to_string (krad_mixer_output_t output_type) {
-  switch (output_type) {
-   case NOTOUTPUT:
-      return "Notoutput";
-    case DIRECT:
-      return "Direct";
-    case AUX:
-      return "Aux";
+char *kr_mixer_unit_type_to_str(kr_mixer_unit_type unit_type) {
+  switch (unit_type) {
+   case INPUT:
+      return "INPUT";
+    case BUS:
+      return "BUS";
+    case DIRECTOUT:
+      return "DIRECTOUT";
+    case AUXOUT:
+      return "AUXOUT";
   }
   return "Unknown";
 }
 
-
-char *portgroup_direction_to_string (krad_mixer_portgroup_direction_t direction) {
-  switch (direction) {
-   case OUTPUT:
-      return "Output";
-    case INPUT:
-      return "Input";
-    case MIX:
-      return "Bus";
-  }
-  return "Unknown";
-}
-
-char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_control) {
-  switch (portgroup_control) {
+char *unit_control_to_str(kr_mixer_unit_control control) {
+  switch (control) {
     case KR_VOLUME:
       return "volume";
     case KR_CROSSFADE:
@@ -122,9 +109,8 @@ char *portgroup_control_to_string (kr_mixer_portgroup_control_t portgroup_contro
   return "Unknown";
 }
 
-char *effect_control_to_string (kr_mixer_effect_control_t effect_control) {
-
-  switch (effect_control) {
+char *effect_control_to_str(kr_mixer_effect_control control) {
+  switch (control) {
     case DB:
       return "db";
     case HZ:
@@ -141,8 +127,7 @@ char *effect_control_to_string (kr_mixer_effect_control_t effect_control) {
   return "Unknown";
 }
 
-char *effect_type_to_string (kr_effect_type_t effect_type) {
-
+char *effect_type_to_str(kr_effect_type effect_type) {
   switch (effect_type) {
     case KRAD_NOFX:
       return "Unknown";

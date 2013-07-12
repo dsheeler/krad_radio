@@ -14,7 +14,7 @@ struct mix_port_St {
 
   int vol;
   int mute;
-  char *sysname;
+  char *name;
 
 };
 

@@ -28,7 +28,7 @@ void my_tag_print (kr_tag_t *tag) {
 
 void my_portgroup_print (kr_portgroup_t *portgroup) {
   printf ("oh its a portgroup called %s and the volume is %0.2f%%\n",
-           portgroup->sysname,
+           portgroup->name,
            portgroup->volume[0]);
 }
 

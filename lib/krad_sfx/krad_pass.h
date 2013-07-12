@@ -28,9 +28,10 @@
 #define KRAD_LOWPASS_HZ_MAX 12000.0
 
 typedef struct krad_pass_St krad_pass_t;
+typedef struct krad_pass_St kr_highpass;
+typedef struct krad_pass_St kr_pass;
 typedef struct krad_pass_St kr_pass_t;
-typedef struct krad_pass_St kr_highpass_t;
-typedef struct krad_pass_St kr_lowpass_t;
+typedef struct krad_pass_St kr_lowpass;
 
 struct krad_pass_St {
 
@@ -44,24 +45,24 @@ struct krad_pass_St {
 
   float new_sample_rate;
   float sample_rate;
-  
-  krad_easing_t krad_easing_bandwidth;
-  krad_easing_t krad_easing_hz;
-  
-  krad_mixer_t *krad_mixer;
+
+  kr_easer bandwidth_easer;
+  kr_easer hz_easer;
+
+  kr_mixer *mixer;
   kr_address_t address;
 };
 
-kr_pass_t *kr_pass_create2 (int sample_rate, kr_effect_type_t type, krad_mixer_t *krad_mixer, char *portgroupname);
-kr_pass_t *kr_pass_create (int sample_rate, kr_effect_type_t type);
-void kr_pass_destroy (kr_pass_t *kr_pass);
+kr_pass *kr_pass_create2(int sample_rate, kr_effect_type_t type, kr_mixer *mixer, char *portgroupname);
+kr_pass *kr_pass_create(int sample_rate, kr_effect_type_t type);
+void kr_pass_destroy(kr_pass *pass);
 
-void kr_pass_set_sample_rate (kr_pass_t *kr_pass, int sample_rate);
+void kr_pass_set_sample_rate(kr_pass *pass, int sample_rate);
 //void kr_pass_process (kr_pass_t *kr_pass, float *input, float *output, int num_samples);
-void kr_pass_process2 (kr_pass_t *kr_pass, float *input, float *output, int num_samples, int broadcast);
+void kr_pass_process2(kr_pass_t *pass, float *input, float *output, int num_samples, int broadcast);
 /* Controls */
-void kr_pass_set_type (kr_pass_t *kr_pass, kr_effect_type_t type);
-void kr_pass_set_bandwidth (kr_pass_t *kr_pass, float bandwidth, int duration, krad_ease_t ease, void *user);
-void kr_pass_set_hz (kr_pass_t *kr_pass, float hz, int duration, krad_ease_t ease, void *user);
+void kr_pass_set_type(kr_pass *pass, kr_effect_type_t type);
+void kr_pass_set_bandwidth(kr_pass *pass, float bandwidth, int duration, kr_easing easing, void *user);
+void kr_pass_set_hz(kr_pass *pass, float hz, int duration, kr_easing easing, void *user);
 
 #endif

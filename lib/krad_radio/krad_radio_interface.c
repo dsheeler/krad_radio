@@ -1,36 +1,36 @@
 #include "krad_radio_interface.h"
 #include "krad_radio_internal.h"
 
-static void krad_radio_remote_rep_to_ebml (kr_remote_t *remote, kr_ebml2_t *ebml);
+static void krad_radio_remote_rep_to_ebml(kr_remote_t *remote, kr_ebml2_t *ebml);
 
-static void krad_radio_remote_rep_to_ebml (kr_remote_t *remote, kr_ebml2_t *ebml) {
-  kr_ebml2_pack_string (ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, remote->interface);
-  kr_ebml2_pack_uint16 (ebml, EBML_ID_KRAD_RADIO_REMOTE_PORT, remote->port);
+static void krad_radio_remote_rep_to_ebml(kr_remote_t *remote, kr_ebml2_t *ebml) {
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_RADIO_REMOTE_INTERFACE, remote->interface);
+  kr_ebml2_pack_uint16(ebml, EBML_ID_KRAD_RADIO_REMOTE_PORT, remote->port);
 }
 
-int krad_radio_broadcast_subunit_destroyed (krad_app_broadcaster_t *broadcaster, kr_address_t *address) {
+int krad_radio_broadcast_subunit_destroyed(krad_app_broadcaster_t *broadcaster, kr_address_t *address) {
 
   unsigned char buffer[256];
   krad_broadcast_msg_t *broadcast_msg;
   kr_ebml2_t ebml;
   unsigned char *message_loc;
 
-  kr_ebml2_set_buffer ( &ebml, buffer, 256);
+  kr_ebml2_set_buffer(&ebml, buffer, 256);
 
-  krad_radio_address_to_ebml2 (&ebml, &message_loc, address);
-  kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_RADIO_UNIT_DESTROYED);
-  kr_ebml2_finish_element (&ebml, message_loc);
+  krad_radio_address_to_ebml2(&ebml, &message_loc, address);
+  kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_RADIO_UNIT_DESTROYED);
+  kr_ebml2_finish_element(&ebml, message_loc);
 
-  broadcast_msg = krad_broadcast_msg_create (broadcaster, buffer, ebml.pos);
+  broadcast_msg = krad_broadcast_msg_create(broadcaster, buffer, ebml.pos);
 
   if (broadcast_msg != NULL) {
-    return krad_app_server_broadcaster_broadcast ( broadcaster, &broadcast_msg );
+    return krad_app_server_broadcaster_broadcast(broadcaster, &broadcast_msg);
   }
 
   return -1;
 }
 
-int krad_radio_broadcast_subunit_created ( krad_app_broadcaster_t *broadcaster, kr_address_t *address, void *subunit_in ) {
+int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr_address_t *address, void *subunit_in) {
 
   unsigned char buffer[4096];
   krad_broadcast_msg_t *broadcast_msg;
@@ -40,16 +40,16 @@ int krad_radio_broadcast_subunit_created ( krad_app_broadcaster_t *broadcaster, 
   krad_subunit_ptr_t subunit;
   kr_rep_actual_t rep;
 
-  kr_ebml2_set_buffer ( &ebml, buffer, 4096 );
+  kr_ebml2_set_buffer(&ebml, buffer, 4096);
 
-  krad_radio_address_to_ebml2 (&ebml, &message_loc, address);
-  kr_ebml2_pack_int32 (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CREATED);
-  kr_ebml2_start_element (&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
+  krad_radio_address_to_ebml2(&ebml, &message_loc, address);
+  kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CREATED);
+  kr_ebml2_start_element(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
 
   if ((address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     subunit.portgroup = subunit_in;
-    krad_mixer_portgroup_to_rep (subunit.portgroup, &rep.portgroup);
-    krad_mixer_portgroup_rep_to_ebml2 (&rep.portgroup, &ebml);
+    kr_mixer_unit_to_rep(subunit.portgroup, &rep.portgroup);
+    kr_mixer_unit_rep_to_ebml(&rep.portgroup, &ebml);
   }
 
   if (address->path.unit == KR_COMPOSITOR) {
@@ -570,7 +570,7 @@ int krad_radio_client_handler(kr_io2_t *in, kr_io2_t *out, void *ptr) {
 
     switch (command) {
       case EBML_ID_KRAD_MIXER_CMD:
-        ret = krad_mixer_command(in, out, client);
+        ret = kr_mixer_command(in, out, client);
         break;
       case EBML_ID_KRAD_COMPOSITOR_CMD:
         ret = krad_compositor_command(in, out, client);

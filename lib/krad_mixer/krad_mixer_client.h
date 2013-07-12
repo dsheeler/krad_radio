@@ -45,9 +45,9 @@ void kr_mixer_portgroup_list (kr_client_t *client);
 void kr_mixer_info (kr_client_t *client);
 void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname);
 void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *control_name, float control_value, uint32_t duration);
-void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num, 
+void kr_mixer_set_effect_control (kr_client_t *client, char *portgroup_name, int effect_num,
                                   int control_id, char *control_name, float control_value, int duration,
-                                  krad_ease_t ease);
+                                  kr_easing easing);
 int kr_mixer_get_info_wait(kr_client_t *client, uint32_t *sample_rate,
  uint32_t *period_size);
 
@@ -59,7 +59,7 @@ void kr_audioport_set_callback(kr_audioport_t *kr_audioport,
 void kr_audioport_connect(kr_audioport_t *kr_audioport);
 void kr_audioport_disconnect(kr_audioport_t *kr_audioport);
 kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,
- krad_mixer_portgroup_direction_t direction);
+ kr_mixer_portgroup_direction_t direction);
 void kr_audioport_destroy(kr_audioport_t *kr_audioport);
 
 /**@}*/

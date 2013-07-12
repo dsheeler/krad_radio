@@ -11,9 +11,7 @@
 
 #include "krad_easing_common.h"
 
-typedef struct krad_easing_St krad_easing_t;
-
-struct krad_easing_St {
+typedef struct {
   int updating;
   int update;
   int active;
@@ -24,16 +22,16 @@ struct krad_easing_St {
   int elapsed_time;
   int duration;
   int new_duration;
-  krad_ease_t krad_ease;
-  krad_ease_t new_krad_ease;
+  kr_easing easing;
+  kr_easing new_easing;
   void *ptr;
-};
+} kr_easer;
 
-krad_ease_t krad_ease_random ();
-float krad_ease (krad_ease_t easing, float time_now, float start_pos, float change_amt, float duration);
-void krad_easing_set_new_value (krad_easing_t *krad_easing, float target, int duration, krad_ease_t krad_ease, void *ptr);
-float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr);
-void krad_easing_destroy (krad_easing_t *krad_easing);
-krad_easing_t *krad_easing_create ();
+kr_easing kr_easing_random();
+float kr_ease(kr_easing easing, float now, float start, float amt, float dur);
+void kr_easer_set(kr_easer *easer, float target, int dur, kr_easing easing, void *ptr);
+float kr_easer_process(kr_easer *easer, float current, void **ptr);
+void kr_easer_destroy(kr_easer *easer);
+kr_easer *kr_easer_create();
 
 #endif

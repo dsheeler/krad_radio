@@ -53,7 +53,9 @@ enum krad_app_shutdown {
   KRAD_APP_SHUTINGDOWN,
 };
 
-typedef struct krad_app_server_St krad_app_server_t;
+typedef struct kr_app_server krad_app_server_t;
+typedef struct kr_app_server kr_as;
+typedef struct kr_app_server kr_app_server;
 typedef struct krad_app_server_client_St krad_app_server_client_t;
 typedef struct krad_app_broadcaster_St krad_app_broadcaster_t;
 typedef struct krad_broadcast_msg_St krad_broadcast_msg_t;
@@ -70,7 +72,7 @@ struct krad_app_broadcaster_St {
   int sockets[2];
 };
 
-struct krad_app_server_St {
+struct kr_app_server {
 
   struct sockaddr_un saddr;
   struct utsname unixname;
@@ -82,9 +84,9 @@ struct krad_app_server_St {
   int shutdown;
 
   int socket_count;
-  
+
   krad_control_t krad_control;
-  uint32_t num_clients;  
+  uint32_t num_clients;
   krad_app_server_client_t *clients;
   krad_app_server_client_t *current_client;
 
@@ -96,7 +98,7 @@ struct krad_app_server_St {
   pthread_t server_thread;
 
   struct pollfd sockets[KRAD_APP_SERVER_MAX_CLIENTS + MAX_BROADCASTERS + MAX_REMOTES + 2];
-  krad_app_server_client_t *sockets_clients[KRAD_APP_SERVER_MAX_CLIENTS + MAX_BROADCASTERS + MAX_REMOTES + 2];  
+  krad_app_server_client_t *sockets_clients[KRAD_APP_SERVER_MAX_CLIENTS + MAX_BROADCASTERS + MAX_REMOTES + 2];
 
   krad_app_broadcaster_t *sockets_broadcasters[MAX_BROADCASTERS + MAX_REMOTES + 2];
   krad_app_broadcaster_t *broadcasters[MAX_BROADCASTERS];
@@ -115,35 +117,35 @@ struct krad_app_server_client_St {
   kr_io2_t *out;
 };
 
-void krad_app_server_add_client_to_broadcast ( krad_app_server_t *krad_app_server, uint32_t broadcast_ebml_id );
-int krad_broadcast_msg_destroy (krad_broadcast_msg_t **broadcast_msg);
-krad_broadcast_msg_t *krad_broadcast_msg_create (krad_app_broadcaster_t *broadcaster, unsigned char *buffer, uint32_t size);
-int krad_app_server_broadcaster_broadcast ( krad_app_broadcaster_t *broadcaster, krad_broadcast_msg_t **broadcast_msg );
-void krad_app_server_broadcaster_register_broadcast ( krad_app_broadcaster_t *broadcaster, uint32_t broadcast_ebml_id );
-krad_app_broadcaster_t *krad_app_server_broadcaster_register ( krad_app_server_t *app_server );
-int krad_app_server_broadcaster_unregister ( krad_app_broadcaster_t **broadcaster );
-int krad_app_server_current_client_is_subscriber (krad_app_server_t *app);
+void krad_app_server_add_client_to_broadcast(krad_app_server_t *krad_app_server, uint32_t broadcast_ebml_id);
+int krad_broadcast_msg_destroy(krad_broadcast_msg_t **broadcast_msg);
+krad_broadcast_msg_t *krad_broadcast_msg_create(krad_app_broadcaster_t *broadcaster, unsigned char *buffer, uint32_t size);
+int krad_app_server_broadcaster_broadcast(krad_app_broadcaster_t *broadcaster, krad_broadcast_msg_t **broadcast_msg);
+void krad_app_server_broadcaster_register_broadcast(krad_app_broadcaster_t *broadcaster, uint32_t broadcast_ebml_id);
+krad_app_broadcaster_t *krad_app_server_broadcaster_register(krad_app_server_t *app_server);
+int krad_app_server_broadcaster_unregister(krad_app_broadcaster_t **broadcaster);
+int krad_app_server_current_client_is_subscriber(krad_app_server_t *app);
 
-int krad_app_server_recvfd (krad_app_server_client_t *client);
+int krad_app_server_recvfd(krad_app_server_client_t *client);
 
-int krad_app_server_disable_remote (krad_app_server_t *app_server,
-                                    char *interface,
-                                    int port);
-int krad_app_server_enable_remote (krad_app_server_t *app_server,
+int krad_app_server_disable_remote(krad_app_server_t *app_server,
                                    char *interface,
-                                   uint16_t port);
+                                   int port);
+int krad_app_server_enable_remote(krad_app_server_t *app_server,
+                                  char *interface,
+                                  uint16_t port);
 uint32_t krad_app_server_num_clients(krad_app_server_t *app_server);
-void krad_app_server_disable (krad_app_server_t *krad_app_server);
-void krad_app_server_destroy (krad_app_server_t *app_server);
-void krad_app_server_run (krad_app_server_t *krad_app_server);
+void krad_app_server_disable(krad_app_server_t *krad_app_server);
+void krad_app_server_destroy(krad_app_server_t *app_server);
+void krad_app_server_run(krad_app_server_t *krad_app_server);
 krad_app_server_t *
-krad_app_server_create (char *appname, char *sysname,
-                        void *client_create (void *),
-                        void client_destroy (void *),
-                        int client_handler (kr_io2_t *in,
-                                            kr_io2_t *out,
-                                            void *),
-                        void *pointer);
+krad_app_server_create(char *appname, char *sysname,
+                       void *client_create(void *),
+                       void client_destroy(void *),
+                       int client_handler(kr_io2_t *in,
+                                          kr_io2_t *out,
+                                          void *),
+                       void *pointer);
 
 #endif
 

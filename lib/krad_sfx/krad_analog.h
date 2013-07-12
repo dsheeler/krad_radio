@@ -27,21 +27,15 @@
 #define KRAD_ANALOG_BLEND_MAX 10.0f
 
 typedef struct {
-
   float sample_rate;
-
   float drive;
   float blend;
-
 	float prev_drive;
 	float prev_blend;
-  
-  krad_easing_t krad_easing_drive;
-  krad_easing_t krad_easing_blend;
-
+  kr_easer drive_easer;
+  kr_easer blend_easer;
 	float prev_med;
 	float prev_out;
-
 	float rdrive;
 	float rbdr;
 	float kpa;
@@ -55,26 +49,23 @@ typedef struct {
 	float srct;
 	float sq;
 	float pwrq;
-	
-  krad_mixer_t *krad_mixer;
+  kr_mixer *mixer;
   kr_address_t address;
+} kr_analog;
 
-} kr_analog_t;
+kr_analog *kr_analog_create2(int sample_rate, kr_mixer *mixer, char *name);
+kr_analog *kr_analog_create(int sample_rate);
+void kr_analog_destroy(kr_analog *analog);
 
-kr_analog_t *kr_analog_create2 (int sample_rate, krad_mixer_t *mixer,
- char *portgroupname);
-kr_analog_t *kr_analog_create (int sample_rate);
-void kr_analog_destroy (kr_analog_t *kr_analog);
-
-void kr_analog_set_sample_rate (kr_analog_t *kr_analog, int sample_rate);
+void kr_analog_set_sample_rate(kr_analog *analog, int sample_rate);
 //void kr_analog_process (kr_analog_t *kr_analog, float *input, float *output, int num_samples);
-void kr_analog_process2 (kr_analog_t *analog, float *input, float *output,
+void kr_analog_process2(kr_analog *analog, float *input, float *output,
  int num_samples, int broadcast);
 
 /* Controls */
-void kr_analog_set_drive(kr_analog_t *kr_analog, float drive, int duration,
- krad_ease_t ease, void *user);
-void kr_analog_set_blend(kr_analog_t *kr_analog, float blend, int duration,
- krad_ease_t ease, void *user);
+void kr_analog_set_drive(kr_analog *analog, float drive, int duration,
+ kr_easing easing, void *user);
+void kr_analog_set_blend(kr_analog *analog, float blend, int duration,
+ kr_easing easing, void *user);
 
 #endif

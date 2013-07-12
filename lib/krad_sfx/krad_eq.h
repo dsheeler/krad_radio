@@ -12,13 +12,8 @@
 
 #include "krad_system.h"
 #include "krad_easing.h"
-
 #include "krad_sfx_common.h"
-
-
 #include "krad_mixer.h"
-
-
 #include "biquad.h"
 
 #define KRAD_EQ_CONTROL_DB 666
@@ -33,44 +28,37 @@
 #define KRAD_EQ_HZ_MAX 20000.0
 
 typedef struct {
-
   biquad filter;
-
   float db;
   float bandwidth;
   float hz;
-  
-  krad_easing_t krad_easing_db;
-  krad_easing_t krad_easing_bandwidth;
-  krad_easing_t krad_easing_hz;
-  
-//  int active;
-
-} kr_eq_band_t;
+  kr_easer db_easer;
+  kr_easer bandwidth_easer;
+  kr_easer hz_easer;
+} kr_eq_band;
 
 typedef struct {
-
   float new_sample_rate;
   float sample_rate;
-  kr_eq_band_t band[KRAD_EQ_MAX_BANDS];
-      
-  krad_mixer_t *krad_mixer;
+  kr_eq_band band[KRAD_EQ_MAX_BANDS];
+  kr_mixer *mixer;
   kr_address_t address;
+} kr_eq;
 
-} kr_eq_t;
+kr_eq *kr_eq_create2(int sample_rate, kr_mixer *mixer, char *name);
+kr_eq *kr_eq_create(int sample_rate);
+void kr_eq_destroy(kr_eq *eq);
 
-
-kr_eq_t *kr_eq_create2 (int sample_rate, krad_mixer_t *krad_mixer, char *portgroupname);
-
-kr_eq_t *kr_eq_create (int sample_rate);
-void kr_eq_destroy (kr_eq_t *kr_eq);
-
-void kr_eq_set_sample_rate (kr_eq_t *kr_eq, int sample_rate);
-//void kr_eq_process (kr_eq_t *kr_eq, float *input, float *output, int num_samples);
-void kr_eq_process2 (kr_eq_t *kr_eq, float *input, float *output, int num_samples, int broadcast);
-
-void kr_eq_band_set_db (kr_eq_t *kr_eq, int band_num, float db, int duration, krad_ease_t ease, void *user);
-void kr_eq_band_set_bandwidth (kr_eq_t *kr_eq, int band_num, float bandwidth, int duration, krad_ease_t ease, void *user);
-void kr_eq_band_set_hz (kr_eq_t *kr_eq, int band_num, float hz, int duration, krad_ease_t ease, void *user);
+void kr_eq_set_sample_rate(kr_eq *eq, int sample_rate);
+//void kr_eq_process (kr_eq_t *kr_eq, float *input, float *output,
+//int num_samples);
+void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
+ int broadcast);
+void kr_eq_band_set_db(kr_eq *eq, int band_num, float db, int duration,
+ kr_easing easing, void *user);
+void kr_eq_band_set_bandwidth(kr_eq *eq, int band_num, float bandwidth,
+ int duration, kr_easing easing, void *user);
+void kr_eq_band_set_hz(kr_eq *eq, int band_num, float hz, int duration,
+ kr_easing easing, void *user);
 
 #endif
