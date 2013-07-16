@@ -24,7 +24,7 @@ body {
   text-shadow: 0px 0px 1em #020202;
 }
 
-.kradmixer, .eq_area, .effect_area, .kradmixer_cappa, .kradcompositor_control, .chooser {
+.kradmixer, .eq_area, .effect_area, .kradmixer_cappa, .kradcompositor, .chooser {
   border: 15px solid #aaa;
   background-color: #666;
   float:left;
@@ -34,14 +34,12 @@ body {
 .chooser {
   position: fixed;
   bottom: 0px;
-  left: 40%;
+  left: 50%;
 }
 
 .chooser_choice {
   float:left;
   background-color: #333;
-  width: 5em;
-  height: 3em;
   text-align: center;
 }
 
@@ -59,12 +57,16 @@ body {
   box-shadow: 1px 1px 2px rgb(2,2,2);
 }
 
-.eq_area, .effect_area, .kradmixer_cappa {
+.eq_area, .effect_area, .kradmixer_cappa, .kradcompositor {
   display: none;
 }
 
+.kradcompositor {
+  opacity: 0;
+}
+
 .kradmixer_cappa {
-  position: absolute;
+  position: fixed;
   top: 100px;
   left: 100px;
 }
@@ -98,6 +100,15 @@ body {
   margin-right: 10px;
   margin-bottom: 10px;
 }
+
+.volume_control, #xmms2s, #crossfades { 
+  float: left; 
+  margin: 10px;
+  background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
+  border: 10px solid #333;
+}
+
+.crossfade_control { float: left; }
 
 .kradmixer_control.volume_control .volume {  
   margin-left: 40px;
@@ -139,6 +150,8 @@ button::-moz-focus-outer, ::-moz-focus-inner {
 
 h1, h2, h3, h4, h5, h6 {
   cursor: default;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 
@@ -222,15 +235,7 @@ h1, h2, h3, h4, h5, h6 {
   float:left;
 }
 
-.volume_control, #xmms2s, #crossfades { 
-  float: left; 
-  margin: 10px;
-  background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
-  border: 10px solid #333;
-}
 
-    .crossfade_control { float: left; }
- 
     .dtmf_pad { display:none; width: 254px; height: 230px; padding: 2px; }
 
     .dtmf_button { color: #FFFFFF; 
