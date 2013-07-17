@@ -21,30 +21,50 @@ body {
   margin-left: 20px;
   background-color: #51617a;
   color: #ccc;
-  text-shadow: 0px 0px 1em #020202;
+  text-shadow: 1px 1px 1px #000, 1px 1px 1px #000;
 }
 
-.kradmixer, .eq_area, .effect_area, .kradmixer_cappa, .kradcompositor, .chooser {
+.kradmixer, .kradcompositor, .chooser {
   border: 15px solid #aaa;
   background-color: #666;
   float:left;
   box-shadow: 1px 1px 2px rgb(2, 2, 2);
 }
 
+
+.kradmixer_cappa {
+ /*position: fixed;
+  top: 13%;
+  left: 6%;
+*/
+  border: 15px solid #aaa;
+
+  background-color: rgba(102,102,102,0.5);
+  box-shadow: 1px 1px 2px rgb(2, 2, 2);
+  float: left;
+}
+
+/*
+.eq_area, .effect_area {
+  background-color: rgba(102,102,102,0.5);
+}
+*/
+
 .chooser {
   position: fixed;
-  bottom: 0px;
-  left: 50%;
+  top: 10px;
+  left: 45%;
+  background-color: rgba(0,0,0,0);
 }
 
 .chooser_choice {
   float:left;
-  background-color: #333;
+  background-color: rgba(48,48,48,0.5);
   text-align: center;
 }
 
 .chooser_choice.chooser_chosen {
-  background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
+  background-color: rgba(172,171,171,0.5);
 }
 
 .kradcompositor_canvas {
@@ -61,20 +81,15 @@ body {
   display: none;
 }
 
-/*.kradcompositor {
-  opacity: 0;
-}*/
-
-.kradmixer_cappa {
-  position: fixed;
-  top: 100px;
-  left: 100px;
-}
 
 .close {
-  position: absolute;
-  right: 0px;
-  top: 0px; 
+  position: relative;
+  top: -23px;
+  right: -23px;
+
+  border-radius: 20px;
+  width: 36px;
+  height: 36px;
 }
 .portgroup {
     float: left;
@@ -91,7 +106,7 @@ body {
 .fade .handle {
   top: -12px;
   height: 32px;
-  width: 24px;
+  width: 20px;
 }
 .volume {
   width: 12px;
@@ -101,11 +116,13 @@ body {
   margin-bottom: 10px;
 }
 
-.volume_control, #xmms2s, #crossfades { 
+.mixer_ui_element, .volume_control, #xmms2s, #crossfades, .effect_area, .eq_area { 
   float: left; 
   margin: 10px;
   background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
-  border: 10px solid #333;
+  border: 10px;
+  border-style: solid;
+  border-color: #555 #333 #333 #555;
 }
 
 .crossfade_control { float: left; }
@@ -132,7 +149,7 @@ body {
 
 .handle {
   background-color: #7a6a51;
-  box-shadow: 1px 1px 2px rgb(2,2,2);
+  box-shadow: 0px 4px 10px 4px rgba(255, 255, 255,0.9);
   left: -10px;
   width: 32px;
   height: 12px;
@@ -196,36 +213,20 @@ h1, h2, h3, h4, h5, h6 {
       border-radius:25px;
      }
     
-    .kradmixer_control { 
-      /*border:4px solid #c1c1c1;
-      border-radius: 6px 6px 6px 6px;
-      background: #383838;*/
-      float: left;
-    }
 
+  .kradmixer_control {
+    float: left;
+    font-weight: bold; 
+    text-align: center;
+  }
 
-    .kradmixer_control {
-            font-size: 8px;
-            font-weight: bold; 
-            text-align: center;
-        }
-
-
-
-    .crossfade_control {
-            position: relative;
-            text-align: center;
-            -webkit-transform: none;
-            -moz-transform: none;
-            -o-transform: none;
-    }
-
-
-    .sysname {
-      font-size: 96px;
-      text-shadow: 0em 0em 0.13em rgb(26, 34, 64);
-      font-weight: bold;
-    }
+  .crossfade_control {
+    position: relative;
+    text-align: center;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -o-transform: none;
+  }
 
 .meter_wrapper {
   text-align: center;
@@ -264,7 +265,6 @@ h1, h2, h3, h4, h5, h6 {
       padding-top: 5px;
       padding-bottom: 4px;
       font-weight: normal;
-      font-family: "TradeGothicLTComBoldCondensed", "Trade Gothic LT Com", Helvetica, sans-serif;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
