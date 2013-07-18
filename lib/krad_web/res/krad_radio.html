@@ -14,41 +14,72 @@
   <script type="text/javascript" src="krad.js"></script>
 <style>
 
+@font-face {
+  font-family: "TradeGothicLTComBoldCondensed";
+  src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
+}
+
+
 body {
-  font-family: ubuntu,Helvetica,sans; 
+   font-family: Helvetica,sans; 
   -moz-user-select: none;
   -webkit-user-select: none;
   margin-left: 20px;
   background-color: #51617a;
   color: #ccc;
-  text-shadow: 1px 1px 1px #000, 1px 1px 1px #000;
+  text-shadow: 0.21em 0.21em 0.1em rgb(0, 0, 0);
 }
 
-.kradmixer, .kradcompositor, .chooser {
-  border: 15px solid #aaa;
+(.kradmixer_control, .volume_control)h2, {
+  float:right;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+    top: 120px;
+    right: -30px;
+    position: relative;
+}
+
+
+.kradmixer, .chooser {
+  /*border: 15px solid #aaa;*/
   background-color: #666;
   float:left;
-  box-shadow: 1px 1px 2px rgb(2, 2, 2);
+ 
 }
-
+.kradcompositor {
+  float: left;
+}
 
 .kradmixer_cappa {
  /*position: fixed;
   top: 13%;
   left: 6%;
 */
-  border: 15px solid #aaa;
+  /*border: 15px solid #aaa;*/
 
-  background-color: rgba(102,102,102,0.5);
-  box-shadow: 1px 1px 2px rgb(2, 2, 2);
+  /*background-color: rgba(102,102,102,0.5);
+  box-shadow: 1px 1px 2px rgb(2, 2, 2);*/
   float: left;
 }
 
-/*
+
 .eq_area, .effect_area {
-  background-color: rgba(102,102,102,0.5);
+  margin: 10px;
+  float: left;
 }
-*/
+
+#mixers .chooser {
+  position: relative;
+  top: 0px;
+  left: 0px;
+}
+
+#mixers .chooser .chooser_choice {
+  min-width: 12em;
+  clear: left;
+  background-color: rgba(0,0,0,0);
+}
 
 .chooser {
   position: fixed;
@@ -59,12 +90,18 @@ body {
 
 .chooser_choice {
   float:left;
-  background-color: rgba(48,48,48,0.5);
+  background-color: rgba(122,122,122,0.5);
   text-align: center;
 }
 
 .chooser_choice.chooser_chosen {
-  background-color: rgba(172,171,171,0.5);
+  background-color: rgba(233,233,233,0.5);
+}
+
+.kradcompositor .close {
+  float: right
+  top: 0px;
+  right: 20px;
 }
 
 .kradcompositor_canvas {
@@ -72,30 +109,33 @@ body {
   height: 540px;
   margin: 10px;
   float:left;
-  background-color: #555; 
-  border: 15px solid #aaa;
-  box-shadow: 1px 1px 2px rgb(2,2,2);
+  background-color: #333; 
+  
 }
 
 .eq_area, .effect_area, .kradmixer_cappa {
   display: none;
 }
 
+.volume_control .close , #xmms2s .close, #crossfades .close {
+  float: right;
+}
 
 .close {
+  
   position: relative;
-  top: -23px;
-  right: -23px;
+  top: -10px;
+  right: -10px;
 
   border-radius: 20px;
   width: 36px;
   height: 36px;
 }
 .portgroup {
-    float: left;
+  float: left;
 }
 .crossfade {
-    float: left;
+  float: left;
 }
 
 .fade {
@@ -116,13 +156,14 @@ body {
   margin-bottom: 10px;
 }
 
-.mixer_ui_element, .volume_control, #xmms2s, #crossfades, .effect_area, .eq_area { 
+.mixer_ui_element, .volume_control, #xmms2s, #crossfades, .kradmixer_cappa/*effect_area, .eq_area*/ { 
   float: left; 
   margin: 10px;
   background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
-  border: 10px;
+  /*border: 10px;
   border-style: solid;
   border-color: #555 #333 #333 #555;
+*/
 }
 
 .crossfade_control { float: left; }
@@ -142,18 +183,20 @@ body {
 }
 
 .fade, .volume {
-    background-color: #515151;
-    box-shadow: 1px 1px 2px rgb(2, 2, 2) inset;
-    border-width: 2px;
+  background-color: #515151;
+  box-shadow: 1px 1px 2px rgb(2, 2, 2) inset;
+  border-width: 2px;
 }
 
 .handle {
   background-color: #7a6a51;
   box-shadow: 0px 4px 10px 4px rgba(255, 255, 255,0.9);
-  left: -10px;
+  left: -12px;
   width: 32px;
   height: 12px;
   margin-bottom: 2.5px;
+  border: 2px solid #333;
+  border-radius: 12px;
 }
 
 
@@ -247,65 +290,10 @@ h1, h2, h3, h4, h5, h6 {
 
 
   </style>
-  
-  <style>
+    <style>
   
     /* d2f700 */
-        .krad_button_xmms {
-      float: left;    
-      min-width: 20px;
-      text-align: center;
-      cursor: default;
-      margin-left: 6px;
-      margin-right: 6px;
-      margin-top: 4px;
-      margin-bottom: 4px;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 4px;
-      font-weight: normal;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(171,171,171,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,0.1);
-      border-bottom: 2px solid rgba(171,171,171,0.1);
-
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
-
-    }
-
-    .krad_button_xmms:active {
-      margin-left: 6px;
-      margin-right: 6px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 4px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,1);
-      border-bottom: 2px solid rgba(171,171,171,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
-
-    }
-
+    
     .krad_button_toggle {
       min-width: 20px;
       text-align: center;
@@ -334,7 +322,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 0.13em solid rgba(171,171,171,0.1);
       border-bottom: 0.13em solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
@@ -350,16 +338,16 @@ h1, h2, h3, h4, h5, h6 {
       padding-top: 8px;
       padding-bottom: 7px;
       color: #191915;
-      background-color: rgba(22,222,5,1);      
+      background-color: rgba(22,222,5,1);
       background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
       border-top: 0em solid rgba(22,222,5,1);
       border-left: 0px solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
       text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */    
+            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
      
      }
   
@@ -373,18 +361,18 @@ h1, h2, h3, h4, h5, h6 {
       padding-top: 8px;
       padding-bottom: 7px;
       color: #191915;
-      background-color: rgba(22,222,5,1);      
+      background-color: rgba(22,222,5,1);
       background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
       border-top: 0em solid rgba(22,222,5,1);
       border-left: 0px solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
       text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
 
-    }    
+    }
     
     .krad_button {
         min-width: 20px;
@@ -414,7 +402,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(254,182,69,0.1);
       border-bottom: 2px solid rgba(254,182,69,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */
 
@@ -436,7 +424,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(254,182,69,1);
       border-bottom: 2px solid rgba(254,182,69,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(254,182,69,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -470,7 +458,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(5,171,224,0.1);
       border-bottom: 2px solid rgba(5,171,224,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(5,171,224,1) 0px 1px 5px; /* drop shadow */
 
@@ -492,7 +480,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(5,171,224,1);
       border-bottom: 2px solid rgba(5,171,224,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(5,171,224,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -526,7 +514,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(171,171,171,0.1);
       border-bottom: 2px solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
@@ -548,7 +536,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(171,171,171,1);
       border-bottom: 2px solid rgba(171,171,171,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -583,7 +571,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(171,5,224,0.1);
       border-bottom: 2px solid rgba(171,5,224,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,5,224,1) 0px 1px 5px; /* drop shadow */
 
@@ -605,11 +593,11 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(171,5,224,1);
       border-bottom: 2px solid rgba(171,5,224,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(171,5,224,0.85) 0px 1px 5px; /* drop shadow */
 
-    }      
+    }
 
     
     .krad_button5 {
@@ -639,7 +627,7 @@ h1, h2, h3, h4, h5, h6 {
       border-left: 0px solid rgba(244,5,35,1);
       border-right: 2px solid rgba(244,5,35,0.1);
       border-bottom: 2px solid rgba(244,5,35,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(244,5,35,1) 0px 1px 5px; /* drop shadow */
 
@@ -661,7 +649,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 0.13em solid rgba(244,5,35,1);
       border-bottom: 0.13em solid rgba(244,5,35,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(244,5,35,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -694,7 +682,7 @@ h1, h2, h3, h4, h5, h6 {
       border-left: 0px solid rgba(222,5,22,1);
       border-right: 0.13em solid rgba(222,5,22,0.1);
       border-bottom: 0.13em solid rgba(222,5,22,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(222,5,22,1) 0px 1px 5px; /* drop shadow */
 
@@ -716,7 +704,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 0.13em solid rgba(222,5,22,1);
       border-bottom: 0.13em solid rgba(222,5,22,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(222,5,22,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -750,7 +738,7 @@ h1, h2, h3, h4, h5, h6 {
       border-left: 0px solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,0.1);
       border-bottom: 0.13em solid rgba(22,222,5,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(22,222,5,1) 0px 1px 5px; /* drop shadow */
 
@@ -772,7 +760,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
       text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -791,9 +779,9 @@ h1, h2, h3, h4, h5, h6 {
       padding-right: 8px;
       padding-top: 5px;
       padding-bottom: 4px;
-      font-size: 24px;
-      font-weight: normal;
-      font-family: "TradeGothicLTComBoldCondensed", "Trade Gothic LT Com", Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
@@ -807,7 +795,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(171,171,171,0.1);
       border-bottom: 2px solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
@@ -829,7 +817,7 @@ h1, h2, h3, h4, h5, h6 {
       border-right: 2px solid rgba(171,171,171,1);
       border-bottom: 2px solid rgba(171,171,171,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -839,9 +827,8 @@ h1, h2, h3, h4, h5, h6 {
       color: #222227;
     }
 
-    #xmms2s .button_wrap {
-      
-      /*height: 50px;*/
+    .button_wrap {
+      height: 50px;
       float: left;
     }
   </style>
