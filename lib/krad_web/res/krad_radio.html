@@ -47,9 +47,6 @@ body {
   float:left;
  
 }
-.kradcompositor {
-  float: left;
-}
 
 .kradmixer_cappa {
  /*position: fixed;
@@ -69,24 +66,19 @@ body {
   float: left;
 }
 
-#mixers .chooser {
+#mixers {
   position: relative;
   top: 0px;
   left: 0px;
 }
 
-#mixers .chooser .chooser_choice {
-  min-width: 12em;
+.chooser .chooser_choice {
+  min-width: 100%;
   clear: left;
-  background-color: rgba(0,0,0,0);
+  background-color: grey;
 }
 
-.chooser {
-  position: fixed;
-  top: 10px;
-  left: 45%;
-  background-color: rgba(0,0,0,0);
-}
+
 
 .chooser_choice {
   float:left;
@@ -98,32 +90,22 @@ body {
   background-color: rgba(233,233,233,0.5);
 }
 
-.kradcompositor .close {
-  float: right
-  top: 0px;
-  right: 20px;
-}
-
 .kradcompositor_canvas {
   width: 960px;
   height: 540px;
-  margin: 10px;
   float:left;
   background-color: #333; 
   
 }
 
-.eq_area, .effect_area, .kradmixer_cappa {
+.eq_area, .effect_area {
   display: none;
 }
 
-.volume_control .close , #xmms2s .close, #crossfades .close {
-  float: right;
-}
-
 .close {
-  
-  position: relative;
+  display: none;
+  float: right;
+  position: absolute;
   top: -10px;
   right: -10px;
 
@@ -156,11 +138,12 @@ body {
   margin-bottom: 10px;
 }
 
-.mixer_ui_element, .volume_control, #xmms2s, #crossfades, .kradmixer_cappa/*effect_area, .eq_area*/ { 
+.mixer_ui_element, .volume_control, #crossfades /*effect_area, .eq_area*/ { 
   float: left; 
   margin: 10px;
-  background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
-  /*border: 10px;
+  position: relative;
+  /*background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
+  border: 10px;
   border-style: solid;
   border-color: #555 #333 #333 #555;
 */
@@ -190,13 +173,11 @@ body {
 
 .handle {
   background-color: #7a6a51;
-  box-shadow: 0px 4px 10px 4px rgba(255, 255, 255,0.9);
-  left: -12px;
+  box-shadow: 2px 2px 2px  rgba(0, 0, 0,0.9);
+  left: -10px;
   width: 32px;
   height: 12px;
   margin-bottom: 2.5px;
-  border: 2px solid #333;
-  border-radius: 12px;
 }
 
 
@@ -256,11 +237,49 @@ h1, h2, h3, h4, h5, h6 {
       border-radius:25px;
      }
     
+.chooser {
+  float: left;
+  width: 10%;
+  height: 100%;
+  background-color: green;
+}
+
+.kradmixer {
+  float: left;
+  width: 40%;
+  height: 100%;
+  background-color: red;
+}
+
+.kradmixer_cappa {
+  float: right;
+  width: 26%;
+  height: 30%; 
+  background-color: purple;
+  position: relative;
+}
+
+#xmms2s {
+  float: right;
+  width: 24%;
+  height: 10%;
+  position: relative;
+  background-color: yellow;
+}
+
+.kradcompositor {
+  position: relative;
+  float:right;
+  width: 50%;
+  height: 70%;
+  background-color: blue;
+}
 
   .kradmixer_control {
     float: left;
     font-weight: bold; 
     text-align: center;
+    position: relative;
   }
 
   .crossfade_control {
@@ -278,7 +297,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
-    .dtmf_pad { display:none; width: 254px; height: 230px; padding: 2px; }
+.dtmf_pad { 
+  width: 254px; 
+  height: 230px; 
+  padding: 2px; 
+  margin: 10px;
+}
 
     .dtmf_button { color: #FFFFFF; 
              background-color: #0000FF; text-align: center; width: 22px; height: 22px; margin: 2px;
