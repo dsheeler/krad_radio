@@ -80,11 +80,11 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     if (uc.data_type == KR_CHAR) {
       uc.value.byte = json[pos];
     }
-    dur_len = strcspn(json + pos + 1, " ");
+    dur_len = strcspn(json + pos, " ");
     if (dur_len != 0) {
-      //printk("duration found: %s", json + pos + dur_len + 1);
+      /*printk("duration found: %s", json + pos + dur_len + 1);*/
       uc.duration = atoi(json + pos + dur_len + 1);
-      //printk("duration: %d", uc.duration);
+      /*printk("duration: %d", uc.duration);*/
     }
     if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
       printke("could not set control");
