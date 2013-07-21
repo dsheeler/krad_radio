@@ -15,51 +15,65 @@
 <style>
 
 @font-face {
+  font-family: "HelveticaNeueW0195Black";
+  src: url("http://media.kradradio.com/HelveticaNeueW0195Black.woff");
+}
+
+@font-face {
   font-family: "TradeGothicLTComBoldCondensed";
   src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
 }
 
+.rrrred { background-color: #E20A16; }
+.darkgreen { background-color: #08BA15; }
+.yellowgreen { background-color: #CCE831; }
+.yelleryellow { background-color: #FBD327; }
+.orangey { background-color: #EC8037; }
+.deepblue { background-color: #2155A0; }
+.brightblue { background-color: #52AEE1; }
+.coolblue { background-color: #84AAC1; }
+.limegreen { background-color: #02DD4F; }
+.lightorange { background-color: #FFBC61; }
+.ultraviolet { background-color: #EC018D; }
+.ultrablue { background-color: #0083FE; }
 
 body {
-   font-family: Helvetica,sans; 
+   font-family: HelveticaNeueW0195Black,Helvetica,sans; 
   -moz-user-select: none;
   -webkit-user-select: none;
-  background-color: #51617a;
+  background-color: grey;
   color: #ccc;
+  margin: 0px; 
+  padding: 0px; 
 }
 
-(.kradmixer_control, .volume_control)h2, {
-  float:right;
-  -webkit-transform: rotate(90deg);
-  -moz-transform: rotate(90deg);
-  -o-transform: rotate(90deg);
-    top: 120px;
-    right: -30px;
-    position: relative;
+h1, h2, h3, h4, h5, h6 {
+  cursor: default;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-weight: normal;
+}
+
+.volume_control h6 {
+  font-size: 18px;
+  margin: 5px;
 }
 
 #stack > h2 {
   position: absolute;
 }
 
-
-  
 #analog_meter_canvas {
   position: relative;
   top: 100px;
 }
 
-.kradmixer, .chooser {
-
-  background-color: #666;
-  float:left;
- 
-}
-
 .eq_area, .effect_area {
   margin: 10px;
   float: left;
+  display:none;
 }
+
 
 #mixers {
   position: relative;
@@ -72,8 +86,6 @@ body {
   clear: left;
   background-color: grey;
 }
-
-
 
 .chooser_choice {
   float:left;
@@ -90,11 +102,6 @@ body {
   height: 540px;
   float:left;
   background-color: #333; 
-  
-}
-
-.eq_area, .effect_area {
-  display: none;
 }
 
 .close {
@@ -108,74 +115,67 @@ body {
   width: 36px;
   height: 36px;
 }
-.portgroup {
-  float: left;
-}
-.crossfade {
-  float: left;
-}
 
 .fade {
-  height: 10px;
-  width: 150px;
-  margin: 30px;
-}
-.fade .handle {
-  top: -12px;
-  height: 32px;
-  width: 20px;
-}
-.volume {
-  width: 12px;
-  min-height: 100px;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
-.volume_control { 
-  float: left; 
-  margin: 10px;
   position: relative;
-  /*background: radial-gradient(ellipse at center, rgba(15,15,15,1) 0%,rgba(171,171,171,1) 100%);
-  border: 10px;
-  border-style: solid;
-  border-color: #555 #333 #333 #555;
-*/
+  top: 100px;
+  height: 24px;
+  width: 150px;
+  margin-left: 20px;
+  background-color: rgb(114, 114, 114);
+  border-radius: 2px 2px 2px 2px;
+  box-shadow: 0px -12px 19px rgb(54, 52, 52) inset;
 }
 
-.crossfade_control { float: left; }
-
-.kradmixer_control.volume_control .volume {  
-  margin-left: 40px;
-  width: 12px;
-  height: 200px;
-  
+.fade .handle {
+  top: -20px;
+  height: 64px;
+  width: 24px;
 }
 
-.kradmixer_control.volume_control .volume .handle {
-  left: -10px;
-  width: 30px;
-  height: 20px;
-  margin-bottom: 5px;
-}
-
-.fade, .volume {
-  background-color: #515151;
-  box-shadow: 1px 1px 2px rgb(2, 2, 2) inset;
-  border-width: 2px;
-}
-
-.handle {
-  background-color: #7a6a51;
-  box-shadow: 2px 2px 2px  rgba(0, 0, 0,0.9);
+.kradmixer_cappa .handle {
+  background-color: rgb(136, 136, 136);
+  box-shadow: 0px 0.5px 2.5px rgb(24, 32, 29);
   left: -10px;
   width: 32px;
   height: 12px;
-  margin-bottom: 2.5px;
+  margin-bottom: 2.5px; 
+  z-index: 10;
 }
 
+.kradmixer_cappa .volume {
+  width: 12px;
+  height: 100px;
+  margin: 10px;
+  border-radius: 1px 1px 1px 1px;
+  box-shadow: 0px -16.5px 9.5px rgb(54, 52, 52) inset;
+}
 
+.volume {
+  width: 24px;
+  height: 200px;
+  margin-left: 60px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  background-color: rgb(114, 114, 114);
+  border-radius: 2px 2px 2px 2px;
+  box-shadow: 0px -33px 19px rgb(54, 52, 52) inset;
+}
+
+.handle {
+  background-color: rgb(136, 136, 136);
+  box-shadow: 0px 1px 5px rgb(24, 32, 29);
+  left: -20px;
+  width: 64px;
+  height: 24px;
+  margin-bottom: 5px; 
+}
+
+.volume_control { 
+  margin: 10px;
+}
+
+.crossfade_control { float: left; }
 
 a { text-decoration: none; }
 a:visited { color: #222227; }
@@ -184,11 +184,6 @@ button::-moz-focus-outer, ::-moz-focus-inner {
   border: 1px solid transparent !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  cursor: default;
-  margin-left: 10px;
-  margin-right: 10px;
-}
 
 
 
@@ -239,20 +234,17 @@ h1, h2, h3, h4, h5, h6 {
   background-color: green;
 }
 
-/*.kradmixer, .kradmixer_cappa, #crossfades, #stack, .kradcompositor {
-  overflow: hidden;
-}*/
-
 .kradmixer {
   float: right;
   width: 100%;
   height: 30%;
   overflow:hidden;
-  background-color: red;
+  background-color: grey;
 }
 
 .kradmixer_cappa {
   position: relative;
+  display: none;
 }
 
 
@@ -264,28 +256,29 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .kradmixer_cappa h4 {
-  display: none;
   position: absolute;
-  font-size: 20px;
-  color: grey;
-}
-
-#crossfades {
-  float: right;
-  width: 20%;
-  height: 10%;
-  position: relative;
-  background-color: orange;
+  right: -32px;
+  top: 38px;
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  color: #666;
+  background-color: rgb(222,222,22);
+  text-shadow: 0px 0px 0px #444;
+  font-weight: bold;
+  font-size: 12px;
+  width: 100px;
+  height: 12px;
 }
 
 .xmms2_control {
   position: relative;
   float: left;
+  width: 100%;
 }
 
 #xmms2s {
   position: relative;
-  width: 100%;
 }
 
 #xmms2s h2 {
@@ -296,13 +289,14 @@ h1, h2, h3, h4, h5, h6 {
     top: -20px;
 
 }
+
 #stack {
   float: right;
   width: 49%;
   height: 540px;
   overflow: hidden;
   position: relative;
-  background-color: yellow;
+
 }
 
  #stack > div { float: none; clear: left; }
@@ -313,7 +307,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 51%;
   height: 540px;
   overflow: hidden;
-  background-color: blue;
+  background-color: grey;
 }
 
   .kradmixer_control {
@@ -324,6 +318,8 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .crossfade_control {
+    float: left;
+    top: 100px;
     position: relative;
     text-align: center;
     -webkit-transform: none;
@@ -339,7 +335,6 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .dtmf_pad { 
-  display: none;
   width: 254px; 
   height: 230px; 
   padding: 2px; 
@@ -366,45 +361,51 @@ h1, h2, h3, h4, h5, h6 {
       margin-right: 2px;
       margin-top: 2px;
       margin-bottom: 2px;
-      padding-left: 2px;
-      padding-right: 2px;
+      padding-left: 6px;
+      padding-right: 6px;
       padding-top: 2px;
-      padding-bottom: 2px
-      font-size: 12px;
-      font-weight: bold;
-      font-family: Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(171,171,171,1);
+      padding-bottom: 2px;
+      font-size: 20px;
+      /*font-weight: bold;*/
+      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
+      color: #484848;
+      background-color: rgba(254,182,69,1);
       border-color: #553344;
       border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
       text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,0.1);
-      border-bottom: 2px solid rgba(171,171,171,0.1);
-      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
+      border-top: 0em solid rgba(254,182,69,1);
+      border-left: 0px solid rgba(254,182,69,1);
+      border-right: 2px solid rgba(254,182,69,0.1);
+      border-bottom: 2px solid rgba(254,182,69,0.1);
+      
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
+
     }
     .krad_button_very_small:active {
       
       margin-left: 2px;
       margin-right: 2px;
       margin-top: 3px;
-      margin-bottom: 3px;
-      padding-left: 2px;
-      padding-right: 2px;
+      margin-bottom: 2px;
+      padding-left: 6px;
+      padding-right: 6px;
       padding-top: 2px;
       padding-bottom: 2px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,1);
-      border-bottom: 2px solid rgba(171,171,171,1);
+      color: #383838;
+      background-color: rgba(254,182,69,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(254,182,69,1);
+      border-left: 0px solid rgba(254,182,69,1);
+      border-right: 2px solid rgba(254,182,69,0.1);
+      border-bottom: 2px solid rgba(254,182,69,0.1);
+      
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
       box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
@@ -618,7 +619,7 @@ h1, h2, h3, h4, h5, h6 {
       padding-bottom: 7px;
       font-size: 16px;
       font-weight: bold;
-      font-family: Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
@@ -954,7 +955,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 25px;
 }
 
- body { margin: 0px; padding: 0px; }
+
   </style>
 
 
