@@ -116,12 +116,15 @@ h1, h2, h3, h4, h5, h6 {
   float: left;
 } 
 
+.crossfade {
+  position: relative;
+  top: 100px; 
+}
+
 .fade {
   position: relative;
-  top: 100px;
   height: 24px;
   width: 150px;
-  margin-left: 20px;
   background-color: rgb(114, 114, 114);
   border-radius: 2px 2px 2px 2px;
   box-shadow: 0px -12px 19px rgb(54, 52, 52) inset;
@@ -175,7 +178,14 @@ h1, h2, h3, h4, h5, h6 {
   margin: 10px;
 }
 
-.crossfade_control { float: left; }
+.crossfade_control {
+  float: left; 
+  position: relative;
+  height: 212px;
+  width: 150px;
+  top: 70px;
+ text-align: center;
+}
 
 a { text-decoration: none; }
 a:visited { color: #222227; }
@@ -183,9 +193,6 @@ a:visited { color: #222227; }
 button::-moz-focus-outer, ::-moz-focus-inner {
   border: 1px solid transparent !important;
 }
-
-
-
 
     .kradcompositor_subunit_list {
       float: left;
@@ -334,15 +341,6 @@ button::-moz-focus-outer, ::-moz-focus-inner {
     position: relative;
   }
 
-  .crossfade_control {
-    float: left;
-    top: 100px;
-    position: relative;
-    text-align: center;
-    -webkit-transform: none;
-    -moz-transform: none;
-    -o-transform: none;
-  }
 
 .meter_wrapper {
   text-align: center;
@@ -968,10 +966,10 @@ button::-moz-focus-outer, ::-moz-focus-inner {
       float: left;
     }
 
-.volume_control .button_wrap {
+/*.volume_control .button_wrap {
   height: 25px;
 }
-
+*/
 
   </style>
 
