@@ -3,122 +3,207 @@
 <head>
   <title>Krad Radio</title>
   <meta charset="utf-8">
-  <!-- <link rel="shortcut icon" href="/favicon.png"> -->
+  <!--<link rel="shortcut icon" href="/favicon.png"> -->
 
- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
   <!--  <script type="text/javascript"
    src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-  -->
-<script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
-
-  <script type="text/javascript"
-   src="//europa.kradradio.com:8040/mootools-more-1.4.0.1.js"></script>
+  /ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js-->
+  <script src="//europa.kradradio.com:8040/mootools-core-1.4.5-full-nocompat.js"></script>
+  <script src="//europa.kradradio.com:8040/mootools-more-1.4.0.1.js""></script>
   <script type="text/javascript" src="krad.js"></script>
-  
-<style
->body {
-    background-color: #a6c;
+<style>
+
+@font-face {
+  font-family: "HelveticaNeueW0195Black";
+  src: url("http://media.kradradio.com/HelveticaNeueW0195Black.woff");
 }
-.portgroup {
-    margin-top: 50px;
-    margin-left: 80px;
-    float: left;
+
+@font-face {
+  font-family: "TradeGothicLTComBoldCondensed";
+  src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
 }
+
+.rrrred { background-color: #E20A16; }
+.darkgreen { background-color: #08BA15; }
+.yellowgreen { background-color: #CCE831; }
+.yelleryellow { background-color: #FBD327; }
+.orangey { background-color: #EC8037; }
+.deepblue { background-color: #2155A0; }
+.brightblue { background-color: #52AEE1; }
+.coolblue { background-color: #84AAC1; }
+.limegreen { background-color: #02DD4F; }
+.lightorange { background-color: #FFBC61; }
+.ultraviolet { background-color: #EC018D; }
+.ultrablue { background-color: #0083FE; }
+
+body {
+   font-family: HelveticaNeueW0195Black,Helvetica,sans; 
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  background-color: grey;
+  color: #ccc;
+  margin: 0px; 
+  padding: 0px; 
+}
+
+h1, h2, h3, h4, h5, h6 {
+  cursor: default;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-weight: normal;
+}
+
+.volume_control h6 {
+  font-size: 18px;
+  margin: 5px;
+}
+
+#stack > h2 {
+  position: absolute;
+}
+
+#analog_meter_canvas {
+  position: relative;
+  top: 100px;
+}
+
+.eq_area, .effect_area {
+  margin: 10px;
+  float: left;
+  display:none;
+}
+
+
+#mixers {
+  position: relative;
+  top: 0px;
+  left: 0px;
+}
+
+.chooser .chooser_choice {
+  min-width: 100%;
+  clear: left;
+  background-color: grey;
+}
+
+.chooser_choice {
+  float:left;
+  background-color: rgba(122,122,122,0.5);
+  text-align: center;
+}
+
+.chooser_choice.chooser_chosen {
+  background-color: rgba(233,233,233,0.5);
+}
+
+.kradcompositor_canvas {
+  width: 960px;
+  height: 540px;
+  float:left;
+  background-color: #333; 
+}
+
+.close {
+  display: none;
+  float: right;
+  position: absolute;
+  top: -10px;
+  right: -20px;
+}
+
+.minimized_portgroup_wrap {
+  float: left;
+} 
+
 .crossfade {
-    margin-top: 120px;
-    margin-left: 80px;
-    float: left;
+  position: relative;
+  top: 100px; 
 }
-.volume {
-    width: 24px;
-    height: 200px;
-    background-color: #4444ff;
-    border-radius: 2px 8px 2px 81px;
-    box-shadow: 1px 1px 5px rgb(101, 82, 2) inset;
-}
-.volume .handle {
-    background-color: rgb(96, 96, 255);
-    box-shadow: 0px 1px 15px rgb(24, 32, 255);
-    left: -20px;
-    width: 64px;
-    height: 24px;
-    margin-bottom: 5px;
-}
+
 .fade {
-    width: 200px;
-    height: 24px;
-    border-radius: 6px 2px 6px 2px;
-    background-color: #ee0000;
-    box-shadow: 2px 3px 22px rgb(52, 2, 1) inset;
+  position: relative;
+  height: 24px;
+  width: 150px;
+  background-color: rgb(114, 114, 114);
+  border-radius: 2px 2px 2px 2px;
+  box-shadow: 0px -12px 19px rgb(54, 52, 52) inset;
 }
+
 .fade .handle {
-    background-color: rgb(222, 16, 16);
-    box-shadow: 0px 1px 25px rgb(224, 32, 29);
-    top: -20px;
-    width: 24px;
-    height: 64px;
-    margin-bottom: 5px;
+  top: -20px;
+  height: 64px;
+  width: 24px;
 }
-.name {
-    font-family: sans-serif;
-    margin-top: 50px;
-    margin-left: 20px;
-    float: left;
-    color: yellow;
+
+.kradmixer_cappa .handle {
+  background-color: rgb(136, 136, 136);
+  box-shadow: 0px 0.5px 2.5px rgb(24, 32, 29);
+  left: -10px;
+  width: 32px;
+  height: 12px;
+  margin-bottom: 2.5px; 
+  z-index: 10;
 }
-</style> 
-  <style>
-    
-    @font-face {
-    font-family: "TradeGothicLTComBoldCondensed";
-    src:
- url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
-    }
-    
-    body {
-      font-family: Helvetica,sans-serif; 
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      color: #ccc;
-      /*background-color: #474747;*/
-      margin: 0px;
-      margin-left: 10%;
-      margin-right: 5%;      
-    }
-    a { text-decoration: none; }
-    a:visited { color: #222227; }
 
-    button::-moz-focus-outer, ::-moz-focus-inner {
-      border: 1px solid transparent !important;
-    }
+.kradmixer_cappa .volume {
+  width: 12px;
+  height: 100px;
+  margin: 10px;
+  border-radius: 1px 1px 1px 1px;
+  box-shadow: 0px -16.5px 9.5px rgb(54, 52, 52) inset;
+  position: relative;
+  z-index: 5;
+}
 
-    h1, h2, h3, h4, h5, h6 {
-      cursor: default;
-    }
+.volume {
+  width: 24px;
+  height: 200px;
+  margin-left: 60px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  background-color: rgb(114, 114, 114);
+  border-radius: 2px 2px 2px 2px;
+  box-shadow: 0px -33px 19px rgb(54, 52, 52) inset;
+}
 
+.handle {
+  background-color: rgb(136, 136, 136);
+  box-shadow: 0px 1px 5px rgb(24, 32, 29);
+  left: -20px;
+  width: 64px;
+  height: 24px;
+  margin-bottom: 5px; 
+}
 
-    .kradcompositor_control {
-      border: 1px solid black;
-      width: 960px;
-      height: 540px;
-      background-color: #ffffff;
+.volume_control { 
+  margin: 10px;
+}
+
+.crossfade_control {
+  float: left; 
+  position: relative;
+  height: 212px;
+  width: 150px;
+  top: 70px;
+ text-align: center;
+}
+
+a { text-decoration: none; }
+a:visited { color: #222227; }
+
+button::-moz-focus-outer, ::-moz-focus-inner {
+  border: 1px solid transparent !important;
+}
+
+    .kradcompositor_subunit_list {
       float: left;
-      margin: 14px;
-      box-shadow: 0px 0px 10px #000;
-    }
-    
-
-    .compositor_subunit_list, .mixer_subunit_list {
-     /* float: left;*/
-      margin: 14px;
-    }
-
-    ul {
+      margin: 10px;
+      width: 910px;
       list-style:none;
-/*      float: left;*/
       border-radius: 6px;
-      background-color: #888;
     }
+
 
     li {
 
@@ -142,115 +227,137 @@
       font-weight: bold;
     }
 
-    
-
-    .kradlink_link h3 {
-      color: #919191;
-      text-shadow: 0px 0px 0px #444;
-      font-weight: bold; 
-      font-size: 26px;
-    }
-    
-    .prepare_link_server_info label, .prepare_link_file_info label {
-      font-weight: bold;
-      position: absolute;
-      width: 110px;
-      padding-top: 7px;
-    }
-    
-    input[type="text"], input[type="password"] {
-      padding: 3px;
-      margin: 6px;
-      margin-left: 120px;
-      background-color: #616161;
-      border: 1px solid #616161;
-    }
-
-    .kradmixer_control {
-      margin-top: 24px;
-      
-    }
-
      .kradradio_station_info, .kradradio_mixer_info, .kradradio_compositor_info, 
      .kradradio_transponder_info {  
       margin-top: 20px; 
-      
       border:8px solid #c1c1c1;
       padding:10px 40px; 
       background: #383838;
       border-radius:25px;
      }
-      
-     
+    
+.minimized_portgroup_wraps .meter {
+  
+}
+.minimized_portgroup_wrap h3, .minimized_crossfade_wrap h3 {
+  float: left;
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  position: relative;
+  top: 100px;
+  font-size: 30px;
+  height: 260px;
+  width: 0px;
+  margin: 20px;
+  left: 120px;
+}
 
-    .kradmixer_control { height: 200px; float: left; margin: 14px; }
+.chooser {
+  float: none;
+  /*width: 9%;
+  height: 100%;*/
+  background-color: green;
+}
 
-    .kradmixer_control { height: 200px; float: left; margin: 14px; }
+.kradmixer {
+  float: right;
+  width: 100%;
+  height: 30%;
+  overflow:hidden;
+  background-color: grey;
+}
 
-    .kradmixer_control h2, .kradlink_control h2, .kradlink_control h3, .masterbus h2 {
-            position: relative;            
-            right: 66px;
-            bottom: 100px;
-            -webkit-transform: rotate(-90deg);
-            -moz-transform: rotate(-90deg);
-            -o-transform: rotate(-90deg);
-            color: #666;
-            text-shadow: 0px 0px 0px #444;
-            font-weight: bold; 
-            font-size: 26px;
-        }
-    
-    .crossfade_control {
-            position: relative;
-            text-align: center;
-            margin: 64px;
-            -webkit-transform: none;
-            -moz-transform: none;
-            -o-transform: none;
-    }
-    
-    .crossfade_control h2 {
-            position: static;
-            text-align: left;
-            margin-top: 4px;
-            -webkit-transform: none;
-            -moz-transform: none;
-            -o-transform: none;
-    }
-    
-    .info_title {
-            text-shadow: 0px 0px 0px #444;
-            font-weight: bold; 
-            font-size: 42px;
-/*            margin-left: 42px;*/
-    }
-    .sysname {
-    
-        /*color: #666;*/
-            text-shadow: 0px 0px 0px #444;
-            font-weight: bold; 
-            font-size: 30px;
-          /*  margin-left: 42px; */
-    }
-    
-    .kradlink_prepare_link {
-      margin-left: 16px;
-    }
-    
-    .meter_wrapper {
-      text-align: center;
-      height: 200px; float: left; margin-top: 0px;
-      padding-left: 28px; margin-left: 20px; margin-right: 20px; padding-right: 20px; width: 50px;
-    }
-    
-    .volume_control, .kradlink_param_control { float: left; padding-left: 78px; margin-right: 40px; padding-right: 20px; width: 50px; }
-    .crossfade_control { width: 200px; }
-    .kradmixer_tools, .kradcompositor_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }    
-    .kradlink_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
-    .kradlink_info, .kradmixer_info, .kradcompositor_info { display: none; width: 80%; margin: 2px; margin-bottom: 4px; padding: 2px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }
-    .kradlink_link { width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
-    .dtmf_pad { width: 254px; height: 230px; padding: 2px; }
-    .effect_area { margin: 20px; padding: 12px; }
+.kradmixer_cappa {
+  position: relative;
+  display: none;
+}
+
+
+.kradmixer_cappa h2 {
+  position: absolute;
+  right: 0px;
+  font-size: 30px;
+  color: grey;
+}
+
+.kradmixer_cappa h4 {
+  z-index: 0;
+  position: absolute;
+  right: -34px;
+  top: 36px;
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  color: #666;
+  background-color: rgb(222,222,22);
+  text-shadow: 0px 0px 0px #444;
+  font-weight: bold;
+  font-size: 12px;
+  width: 100px;
+
+}
+
+.xmms2_control {
+  position: relative;
+  float: left;
+  width: 100%;
+}
+
+#xmms2s {
+  position: relative;
+}
+
+#xmms2s h2 {
+    position: absolute;
+    right: 0px;
+    font-size: 30px;
+    color: grey;
+    top: -20px;
+
+}
+
+#stack {
+  float: right;
+  width: 49%;
+  height: 540px;
+  overflow: hidden;
+  position: relative;
+
+}
+
+ #stack > div { float: none; clear: left; }
+
+.kradcompositor {
+  position: relative;
+  float:left;
+  width: 51%;
+  height: 540px;
+  overflow: hidden;
+  background-color: grey;
+}
+
+  .kradmixer_control {
+    float: left;
+    font-weight: bold; 
+    text-align: center;
+    position: relative;
+  }
+
+
+.meter_wrapper {
+  text-align: center;
+  margin-left: 10px;
+  float:left;
+}
+
+
+.dtmf_pad { 
+  width: 254px; 
+  height: 230px; 
+  padding: 2px; 
+}
+
     .dtmf_button { color: #FFFFFF; 
              background-color: #0000FF; text-align: center; width: 22px; height: 22px; margin: 2px;
              border: 1px solid grey; cursor: pointer; float: left; }
@@ -258,17 +365,71 @@
     .dtmf_button_mil { color: #FFFFFF;
                background-color: #FF0000;  text-align: center; width: 22px; height: 22px; margin: 2px;
                border: 1px solid grey; cursor: pointer; float: left; }
-               
-        .kradlink { display: none; margin-top: 132px; }
-        .tag { cursor: default; white-space: nowrap; font-family: Helvetica,sans-serif; font-size: 14px; color: #ccc; margin-top: 4px}
-        .nowplaying { font-weight: normal; font-size: 18px; margin-left: 6px; white-space: normal; color: #9faa8b; text-shadow: #111112 5px 2px 5px; }
-        .playtime { float: left; margin-left: 6px; margin-top: 9px; margin-bottom: 8px; box-shadow: inset #192122 1px 1px 2px; border-radius: 2px; border: 0px solid #444; padding: 3px; font-weight: normal; font-size: 16px; color: #8aaa03; background-color: #434244; text-align: right; padding-right: 9px; width: 48px; }
+
 
   </style>
-  
-  <style>
+    <style>
   
     /* d2f700 */
+       .krad_button_very_small {
+        /*min-width: 20px;*/
+        text-align: center;
+      cursor: default;
+      margin-left: 2px;
+      margin-right: 2px;
+      margin-top: 2px;
+      margin-bottom: 2px;
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      font-size: 20px;
+      /*font-weight: bold;*/
+      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
+      color: #484848;
+      background-color: rgba(254,182,69,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(254,182,69,1);
+      border-left: 0px solid rgba(254,182,69,1);
+      border-right: 2px solid rgba(254,182,69,1);
+      border-bottom: 2px solid rgba(254,182,69,1);
+      
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
+
+    }
+    .krad_button_very_small:active {
+      
+      margin-left: 2px;
+      margin-right: 2px;
+      margin-top: 3px;
+      margin-bottom: 2px;
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      color: #383838;
+      background-color: rgba(254,182,69,1);
+      border-color: #553344;
+      border-radius: 2px;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
+      border-top: 0em solid rgba(254,182,69,1);
+      border-left: 0px solid rgba(254,182,69,1);
+      border-right: 2px solid rgba(229,166,62,1);
+      border-bottom: 2px solid rgba(229,166,62,1);
+      
+      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
+            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
+
+    }
     
     .krad_button_toggle {
       min-width: 20px;
@@ -298,7 +459,7 @@
       border-right: 0.13em solid rgba(171,171,171,0.1);
       border-bottom: 0.13em solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
@@ -314,16 +475,16 @@
       padding-top: 8px;
       padding-bottom: 7px;
       color: #191915;
-      background-color: rgba(22,222,5,1);      
+      background-color: rgba(22,222,5,1);
       background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
       border-top: 0em solid rgba(22,222,5,1);
       border-left: 0px solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
       text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */    
+            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
      
      }
   
@@ -337,18 +498,18 @@
       padding-top: 8px;
       padding-bottom: 7px;
       color: #191915;
-      background-color: rgba(22,222,5,1);      
+      background-color: rgba(22,222,5,1);
       background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
       border-top: 0em solid rgba(22,222,5,1);
       border-left: 0px solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
       text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
 
-    }    
+    }
     
     .krad_button {
         min-width: 20px;
@@ -378,7 +539,7 @@
       border-right: 2px solid rgba(254,182,69,0.1);
       border-bottom: 2px solid rgba(254,182,69,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */
 
@@ -400,7 +561,7 @@
       border-right: 2px solid rgba(254,182,69,1);
       border-bottom: 2px solid rgba(254,182,69,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(254,182,69,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -434,7 +595,7 @@
       border-right: 2px solid rgba(5,171,224,0.1);
       border-bottom: 2px solid rgba(5,171,224,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(5,171,224,1) 0px 1px 5px; /* drop shadow */
 
@@ -456,7 +617,7 @@
       border-right: 2px solid rgba(5,171,224,1);
       border-bottom: 2px solid rgba(5,171,224,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(5,171,224,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -476,7 +637,7 @@
       padding-bottom: 7px;
       font-size: 16px;
       font-weight: bold;
-      font-family: Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
@@ -490,7 +651,7 @@
       border-right: 2px solid rgba(171,171,171,0.1);
       border-bottom: 2px solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
@@ -512,7 +673,7 @@
       border-right: 2px solid rgba(171,171,171,1);
       border-bottom: 2px solid rgba(171,171,171,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -547,7 +708,7 @@
       border-right: 2px solid rgba(171,5,224,0.1);
       border-bottom: 2px solid rgba(171,5,224,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,5,224,1) 0px 1px 5px; /* drop shadow */
 
@@ -569,11 +730,11 @@
       border-right: 2px solid rgba(171,5,224,1);
       border-bottom: 2px solid rgba(171,5,224,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(171,5,224,0.85) 0px 1px 5px; /* drop shadow */
 
-    }      
+    }
 
     
     .krad_button5 {
@@ -603,7 +764,7 @@
       border-left: 0px solid rgba(244,5,35,1);
       border-right: 2px solid rgba(244,5,35,0.1);
       border-bottom: 2px solid rgba(244,5,35,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(244,5,35,1) 0px 1px 5px; /* drop shadow */
 
@@ -625,7 +786,7 @@
       border-right: 0.13em solid rgba(244,5,35,1);
       border-bottom: 0.13em solid rgba(244,5,35,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(244,5,35,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -658,7 +819,7 @@
       border-left: 0px solid rgba(222,5,22,1);
       border-right: 0.13em solid rgba(222,5,22,0.1);
       border-bottom: 0.13em solid rgba(222,5,22,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(222,5,22,1) 0px 1px 5px; /* drop shadow */
 
@@ -680,7 +841,7 @@
       border-right: 0.13em solid rgba(222,5,22,1);
       border-bottom: 0.13em solid rgba(222,5,22,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(222,5,22,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -714,7 +875,7 @@
       border-left: 0px solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,0.1);
       border-bottom: 0.13em solid rgba(22,222,5,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(22,222,5,1) 0px 1px 5px; /* drop shadow */
 
@@ -736,7 +897,7 @@
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
       text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -755,9 +916,9 @@
       padding-right: 8px;
       padding-top: 5px;
       padding-bottom: 4px;
-      font-size: 24px;
-      font-weight: normal;
-      font-family: "TradeGothicLTComBoldCondensed", "Trade Gothic LT Com", Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
@@ -771,7 +932,7 @@
       border-right: 2px solid rgba(171,171,171,0.1);
       border-bottom: 2px solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
             /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
 
@@ -793,7 +954,7 @@
       border-right: 2px solid rgba(171,171,171,1);
       border-bottom: 2px solid rgba(171,171,171,1);
       text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
             /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
             rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
 
@@ -807,20 +968,27 @@
       height: 50px;
       float: left;
     }
+
+/*.volume_control .button_wrap {
+  height: 25px;
+}
+*/
+
   </style>
 
 
   <script>
-    var kradradio = false;
-    var kradwebsocket = false;
+    var kr = false;
     $(window).bind('beforeunload', function() {
-      if (kradwebsocket != false) {
-        kradwebsocket.disconnect();
+      if (kradradio.websocket != false) {
+        kradradio.websocket.disconnect();
       }
     });    
     $(document).ready(function() {
       var websocket_port = ~;
-      kradwebsocket = new Kradwebsocket (websocket_port);
+      kr = new Kr();
+      kr.load_interface();
+
     });
   </script>
   ~
