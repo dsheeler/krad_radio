@@ -79,21 +79,19 @@ kr_mixer_path *kr_mixer_path_create(kr_mixer *mixer, char *name,
  int direction, kr_mixer_path_type type, int channels,
  float volume, kr_mixer_bus *bus, kr_mixer_path_type type2,
  void *io_ptr, krad_audio_api_t api);
-
 void kr_mixer_path_destroy(kr_mixer *mixer, kr_mixer_path *unit);
-
-int kr_mixer_ctl(kr_mixer *mixer, char *name, char *control, float value,
- int duration, void *ptr);
-
 kr_mixer_path *kr_mixer_get_path_from_name(kr_mixer *mixer, char *name);
-
-/* Unit operation controls */
-void kr_mixer_cf_attach(kr_mixer *mixer, kr_mixer_path *left, kr_mixer_path *right);
-void kr_mixer_cf_detatch(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
+int kr_mixer_ctl(kr_mixer *mx, char *n, char *ctl, float val, int dr, void *p);
+void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *l, kr_mixer_path *r);
+void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
 
 /* Mixer as a whole funcs */
+kr_mixer *kr_mixer_create();
+int kr_mixer_destroy(kr_mixer *mixer);
+int kr_mixer_mix(kr_mixer *mixer, uint32_t frames);
+void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
 uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
 int32_t kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate);
 uint32_t kr_mixer_period(kr_mixer *mixer);
@@ -104,9 +102,5 @@ void kr_mixer_set_pusher(kr_mixer *mixer, krad_audio_api_t pusher);
 void kr_mixer_unset_pusher(kr_mixer *mixer);
 void kr_mixer_start_ticker_at(kr_mixer *mixer, struct timespec start_time);
 void kr_mixer_start_ticker(kr_mixer *mixer);
-int kr_mixer_mix(kr_mixer *mixer, uint32_t frames);
-kr_mixer *kr_mixer_create();
-int kr_mixer_destroy(kr_mixer *mixer);
-void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
 
 #endif

@@ -368,7 +368,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         unit = kr_mixer_path_from_name(mixer, unitname);
         if (unit != NULL) {
           if (unit->crossfader != NULL) {
-            kr_mixer_cf_detatch(mixer, unit->crossfader);
+            kr_mixer_xf_decouple(mixer, unit->crossfader);
             if (strlen(string) == 0) {
               return 0;
             }
@@ -377,10 +377,10 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
             unit2 = kr_mixer_path_from_name(mixer, string);
             if (unit2 != NULL) {
               if (unit2->crossfader != NULL) {
-                kr_mixer_cf_detatch(mixer, unit2->crossfader);
+                kr_mixer_xf_decouple(mixer, unit2->crossfader);
               }
               if (unit != unit2) {
-                kr_mixer_cf_attach(mixer, unit, unit2);
+                kr_mixer_xf_couple(mixer, unit, unit2);
               }
             }
           }
