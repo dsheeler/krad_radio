@@ -1,10 +1,6 @@
 #ifndef KRAD_SFX_COMMON_H
 #define KRAD_SFX_COMMON_H
 
-#ifndef LIMIT
-#define LIMIT(v,l,u) ((v)<(l)?(l):((v)>(u)?(u):(v)))
-#endif
-
 #define KR_SFX_MAX 4
 #define KR_SFX_MAX_CHANNELS 8
 #define KR_EQ_MAX_BANDS 32

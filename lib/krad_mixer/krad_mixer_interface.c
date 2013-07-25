@@ -1,6 +1,6 @@
 #include "krad_mixer_interface.h"
 
-void kr_mixer_unit_to_rep(kr_mixer_unit *unit, kr_mxr_unit_rep *unit_rep) {
+void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
 
   int i;
   kr_eq *eq;
@@ -20,14 +20,14 @@ void kr_mixer_unit_to_rep(kr_mixer_unit *unit, kr_mxr_unit_rep *unit_rep) {
     unit_rep->bus[0] = '\0';
   }
 
-  for (i = 0; i < KRAD_MIXER_MAX_CHANNELS; i++) {
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
     unit_rep->volume[i] = unit->volume[i];
     unit_rep->map[i] = unit->map[i];
     unit_rep->mixmap[i] = unit->mixmap[i];
     unit_rep->rms[i] = unit->avg[i];
     unit_rep->peak[i] = unit->peak_last[i];
   }
-
+/*
   if (unit->xmms != NULL) {
     unit_rep->has_xmms2 = 1;
     strncpy(unit_rep->xmms2_ipc_path, unit->xmms->ipc_path,
@@ -36,36 +36,37 @@ void kr_mixer_unit_to_rep(kr_mixer_unit *unit, kr_mxr_unit_rep *unit_rep) {
     unit_rep->has_xmms2 = 0;
     unit_rep->xmms2_ipc_path[0] = '\0';
   }
-
-  if (unit->direction == INPUT) {
-    eq = (kr_eq *)unit->effects->effect[0].effect[0];
-    lowpass = (kr_lowpass *)unit->effects->effect[1].effect[0];
-    highpass = (kr_highpass *)unit->effects->effect[2].effect[0];
-    analog = (kr_analog *)unit->effects->effect[3].effect[0];
-    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+*/
+ // if (unit->direction == INPUT) {
+    eq = (kr_eq *)unit->sfx->effect[0].effect[0];
+    lowpass = (kr_lowpass *)unit->sfx->effect[1].effect[0];
+    highpass = (kr_highpass *)unit->sfx->effect[2].effect[0];
+    analog = (kr_analog *)unit->sfx->effect[3].effect[0];
+    for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
       unit_rep->eq.band[i].db = eq->band[i].db;
-      unit_rep->eq.band[i].bandwidth = eq->band[i].bandwidth;
+      unit_rep->eq.band[i].bw = eq->band[i].bw;
       unit_rep->eq.band[i].hz = eq->band[i].hz;
     }
     unit_rep->lowpass.hz = lowpass->hz;
-    unit_rep->lowpass.bandwidth = lowpass->bandwidth;
+    unit_rep->lowpass.bw = lowpass->bw;
     unit_rep->highpass.hz = highpass->hz;
-    unit_rep->highpass.bandwidth = highpass->bandwidth;
+    unit_rep->highpass.bw = highpass->bw;
     unit_rep->analog.drive = analog->drive;
     unit_rep->analog.blend = analog->blend;
-  } else {
-    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+/*  } else {
+    for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
       unit_rep->eq.band[i].db = 0.0f;
-      unit_rep->eq.band[i].bandwidth = 0.0f;
+      unit_rep->eq.band[i].bw = 0.0f;
       unit_rep->eq.band[i].hz = 0.0f;
     }
     unit_rep->lowpass.hz = 0.0f;
-    unit_rep->lowpass.bandwidth = 0.0f;
+    unit_rep->lowpass.bw = 0.0f;
     unit_rep->highpass.hz = 0.0f;
-    unit_rep->highpass.bandwidth = 0.0f;
+    unit_rep->highpass.bw = 0.0f;
     unit_rep->analog.drive = 0.0f;
     unit_rep->analog.blend = 0.0f;
   }
+*/
   if ((unit->crossfader != NULL) && (unit->crossfader->unit[0] == unit)) {
     unit_rep->fade = unit->crossfader->fade;
     strncpy(unit_rep->crossfade_group, unit->crossfader->unit[1]->name,
@@ -76,24 +77,24 @@ void kr_mixer_unit_to_rep(kr_mixer_unit *unit, kr_mxr_unit_rep *unit_rep) {
   }
 }
 
-void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_t *mixer_rep) {
+void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_info *mixer_rep) {
 
-  kr_mixer_unit *unit;
+  kr_mixer_path *unit;
   int p;
 
   p = 0;
   unit = NULL;
 
-  for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+  for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     unit = mixer->unit[p];
     if ((unit != NULL) && ((unit->active == 1) || (unit->active == 2))) {
-      if (unit->direction == INPUT) {
+      if (unit->type == KR_MXR_INPUT) {
         mixer_rep->inputs++;
       }
-      if (unit->direction == OUTPUT) {
-        mixer_rep->outputs++;
+      if (unit->type == KR_MXR_AUX) {
+        mixer_rep->auxes++;
       }
-      if (unit->direction == MIX) {
+      if (unit->type == KR_MXR_BUS) {
         mixer_rep->buses++;
       }
     }
@@ -103,25 +104,25 @@ void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_t *mixer_rep) {
   mixer_rep->sample_rate = kr_mixer_sample_rate(mixer);
 
   if (mixer->pusher == JACK) {
-    strncpy(mixer_rep->time_source, "Jack", sizeof(mixer_rep->time_source));
+    strncpy(mixer_rep->clock, "Jack", sizeof(mixer_rep->clock));
   } else {
-    strncpy(mixer_rep->time_source, "Internal Chronometer",
-     sizeof(mixer_rep->time_source));
+    strncpy(mixer_rep->clock, "Internal Chronometer",
+     sizeof(mixer_rep->clock));
   }
 }
 
-void kr_mixer_rep_to_ebml(kr_ebml2_t *ebml, kr_mixer_t *mxr) {
+void kr_mixer_rep_to_ebml(kr_ebml2_t *ebml, kr_mixer_info *mxr) {
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mxr->period_size);
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mxr->sample_rate);
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->inputs);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->outputs);
+  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->auxes);
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->buses);
-  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_TIME_SOURCE, mxr->time_source);
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_TIME_SOURCE, mxr->clock);
 }
 
-void kr_mixer_to_ebml(kr_ebml2_t *ebml, kr_mixer *mixer) {
-  kr_mixer_t mixer_rep;
-  memset(&mixer_rep, 0, sizeof(kr_mixer_t));
+void kr_mixer_to_ebml(kr_ebml *ebml, kr_mixer *mixer) {
+  kr_mixer_info mixer_rep;
+  memset(&mixer_rep, 0, sizeof(kr_mixer_info));
   kr_mixer_to_rep(mixer, &mixer_rep);
   kr_mixer_rep_to_ebml(ebml, &mixer_rep);
 }
@@ -149,10 +150,10 @@ static uint32_t ms_to_cycles(int sample_rate, int cycle_frames, int ms) {
 
 int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
-  kr_mixer_unit *unit;
-  kr_mixer_unit *unit2;
-  kr_mxr_unit unit_rep;
-  kr_mixer_output_t output_type;
+  kr_mixer_path *unit;
+  kr_mixer_path *unit2;
+  kr_mixer_path_info unit_rep;
+  int output_type; //fixme
   char unitname[64];
   char unitname2[64];
   char controlname[16];
@@ -165,8 +166,8 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   kr_address_t address;
   unsigned char *response;
   unsigned char *payload;
-  kr_ebml2_t ebml_in;
-  kr_ebml2_t ebml_out;
+  kr_ebml ebml_in;
+  kr_ebml ebml_out;
   uint32_t command;
   uint32_t element;
   uint64_t size;
@@ -225,7 +226,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       } else {
         duration = ms_to_cycles(mixer->sample_rate, mixer->period_size, duration);
       }
-      kr_mixer_control(mixer, unitname, controlname, floatval, duration, ptr);
+      kr_mixer_ctl(mixer, unitname, controlname, floatval, duration, ptr);
       break;
     case EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL:
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
@@ -243,8 +244,8 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         } else {
           duration = ms_to_cycles(mixer->sample_rate, mixer->period_size, duration);
         }
-        kr_effects_control(unit->effects, numbers[0], numbers[5],
-         kr_effects_strtoctrl(unit->effects->effect[numbers[0]].effect_type,
+        kr_sfx_ctl(unit->sfx, numbers[0], numbers[5],
+         kr_sfx_strtoctl(unit->sfx->effect[numbers[0]].type,
           controlname),
          floatval, duration, numbers[7], ptr);
       }
@@ -281,7 +282,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       //kr_mixer_xmms_unbind(mixer, unitname);
       break;
     case EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS:
-      for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+      for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
         unit = mixer->unit[p];
         if ((unit != NULL) && ((unit->active == 1) || (unit->active == 2))) {
           krad_radio_address_to_ebml2(&ebml_out, &response, &unit->address);
@@ -328,7 +329,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       if (unit != NULL) {
         krad_radio_broadcast_subunit_created(as->app_broadcaster,
          &unit->address, (void *)unit);
-        kr_mixer_control(mixer, unitname, "volume", 100.0f, 500, NULL);
+        kr_mixer_ctl(mixer, unitname, "volume", 100.0f, 500, NULL);
       } else {
         printke("Krad Mixer: Failed to create unit: %s", unitname);
       }

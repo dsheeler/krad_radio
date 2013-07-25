@@ -51,8 +51,8 @@ struct krad_audio_portgroup_St {
 
 	int sample_rate;
 
-	//krad_ringbuffer_t *input_ringbuffer[KRAD_MIXER_MAX_CHANNELS];
-	//krad_ringbuffer_t *output_ringbuffer[KRAD_MIXER_MAX_CHANNELS];
+	//krad_ringbuffer_t *input_ringbuffer[KR_MXR_MAX_CHANNELS];
+	//krad_ringbuffer_t *output_ringbuffer[KR_MXR_MAX_CHANNELS];
 
 	//pthread_t tone_generator_thread;
 	//int run_tone;
@@ -66,7 +66,7 @@ struct krad_audio_St {
 	krad_alsa_t *krad_alsa;
 	krad_jack_t *krad_jack;
 
-	krad_audio_portgroup_t *portgroup[KRAD_MIXER_MAX_PORTGROUPS];
+	krad_audio_portgroup_t *portgroup[KR_MXR_MAX_PATHS];
 
 	int destroy;
 

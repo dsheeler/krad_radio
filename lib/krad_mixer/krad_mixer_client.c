@@ -575,19 +575,19 @@ static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *
   kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->crossfade_group, sizeof(portgroup_rep->crossfade_group));
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->fade);
 
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->has_xmms2);
+//  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->has_xmms2);
 
-  if (portgroup_rep->has_xmms2 == 1) {
-    kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->xmms2_ipc_path, sizeof(portgroup_rep->xmms2_ipc_path));
-  }
+//  if (portgroup_rep->has_xmms2 == 1) {
+//    kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->xmms2_ipc_path, sizeof(portgroup_rep->xmms2_ipc_path));
+//  }
 
   kr_ebml2_unpack_element_data (ebml, NULL, &portgroup_rep->eq, sizeof (portgroup_rep->eq));
 
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.hz);
-  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.bandwidth);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.bw);
 
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.hz);
-  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.bandwidth);
+  kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.bw);
 
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.drive);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.blend);
@@ -599,7 +599,7 @@ static void kr_ebml_to_mixer_rep(kr_ebml *ebml, kr_mixer_info *mixer) {
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->period_size);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->sample_rate);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->inputs);
-  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->outputs);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->auxes);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->buses);
   kr_ebml2_unpack_element_string(ebml, NULL, mixer->clock,
    sizeof(mixer->clock));
@@ -618,7 +618,7 @@ static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate,
       kr_ebml2_unpack_element_float (&crate->payload_ebml, NULL, &real);
       len += sprintf (*string + len, "%5.2f", real);
     }
-    if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) || (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+    if (crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) {
       kr_ebml2_unpack_element_string (&crate->payload_ebml, NULL, *string + len, 32);
       len += strlen (*string + len);
     }
@@ -643,7 +643,7 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
   pos += sprintf(*string + pos, "Mixer Status:\n");
   pos += sprintf(*string + pos, "Sample Rate: %u\n", mixer.sample_rate);
   pos += sprintf(*string + pos, "Inputs: %u\n", mixer.inputs);
-  pos += sprintf(*string + pos, "Outputs: %u\n", mixer.outputs);
+  pos += sprintf(*string + pos, "Auxes: %u\n", mixer.auxes);
   pos += sprintf(*string + pos, "Buses: %u\n", mixer.buses);
   pos += sprintf(*string + pos, "Time Source: %s", mixer.clock);
 
@@ -655,7 +655,7 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
   int pos;
   int c;
   int i;
-  krad_mixer_portgroup_rep_t portgroup_rep;
+  kr_mixer_path_info portgroup_rep;
 
   pos = 0;
 
@@ -707,35 +707,35 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
                     portgroup_rep.fade);
   }
 
-  if (portgroup_rep.direction == INPUT) {
+//  if (portgroup_rep.direction == INPUT) {
 
-    if (portgroup_rep.has_xmms2 == 1) {
-      pos += sprintf (*string + pos, " [XMMS2] (%s)", portgroup_rep.xmms2_ipc_path);
-    }
+//    if (portgroup_rep.has_xmms2 == 1) {
+//      pos += sprintf (*string + pos, " [XMMS2] (%s)", portgroup_rep.xmms2_ipc_path);
+ //   }
 
     pos += sprintf (*string + pos, "\n");
 
     pos += sprintf (*string + pos, " EQ Band \t %6s \t %6s \t %2s\n", "Db", "Hz", "BW");
 
-    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
+    for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
       pos += sprintf (*string + pos, "     %2d:\t %6.2f \t %6.0f \t %0.2f\n",
                       i,
                       portgroup_rep.eq.band[i].db,
                       portgroup_rep.eq.band[i].hz,
-                      portgroup_rep.eq.band[i].bandwidth);
+                      portgroup_rep.eq.band[i].bw);
     }
 
 
     //if (krad_mixer_portgroup_rep->lowpass.hz != ) {
       pos += sprintf (*string + pos, "  Lowpass     Hz %8.2f      BW %5.2f\n",
                       portgroup_rep.lowpass.hz,
-                      portgroup_rep.lowpass.bandwidth);
+                      portgroup_rep.lowpass.bw);
     //}
 
     //if (krad_mixer_portgroup_rep->highpass.hz != ) {
       pos += sprintf (*string + pos, " Highpass     Hz %8.2f      BW %5.2f\n",
                       portgroup_rep.highpass.hz,
-                      portgroup_rep.highpass.bandwidth);
+                      portgroup_rep.highpass.bw);
     //}
 
     //if (krad_mixer_portgroup_rep->analog.drive != ) {
@@ -745,7 +745,7 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
     //}
 
     pos += sprintf (*string + pos, "\n");
-  }
+ // }
 
   return pos;
 }

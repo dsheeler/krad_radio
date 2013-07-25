@@ -82,8 +82,8 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   return 0;
 }
 
-void krad_websocket_add_portgroup ( kr_iws_client_t *client,
- kr_mixer_portgroup_t *portgroup) {
+void krad_websocket_add_portgroup(kr_iws_client_t *client,
+ kr_mixer_path_info *portgroup) {
 
   int i;
   int pos;
@@ -91,13 +91,9 @@ void krad_websocket_add_portgroup ( kr_iws_client_t *client,
 
   pos = 0;
 
-  //for the moment will ignore these
-  if ((portgroup->direction == OUTPUT) && (portgroup->output_type == DIRECT)) {
-    return;
-  }
   pos += snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
    "\"ctrl\":\"add_portgroup\",\"portgroup_name\":\"%s\","
-   "\"volume\":%g,", portgroup->sysname, portgroup->volume[0]);
+   "\"volume\":%g,", portgroup->name, portgroup->volume[0]);
   if (portgroup->crossfade_group[0] != '\0') {
     pos += snprintf(json + pos, sizeof(json) - pos,
      "\"crossfade_name\":\"%s\",\"crossfade\":%g,",
@@ -106,31 +102,26 @@ void krad_websocket_add_portgroup ( kr_iws_client_t *client,
     pos += snprintf(json + pos, sizeof(json) - pos,
      "\"crossfade_name\":\"\",\"crossfade\":0,");
   }
-  pos += snprintf(json + pos, sizeof(json) - pos,
-   "\"xmms2\":%d,\"direction\":%d,",
-   portgroup->has_xmms2, portgroup->direction);
-  if (portgroup->direction == INPUT) {
-    pos += snprintf(json + pos, sizeof(json) - pos, "\"eq\":{\"bands\":[");
-    for (i = 0; i < KRAD_EQ_MAX_BANDS; i++) {
-      pos += snprintf(json + pos, sizeof(json) - pos,
-       "{\"hz\":%g,\"db\":%g,\"bw\":%g},",
-        portgroup->eq.band[i].hz, portgroup->eq.band[i].db,
-        portgroup->eq.band[i].bandwidth);
-    }
-    pos--;
-    pos += snprintf(json + pos, sizeof(json) - pos, "]},");
+  pos += snprintf(json + pos, sizeof(json) - pos, "\"type\":%d,",
+   portgroup->type);
+  pos += snprintf(json + pos, sizeof(json) - pos, "\"eq\":{\"bands\":[");
+  for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
     pos += snprintf(json + pos, sizeof(json) - pos,
-     "\"lowpass_hz\":%g,\"lowpass_bw\":%g,",
-     portgroup->lowpass.hz, portgroup->lowpass.bandwidth);
-    pos += snprintf(json + pos, sizeof(json) - pos,
-     "\"highpass_hz\":%g,\"highpass_bw\":%g,",
-     portgroup->highpass.hz, portgroup->highpass.bandwidth);
-    pos += snprintf(json + pos, sizeof(json) - pos,
-     "\"analog_drive\":%g,\"analog_blend\":%g",
-     portgroup->analog.drive, portgroup->analog.blend);
-  } else {
-    pos--;
+     "{\"hz\":%g,\"db\":%g,\"bw\":%g},",
+      portgroup->eq.band[i].hz, portgroup->eq.band[i].db,
+      portgroup->eq.band[i].bw);
   }
+  pos--;
+  pos += snprintf(json + pos, sizeof(json) - pos, "]},");
+  pos += snprintf(json + pos, sizeof(json) - pos,
+   "\"lowpass_hz\":%g,\"lowpass_bw\":%g,",
+   portgroup->lowpass.hz, portgroup->lowpass.bw);
+  pos += snprintf(json + pos, sizeof(json) - pos,
+   "\"highpass_hz\":%g,\"highpass_bw\":%g,",
+   portgroup->highpass.hz, portgroup->highpass.bw);
+  pos += snprintf(json + pos, sizeof(json) - pos,
+   "\"analog_drive\":%g,\"analog_blend\":%g",
+   portgroup->analog.drive, portgroup->analog.blend);
   pos += snprintf(json + pos, sizeof(json) - pos, "}]");
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
@@ -157,8 +148,8 @@ void krad_websocket_set_portgroup_eff(kr_iws_client_t *client,
    "\"effect_name\":\"%s\",\"effect_num\":%d,"
    "\"control_name\":\"%s\","
    "\"value\":%g}]", address->id.name,
-   effect_type_to_string (address->sub_id + 1), address->sub_id2,
-   effect_control_to_string(address->control.effect_control), value);
+   sfxtypetostr(address->sub_id + 1), address->sub_id2,
+   sfxctltostr(address->control.effect_control), value);
 
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
@@ -186,7 +177,7 @@ void krad_websocket_set_portgroup_control ( kr_iws_client_t *client,
    "\"ctrl\":\"control_portgroup\",\"portgroup_name\":\"%s\",\"control_name\":"
    "\"%s\", \"value\":%g}]",
    address->id.name,
-   portgroup_control_to_string(address->control.portgroup_control),
+   kr_mixer_ctltostr(address->control.portgroup_control),
    value);
 
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
@@ -213,13 +204,13 @@ void krad_websocket_update_portgroup ( kr_iws_client_t *client,
    "\"ctrl\":\"update_portgroup\",\"portgroup_name\":\"%s\",\"control_name\":"
    "\"%s\", \"value\":\"%s\"}]",
    address->id.name,
-   portgroup_control_to_string(address->control.portgroup_control),
+   kr_mixer_ctltostr(address->control.portgroup_control),
    value);
 
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
 
-void krad_websocket_set_mixer(kr_iws_client_t *client, kr_mixer_t *mixer) {
+void krad_websocket_set_mixer(kr_iws_client_t *client, kr_mixer_info *mixer) {
 
   char json[96];
 

@@ -29,7 +29,7 @@ krad_audio_portgroup_t *krad_audio_portgroup_create(krad_audio_t *krad_audio,
 
 	portgroup = NULL;
 
-	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+	for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
 		if (krad_audio->portgroup[p]->active == 0) {
 			portgroup = krad_audio->portgroup[p];
 			break;
@@ -86,7 +86,7 @@ void krad_audio_portgroup_destroy(krad_audio_portgroup_t *portgroup) {
 		case JACK:
 			krad_jack_portgroup_destroy (portgroup->api_portgroup);
 			// if there is no jack portgroups, disconnect from jack
-			for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+			for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
 				if ((portgroup->krad_audio->portgroup[p]->active != 0) &&
 					(portgroup->krad_audio->portgroup[p] != portgroup) &&
 					(portgroup->krad_audio->portgroup[p]->audio_api == JACK)) {
@@ -120,13 +120,13 @@ void krad_audio_destroy(krad_audio_t *krad_audio) {
 
 	krad_audio->destroy = 1;
 
-	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+	for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
 		if (krad_audio->portgroup[p]->active != 0) {
 			krad_audio_portgroup_destroy ( krad_audio->portgroup[p] );
 		}
 	}
 
-	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+	for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
 		if (krad_audio->portgroup[p] != NULL) {
 			free ( krad_audio->portgroup[p] );
 			krad_audio->portgroup[p] = NULL;
@@ -147,7 +147,7 @@ krad_audio_t *krad_audio_create(kr_mixer *mixer) {
 
 	krad_audio->mixer = mixer;
 
-	for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {
+	for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
 		krad_audio->portgroup[p] = calloc (1, sizeof (krad_audio_portgroup_t));
 	}
 

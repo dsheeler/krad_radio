@@ -30,10 +30,10 @@
 typedef struct {
   biquad filter;
   float db;
-  float bandwidth;
+  float bw;
   float hz;
   kr_easer db_easer;
-  kr_easer bandwidth_easer;
+  kr_easer bw_easer;
   kr_easer hz_easer;
 } kr_eq_band;
 
@@ -56,7 +56,7 @@ void kr_eq_process2(kr_eq *eq, float *input, float *output, int nsamples,
  int broadcast);
 void kr_eq_band_set_db(kr_eq *eq, int band_num, float db, int duration,
  kr_easing easing, void *user);
-void kr_eq_band_set_bandwidth(kr_eq *eq, int band_num, float bandwidth,
+void kr_eq_band_set_bw(kr_eq *eq, int band_num, float bw,
  int duration, kr_easing easing, void *user);
 void kr_eq_band_set_hz(kr_eq *eq, int band_num, float hz, int duration,
  kr_easing easing, void *user);

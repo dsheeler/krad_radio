@@ -5,7 +5,7 @@
 #define KRAD_RADIO_INTERFACE_H
 
 typedef union {
-  kr_mixer_unit *portgroup;
+  kr_mixer_path_info *portgroup;
   kr_remote_t *remote;
 } krad_subunit_ptr_t;
 

@@ -1,3 +1,5 @@
+#include "krad_sfx_common.h"
+
 char *sfxtypetostr(kr_sfx_type type) {
   switch (type) {
     case KR_NOFX:

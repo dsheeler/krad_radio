@@ -59,7 +59,7 @@ void kr_pass_destroy(kr_pass *pass);
 void kr_pass_set_sample_rate(kr_pass *pass, int sample_rate);
 //void kr_pass_process (kr_pass_t *kr_pass, float *input, float *output,
 //int nsamples);
-void kr_pass_process2(kr_pass_t *pass, float *input, float *output,
+void kr_pass_process2(kr_pass *pass, float *input, float *output,
  int nsamples, int broadcast);
 /* Controls */
 void kr_pass_set_type(kr_pass *pass, kr_sfx_type type);

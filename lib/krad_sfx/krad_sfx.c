@@ -5,7 +5,7 @@ kr_sfx *kr_sfx_create(int channels, int sample_rate) {
   kr_sfx *sfx;
 
   sfx = calloc(1, sizeof(kr_sfx));
-  sfx->effect = calloc(KR_EFFECTS_MAX, sizeof(kr_effect_t));
+  sfx->effect = calloc(KR_SFX_MAX, sizeof(kr_sfx_effect));
   sfx->channels = channels;
   sfx->sample_rate = sample_rate;
 
@@ -16,7 +16,7 @@ void kr_sfx_destroy(kr_sfx *sfx) {
 
   int e;
 
-  for (e = 0; e < KR_EFFECTS_MAX; e++) {
+  for (e = 0; e < KR_SFX_MAX; e++) {
     if (sfx->effect[e].active == 1) {
       kr_sfx_effect_remove(sfx, e);
     }
@@ -32,10 +32,10 @@ void kr_sfx_set_sample_rate(kr_sfx *sfx, uint32_t sample_rate) {
 
   sfx->sample_rate = sample_rate;
 
-  for (e = 0; e < KR_EFFECTS_MAX; e++) {
+  for (e = 0; e < KR_SFX_MAX; e++) {
     if (sfx->effect[e].active == 1) {
       for (c = 0; c < sfx->channels; c++) {
-        switch (sfx->effect[e].effect_type) {
+        switch (sfx->effect[e].type) {
           case KR_NOFX:
             break;
           case KR_EQ:
@@ -58,10 +58,10 @@ void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes) {
 
   int e, c;
 
-  for (e = 0; e < KR_EFFECTS_MAX; e++) {
+  for (e = 0; e < KR_SFX_MAX; e++) {
     if (sfx->effect[e].active == 1) {
       for (c = 0; c < sfx->channels; c++) {
-        switch (sfx->effect[e].effect_type) {
+        switch (sfx->effect[e].type) {
           case KR_NOFX:
             break;
           case KR_EQ:
@@ -83,15 +83,15 @@ void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes) {
   }
 }
 
-void kr_sfx_effect_add(kr_sfx *sfx, kr_effect_type_t effect) {
+void kr_sfx_effect_add(kr_sfx *sfx, kr_sfx_type effect) {
 
   int e, c;
 
-  for (e = 0; e < KR_EFFECTS_MAX; e++) {
+  for (e = 0; e < KR_SFX_MAX; e++) {
     if (sfx->effect[e].active == 0) {
-      sfx->effect[e].effect_type = effect;
+      sfx->effect[e].type = effect;
       for (c = 0; c < sfx->channels; c++) {
-        switch (sfx->effect[e].effect_type) {
+        switch (sfx->effect[e].type) {
           case KR_NOFX:
             break;
           case KR_EQ:
@@ -119,11 +119,11 @@ void kr_sfx_effect_add2(kr_sfx *sfx, kr_sfx_type effect, kr_mixer *mixer,
 
   int e, c;
 
-  for (e = 0; e < KR_EFFECTS_MAX; e++) {
+  for (e = 0; e < KR_SFX_MAX; e++) {
     if (sfx->effect[e].active == 0) {
-      sfx->effect[e].effect_type = effect;
+      sfx->effect[e].type = effect;
       for (c = 0; c < sfx->channels; c++) {
-        switch (sfx->effect[e].effect_type) {
+        switch (sfx->effect[e].type) {
           case KR_NOFX:
             break;
           case KR_EQ:
@@ -155,7 +155,7 @@ void kr_sfx_effect_remove(kr_sfx *sfx, int effect_num) {
   int c;
 
   for (c = 0; c < sfx->channels; c++) {
-    switch (sfx->effect[effect_num].effect_type) {
+    switch (sfx->effect[effect_num].type) {
       case KR_NOFX:
         break;
       case KR_EQ:
@@ -174,13 +174,13 @@ void kr_sfx_effect_remove(kr_sfx *sfx, int effect_num) {
   sfx->effect[effect_num].active = 0;
 }
 
-void kr_sfx_control(kr_sfx *sfx, int effect_num, int control_id,
+void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
  int control, float value, int duration, kr_easing easing, void *user) {
 
   int c;
 
   for (c = 0; c < sfx->channels; c++) {
-    switch (sfx->effect[effect_num].effect_type) {
+    switch (sfx->effect[effect_num].type) {
       case KR_NOFX:
         break;
       case KR_EQ:
@@ -189,7 +189,7 @@ void kr_sfx_control(kr_sfx *sfx, int effect_num, int control_id,
             kr_eq_band_set_db(sfx->effect[effect_num].effect[c],
              control_id, value, duration, easing, user);
             break;
-          case KR_EQ_BANDWIDTH:
+          case KR_EQ_BW:
             kr_eq_band_set_bandwidth(sfx->effect[effect_num].effect[c],
              control_id, value, duration, easing, user);
             break;
@@ -266,10 +266,10 @@ int kr_sfx_strtoctl(kr_sfx_type type, char *string) {
 		  return KR_PASS_HZ;
 	  }
 	  if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
-		  return KR_PASS_BANDWIDTH;
+		  return KR_PASS_BW;
 	  }
 	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-		  return KR_PASS_BANDWIDTH;
+		  return KR_PASS_BW;
 	  }
   }
   if (type == KR_ANALOG) {

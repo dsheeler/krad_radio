@@ -1830,12 +1830,10 @@ int kr_unit_control_data_type_from_address(kr_address_t *address,
   //        (address->control.portgroup_control == KR_DTMF)) {
   //      *data_type = KR_CHAR;
   //      return 1;
-  //FIXME
-          return -1;
-      } else {
+  //    } else {
         *data_type = KR_FLOAT;
         return 1;
-      }
+  //    }
     case KR_COMPOSITOR:
       if ((address->control.compositor_control == KR_X) ||
           (address->control.compositor_control == KR_Y) ||
@@ -1914,7 +1912,7 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
           break;
         case KR_EFFECT:
           kr_mixer_set_effect_control(client, uc->address.id.name, uc->address.sub_id, uc->address.sub_id2,
-                                      effect_control_to_str(uc->address.control.effect_control),
+                                      sfxctltostr(uc->address.control.effect_control),
                                       uc->value.real, uc->duration, EASEINOUTSINE);
           break;
       }

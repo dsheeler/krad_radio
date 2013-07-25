@@ -53,7 +53,7 @@ struct krad_link_St {
 	krad_link_av_mode_t av_mode;
 
 	krad_framepool_t *krad_framepool;
-	kr_mixer_unit *krad_mixer_portgroup;
+	kr_mixer_path *krad_mixer_portgroup;
 	krad_compositor_port_t *krad_compositor_port;
 
 	krad_compositor_port_t *krad_compositor_port2;
@@ -136,10 +136,10 @@ struct krad_link_St {
 	int capture_buffer_frames;
 	int decoding_buffer_frames;
 
-	krad_ringbuffer_t *audio_capture_ringbuffer[KRAD_MIXER_MAX_CHANNELS];
-	krad_ringbuffer_t *audio_input_ringbuffer[KRAD_MIXER_MAX_CHANNELS];
-	krad_ringbuffer_t *audio_output_ringbuffer[KRAD_MIXER_MAX_CHANNELS];
-	float *samples[KRAD_MIXER_MAX_CHANNELS];
+	krad_ringbuffer_t *audio_capture_ringbuffer[KR_MXR_MAX_CHANNELS];
+	krad_ringbuffer_t *audio_input_ringbuffer[KR_MXR_MAX_CHANNELS];
+	krad_ringbuffer_t *audio_output_ringbuffer[KR_MXR_MAX_CHANNELS];
+	float *samples[KR_MXR_MAX_CHANNELS];
 
 	int audio_encoder_ready;
 	int audio_frames_captured;
@@ -153,9 +153,9 @@ struct krad_link_St {
 
 	kr_xpdr_subunit_t *subunit;
 
-	kr_mixer_unit *mixer_portgroup;
+	kr_mixer_path *mixer_portgroup;
 	int au_framecnt;
-	float *au_samples[KRAD_MIXER_MAX_CHANNELS];
+	float *au_samples[KR_MXR_MAX_CHANNELS];
 	float *au_interleaved_samples;
   int socketpair[2];
 
@@ -166,7 +166,7 @@ struct krad_link_St {
 	int vu_header_len[3];
 	float *au_audio;
 
-	krad_resample_ring_t *krad_resample_ring[KRAD_MIXER_MAX_CHANNELS];
+	krad_resample_ring_t *krad_resample_ring[KR_MXR_MAX_CHANNELS];
 
   int graph_id;
 

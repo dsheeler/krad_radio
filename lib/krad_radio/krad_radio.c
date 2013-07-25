@@ -212,7 +212,7 @@ static void radio_wait(kr_radio *radio) {
 
 krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {
 
-  kr_mixer_unit *unit;
+  kr_mixer_path *unit;
 
   unit = kr_mixer_unit_from_name(radio->mixer, item);
   if (unit != NULL) {

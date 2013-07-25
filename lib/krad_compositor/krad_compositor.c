@@ -13,6 +13,7 @@ static void krad_compositor_set_frame_rate (krad_compositor_t *krad_compositor,
                                             int fps_numerator, int fps_denominator);
 
 //FIXME
+#define INPUT 667
 #define OUTPUT 666
 
 void krad_compositor_unset_background (krad_compositor_t *krad_compositor) {
