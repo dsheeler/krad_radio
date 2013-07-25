@@ -7,12 +7,12 @@ static int mixer_process(kr_mixer *mixer, uint32_t frames);
 static void update_state(kr_mixer *mixer);
 static void mark_destroy(kr_mixer *mixer, kr_mixer_path *unit);
 static void limit(kr_mixer_path *unit, uint32_t nframes);
-static void copy_samples(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nframes);
+static void copy_frames(kr_mixer_path *d, kr_mixer_path *s, uint32_t nframes);
 static void mix(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nframes);
-static void update_samples(kr_mixer_path *unit, uint32_t nframes);
-static void get_samples(kr_mixer_path *unit, uint32_t nframes);
+static void update_frames(kr_mixer_path *unit, uint32_t nframes);
+static void get_frames(kr_mixer_path *unit, uint32_t nframes);
 static int handle_delay(kr_mixer_path *unit, uint32_t nframes);
-static void clear_samples(kr_mixer_path *unit, uint32_t nframes);
+static void clear_frames(kr_mixer_path *unit, uint32_t nframes);
 static float read_peak(kr_mixer_path *unit);
 static float read_peak_scaled(kr_mixer_path *unit);
 static void update_meter_readings(kr_mixer_path *unit);
@@ -23,7 +23,6 @@ static void apply_effects(kr_mixer_path *unit, int nframes);
 static float get_crossfade(kr_mixer_path *unit);
 static float get_fade_out(float crossfade_value);
 static float get_fade_in(float crossfade_value);
-static void crossfader_set_crossfade(kr_mixer_crossfader *crossfader, float value);
 static void set_channel_volume(kr_mixer_path *unit, int channel, float value);
 static void set_volume(kr_mixer_path *unit, float value);
 static void set_crossfade(kr_mixer_path *unit, float value);
@@ -202,7 +201,7 @@ static void compute_meters(kr_mixer_path *unit, uint32_t nframes) {
   }
 }
 
-static void clear_samples(kr_mixer_path *unit, uint32_t nframes) {
+static void clear_frames(kr_mixer_path *unit, uint32_t nframes) {
 
   int c;
   int s;
@@ -223,7 +222,7 @@ static int handle_delay(kr_mixer_path *unit, uint32_t nframes) {
     if (delay_frames > nframes) {
       delay_frames = nframes;
     }
-    clear_samples(unit, delay_frames);
+    clear_frames(unit, delay_frames);
     unit->delay += delay_frames;
     return nframes - delay_frames;
   }
@@ -231,7 +230,7 @@ static int handle_delay(kr_mixer_path *unit, uint32_t nframes) {
   return nframes;
 }
 
-static void get_samples(kr_mixer_path *unit, uint32_t nframes) {
+static void get_frames(kr_mixer_path *unit, uint32_t nframes) {
 
   int c;
   float *samples[KR_MXR_MAX_CHANNELS];
@@ -264,11 +263,11 @@ static void get_samples(kr_mixer_path *unit, uint32_t nframes) {
   */
 }
 
-static void update_samples(kr_mixer_path *unit, uint32_t nframes) {
+static void update_frames(kr_mixer_path *unit, uint32_t nframes) {
   if (unit->delay != unit->delay_actual) {
     nframes = handle_delay(unit, nframes);
   }
-  get_samples(unit, nframes);
+  get_frames(unit, nframes);
 }
 
 static void mix(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nframes) {
@@ -294,13 +293,13 @@ static void mix(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nframes) {
   }
 }
 
-static void copy_samples(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nframes) {
+static void copy_frames(kr_mixer_path *d, kr_mixer_path *s, uint32_t nframes) {
 
+  /*
   int c;
   int s;
 
   // Do mixdown here?
-/*
   switch (dest->type) {
     case KRAD_TONE:
       break;
@@ -417,15 +416,13 @@ static void mark_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
 }
 
 static void set_crossfade(kr_mixer_path *unit, float value) {
-  if (unit->crossfader != NULL) {
-    crossfader_set_crossfade(unit->crossfader, value);
-  }
-}
 
-static void crossfader_set_crossfade(kr_mixer_crossfader *crossfader, float value) {
-  if (crossfader != NULL) {
-    crossfader->fade = value;
+  kr_mixer_crossfader *crossfader;
+
+  if (unit->crossfader != NULL) {
+    crossfader = unit->crossfader;
     if ((crossfader->unit[0] != NULL) && (crossfader->unit[1] != NULL)) {
+      crossfader->fade = value;
       update_volume(crossfader->unit[0]);
       update_volume(crossfader->unit[1]);
     }
@@ -527,7 +524,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
     if ((unit != NULL) && (unit->active == 2) &&
        //((unit->type == KR_MXR_INPUT) || (unit->type == KR_MXR_AUX))) {
        ((unit->type == KR_MXR_INPUT))) {
-      update_samples(unit, nframes);
+      update_frames(unit, nframes);
     }
   }
 
@@ -578,7 +575,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
     unit = mixer->unit[p];
     if ((unit != NULL) && (unit->active == 2) &&
         (unit->type == KR_MXR_BUS)) {
-      clear_samples(unit, nframes);
+      clear_frames(unit, nframes);
     }
   }
 
