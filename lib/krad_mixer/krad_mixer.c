@@ -23,7 +23,7 @@ static void apply_effects(kr_mixer_path *unit, int nframes);
 static float get_crossfade(kr_mixer_path *unit);
 static float get_fade_out(float crossfade_value);
 static float get_fade_in(float crossfade_value);
-static void crossfader_set_crossfade(kr_mxcf *crossfader, float value);
+static void crossfader_set_crossfade(kr_mixer_crossfader *crossfader, float value);
 static void set_channel_volume(kr_mixer_path *unit, int channel, float value);
 static void set_volume(kr_mixer_path *unit, float value);
 static void set_crossfade(kr_mixer_path *unit, float value);
@@ -235,8 +235,8 @@ static void get_samples(kr_mixer_path *unit, uint32_t nframes) {
 
   int c;
   float *samples[KR_MXR_MAX_CHANNELS];
-
-  switch (unit->io_type) {
+/*
+  switch (unit->type) {
     case KRAD_TONE:
       //krad_tone_run(unit->io_ptr, *unit->mapped_samples[0], nframes);
       break;
@@ -261,6 +261,7 @@ static void get_samples(kr_mixer_path *unit, uint32_t nframes) {
       }
       break;
   }
+  */
 }
 
 static void update_samples(kr_mixer_path *unit, uint32_t nframes) {
@@ -299,8 +300,8 @@ static void copy_samples(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nfram
   int s;
 
   // Do mixdown here?
-
-  switch (dest->io_type) {
+/*
+  switch (dest->type) {
     case KRAD_TONE:
       break;
     case MIXBUS:
@@ -324,6 +325,7 @@ static void copy_samples(kr_mixer_path *dest, kr_mixer_path *src, uint32_t nfram
       }
       break;
   }
+  */
 }
 
 static void limit(kr_mixer_path *unit, uint32_t nframes) {
@@ -420,7 +422,7 @@ static void set_crossfade(kr_mixer_path *unit, float value) {
   }
 }
 
-static void crossfader_set_crossfade(kr_mxcf *crossfader, float value) {
+static void crossfader_set_crossfade(kr_mixer_crossfader *crossfader, float value) {
   if (crossfader != NULL) {
     crossfader->fade = value;
     if ((crossfader->unit[0] != NULL) && (crossfader->unit[1] != NULL)) {
@@ -437,8 +439,8 @@ static void set_volume(kr_mixer_path *unit, float value) {
 
   volume_temp = (value/100.0f);
   volume_temp *= volume_temp;
-
-  if (unit->direction == INPUT) {
+  //FIXME input gets bus volume, bus gets higher level bus vol
+  if ((unit->type == KR_MXR_INPUT) || (1 == 2)) {
     volume_temp = volume_temp * unit->bus->volume_actual[0];
 
     if (unit->crossfader != NULL) {
@@ -448,21 +450,21 @@ static void set_volume(kr_mixer_path *unit, float value) {
 
   for (c = 0; c < unit->channels; c++) {
     unit->volume[c] = value;
-    if (unit->direction == MIX) {
+    if (unit->type == KR_MXR_BUS) {
       unit->volume_actual[c] = volume_temp;
     } else {
       unit->new_volume_actual[c] = volume_temp;
     }
   }
 
-  if (unit->direction == MIX) {
+  if (unit->type == KR_MXR_BUS) {
 
     int p;
     kr_mixer_path *pg;
 
     for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
       pg = unit->mixer->unit[p];
-      if ((pg != NULL) && (pg->active == 2) && (pg->direction == INPUT)) {
+      if ((pg != NULL) && (pg->active == 2) && (pg->type == KR_MXR_INPUT)) {
         if (pg->bus == unit) {
           update_volume(pg);
         }
@@ -475,7 +477,7 @@ static void set_channel_volume(kr_mixer_path *unit, int channel, float value) {
 
   float volume_temp;
 
-  if (unit->direction == INPUT) {
+  if (unit->type == KR_MXR_INPUT) {
     unit->volume[channel] = value;
     volume_temp = (unit->volume[channel]/100.0f);
     volume_temp *= volume_temp;
@@ -503,7 +505,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
 
   int p, m;
   void *client;
-  char tone_str[2];
+  //char tone_str[2];
 
   client = NULL;
   kr_mixer_path *unit = NULL;
@@ -523,7 +525,8 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     unit = mixer->unit[p];
     if ((unit != NULL) && (unit->active == 2) &&
-       ((unit->direction == INPUT) || (unit->direction == OUTPUT))) {
+       //((unit->type == KR_MXR_INPUT) || (unit->type == KR_MXR_AUX))) {
+       ((unit->type == KR_MXR_INPUT))) {
       update_samples(unit, nframes);
     }
   }
@@ -560,7 +563,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     unit = mixer->unit[p];
     if ((unit != NULL) && (unit->active == 2) &&
-        (unit->direction == INPUT)) {
+        (unit->type == KR_MXR_INPUT)) {
       apply_volume(unit, nframes);
       //experiment
       if (unit->volume_actual[0] != 0.0f) {
@@ -574,7 +577,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     unit = mixer->unit[p];
     if ((unit != NULL) && (unit->active == 2) &&
-        (unit->io_type == MIXBUS)) {
+        (unit->type == KR_MXR_BUS)) {
       clear_samples(unit, nframes);
     }
   }
@@ -582,17 +585,17 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
   // Mix
   for (m = 0; m < KR_MXR_MAX_PATHS; m++) {
     bus = mixer->unit[m];
-    if ((bus != NULL) && (bus->active) && (bus->io_type == MIXBUS)) {
+    if ((bus != NULL) && (bus->active) && (bus->type == KR_MXR_BUS)) {
       for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
         unit = mixer->unit[p];
         if ((unit != NULL) && (unit->active == 2) &&
-            (unit->bus == bus) && (unit->direction == INPUT)) {
+            (unit->bus == bus) && (unit->type == KR_MXR_INPUT)) {
           mix(bus, unit, nframes);
         }
       }
     }
   }
-
+/*
   // copy to outputs, limit all outputs
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     unit = mixer->unit[p];
@@ -605,7 +608,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
       limit(unit, nframes);
     }
   }
-
+*/
   if (mixer->master != NULL) {
     compute_meters(mixer->master, nframes);
   }
@@ -616,8 +619,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
     mixer->frames_since_peak_read = 0;
     for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
       unit = mixer->unit[p];
-      if ((unit != NULL) && (unit->active == 2) &&
-          (unit->direction == INPUT)) {
+      if ((unit != NULL) && (unit->active == 2)) {
         update_meter_readings(unit);
       }
     }
@@ -628,7 +630,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
   return 0;
 }
 
-void kr_mixer_cf_attatch(kr_mixer *mixer, kr_mixer_path *unit1, kr_mixer_path *unit2) {
+void kr_mixer_cf_attach(kr_mixer *mixer, kr_mixer_path *unit1, kr_mixer_path *unit2) {
 
   int i;
   kr_mixer_crossfader *crossfader;
@@ -638,10 +640,10 @@ void kr_mixer_cf_attatch(kr_mixer *mixer, kr_mixer_path *unit1, kr_mixer_path *u
     printke("Invalid unit for crossfade!");
     return;
   }
-  if (!(((unit1->direction == INPUT) || (unit1->direction == MIX)) &&
-      ((unit1->direction == INPUT) || (unit2->direction == MIX)) &&
-      (((unit1->io_type == MIXBUS) && (unit2->io_type == MIXBUS)) ||
-       ((unit1->io_type != MIXBUS) && (unit2->io_type != MIXBUS))))) {
+  if (!(((unit1->type == KR_MXR_INPUT) || (unit1->type == KR_MXR_BUS)) &&
+      ((unit1->type == KR_MXR_INPUT) || (unit2->type == KR_MXR_BUS)) &&
+      (((unit1->type == KR_MXR_BUS) && (unit2->type == KR_MXR_BUS)) ||
+       ((unit1->type != KR_MXR_BUS) && (unit2->type != KR_MXR_BUS))))) {
     printke("Invalid crossfade group!");
     return;
   }
@@ -665,9 +667,9 @@ void kr_mixer_cf_attatch(kr_mixer *mixer, kr_mixer_path *unit1, kr_mixer_path *u
   unit2->crossfader = crossfader;
 
   krad_radio_broadcast_subunit_update(mixer->as->app_broadcaster,
-   &unit1->address, KR_CROSSFADE_GROUP, KR_STRING, unit2->name, NULL );
+   &unit1->address, KR_CROSSFADE_GROUP, KR_STRING, unit2->name, NULL);
 
-  kr_mixer_control(mixer, unit1->name, "crossfade", -100.0f, 0, NULL);
+  kr_mixer_ctl(mixer, unit1->name, "crossfade", -100.0f, 0, NULL);
 }
 
 void kr_mixer_cf_detatch(kr_mixer *mixer, kr_mixer_crossfader *crossfader) {
@@ -690,9 +692,9 @@ void kr_mixer_cf_detatch(kr_mixer *mixer, kr_mixer_crossfader *crossfader) {
     crossfader->fade = -100.0f;
 
     /* Hrm */
-    kr_mixer_control(mixer, unit[0]->name, "volume",
+    kr_mixer_ctl(mixer, unit[0]->name, "volume",
      unit[0]->volume[0], 0, NULL);
-    kr_mixer_control(mixer, unit[1]->name, "volume",
+    kr_mixer_ctl(mixer, unit[1]->name, "volume",
      unit[1]->volume[0], 0, NULL);
 
     krad_radio_broadcast_subunit_update(mixer->as->app_broadcaster,
@@ -700,9 +702,9 @@ void kr_mixer_cf_detatch(kr_mixer *mixer, kr_mixer_crossfader *crossfader) {
   }
 }
 
-kr_mixer_path *kr_mixer_unit_create (kr_mixer *mixer, char *name, int direction,
- kr_mixer_output_t output_type, int channels, float volume,
- kr_mixer_bus *bus, kr_mixer_unit_io_t io_type, void *io_ptr,
+kr_mixer_path *kr_mixer_path_create(kr_mixer *mixer, char *name, int direction,
+ kr_mixer_path_type type, int channels, float volume,
+ kr_mixer_bus *bus, kr_mixer_path_type type2, void *io_ptr,
  krad_audio_api_t api) {
 
   int p;
@@ -736,10 +738,10 @@ kr_mixer_path *kr_mixer_unit_create (kr_mixer *mixer, char *name, int direction,
   unit->mixer = mixer;
   strcpy(unit->name, name);
   unit->channels = channels;
-  unit->io_type = io_type;
-  unit->output_type = output_type;
+  unit->type = type;
+//  unit->output_type = output_type;
   unit->bus = bus;
-  unit->direction = direction;
+  //unit->direction = direction;
   unit->address.path.unit = KR_MIXER;
   unit->address.path.subunit.mixer_subunit = KR_PORTGROUP;
   strcpy (unit->address.id.name, unit->name);
@@ -752,60 +754,27 @@ kr_mixer_path *kr_mixer_unit_create (kr_mixer *mixer, char *name, int direction,
     }
     unit->map[c] = c;
     unit->mapped_samples[c] = &unit->samples[c];
-    if ((unit->direction != OUTPUT) || (unit->output_type == AUX)) {
+    //if ((unit->direction != OUTPUT) || (unit->output_type == AUX)) {
       unit->volume[c] = volume;
-    } else {
-      unit->volume[c] = 100.0f;
-    }
+    //} else {
+    //  unit->volume[c] = 100.0f;
+    //}
     unit->volume_actual[c] = (float)(unit->volume[c]/100.0f);
     unit->volume_actual[c] *= unit->volume_actual[c];
     unit->new_volume_actual[c] = unit->volume_actual[c];
-
-    switch (unit->io_type) {
-      case KRAD_TONE:
-        unit->samples[c] = calloc (1, 16384);
-        break;
-      case MIXBUS:
-        unit->samples[c] = calloc (1, 16384);
-        break;
-      case KRAD_AUDIO:
-        break;
-      case KRAD_LINK:
-        unit->samples[c] = calloc (1, 16384);
-        break;
-      case KLOCALSHM:
-        break;
-    }
+    unit->samples[c] = calloc (1, 8192);
   }
 
-  switch (unit->io_type) {
-    case KRAD_TONE:
-      //unit->io_ptr = krad_tone_create(mixer->sample_rate);
-    case MIXBUS:
-      break;
-    case KRAD_AUDIO:
-      unit->io_ptr = krad_audio_unit_create(mixer->krad_audio,
-       unit->name, kr_mixer_dir_to_kr_audio_dir(unit->direction),
-       unit->channels, api);
-      break;
-    case KRAD_LINK:
-      unit->io_ptr = io_ptr;
-      break;
-    case KLOCALSHM:
-      unit->io_ptr = io_ptr;
-      break;
-  }
-
-  if (unit->io_type != KRAD_LINK) {
+ // if (unit->type != KRAD_LINK) {
     unit->tags = krad_tags_create(unit->name);
     //if ((unit->krad_tags != NULL) && (mixer->app != NULL)) {
     //  krad_tags_set_set_tag_callback (unit->krad_tags, mixer->app,
     //  (void (*)(void *, char *, char *, char *, int))
     //  krad_app_server_broadcast_tag);
     //}
-  } else {
-    unit->tags = krad_link_get_tags(unit->io_ptr);
-  }
+ // } else {
+ //   unit->tags = krad_link_get_tags(unit->io_ptr);
+ // }
 
   if (unit->tags == NULL) {
     failfast ("Oh I couldn't find me tags");
@@ -817,25 +786,19 @@ kr_mixer_path *kr_mixer_unit_create (kr_mixer *mixer, char *name, int direction,
     failfast ("Oh I couldn't make effects");
   }
 
-  if (unit->direction == INPUT) {
-    kr_sfx_effect_add2(unit->sfx, kr_sfx_strtosfx("eq"),
-    unit->mixer unit->name);
-    kr_sfx_effect_add2(unit->sfx,
-     kr_sfx_string_to_effect("lowpass"), unit->mixer, unit->name);
-    kr_sfx_effect_add2(unit->sfx,
-     kr_sfx_string_to_effect("highpass"), unit->mixer, unit->name);
-    kr_sfx_effect_add2(unit->sfx,
-     kr_sfx_string_to_effect("analog"), unit->mixer, unit->name);
-  }
-
-  if (unit->io_type != KLOCALSHM) {
-    unit->active = 1;
-  }
+  kr_sfx_effect_add2(unit->sfx, kr_sfx_strtosfx("eq"), unit->mixer,
+   unit->name);
+  kr_sfx_effect_add2(unit->sfx, kr_sfx_strtosfx("lowpass"), unit->mixer,
+   unit->name);
+  kr_sfx_effect_add2(unit->sfx, kr_sfx_strtosfx("highpass"), unit->mixer,
+   unit->name);
+  kr_sfx_effect_add2(unit->sfx, kr_sfx_strtosfx("analog"), unit->mixer,
+   unit->name);
 
   return unit;
 }
 
-void kr_mixer_unit_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
+void kr_mixer_path_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
 
   int c;
 
@@ -859,47 +822,13 @@ void kr_mixer_unit_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
   printk("Krad Mixer: Removing %s", unit->name);
 
   for (c = 0; c < KR_MXR_MAX_CHANNELS; c++) {
-    switch (unit->io_type) {
-      case KRAD_TONE:
-        free(unit->samples[c]);
-        break;
-      case MIXBUS:
-        free(unit->samples[c]);
-        break;
-      case KRAD_AUDIO:
-        break;
-      case KRAD_LINK:
-        free(unit->samples[c]);
-        break;
-      case KLOCALSHM:
-        break;
-    }
+    free(unit->samples[c]);
   }
 
-  switch (unit->io_type) {
-    case KRAD_TONE:
-      //krad_tone_destroy(unit->io_ptr);
-    case MIXBUS:
-      break;
-    case KRAD_AUDIO:
-      krad_audio_portgroup_destroy(unit->io_ptr);
-      break;
-    case KRAD_LINK:
-      break;
-    case KLOCALSHM:
-      kr_mixer_local_portgroup_destroy(unit->io_ptr);
-      break;
-  }
-
-  if (unit->xmms != NULL) {
-    krad_xmms_destroy(unit->xmms);
-    unit->xmms = NULL;
-  }
-
-  if (unit->io_type != KRAD_LINK) {
+  //if (unit->type != KRAD_LINK) {
     krad_tags_destroy(unit->tags);
     unit->tags = NULL;
-  }
+  //}
 
   if (unit->sfx != NULL) {
     kr_sfx_destroy(unit->sfx);
@@ -910,7 +839,7 @@ void kr_mixer_unit_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
   unit->active = 0;
 }
 
-kr_mixer_path *kr_mixer_get_unit_from_name(kr_mixer *mixer, char *name) {
+kr_mixer_path *kr_mixer_path_from_name(kr_mixer *mixer, char *name) {
 
   int p;
   int len;
@@ -935,24 +864,25 @@ kr_mixer_path *kr_mixer_get_unit_from_name(kr_mixer *mixer, char *name) {
   return NULL;
 }
 
-int kr_mixer_control(kr_mixer *mixer, char *name, char *control, float value,
+int kr_mixer_ctl(kr_mixer *mixer, char *name, char *control, float value,
  int duration, void *ptr) {
 
   kr_mixer_path *unit;
 
-  unit = kr_mixer_unit_from_name(mixer, name);
+  unit = kr_mixer_path_from_name(mixer, name);
 
   if (unit != NULL) {
-    if ((unit->direction == OUTPUT) &&
-        (unit->output_type == DIRECT)) {
-      return 1;
-    }
+    //if ((unit->direction == OUTPUT) &&
+    //    (unit->output_type == DIRECT)) {
+    //  return 1;
+   // }
     if ((strncmp(control, "volume", 6) == 0) && (strlen(control) == 6)) {
       //unit_set_volume (unit, value);
       kr_easer_set(&unit->volume_easer, value, duration, EASEINOUTSINE, ptr);
       return 1;
     }
-    if ((unit->direction == INPUT) && (unit->io_type != MIXBUS)) {
+    //Fixme add bus to bus crossfadin
+    if ((unit->type == KR_MXR_INPUT) && (unit->type != KR_MXR_BUS)) {
       if ((strncmp(control, "crossfade", 9) == 0) && (strlen(control) == 9)) {
         if (unit->crossfader != NULL) {
           //unit_set_crossfade (unit, value);
@@ -974,12 +904,12 @@ int kr_mixer_control(kr_mixer *mixer, char *name, char *control, float value,
   return 0;
 }
 
-void kr_mixer_channel_move(kr_mixer_unit *unit, int in_chan, int out_chan) {
+void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan) {
   unit->map[in_chan] = out_chan;
   unit->mapped_samples[in_chan] = &unit->samples[out_chan];
 }
 
-void kr_mixer_channel_copy(kr_mixer_unit *unit, int in_chan, int out_chan) {
+void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan) {
   unit->mixmap[out_chan] = in_chan;
 }
 
@@ -1009,8 +939,8 @@ void kr_mixer_unset_pusher(kr_mixer *mixer) {
   if (mixer->ticker_running == 1) {
     mixer_stop_ticker(mixer);
   }
-  if (kr_mixer_period(mixer) != KR_MXR_DEFAULT_PERIOD_SIZE) {
-    kr_mixer_period_set(mixer, KR_MXR_DEFAULT_PERIOD_SIZE);
+  if (kr_mixer_period(mixer) != KR_MXR_DEF_PFRAMES) {
+    kr_mixer_period_set(mixer, KR_MXR_DEF_PFRAMES);
   }
   kr_mixer_start_ticker(mixer);
   mixer->pusher = 0;
@@ -1080,20 +1010,20 @@ int kr_mixer_destroy(kr_mixer *mixer) {
   }
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if ((mixer->unit[p]->active == 2) &&
-        (mixer->unit[p]->io_type != MIXBUS)) {
+        (mixer->unit[p]->type != KR_MXR_BUS)) {
       mark_destroy(mixer, mixer->unit[p]);
     }
   }
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if ((mixer->unit[p]->active != 0) &&
-        (mixer->unit[p]->io_type != MIXBUS)) {
-      kr_mixer_unit_destroy(mixer, mixer->unit[p]);
+        (mixer->unit[p]->type != KR_MXR_BUS)) {
+      kr_mixer_path_destroy(mixer, mixer->unit[p]);
     }
   }
   mixer->destroying = 2;
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if (mixer->unit[p]->active != 0) {
-      kr_mixer_unit_destroy(mixer, mixer->unit[p]);
+      kr_mixer_path_destroy(mixer, mixer->unit[p]);
     }
   }
   free(mixer->crossfader);
@@ -1110,23 +1040,22 @@ kr_mixer *kr_mixer_create() {
   int p;
   kr_mixer *mixer;
 
-  if ((mixer = calloc(1, sizeof(kr_mixer_t))) == NULL) {
+  if ((mixer = calloc(1, sizeof(kr_mixer))) == NULL) {
     failfast("Krad Mixer memory alloc failure");
   }
 
   mixer->address.path.unit = KR_MIXER;
   mixer->address.path.subunit.mixer_subunit = KR_UNIT;
-  mixer->sample_rate = KR_MXR_DEFAULT_SAMPLE_RATE;
-  mixer->avg_window_size = (mixer->sample_rate / 1000) *
-   KR_MXR_RMS_WINDOW_SIZE_MS;
-  mixer->period_size = KR_MXR_DEFAULT_PERIOD_SIZE;
+  mixer->sample_rate = KR_MXR_DEF_SRATE;
+  mixer->avg_window_size = (mixer->sample_rate / 1000) * KR_MXR_RMS_WINDOW_MS;
+  mixer->period_size = KR_MXR_DEF_PFRAMES;
   mixer->frames_per_peak_broadcast = 1536;
   mixer->crossfader = calloc(KR_MXR_MAX_PATHS / 2,
    sizeof(kr_mixer_crossfader));
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
-    mixer->unit[p] = calloc(1, sizeof(kr_mixer_unit));
+    mixer->unit[p] = calloc(1, sizeof(kr_mixer_path));
   }
-  mixer->master = kr_mixer_unit_create(mixer, "MasterBUS", MIX, NOTOUTPUT, 2,
+  mixer->master = kr_mixer_path_create(mixer, "MasterBUS", KR_MXR_BUS, 0, 2,
    KR_MXR_DEF_MBUS_LVL, NULL, KR_MXR_BUS, NULL, 0);
   return mixer;
 }

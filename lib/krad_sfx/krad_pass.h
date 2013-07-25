@@ -63,7 +63,7 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
  int nsamples, int broadcast);
 /* Controls */
 void kr_pass_set_type(kr_pass *pass, kr_sfx_type type);
-void kr_pass_set_bandwidth(kr_pass *pass, float bandwidth, int duration, kr_easing easing, void *user);
+void kr_pass_set_bw(kr_pass *pass, float bw, int duration, kr_easing easing, void *user);
 void kr_pass_set_hz(kr_pass *pass, float hz, int duration, kr_easing easing, void *user);
 
 #endif

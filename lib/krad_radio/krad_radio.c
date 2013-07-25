@@ -214,7 +214,7 @@ krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {
 
   kr_mixer_path *unit;
 
-  unit = kr_mixer_unit_from_name(radio->mixer, item);
+  unit = kr_mixer_path_from_name(radio->mixer, item);
   if (unit != NULL) {
     return unit->tags;
   } else {

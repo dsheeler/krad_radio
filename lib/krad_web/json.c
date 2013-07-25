@@ -281,7 +281,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
       break;
     case KR_VIDEOPORT:
       controls = crate->inside.videoport->controls;
-      if (crate->inside.videoport->direction == OUTPUT) {
+      if (crate->inside.videoport->direction == 0) { //FIXME
         pos += snprintf(json + pos, sizeof(json) - pos,
          "\"port_name\":\"%s\",\"direction\":\"%s\",",
          crate->inside.videoport->sysname, "output");
@@ -388,8 +388,7 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
               krad_websocket_set_portgroup_control(client, crate->addr, crate->real);
             }
           } else {
-            if ((crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) ||
-                (crate->addr->control.portgroup_control == KR_XMMS2_IPC_PATH)) {
+            if (crate->addr->control.portgroup_control == KR_CROSSFADE_GROUP) {
               if (kr_uncrate_string (crate, &string)) {
                 krad_websocket_update_portgroup(client, crate->addr, string);
                 kr_string_recycle (&string);

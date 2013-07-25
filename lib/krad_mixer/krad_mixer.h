@@ -8,7 +8,7 @@ typedef struct kr_mixer_path kr_mixer_bus;
 typedef struct kr_mixer_path kr_mixer_aux;
 typedef struct kr_mixer_crossfader kr_mixer_crossfader;
 
-#define KRAD_MIXER_MAX_MINIWINS 192
+#define KR_MXR_MAX_MINIWINS 192
 
 #include "krad_mixer_common.h"
 #include "krad_radio.h"
@@ -37,8 +37,8 @@ struct kr_mixer_path {
   float new_volume_actual[KR_MXR_MAX_CHANNELS];
   int last_sign[KR_MXR_MAX_CHANNELS];
   int win;
-  int winss[KRAD_MIXER_MAX_MINIWINS];
-  float wins[KR_MXR_MAX_CHANNELS][KRAD_MIXER_MAX_MINIWINS];
+  int winss[KR_MXR_MAX_MINIWINS];
+  float wins[KR_MXR_MAX_CHANNELS][KR_MXR_MAX_MINIWINS];
   float avg[KR_MXR_MAX_CHANNELS];
   float peak[KR_MXR_MAX_CHANNELS];
   float peak_last[KR_MXR_MAX_CHANNELS];
@@ -75,17 +75,17 @@ struct kr_mixer {
   int destroying;
 };
 
-kr_mixer_path *kr_mixer_unit_create(kr_mixer *mixer, char *name,
- int direction, kr_mixer_path_type output_type, int channels,
- float volume, kr_mixer_bus *bus, int io_type,
+kr_mixer_path *kr_mixer_path_create(kr_mixer *mixer, char *name,
+ int direction, kr_mixer_path_type type, int channels,
+ float volume, kr_mixer_bus *bus, kr_mixer_path_type type2,
  void *io_ptr, krad_audio_api_t api);
 
-void kr_mixer_unit_destroy(kr_mixer *mixer, kr_mixer_path *unit);
+void kr_mixer_path_destroy(kr_mixer *mixer, kr_mixer_path *unit);
 
 int kr_mixer_ctl(kr_mixer *mixer, char *name, char *control, float value,
  int duration, void *ptr);
 
-kr_mixer_path *kr_mixer_unit_from_name(kr_mixer *mixer, char *name);
+kr_mixer_path *kr_mixer_get_path_from_name(kr_mixer *mixer, char *name);
 
 /* Unit operation controls */
 void kr_mixer_cf_attach(kr_mixer *mixer, kr_mixer_path *left, kr_mixer_path *right);

@@ -49,7 +49,7 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
   if ((address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     subunit.portgroup = subunit_in;
     kr_mixer_unit_to_rep(subunit.portgroup, &rep.portgroup);
-    kr_mixer_unit_rep_to_ebml(&rep.portgroup, &ebml);
+    kr_mixer_path_info_to_ebml(&rep.portgroup, &ebml);
   }
 
   if (address->path.unit == KR_COMPOSITOR) {

@@ -6,6 +6,11 @@
 #include "krad_ebml2.h"
 #include "krad_codec_header.h"
 
+#define KR_AIN 0
+#define KR_AOUT 1
+#define KR_VIN 0
+#define KR_VOUT 1
+
 typedef struct krad_transponder_rep_St krad_transponder_rep_t;
 typedef struct krad_transponder_rep_St kr_transponder_t;
 
@@ -91,35 +96,35 @@ typedef enum {
 
 struct krad_transponder_rep_St {
   uint16_t receiver_port;
-  uint16_t transmitter_port;  
+  uint16_t transmitter_port;
 };
 
 struct kr_flac_encoder_St {
-  int bit_depth;	
+  int bit_depth;
 };
 
 struct kr_vpx_decoder_St {
-  int yea;	
+  int yea;
 };
 
 struct kr_theora_decoder_St {
-  int yea;	
+  int yea;
 };
 
 struct kr_daala_decoder_St {
-  int lol;	
+  int lol;
 };
 
 struct kr_vorbis_decoder_St {
-  int yea;	
+  int yea;
 };
 
 struct kr_opus_decoder_St {
-  int yea;	
+  int yea;
 };
 
 struct kr_flac_decoder_St {
-  int bit_depth;	
+  int bit_depth;
 };
 
 struct kr_vpx_encoder_St {
@@ -134,7 +139,7 @@ struct kr_theora_encoder_St {
 };
 
 struct kr_daala_encoder_St {
-  int lol;	
+  int lol;
 };
 
 struct kr_vorbis_encoder_St {
@@ -192,10 +197,10 @@ struct kr_video_encoder_St {
   int fps_denominator;
   int color_depth;
   kr_video_codec_t codec;
-  
+
   uint64_t bytes;
   uint64_t frames;
-  
+
 };
 
 typedef union {
@@ -215,7 +220,7 @@ typedef union {
 /*
 struct kr_decoder_St {
 	krad_codec_t codec;
-	kr_av_decoder_t decoder;	
+	kr_av_decoder_t decoder;
 };
 */
 struct kr_udp_muxer_St {
@@ -254,7 +259,7 @@ typedef union {
 	kr_ogg_muxer_t ogg;
 	kr_mkv_muxer_t mkv;
 	kr_transogg_muxer_t togg;
-	kr_udp_muxer_t udp;	
+	kr_udp_muxer_t udp;
 } kr_muxer_actual_t;
 
 struct kr_muxer_St {

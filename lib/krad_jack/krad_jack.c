@@ -7,7 +7,7 @@ void krad_jack_portgroup_samples_callback(int frames, void *userdata, float **sa
   float *temp;
 
   for (c = 0; c < portgroup->channels; c++) {
-    if (portgroup->direction == INPUT) {
+    if (portgroup->direction == KR_AIN) {
       temp = jack_port_get_buffer (portgroup->ports[c], frames);
       memcpy (portgroup->samples[c], temp, frames * 4);
       samples[c] = portgroup->samples[c];
@@ -130,7 +130,7 @@ void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_na
     for (c = 0; c < portgroup->channels; c++) {
       if (ports[c]) {
         //krad_jack_stay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), (char *)ports[c]);
-        if (portgroup->direction == INPUT) {
+        if (portgroup->direction == KR_AIN) {
           //printk ("Krad Jack: Plugging %s to %s", ports[c], jack_port_name(portgroup->ports[c]));
           jack_connect (portgroup->krad_jack->client, ports[c], jack_port_name(portgroup->ports[c]));
         } else {
@@ -164,7 +164,7 @@ void krad_jack_portgroup_destroy (krad_jack_portgroup_t *portgroup) {
 
     portgroup->ports[c] = NULL;
 
-    if (portgroup->direction == INPUT) {
+    if (portgroup->direction == KR_AIN) {
       free (portgroup->samples[c]);
     }
   }
@@ -187,7 +187,7 @@ krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char 
   portgroup->direction = direction;
   strcpy ( portgroup->name, name );
 
-  if (portgroup->direction == INPUT) {
+  if (portgroup->direction == KR_AIN) {
     port_direction = JackPortIsInput;
   } else {
     port_direction = JackPortIsOutput;
@@ -198,8 +198,8 @@ krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char 
     strcpy ( portname, name );
 
     if (portgroup->channels > 1) {
-      strcat ( portname, "_" );
-      strcat ( portname, krad_mixer_channel_number_to_string ( c ) );
+      strcat(portname, "_");
+      strcat(portname, kr_mixer_channeltostr(c));
     }
 
     portgroup->ports[c] = jack_port_register (portgroup->krad_jack->client,
@@ -214,7 +214,7 @@ krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char 
       return NULL;
     }
 
-    if (portgroup->direction == INPUT) {
+    if (portgroup->direction == KR_AIN) {
       portgroup->samples[c] = calloc (1, 16384);
     }
   }
@@ -321,7 +321,7 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
 
   krad_system_set_thread_name ("kr_jack");
 
-  krad_jack->name = krad_jack->krad_audio->mixer->name;
+  krad_jack->name = "kradradio"; // FIXME get this or set it somehows?;
 
   if (server_name != NULL) {
     krad_jack->options = JackNoStartServer | JackServerName;

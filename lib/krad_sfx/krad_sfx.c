@@ -190,7 +190,7 @@ void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
              control_id, value, duration, easing, user);
             break;
           case KR_EQ_BW:
-            kr_eq_band_set_bandwidth(sfx->effect[effect_num].effect[c],
+            kr_eq_band_set_bw(sfx->effect[effect_num].effect[c],
              control_id, value, duration, easing, user);
             break;
           case KR_EQ_HZ:
@@ -203,7 +203,7 @@ void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
       case KR_HIGHPASS:
         switch (control) {
           case KR_PASS_BW:
-            kr_pass_set_bandwidth(sfx->effect[effect_num].effect[c],
+            kr_pass_set_bw(sfx->effect[effect_num].effect[c],
              value, duration, easing, user);
             break;
           case KR_PASS_HZ:
