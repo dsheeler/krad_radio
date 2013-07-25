@@ -63,7 +63,7 @@ int new_frame (void *buffer, void *user) {
   krad_frame_t *frame;
 
   streamer = (kr_streamer_t *)user;
-    
+
   frame = krad_framepool_getframe (streamer->framepool);
 
   if (frame != NULL) {
@@ -113,17 +113,17 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 	if (streamer->client == NULL) {
 		fprintf (stderr, "Could not create KR client.\n");
 	  exit (1);
-	}	
+	}
 
   kr_connect (streamer->client, streamer->params->station);
-  
+
   if (!kr_connected (streamer->client)) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
              streamer->params->station);
 	  kr_client_destroy (&streamer->client);
 	  exit (1);
   }
-  
+
   if (kr_compositor_get_info_wait (streamer->client,
                                    &streamer->width, &streamer->height,
                                    &streamer->fps_numerator, &streamer->fps_denominator) != 1) {
@@ -133,8 +133,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
   }
 
   streamer->frame_size = streamer->width * streamer->height * 4;
-
-	streamer->videoport = kr_videoport_create (streamer->client, OUTPUT);
+  //FIXME
+	streamer->videoport = kr_videoport_create (streamer->client, 0);
 
 	if (streamer->videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");
@@ -143,7 +143,7 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 	} else {
 		printf ("Working!\n");
 	}
-	
+
   kr_videoport_set_callback (streamer->videoport, new_frame, streamer);
 
   if (params->file != NULL) {
@@ -196,7 +196,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
   int32_t ret;
 
   signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);    
+  signal (SIGTERM, signal_recv);
 
   converter = NULL;
   sws_algo = SWS_BILINEAR;
@@ -212,19 +212,19 @@ void kr_streamer_run (kr_streamer_t *streamer) {
 
     frame = NULL;
     frames = krad_ringbuffer_read_space (streamer->frame_ring) / sizeof(void *);
-	
+
     if (frames > 1) {
       krad_vpx_encoder_deadline_set (streamer->vpx_enc, 1);
 	    sws_algo = SWS_POINT;
     }
-	
+
     if (frames == 0) {
       krad_vpx_encoder_deadline_set (streamer->vpx_enc, 10000);
       sws_algo = SWS_BILINEAR;
       usleep (2000);
       continue;
     }
-	
+
     if (frames > 0) {
       krad_ringbuffer_read (streamer->frame_ring,
                             (char *)&frame,
@@ -243,14 +243,14 @@ void kr_streamer_run (kr_streamer_t *streamer) {
       frame->yuv_strides[1] = 0;
       frame->yuv_strides[2] = 0;
       frame->yuv_strides[3] = 0;
-      
+
       converter = sws_getCachedContext ( converter,
                                          streamer->width,
                                          streamer->height,
                                          frame->format,
                                          streamer->params->width,
                                          streamer->params->height,
-                                         PIX_FMT_YUV420P, 
+                                         PIX_FMT_YUV420P,
                                          sws_algo,
                                          NULL, NULL, NULL);
 
@@ -259,7 +259,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
       }
 
       vmedium->v.pps[0] = streamer->params->width;
-      vmedium->v.pps[1] = streamer->params->width/2;  
+      vmedium->v.pps[1] = streamer->params->width/2;
       vmedium->v.pps[2] = streamer->params->width/2;
       vmedium->v.ppx[0] = vmedium->data;
       vmedium->v.ppx[1] = vmedium->data +
@@ -282,9 +282,9 @@ void kr_streamer_run (kr_streamer_t *streamer) {
       if (ret == 1) {
         kr_mkv_add_video_tc (streamer->mkv, 1,
                              vcodeme->data, vcodeme->sz,
-                             vcodeme->key, vcodeme->tc);      
+                             vcodeme->key, vcodeme->tc);
       }
-      
+
       printf ("\rKrad Streamer Frame# %12"PRIu64"",
               streamer->eframes++);
       fflush (stdout);
@@ -307,12 +307,12 @@ void kr_streamer_run (kr_streamer_t *streamer) {
 void kr_streamer (kr_streamer_params_t *params) {
 
   kr_streamer_t *streamer;
-  
+
   streamer = kr_streamer_create (params);
   kr_streamer_run (streamer);
   kr_streamer_destroy (&streamer);
 }
-  
+
 int main (int argc, char *argv[]) {
 
   kr_streamer_params_t params;

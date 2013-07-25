@@ -10,9 +10,9 @@
 /**
  * @mainpage Krad Radio Client API
  *
- * These documents contain all types and functions needed to to 
+ * These documents contain all types and functions needed to to
  * API conmmunication to manage, control and modify krad radio stations.
- * 
+ *
  * Sections:
  * @li @ref krad_radio_client_ctl
  * @li @ref krad_radio_client
@@ -30,8 +30,8 @@
 
 
 /** @defgroup krad_radio_client Krad Radio Client API
- * @brief Get and Manage general client functions like API-connection, 
- * API-responses, system information, uptime, enable or disbale remote 
+ * @brief Get and Manage general client functions like API-connection,
+ * API-responses, system information, uptime, enable or disbale remote
  * control and list / manage tags for one station
  * @{
  */
@@ -110,7 +110,7 @@ typedef enum {
 typedef enum {
   KR_STATION_UNIT = 1,
   KR_CPU,
-  KR_REMOTE,  
+  KR_REMOTE,
 } kr_station_subunit_t;
 
 /* Control Types */
@@ -147,8 +147,8 @@ typedef union {
 
 typedef union {
   uint32_t unit_control;
-  kr_mixer_portgroup_control_t portgroup_control;
-  kr_mixer_effect_control_t effect_control;
+  kr_mixer_control portgroup_control;
+  kr_sfx_control effect_control;
   kr_compositor_control_t compositor_control;
   kr_transponder_control_t transponder_control;
 } kr_unit_control_name_t;
@@ -182,8 +182,8 @@ typedef union {
   void *actual;
   kr_tag_t *tag;
   kr_remote_t *remote;
-  kr_mixer_t *mixer;
-  kr_mixer_portgroup_t *portgroup;
+  kr_mixer_info *mixer;
+  kr_mixer_path_info *portgroup;
   kr_compositor_t *compositor;
   kr_radio_t *radio;
   kr_sprite_t *sprite;
@@ -197,8 +197,8 @@ typedef union {
   char actual;
   kr_tag_t tag;
   kr_remote_t remote;
-  kr_mixer_t mixer;
-  kr_mixer_portgroup_t portgroup;
+  kr_mixer_info mixer;
+  kr_mixer_path_info portgroup;
   kr_compositor_t compositor;
   kr_sprite_t sprite;
   kr_text_t text;
@@ -293,7 +293,7 @@ void kr_subscribe_all (kr_client_t *client);
  * @return > 0 if there are new messages, 0 otherwise
  * @see kr_broadcast_subscribe
  */
- 
+
 int kr_poll (kr_client_t *client, uint32_t timeout_ms);
 int kr_crate_addr_path_match (kr_crate_t *crate, int unit, int subunit);
 void kr_crate_recycle (kr_crate_t **crate);
@@ -396,7 +396,7 @@ void kr_shm_destroy (kr_shm_t *kr_shm);
 //void kr_uptime (kr_client_t *client);
 
 /**
- * @brief Prints out system information (hostname, architecture and kernel 
+ * @brief Prints out system information (hostname, architecture and kernel
  * version) from where the station is running on
  * @param client handle of the API-connection to the station
  */
@@ -409,8 +409,8 @@ void kr_system_info (kr_client_t *client);
 //void kr_system_cpu_usage (kr_client_t *client);
 
 /**
- * @brief Sets the "working directory" for the station where logfiles and 
- * snaphots are stored. The directory must exist, it will not be created 
+ * @brief Sets the "working directory" for the station where logfiles and
+ * snaphots are stored. The directory must exist, it will not be created
  * for you!
  * @param client handle of the API-connection to the station
  * @param dir
@@ -433,8 +433,8 @@ void kr_set_dir (kr_client_t *client, char *dir);
 void kr_remote_list (kr_client_t *client);
 
 /**
- * @brief Enable API remote control on a specifed port. You can use 
- * "hostname:port" as sysname to specify this station from another machine. 
+ * @brief Enable API remote control on a specifed port. You can use
+ * "hostname:port" as sysname to specify this station from another machine.
  * This can only be enabled once per station.
  * @param client handle of the API-connection to the station
  * @param port TCP-port on which to listen for incoming connections
@@ -448,7 +448,7 @@ int kr_remote_on (kr_client_t *client, char *interface, int port);
 int kr_remote_off (kr_client_t *client, char *interface, int port);
 
 /**
- * @brief Enable web UI remote control on a specifed port. This can only be 
+ * @brief Enable web UI remote control on a specifed port. This can only be
  * enabled once per station.
  * @param client handle of the API-connection to the station
  * @param http_port port on which to listen for incoming HTTP-connections
@@ -496,7 +496,7 @@ void kr_osc_disable (kr_client_t *client);
  * @param tag_name
  * @param tag_value
  */
- 
+
 
 /**
  * @brief prints out a list of all tags in a group

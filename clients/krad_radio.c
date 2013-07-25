@@ -16,7 +16,7 @@ int get_logname (kr_client_t *client, char *logname, int max) {
   crate = NULL;
   int wait_ms;
   int ret;
-  
+
   kr_system_info (client);
   wait_ms = 250;
   ret = 0;
@@ -57,11 +57,11 @@ void tail_log (kr_client_t *client, int lines, int dofollow) {
   char logname[256];
   char last[32];
   char *args[6];
-  
+
   if (lines < 0) {
     lines = 0;
   }
-  
+
   snprintf (last, sizeof (last), "%d", lines);
 
   if (get_logname (client, logname, 256)) {
@@ -72,7 +72,7 @@ void tail_log (kr_client_t *client, int lines, int dofollow) {
     if (dofollow == 1) {
       args[3] = "-f";
       args[4] = logname;
-      args[5] = NULL;    
+      args[5] = NULL;
     } else {
       args[3] = logname;
       args[4] = NULL;
@@ -195,7 +195,7 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if ((((strncmp(argv[2], "lsv", 3) == 0) || 
+  if ((((strncmp(argv[2], "lsv", 3) == 0) ||
         (strncmp(argv[2], "lsd", 3) == 0) ||
         (strncmp(argv[2], "lsa", 3) == 0)) &&
         (strlen(argv[2]) == 3)) || (strncmp(argv[2], "adapters", 8) == 0)) {
@@ -209,7 +209,7 @@ int main (int argc, char *argv[]) {
     kr_system_info (client);
     kr_delivery_accept_and_report (client);
     printf ("\n");
-    kr_mixer_info (client);
+    kr_mixer_info_get (client);
     kr_delivery_accept_and_report (client);
     printf ("\n");
     kr_compositor_info (client);
@@ -223,7 +223,7 @@ int main (int argc, char *argv[]) {
     kr_system_info (client);
     kr_delivery_accept_and_report (client);
   }
-  
+
   if (strncmp(argv[2], "setdir", 6) == 0) {
     if (argc == 4) {
       kr_set_dir (client, argv[3]);
@@ -233,14 +233,14 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "log", 3) == 0) {
     print_logname (client);
   }
-  
+
   if ((strncmp(argv[2], "tailf", 5) == 0) || (strncmp(argv[2], "ftail", 5) == 0)) {
     if (argc == 3) {
       tail_log (client, 25, 1);
     }
     if (argc == 4) {
       tail_log (client, atoi(argv[3]), 1);
-    }    
+    }
   }
 
   if (strncmp(argv[2], "tail", 4) == 0) {
@@ -249,19 +249,19 @@ int main (int argc, char *argv[]) {
     }
     if (argc == 4) {
       tail_log (client, atoi(argv[3]), 0);
-    }    
+    }
   }
 
   if (strncmp(argv[2], "tags", 4) == 0) {
 
     if (argc == 3) {
-      kr_tags (client, NULL);    
+      kr_tags (client, NULL);
       kr_delivery_accept_and_report (client);
     }
     if (argc == 4) {
-      kr_tags (client, argv[3]);    
+      kr_tags (client, argv[3]);
       kr_delivery_accept_and_report (client);
-    }          
+    }
 
   } else {
     if (strncmp(argv[2], "tag", 3) == 0) {
@@ -271,8 +271,8 @@ int main (int argc, char *argv[]) {
       }
       if (argc == 5) {
         kr_tag (client, argv[3], argv[4]);
-        kr_delivery_accept_and_report (client);            
-      }    
+        kr_delivery_accept_and_report (client);
+      }
     }
   }
 
@@ -285,7 +285,7 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (((strlen(argv[2]) == 6) && (strncmp(argv[2], "remote", 6) == 0)) || 
+  if (((strlen(argv[2]) == 6) && (strncmp(argv[2], "remote", 6) == 0)) ||
       ((strlen(argv[2]) == 7) && (strncmp(argv[2], "remotes", 7) == 0))) {
     kr_remote_list (client);
     kr_delivery_accept_and_report (client);
@@ -302,7 +302,7 @@ int main (int argc, char *argv[]) {
     if (ret == -1) {
       printf ("Invalid Port Specified\n");
     }
-  }  
+  }
 
   if ((strncmp(argv[2], "remoteoff", 9) == 0) || (strncmp(argv[2], "remote_off", 10) == 0)) {
     ret = 0;
@@ -334,7 +334,7 @@ int main (int argc, char *argv[]) {
     if (argc == 7) {
       kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], argv[6]);
     }
-  }      
+  }
 
   if (strncmp(argv[2], "weboff", 6) == 0) {
     if (argc == 3) {
@@ -346,7 +346,7 @@ int main (int argc, char *argv[]) {
     if (argc == 4) {
       kr_osc_enable (client, atoi(argv[3]));
     }
-  }      
+  }
 
   if (strncmp(argv[2], "oscoff", 6) == 0) {
     if (argc == 3) {
@@ -367,16 +367,16 @@ int main (int argc, char *argv[]) {
       ((strncmp(argv[2], "mix", 3) == 0) && (strlen(argv[2]) == 3)) ||
       ((strncmp(argv[2], "mixer", 5) == 0) && (strlen(argv[2]) == 5))) {
     if (argc == 3) {
-      kr_mixer_info (client);
+      kr_mixer_info_get (client);
       kr_delivery_accept_and_report (client);
     }
-  }      
+  }
 
   if (strncmp(argv[2], "setrate", 7) == 0) {
     if (argc == 4) {
       kr_mixer_set_sample_rate (client, atoi(argv[3]));
     }
-  }        
+  }
 
   if (strncmp(argv[2], "tone", 4) == 0) {
     if (argc == 4) {
@@ -398,7 +398,7 @@ int main (int argc, char *argv[]) {
     if (argc == 5) {
       kr_mixer_create_portgroup(client, argv[3], "input", "jack", atoi(argv[4]));
     }
-  }      
+  }
 
   if (strncmp(argv[2], "output", 6) == 0) {
     if (argc == 4) {
@@ -408,7 +408,7 @@ int main (int argc, char *argv[]) {
       kr_mixer_create_portgroup(client, argv[3], "output", "jack", atoi(argv[4]));
     }
   }
-  
+
   if (strncmp(argv[2], "auxout", 6) == 0) {
     if (argc == 4) {
       kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", 2);
@@ -430,8 +430,8 @@ int main (int argc, char *argv[]) {
     }
     if (argc == 5) {
       kr_mixer_unplug_portgroup (client, argv[3], argv[4]);
-    }        
-  }            
+    }
+  }
 
   if (strncmp(argv[2], "map", 3) == 0) {
     if (argc == 6) {
@@ -443,7 +443,7 @@ int main (int argc, char *argv[]) {
     if (argc == 6) {
       kr_mixer_update_portgroup_mixmap_channel (client, argv[3], atoi(argv[4]), atoi(argv[5]));
     }
-  }      
+  }
 
   if (strncmp(argv[2], "crossfade", 9) == 0) {
     if (argc == 4) {
@@ -453,12 +453,12 @@ int main (int argc, char *argv[]) {
       kr_mixer_set_portgroup_crossfade_group (client, argv[3], argv[4]);
     }
   }
-  
+
   if ((strncmp(argv[2], "rmcrossfade", 11) == 0) || (strncmp(argv[2], "nocrossfade", 11) == 0)) {
     if (argc == 4) {
       kr_mixer_set_portgroup_crossfade_group (client, argv[3], "");
     }
-  }     
+  }
 
   if (strncmp(argv[2], "xmms2", 5) == 0) {
     if (argc == 5) {
@@ -471,7 +471,7 @@ int main (int argc, char *argv[]) {
         kr_mixer_bind_portgroup_xmms2 (client, argv[3], argv[4]);
       }
     }
-  }  
+  }
 
   if (strncmp(argv[2], "noxmms2", 7) == 0) {
     if (argc == 4) {
@@ -496,7 +496,7 @@ int main (int argc, char *argv[]) {
       kr_unit_control_set (client, &uc);
     }
   }
-  
+
   if (((argc == 3) || (argc == 4) || (argc == 5)) &&
       (((strlen(argv[2]) > 2) && (strchr(argv[2], '/') != NULL)) ||
        (0))) {
@@ -540,7 +540,7 @@ int main (int argc, char *argv[]) {
       }
     }
   }
-  
+
   if ((argc == 4) && ((strncmp(argv[2], "rm", 2) == 0) && (strlen(argv[2]) == 2)) &&
       (((strlen(argv[3]) > 2) && (strchr(argv[3], '/') != NULL)) ||
        (0))) {
@@ -559,13 +559,13 @@ int main (int argc, char *argv[]) {
       kr_delivery_accept_and_report (client);
     }
   }
-  
+
   if ((strlen(argv[2]) == 9) && (strncmp(argv[2], "addsprite", 9) == 0)) {
     if (argc == 4) {
       kr_compositor_subunit_create (client, KR_SPRITE, argv[3], NULL);
     }
   }
-  
+
   if ((strlen(argv[2]) == 7) && (strncmp(argv[2], "addtext", 7) == 0)) {
     if (argc == 4) {
       kr_compositor_subunit_create (client, KR_TEXT, argv[3], NULL);
@@ -574,7 +574,7 @@ int main (int argc, char *argv[]) {
       kr_compositor_subunit_create (client, KR_TEXT, argv[3], argv[4]);
     }
   }
-  
+
   if ((strlen(argv[2]) > 5) && (strncmp(argv[2], "addvec", 6) == 0)) {
     if (argc == 4) {
       kr_compositor_subunit_create (client, KR_VECTOR, argv[3], NULL);
@@ -598,7 +598,7 @@ int main (int argc, char *argv[]) {
   if (strncmp(argv[2], "fps", 3) == 0) {
     if (argc == 4) {
       kr_compositor_set_frame_rate (client, atoi(argv[3]) * 1000, 1000);
-    }      
+    }
     if (argc == 5) {
       kr_compositor_set_frame_rate (client, atoi(argv[3]), atoi(argv[4]));
     }
@@ -608,9 +608,9 @@ int main (int argc, char *argv[]) {
     if (argc == 4) {
       kr_compositor_background (client, argv[3]);
     }
-  }      
+  }
 
-  /* Krad Transponder Commands */      
+  /* Krad Transponder Commands */
 
   if ((strlen(argv[2]) == 4) && (strncmp(argv[2], "xpdr", 4) == 0)) {
     kr_transponder_info (client);
@@ -629,19 +629,19 @@ int main (int argc, char *argv[]) {
       kr_transponder_subunit_create (client, "record", argv[3]);
     }
   }
-  
+
   if (strncmp(argv[2], "encode", 6) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "encode", argv[3]);
     }
   }
-  
+
   if (strncmp(argv[2], "decode", 6) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "decode", argv[3]);
     }
   }
-  
+
   if ((strncmp(argv[2], "play", 4) == 0) ||
       (strncmp(argv[2], "demux", 5) == 0)) {
     if (argc == 4) {
@@ -654,7 +654,7 @@ int main (int argc, char *argv[]) {
       kr_transponder_subunit_create (client, "mux", argv[3]);
     }
   }
-  
+
   if (strncmp(argv[2], "capture", 7) == 0) {
     if (argc == 4) {
       kr_transponder_subunit_create (client, "rawin", argv[3]);

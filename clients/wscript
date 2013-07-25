@@ -343,16 +343,16 @@ def check_system(systm):
   global shlibs2
   global shlibs4
   global shlibs7
-  global shlibs8  
+  global shlibs8
   global shlibs9
   global shlibs10
   global shlibs11
   global syslibs
   global syslibs2
   global syslibs3
-  
+
   if systm.env['KR_LINUX']:
-    #shlibs = shlibs + ["alsa"]    
+    #shlibs = shlibs + ["alsa"]
     #libsources = ["../lib/krad_alsa/krad_alsa.c", "../lib/krad_alsa/krad_alsa_seq.c"] + libsources
     #programs = ["krad_radio_ev.c"] + programs
     syslibs = syslibs + syslibs2
@@ -377,7 +377,7 @@ def configure(conf):
   global shlibs10
   global shlibs11
   global syslibs
-  global syslibs3  
+  global syslibs3
   check_system(conf)
 
   for l in syslibs:
@@ -446,181 +446,181 @@ def build(bld):
       break
   f.close()
 
-  # we use "KRAD_VERSION.0.0" for now as vnum. this basically means 
-  # that we advise to rebuild clients every new version due to 
+  # we use "KRAD_VERSION.0.0" for now as vnum. this basically means
+  # that we advise to rebuild clients every new version due to
   # possible API-breakages. closest to reality currently.
-  # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only 
+  # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only
   # needed when we _really_ break the API
 
 
   for p in programs:
-    bld(features = 'c cprogram', 
-    source = [p], 
-    includes = includedirs, 
+    bld(features = 'c cprogram',
+    source = [p],
+    includes = includedirs,
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs + stlibs + syslibs)
 
   for p in programs2:
-    bld(features = 'c cprogram', 
+    bld(features = 'c cprogram',
       source = [p] + depsources2,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs + stlibs + syslibs + plibs)
 
   for p in programs4:
-    bld(features = 'c cprogram', 
-    source = [p] + depsources4, 
-    includes = includedirs, 
+    bld(features = 'c cprogram',
+    source = [p] + depsources4,
+    includes = includedirs,
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs + shlibs4 + stlibs + syslibs)
 
   if bld.env['KPLAYER'] == "yes":
     for p in programs6:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs6 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs7:
-    bld(features = 'c cprogram', 
+    bld(features = 'c cprogram',
     source = [p] + depsources7,
-    includes = includedirs, 
+    includes = includedirs,
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs7 + shlibs + stlibs + syslibs + plibs)
 
   if bld.env['KR_LINUX']:
     for p in programs8:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsources8,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs8 + shlibs + stlibs + syslibs3 + syslibs + plibs)
 
   if bld.env['KR_LINUX'] and bld.env['KRAD_USE_WAYLAND']:
     for p in programs9:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsourcesdu,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs9 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs12:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsourcesd,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs9 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs13:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsources9 + depsources13,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs14:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsources9 + depsources13,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs15:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsources9 + depsources13 + depsources15,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs16:
-      bld(features = 'c cprogram cxx cxxprogram', 
+      bld(features = 'c cprogram cxx cxxprogram',
       source = [p] + depsources11 + depsources16,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs11 + shlibs9 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs17:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + depsources9 + depsources13 + depsources17,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
 
     for p in programs18:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs4 + syslibs + plibs)
 
   for p in programs10:
-    bld(features = 'c cprogram', 
+    bld(features = 'c cprogram',
     source = [p] + depsources10,
-    includes = includedirs, 
+    includes = includedirs,
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs10 + shlibs + stlibs + syslibs + plibs)
 
   for p in programs11:
-    bld(features = 'c cprogram cxx cxxprogram', 
+    bld(features = 'c cprogram cxx cxxprogram',
     source = [p] + depsources11,
-    includes = includedirs, 
+    includes = includedirs,
     target = p.replace(".c", ""),
     use = ["kradradio_client"],
     uselib = shlibs11 + shlibs + stlibs + syslibs + plibs)
 
-  for p in kr_shell:
-    bld(features = 'c cprogram', 
-    source = [p] + krad_shell_dep,
-    includes = includedirs, 
-    target = 'kr_shell',
-    use = ["kradradio_client"],
-    uselib = shlibs + stlibs + syslibs + kr_shell_libs)
+#  for p in kr_shell:
+#    bld(features = 'c cprogram',
+#    source = [p] + krad_shell_dep,
+#    includes = includedirs,
+#    target = 'kr_shell',
+#    use = ["kradradio_client"],
+#    uselib = shlibs + stlibs + syslibs + kr_shell_libs)
 
-  for p in kr_mixer:
-    bld(features = 'c cprogram', 
-    source = [p] + kr_mixer_dep,
-    includes = includedirs, 
-    target = 'kr_mixer',
-    use = ["kradradio_client"],
-    uselib = shlibs + stlibs + syslibs + kr_mixer_libs)
+  #for p in kr_mixer:
+  #  bld(features = 'c cprogram',
+  #  source = [p] + kr_mixer_dep,
+  #  includes = includedirs,
+  #  target = 'kr_mixer',
+  #  use = ["kradradio_client"],
+  #  uselib = shlibs + stlibs + syslibs + kr_mixer_libs)
 
-  if bld.env['KR_LINUX']:
-    for p in kr_gnmc:
-      bld(features = 'c cprogram', 
-      source = [p] + kr_gnmc_dep,
-      includes = includedirs, 
-      target = 'kr_gnmc',
-      use = ["kradradio_client"],
-      uselib = shlibs + stlibs + syslibs + kr_gnmc_libs)
+  #if bld.env['KR_LINUX']:
+    #for p in kr_gnmc:
+    #  bld(features = 'c cprogram',
+    #  source = [p] + kr_gnmc_dep,
+    #  includes = includedirs,
+    #  target = 'kr_gnmc',
+    #  use = ["kradradio_client"],
+    #  uselib = shlibs + stlibs + syslibs + kr_gnmc_libs)
 
   if bld.env['KRAD_GTK'] == "yes":
     for p in programs3:
-      bld(features = 'c cprogram', 
-        source = [p], 
-        includes = includedirs, 
+      bld(features = 'c cprogram',
+        source = [p],
+        includes = includedirs,
         target = p.replace(".c", ""),
         use = ["kradradio_client"],
         uselib = shlibs + shlibs2 + stlibs + syslibs)
 
   bld.shlib(
-    source = libsources, 
-    includes = includedirs, 
+    source = libsources,
+    includes = includedirs,
     target = "kradradio_client",
     vnum = krad_version + ".0.0",
     uselib = shlibs + stlibs + syslibs)

@@ -83,7 +83,7 @@ int new_frame(void *buffer, void *user) {
 
   int32_t pos;
   kr_display_t *display;
-	
+
   display = (kr_display_t *)user;
 
   pos = (display->frames % display->framebufsize);
@@ -103,12 +103,12 @@ void kr_display(kr_display_t *display) {
   struct pollfd pollfds[4];
 
 	while (1) {
-	
+
 	  if (destroy == 1) {
 		  printf ("Got signal!\n");
 	    break;
 	  }
-	  
+
     pollfds[0].fd = kr_wayland_get_fd(display->wayland);
     pollfds[0].events = POLLIN;
 
@@ -122,7 +122,7 @@ void kr_display(kr_display_t *display) {
 	    break;
 	  }
 
-    if (pollfds[0].revents == POLLIN) { 
+    if (pollfds[0].revents == POLLIN) {
       kr_wayland_process (display->wayland);
     }
 	}
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
 
   display->width = 960;
   display->height = 540;
-	
+
 	if (argc > 1) {
 	  display->station = argv[1];
 	} else {
@@ -157,31 +157,31 @@ int main(int argc, char *argv[]) {
 	}
 
 	signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);	
+  signal (SIGTERM, signal_recv);
 
 	display->client = kr_client_create ("krad videoport client");
 
 	if (display->client == NULL) {
 		fprintf (stderr, "Could not create KR client.\n");
 		return 1;
-	}	
+	}
 
   kr_connect (display->client, display->station);
-  
+
   if (!kr_connected (display->client)) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
              display->station);
 	  kr_client_destroy (&display->client);
 	  return 1;
   }
-  
+
   if (kr_compositor_get_info_wait (display->client, &display->width, &display->height, NULL, NULL) != 1) {
     fprintf (stderr, "Could not get compositor info!\n");
 	  kr_client_destroy (&display->client);
 	  return 1;
   }
-
-	display->videoport = kr_videoport_create (display->client, OUTPUT);
+  //FIXME
+  display->videoport = kr_videoport_create (display->client, 0);
 
 	if (display->videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");
@@ -205,13 +205,13 @@ int main(int argc, char *argv[]) {
   printk("Wayland display prepared");
 
   kr_videoport_set_callback(display->videoport, new_frame, display);
-	
+
   kr_videoport_activate(display->videoport);
 
   kr_display(display);
 
 	kr_videoport_deactivate(display->videoport);
-	
+
 	kr_videoport_destroy(display->videoport);
 
 	kr_client_destroy(&display->client);
@@ -224,5 +224,5 @@ int main(int argc, char *argv[]) {
 
   free (display);
 
-	return 0;	
+	return 0;
 }

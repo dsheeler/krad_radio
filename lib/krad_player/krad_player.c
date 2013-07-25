@@ -46,12 +46,12 @@ struct kr_player_St {
   int64_t rel_ms;
   krad_timer_t *timer;
 
-  kr_demuxer_state_t demuxer_state;  
+  kr_demuxer_state_t demuxer_state;
 
   kr_machine_t *machine;
   kr_demuxer_t *demuxer;
   kr_decoder_t *decoder;
-  
+
   char *station;
   kr_client_t *client;
   kr_videoport_t *videoport;
@@ -71,7 +71,7 @@ struct kr_player_St {
   float *samples[8];
   int64_t ms;
   uint32_t fps_den;
-  uint32_t fps_num;  
+  uint32_t fps_num;
   uint32_t width;
   uint32_t height;
   uint32_t frame_size;
@@ -91,7 +91,7 @@ struct kr_player_St {
 int krad_player_get_frame(kr_player_t *player, void *frame) {
 
   int pos;
-  
+
   if (player->state == PLAYING) {
     if (player->last_state != PLAYING) {
       player->rel_ms = 0;
@@ -115,7 +115,7 @@ int krad_player_get_frame(kr_player_t *player, void *frame) {
       return 1;
     }
   }
-  
+
   return 0;
 }
 
@@ -125,7 +125,7 @@ int videoport_process (void *buffer, void *arg) {
   player = (kr_player_t *)arg;
 
   int pos;
-  
+
   if (player->state == PLAYING) {
     if (player->frames_dec > player->consumed) {
       pos = (player->consumed % player->framebufsize);
@@ -140,7 +140,7 @@ int videoport_process (void *buffer, void *arg) {
       //}
     }
   }
-  
+
   return 0;
 }
 
@@ -155,10 +155,10 @@ int audioport_process (uint32_t nframes, void *arg) {
   output[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
   output[1] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 1);
 
-  if ((player->state == PLAYING) && 
-      ((krad_resample_ring_read_space (player->resample_ring[0]) >= nframes * 4) && 
+  if ((player->state == PLAYING) &&
+      ((krad_resample_ring_read_space (player->resample_ring[0]) >= nframes * 4) &&
       (krad_resample_ring_read_space (player->resample_ring[1]) >= nframes * 4))) {
-       
+
     krad_resample_ring_read (player->resample_ring[0], output[0], nframes * 4);
     krad_resample_ring_read (player->resample_ring[1], output[1], nframes * 4);
 
@@ -242,7 +242,7 @@ static int32_t kr_player_process (void *msgin, void *actual) {
       case SETDIR:
         printf ("Got SETDIR %"PRIi64" command!\n", msg->actual.user.param.integer);
         player->direction = msg->actual.user.param.integer;
-        break;    
+        break;
     }
   }
   return 1;
@@ -275,7 +275,7 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
   player = (kr_player_t *)actual;
 
   printf ("Codeme sized %zu track %d!\n", codeme->sz, codeme->trk);
-  
+
   if (codeme->trk == 1) {
 
     krad_vpx_decoder_decode (player->vpx, codeme->data, codeme->sz);
@@ -298,14 +298,14 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
 
       int rgb_stride_arr[3] = {4*player->width, 0, 0};
       uint8_t *dst[4];
-      
+
       player->scaler = sws_getCachedContext ( player->scaler,
                                               player->vpx->width,
                                               player->vpx->height,
                                               PIX_FMT_YUV420P,
                                               player->width,
                                               player->height,
-                                              PIX_FMT_RGB32, 
+                                              PIX_FMT_RGB32,
                                               SWS_BICUBIC,
                                               NULL, NULL, NULL);
 
@@ -322,10 +322,10 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
       player->frames_dec++;
       krad_vpx_decoder_decode_again (player->vpx);
     }
-  
+
     if (0) {
       pos = (player->frames_dec + 1 % player->framebufsize) * player->frame_size;
-    
+
       krad_vhs_decode (player->kvhs,
                        codeme->data,
                        player->rgba + pos);
@@ -336,8 +336,8 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
                                                  krad_link->vu_header[1], krad_link->vu_header_len[1],
                                                  krad_link->vu_header[2], krad_link->vu_header_len[2]);
     if (krad_link->video_codec == THEORA) {
-      krad_theora_decoder_decode (krad_link->krad_theora_decoder, kr_slice->data, kr_slice->size);    
-      krad_theora_decoder_timecode (krad_link->krad_theora_decoder, &timecode2);      
+      krad_theora_decoder_decode (krad_link->krad_theora_decoder, kr_slice->data, kr_slice->size);
+      krad_theora_decoder_timecode (krad_link->krad_theora_decoder, &timecode2);
       //printk ("timecode1: %zu timecode2: %zu", timecode, timecode2);
       timecode = timecode2;
 
@@ -356,15 +356,15 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
     krad_theora_decoder_destroy (player->theora);
     */
   }
-  
+
   if (codeme->trk == 2) {
     /*
     int ret;
     ret = krad_flac_decode (player->flac, codeme->data,
                             codeme->sz, player->samples);
     printf ("flac decode ret is %d\n", ret);
-    
-    while ((krad_resample_ring_write_space (player->resample_ring[0]) <= ret * 4) || 
+
+    while ((krad_resample_ring_write_space (player->resample_ring[0]) <= ret * 4) ||
            (krad_resample_ring_write_space (player->resample_ring[1]) <= ret * 4)) {
       usleep (6000);
       if ((player->state == CUED) || (player->state == PLAYERDESTROYING)) {
@@ -467,7 +467,7 @@ static void kr_player_station_connect(kr_player_t *player) {
     exit (1);
   }
   printf ("Krad player Connected to %s!\n", player->station);
-  
+
   if (kr_mixer_get_info_wait (player->client,
                               &player->sample_rate, NULL) != 1) {
     fprintf (stderr, "Krad player: Could not get mixer info!\n");
@@ -482,16 +482,16 @@ static void kr_player_station_connect(kr_player_t *player) {
 	  kr_client_destroy (&player->client);
     exit (1);
   }
-  
-  player->audioport = kr_audioport_create (player->client, "krad player", INPUT);
+
+  player->audioport = kr_audioport_create (player->client, "krad player", KR_MXR_INPUT);
   if (player->audioport == NULL) {
     fprintf (stderr, "Krad player: could not setup audioport\n");
     exit (1);
   }
   kr_audioport_set_callback (player->audioport, audioport_process, player);
   kr_audioport_connect(player->audioport);
-
-  player->videoport = kr_videoport_create (player->client, INPUT);
+  //FIXME
+  player->videoport = kr_videoport_create (player->client, 0);
   if (player->videoport == NULL) {
     fprintf (stderr, "could not setup videoport\n");
     exit (1);
@@ -502,7 +502,7 @@ static void kr_player_station_connect(kr_player_t *player) {
 }
 
 static void kr_player_start (void *actual) {
-  
+
   kr_player_t *player;
   int c;
 
@@ -552,14 +552,14 @@ void kr_player_destroy (kr_player_t **player) {
     msg.actual.user.cmd = PLAYERDESTROY;
     krad_machine_msg ((*player)->machine, &msg);
     krad_machine_destroy (&(*player)->machine);
-    krad_player_free_framebuf (*player);    
+    krad_player_free_framebuf (*player);
     free (*player);
     *player = NULL;
   }
 }
 
 kr_player_t *kr_player_create(char *station, char *url) {
-  
+
   kr_player_t *player;
   kr_machine_params_t machine_params;
 
@@ -578,7 +578,7 @@ kr_player_t *kr_player_create(char *station, char *url) {
   machine_params.destroy = kr_player_destroy_actual;
 
   player->machine = krad_machine_create (&machine_params);
-  
+
   return player;
 };
 

@@ -26,7 +26,7 @@ void my_tag_print (kr_tag_t *tag) {
           tag->value);
 }
 
-void my_portgroup_print (kr_portgroup_t *portgroup) {
+void my_portgroup_print (kr_mixer_path_info *portgroup) {
   printf ("oh its a portgroup called %s and the volume is %0.2f%%\n",
            portgroup->name,
            portgroup->volume[0]);
@@ -64,7 +64,7 @@ void my_videoport_print (kr_port_t *videoport) {
 					 videoport->controls.width, videoport->controls.rotation);
 }
 
-void my_mixer_print (kr_mixer_t *mixer) {
+void my_mixer_print (kr_mixer_info *mixer) {
 
   printf ("Mixer Sample Rate: %d\n",
 					 mixer->sample_rate);
@@ -83,13 +83,13 @@ void my_print (kr_crate_t *crate) {
   }
   if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_TEXT)) {
     my_text_print (crate->inside.text);
-  } 
+  }
   if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VECTOR)) {
     my_vector_print (crate->inside.vector);
-  } 
+  }
   if ((crate->addr->path.unit == KR_COMPOSITOR) && (crate->addr->path.subunit.zero == KR_VIDEOPORT)) {
     my_videoport_print (crate->inside.videoport);
-  } 
+  }
   if ((crate->addr->path.unit == KR_MIXER) && (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     my_portgroup_print (crate->inside.portgroup);
   }
@@ -106,16 +106,16 @@ void handle_crate (kr_crate_t *crate) {
   string = NULL;
   printf ("\n*** Delivery Start: \n");
 
-  //kr_address_debug_print (crate->addr); 
+  //kr_address_debug_print (crate->addr);
 
   /* Crate sometimes can be converted
      to a integer, float or string */
-  
+
   if (kr_uncrate_string (crate, &string)) {
     printf ("String: \n%s\n", string);
     kr_string_recycle (&string);
   }
-  
+
   if (kr_uncrate_int (crate, &integer)) {
     printf ("Int: %d\n", integer);
     /* or but check first always! */
@@ -123,7 +123,7 @@ void handle_crate (kr_crate_t *crate) {
     //   crate->integer;
     // }
   }
-  
+
   if (kr_uncrate_float (crate, &real)) {
     printf ("Float: %f\n", real);
     /* or but check first always! */
@@ -131,11 +131,11 @@ void handle_crate (kr_crate_t *crate) {
     //   crate->real;
     // }
   }
-  
-  //crate->notice  << a type/reason/event    
-  
+
+  //crate->notice  << a type/reason/event
+
   /* Crate has a rep struct */
-  
+
   if (kr_crate_loaded (crate)) {
     my_print (crate);
   }
@@ -148,10 +148,10 @@ void get_delivery (kr_client_t *client) {
   kr_crate_t *crate;
   crate = NULL;
   kr_delivery_recv (client);
-  
+
   while ((kr_delivery_get (client, &crate) > 0) &&
          (crate != NULL)) {
-  
+
     handle_crate (crate);
     kr_crate_recycle (&crate);
   }
@@ -163,18 +163,18 @@ void take_deliveries_long_time (kr_client_t *client) {
   int ret;
   uint64_t max;
   unsigned int timeout_ms;
-  
+
   ret = 0;
   b = 0;
   max = 10000;
   timeout_ms = 3000;
-  
+
 
   kr_subscribe_all (client);
-  
+
   printf ("Waiting for up to %"PRIu64" deliveries for up to %ums each\n",
           max, timeout_ms);
-  
+
   for (b = 0; b < max; b++) {
     ret = kr_wait (client, timeout_ms);
     if (ret > 0) {
@@ -201,7 +201,7 @@ void accept_some_deliveries (kr_client_t *client) {
 
 void rage (kr_client_t *client) {
 
-  kr_tags (client, NULL);    
+  kr_tags (client, NULL);
   accept_some_deliveries (client);
 
   kr_system_info (client);
@@ -209,8 +209,8 @@ void rage (kr_client_t *client) {
 
   //kr_remote_list (client);
   //accept_some_deliveries (client);
-  
-  kr_mixer_info (client);
+
+  kr_mixer_info_get(client);
   accept_some_deliveries (client);
 
   kr_mixer_portgroups (client);
@@ -218,7 +218,7 @@ void rage (kr_client_t *client) {
 
   kr_compositor_info (client);
   accept_some_deliveries (client);
-  
+
   kr_compositor_subunit_list (client);
   accept_some_deliveries (client);
 
@@ -229,11 +229,11 @@ void summon_monkey (khaos_monkey_t *monkey) {
   char monkey_name[256];
   int len;
   int i;
-  
+
   len = rand() % 255;
-  
+
   monkey->lifetime = rand() % MAX_MONKEY_LIFE;
-  
+
   for (i = 0; i < len; i++) {
     monkey_name[i] = rand();
   }
@@ -270,11 +270,11 @@ void *on_the_lamb (void *arg) {
   int b;
   int ret;
   unsigned int timeout_ms;
-  
+
   ret = 0;
   b = 0;
   timeout_ms = 3000;
-  
+
   kr_subscribe_all (monkey->client);
 
   //printf ("Running the one shot demo\n");
@@ -282,10 +282,10 @@ void *on_the_lamb (void *arg) {
 
 
   kr_subscribe_all (monkey->client);
-  
+
   //printf ("Waiting for up to %"PRIu64" deliveries for up to %ums each\n",
   //        max, timeout_ms);
-  
+
   for (b = 0; b < monkey->lifetime; b++) {
     ret = kr_wait (monkey->client, timeout_ms);
     if (ret > 0) {
@@ -294,12 +294,12 @@ void *on_the_lamb (void *arg) {
       //printf (".");
       //fflush (stdout);
     }
-    
+
     if ((b % 1423) > 1222) {
       rage (monkey->client);
     }
   }
-  
+
   kr_disconnect (monkey->client);
   kr_client_destroy (&monkey->client);
 
@@ -314,7 +314,7 @@ khaos_monkey_t *monkey_on_the_lamb (char *sysname) {
   monkey->number = monkey_number++;
   strncpy ( monkey->station_sysname, sysname, sizeof (monkey->station_sysname));
 	pthread_create (&monkey->on_the_lamb_thread, NULL, on_the_lamb, (void *)monkey);
-	
+
 	return monkey;
 }
 
@@ -328,8 +328,8 @@ void uncage_monkeys (char *sysname) {
   int m;
   int lamb;
   khaos_monkey_t *monkeys[MAX_MONKEYS_ON_THE_LAMB];
-  
-  srand (time(NULL));  
+
+  srand (time(NULL));
   lamb = 2 + rand() % (MAX_MONKEYS_ON_THE_LAMB - 2);
 
   printf ("Uncaging %d monkeys\n", lamb);
@@ -337,7 +337,7 @@ void uncage_monkeys (char *sysname) {
   for (m = 0; m < lamb; m++) {
     monkeys[m] = monkey_on_the_lamb (sysname);
   }
-  
+
   for (m = 0; m < lamb; m++) {
     catch_monkey (monkeys[m]);
     printf ("Caught monkey %d!\n", m);

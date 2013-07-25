@@ -5,50 +5,54 @@
 #define LIMIT(v,l,u) ((v)<(l)?(l):((v)>(u)?(u):(v)))
 #endif
 
-#define KRAD_EFFECTS_MAX 4
-#define KRAD_EFFECTS_MAX_CHANNELS 8
-
-#define KRAD_EQ_MAX_BANDS 32
+#define KR_SFX_MAX 4
+#define KR_SFX_MAX_CHANNELS 8
+#define KR_EQ_MAX_BANDS 32
 
 typedef enum {
-  KRAD_NOFX,
-  KRAD_EQ,
-  KRAD_LOWPASS,
-  KRAD_HIGHPASS,
-  KRAD_ANALOG,
-} kr_effect_type_t;
+  KR_NOFX,
+  KR_EQ,
+  KR_LOWPASS,
+  KR_HIGHPASS,
+  KR_ANALOG,
+} kr_sfx_type;
 
-typedef struct krad_eq_rep_St krad_eq_rep_t;
-typedef struct krad_eq_rep_St kr_eq_rep_t;
+typedef enum {
+  DB = 1,
+  BW,
+  HZ,
+  TYPE,
+  DRIVE,
+  BLEND
+} kr_sfx_control;
 
-typedef struct krad_eq_band_rep_St krad_eq_band_rep_t;
-typedef struct krad_eq_band_rep_St kr_eq_band_rep_t;
+typedef struct kr_eq_info kr_eq_info;
+typedef struct kr_eq_band_info kr_eq_band_info;
+typedef struct kr_pass_info kr_lowpass_info;
+typedef struct kr_pass_info kr_highpass_info;
+typedef struct kr_analog_info kr_analog_info;
 
-struct krad_eq_band_rep_St {
+struct kr_eq_band_info {
   float db;
-  float bandwidth;
+  float bw;
   float hz;
 };
 
-struct krad_eq_rep_St {
-  kr_eq_band_rep_t band[KRAD_EQ_MAX_BANDS];
+struct kr_eq_info {
+  kr_eq_band_info band[KR_EQ_MAX_BANDS];
 };
 
-typedef struct krad_pass_rep_St krad_pass_rep_t;
-typedef struct krad_pass_rep_St kr_highpass_rep_t;
-typedef struct krad_pass_rep_St kr_lowpass_rep_t;
-
-struct krad_pass_rep_St {
-  float bandwidth;
+struct kr_pass_info {
+  float bw;
   float hz;
 };
 
-typedef struct krad_analog_rep_St krad_analog_rep_t;
-typedef struct krad_analog_rep_St kr_analog_rep_t;
-
-struct krad_analog_rep_St {
+struct kr_analog_info {
   float drive;
   float blend;
 };
+
+char *sfxtypetostr(kr_sfx_type type);
+char *sfxctltostr(kr_sfx_control control);
 
 #endif

@@ -26,7 +26,7 @@ struct kr_udp_recvr_St {
 	krad_vpx_decoder_t *vpxdec;
   krad_opus_t *krad_opus;
 	kr_audioport_t *audioport;
-	kr_mixer_portgroup_direction_t direction;
+	int direction;
 	uint32_t sample_rate;
 
   uint32_t frame_size;
@@ -427,7 +427,7 @@ int main (int argc, char *argv[]) {
   }
 
 
-  videoport = kr_videoport_create (client, INPUT);
+  videoport = kr_videoport_create (client, KR_MXR_INPUT);
 
 	if (videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");
@@ -478,7 +478,7 @@ int main (int argc, char *argv[]) {
 
   krad_opus_encoder_destroy (tmphack);
 
-	udp_recvr->direction = INPUT;
+	udp_recvr->direction = KR_MXR_INPUT;
 	udp_recvr->audioport = kr_audioport_create(client, "udp recvr",
 	 udp_recvr->direction);
 

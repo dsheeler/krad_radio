@@ -1,5 +1,5 @@
-#ifndef KRAD_EQ_H
-#define KRAD_EQ_H
+#ifndef KR_EQ_H
+#define KR_EQ_H
 
 #include <stdio.h>
 #include <string.h>
@@ -16,16 +16,16 @@
 #include "krad_mixer.h"
 #include "biquad.h"
 
-#define KRAD_EQ_CONTROL_DB 666
-#define KRAD_EQ_CONTROL_BANDWIDTH 667
-#define KRAD_EQ_CONTROL_HZ 668
+#define KR_EQ_DB 666
+#define KR_EQ_BW 667
+#define KR_EQ_HZ 668
 
-#define KRAD_EQ_BANDWIDTH_MIN 0.1
-#define KRAD_EQ_BANDWIDTH_MAX 5.0
-#define KRAD_EQ_DB_MIN -50.0
-#define KRAD_EQ_DB_MAX 20.0
-#define KRAD_EQ_HZ_MIN 20.0
-#define KRAD_EQ_HZ_MAX 20000.0
+#define KR_EQ_BW_MIN 0.1
+#define KR_EQ_BW_MAX 5.0
+#define KR_EQ_DB_MIN -50.0
+#define KR_EQ_DB_MAX 20.0
+#define KR_EQ_HZ_MIN 20.0
+#define KR_EQ_HZ_MAX 20000.0
 
 typedef struct {
   biquad filter;
@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
   float new_sample_rate;
   float sample_rate;
-  kr_eq_band band[KRAD_EQ_MAX_BANDS];
+  kr_eq_band band[KR_EQ_MAX_BANDS];
   kr_mixer *mixer;
   kr_address_t address;
 } kr_eq;
@@ -52,7 +52,7 @@ void kr_eq_destroy(kr_eq *eq);
 void kr_eq_set_sample_rate(kr_eq *eq, int sample_rate);
 //void kr_eq_process (kr_eq_t *kr_eq, float *input, float *output,
 //int num_samples);
-void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
+void kr_eq_process2(kr_eq *eq, float *input, float *output, int nsamples,
  int broadcast);
 void kr_eq_band_set_db(kr_eq *eq, int band_num, float db, int duration,
  kr_easing easing, void *user);

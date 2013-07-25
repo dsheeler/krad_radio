@@ -9,22 +9,19 @@
 
 #include "krad_system.h"
 #include "krad_easing.h"
-
 #include "krad_sfx_common.h"
-
 #include "krad_mixer.h"
 
-#ifndef KRAD_ANALOG_H
-#define KRAD_ANALOG_H
+#ifndef KR_ANALOG_H
+#define KR_ANALOG_H
 
-#define KRAD_ANALOG_CONTROL_DRIVE 671
-#define KRAD_ANALOG_CONTROL_BLEND 672
-
-#define KRAD_ANALOG_DRIVE_MIN_OFF 0.0f
-#define KRAD_ANALOG_DRIVE_MIN 0.1f
-#define KRAD_ANALOG_DRIVE_MAX 10.0f
-#define KRAD_ANALOG_BLEND_MIN -10.0f
-#define KRAD_ANALOG_BLEND_MAX 10.0f
+#define KR_ANALOG_DRIVE 671
+#define KR_ANALOG_BLEND 672
+#define KR_ANALOG_DRIVE_MIN_OFF 0.0f
+#define KR_ANALOG_DRIVE_MIN 0.1f
+#define KR_ANALOG_DRIVE_MAX 10.0f
+#define KR_ANALOG_BLEND_MIN -10.0f
+#define KR_ANALOG_BLEND_MAX 10.0f
 
 typedef struct {
   float sample_rate;
@@ -58,9 +55,10 @@ kr_analog *kr_analog_create(int sample_rate);
 void kr_analog_destroy(kr_analog *analog);
 
 void kr_analog_set_sample_rate(kr_analog *analog, int sample_rate);
-//void kr_analog_process (kr_analog_t *kr_analog, float *input, float *output, int num_samples);
+//void kr_analog_process(kr_analog_t *kr_analog, float *input, float *output,
+//int nsamples);
 void kr_analog_process2(kr_analog *analog, float *input, float *output,
- int num_samples, int broadcast);
+ int nsamples, int broadcast);
 
 /* Controls */
 void kr_analog_set_drive(kr_analog *analog, float drive, int duration,

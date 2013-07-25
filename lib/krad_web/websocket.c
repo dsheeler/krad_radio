@@ -259,11 +259,11 @@ int32_t interweb_ws_kr_client_connect(kr_iws_client_t *client) {
     return -1;
   }
 
-  kr_mixer_info (client->ws.krclient);
+  kr_mixer_info_get(client->ws.krclient);
   kr_mixer_portgroup_list (client->ws.krclient);
   kr_compositor_subunit_list (client->ws.krclient);
   kr_subscribe_all (client->ws.krclient);
-  
+
   //printk("interweb_ws_kr_client_connect happens");
 
   return 0;

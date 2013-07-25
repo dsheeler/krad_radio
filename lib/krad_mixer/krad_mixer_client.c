@@ -6,9 +6,9 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
 static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char **string);
 static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string);
 
-static void kr_ebml_to_mixer_rep(kr_ebml2_t *ebml, kr_mixer_t *mixer_rep);
+static void kr_ebml_to_mixer_rep(kr_ebml2_t *ebml, kr_mixer_info *mixer_rep);
 static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml,
- kr_mixer_portgroup_t *portgroup_rep);
+ kr_mixer_path_info *portgroup_rep);
 
 
 typedef struct kr_audioport_St kr_audioport_t;
@@ -20,7 +20,7 @@ struct kr_audioport_St {
   kr_client_t *client;
   int sd;
 
-  kr_mixer_portgroup_direction_t direction;
+  int direction;
 
   int (*callback)(uint32_t, void *);
   void *pointer;
@@ -162,7 +162,7 @@ int kr_audioport_error (kr_audioport_t *audioport) {
 }
 
 kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,
- kr_mixer_portgroup_direction_t direction) {
+ int direction) {
 
   kr_audioport_t *audioport;
   int sockets[2];
@@ -291,7 +291,7 @@ void kr_mixer_set_sample_rate (kr_client_t *client, int sample_rate) {
   kr_client_push (client);
 }
 
-void kr_mixer_info (kr_client_t *client) {
+void kr_mixer_info_get(kr_client_t *client) {
 
   unsigned char *mixer_command;
   unsigned char *get_info;
@@ -316,7 +316,7 @@ int kr_mixer_get_info_wait (kr_client_t *client,
   crate = NULL;
   wait_ms = 750;
 
-  kr_mixer_info (client);
+  kr_mixer_info_get (client);
 
   while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
     if (crate != NULL) {
@@ -541,24 +541,24 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
   kr_client_push (client);
 }
 
-static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_t *portgroup_rep) {
+static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *portgroup_rep) {
 
   int i;
   char string[256];
 
-  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->name, sizeof(portgroup_rep->name));
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->channels);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->direction);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->output_type);
+  kr_ebml2_unpack_element_string(ebml, NULL, portgroup_rep->name, sizeof(portgroup_rep->name));
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->channels);
+//  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->direction);
+//  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->output_type);
 
   kr_ebml2_unpack_element_string (ebml, NULL, string, sizeof(string));
-
+/*
   if (strncmp (string, "Jack", 4) == 0) {
     portgroup_rep->io_type = 0;
   } else {
     portgroup_rep->io_type = 1;
   }
-
+*/
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->volume[i]);
   }
@@ -571,7 +571,7 @@ static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->rms[i]);
   }
 
-  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->mixbus, sizeof(portgroup_rep->mixbus));
+  kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->bus, sizeof(portgroup_rep->bus));
   kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->crossfade_group, sizeof(portgroup_rep->crossfade_group));
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->fade);
 
@@ -595,13 +595,14 @@ static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_
   return 1;
 }
 
-static void kr_ebml_to_mixer_rep (kr_ebml2_t *ebml, kr_mixer_t *mixer_rep) {
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->period_size);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->sample_rate);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->inputs);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->outputs);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &mixer_rep->buses);
-  kr_ebml2_unpack_element_string (ebml, NULL, mixer_rep->time_source, sizeof(mixer_rep->time_source));
+static void kr_ebml_to_mixer_rep(kr_ebml *ebml, kr_mixer_info *mixer) {
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->period_size);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->sample_rate);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->inputs);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->outputs);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->buses);
+  kr_ebml2_unpack_element_string(ebml, NULL, mixer->clock,
+   sizeof(mixer->clock));
 }
 
 static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string) {
@@ -634,17 +635,17 @@ static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate,
 static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **string) {
 
   int pos;
-  kr_mixer_t kr_mixer;
+  kr_mixer_info mixer;
 
   pos = 0;
 
-  kr_ebml_to_mixer_rep (&crate->payload_ebml, &kr_mixer);
-  pos += sprintf (*string + pos, "Mixer Status:\n");
-  pos += sprintf (*string + pos, "Sample Rate: %u\n", kr_mixer.sample_rate);
-  pos += sprintf (*string + pos, "Inputs: %u\n", kr_mixer.inputs);
-  pos += sprintf (*string + pos, "Outputs: %u\n", kr_mixer.outputs);
-  pos += sprintf (*string + pos, "Buses: %u\n", kr_mixer.buses);
-  pos += sprintf (*string + pos, "Time Source: %s", kr_mixer.time_source);
+  kr_ebml_to_mixer_rep (&crate->payload_ebml, &mixer);
+  pos += sprintf(*string + pos, "Mixer Status:\n");
+  pos += sprintf(*string + pos, "Sample Rate: %u\n", mixer.sample_rate);
+  pos += sprintf(*string + pos, "Inputs: %u\n", mixer.inputs);
+  pos += sprintf(*string + pos, "Outputs: %u\n", mixer.outputs);
+  pos += sprintf(*string + pos, "Buses: %u\n", mixer.buses);
+  pos += sprintf(*string + pos, "Time Source: %s", mixer.clock);
 
   return pos;
 }
@@ -659,10 +660,10 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
   pos = 0;
 
   kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &portgroup_rep);
-
-  if ((portgroup_rep.direction == OUTPUT) && (portgroup_rep.output_type == DIRECT)) {
-    pos += sprintf (*string + pos, "%d Channel ", portgroup_rep.channels);
-  } else {
+  //FIXME
+//  if ((portgroup_rep.direction == OUTPUT) && (portgroup_rep.output_type == DIRECT)) {
+//    pos += sprintf (*string + pos, "%d Channel ", portgroup_rep.channels);
+//  } else {
 
     if ((portgroup_rep.channels == 1) || ((portgroup_rep.channels == 2) &&
          (portgroup_rep.volume[0] == portgroup_rep.volume[1]))) {
@@ -676,8 +677,8 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
                         portgroup_rep.volume[c]);
       }
     }
-  }
-
+//  }
+/*
   if (portgroup_rep.direction == OUTPUT) {
     pos += sprintf (*string + pos, "%s ",
                    portgroup_output_type_to_string (portgroup_rep.output_type));
@@ -685,7 +686,7 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
 
   pos += sprintf (*string + pos, "%-7s",
                   portgroup_direction_to_string (portgroup_rep.direction));
-
+*/
   if (portgroup_rep.channels == 1) {
     pos += sprintf (*string + pos, "%-8s (Mono)",
                     portgroup_rep.name);

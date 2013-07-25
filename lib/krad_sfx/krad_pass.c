@@ -2,7 +2,7 @@
 
 /* Controls */
 void kr_pass_set_type(kr_pass *pass, kr_effect_type_t type) {
-  if ((type != KRAD_LOWPASS) && (type != KRAD_HIGHPASS)) {
+  if ((type != KR_LOWPASS) && (type != KR_HIGHPASS)) {
     return;
   }
   pass->new_type = type;
@@ -10,16 +10,16 @@ void kr_pass_set_type(kr_pass *pass, kr_effect_type_t type) {
 
 void kr_pass_set_bandwidth(kr_pass *pass, float bw, int duration,
  kr_easing easing, void *user) {
-  bw = LIMIT(bw, KRAD_PASS_BANDWIDTH_MIN, KRAD_PASS_BANDWIDTH_MAX);
+  bw = LIMIT(bw, KR_PASS_BANDWIDTH_MIN, KR_PASS_BANDWIDTH_MAX);
   kr_easer_set(&pass->bandwidth_easer, bw, duration, easing, user);
 }
 
 void kr_pass_set_hz(kr_pass *pass, float hz, int duration, kr_easing easing,
  void *user) {
-  if (pass->type == KRAD_LOWPASS) {
-    hz = LIMIT(hz, KRAD_PASS_HZ_MIN, KRAD_LOWPASS_HZ_MAX);
+  if (pass->type == KR_LOWPASS) {
+    hz = LIMIT(hz, KR_PASS_HZ_MIN, KR_LOWPASS_HZ_MAX);
   } else {
-    hz = LIMIT(hz, KRAD_PASS_HZ_MIN, KRAD_PASS_HZ_MAX);
+    hz = LIMIT(hz, KR_PASS_HZ_MIN, KR_PASS_HZ_MAX);
   }
   kr_easer_set(&pass->hz_easer, hz, duration, easing, user);
 }
@@ -65,7 +65,7 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
   }
 
   if (recompute == 1) {
-    if (pass->type == KRAD_LOWPASS) {
+    if (pass->type == KR_LOWPASS) {
       lp_set_params(&pass->filter, pass->hz, pass->bandwidth,
        pass->sample_rate);
     } else {
@@ -74,8 +74,8 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
     }
   }
 
-  if (((pass->type == KRAD_LOWPASS) && (pass->hz == KRAD_LOWPASS_HZ_MAX)) ||
-      ((pass->type == KRAD_HIGHPASS) && (pass->hz == KRAD_PASS_HZ_MIN))) {
+  if (((pass->type == KR_LOWPASS) && (pass->hz == KR_LOWPASS_HZ_MAX)) ||
+      ((pass->type == KR_HIGHPASS) && (pass->hz == KR_PASS_HZ_MIN))) {
     return;
   }
 
@@ -93,7 +93,7 @@ kr_pass *kr_pass_create2(int sample_rate, kr_effect_type_t type,
 
   kr_pass *pass;
 
-  if ((type != KRAD_LOWPASS) && (type != KRAD_HIGHPASS)) {
+  if ((type != KR_LOWPASS) && (type != KR_HIGHPASS)) {
     return NULL;
   }
   pass = calloc(1, sizeof(kr_pass));
@@ -103,20 +103,20 @@ kr_pass *kr_pass_create2(int sample_rate, kr_effect_type_t type,
   pass->address.path.unit = KR_MIXER;
   pass->address.path.subunit.mixer_subunit = KR_EFFECT;
   strncpy(pass->address.id.name, portgroupname, sizeof(pass->address.id.name));
-  if (pass->type == KRAD_LOWPASS) {
+  if (pass->type == KR_LOWPASS) {
     pass->address.sub_id = 1;
   }
-  if (pass->type == KRAD_HIGHPASS) {
+  if (pass->type == KR_HIGHPASS) {
     pass->address.sub_id = 2;
   }
   pass->address.sub_id2 = 0;
   pass->new_sample_rate = sample_rate;
   pass->bandwidth = 1;
-  if (pass->type == KRAD_LOWPASS) {
-    pass->hz = KRAD_LOWPASS_HZ_MAX;
+  if (pass->type == KR_LOWPASS) {
+    pass->hz = KR_LOWPASS_HZ_MAX;
   }
-  if (pass->type == KRAD_HIGHPASS) {
-    pass->hz = KRAD_PASS_HZ_MIN;
+  if (pass->type == KR_HIGHPASS) {
+    pass->hz = KR_PASS_HZ_MIN;
   }
   return pass;
 }
@@ -125,7 +125,7 @@ kr_pass *kr_pass_create(int sample_rate, kr_effect_type_t type) {
 
   kr_pass *pass;
 
-  if ((type != KRAD_LOWPASS) && (type != KRAD_HIGHPASS)) {
+  if ((type != KR_LOWPASS) && (type != KR_HIGHPASS)) {
     return NULL;
   }
 
@@ -134,11 +134,11 @@ kr_pass *kr_pass_create(int sample_rate, kr_effect_type_t type) {
   pass->type = type;
   pass->new_type = pass->type;
   pass->bandwidth = 1;
-  if (pass->type == KRAD_LOWPASS) {
-    pass->hz = KRAD_LOWPASS_HZ_MAX;
+  if (pass->type == KR_LOWPASS) {
+    pass->hz = KR_LOWPASS_HZ_MAX;
   }
-  if (pass->type == KRAD_HIGHPASS) {
-    pass->hz = KRAD_PASS_HZ_MIN;
+  if (pass->type == KR_HIGHPASS) {
+    pass->hz = KR_PASS_HZ_MIN;
   }
   return pass;
 }

@@ -39,6 +39,7 @@ depsources = """
 ../lib/krad_sfx/krad_analog.c
 ../lib/krad_sfx/krad_pass.c
 ../lib/krad_sfx/krad_hardlimiter.c
+../lib/krad_sfx/krad_sfx_common.c
 ../lib/krad_sfx/krad_sfx.c
 ../lib/krad_app/krad_app_server.c
 ../lib/krad_tags/krad_tags.c

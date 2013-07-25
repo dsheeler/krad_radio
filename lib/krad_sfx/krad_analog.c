@@ -20,13 +20,13 @@ static inline float D(float x) {
 
 void kr_analog_set_blend(kr_analog *analog, float blend, int duration,
  kr_easing easing, void *user) {
-	blend = LIMIT(blend, KRAD_ANALOG_BLEND_MIN, KRAD_ANALOG_BLEND_MAX);
+	blend = LIMIT(blend, KR_ANALOG_BLEND_MIN, KR_ANALOG_BLEND_MAX);
   kr_easer_set(&analog->blend_easer, blend, duration, easing, user);
 }
 
 void kr_analog_set_drive(kr_analog *analog, float drive, int duration,
  kr_easing easing, void *user) {
-	drive = LIMIT(drive, KRAD_ANALOG_DRIVE_MIN_OFF, KRAD_ANALOG_DRIVE_MAX);
+	drive = LIMIT(drive, KR_ANALOG_DRIVE_MIN_OFF, KR_ANALOG_DRIVE_MAX);
   kr_easer_set(&analog->drive_easer, drive, duration, easing, user);
 }
 
@@ -118,12 +118,12 @@ void kr_analog_process2(kr_analog *analog, float *input, float *output,
     }
   }
 
-  if (analog->drive < KRAD_ANALOG_DRIVE_MIN) {
+  if (analog->drive < KR_ANALOG_DRIVE_MIN) {
     return;
   }
 
-	drive = LIMIT(analog->drive, KRAD_ANALOG_DRIVE_MIN, KRAD_ANALOG_DRIVE_MAX);
-	blend = LIMIT(analog->blend, KRAD_ANALOG_BLEND_MIN, KRAD_ANALOG_BLEND_MAX);
+	drive = LIMIT(analog->drive, KR_ANALOG_DRIVE_MIN, KR_ANALOG_DRIVE_MAX);
+	blend = LIMIT(analog->blend, KR_ANALOG_BLEND_MIN, KR_ANALOG_BLEND_MAX);
 
   sample_rate = analog->sample_rate;
 

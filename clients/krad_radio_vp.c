@@ -26,7 +26,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	static float hexrot = 0;
 	int r1;
 	//float scale;
-		
+
 	cairo_save(cr);
 	cairo_set_line_width(cr, 1);
 	cairo_set_source_rgb(cr, ORANGE);
@@ -52,12 +52,12 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_rel_line_to (cr, w, 0);
 	hexrot += 1.5;
 	cairo_fill (cr);
-	
+
 	cairo_restore(cr);
 
 /*
 	cairo_save(cr);
-		
+
 	cairo_set_line_width(cr, 1.5);
 	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 	cairo_set_source_rgb(cr, GREY);
@@ -80,7 +80,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_rel_line_to (cr, w, 0);
 	cairo_rotate (cr, 60 * (M_PI/180.0));
 	cairo_rel_line_to (cr, w, 0);
-	
+
 	cairo_rotate (cr, 60 * (M_PI/180.0));
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -88,7 +88,7 @@ void render_hex (cairo_t *cr, int x, int y, int w) {
 	cairo_pattern_add_color_stop_rgba (pat, 0, 0, 0, 1, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.4, 0, 0, 0, 0);
 	cairo_set_source (cr, pat);
-	
+
 	cairo_fill (cr);
 	cairo_pattern_destroy (pat);
 	cairo_restore(cr);
@@ -101,7 +101,7 @@ int videoport_process (void *buffer, void *user) {
 	cairo_surface_t *cst;
 	cairo_t *cr;
   videoport_demo_t *demo;
-  
+
   demo = (videoport_demo_t *)user;
 
 	cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
@@ -109,11 +109,11 @@ int videoport_process (void *buffer, void *user) {
 												 demo->width,
 												 demo->height,
 												 demo->width * 4);
-	
+
 	cr = cairo_create (cst);
 	cairo_save (cr);
 	cairo_set_source_rgba (cr, BGCOLOR_CLR);
-	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
+	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
 	cairo_paint (cr);
 	cairo_restore (cr);
 	render_hex (cr, demo->width / 2, demo->height / 2, 66);
@@ -146,34 +146,34 @@ int main (int argc, char *argv[]) {
 		}
 		return 1;
 	}
-	
+
 	client = kr_client_create ("krad videoport client");
 
 	if (client == NULL) {
 		fprintf (stderr, "Could not create KR client.\n");
 		return 1;
-	}	
+	}
 
   kr_connect (client, argv[1]);
-  
+
   if (!kr_connected (client)) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n", argv[1]);
 	  kr_client_destroy (&client);
 	  return 1;
   }
-	
+
   if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
 	  kr_client_destroy (&client);
 	  return 1;
   }
-  
+
   if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
     fprintf (stderr, "Could not get compositor info!\n");
 	  kr_client_destroy (&client);
 	  return 1;
   }
-
-	videoport = kr_videoport_create (client, INPUT);
+  //FIXME
+	videoport = kr_videoport_create (client, 0);
 
 	if (videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");
@@ -184,17 +184,17 @@ int main (int argc, char *argv[]) {
 	}
 
   demo = calloc (1, sizeof (videoport_demo_t));
-  
+
   demo->width = width;
   demo->height = height;
-	
+
 	kr_videoport_set_callback (videoport, videoport_process, demo);
-	
+
   signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);	
-	
+  signal (SIGTERM, signal_recv);
+
 	kr_videoport_activate (videoport);
-	
+
 	for (i = 0; i < 3000; i++) {
 	  usleep (30000);
 	  if (destroy == 1) {
@@ -207,9 +207,9 @@ int main (int argc, char *argv[]) {
       break;
     }
 	}
-	
+
 	kr_videoport_deactivate (videoport);
-	
+
 	kr_videoport_destroy (videoport);
 
 	kr_client_destroy (&client);
@@ -224,5 +224,5 @@ int main (int argc, char *argv[]) {
 		printf ("Worked!\n");
 	}
 
-	return ret;	
+	return ret;
 }

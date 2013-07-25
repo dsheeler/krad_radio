@@ -67,7 +67,7 @@ int kr_streamer_destroy (kr_streamer_t **streamer) {
     return -1;
   }
 
- 	kr_audioport_disconnect((*streamer)->audioport);	
+ 	kr_audioport_disconnect((*streamer)->audioport);
 	kr_audioport_destroy ((*streamer)->audioport);
 	kr_client_destroy (&(*streamer)->client);
   kr_ogg_io_destroy (&(*streamer)->ogg_io);
@@ -97,10 +97,10 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 	if (streamer->client == NULL) {
 		fprintf (stderr, "Could not create KR client.\n");
 	  exit (1);
-	}	
+	}
 
   kr_connect (streamer->client, streamer->params->station);
-  
+
   if (!kr_connected (streamer->client)) {
 		fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
              streamer->params->station);
@@ -109,7 +109,7 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
   }
 
   for (c = 0; c < streamer->params->channels; c++) {
-    streamer->audio_ring[c] = krad_ringbuffer_create (48000 * 4 * 8);    
+    streamer->audio_ring[c] = krad_ringbuffer_create (48000 * 4 * 8);
   }
 
   if (kr_mixer_get_info_wait (streamer->client, &streamer->params->sample_rate, NULL) != 1) {
@@ -141,8 +141,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
   }
 
   kr_ogg_add_track (streamer->ogg_io->ogg, &streamer->opus->krad_codec_header);
-
-	streamer->audioport = kr_audioport_create (streamer->client, "opusstreamer", OUTPUT);
+  //FIXME
+	streamer->audioport = kr_audioport_create (streamer->client, "opusstreamer", 0);
 	kr_audioport_set_callback (streamer->audioport, audioport_process, streamer);
 
   return streamer;
@@ -157,7 +157,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
   uint32_t c;
 
   signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);    
+  signal (SIGTERM, signal_recv);
 
   amedium = kr_medium_kludge_create ();
   acodeme = kr_codeme_kludge_create ();
@@ -222,12 +222,12 @@ void kr_streamer_run (kr_streamer_t *streamer) {
 void kr_streamer (kr_streamer_params_t *params) {
 
   kr_streamer_t *streamer;
-  
+
   streamer = kr_streamer_create (params);
   kr_streamer_run (streamer);
   kr_streamer_destroy (&streamer);
 }
-  
+
 int main (int argc, char *argv[]) {
 
   kr_streamer_params_t params;

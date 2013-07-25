@@ -2,14 +2,14 @@
 #define KRAD_MIXER_H
 
 typedef struct kr_mixer kr_mixer;
-typedef struct kr_mixer_unit kr_mixer_unit;
-typedef struct kr_mixer_unit kr_mixer_input;
-typedef struct kr_mixer_unit kr_mixer_bus;
-typedef struct kr_mixer_unit kr_mixer_auxout;
-typedef struct kr_mixer_unit kr_mixer_directout;
-typedef struct kr_mixer_unit kr_mxu;
+typedef struct kr_mixer_info kr_mixer_info;
+
+typedef struct kr_mixer_path kr_mixer_path;
+typedef struct kr_mixer_path kr_mixer_input;
+typedef struct kr_mixer_path kr_mixer_bus;
+typedef struct kr_mixer_path kr_mixer_auxout;
 typedef struct kr_mixer_crossfader kr_mixer_crossfader;
-typedef struct kr_mixer_crossfader kr_mxcf;
+typedef struct kr_mixer_crossfader kr_mixer_xfader;
 
 #define KRAD_MIXER_MAX_MINIWINS 192
 
@@ -26,6 +26,7 @@ struct kr_mixer_crossfader {
 
 struct kr_mixer_unit {
   kr_mixer_unit_type type;
+  kr_mixer_bus *bus;
   void *user;
   char name[64];
   kr_address_t address;
@@ -78,8 +79,8 @@ struct kr_mixer {
 };
 
 kr_mixer_unit *kr_mixer_unit_create(kr_mixer *mixer, char *name,
- int direction, kr_mixer_output_t output_type, int channels,
- float volume, kr_mixer_bus *bus, kr_mixer_portgroup_io_t io_type,
+ int direction, kr_mixer_unit_type output_type, int channels,
+ float volume, kr_mixer_bus *bus, int io_type,
  void *io_ptr, krad_audio_api_t api);
 
 void kr_mixer_unit_destroy(kr_mixer *mixer, kr_mixer_unit *unit);

@@ -11,6 +11,7 @@
 #include "krad_ebml2_ids.h"
 
 typedef struct kr_ebml2_St kr_ebml2_t;
+typedef struct kr_ebml2_St kr_ebml;
 
 struct kr_ebml2_St {
   size_t pos;

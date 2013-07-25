@@ -9,15 +9,15 @@ void kr_mixer_unit_to_rep(kr_mixer_unit *unit, kr_mxr_unit_rep *unit_rep) {
   kr_analog *analog;
 
   strcpy(unit_rep->name, unit->name);
-  unit_rep->channels = unit->channels;
-  unit_rep->direction = unit->direction;
-  unit_rep->output_type = unit->output_type;
-  unit_rep->io_type = unit->io_type;
+//  unit_rep->channels = unit->channels;
+//  unit_rep->direction = unit->direction;
+//  unit_rep->output_type = unit->output_type;
+//  unit_rep->io_type = unit->io_type;
 
   if (unit->bus != NULL) {
-    strncpy(unit_rep->mixbus, unit->bus->name, sizeof(unit_rep->mixbus));
+    strncpy(unit_rep->bus, unit->bus->name, sizeof(unit_rep->bus));
   } else {
-    unit_rep->mixbus[0] = '\0';
+    unit_rep->bus[0] = '\0';
   }
 
   for (i = 0; i < KRAD_MIXER_MAX_CHANNELS; i++) {
@@ -252,33 +252,33 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
     case EBML_ID_KRAD_MIXER_CMD_PUSH_TONE:
       tone = 0;
       kr_ebml2_unpack_element_int8(&ebml_in, &element, (int8_t *)&tone);
-      if (mixer->push_tone == -1) {
-        mixer->push_tone = tone;
-      }
+      //if (mixer->push_tone == -1) {
+      //  mixer->push_tone = tone;
+      //}
       break;
     case EBML_ID_KRAD_MIXER_CMD_PORTGROUP_XMMS2_CMD:
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
       kr_ebml2_unpack_element_string(&ebml_in, &element, string, sizeof(string));
-      kr_mixer_xmms_cmd(mixer, unitname, string);
+      //kr_mixer_xmms_cmd(mixer, unitname, string);
       break;
     case EBML_ID_KRAD_MIXER_CMD_PLUG_PORTGROUP:
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname2, sizeof(unitname2));
-      kr_mixer_plug(mixer, unitname, unitname2);
+      //kr_mixer_plug(mixer, unitname, unitname2);
       break;
     case EBML_ID_KRAD_MIXER_CMD_UNPLUG_PORTGROUP:
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname2, sizeof(unitname2));
-      kr_mixer_unplug(mixer, unitname, unitname2);
+      //kr_mixer_unplug(mixer, unitname, unitname2);
       break;
     case EBML_ID_KRAD_MIXER_CMD_BIND_PORTGROUP_XMMS2:
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
       kr_ebml2_unpack_element_string(&ebml_in, &element, string, sizeof(string));
-      kr_mixer_xmms_bind(mixer, unitname, string);
+      //kr_mixer_xmms_bind(mixer, unitname, string);
       break;
     case EBML_ID_KRAD_MIXER_CMD_UNBIND_PORTGROUP_XMMS2:
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
-      kr_mixer_xmms_unbind(mixer, unitname);
+      //kr_mixer_xmms_unbind(mixer, unitname);
       break;
     case EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS:
       for (p = 0; p < KRAD_MIXER_MAX_PORTGROUPS; p++) {

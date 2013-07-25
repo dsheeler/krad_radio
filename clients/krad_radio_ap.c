@@ -50,11 +50,12 @@ int main (int argc, char *argv[]) {
   int ret;
 	kr_client_t *client;
 	kr_audioport_t *audioport;
-	kr_mixer_portgroup_direction_t direction;
-	uint32_t sample_rate;
+  //FIXME
+  int direction;
+  uint32_t sample_rate;
 
   ret = 0;
-	direction = INPUT;
+	direction = KR_MXR_INPUT;
 
 	if (argc != 2) {
 		if (argc > 2) {
@@ -86,7 +87,7 @@ int main (int argc, char *argv[]) {
 	  return 1;
   }
 
-	if (direction == INPUT) {
+	if (direction == KR_MXR_INPUT) {
 		krad_tone = krad_tone_create(sample_rate);
 		krad_tone_add_preset(krad_tone, "3");
 		krad_tone2 = krad_tone_create(sample_rate);
@@ -129,7 +130,7 @@ int main (int argc, char *argv[]) {
 
 	kr_audioport_destroy(audioport);
 
-	if (direction == INPUT) {
+	if (direction == KR_MXR_INPUT) {
 		krad_tone_destroy (krad_tone);
 		krad_tone_destroy (krad_tone2);
 	}

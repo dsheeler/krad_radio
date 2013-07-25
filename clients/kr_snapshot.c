@@ -21,7 +21,7 @@ void signal_recv(int sig) {
 int frame_cb(void *buffer, void *user) {
 
   kr_snapshot *snapshot;
-	
+
   snapshot = (kr_snapshot *)user;
 
   if (snapshot->got_frame == 0) {
@@ -59,12 +59,12 @@ int kr_snapshot_take(char *station, char *filename) {
   }
   snapshot = calloc(1, sizeof(kr_snapshot));
 	signal(SIGINT, signal_recv);
-  signal(SIGTERM, signal_recv);	
+  signal(SIGTERM, signal_recv);
 	snapshot->client = kr_client_create("krad snapshot client");
 	if (snapshot->client == NULL) {
 		fprintf (stderr, "Could not create KR client.\n");
 		return -1;
-	}	
+	}
   kr_connect(snapshot->client, station);
   if (!kr_connected(snapshot->client)) {
 		fprintf(stderr, "Could not connect to %s krad radio daemon.\n",
@@ -79,7 +79,8 @@ int kr_snapshot_take(char *station, char *filename) {
 	  return -1;
   }
   snapshot->rgba = malloc(snapshot->width * snapshot->height * 4);
-	snapshot->videoport = kr_videoport_create(snapshot->client, OUTPUT);
+  //FIXME
+  snapshot->videoport = kr_videoport_create(snapshot->client, 0);
 	if (snapshot->videoport == NULL) {
 		fprintf (stderr, "Could not make videoport.\n");
 	  kr_client_destroy (&snapshot->client);
@@ -155,5 +156,5 @@ int main(int argc, char *argv[]) {
     }
   }
 
-	return 0;	
+	return 0;
 }

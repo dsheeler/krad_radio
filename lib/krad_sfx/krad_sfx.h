@@ -8,43 +8,39 @@
 #ifndef KRAD_SFX_H
 #define KRAD_SFX_H
 
-typedef struct kr_effect_St kr_effect_t;
-typedef struct kr_effects_St kr_effects_t;
-typedef struct kr_effects_St kr_effects;
-typedef struct kr_effects_St kr_adsp;
+typedef struct kr_sfx kr_sfx;
+typedef struct kr_sfx_effect kr_sfx_effect;
 
-struct kr_effect_St {
-	kr_effect_type_t effect_type;
-	void *effect[KRAD_EFFECTS_MAX_CHANNELS];
+struct kr_sfx_effect {
+  kr_sfx_type type;
+  void *effect[KR_SFX_MAX_CHANNELS];
   int active;
 };
 
-struct kr_effects_St {
+struct kr_sfx {
   float sample_rate;
   int channels;
-	kr_effect_t *effect;
+  kr_sfx_effect *effect;
 };
 
-kr_effects *kr_effects_create(int channels, int sample_rate);
-void kr_effects_destroy(kr_effects *effects);
+kr_sfx *kr_sfx_create(int channels, int sample_rate);
+void kr_sfx_destroy(kr_sfx *sfx);
 
-void kr_effects_set_sample_rate(kr_effects *effects,
- uint32_t sample_rate);
-void kr_effects_process(kr_effects *effects, float **input,
- float **output, int num_samples);
+void kr_sfx_set_sample_rate(kr_sfx *sfx, uint32_t sample_rate);
+void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes);
 
 /* OpControls */
-void kr_effects_effect_add2(kr_effects *effects, kr_effect_type_t effect,
- kr_mixer *mixer, char *portgroupname);
-void kr_effects_effect_add(kr_effects *effects, kr_effect_type_t effect);
-void kr_effects_effect_remove(kr_effects_t *kr_effects, int effect_num);
+void kr_sfx_effect_add2(kr_sfx *sfx, kr_effect_type_t effect, kr_mixer *mixer,
+ char *pathname);
+void kr_sfx_effect_add(kr_effects *sfx, kr_sfx_type effect);
+void kr_sfx_effect_remove(kr_sfx *sfx, int effect_num);
 
 /* Controls */
-void kr_effects_control(kr_effects *effects, int effect_num, int control_id,
- int control, float value, int duration, kr_easing easing, void *user);
+void kr_sfx_control(kr_sfx *sfx, int effect_num, int control_id, int control,
+ float value, int duration, kr_easing easing, void *user);
 
 /* Utils */
-kr_effect_type_t kr_effects_strtoeffect(char *string);
-int kr_effects_strtoctrl(kr_effect_type_t effect_type, char *string);
+kr_sfx_type kr_sfx_strtosfx(char *string);
+int kr_sfx_strtoctl(kr_sfx_type type, char *string);
 
 #endif

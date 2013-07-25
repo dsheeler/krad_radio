@@ -2,22 +2,22 @@
 
 void kr_eq_band_set_db(kr_eq *eq, int band_num, float db, int duration,
  kr_easing easing, void *user) {
-  if (band_num >= KRAD_EQ_MAX_BANDS) return;
-  db = LIMIT(db, KRAD_EQ_DB_MIN, KRAD_EQ_DB_MAX);
+  if (band_num >= KR_EQ_MAX_BANDS) return;
+  db = LIMIT(db, KR_EQ_DB_MIN, KR_EQ_DB_MAX);
   kr_easer_set(&eq->band[band_num].db_easer, db, duration, easing, user);
 }
 
 void kr_eq_band_set_bandwidth(kr_eq *eq, int band_num, float bw, int duration,
  kr_easing easing, void *user) {
-  if (band_num >= KRAD_EQ_MAX_BANDS) return;
-  bw = LIMIT(bw, KRAD_EQ_BANDWIDTH_MIN, KRAD_EQ_BANDWIDTH_MAX);
+  if (band_num >= KR_EQ_MAX_BANDS) return;
+  bw = LIMIT(bw, KR_EQ_BANDWIDTH_MIN, KR_EQ_BANDWIDTH_MAX);
   kr_easer_set(&eq->band[band_num].bandwidth_easer, bw, duration, easing, user);
 }
 
 void kr_eq_band_set_hz(kr_eq *eq, int band_num, float hz, int duration,
  kr_easing easing, void *user) {
-  if (band_num >= KRAD_EQ_MAX_BANDS) return;
-  hz = LIMIT(hz, KRAD_EQ_HZ_MIN, KRAD_EQ_HZ_MAX);
+  if (band_num >= KR_EQ_MAX_BANDS) return;
+  hz = LIMIT(hz, KR_EQ_HZ_MIN, KR_EQ_HZ_MAX);
   kr_easer_set(&eq->band[band_num].hz_easer, hz, duration, easing, user);
 }
 
@@ -40,7 +40,7 @@ void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
     recompute_default = 0;
   }
 
-  for (b = 0; b < KRAD_EQ_MAX_BANDS; b++) {
+  for (b = 0; b < KR_EQ_MAX_BANDS; b++) {
     //if ((kr_eq->band[b].db == 0.0f) && (!kr_eq->band[b].krad_easing_db.active)) {
     //  continue;
     //}
@@ -96,7 +96,7 @@ kr_eq *kr_eq_create(int sample_rate) {
   eq->sample_rate = eq->new_sample_rate;
 
   hz = 30.0;
-  for (b = 0; b < KRAD_EQ_MAX_BANDS; b++) {
+  for (b = 0; b < KR_EQ_MAX_BANDS; b++) {
     eq->band[b].db = 0.0f,
     eq->band[b].bandwidth = 1.0f;
     eq->band[b].hz = floor(hz);
@@ -134,7 +134,7 @@ kr_eq *kr_eq_create2(int sample_rate, kr_mixer *mixer, char *name) {
   eq->address.sub_id = 0;
 
   hz = 30.0;
-  for (b = 0; b < KRAD_EQ_MAX_BANDS; b++) {
+  for (b = 0; b < KR_EQ_MAX_BANDS; b++) {
     eq->band[b].db = 0.0f,
     eq->band[b].bandwidth = 1.0f;
     eq->band[b].hz = floor(hz);
