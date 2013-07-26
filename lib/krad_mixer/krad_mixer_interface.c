@@ -338,7 +338,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       kr_ebml2_unpack_element_string(&ebml_in, &element, unitname, sizeof(unitname));
       unit = kr_mixer_path_from_name(mixer, unitname);
       if (unit != NULL) {
-        kr_mixer_path_destroy(mixer, unit);
+        kr_mixer_path_unlink(mixer, unit);
         address.path.unit = KR_MIXER;
         address.path.subunit.mixer_subunit = KR_PORTGROUP;
         strncpy(address.id.name, unitname, sizeof (address.id.name));

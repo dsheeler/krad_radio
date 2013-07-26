@@ -767,7 +767,7 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   return path;
 }
 
-void kr_mixer_path_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
+void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *unit) {
 
   int c;
 
@@ -986,13 +986,13 @@ int kr_mixer_destroy(kr_mixer *mixer) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if ((mixer->unit[p]->active != 0) &&
         (mixer->unit[p]->type != KR_MXR_BUS)) {
-      kr_mixer_path_destroy(mixer, mixer->unit[p]);
+      kr_mixer_path_unlink(mixer, mixer->unit[p]);
     }
   }
   mixer->destroying = 2;
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if (mixer->unit[p]->active != 0) {
-      kr_mixer_path_destroy(mixer, mixer->unit[p]);
+      kr_mixer_path_unlink(mixer, mixer->unit[p]);
     }
   }
   free(mixer->crossfader);

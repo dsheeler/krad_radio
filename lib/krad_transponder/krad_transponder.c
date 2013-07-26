@@ -471,13 +471,26 @@ int krad_link_decklink_audio_callback (void *arg, void *buffer, int frames) {
   return 0;
 }
 
+void mixer_input_setup_defaults(kr_mixer_input_setup *input,
+ krad_link_t *link) {
+  memset(input, 0, sizeof(kr_mixer_input_setup));
+  input->info.type = KR_MXR_INPUT;
+  strncpy(input->info.name, link->sysname, sizeof(input->info.name));
+  input->info.channels = 2;
+  input->info.volume[0] = 90.0f;
+  input->info.volume[1] = 90.0f;
+  input->user = link;
+  input->cb = link; //FIXME callback
+}
+
 void decklink_capture_unit_create (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
+  kr_mixer_input_setup audio_out;
   int c;
 
   krad_system_set_thread_name ("kr_decklink");
-
+  mixer_input_setup_defaults(&audio_out, krad_link);
   krad_link->krad_decklink = krad_decklink_create (krad_link->device);
 
   if ((krad_link->fps_numerator == 0) || (krad_link->fps_denominator == 0)) {
@@ -513,9 +526,8 @@ void decklink_capture_unit_create (void *arg) {
                                                       krad_link->capture_height,
                                                       DEFAULT_CAPTURE_BUFFER_FRAMES);
 
-//  krad_link->krad_mixer_portgroup = kr_mixer_mkpath(krad_link->krad_radio->mixer,
-//   krad_link->krad_decklink->simplename, KR_AIN, 0, 2, 0.0f,
-//   krad_link->krad_radio->mixer->master, 0, krad_link, 0);
+  krad_link->krad_mixer_portgroup = kr_mixer_mkpath(krad_link->krad_radio->mixer,
+   &audio_out);
 
   kr_mixer_ctl(krad_link->krad_radio->mixer,
    krad_link->krad_decklink->simplename, "volume", 100.0f, 500, NULL);
@@ -541,7 +553,7 @@ void decklink_capture_unit_destroy (void *arg) {
     krad_link->krad_decklink = NULL;
   }
 
-  kr_mixer_path_destroy(krad_link->krad_radio->mixer, krad_link->krad_mixer_portgroup);
+  kr_mixer_path_unlink(krad_link->krad_radio->mixer, krad_link->krad_mixer_portgroup);
   krad_compositor_port_destroy (krad_link->krad_radio->compositor, krad_link->krad_compositor_port);
 
   for (c = 0; c < krad_link->channels; c++) {
@@ -967,7 +979,7 @@ void audio_encoding_unit_destroy (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
 
-  kr_mixer_path_destroy(krad_link->krad_radio->mixer, krad_link->mixer_portgroup);
+  kr_mixer_path_unlink(krad_link->krad_radio->mixer, krad_link->mixer_portgroup);
 
   int c;
   //unsigned char *vorbis_buffer;

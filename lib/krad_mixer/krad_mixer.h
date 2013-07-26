@@ -8,6 +8,8 @@ typedef struct kr_mixer_path kr_mixer_bus;
 typedef struct kr_mixer_path kr_mixer_aux;
 typedef struct kr_mixer_crossfader kr_mixer_crossfader;
 typedef struct kr_mixer_path_setup kr_mixer_path_setup;
+typedef struct kr_mixer_path_setup kr_mixer_input_setup;
+typedef struct kr_mixer_path_setup kr_mixer_aux_setup;
 
 #define KR_MXR_MAX_MINIWINS 192
 
@@ -83,13 +85,7 @@ struct kr_mixer {
 };
 
 kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np);
-/*
-kr_mixer_path *kr_mixer_path_create(kr_mixer *mixer, char *name,
- int direction, kr_mixer_path_type type, int channels,
- float volume, kr_mixer_bus *bus, kr_mixer_path_type type2,
- void *io_ptr, krad_audio_api_t api);
-*/
-void kr_mixer_path_destroy(kr_mixer *mixer, kr_mixer_path *path);
+void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *path);
 kr_mixer_path *kr_mixer_path_from_name(kr_mixer *mixer, char *name);
 int kr_mixer_ctl(kr_mixer *mx, char *n, char *ctl, float val, int dr, void *p);
 void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *l, kr_mixer_path *r);
@@ -106,6 +102,7 @@ uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
 int32_t kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate);
 uint32_t kr_mixer_period(kr_mixer *mixer);
 int32_t kr_mixer_period_set(kr_mixer *mixer, uint32_t period_sz);
+
 krad_audio_api_t kr_mixer_get_pusher(kr_mixer *mixer);
 int32_t kr_mixer_has_pusher(kr_mixer *mixer);
 void kr_mixer_set_pusher(kr_mixer *mixer, krad_audio_api_t pusher);
