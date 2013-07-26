@@ -513,9 +513,9 @@ void decklink_capture_unit_create (void *arg) {
                                                       krad_link->capture_height,
                                                       DEFAULT_CAPTURE_BUFFER_FRAMES);
 
-  krad_link->krad_mixer_portgroup = kr_mixer_path_create(krad_link->krad_radio->mixer,
-   krad_link->krad_decklink->simplename, KR_AIN, 0, 2, 0.0f,
-   krad_link->krad_radio->mixer->master, 0, krad_link, 0);
+//  krad_link->krad_mixer_portgroup = kr_mixer_mkpath(krad_link->krad_radio->mixer,
+//   krad_link->krad_decklink->simplename, KR_AIN, 0, 2, 0.0f,
+//   krad_link->krad_radio->mixer->master, 0, krad_link, 0);
 
   kr_mixer_ctl(krad_link->krad_radio->mixer,
    krad_link->krad_decklink->simplename, "volume", 100.0f, 500, NULL);
@@ -821,9 +821,9 @@ void audio_encoding_unit_create (void *arg) {
     return;
   }
 
-  krad_link->mixer_portgroup = kr_mixer_path_create(krad_link->krad_radio->mixer,
-   krad_link->sysname, KR_AOUT, 0, krad_link->channels, 0.0f,
-   krad_link->krad_radio->mixer->master, 0, krad_link, 0);
+//  krad_link->mixer_portgroup = kr_mixer_path_create(krad_link->krad_radio->mixer,
+//   krad_link->sysname, KR_AOUT, 0, krad_link->channels, 0.0f,
+//   krad_link->krad_radio->mixer->master, 0, krad_link, 0);
 
   switch (krad_link->codec) {
     case VORBIS:
