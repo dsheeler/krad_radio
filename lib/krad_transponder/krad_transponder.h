@@ -192,21 +192,20 @@ struct krad_link_St {
 #endif
 };
 
-void demuxer_unit_create (void *arg);
-int demuxer_unit_process (void *arg);
-void demuxer_unit_destroy (void *arg);
+void demuxer_unit_create(void *arg);
+int demuxer_unit_process(void *arg);
+void demuxer_unit_destroy(void *arg);
 
+krad_link_t *krad_transponder_get_link_from_sysname(krad_transponder_t *tpdr, char *sysname);
+krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *tpdr, char *sysname);
+krad_tags_t *krad_link_get_tags(krad_link_t *krad_link);
 
-krad_link_t *krad_transponder_get_link_from_sysname (krad_transponder_t *krad_transponder, char *sysname);
-krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *krad_transponder, char *sysname);
-krad_tags_t *krad_link_get_tags (krad_link_t *krad_link);
+void krad_link_destroy(krad_link_t *krad_link);
+krad_link_t *krad_link_prepare(int linknum);
+void krad_link_start(krad_link_t *krad_link);
 
-void krad_link_destroy (krad_link_t *krad_link);
-krad_link_t *krad_link_prepare (int linknum);
-void krad_link_start (krad_link_t *krad_link);
-
-krad_transponder_t *krad_transponder_create ();
-void krad_transponder_destroy (krad_transponder_t *krad_transponder);
-void krad_link_audio_samples_callback (int frames, void *userdata, float **samples);
+krad_transponder_t *krad_transponder_create();
+void krad_transponder_destroy(krad_transponder_t *krad_transponder);
+void krad_link_audio_samples_callback(int frames, void *userdata, float **samples);
 
 #endif

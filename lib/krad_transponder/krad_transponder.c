@@ -1280,7 +1280,7 @@ void krad_link_start (krad_link_t *link) {
                                   &link->composite_width,
                                   &link->composite_height);
 
-  switch ( link->type ) {
+  switch (link->type) {
     case ENCODE:
       if (link->av_mode == AUDIO_ONLY) {
         audio_encoding_unit_create (link);
@@ -1352,14 +1352,14 @@ void krad_link_start (krad_link_t *link) {
       return;
   }
 
-  link->subunit = kr_xpdr_get_subunit (link->krad_transponder->xpdr, link->graph_id);
+  link->subunit = kr_xpdr_get_subunit(link->krad_transponder->xpdr, link->graph_id);
 
   if (link->type == MUX) {
-    connect_muxer_to_encoders (link);
+    connect_muxer_to_encoders(link);
   }
 }
 
-krad_link_t *krad_transponder_get_link_from_sysname (krad_transponder_t *krad_transponder, char *sysname) {
+krad_link_t *krad_transponder_get_link_from_sysname(krad_transponder_t *krad_transponder, char *sysname) {
 
   int i;
   krad_link_t *krad_link;
@@ -1393,35 +1393,35 @@ krad_transponder_t *krad_transponder_create(kr_radio *radio) {
 
   krad_transponder_t *krad_transponder;
 
-  krad_transponder = calloc (1, sizeof(krad_transponder_t));
+  krad_transponder = calloc(1, sizeof(krad_transponder_t));
 
   krad_transponder->address.path.unit = KR_TRANSPONDER;
   krad_transponder->address.path.subunit.mixer_subunit = KR_UNIT;
 
   krad_transponder->krad_radio = radio;
-  krad_transponder->krad_transmitter = krad_transmitter_create ();
-  krad_transponder->xpdr = krad_xpdr_create (krad_transponder->krad_radio);
+  krad_transponder->krad_transmitter = krad_transmitter_create();
+  krad_transponder->xpdr = krad_xpdr_create(krad_transponder->krad_radio);
 
   return krad_transponder;
 }
 
-void krad_transponder_destroy (krad_transponder_t *krad_transponder) {
+void krad_transponder_destroy(krad_transponder_t *krad_transponder) {
 
   int l;
 
-  printk ("Krad Transponder: Destroy Started");
+  printk("Krad Transponder: Destroy Started");
 
   for (l = 0; l < KRAD_TRANSPONDER_MAX_SUBUNITS; l++) {
     if (krad_transponder->krad_link[l] != NULL) {
-      krad_link_destroy (krad_transponder->krad_link[l]);
+      krad_link_destroy(krad_transponder->krad_link[l]);
       krad_transponder->krad_link[l] = NULL;
     }
   }
 
-  krad_transmitter_destroy (krad_transponder->krad_transmitter);
-  krad_xpdr_destroy (&krad_transponder->xpdr);
+  krad_transmitter_destroy(krad_transponder->krad_transmitter);
+  krad_xpdr_destroy(&krad_transponder->xpdr);
 
-  free (krad_transponder);
+  free(krad_transponder);
 
-  printk ("Krad Transponder: Destroy Completed");
+  printk("Krad Transponder: Destroy Completed");
 }
