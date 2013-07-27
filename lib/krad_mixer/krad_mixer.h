@@ -93,14 +93,22 @@ void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
 
+// hrm perhaps we have two ctl functions one for mixer as a whole and 
+// one for paths, makes sense to mee
+
+
 /* Mixer as a whole funcs */
-kr_mixer *kr_mixer_create();
+kr_mixer *kr_mixer_create();//FIXME max paths?
 int kr_mixer_destroy(kr_mixer *mixer);
-int kr_mixer_mix(kr_mixer *mixer, uint32_t frames);
-void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
+int kr_mixer_mix(kr_mixer *mixer);
 uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
 int32_t kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate);
 uint32_t kr_mixer_period(kr_mixer *mixer);
 int32_t kr_mixer_period_set(kr_mixer *mixer, uint32_t period_sz);
+
+
+//FIXME replace with cb
+//void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
+//
 
 #endif

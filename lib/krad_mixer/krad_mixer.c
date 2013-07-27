@@ -848,8 +848,8 @@ int kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate) {
   return mixer->sample_rate;
 }
 
-int kr_mixer_mix(kr_mixer *mixer, uint32_t frames) {
-  return mixer_process(mixer, frames);
+int kr_mixer_mix(kr_mixer *mixer) {
+  return mixer_process(mixer, mixer->period_size);
 }
 
 void kr_mixer_appserver_set(kr_mixer *mixer, kr_app_server *as) {
