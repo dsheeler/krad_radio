@@ -10,20 +10,50 @@ typedef struct kr_mixer_crossfader kr_mixer_crossfader;
 typedef struct kr_mixer_path_setup kr_mixer_path_setup;
 typedef struct kr_mixer_path_setup kr_mixer_input_setup;
 typedef struct kr_mixer_path_setup kr_mixer_aux_setup;
+typedef struct kr_mixer_path_audio_cb_arg kr_mixer_path_audio_cb_arg;
+typedef struct kr_mixer_path_info_cb_arg kr_mixer_path_info_cb_arg;
+typedef struct kr_mixer_info_cb_arg kr_mixer_info_cb_arg;
+typedef struct kr_mixer_setup kr_mixer_setup;
 
 #define KR_MXR_MAX_MINIWINS 192
 
 #include "krad_mixer_common.h"
-#include "krad_radio.h"
 #include "krad_mixer_interface.h"
 #include "krad_sfx.h"
+
+typedef void (kr_mixer_info_cb)(kr_mixer_info_cb_arg *);
+typedef void (kr_mixer_path_info_cb)(kr_mixer_path_info_cb_arg *);
+typedef void (kr_mixer_path_audio_cb)(kr_mixer_path_audio_cb_arg *);
+
+struct kr_mixer_info_cb_arg {
+  void *user;
+};
+
+struct kr_mixer_path_info_cb_arg {
+  void *user;
+};
+
+struct kr_mixer_path_audio_cb_arg {
+  uint32_t channels;
+  uint32_t nframes;
+  float **samples;
+  void *user;
+};
+
+struct kr_mixer_setup {
+  uint32_t period_size;
+  uint32_t sample_rate;
+  void *user;
+  kr_mixer_info_cb *cb;
+};
 
 struct kr_mixer_path_setup {
   kr_mixer_path_info info;
   void *user;
-  void *cb;
+  kr_mixer_path_audio_cb *cb;
 };
 
+//FIXME the below strucst should be opauqe
 struct kr_mixer_crossfader {
   kr_mixer_path *unit[2];
   float fade;
@@ -33,7 +63,6 @@ struct kr_mixer_crossfader {
 struct kr_mixer_path {
   kr_mixer_path_type type;
   kr_mixer_bus *bus;
-  void *user;
   char name[64];
   kr_address_t address;
   kr_mixer_channels channels;
@@ -57,6 +86,10 @@ struct kr_mixer_path {
   int delay_actual;
   int destroy_mark;
   int active;
+  kr_mixer_path_info_cb *info_cb;
+  void *info_cb_user;
+  kr_mixer_path_audio_cb *audio_cb;
+  void *audio_cb_user;
   kr_mixer *mixer;
   krad_tags_t *tags; //prolly better off in the txpnder?
   kr_sfx *sfx;
@@ -72,6 +105,9 @@ struct kr_mixer {
   kr_mixer_crossfader *crossfader;
   int frames_since_peak_read;
   int frames_per_peak_broadcast;
+  kr_mixer_info_cb *info_cb;
+  void *info_cb_user;
+  //fixm remove belowe
   krad_app_broadcaster_t *broadcaster;
   kr_app_server *as;
   int pusher;
@@ -98,7 +134,7 @@ void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
 // I should note that the address_t is only used for the broadcasts
 
 /* Mixer as a whole funcs */
-kr_mixer *kr_mixer_create();//FIXME max paths?
+kr_mixer *kr_mixer_create(kr_mixer_setup *setup);//FIXME max paths?
 int kr_mixer_destroy(kr_mixer *mixer);
 int kr_mixer_mix(kr_mixer *mixer);
 uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
@@ -108,7 +144,7 @@ int32_t kr_mixer_period_set(kr_mixer *mixer, uint32_t period_sz);
 
 
 //FIXME replace with cb
-//void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
+void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
 //
 
 #endif

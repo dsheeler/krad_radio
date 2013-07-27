@@ -904,7 +904,7 @@ static void kr_mixer_masterbus_setup(kr_mixer *mixer) {
   mixer->master = kr_mixer_mkpath(mixer, &mbs);
 }
 
-kr_mixer *kr_mixer_create() {
+kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
 
   int p;
   kr_mixer *mixer;
@@ -912,6 +912,8 @@ kr_mixer *kr_mixer_create() {
   if ((mixer = calloc(1, sizeof(kr_mixer))) == NULL) {
     failfast("Krad Mixer memory alloc failure");
   }
+
+  //FIXME use setup arg
 
   mixer->address.path.unit = KR_MIXER;
   mixer->address.path.subunit.mixer_subunit = KR_UNIT;

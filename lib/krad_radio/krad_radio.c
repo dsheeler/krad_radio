@@ -84,7 +84,8 @@ static kr_radio *radio_create(char *sysname) {
     radio_shutdown(radio);
     return NULL;
   }
-  radio->mixer = kr_mixer_create(radio->sysname);
+  //FIXME use setup arg
+  radio->mixer = kr_mixer_create(NULL);
   if (radio->mixer == NULL) {
     radio_shutdown(radio);
     return NULL;
