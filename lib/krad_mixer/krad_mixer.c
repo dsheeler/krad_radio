@@ -1,8 +1,5 @@
 #include "krad_mixer.h"
 
-static void ticker_thread_cleanup(void *arg);
-static void *ticker_thread(void *arg);
-static void mixer_stop_ticker(kr_mixer *mixer);
 static int mixer_process(kr_mixer *mixer, uint32_t frames);
 static void update_state(kr_mixer *mixer);
 static void mark_destroy(kr_mixer *mixer, kr_mixer_path *unit);
@@ -364,46 +361,6 @@ static void update_volume(kr_mixer_path *unit) {
   }
 }
 
-static void ticker_thread_cleanup(void *arg) {
-
-  kr_mixer *mixer = (kr_mixer *)arg;
-
-  if (mixer->ticker != NULL) {
-    krad_ticker_destroy(mixer->ticker);
-    mixer->ticker = NULL;
-    printk("Krad Mixer: Synthetic Timer Destroyed");
-  }
-}
-
-static void *ticker_thread(void *arg) {
-
-  kr_mixer *mixer = (kr_mixer *)arg;
-
-  krad_system_set_thread_name("kr_mixer");
-  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-  mixer->ticker = krad_ticker_create(mixer->sample_rate, mixer->period_size);
-  pthread_cleanup_push(ticker_thread_cleanup, mixer);
-  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-  krad_ticker_start_at(mixer->ticker, mixer->start_time);
-  while (mixer->ticker_running == 1) {
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-    mixer_process(mixer, mixer->period_size);
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-    krad_ticker_wait(mixer->ticker);
-  }
-  pthread_cleanup_pop(1);
-  return NULL;
-}
-
-static void mixer_stop_ticker(kr_mixer *mixer) {
-  if (mixer->ticker_running == 1) {
-    mixer->ticker_running = 2;
-    pthread_cancel(mixer->ticker_thread);
-    pthread_join(mixer->ticker_thread, NULL);
-    mixer->ticker_running = 0;
-  }
-}
-
 static void mark_destroy(kr_mixer *mixer, kr_mixer_path *unit) {
   if (mixer->destroying == 2) {
     unit->active = 4;
@@ -502,7 +459,6 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
 
   int p, m;
   void *client;
-  //char tone_str[2];
 
   client = NULL;
   kr_mixer_path *unit = NULL;
@@ -510,14 +466,6 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
   kr_mixer_crossfader *crossfader = NULL;
 
   update_state(mixer);
-/*
-  if (mixer->push_tone != -1) {
-    tone_str[0] = mixer->push_tone;
-    tone_str[1] = '\0';
-    krad_tone_add_preset(mixer->tone->io_ptr, tone_str);
-    mixer->push_tone = -1;
-  }
-*/
   // Gets input/output port buffers
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     unit = mixer->unit[p];
@@ -598,7 +546,7 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
     unit = mixer->unit[p];
     if ((unit != NULL) && (unit->active == 2) &&
         (unit->direction == OUTPUT)) {
-      copy_samples(unit, unit->bus, nframes);
+      copy_frames(unit, unit->bus, nframes);
       if (unit->output_type == AUX) {
         apply_volume(unit, nframes);
       }
@@ -882,58 +830,6 @@ void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan) {
   unit->mixmap[out_chan] = in_chan;
 }
 
-void kr_mixer_start_ticker(kr_mixer *mixer) {
-  if (mixer->ticker_running == 1) {
-    mixer_stop_ticker(mixer);
-  }
-  if (mixer->destroying == 0) {
-    clock_gettime(CLOCK_MONOTONIC, &mixer->start_time);
-    mixer->ticker_running = 1;
-    pthread_create(&mixer->ticker_thread, NULL, ticker_thread, (void *)mixer);
-  }
-}
-
-void kr_mixer_start_ticker_at(kr_mixer *mixer, struct timespec start_time) {
-  if (mixer->ticker_running == 1) {
-    mixer_stop_ticker(mixer);
-  }
-  if (mixer->destroying == 0) {
-    memcpy(&mixer->start_time, &start_time, sizeof(struct timespec));
-    mixer->ticker_running = 1;
-    pthread_create(&mixer->ticker_thread, NULL, ticker_thread, (void *)mixer);
-  }
-}
-
-void kr_mixer_unset_pusher(kr_mixer *mixer) {
-  if (mixer->ticker_running == 1) {
-    mixer_stop_ticker(mixer);
-  }
-  if (kr_mixer_period(mixer) != KR_MXR_DEF_PFRAMES) {
-    kr_mixer_period_set(mixer, KR_MXR_DEF_PFRAMES);
-  }
-  kr_mixer_start_ticker(mixer);
-  mixer->pusher = 0;
-}
-
-void kr_mixer_set_pusher(kr_mixer *mixer, krad_audio_api_t pusher) {
-  if (mixer->ticker_running == 1) {
-    mixer_stop_ticker(mixer);
-  }
-  mixer->pusher = pusher;
-}
-
-int kr_mixer_has_pusher(kr_mixer *mixer) {
-  if (mixer->pusher == 0) {
-    return 0;
-  } else {
-    return 1;
-  }
-}
-
-krad_audio_api_t kr_mixer_get_pusher(kr_mixer *mixer) {
-  return mixer->pusher;
-}
-
 uint32_t kr_mixer_period(kr_mixer *mixer) {
   return mixer->period_size;
 }
@@ -949,11 +845,6 @@ uint32_t kr_mixer_sample_rate(kr_mixer *mixer) {
 
 int kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate) {
   mixer->sample_rate = sample_rate;
-  //krad_tone_set_sample_rate(mixer->tone->io_ptr, mixer->sample_rate);
-  if (mixer->ticker_running == 1) {
-    mixer_stop_ticker(mixer);
-    kr_mixer_start_ticker(mixer);
-  }
   return mixer->sample_rate;
 }
 
@@ -973,10 +864,6 @@ int kr_mixer_destroy(kr_mixer *mixer) {
   printk("Krad Mixer shutdown started");
 
   mixer->destroying = 1;
-  if (mixer->pusher != JACK) {
-    mixer_stop_ticker(mixer);
-    mixer->destroying = 2;
-  }
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if ((mixer->unit[p]->active == 2) &&
         (mixer->unit[p]->type != KR_MXR_BUS)) {

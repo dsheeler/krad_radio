@@ -38,7 +38,6 @@ typedef struct kr_remote_control kr_remote_control;
 #include "krad_ring.h"
 #include "krad_resample_ring.h"
 #include "krad_tone.h"
-#include "krad_audio.h"
 #include "krad_jack.h"
 #include "krad_vhs.h"
 #ifdef KR_LINUX

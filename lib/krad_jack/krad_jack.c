@@ -1,8 +1,9 @@
 #include "krad_jack.h"
 
-void krad_jack_portgroup_samples_callback(int frames, void *userdata, float **samples) {
+void kr_jack_portgroup_samples_callback(int frames, void *userdata,
+ float **samples) {
 
-  krad_jack_portgroup_t *portgroup = (krad_jack_portgroup_t *)userdata;
+  kr_jack_portgroup *portgroup = (kr_jack_portgroup *)userdata;
   int c;
   float *temp;
 
@@ -17,7 +18,7 @@ void krad_jack_portgroup_samples_callback(int frames, void *userdata, float **sa
   }
 }
 /*
-void krad_jack_check_connection (krad_jack_t *krad_jack, char *remote_port) {
+void kr_jack_check_connection (kr_jack *krad_jack, char *remote_port) {
 
   int p;
   int flags;
@@ -44,7 +45,7 @@ void krad_jack_check_connection (krad_jack_t *krad_jack, char *remote_port) {
   }
 }
 
-void krad_jack_stay_connection (krad_jack_t *krad_jack, char *port, char *remote_port) {
+void kr_jack_stay_connection (kr_jack *krad_jack, char *port, char *remote_port) {
 
   int p;
 
@@ -59,7 +60,7 @@ void krad_jack_stay_connection (krad_jack_t *krad_jack, char *port, char *remote
   }
 }
 
-void krad_jack_unstay_connection (krad_jack_t *krad_jack, char *port, char *remote_port) {
+void kr_jack_unstay_connection (kr_jack *krad_jack, char *port, char *remote_port) {
 
   int p;
 
@@ -77,9 +78,9 @@ void krad_jack_unstay_connection (krad_jack_t *krad_jack, char *port, char *remo
   }
 }
 
-void krad_jack_port_registration_callback (jack_port_id_t portid, int regged, void *arg) {
+void kr_jack_port_registration_callback (jack_port_id_t portid, int regged, void *arg) {
 
-  krad_jack_t *krad_jack = (krad_jack_t *)arg;
+  kr_jack *krad_jack = (kr_jack *)arg;
 
   jack_port_t *port;
 
@@ -88,16 +89,16 @@ void krad_jack_port_registration_callback (jack_port_id_t portid, int regged, vo
   if (regged == 1) {
     //printk ("Krad Jack: %s registered", jack_port_name (port));
     if (jack_port_is_mine(krad_jack->client, port) == 0) {
-      krad_jack_check_connection (krad_jack, (char *)jack_port_name(port));
+      kr_jack_check_connection (krad_jack, (char *)jack_port_name(port));
     }
   } else {
     //printk ("Krad Jack: %s unregistered", jack_port_name (port));
   }
 }
 
-void krad_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int connect, void *arg) {
+void kr_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int connect, void *arg) {
 
-  krad_jack_t *krad_jack = (krad_jack_t *)arg;
+  kr_jack *krad_jack = (kr_jack *)arg;
 
   jack_port_t *ports[2];
 
@@ -112,7 +113,7 @@ void krad_jack_port_connection_callback (jack_port_id_t a, jack_port_id_t b, int
 
 }
 */
-void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_name) {
+void kr_jack_portgroup_plug(kr_jack_portgroup *portgroup, char *remote_name) {
 
   const char **ports;
   int flags;
@@ -124,18 +125,18 @@ void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_na
     return;
   }
 
-  ports = jack_get_ports (portgroup->krad_jack->client, remote_name, JACK_DEFAULT_AUDIO_TYPE, flags);
+  ports = jack_get_ports(portgroup->kr_jack->client, remote_name, JACK_DEFAULT_AUDIO_TYPE, flags);
 
   if (ports) {
     for (c = 0; c < portgroup->channels; c++) {
       if (ports[c]) {
-        //krad_jack_stay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), (char *)ports[c]);
+        //kr_jack_stay_connection (portgroup->kr_jack, (char *)jack_port_name(portgroup->ports[c]), (char *)ports[c]);
         if (portgroup->direction == KR_AIN) {
           //printk ("Krad Jack: Plugging %s to %s", ports[c], jack_port_name(portgroup->ports[c]));
-          jack_connect (portgroup->krad_jack->client, ports[c], jack_port_name(portgroup->ports[c]));
+          jack_connect (portgroup->kr_jack->client, ports[c], jack_port_name(portgroup->ports[c]));
         } else {
           //printk ("Krad Jack: Plugging %s to %s", jack_port_name(portgroup->ports[c]), ports[c]);
-          jack_connect (portgroup->krad_jack->client, jack_port_name(portgroup->ports[c]), ports[c]);
+          jack_connect (portgroup->kr_jack->client, jack_port_name(portgroup->ports[c]), ports[c]);
         }
       } else {
         return;
@@ -144,23 +145,23 @@ void krad_jack_portgroup_plug (krad_jack_portgroup_t *portgroup, char *remote_na
   }
 }
 
-void krad_jack_portgroup_unplug (krad_jack_portgroup_t *portgroup, char *remote_name) {
+void kr_jack_portgroup_unplug(kr_jack_portgroup *portgroup, char *remote_name) {
 
   int c;
 
   for (c = 0; c < portgroup->channels; c++) {
-    //krad_jack_unstay_connection (portgroup->krad_jack, (char *)jack_port_name(portgroup->ports[c]), remote_name);
-    jack_port_disconnect (portgroup->krad_jack->client, portgroup->ports[c]);
+    //kr_jack_unstay_connection (portgroup->kr_jack, (char *)jack_port_name(portgroup->ports[c]), remote_name);
+    jack_port_disconnect (portgroup->kr_jack->client, portgroup->ports[c]);
   }
 }
 
-void krad_jack_portgroup_destroy (krad_jack_portgroup_t *portgroup) {
+void kr_jack_portgroup_destroy(kr_jack_portgroup *portgroup) {
 
   int c;
 
   for (c = 0; c < portgroup->channels; c++) {
 
-    jack_port_unregister (portgroup->krad_jack->client, portgroup->ports[c]);
+    jack_port_unregister(portgroup->kr_jack->client, portgroup->ports[c]);
 
     portgroup->ports[c] = NULL;
 
@@ -169,20 +170,21 @@ void krad_jack_portgroup_destroy (krad_jack_portgroup_t *portgroup) {
     }
   }
 
-  free (portgroup);
+  free(portgroup);
 }
 
 
-krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char *name, int direction, int channels) {
+kr_jack_portgroup *kr_jack_portgroup_create (kr_jack *krad_jack, char *name,
+ int direction, int channels) {
 
   int c;
   int port_direction;
   char portname[256];
-  krad_jack_portgroup_t *portgroup;
+  kr_jack_portgroup *portgroup;
 
-  portgroup = calloc (1, sizeof(krad_jack_portgroup_t));
+  portgroup = calloc (1, sizeof(kr_jack_portgroup));
 
-  portgroup->krad_jack = krad_jack;
+  portgroup->kr_jack = krad_jack;
   portgroup->channels = channels;
   portgroup->direction = direction;
   strcpy ( portgroup->name, name );
@@ -202,14 +204,14 @@ krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char 
       strcat(portname, kr_mixer_channeltostr(c));
     }
 
-    portgroup->ports[c] = jack_port_register (portgroup->krad_jack->client,
+    portgroup->ports[c] = jack_port_register (portgroup->kr_jack->client,
                           portname,
                           JACK_DEFAULT_AUDIO_TYPE,
                           port_direction,
                           0);
 
     if (portgroup->ports[c] == NULL) {
-      printke ("Krad Jack: Could not reg port, prolly a dupe reg: %s", portname);
+      printke("Krad Jack: Could not reg port, prolly a dupe reg: %s", portname);
       free(portgroup);
       return NULL;
     }
@@ -222,9 +224,9 @@ krad_jack_portgroup_t *krad_jack_portgroup_create (krad_jack_t *krad_jack, char 
   return portgroup;
 }
 
-int krad_jack_xrun (void *arg) {
+int kr_jack_xrun (void *arg) {
 
-  krad_jack_t *krad_jack = (krad_jack_t *)arg;
+  kr_jack *krad_jack = (kr_jack *)arg;
 
   krad_jack->xruns++;
   printke ("Krad Jack: %s xrun number %d!", krad_jack->name, krad_jack->xruns);
@@ -232,56 +234,56 @@ int krad_jack_xrun (void *arg) {
   return 0;
 }
 
-int krad_jack_process (jack_nframes_t nframes, void *arg) {
+int kr_jack_process (jack_nframes_t nframes, void *arg) {
 
-  krad_jack_t *krad_jack = (krad_jack_t *)arg;
+  kr_jack *krad_jack = (kr_jack *)arg;
 
   if (krad_jack->set_thread_name_process == 0) {
     krad_system_set_thread_name ("kr_jack_mix");
     krad_jack->set_thread_name_process = 1;
   }
 
-  return kr_mixer_mix(krad_jack->krad_audio->mixer, nframes);
+  //FIXME callback go here
+
+  return 0;
 }
 
-void krad_jack_shutdown (void *arg) {
+void kr_jack_shutdown (void *arg) {
 
-  //krad_jack_t *krad_jack = (krad_jack_t *)arg;
+  //kr_jack *krad_jack = (kr_jack *)arg;
 
-  printke ("Krad Jack: shutdown callback, oh dear!");
+  printke("Krad Jack: shutdown callback, oh dear!");
 }
 
-void krad_jack_destroy (krad_jack_t *krad_jack) {
+void kr_jack_destroy (kr_jack *krad_jack) {
 
   int p;
-  jack_client_close (krad_jack->client);
-
-  kr_mixer_unset_pusher(krad_jack->krad_audio->mixer);
+  jack_client_close(krad_jack->client);
 
   for (p = 0; p < 256; p++) {
     if (krad_jack->stay_connected[p] != NULL) {
-      free (krad_jack->stay_connected[p]);
+      free(krad_jack->stay_connected[p]);
     }
     if (krad_jack->stay_connected_to[p] != NULL) {
-      free (krad_jack->stay_connected_to[p]);
+      free(krad_jack->stay_connected_to[p]);
     }
   }
 
-  free (krad_jack);
+  free(krad_jack);
 }
 
-int krad_jack_detect () {
-  return krad_jack_detect_for_jack_server_name (NULL);
+int kr_jack_detect () {
+  return kr_jack_detect_for_jack_server_name (NULL);
 }
 
-int krad_jack_detect_for_jack_server_name (char *server_name) {
+int kr_jack_detect_for_jack_server_name (char *server_name) {
 
   jack_client_t *client;
   jack_options_t options;
   jack_status_t status;
   char name[128];
 
-  sprintf(name, "krad_jack_detect_%d", rand());
+  sprintf(name, "kr_jack_detect_%d", rand());
 
   if (server_name != NULL) {
     options = JackNoStartServer | JackServerName;
@@ -289,7 +291,7 @@ int krad_jack_detect_for_jack_server_name (char *server_name) {
     options = JackNoStartServer;
   }
 
-  client = jack_client_open (name, options, &status, server_name);
+  client = jack_client_open(name, options, &status, server_name);
 
   if (client == NULL) {
     return 0;
@@ -299,24 +301,16 @@ int krad_jack_detect_for_jack_server_name (char *server_name) {
   }
 }
 
-krad_jack_t *krad_jack_create (krad_audio_t *krad_audio) {
-  return krad_jack_create_for_jack_server_name (krad_audio, NULL);
+kr_jack *kr_jack_create() {
+  return kr_jack_create_for_jack_server_name(NULL);
 }
 
-krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, char *server_name) {
+kr_jack *kr_jack_create_for_jack_server_name(char *server_name) {
 
-  krad_jack_t *krad_jack;
+  kr_jack *krad_jack;
 
-  if ((krad_jack = calloc (1, sizeof (krad_jack_t))) == NULL) {
+  if ((krad_jack = calloc (1, sizeof (kr_jack))) == NULL) {
     failfast ("Krad Jack memory alloc failure\n");
-  }
-
-  krad_jack->krad_audio = krad_audio;
-
-  if (kr_mixer_has_pusher(krad_jack->krad_audio->mixer)) {
-    printke ("Krad Jack: oh no already have a pusher...");
-    free(krad_jack);
-    return NULL;
   }
 
   krad_system_set_thread_name ("kr_jack");
@@ -326,15 +320,18 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
   if (server_name != NULL) {
     krad_jack->options = JackNoStartServer | JackServerName;
     krad_jack->server_name[sizeof(krad_jack->server_name) - 1] = '\0';
-    snprintf(krad_jack->server_name, sizeof(krad_jack->server_name) - 2, "%s", server_name);
+    snprintf(krad_jack->server_name, sizeof(krad_jack->server_name) - 2, "%s",
+     server_name);
   } else {
     krad_jack->options = JackNoStartServer;
     krad_jack->server_name[0] = '\0';
   }
 
-  krad_jack->client = jack_client_open (krad_jack->name, krad_jack->options, &krad_jack->status, krad_jack->server_name);
+  krad_jack->client = jack_client_open(krad_jack->name, krad_jack->options,
+   &krad_jack->status, krad_jack->server_name);
   if (krad_jack->client == NULL) {
-    failfast ("Krad Jack: jack_client_open() failed, status = 0x%2.0x", krad_jack->status);
+    failfast ("Krad Jack: jack_client_open() failed, status = 0x%2.0x",
+     krad_jack->status);
     if (krad_jack->status & JackServerFailed) {
       failfast ("Krad Jack: Unable to connect to JACK server");
     }
@@ -345,28 +342,16 @@ krad_jack_t *krad_jack_create_for_jack_server_name (krad_audio_t *krad_audio, ch
     printke ("Krad Jack: unique name `%s' assigned", krad_jack->name);
   }
 
-  kr_mixer_set_pusher(krad_jack->krad_audio->mixer, JACK);
-
   krad_jack->sample_rate = jack_get_sample_rate(krad_jack->client);
   krad_jack->period_size = jack_get_buffer_size(krad_jack->client);
 
-  if (krad_jack->sample_rate != kr_mixer_sample_rate(krad_jack->krad_audio->mixer)) {
-    kr_mixer_sample_rate_set(krad_jack->krad_audio->mixer, krad_jack->sample_rate);
-    printk ("Krad Jack: Set Krad Mixer sample rate to %u", krad_jack->sample_rate);
-  }
-
-  if (krad_jack->period_size != kr_mixer_period(krad_jack->krad_audio->mixer)) {
-    kr_mixer_period_set(krad_jack->krad_audio->mixer, krad_jack->period_size);
-    printk ("Krad Jack: Set Krad Mixer period size to %u", krad_jack->period_size);
-  }
-
   // Set up Callbacks
 
-  jack_set_process_callback (krad_jack->client, krad_jack_process, krad_jack);
-  jack_on_shutdown (krad_jack->client, krad_jack_shutdown, krad_jack);
-  jack_set_xrun_callback (krad_jack->client, krad_jack_xrun, krad_jack);
-  //jack_set_port_registration_callback ( krad_jack->client, krad_jack_port_registration_callback, krad_jack );
-  //jack_set_port_connect_callback ( krad_jack->client, krad_jack_port_connection_callback, krad_jack );
+  jack_set_process_callback (krad_jack->client, kr_jack_process, krad_jack);
+  jack_on_shutdown (krad_jack->client, kr_jack_shutdown, krad_jack);
+  jack_set_xrun_callback (krad_jack->client, kr_jack_xrun, krad_jack);
+  //jack_set_port_registration_callback(krad_jack->client, kr_jack_port_registration_callback, krad_jack );
+  //jack_set_port_connect_callback(krad_jack->client, kr_jack_port_connection_callback, krad_jack );
 
   // Activate
 

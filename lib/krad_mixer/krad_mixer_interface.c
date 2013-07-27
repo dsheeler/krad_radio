@@ -103,7 +103,7 @@ void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_info *mixer_rep) {
   mixer_rep->period_size = kr_mixer_period(mixer);
   mixer_rep->sample_rate = kr_mixer_sample_rate(mixer);
 
-  if (mixer->pusher == JACK) {
+  if (mixer->pusher == KR_JACK) {
     strncpy(mixer_rep->clock, "Jack", sizeof(mixer_rep->clock));
   } else {
     strncpy(mixer_rep->clock, "Internal Chronometer",
@@ -153,13 +153,11 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   kr_mixer_path *unit;
   kr_mixer_path *unit2;
   kr_mixer_path_info unit_rep;
-  int output_type; //fixme
   char unitname[64];
   char unitname2[64];
   char controlname[16];
   void *ptr;
   float floatval;
-  int direction;
   int p;
   kr_radio *radio;
   kr_mixer *mixer;
@@ -188,7 +186,6 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   radio = client->krad_radio;
   mixer = radio->mixer;
   as = radio->app;
-  direction = 0;
   unitname[0] = '\0';
   unitname2[0] = '\0';
   controlname[0] = '\0';

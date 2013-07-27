@@ -65,7 +65,6 @@ struct kr_mixer_path {
 
 struct kr_mixer {
   kr_address_t address;
-  krad_audio_api_t pusher;
   krad_ticker_t *ticker;
   int ticker_running;
   int ticker_period;
@@ -81,6 +80,7 @@ struct kr_mixer {
   struct timespec start_time;
   krad_app_broadcaster_t *broadcaster;
   kr_app_server *as;
+  int pusher;
   int destroying;
 };
 
@@ -102,12 +102,5 @@ uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
 int32_t kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate);
 uint32_t kr_mixer_period(kr_mixer *mixer);
 int32_t kr_mixer_period_set(kr_mixer *mixer, uint32_t period_sz);
-
-krad_audio_api_t kr_mixer_get_pusher(kr_mixer *mixer);
-int32_t kr_mixer_has_pusher(kr_mixer *mixer);
-void kr_mixer_set_pusher(kr_mixer *mixer, krad_audio_api_t pusher);
-void kr_mixer_unset_pusher(kr_mixer *mixer);
-void kr_mixer_start_ticker_at(kr_mixer *mixer, struct timespec start_time);
-void kr_mixer_start_ticker(kr_mixer *mixer);
 
 #endif

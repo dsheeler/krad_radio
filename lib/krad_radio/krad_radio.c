@@ -199,7 +199,7 @@ static void radio_start(kr_radio *radio) {
   clock_gettime(CLOCK_MONOTONIC, &start_sync);
   start_sync = timespec_add_ms(start_sync, 100);
   krad_compositor_start_ticker_at(radio->compositor, start_sync);
-  kr_mixer_start_ticker_at(radio->mixer, start_sync);
+  //FIXMEkr_mixer_start_ticker_at(radio->mixer, start_sync);
   krad_app_server_run(radio->app);
   if (radio->log.startup_timer != NULL) {
     krad_timer_finish(radio->log.startup_timer);
