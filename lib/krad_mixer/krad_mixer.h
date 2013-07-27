@@ -58,17 +58,12 @@ struct kr_mixer_path {
   int destroy_mark;
   int active;
   kr_mixer *mixer;
-  krad_tags_t *tags;
-  krad_xmms_t *xmms;
+  krad_tags_t *tags; //prolly better off in the txpnder?
   kr_sfx *sfx;
 };
 
 struct kr_mixer {
   kr_address_t address;
-  krad_ticker_t *ticker;
-  int ticker_running;
-  int ticker_period;
-  pthread_t ticker_thread;
   uint32_t period_size;
   uint32_t sample_rate;
   int avg_window_size;
@@ -77,7 +72,6 @@ struct kr_mixer {
   kr_mixer_crossfader *crossfader;
   int frames_since_peak_read;
   int frames_per_peak_broadcast;
-  struct timespec start_time;
   krad_app_broadcaster_t *broadcaster;
   kr_app_server *as;
   int pusher;
@@ -93,9 +87,15 @@ void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
 
-// hrm perhaps we have two ctl functions one for mixer as a whole and 
+// hrm perhaps we have two ctl functions one for mixer as a whole and
 // one for paths, makes sense to mee
 
+// ok so what we need to do is setup two cb types
+// one is for pushing/pulling samples
+// the other is for volume/peaks/level up
+// ... perhaps a 3rd type for path create/destroy?
+// this will remove an un-needed mixer/appserver dep
+// I should note that the address_t is only used for the broadcasts
 
 /* Mixer as a whole funcs */
 kr_mixer *kr_mixer_create();//FIXME max paths?
