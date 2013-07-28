@@ -196,45 +196,38 @@ button::-moz-focus-outer, ::-moz-focus-inner {
   border: 1px solid transparent !important;
 }
 
-    .kradcompositor_subunit_list {
-      float: left;
-      margin: 10px;
-      width: 910px;
-      list-style:none;
-      border-radius: 6px;
-    }
+.kradcompositor_subunit_list {
+  float: left;
+  margin: 10px;
+  width: 600px;
+  font-size: 14px;
+  border-radius: 6px;
+  background-color: rgb(10, 106,89)
+}
 
+li {
+  float: left;
+  border-radius: 6px;
+  background-color: rgb(2, 137, 114);
+  padding: 5px;
+}
 
-    li {
+li.alt {
+  background-color: rgb(8, 123, 98);
+}
 
-      border-radius: 6px;
-      color: white;
-      background-color: #2A2A2A; 
-      padding: 10px;
-    }
+.alt.selected, .selected{
+  background-color: rgb(2, 48, 48);
+}
 
-    li.alt {
-      background-color: #282828;
-    }
-    
-    .alt.selected {
-      background-color: #475b7e;
-    }
-
-    .selected {
-      color: white;
-      background-color: #43587A;
-      font-weight: bold;
-    }
-
-     .kradradio_station_info, .kradradio_mixer_info, .kradradio_compositor_info, 
-     .kradradio_transponder_info {  
-      margin-top: 20px; 
-      border:8px solid #c1c1c1;
-      padding:10px 40px; 
-      background: #383838;
-      border-radius:25px;
-     }
+.kradradio_station_info, .kradradio_mixer_info, .kradradio_compositor_info, 
+ .kradradio_transponder_info {  
+  margin-top: 20px; 
+  border:8px solid #c1c1c1;
+  padding:10px 40px; 
+  background: #383838;
+  border-radius:25px;
+}
     
 .minimized_portgroup_wraps .meter {
   
@@ -314,19 +307,20 @@ button::-moz-focus-outer, ::-moz-focus-inner {
     font-size: 30px;
     color: grey;
     top: -20px;
-
 }
 
 #stack {
   float: right;
   width: 49%;
-  height: 540px;
+  height: 1080px;
   overflow: hidden;
   position: relative;
-
 }
 
- #stack > div { float: none; clear: left; }
+#stack > div { 
+  float: none; 
+  clear: left; 
+}
 
 .kradcompositor {
   position: relative;
@@ -351,8 +345,12 @@ button::-moz-focus-outer, ::-moz-focus-inner {
   float:left;
 }
 
+.dtmf_pad .button_wrap {
+  float: left;
+}
 
 .dtmf_pad { 
+  float: left;
   width: 254px; 
   height: 230px; 
   padding: 2px; 
@@ -370,8 +368,13 @@ button::-moz-focus-outer, ::-moz-focus-inner {
   </style>
     <style>
   
+.krad_button_very_small, .krad_button3 {
+  float: left;
+}
+
     /* d2f700 */
        .krad_button_very_small {
+     
         /*min-width: 20px;*/
         text-align: center;
       cursor: default;
@@ -964,15 +967,15 @@ button::-moz-focus-outer, ::-moz-focus-inner {
       color: #222227;
     }
 
-    .button_wrap {
-      height: 50px;
-      float: left;
-    }
-
-/*.volume_control .button_wrap {
-  height: 25px;
+.button_wrap {
+  height: 50px;
+  float: left;
 }
-*/
+
+li .button_wrap {
+  height: 35px;
+  float: left;
+}
 
   </style>
 
