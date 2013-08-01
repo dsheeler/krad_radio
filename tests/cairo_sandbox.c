@@ -49,14 +49,14 @@ void render_rectangle(char *filename) {
   int width;
   int height;
   int rec_x;
-  int rec_y;  
+  int rec_y;
   int rec_width;
-  int rec_height;  
-  
+  int rec_height;
+
   width = 1280;
   height = 720;
   rec_x = 320;
-  rec_y = 240; 
+  rec_y = 240;
   rec_width = 30;
   rec_height = 300;
 
