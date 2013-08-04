@@ -133,9 +133,10 @@ def combine_javascript_interface():
   outfile = open("lib/krad_web/res/kr_interface.js", "w")
   
   for filename in os.listdir("lib/krad_web/rack"):
-    file = open(os.path.join("lib/krad_web/rack", filename),'r')
-    content = file.read()
-    outfile.write(content + "\n")
+    if filename[-2:] == "js":
+      file = open(os.path.join("lib/krad_web/rack", filename),'r')
+      content = file.read()
+      outfile.write(content + "\n")
   
 def hexilate_file(filename):
 

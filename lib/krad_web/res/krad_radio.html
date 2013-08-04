@@ -121,7 +121,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .kradcompositor_canvas {
-  width: 60;
+  width: 60em;
   height: 33.75em;
   float:left;
   background-color: #333;
@@ -208,7 +208,7 @@ h1, h2, h3, h4, h5, h6 {
 .crossfade_control {
   float: left;
   position: relative;
-  height: 13.250;
+  height: 13.250em;
   width: 9.375em;
   top: 4.375em;
  text-align: center;
@@ -673,8 +673,8 @@ li .button_wrap {
   <script>
     var kr = false;
     $(window).bind('beforeunload', function() {
-      if (kradradio.websocket != false) {
-        kradradio.websocket.disconnect();
+      if (kr.ws != false) {
+        kr.ws.disconnect();
       }
     });
     $(document).ready(function() {
