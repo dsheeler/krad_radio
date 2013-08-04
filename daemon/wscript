@@ -130,7 +130,6 @@ syslibs = ['m', 'dl', 'z', 'pthread']
 syslibs2 = ['rt', 'turbojpeg']
 
 def combine_javascript_interface():
-  os.unlink("lib/krad_web/res/kr_interface.js")
   outfile = open("lib/krad_web/res/kr_interface.js", "w")
   
   for filename in os.listdir("lib/krad_web/rack"):
