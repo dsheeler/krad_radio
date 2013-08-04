@@ -129,6 +129,15 @@ stlibs = []
 syslibs = ['m', 'dl', 'z', 'pthread']
 syslibs2 = ['rt', 'turbojpeg']
 
+def combine_javascript_interface():
+  os.unlink("lib/krad_web/res/kr_interface.js")
+  outfile = open("lib/krad_web/res/kr_interface.js", "w")
+  
+  for filename in os.listdir("lib/krad_web/rack"):
+    file = open(os.path.join("lib/krad_web/rack", filename),'r')
+    content = file.read()
+    outfile.write(content + "\n")
+  
 def hexilate_file(filename):
 
   varname = filename.replace("/","_").replace(".","_")
@@ -227,6 +236,7 @@ def check_gif(conf):
     syslibs += ["gif"]
 
 def remake_webres(web):
+  combine_javascript_interface()
   hexilate_file("lib/krad_web/res/krad_radio.html")
   hexilate_file("lib/krad_web/res/kr_api.js")
   hexilate_file("lib/krad_web/res/kr_interface.js")
