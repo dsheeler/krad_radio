@@ -84,6 +84,7 @@ tests/kr_terminfo
 tests/kr_launcher
 lib/krad_rc/krad_rc_sdl_joy_control
 tests/kr_scaletest
+lib/krad_web/res/kr_interface.js
 lib/krad_web/res/kr_api.js.h
 lib/krad_web/res/kr_dev_interface.js.h
 lib/krad_web/res/kr_interface.js.h
