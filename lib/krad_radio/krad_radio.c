@@ -6,6 +6,7 @@ static void radio_shutdown(kr_radio *radio);
 static kr_radio *radio_create(char *sysname);
 static void radio_start(kr_radio *radio);
 static void radio_wait(kr_radio *radio);
+static void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage);
 
 static void radio_shutdown(kr_radio *radio) {
 
@@ -32,7 +33,7 @@ static void radio_shutdown(kr_radio *radio) {
   }
   krad_timer_status(timer);
   if (radio->transponder != NULL) {
-    krad_transponder_destroy(radio->transponder);
+    kr_transponder_destroy(radio->transponder);
     radio->transponder = NULL;
   }
   krad_timer_status(timer);
@@ -42,7 +43,7 @@ static void radio_shutdown(kr_radio *radio) {
   }
   krad_timer_status(timer);
   if (radio->compositor != NULL) {
-    krad_compositor_destroy(radio->compositor);
+    kr_compositor_destroy(radio->compositor);
     radio->compositor = NULL;
   }
   krad_timer_status(timer);
@@ -90,14 +91,14 @@ static kr_radio *radio_create(char *sysname) {
     radio_shutdown(radio);
     return NULL;
   }
-  radio->compositor = krad_compositor_create(DEFAULT_COMPOSITOR_WIDTH,
-   DEFAULT_COMPOSITOR_HEIGHT, DEFAULT_COMPOSITOR_FPS_NUMERATOR,
-   DEFAULT_COMPOSITOR_FPS_DENOMINATOR);
+  //FIXME use setup arg
+  radio->compositor = kr_compositor_create(NULL);
   if (radio->compositor == NULL) {
     radio_shutdown(radio);
     return NULL;
   }
-  radio->transponder = krad_transponder_create(radio);
+  //FIXME use setup arg
+  radio->transponder = kr_transponder_create(NULL);
   if (radio->transponder == NULL) {
     radio_shutdown(radio);
     return NULL;
@@ -131,37 +132,28 @@ static kr_radio *radio_create(char *sysname) {
   return radio;
 }
 
-int kr_radio_daemon(char *sysname) {
+static void radio_start(kr_radio *radio) {
 
-  pid_t pid;
-  kr_radio *radio;
+  struct timespec start_sync;
 
-  if (!krad_valid_sysname(sysname)) {
-    return -1;
+  krad_system_monitor_cpu_on();
+  krad_system_set_monitor_cpu_callback((void *)radio,
+   (void (*)(void *, uint32_t))radio_cpu_monitor_callback);
+  clock_gettime(CLOCK_MONOTONIC, &start_sync);
+  start_sync = timespec_add_ms(start_sync, 100);
+  krad_compositor_start_ticker_at(radio->compositor, start_sync);
+  //FIXMEkr_mixer_start_ticker_at(radio->mixer, start_sync);
+  krad_app_server_run(radio->app);
+  if (radio->log.startup_timer != NULL) {
+    krad_timer_finish(radio->log.startup_timer);
   }
-
-  pid = fork();
-
-  if (pid < 0) {
-    return -1;
-  } else if (pid > 0) {
-    return 0;
-  }
-
-  krad_system_daemonize();
-  krad_system_init();
-  radio = radio_create(sysname);
-  if (radio == NULL) {
-    return -1;
-  }
-  radio_start(radio);
-  radio_wait(radio);
-  radio_shutdown(radio);
-
-  return 0;
 }
 
-void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage) {
+static void radio_wait(kr_radio *radio) {
+  krad_system_daemon_wait();
+}
+
+static void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage) {
 
   unsigned char buffer[128];
   krad_broadcast_msg_t *msg;
@@ -190,25 +182,34 @@ void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage) {
   }
 }
 
-static void radio_start(kr_radio *radio) {
+int kr_radio_daemon(char *sysname) {
 
-  struct timespec start_sync;
+  pid_t pid;
+  kr_radio *radio;
 
-  krad_system_monitor_cpu_on();
-  krad_system_set_monitor_cpu_callback((void *)radio,
-   (void (*)(void *, uint32_t))radio_cpu_monitor_callback);
-  clock_gettime(CLOCK_MONOTONIC, &start_sync);
-  start_sync = timespec_add_ms(start_sync, 100);
-  krad_compositor_start_ticker_at(radio->compositor, start_sync);
-  //FIXMEkr_mixer_start_ticker_at(radio->mixer, start_sync);
-  krad_app_server_run(radio->app);
-  if (radio->log.startup_timer != NULL) {
-    krad_timer_finish(radio->log.startup_timer);
+  if (!krad_valid_sysname(sysname)) {
+    return -1;
   }
-}
 
-static void radio_wait(kr_radio *radio) {
-  krad_system_daemon_wait();
+  pid = fork();
+
+  if (pid < 0) {
+    return -1;
+  } else if (pid > 0) {
+    return 0;
+  }
+
+  krad_system_daemonize();
+  krad_system_init();
+  radio = radio_create(sysname);
+  if (radio == NULL) {
+    return -1;
+  }
+  radio_start(radio);
+  radio_wait(radio);
+  radio_shutdown(radio);
+
+  return 0;
 }
 
 krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {

@@ -23,20 +23,20 @@ struct kr_test_machine_St {
 };
 
 int encoded_callback (kr_encoder_machine_t *encoder_machine, kr_em_sector_t *sector, void *user) {
-  
+
   /*
 
   kr_test_machine_t *test_machine;
-  
+
   test_machine = (kr_test_machine_t *)user;
-  
+
   */
 
   printf ("Encoded callback!\n");
-  
+
   kr_medium_kludge_destroy (&sector->medium);
   kr_codeme_kludge_destroy (&sector->codeme);
-  
+
   return 0;
 }
 
@@ -54,17 +54,17 @@ int main (int argc, char *argv[]) {
   test_machine = calloc (1, sizeof(kr_test_machine_t));
 
   encoder_machine = kr_encoder_machine_create (encoded_callback, test_machine);
-  
+
   // set encoder params: bitrate, kf int, threads, deadline etc
-  
+
   // encode medium - codeme - callback?
-  
+
   for (i = 0; i < 10; i++) {
     sector.medium = kr_medium_kludge_create ();
     sector.codeme = kr_codeme_kludge_create ();
     kr_encoder_machine_encode (encoder_machine, &sector);
   }
-  
+
   ret = kr_encoder_machine_destroy (&encoder_machine);
   if (ret != 0) {
     printf ("Encoder machine destroy problemo!\n");

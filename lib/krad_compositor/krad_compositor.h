@@ -16,6 +16,16 @@ typedef struct krad_compositor_port_St kr_comp_port_t;
 typedef struct krad_compositor_St krad_compositor_t;
 typedef struct krad_compositor_St kr_compositor;
 
+typedef struct kr_compositor_path_setup kr_compositor_path_setup;
+typedef struct kr_compositor_path_frame_cb_arg kr_compositor_path_frame_cb_arg;
+typedef struct kr_compositor_path_info_cb_arg kr_compositor_path_info_cb_arg;
+typedef struct kr_compositor_setup kr_compositor_setup;
+typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
+
+typedef void (kr_compositor_info_cb)(kr_compositor_info_cb_arg *);
+typedef void (kr_compositor_path_info_cb)(kr_compositor_path_info_cb_arg *);
+typedef void (kr_compositor_path_frame_cb)(kr_compositor_path_frame_cb_arg *);
+
 #include "krad_radio.h"
 #include "krad_compositor_subunit.h"
 #include "krad_videoport.h"
@@ -33,6 +43,36 @@ typedef struct krad_compositor_St kr_compositor;
 #define RED 0.244 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0
 #define GREY 0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255 * 1.0
 #define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.255 / 0.255   * 1.0
+
+struct kr_compositor_info_cb_arg {
+  void *user;
+};
+
+struct kr_compositor_path_info_cb_arg {
+  void *user;
+};
+
+struct kr_compositor_path_frame_cb_arg {
+  uint32_t channels;
+  uint32_t nframes;
+  float **samples;
+  void *user;
+};
+
+struct kr_compositor_setup {
+  uint32_t width;
+  uint32_t height;
+  uint32_t fps_num;
+  uint32_t fps_den;
+  void *user;
+  kr_compositor_info_cb *cb;
+};
+
+struct kr_compositor_path_setup {
+  kr_compositor_path_info info;
+  void *user;
+  kr_compositor_path_frame_cb *cb;
+};
 
 struct krad_compositor_St {
 
@@ -159,10 +199,9 @@ void krad_compositor_get_resolution (krad_compositor_t *compositor,
 void krad_compositor_set_resolution (krad_compositor_t *comp,
                                      uint32_t width, uint32_t height);
 
-void krad_compositor_process (krad_compositor_t *compositor);
-void krad_compositor_destroy (krad_compositor_t *compositor);
+void krad_compositor_process(krad_compositor_t *compositor);
+void kr_compositor_destroy(krad_compositor_t *compositor);
 
-krad_compositor_t *
-krad_compositor_create (int width, int height, int fps_num, int fps_den);
+kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
 
 #endif

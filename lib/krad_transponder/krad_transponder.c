@@ -1389,39 +1389,40 @@ krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *krad_transp
   }
 }
 
-krad_transponder_t *krad_transponder_create(kr_radio *radio) {
+kr_transponder *kr_transponder_create(kr_transponder_setup *setup) {
 
-  krad_transponder_t *krad_transponder;
+  kr_transponder *transponder;
 
-  krad_transponder = calloc(1, sizeof(krad_transponder_t));
+  transponder = calloc(1, sizeof(kr_transponder));
 
-  krad_transponder->address.path.unit = KR_TRANSPONDER;
-  krad_transponder->address.path.subunit.mixer_subunit = KR_UNIT;
+  transponder->address.path.unit = KR_TRANSPONDER;
+  transponder->address.path.subunit.mixer_subunit = KR_UNIT;
 
-  krad_transponder->krad_radio = radio;
-  krad_transponder->krad_transmitter = krad_transmitter_create();
-  krad_transponder->xpdr = krad_xpdr_create(krad_transponder->krad_radio);
+  //FIXME transponder->krad_radio = radio;
+  transponder->krad_transmitter = krad_transmitter_create();
+  transponder->xpdr = krad_xpdr_create(transponder->krad_radio);
 
-  return krad_transponder;
+  return transponder;
 }
 
-void krad_transponder_destroy(krad_transponder_t *krad_transponder) {
+int kr_transponder_destroy(kr_transponder *transponder) {
 
   int l;
 
   printk("Krad Transponder: Destroy Started");
 
   for (l = 0; l < KRAD_TRANSPONDER_MAX_SUBUNITS; l++) {
-    if (krad_transponder->krad_link[l] != NULL) {
-      krad_link_destroy(krad_transponder->krad_link[l]);
-      krad_transponder->krad_link[l] = NULL;
+    if (transponder->krad_link[l] != NULL) {
+      krad_link_destroy(transponder->krad_link[l]);
+      transponder->krad_link[l] = NULL;
     }
   }
 
-  krad_transmitter_destroy(krad_transponder->krad_transmitter);
-  krad_xpdr_destroy(&krad_transponder->xpdr);
-
-  free(krad_transponder);
+  krad_transmitter_destroy(transponder->krad_transmitter);
+  krad_xpdr_destroy(&transponder->xpdr);
+  free(transponder);
 
   printk("Krad Transponder: Destroy Completed");
+
+  return 0;
 }

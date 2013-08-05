@@ -2,7 +2,13 @@
 #define KRAD_TRANSPONDER_H
 
 typedef struct krad_link_St krad_link_t;
-typedef struct krad_transponder_St krad_transponder_t;
+typedef struct kr_transponder krad_transponder_t;
+typedef struct kr_transponder kr_transponder;
+typedef struct kr_transponder_setup kr_transponder_setup;
+
+typedef struct kr_transponder_info_cb_arg kr_transponder_info_cb_arg;
+
+typedef void (kr_transponder_info_cb)(kr_transponder_info_cb_arg *);
 
 #include "krad_radio.h"
 #include "krad_slice.h"
@@ -33,7 +39,12 @@ typedef struct krad_transponder_St krad_transponder_t;
 #define KRAD_LINK_DEFAULT_AUDIO_CODEC VORBIS
 #define KRAD_TRANSPONDER_MAX_SUBUNITS 32
 
-struct krad_transponder_St {
+struct kr_transponder_setup {
+  void *user;
+  kr_transponder_info_cb *cb;
+};
+
+struct kr_transponder {
   kr_address_t address;
 	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_SUBUNITS];
 	kr_radio *krad_radio;
@@ -204,8 +215,8 @@ void krad_link_destroy(krad_link_t *krad_link);
 krad_link_t *krad_link_prepare(int linknum);
 void krad_link_start(krad_link_t *krad_link);
 
-krad_transponder_t *krad_transponder_create();
-void krad_transponder_destroy(krad_transponder_t *krad_transponder);
+kr_transponder *kr_transponder_create(kr_transponder_setup *setup);
+int kr_transponder_destroy(kr_transponder *transponder);
 void krad_link_audio_samples_callback(int frames, void *userdata, float **samples);
 
 #endif

@@ -64,6 +64,7 @@ typedef struct krad_vector_rep_St krad_vector_rep_t;
 typedef struct krad_vector_rep_St kr_vector_t;
 typedef struct krad_port_rep_St krad_port_rep_t;
 typedef struct krad_port_rep_St kr_port_t;
+typedef struct krad_port_rep_St kr_compositor_path_info;
 typedef struct kr_compositor_subunit_controls_St kr_compositor_subunit_controls_t;
 typedef struct kr_compositor_subunit_controls_St kr_comp_controls_t;
 typedef struct krad_compositor_rep_St krad_compositor_rep_t;

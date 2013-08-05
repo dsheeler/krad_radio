@@ -1705,43 +1705,42 @@ static void krad_compositor_prepare_subunits (krad_compositor_t *compositor) {
   }
 }
 
-void krad_compositor_destroy (krad_compositor_t *compositor) {
+void kr_compositor_destroy(kr_compositor *compositor) {
 
-  printk ("Krad Compositor: Destroy Started");
+  printk("Krad Compositor: Destroy Started");
 
-  krad_compositor_ports_destroy_all (compositor);
-  krad_compositor_stop_ticker (compositor);
-  krad_compositor_free_framepool (compositor);
-  krad_sprite_destroy (compositor->background);
-  krad_sprite_destroy_arr (compositor->sprite, KC_MAX_SPRITES);
-  krad_text_destroy_arr (compositor->text, KC_MAX_TEXTS);
-  krad_vector_destroy_arr (compositor->vector, KC_MAX_VECTORS);
+  krad_compositor_ports_destroy_all(compositor);
+  krad_compositor_stop_ticker(compositor);
+  krad_compositor_free_framepool(compositor);
+  krad_sprite_destroy(compositor->background);
+  krad_sprite_destroy_arr(compositor->sprite, KC_MAX_SPRITES);
+  krad_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
+  krad_vector_destroy_arr(compositor->vector, KC_MAX_VECTORS);
 
-  FT_Done_FreeType (compositor->ft_library);
-  free (compositor);
+  FT_Done_FreeType(compositor->ft_library);
+  free(compositor);
 
-  printk ("Krad Compositor: Destroy Complete");
+  printk("Krad Compositor: Destroy Complete");
 }
 
-krad_compositor_t *
-krad_compositor_create (int width, int height, int fps_num, int fps_den) {
+kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
 
-  krad_compositor_t *compositor = calloc (1, sizeof(krad_compositor_t));
+  kr_compositor *compositor = calloc(1, sizeof(kr_compositor));
 
-  printk ("Krad Compositor: Cairo Version: %s", cairo_version_string());
-  printk ("Krad Compositor: SWScale Version: %u", swscale_version());
+  printk("Krad Compositor: Cairo Version: %s", cairo_version_string());
+  printk("Krad Compositor: SWScale Version: %u", swscale_version());
 
   FT_Init_FreeType (&compositor->ft_library);
 
-  krad_compositor_set_resolution (compositor, width, height);
-  krad_compositor_set_frame_rate (compositor, fps_num, fps_den);
+  krad_compositor_set_resolution(compositor, setup->width, setup->height);
+  krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
 
   compositor->address.path.unit = KR_COMPOSITOR;
   compositor->address.path.subunit.compositor_subunit = KR_UNIT;
-  compositor->background = krad_sprite_create ();
+  compositor->background = krad_sprite_create();
 
-  krad_compositor_prepare_subunits (compositor);
-  //krad_compositor_alloc_framepool (compositor);
+  krad_compositor_prepare_subunits(compositor);
+  //krad_compositor_alloc_framepool(compositor);
 
   return compositor;
 }
