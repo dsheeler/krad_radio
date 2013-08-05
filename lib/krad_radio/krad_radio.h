@@ -86,9 +86,9 @@ struct kr_log {
 };
 
 struct kr_radio {
-  krad_transponder_t *transponder;
   kr_mixer *mixer;
   kr_compositor *compositor;
+  kr_transponder *transponder;
   krad_app_server_t *app;
   krad_app_broadcaster_t *system_broadcaster;
   kr_remote_control remote;

@@ -39,9 +39,9 @@ struct krad_osc_St {
 	pthread_t listening_thread;
 };
 
-void krad_osc_stop_listening (krad_osc_t *krad_osc);
-int krad_osc_listen (krad_osc_t *krad_osc, int port);
+void krad_osc_stop_listening(krad_osc_t *krad_osc);
+int krad_osc_listen(krad_osc_t *krad_osc, int port);
 
-void krad_osc_destroy (krad_osc_t *krad_osc);
-krad_osc_t *krad_osc_create (char *sysname);
+void krad_osc_destroy(krad_osc_t *krad_osc);
+krad_osc_t *krad_osc_create(char *sysname);
 

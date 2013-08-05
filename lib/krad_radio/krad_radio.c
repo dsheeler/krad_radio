@@ -127,8 +127,6 @@ static kr_radio *radio_create(char *sysname) {
   krad_app_server_broadcaster_register_broadcast(radio->system_broadcaster,
    EBML_ID_KRAD_SYSTEM_BROADCAST);
 
-  kr_mixer_appserver_set(radio->mixer, radio->app);
-
   return radio;
 }
 

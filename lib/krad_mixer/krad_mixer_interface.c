@@ -3,13 +3,9 @@
 void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
 
   int i;
-  kr_eq *eq;
-  kr_pass *lowpass;
-  kr_pass *highpass;
-  kr_analog *analog;
 
   strcpy(unit_rep->name, unit->name);
-//  unit_rep->channels = unit->channels;
+  unit_rep->channels = unit->channels;
 //  unit_rep->direction = unit->direction;
 //  unit_rep->output_type = unit->output_type;
 //  unit_rep->io_type = unit->io_type;
@@ -38,6 +34,7 @@ void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
   }
 */
  // if (unit->direction == INPUT) {
+ /*
     eq = (kr_eq *)unit->sfx->effect[0].effect[0];
     lowpass = (kr_lowpass *)unit->sfx->effect[1].effect[0];
     highpass = (kr_highpass *)unit->sfx->effect[2].effect[0];
@@ -53,6 +50,7 @@ void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
     unit_rep->highpass.bw = highpass->bw;
     unit_rep->analog.drive = analog->drive;
     unit_rep->analog.blend = analog->blend;
+*/
 /*  } else {
     for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
       unit_rep->eq.band[i].db = 0.0f;
@@ -67,6 +65,12 @@ void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
     unit_rep->analog.blend = 0.0f;
   }
 */
+
+  kr_sfx_effect_info(unit->sfx, 0, &unit_rep->eq);
+  kr_sfx_effect_info(unit->sfx, 1, &unit_rep->lowpass);
+  kr_sfx_effect_info(unit->sfx, 2, &unit_rep->highpass);
+  kr_sfx_effect_info(unit->sfx, 3, &unit_rep->analog);
+
   if ((unit->crossfader != NULL) && (unit->crossfader->unit[0] == unit)) {
     unit_rep->fade = unit->crossfader->fade;
     strncpy(unit_rep->crossfade_group, unit->crossfader->unit[1]->name,
@@ -241,10 +245,12 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         } else {
           duration = ms_to_cycles(mixer->sample_rate, mixer->period_size, duration);
         }
-        kr_sfx_ctl(unit->sfx, numbers[0], numbers[5],
-         kr_sfx_strtoctl(unit->sfx->effect[numbers[0]].type,
+/*
+        kr_sfx_effect_ctl(unit->sfx, numbers[0], numbers[5],
+         kr_sfxeftctlstr(unit->sfx->effect[numbers[0]].type,
           controlname),
          floatval, duration, numbers[7], ptr);
+*/
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_PUSH_TONE:

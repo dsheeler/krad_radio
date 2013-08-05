@@ -54,10 +54,6 @@ static float get_crossfade(kr_mixer_path *unit) {
 }
 
 static void apply_effects(kr_mixer_path *port, int nframes) {
-
-  if (port->sfx->sample_rate != port->mixer->sample_rate) {
-    kr_sfx_set_sample_rate(port->sfx, port->mixer->sample_rate);
-  }
   // FIXME hrm we count on thems being the same btw in them effects lookout
   kr_sfx_process(port->sfx, port->samples, port->samples, nframes);
 }
@@ -336,18 +332,25 @@ static void limit(kr_mixer_path *unit, uint32_t nframes) {
 static void update_state(kr_mixer *mixer) {
 
   int p;
-  kr_mixer_path *unit;
+  kr_mixer_path *path;
 
   p = 0;
-  unit = NULL;
+  path = NULL;
 
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
-    unit = mixer->unit[p];
-    if ((unit != NULL) && (unit->active == 3)) {
-      unit->active = 4;
+    path = mixer->unit[p];
+    if ((path != NULL) && (path->active == 3)) {
+      path->active = 4;
     }
-    if ((unit != NULL) && (unit->active == 1)) {
-      unit->active = 2;
+    if ((path != NULL) && (path->active == 1)) {
+      path->active = 2;
+    }
+  }
+  if (mixer->new_sample_rate != mixer->sample_rate) {
+    mixer->sample_rate = mixer->new_sample_rate;
+    for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
+      path = mixer->unit[p];
+      kr_sfx_sample_rate_set(path->sfx, mixer->sample_rate);
     }
   }
 }
@@ -450,8 +453,9 @@ static void update_meter_readings(kr_mixer_path *unit) {
   peak = read_peak_scaled(unit);
   if (peak != unit->peak_last[0]) {
     unit->peak_last[0] = peak;
-    krad_radio_broadcast_subunit_control(unit->mixer->broadcaster,
-     &unit->address, KR_PEAK, peak, NULL);
+   /* krad_radio_broadcast_subunit_control(unit->mixer->broadcaster,
+    *  &unit->address, KR_PEAK, peak, NULL);
+    */
   }
 }
 
@@ -485,9 +489,10 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
         set_crossfade(crossfader->unit[0],
          kr_easer_process(&crossfader->easer,
           crossfader->fade, &client));
-        krad_radio_broadcast_subunit_control(mixer->broadcaster,
-         &crossfader->unit[0]->address, KR_CROSSFADE,
-         crossfader->fade, client);
+       /* krad_radio_broadcast_subunit_control(mixer->broadcaster,
+        * &crossfader->unit[0]->address, KR_CROSSFADE,
+        * crossfader->fade, client);
+        */
       }
     }
   }
@@ -499,8 +504,9 @@ static int mixer_process(kr_mixer *mixer, uint32_t nframes) {
       set_volume(unit,
        kr_easer_process(&unit->volume_easer, unit->volume[0],
        &client));
-      krad_radio_broadcast_subunit_control(mixer->broadcaster,
-       &unit->address, KR_VOLUME, unit->volume[0], client);
+     /* krad_radio_broadcast_subunit_control(mixer->broadcaster,
+      * &unit->address, KR_VOLUME, unit->volume[0], client);
+      */
     }
   }
 
@@ -612,9 +618,10 @@ void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *unit1,
   unit1->crossfader = crossfader;
   unit2->crossfader = crossfader;
 
-  krad_radio_broadcast_subunit_update(mixer->as->app_broadcaster,
-   &unit1->address, KR_CROSSFADE_GROUP, KR_STRING, unit2->name, NULL);
-
+/*
+ * krad_radio_broadcast_subunit_update(mixer->as->app_broadcaster,
+ * &unit1->address, KR_CROSSFADE_GROUP, KR_STRING, unit2->name, NULL);
+ */
   kr_mixer_ctl(mixer, unit1->name, "crossfade", -100.0f, 0, NULL);
 }
 
@@ -642,9 +649,10 @@ void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader) {
      unit[0]->volume[0], 0, NULL);
     kr_mixer_ctl(mixer, unit[1]->name, "volume",
      unit[1]->volume[0], 0, NULL);
-
-    krad_radio_broadcast_subunit_update(mixer->as->app_broadcaster,
-     &unit[0]->address, KR_CROSSFADE_GROUP, KR_STRING, "", NULL);
+    /*
+     * krad_radio_broadcast_subunit_update(mixer->as->app_broadcaster,
+     * &unit[0]->address, KR_CROSSFADE_GROUP, KR_STRING, "", NULL);
+     */
   }
 }
 
@@ -654,6 +662,7 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   int c;
   int len;
   kr_mixer_path *path;
+  kr_sfx_setup sfx_setup;
 
   path = NULL;
   len = strlen(np->info.name);
@@ -702,16 +711,25 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   if (path->tags == NULL) {
     failfast ("Oh I couldn't find me tags");
   }
-  path->sfx = kr_sfx_create(path->channels, path->mixer->sample_rate);
+
+  sfx_setup.channels = path->channels;
+  sfx_setup.sample_rate = path->mixer->sample_rate;
+  sfx_setup.user = path;
+  //FIXME actual sfx info callback
+  sfx_setup.cb = NULL;
+  path->sfx = kr_sfx_create(&sfx_setup);
   if (path->sfx == NULL) {
     failfast ("Oh I couldn't make effects");
   }
-  kr_sfx_effect_add2(path->sfx, KR_EQ, path->mixer, path->name);
-  kr_sfx_effect_add2(path->sfx, KR_LOWPASS, path->mixer, path->name);
-  kr_sfx_effect_add2(path->sfx, KR_HIGHPASS, path->mixer, path->name);
-  kr_sfx_effect_add2(path->sfx, KR_ANALOG, path->mixer, path->name);
+  kr_sfx_add(path->sfx, KR_SFX_EQ);
+  kr_sfx_add(path->sfx, KR_SFX_LOWPASS);
+  kr_sfx_add(path->sfx, KR_SFX_HIGHPASS);
+  kr_sfx_add(path->sfx, KR_SFX_ANALOG);
   //FIXME
   //set sfx params from np
+
+  path->active = 1;
+
   return path;
 }
 
@@ -835,6 +853,9 @@ uint32_t kr_mixer_period(kr_mixer *mixer) {
 }
 
 int kr_mixer_period_set(kr_mixer *mixer, uint32_t period_size) {
+  if ((period_size < KR_MXR_PERIOD_MIN) || (period_size > KR_MXR_PERIOD_MAX)) {
+    return -1;
+  }
   mixer->period_size = period_size;
   return mixer->period_size;
 }
@@ -844,19 +865,22 @@ uint32_t kr_mixer_sample_rate(kr_mixer *mixer) {
 }
 
 int kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate) {
-  mixer->sample_rate = sample_rate;
-  return mixer->sample_rate;
+  if ((sample_rate < KR_MXR_SRATE_MIN) || (sample_rate > KR_MXR_SRATE_MAX)) {
+    return -1;
+  }
+  mixer->new_sample_rate = sample_rate;
+  return mixer->new_sample_rate;
 }
 
 int kr_mixer_mix(kr_mixer *mixer) {
   return mixer_process(mixer, mixer->period_size);
 }
-
+/*
 void kr_mixer_appserver_set(kr_mixer *mixer, kr_app_server *as) {
   mixer->as = as;
   mixer->broadcaster = krad_app_server_broadcaster_register(mixer->as);
 }
-
+*/
 int kr_mixer_destroy(kr_mixer *mixer) {
 
   int p;
@@ -917,9 +941,9 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
 
   mixer->address.path.unit = KR_MIXER;
   mixer->address.path.subunit.mixer_subunit = KR_UNIT;
-  mixer->sample_rate = KR_MXR_DEF_SRATE;
+  kr_mixer_period_set(mixer, KR_MXR_PERIOD_DEF);
+  kr_mixer_sample_rate_set(mixer, KR_MXR_SRATE_DEF);
   mixer->avg_window_size = (mixer->sample_rate / 1000) * KR_MXR_RMS_WINDOW_MS;
-  mixer->period_size = KR_MXR_DEF_PFRAMES;
   mixer->frames_per_peak_broadcast = 1536;
   mixer->crossfader = calloc(KR_MXR_MAX_PATHS / 2,
    sizeof(kr_mixer_crossfader));

@@ -1462,9 +1462,9 @@ void kr_address_debug_print (kr_address_t *addr) {
           }
           break;
         case KR_EFFECT:
-          printf ("%s ", id->name);
-          printf ("Effect: %d Control ID: %d Control: %s", addr->sub_id, addr->sub_id2,
-                  sfxctltostr(addr->control.effect_control));
+          printf("%s ", id->name);
+          printf("Effect: %d Control ID: %d Control: %s", addr->sub_id, addr->sub_id2,
+           kr_strsfxeftctl(addr->control.effect_control));
           break;
       }
       break;
@@ -1741,22 +1741,22 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
           addr->sub_id2 = atoi(effect_control_id);
         }
         if ((effect_control[0] == 'd') && (effect_control[1] == 'b')) {
-          addr->control.effect_control = DB;
+          addr->control.effect_control = KR_SFX_DB;
         } else {
           if ((effect_control[0] == 'h') && (effect_control[1] == 'z')) {
-            addr->control.effect_control = HZ;
+            addr->control.effect_control = KR_SFX_HZ;
           } else {
             if ((effect_control[0] == 'b') && (effect_control[1] == 'w')) {
-              addr->control.effect_control = BW;
+              addr->control.effect_control = KR_SFX_BW;
             } else {
               if (effect_control[0] == 't') {
-                addr->control.effect_control = TYPE;
+                addr->control.effect_control = KR_SFX_PASSTYPE;
               } else {
                 if ((effect_control[0] == 'd') && (effect_control[1] == 'r')) {
-                  addr->control.effect_control = DRIVE;
+                  addr->control.effect_control = KR_SFX_DRIVE;
                 } else {
                   if ((effect_control[0] == 'b') && (effect_control[1] == 'l')) {
-                    addr->control.effect_control = BLEND;
+                    addr->control.effect_control = KR_SFX_BLEND;
                   }
                 }
               }
@@ -1912,7 +1912,7 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
           break;
         case KR_EFFECT:
           kr_mixer_set_effect_control(client, uc->address.id.name, uc->address.sub_id, uc->address.sub_id2,
-                                      sfxctltostr(uc->address.control.effect_control),
+                                      kr_strsfxeftctl(uc->address.control.effect_control),
                                       uc->value.real, uc->duration, EASEINOUTSINE);
           break;
       }

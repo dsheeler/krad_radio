@@ -28,13 +28,13 @@ static int address_handler (char *in, char *out) {
 
   r = 0;
   b = 0;
-  
+
   binds[b] = "/1/fader1";
   replaces[b++] = "m/Music/c";
 
   binds[b] = "/1/fader2";
   replaces[b++] = "m/Music";
-  
+
   binds[b] = "/1/fader3";
   replaces[b++] = "m/Music2";
 
@@ -58,7 +58,7 @@ static int address_handler (char *in, char *out) {
   replaces[b++] = "m/Music/eq/8/db";
   binds[b] = "/4/multifader1/10";
   replaces[b++] = "m/Music/eq/9/db";
-  
+
   binds[b] = "/4/multifader2/1";
   replaces[b++] = "m/Music2/eq/0/db";
   binds[b] = "/4/multifader2/2";
@@ -79,16 +79,16 @@ static int address_handler (char *in, char *out) {
   replaces[b++] = "m/Music2/eq/8/db";
   binds[b] = "/4/multifader2/10";
   replaces[b++] = "m/Music2/eq/9/db";
-  
+
   for (r = 0; r < b; r++) {
     if (strcmp (in, binds[r]) == 0) {
       strcpy (out, replaces[r]);
       return 1;
     }
   }
-  
+
   strcpy (out, in);
-  
+
   return 0;
 }
 
@@ -158,24 +158,24 @@ static void krad_osc_parse_message (krad_osc_t *krad_osc, unsigned char *message
         dpos += sprintf(debugmsg + dpos, "%d", ints[d]);
       }
     }
-    
+
     address_handler ((char *)message, address);
-            
+
     printk ("Krad OSC: %s%s", address, debugmsg);
-    
+
     memset (&uc, 0, sizeof (uc));
     if (kr_string_to_address (address, &uc.address)) {
       kr_unit_control_data_type_from_address (&uc.address, &uc.data_type);
       if (uc.data_type == KR_FLOAT) {
         uc.value.real = floats[0] * 100.0f;
         if ((uc.address.path.unit == KR_MIXER) &&
-            (uc.address.path.subunit.mixer_subunit == KR_PORTGROUP) && 
+            (uc.address.path.subunit.mixer_subunit == KR_PORTGROUP) &&
             (uc.address.control.portgroup_control == KR_CROSSFADE)) {
           uc.value.real = ((floats[0] * 200.0f) - 100.0f);
         } else {
           if ((uc.address.path.unit == KR_MIXER) &&
-              (uc.address.path.subunit.mixer_subunit == KR_EFFECT) && 
-              (uc.address.control.effect_control == DB)) {
+              (uc.address.path.subunit.mixer_subunit == KR_EFFECT) &&
+              (uc.address.control.effect_control == KR_SFX_DB)) {
             uc.value.real = ((floats[0] * 18.0f) - 9.0f);
           }
         }
@@ -194,18 +194,18 @@ static void *krad_osc_listening_thread (void *arg) {
 	struct sockaddr_in remote_address;
 	struct pollfd sockets[1];
 	unsigned char buffer[OSC_BUF_SIZE];
-		
-	krad_system_set_thread_name ("kr_osc");	
-	
+
+	krad_system_set_thread_name ("kr_osc");
+
 	printk ("Krad OSC: Listening thread starting");
   printk ("Krad OSC: Using UDP port: %d", krad_osc->port);
 
 	addr_size = 0;
 	ret = 0;
-	memset (&remote_address, 0, sizeof(remote_address));	
+	memset (&remote_address, 0, sizeof(remote_address));
 
 	addr_size = sizeof (remote_address);
-	
+
 	while (krad_osc->stop_listening == 0) {
 
     if (!(kr_connected (krad_osc->client))) {
@@ -219,7 +219,7 @@ static void *krad_osc_listening_thread (void *arg) {
 		sockets[0].fd = krad_osc->sd;
 		sockets[0].events = POLLIN;
 
-		ret = poll (sockets, 1, 250);	
+		ret = poll (sockets, 1, 250);
 
 		if (ret < 0) {
 			printke ("Krad OSC: Failed on poll");
@@ -232,24 +232,24 @@ static void *krad_osc_listening_thread (void *arg) {
 			                buffer, OSC_BUF_SIZE, 0,
 							        (struct sockaddr *)&remote_address,
 							        (socklen_t *)&addr_size);
-		
+
 			if (ret == -1) {
 				printke ("Krad OSC Failed on recvfrom");
 				krad_osc->stop_listening = 1;
 				break;
 			}
-			
+
 			if (ret > 0) {
 				krad_osc_parse_message (krad_osc, buffer, ret);
 			}
 		}
 	}
-	
+
   kr_disconnect (krad_osc->client);
-	
+
 	close (krad_osc->sd);
 	krad_osc->port = 0;
-	krad_osc->listening = 0;	
+	krad_osc->listening = 0;
 
 	printk ("Krad OSC Listening thread exiting");
 
@@ -270,18 +270,18 @@ int krad_osc_listen (krad_osc_t *krad_osc, int port) {
 	if (krad_osc->listening == 1) {
 		krad_osc_stop_listening (krad_osc);
 	}
-	
+
 	krad_osc->port = port;
 	krad_osc->listening = 1;
-	
+
 	krad_osc->local_address.sin_family = AF_INET;
 	krad_osc->local_address.sin_port = htons (krad_osc->port);
 	krad_osc->local_address.sin_addr.s_addr = htonl (INADDR_ANY);
-	
+
 	if ((krad_osc->sd = socket (AF_INET, SOCK_DGRAM, 0)) < 0) {
 		printke ("Krad OSC system call socket error");
 		krad_osc->listening = 0;
-		krad_osc->port = 0;		
+		krad_osc->port = 0;
 		return 0;
 	}
 
@@ -291,9 +291,9 @@ int krad_osc_listen (krad_osc_t *krad_osc, int port) {
 		krad_osc->port = 0;
 		return 0;
 	}
-	
+
 	pthread_create (&krad_osc->listening_thread, NULL, krad_osc_listening_thread, (void *)krad_osc);
-	
+
 	return 1;
 }
 

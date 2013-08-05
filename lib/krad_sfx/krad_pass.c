@@ -1,7 +1,7 @@
 #include "krad_pass.h"
 
 /* Controls */
-void kr_pass_set_type(kr_pass *pass, kr_sfx_type type) {
+void kr_pass_set_type(kr_pass *pass, kr_sfx_effect_type type) {
   if ((type != KR_LOWPASS) && (type != KR_HIGHPASS)) {
     return;
   }
@@ -50,8 +50,8 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
     pass->bw = kr_easer_process(&pass->bw_easer, pass->bw, &ptr);
     recompute = 1;
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control(pass->mixer->broadcaster,
-       &pass->address, BW, pass->bw, ptr);
+//      krad_radio_broadcast_subunit_control(pass->mixer->broadcaster,
+//       &pass->address, BW, pass->bw, ptr);
     }
   }
 
@@ -59,8 +59,8 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
     pass->hz = kr_easer_process(&pass->hz_easer, pass->hz, &ptr);
     recompute = 1;
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control(pass->mixer->broadcaster,
-       &pass->address, HZ, pass->hz, ptr);
+//      krad_radio_broadcast_subunit_control(pass->mixer->broadcaster,
+//       &pass->address, HZ, pass->hz, ptr);
     }
   }
 
@@ -88,7 +88,7 @@ void kr_pass_set_sample_rate(kr_pass *pass, int sample_rate) {
   pass->new_sample_rate = sample_rate;
 }
 
-kr_pass *kr_pass_create2(int sample_rate, kr_sfx_type type,
+kr_pass *kr_pass_create2(int sample_rate, kr_sfx_effect_type type,
  kr_mixer *mixer, char *portgroupname) {
 
   kr_pass *pass;
@@ -121,7 +121,7 @@ kr_pass *kr_pass_create2(int sample_rate, kr_sfx_type type,
   return pass;
 }
 
-kr_pass *kr_pass_create(int sample_rate, kr_sfx_type type) {
+kr_pass *kr_pass_create(int sample_rate, kr_sfx_effect_type type) {
 
   kr_pass *pass;
 

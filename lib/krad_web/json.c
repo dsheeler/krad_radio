@@ -148,8 +148,8 @@ void krad_websocket_set_portgroup_eff(kr_iws_client_t *client,
    "\"effect_name\":\"%s\",\"effect_num\":%d,"
    "\"control_name\":\"%s\","
    "\"value\":%g}]", address->id.name,
-   sfxtypetostr(address->sub_id + 1), address->sub_id2,
-   sfxctltostr(address->control.effect_control), value);
+   kr_strsfxeft(address->sub_id + 1), address->sub_id2,
+   kr_strsfxeftctl(address->control.effect_control), value);
 
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }

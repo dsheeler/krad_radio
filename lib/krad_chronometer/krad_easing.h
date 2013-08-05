@@ -13,7 +13,6 @@
 
 typedef struct {
   int updating;
-  int update;
   int active;
   float target;
   float new_target;
@@ -25,6 +24,7 @@ typedef struct {
   kr_easing easing;
   kr_easing new_easing;
   void *ptr;
+  void *new_ptr;
 } kr_easer;
 
 kr_easing kr_easing_random();

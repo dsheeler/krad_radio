@@ -1,13 +1,32 @@
 #include "krad_sfx.h"
 
-kr_sfx *kr_sfx_create(int channels, int sample_rate) {
+typedef struct kr_sfx_effect kr_sfx_effect;
+
+struct kr_sfx_effect {
+  kr_sfx_effect_type type;
+  void *effect[KR_SFX_MAX_CHANNELS];
+  int active;
+};
+
+struct kr_sfx {
+  int channels;
+  float sample_rate;
+  void *user;
+  kr_sfx_info_cb *cb;
+  kr_sfx_effect *effect;
+};
+
+kr_sfx *kr_sfx_create(kr_sfx_setup *setup) {
 
   kr_sfx *sfx;
 
   sfx = calloc(1, sizeof(kr_sfx));
   sfx->effect = calloc(KR_SFX_MAX, sizeof(kr_sfx_effect));
-  sfx->channels = channels;
-  sfx->sample_rate = sample_rate;
+
+  sfx->channels = setup->channels;
+  sfx->sample_rate = setup->sample_rate;
+  sfx->user = setup->user;
+  sfx->cb = setup->cb;
 
   return sfx;
 }
@@ -18,7 +37,7 @@ void kr_sfx_destroy(kr_sfx *sfx) {
 
   for (e = 0; e < KR_SFX_MAX; e++) {
     if (sfx->effect[e].active == 1) {
-      kr_sfx_effect_remove(sfx, e);
+      kr_sfx_remove(sfx, e);
     }
   }
 
@@ -26,7 +45,7 @@ void kr_sfx_destroy(kr_sfx *sfx) {
   free(sfx);
 }
 
-void kr_sfx_set_sample_rate(kr_sfx *sfx, uint32_t sample_rate) {
+void kr_sfx_sample_rate_set(kr_sfx *sfx, uint32_t sample_rate) {
 
   int e, c;
 
@@ -36,16 +55,16 @@ void kr_sfx_set_sample_rate(kr_sfx *sfx, uint32_t sample_rate) {
     if (sfx->effect[e].active == 1) {
       for (c = 0; c < sfx->channels; c++) {
         switch (sfx->effect[e].type) {
-          case KR_NOFX:
+          case KR_SFX_NONE:
             break;
-          case KR_EQ:
+          case KR_SFX_EQ:
             kr_eq_set_sample_rate(sfx->effect[e].effect[c], sfx->sample_rate);
             break;
-          case KR_LOWPASS:
-          case KR_HIGHPASS:
+          case KR_SFX_LOWPASS:
+          case KR_SFX_HIGHPASS:
             kr_pass_set_sample_rate(sfx->effect[e].effect[c], sfx->sample_rate);
             break;
-          case KR_ANALOG:
+          case KR_SFX_ANALOG:
             kr_analog_set_sample_rate(sfx->effect[e].effect[c], sfx->sample_rate);
             break;
         }
@@ -62,18 +81,18 @@ void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes) {
     if (sfx->effect[e].active == 1) {
       for (c = 0; c < sfx->channels; c++) {
         switch (sfx->effect[e].type) {
-          case KR_NOFX:
+          case KR_SFX_NONE:
             break;
-          case KR_EQ:
+          case KR_SFX_EQ:
             //kr_eq_process (sfx->effect[e].effect[c], input[c], output[c], num_samples);
             kr_eq_process2(sfx->effect[e].effect[c], input[c], output[c], nframes, c == 0);
             break;
-          case KR_LOWPASS:
-          case KR_HIGHPASS:
+          case KR_SFX_LOWPASS:
+          case KR_SFX_HIGHPASS:
             //kr_pass_process (sfx->effect[e].effect[c], input[c], output[c], num_samples);
             kr_pass_process2(sfx->effect[e].effect[c], input[c], output[c], nframes, c == 0);
             break;
-          case KR_ANALOG:
+          case KR_SFX_ANALOG:
             //kr_analog_process (sfx->effect[e].effect[c], input[c], output[c], num_samples);
             kr_analog_process2(sfx->effect[e].effect[c], input[c], output[c], nframes, c == 0);
             break;
@@ -83,7 +102,7 @@ void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes) {
   }
 }
 
-void kr_sfx_effect_add(kr_sfx *sfx, kr_sfx_type effect) {
+void kr_sfx_add(kr_sfx *sfx, kr_sfx_effect_type effect) {
 
   int e, c;
 
@@ -92,18 +111,18 @@ void kr_sfx_effect_add(kr_sfx *sfx, kr_sfx_type effect) {
       sfx->effect[e].type = effect;
       for (c = 0; c < sfx->channels; c++) {
         switch (sfx->effect[e].type) {
-          case KR_NOFX:
+          case KR_SFX_NONE:
             break;
-          case KR_EQ:
+          case KR_SFX_EQ:
             sfx->effect[e].effect[c] = kr_eq_create(sfx->sample_rate);
             break;
-         case KR_LOWPASS:
+         case KR_SFX_LOWPASS:
            sfx->effect[e].effect[c] = kr_pass_create(sfx->sample_rate, KR_LOWPASS);
            break;
-         case KR_HIGHPASS:
+         case KR_SFX_HIGHPASS:
            sfx->effect[e].effect[c] = kr_pass_create(sfx->sample_rate, KR_HIGHPASS);
            break;
-         case KR_ANALOG:
+         case KR_SFX_ANALOG:
            sfx->effect[e].effect[c] = kr_analog_create(sfx->sample_rate);
            break;
         }
@@ -114,7 +133,7 @@ void kr_sfx_effect_add(kr_sfx *sfx, kr_sfx_type effect) {
   }
 }
 
-void kr_sfx_effect_add2(kr_sfx *sfx, kr_sfx_type effect, kr_mixer *mixer,
+void kr_sfx_effect_add2(kr_sfx *sfx, kr_sfx_effect_type effect, kr_mixer *mixer,
  char *portgroupname) {
 
   int e, c;
@@ -124,21 +143,21 @@ void kr_sfx_effect_add2(kr_sfx *sfx, kr_sfx_type effect, kr_mixer *mixer,
       sfx->effect[e].type = effect;
       for (c = 0; c < sfx->channels; c++) {
         switch (sfx->effect[e].type) {
-          case KR_NOFX:
+          case KR_SFX_NONE:
             break;
-          case KR_EQ:
+          case KR_SFX_EQ:
             //sfx->effect[e].effect[c] = kr_eq_create (sfx->sample_rate);
             sfx->effect[e].effect[c] = kr_eq_create2(sfx->sample_rate, mixer, portgroupname);
             break;
-         case KR_LOWPASS:
+         case KR_SFX_LOWPASS:
            //sfx->effect[e].effect[c] = kr_pass_create (sfx->sample_rate, KR_LOWPASS);
            sfx->effect[e].effect[c] = kr_pass_create2(sfx->sample_rate, KR_LOWPASS, mixer, portgroupname);
            break;
-         case KR_HIGHPASS:
+         case KR_SFX_HIGHPASS:
            //sfx->effect[e].effect[c] = kr_pass_create (sfx->sample_rate, KR_HIGHPASS);
            sfx->effect[e].effect[c] = kr_pass_create2(sfx->sample_rate, KR_HIGHPASS, mixer, portgroupname);
            break;
-         case KR_ANALOG:
+         case KR_SFX_ANALOG:
            //sfx->effect[e].effect[c] = kr_analog_create (sfx->sample_rate);
            sfx->effect[e].effect[c] = kr_analog_create2(sfx->sample_rate, mixer, portgroupname);
            break;
@@ -150,22 +169,22 @@ void kr_sfx_effect_add2(kr_sfx *sfx, kr_sfx_type effect, kr_mixer *mixer,
   }
 }
 
-void kr_sfx_effect_remove(kr_sfx *sfx, int effect_num) {
+void kr_sfx_remove(kr_sfx *sfx, int effect_num) {
 
   int c;
 
   for (c = 0; c < sfx->channels; c++) {
     switch (sfx->effect[effect_num].type) {
-      case KR_NOFX:
+      case KR_SFX_NONE:
         break;
-      case KR_EQ:
+      case KR_SFX_EQ:
         kr_eq_destroy(sfx->effect[effect_num].effect[c]);
         break;
-      case KR_LOWPASS:
-      case KR_HIGHPASS:
+      case KR_SFX_LOWPASS:
+      case KR_SFX_HIGHPASS:
         kr_pass_destroy(sfx->effect[effect_num].effect[c]);
         break;
-      case KR_ANALOG:
+      case KR_SFX_ANALOG:
         kr_analog_destroy(sfx->effect[effect_num].effect[c]);
         break;
     }
@@ -174,16 +193,16 @@ void kr_sfx_effect_remove(kr_sfx *sfx, int effect_num) {
   sfx->effect[effect_num].active = 0;
 }
 
-void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
+void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id,
  int control, float value, int duration, kr_easing easing, void *user) {
 
   int c;
 
   for (c = 0; c < sfx->channels; c++) {
     switch (sfx->effect[effect_num].type) {
-      case KR_NOFX:
+      case KR_SFX_NONE:
         break;
-      case KR_EQ:
+      case KR_SFX_EQ:
         switch (control) {
           case KR_EQ_DB:
             kr_eq_band_set_db(sfx->effect[effect_num].effect[c],
@@ -199,8 +218,8 @@ void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
             break;
         }
         break;
-      case KR_LOWPASS:
-      case KR_HIGHPASS:
+      case KR_SFX_LOWPASS:
+      case KR_SFX_HIGHPASS:
         switch (control) {
           case KR_PASS_BW:
             kr_pass_set_bw(sfx->effect[effect_num].effect[c],
@@ -212,7 +231,7 @@ void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
             break;
         }
         break;
-      case KR_ANALOG:
+      case KR_SFX_ANALOG:
         switch (control) {
           case KR_ANALOG_BLEND:
             kr_analog_set_blend(sfx->effect[effect_num].effect[c],
@@ -228,26 +247,55 @@ void kr_sfx_ctl(kr_sfx *sfx, int effect_num, int control_id,
   }
 }
 
-kr_sfx_type kr_sfx_strtosfx(char *string) {
-	if (((strlen(string) == 2) && (strncmp(string, "lp", 2) == 0)) ||
-	    ((strlen(string) == 7) && (strncmp(string, "lowpass", 7) == 0))) {
-		return KR_LOWPASS;
-	}
-	if (((strlen(string) == 2) && (strncmp(string, "hp", 2) == 0)) ||
-	    ((strlen(string) == 8) && (strncmp(string, "highpass", 8) == 0))) {
-		return KR_HIGHPASS;
-	}
-	if ((strlen(string) == 2) && (strncmp(string, "eq", 2) == 0)) {
-		return KR_EQ;
-	}
-	if ((strlen(string) == 6) && (strncmp(string, "analog", 6) == 0)) {
-		return KR_ANALOG;
-	}
-	return KR_NOFX;
+int kr_sfx_effect_info(kr_sfx *sfx, int num, void *effect_info) {
+
+  int i;
+  kr_eq_info *eq_info;
+  kr_lowpass_info *lp_info;
+  kr_highpass_info *hp_info;
+  kr_analog_info *analog_info;
+  kr_eq *eq;
+  kr_lowpass *lowpass;
+  kr_highpass *highpass;
+  kr_analog *analog;
+
+  switch (num) {
+    case 0:
+      eq_info = (kr_eq_info *)effect_info;
+      eq = (kr_eq *)sfx->effect[0].effect[0];
+      for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
+        eq_info->band[i].db = eq->band[i].db;
+        eq_info->band[i].bw = eq->band[i].bw;
+        eq_info->band[i].hz = eq->band[i].hz;
+      }
+      return 0;
+    case 1:
+      lp_info = (kr_lowpass_info *)effect_info;
+      lowpass = (kr_lowpass *)sfx->effect[1].effect[0];
+      lp_info->hz = lowpass->hz;
+      lp_info->bw = lowpass->bw;
+      return 0;
+    case 2:
+      hp_info = (kr_highpass_info *)effect_info;
+      highpass = (kr_highpass *)sfx->effect[2].effect[0];
+      hp_info->hz = highpass->hz;
+      hp_info->bw = highpass->bw;
+      return 0;
+    case 3:
+      analog_info = (kr_analog_info *)effect_info;
+      analog = (kr_analog *)sfx->effect[3].effect[0];
+      analog_info->drive = analog->drive;
+      analog_info->blend = analog->blend;
+      return 0;
+   default:
+      break;
+  }
+
+  return -1;
 }
 
-int kr_sfx_strtoctl(kr_sfx_type type, char *string) {
-  if (type == KR_EQ) {
+int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string) {
+  if (type == KR_SFX_EQ) {
 	  if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
 		  return KR_EQ_DB;
 	  }
@@ -261,7 +309,7 @@ int kr_sfx_strtoctl(kr_sfx_type type, char *string) {
 		  return KR_EQ_BW;
 	  }
   }
-  if (((type == KR_LOWPASS) || (type == KR_HIGHPASS))) {
+  if (((type == KR_SFX_LOWPASS) || (type == KR_SFX_HIGHPASS))) {
 	  if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
 		  return KR_PASS_HZ;
 	  }
@@ -272,7 +320,7 @@ int kr_sfx_strtoctl(kr_sfx_type type, char *string) {
 		  return KR_PASS_BW;
 	  }
   }
-  if (type == KR_ANALOG) {
+  if (type == KR_SFX_ANALOG) {
 	  if ((strlen(string) == 5) && (strncmp(string, "blend", 5) == 0)) {
 		  return KR_ANALOG_BLEND;
 	  }

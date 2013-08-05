@@ -20,50 +20,45 @@ float kr_easer_process(kr_easer *easer, float current, void **ptr) {
 
   float value;
 
-  value = 0.0f;
-
-  if (easer->update == 1) {
+  if (easer->active == 0) {
+    return current;
+  } else if (easer->active == 2) {
     while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
-    easer->easing = easer->new_easing;
-    easer->duration = easer->new_duration;
-    easer->elapsed_time = 0;
-    easer->start_value = current;
     easer->target = easer->new_target;
-    easer->change_amount = easer->target - easer->start_value;
-    easer->update = 0;
-    while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
-  }
-
-  if (easer->duration > 0) {
-    value = kr_ease(easer->easing, easer->elapsed_time, easer->start_value,
-     easer->change_amount, easer->duration);
-    value = floorf(value * 100.0f + 0.5f) / 100.0f;
-    easer->elapsed_time++;
-  } else {
-    easer->duration = 0;
-    easer->elapsed_time = 0;
-  }
-
-  if (ptr != NULL) {
-    *ptr = NULL;
+    if (easer->new_duration < 2) {
+      if (ptr != NULL) {
+        *ptr = easer->new_ptr;
+      }
+      easer->active = 0;
+      while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
+      return easer->target;
+    } else {
+      easer->active = 1;
+      easer->elapsed_time = 1;
+      easer->duration = easer->new_duration;
+      easer->ptr = easer->new_ptr;
+      easer->start_value = current;
+      easer->change_amount = easer->target - easer->start_value;
+      easer->easing = easer->new_easing;
+      while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
+    }
   }
 
   if (easer->elapsed_time == easer->duration) {
     value = easer->target;
-    while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
-    // FIXME probably should recheck elapsed_time == duration here but
-    // ill leave it alone for now since it appears to work..
-    // PS i think what we do is check for update = 1
-    // since we use active to know if to process teh ease
     if (ptr != NULL) {
       *ptr = easer->ptr;
-      //if (krad_easing->ptr != NULL) {
-      //  printk ("easing delt it it!\n");
-      //}
     }
-    easer->ptr = NULL;
-    easer->active = 0;
+    while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
+    if (easer->active == 1) {
+      easer->active = 0;
+    }
     while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
+  } else {
+    value = kr_ease(easer->easing, easer->elapsed_time, easer->start_value,
+     easer->change_amount, easer->duration);
+    value = floorf(value * 100.0f + 0.5f) / 100.0f;
+    easer->elapsed_time++;
   }
 
   return value;
@@ -72,15 +67,11 @@ float kr_easer_process(kr_easer *easer, float current, void **ptr) {
 void kr_easer_set(kr_easer *easer, float target, int duration,
  kr_easing easing, void *ptr) {
   while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
-  easer->ptr = ptr;
-  //if (ptr != NULL) {
-  //  printk ("easing got it!\n");
-  //}
+  easer->new_ptr = ptr;
   easer->new_target = target;
   easer->new_duration = duration;
   easer->new_easing = easing;
-  easer->update = 1;
-  easer->active = 1;
+  easer->active = 2;
   while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
 }
 

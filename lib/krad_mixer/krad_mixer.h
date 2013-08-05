@@ -99,6 +99,7 @@ struct kr_mixer {
   kr_address_t address;
   uint32_t period_size;
   uint32_t sample_rate;
+  uint32_t new_sample_rate;
   int avg_window_size;
   kr_mixer_bus *master;
   kr_mixer_path *unit[KR_MXR_MAX_PATHS];
@@ -108,8 +109,8 @@ struct kr_mixer {
   kr_mixer_info_cb *info_cb;
   void *info_cb_user;
   //fixm remove belowe
-  krad_app_broadcaster_t *broadcaster;
-  kr_app_server *as;
+//  krad_app_broadcaster_t *broadcaster;
+//  kr_app_server *as;
   int pusher;
   int destroying;
 };
@@ -117,26 +118,20 @@ struct kr_mixer {
 kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np);
 void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *path);
 kr_mixer_path *kr_mixer_path_from_name(kr_mixer *mixer, char *name);
+
+//FIXME replace with kr_mixer_path_ctl and union type arg
 int kr_mixer_ctl(kr_mixer *mx, char *n, char *ctl, float val, int dr, void *p);
 void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *l, kr_mixer_path *r);
 void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
 
-// hrm perhaps we have two ctl functions one for mixer as a whole and
-// one for paths, makes sense to mee
-
-// ok so what we need to do is setup two cb types
-// one is for pushing/pulling samples
-// the other is for volume/peaks/level up
-// ... perhaps a 3rd type for path create/destroy?
-// this will remove an un-needed mixer/appserver dep
-// I should note that the address_t is only used for the broadcasts
-
 /* Mixer as a whole funcs */
 kr_mixer *kr_mixer_create(kr_mixer_setup *setup);//FIXME max paths?
 int kr_mixer_destroy(kr_mixer *mixer);
 int kr_mixer_mix(kr_mixer *mixer);
+
+//FIXME replace with kr_mixer_ctl
 uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
 int32_t kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate);
 uint32_t kr_mixer_period(kr_mixer *mixer);
@@ -144,7 +139,7 @@ int32_t kr_mixer_period_set(kr_mixer *mixer, uint32_t period_sz);
 
 
 //FIXME replace with cb
-void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
+//void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
 //
 
 #endif

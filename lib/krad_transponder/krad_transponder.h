@@ -40,6 +40,8 @@ typedef void (kr_transponder_info_cb)(kr_transponder_info_cb_arg *);
 #define KRAD_TRANSPONDER_MAX_SUBUNITS 32
 
 struct kr_transponder_setup {
+  kr_mixer *mixer;
+  kr_compositor *compositor;
   void *user;
   kr_transponder_info_cb *cb;
 };
