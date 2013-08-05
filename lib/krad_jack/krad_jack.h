@@ -9,7 +9,6 @@
 #include <memory.h>
 #include <stdint.h>
 #include <limits.h>
-#include <endian.h>
 
 #include <jack/jack.h>
 
