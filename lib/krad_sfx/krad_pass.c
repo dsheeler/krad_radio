@@ -88,39 +88,6 @@ void kr_pass_set_sample_rate(kr_pass *pass, int sample_rate) {
   pass->new_sample_rate = sample_rate;
 }
 
-kr_pass *kr_pass_create2(int sample_rate, kr_sfx_effect_type type,
- kr_mixer *mixer, char *portgroupname) {
-
-  kr_pass *pass;
-
-  if ((type != KR_LOWPASS) && (type != KR_HIGHPASS)) {
-    return NULL;
-  }
-  pass = calloc(1, sizeof(kr_pass));
-  pass->mixer = mixer;
-  pass->type = type;
-  pass->new_type = pass->type;
-  pass->address.path.unit = KR_MIXER;
-  pass->address.path.subunit.mixer_subunit = KR_EFFECT;
-  strncpy(pass->address.id.name, portgroupname, sizeof(pass->address.id.name));
-  if (pass->type == KR_LOWPASS) {
-    pass->address.sub_id = 1;
-  }
-  if (pass->type == KR_HIGHPASS) {
-    pass->address.sub_id = 2;
-  }
-  pass->address.sub_id2 = 0;
-  pass->new_sample_rate = sample_rate;
-  pass->bw = 1;
-  if (pass->type == KR_LOWPASS) {
-    pass->hz = KR_LOWPASS_HZ_MAX;
-  }
-  if (pass->type == KR_HIGHPASS) {
-    pass->hz = KR_PASS_HZ_MIN;
-  }
-  return pass;
-}
-
 kr_pass *kr_pass_create(int sample_rate, kr_sfx_effect_type type) {
 
   kr_pass *pass;

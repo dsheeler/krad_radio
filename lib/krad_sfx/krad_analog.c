@@ -42,25 +42,6 @@ kr_analog *kr_analog_create(int sample_rate) {
   analog->sample_rate = sample_rate;
   analog->prev_drive = -1.0f;
   analog->prev_blend = -11.0f;
-
-  return analog;
-}
-
-kr_analog *kr_analog_create2(int sample_rate, kr_mixer *mixer, char *name) {
-
-  kr_analog *analog;
-
-  analog = calloc (1, sizeof(kr_analog));
-  analog->mixer = mixer;
-  analog->address.path.unit = KR_MIXER;
-  analog->address.path.subunit.mixer_subunit = KR_EFFECT;
-  strncpy(analog->address.id.name, name, sizeof(analog->address.id.name));
-  analog->address.sub_id = 3;
-  analog->address.sub_id2 = 0;
-  analog->sample_rate = sample_rate;
-  analog->prev_drive = -1.0f;
-  analog->prev_blend = -11.0f;
-
   return analog;
 }
 

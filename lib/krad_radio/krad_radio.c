@@ -211,7 +211,7 @@ int kr_radio_daemon(char *sysname) {
 }
 
 krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {
-
+/*
   kr_mixer_path *unit;
 
   unit = kr_mixer_path_from_name(radio->mixer, item);
@@ -220,6 +220,7 @@ krad_tags *kr_radio_find_tags_for_item(kr_radio *radio, char *item) {
   } else {
     //return krad_transponder_get_tags_for_link(radio->krad_transponder, item);
   }
+*/
   return NULL;
 }
 

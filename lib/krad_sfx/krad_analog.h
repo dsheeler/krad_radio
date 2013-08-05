@@ -46,11 +46,8 @@ typedef struct {
 	float srct;
 	float sq;
 	float pwrq;
-  kr_mixer *mixer;
-  kr_address_t address;
 } kr_analog;
 
-kr_analog *kr_analog_create2(int sample_rate, kr_mixer *mixer, char *name);
 kr_analog *kr_analog_create(int sample_rate);
 void kr_analog_destroy(kr_analog *analog);
 

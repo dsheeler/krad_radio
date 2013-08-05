@@ -44,7 +44,7 @@ void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
     //if ((kr_eq->band[b].db == 0.0f) && (!kr_eq->band[b].krad_easing_db.active)) {
     //  continue;
     //}
-    eq->address.sub_id2 = b;
+   // eq->address.sub_id2 = b;
     recompute = recompute_default;
     if (eq->band[b].hz_easer.active) {
       eq->band[b].hz = kr_easer_process(&eq->band[b].hz_easer, eq->band[b].hz, &ptr);
@@ -94,44 +94,6 @@ kr_eq *kr_eq_create(int sample_rate) {
 
   eq->new_sample_rate = sample_rate;
   eq->sample_rate = eq->new_sample_rate;
-
-  hz = 30.0;
-  for (b = 0; b < KR_EQ_MAX_BANDS; b++) {
-    eq->band[b].db = 0.0f,
-    eq->band[b].bw = 1.0f;
-    eq->band[b].hz = floor(hz);
-    if (hz < 1000.0f) {
-      if (hz < 150.0f) {
-        hz = hz + 15.0f;
-      } else {
-        if (hz < 600.0f) {
-          hz = hz + 50.0f;
-        } else {
-          hz = hz + 200.0f;
-        }
-      }
-    } else {
-      hz = hz + 1500.0f;
-    }
-  }
-
-  return eq;
-}
-
-kr_eq *kr_eq_create2(int sample_rate, kr_mixer *mixer, char *name) {
-
-  int b;
-  float hz;
-  kr_eq *eq;
-
-  eq = calloc(1, sizeof(kr_eq));
-  eq->new_sample_rate = sample_rate;
-  eq->sample_rate = eq->new_sample_rate;
-  eq->mixer = mixer;
-  eq->address.path.unit = KR_MIXER;
-  eq->address.path.subunit.mixer_subunit = KR_EFFECT;
-  strncpy(eq->address.id.name, name, sizeof(eq->address.id.name));
-  eq->address.sub_id = 0;
 
   hz = 30.0;
   for (b = 0; b < KR_EQ_MAX_BANDS; b++) {

@@ -32,6 +32,12 @@ typedef void (kr_compositor_path_frame_cb)(kr_compositor_path_frame_cb_arg *);
 #include "krad_text.h"
 #include "krad_compositor_interface.h"
 
+#define KR_COMPOSITOR_WIDTH_DEF 960
+#define KR_COMPOSITOR_HEIGHT_DEF 540
+#define KR_COMPOSITOR_FPS_DEF 30
+#define KR_COMPOSITOR_FPS_NUM_DEF KR_COMPOSITOR_FPS_DEF * 1000
+#define KR_COMPOSITOR_FPS_DEN_DEF 1 * 1000
+
 #define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
 #define KC_MAX_PORTS 32
 #define KC_MAX_SPRITES 32

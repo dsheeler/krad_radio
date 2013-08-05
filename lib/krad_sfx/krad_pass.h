@@ -35,27 +35,17 @@ typedef struct kr_pass kr_lowpass;
 typedef struct kr_pass kr_highpass;
 
 struct kr_pass {
-
   biquad filter;
-
   int type;
   float bw;
   float hz;
-
   int new_type;
-
   float new_sample_rate;
   float sample_rate;
-
   kr_easer bw_easer;
   kr_easer hz_easer;
-
-  kr_mixer *mixer;
-  kr_address_t address;
 };
 
-kr_pass *kr_pass_create2(int sample_rate, kr_sfx_effect_type type, kr_mixer *mixer,
- char *portgroupname);
 kr_pass *kr_pass_create(int sample_rate, kr_sfx_effect_type type);
 void kr_pass_destroy(kr_pass *pass);
 

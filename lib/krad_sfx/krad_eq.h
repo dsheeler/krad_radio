@@ -41,11 +41,8 @@ typedef struct {
   float new_sample_rate;
   float sample_rate;
   kr_eq_band band[KR_EQ_MAX_BANDS];
-  kr_mixer *mixer;
-  kr_address_t address;
 } kr_eq;
 
-kr_eq *kr_eq_create2(int sample_rate, kr_mixer *mixer, char *name);
 kr_eq *kr_eq_create(int sample_rate);
 void kr_eq_destroy(kr_eq *eq);
 

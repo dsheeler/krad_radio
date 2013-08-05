@@ -689,9 +689,6 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   path->type = np->info.type;
   //FIXME find my bus by name
   path->bus = mixer->master;
-  path->address.path.unit = KR_MIXER;
-  path->address.path.subunit.mixer_subunit = KR_PORTGROUP;
-  strcpy (path->address.id.name, path->name);
   for (c = 0; c < KR_MXR_MAX_CHANNELS; c++) {
     if (c < path->channels) {
       //FIXME take mapping from np
@@ -707,11 +704,6 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
     path->new_volume_actual[c] = path->volume_actual[c];
     path->samples[c] = calloc(1, 4096);
   }
-  path->tags = krad_tags_create(path->name);
-  if (path->tags == NULL) {
-    failfast ("Oh I couldn't find me tags");
-  }
-
   sfx_setup.channels = path->channels;
   sfx_setup.sample_rate = path->mixer->sample_rate;
   sfx_setup.user = path;
@@ -759,11 +751,6 @@ void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *unit) {
   for (c = 0; c < KR_MXR_MAX_CHANNELS; c++) {
     free(unit->samples[c]);
   }
-
-  //if (unit->type != KRAD_LINK) {
-    krad_tags_destroy(unit->tags);
-    unit->tags = NULL;
-  //}
 
   if (unit->sfx != NULL) {
     kr_sfx_destroy(unit->sfx);
@@ -939,8 +926,6 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
 
   //FIXME use setup arg
 
-  mixer->address.path.unit = KR_MIXER;
-  mixer->address.path.subunit.mixer_subunit = KR_UNIT;
   kr_mixer_period_set(mixer, KR_MXR_PERIOD_DEF);
   kr_mixer_sample_rate_set(mixer, KR_MXR_SRATE_DEF);
   mixer->avg_window_size = (mixer->sample_rate / 1000) * KR_MXR_RMS_WINDOW_MS;

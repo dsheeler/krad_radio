@@ -64,7 +64,6 @@ struct kr_mixer_path {
   kr_mixer_path_type type;
   kr_mixer_bus *bus;
   char name[64];
-  kr_address_t address;
   kr_mixer_channels channels;
   kr_mixer_crossfader *crossfader;
   kr_easer volume_easer;
@@ -91,12 +90,10 @@ struct kr_mixer_path {
   kr_mixer_path_audio_cb *audio_cb;
   void *audio_cb_user;
   kr_mixer *mixer;
-  krad_tags_t *tags; //prolly better off in the txpnder?
   kr_sfx *sfx;
 };
 
 struct kr_mixer {
-  kr_address_t address;
   uint32_t period_size;
   uint32_t sample_rate;
   uint32_t new_sample_rate;
@@ -108,9 +105,6 @@ struct kr_mixer {
   int frames_per_peak_broadcast;
   kr_mixer_info_cb *info_cb;
   void *info_cb_user;
-  //fixm remove belowe
-//  krad_app_broadcaster_t *broadcaster;
-//  kr_app_server *as;
   int pusher;
   int destroying;
 };
@@ -136,10 +130,5 @@ uint32_t kr_mixer_sample_rate(kr_mixer *mixer);
 int32_t kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate);
 uint32_t kr_mixer_period(kr_mixer *mixer);
 int32_t kr_mixer_period_set(kr_mixer *mixer, uint32_t period_sz);
-
-
-//FIXME replace with cb
-//void kr_mixer_appserver_set(kr_mixer *mixer, kr_as *as);
-//
 
 #endif

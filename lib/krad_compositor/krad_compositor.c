@@ -1732,8 +1732,15 @@ kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
 
   FT_Init_FreeType (&compositor->ft_library);
 
-  krad_compositor_set_resolution(compositor, setup->width, setup->height);
-  krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
+  if (setup != NULL) {
+    krad_compositor_set_resolution(compositor, setup->width, setup->height);
+    krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
+  } else {
+    krad_compositor_set_resolution(compositor, KR_COMPOSITOR_WIDTH_DEF,
+     KR_COMPOSITOR_HEIGHT_DEF);
+    krad_compositor_set_frame_rate(compositor, KR_COMPOSITOR_FPS_NUM_DEF,
+     KR_COMPOSITOR_FPS_DEN_DEF);
+  }
 
   compositor->address.path.unit = KR_COMPOSITOR;
   compositor->address.path.subunit.compositor_subunit = KR_UNIT;
