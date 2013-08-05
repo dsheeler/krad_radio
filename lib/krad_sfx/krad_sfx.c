@@ -84,16 +84,13 @@ void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes) {
           case KR_SFX_NONE:
             break;
           case KR_SFX_EQ:
-            //kr_eq_process (sfx->effect[e].effect[c], input[c], output[c], num_samples);
             kr_eq_process2(sfx->effect[e].effect[c], input[c], output[c], nframes, c == 0);
             break;
           case KR_SFX_LOWPASS:
           case KR_SFX_HIGHPASS:
-            //kr_pass_process (sfx->effect[e].effect[c], input[c], output[c], num_samples);
             kr_pass_process2(sfx->effect[e].effect[c], input[c], output[c], nframes, c == 0);
             break;
           case KR_SFX_ANALOG:
-            //kr_analog_process (sfx->effect[e].effect[c], input[c], output[c], num_samples);
             kr_analog_process2(sfx->effect[e].effect[c], input[c], output[c], nframes, c == 0);
             break;
         }
@@ -124,42 +121,6 @@ void kr_sfx_add(kr_sfx *sfx, kr_sfx_effect_type effect) {
            break;
          case KR_SFX_ANALOG:
            sfx->effect[e].effect[c] = kr_analog_create(sfx->sample_rate);
-           break;
-        }
-      }
-      sfx->effect[e].active = 1;
-      break;
-    }
-  }
-}
-
-void kr_sfx_effect_add2(kr_sfx *sfx, kr_sfx_effect_type effect, kr_mixer *mixer,
- char *portgroupname) {
-
-  int e, c;
-
-  for (e = 0; e < KR_SFX_MAX; e++) {
-    if (sfx->effect[e].active == 0) {
-      sfx->effect[e].type = effect;
-      for (c = 0; c < sfx->channels; c++) {
-        switch (sfx->effect[e].type) {
-          case KR_SFX_NONE:
-            break;
-          case KR_SFX_EQ:
-            //sfx->effect[e].effect[c] = kr_eq_create (sfx->sample_rate);
-            sfx->effect[e].effect[c] = kr_eq_create2(sfx->sample_rate, mixer, portgroupname);
-            break;
-         case KR_SFX_LOWPASS:
-           //sfx->effect[e].effect[c] = kr_pass_create (sfx->sample_rate, KR_LOWPASS);
-           sfx->effect[e].effect[c] = kr_pass_create2(sfx->sample_rate, KR_LOWPASS, mixer, portgroupname);
-           break;
-         case KR_SFX_HIGHPASS:
-           //sfx->effect[e].effect[c] = kr_pass_create (sfx->sample_rate, KR_HIGHPASS);
-           sfx->effect[e].effect[c] = kr_pass_create2(sfx->sample_rate, KR_HIGHPASS, mixer, portgroupname);
-           break;
-         case KR_SFX_ANALOG:
-           //sfx->effect[e].effect[c] = kr_analog_create (sfx->sample_rate);
-           sfx->effect[e].effect[c] = kr_analog_create2(sfx->sample_rate, mixer, portgroupname);
            break;
         }
       }
