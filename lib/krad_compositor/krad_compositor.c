@@ -1725,6 +1725,8 @@ void kr_compositor_destroy(kr_compositor *compositor) {
 
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
 
+  if (setup == NULL) return NULL;
+
   kr_compositor *compositor = calloc(1, sizeof(kr_compositor));
 
   printk("Krad Compositor: Cairo Version: %s", cairo_version_string());
@@ -1732,22 +1734,20 @@ kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
 
   FT_Init_FreeType (&compositor->ft_library);
 
-  if (setup != NULL) {
-    krad_compositor_set_resolution(compositor, setup->width, setup->height);
-    krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
-  } else {
-    krad_compositor_set_resolution(compositor, KR_COMPOSITOR_WIDTH_DEF,
-     KR_COMPOSITOR_HEIGHT_DEF);
-    krad_compositor_set_frame_rate(compositor, KR_COMPOSITOR_FPS_NUM_DEF,
-     KR_COMPOSITOR_FPS_DEN_DEF);
-  }
+  krad_compositor_set_resolution(compositor, setup->width, setup->height);
+  krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
 
-  compositor->address.path.unit = KR_COMPOSITOR;
-  compositor->address.path.subunit.compositor_subunit = KR_UNIT;
   compositor->background = krad_sprite_create();
 
   krad_compositor_prepare_subunits(compositor);
   //krad_compositor_alloc_framepool(compositor);
 
   return compositor;
+}
+
+void kr_compositor_setup_init(kr_compositor_setup *setup) {
+  setup->fps_num = KR_COMPOSITOR_FPS_NUM_DEF;
+  setup->fps_den = KR_COMPOSITOR_FPS_DEN_DEF;
+  setup->width = KR_COMPOSITOR_WIDTH_DEF;
+  setup->height = KR_COMPOSITOR_HEIGHT_DEF;
 }

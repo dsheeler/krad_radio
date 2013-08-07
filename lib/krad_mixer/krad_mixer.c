@@ -708,6 +708,7 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   sfx_setup.sample_rate = path->mixer->sample_rate;
   sfx_setup.user = path;
   //FIXME actual sfx info callback
+  //have sfx info callback hit path cb that propagates to path info cb
   sfx_setup.cb = NULL;
   path->sfx = kr_sfx_create(&sfx_setup);
   if (path->sfx == NULL) {
@@ -856,6 +857,9 @@ int kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate) {
     return -1;
   }
   mixer->new_sample_rate = sample_rate;
+  if (mixer->sample_rate == 0) {
+    mixer->sample_rate = sample_rate;
+  }
   return mixer->new_sample_rate;
 }
 
@@ -920,14 +924,14 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
   int p;
   kr_mixer *mixer;
 
+  if (setup == NULL) return NULL;
+
   if ((mixer = calloc(1, sizeof(kr_mixer))) == NULL) {
     failfast("Krad Mixer memory alloc failure");
   }
 
-  //FIXME use setup arg
-
-  kr_mixer_period_set(mixer, KR_MXR_PERIOD_DEF);
-  kr_mixer_sample_rate_set(mixer, KR_MXR_SRATE_DEF);
+  kr_mixer_period_set(mixer, setup->period_size);
+  kr_mixer_sample_rate_set(mixer, setup->sample_rate);
   mixer->avg_window_size = (mixer->sample_rate / 1000) * KR_MXR_RMS_WINDOW_MS;
   mixer->frames_per_peak_broadcast = 1536;
   mixer->crossfader = calloc(KR_MXR_MAX_PATHS / 2,
@@ -937,4 +941,14 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
   }
   kr_mixer_masterbus_setup(mixer);
   return mixer;
+}
+
+void kr_mixer_setup_init(kr_mixer_setup *setup) {
+
+  if (setup == NULL) return;
+
+  setup->period_size = KR_MXR_PERIOD_DEF;
+  setup->sample_rate = KR_MXR_SRATE_DEF;
+  setup->user = NULL;
+  setup->cb = NULL;
 }

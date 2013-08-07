@@ -24,7 +24,7 @@ void krad_compositor_videoport_rep_to_ebml2 (kr_port_t *port, kr_ebml2_t *ebml) 
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->view.bottom_right.y);
 
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.width);
-  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.height);  
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, port->controls.height);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, port->controls.opacity);
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, port->controls.rotation);
 }
@@ -69,7 +69,7 @@ void krad_compositor_sprite_rep_to_ebml2 (krad_sprite_rep_t *sprite, kr_ebml2_t 
 void krad_compositor_vector_rep_to_ebml2 (krad_vector_rep_t *vector, kr_ebml2_t *ebml) {
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->type);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.width);
-  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.height);  
+  kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.height);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->controls.x);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.y);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.z);
@@ -80,7 +80,7 @@ void krad_compositor_vector_rep_to_ebml2 (krad_vector_rep_t *vector, kr_ebml2_t 
 }
 
 int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videoport_rep) {
-  
+
   if ((videoport == NULL) || (videoport_rep == NULL)) {
     return 0;
   }
@@ -108,7 +108,7 @@ int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videopo
   videoport_rep->controls.height = videoport->subunit.height;
   videoport_rep->controls.rotation = videoport->subunit.rotation;
   videoport_rep->controls.opacity = videoport->subunit.opacity;
-   
+
   return 1;
 }
 
@@ -119,7 +119,7 @@ void krad_compositor_to_ebml ( kr_ebml2_t *ebml, krad_compositor_t *krad_composi
   name = "";
 
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_WIDTH, krad_compositor->width);
-  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_HEIGHT, krad_compositor->height);  
+  kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_HEIGHT, krad_compositor->height);
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR,
                                    krad_compositor->fps_numerator);
   kr_ebml2_pack_uint32 (ebml, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR,
@@ -245,7 +245,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
         krad_radio_broadcast_subunit_update ( app->app_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
                                               unit_control.data_type, (void *)&unit_control.value.integer, app->current_client );
       }
-      break;  
+      break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT:
       address.path.unit = KR_COMPOSITOR;
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[0]);
@@ -266,7 +266,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
         if (type == KR_SPRITE) {
           krad_radio_broadcast_subunit_created ( app->app_broadcaster,
                                                  &krad_compositor->sprite[s].subunit.address,
-                                                 (void *)&krad_compositor->sprite[s]);        
+                                                 (void *)&krad_compositor->sprite[s]);
         }
         if (type == KR_TEXT) {
           krad_radio_broadcast_subunit_created ( app->app_broadcaster,
@@ -276,7 +276,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
         if (type == KR_VECTOR) {
           krad_radio_broadcast_subunit_created ( app->app_broadcaster,
                                                  &krad_compositor->vector[s].subunit.address,
-                                                 (void *)&krad_compositor->vector[s]);        
+                                                 (void *)&krad_compositor->vector[s]);
         }
       }
       break;
@@ -389,15 +389,15 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       }
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_INFO:
-    
-      krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->address);
-      kr_ebml2_pack_uint32 ( &ebml_out,
-                             EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                             EBML_ID_KRAD_UNIT_INFO);
-      kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-      krad_compositor_to_ebml (&ebml_out, krad_compositor);
-      kr_ebml2_finish_element (&ebml_out, payload);
-      kr_ebml2_finish_element (&ebml_out, response);
+      address.path.unit = KR_COMPOSITOR;
+      address.path.subunit.compositor_subunit = KR_UNIT;
+      krad_radio_address_to_ebml2(&ebml_out, &response, &address);
+      kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+       EBML_ID_KRAD_UNIT_INFO);
+      kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+      krad_compositor_to_ebml(&ebml_out, krad_compositor);
+      kr_ebml2_finish_element(&ebml_out, payload);
+      kr_ebml2_finish_element(&ebml_out, response);
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND:
       kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
@@ -413,12 +413,12 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &numbers[1]);
       krad_compositor_set_resolution (krad_compositor, numbers[0], numbers[1]);
       break;
-      
-      
+
+
     int p;
     int sd1;
     int sd2;
-      
+
     case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
       for (p = 0; p < KC_MAX_PORTS; p++) {
         if (krad_compositor->port[p].local == 1) {
@@ -433,22 +433,22 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
       kr_ebml2_unpack_element_int32 (&ebml_in, &element, &direction);
 
       krad_system_set_socket_blocking (app->current_client->sd);
-    
+
       sd1 = krad_app_server_recvfd (app->current_client);
       sd2 = krad_app_server_recvfd (app->current_client);
       printk ("VIDEOPORT_CREATE Got FD's %d and %d\n", sd1, sd2);
       krad_compositor_local_port_create (krad_compositor,
                                          "localport",
                                          direction, sd1, sd2);
-      
+
       krad_system_set_socket_nonblocking (app->current_client->sd);
-      
+
       break;
-      
-      
-      
+
+
+
     default:
-      return -1;    
+      return -1;
   }
 
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS)) &&

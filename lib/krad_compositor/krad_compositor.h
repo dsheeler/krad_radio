@@ -210,4 +210,7 @@ void kr_compositor_destroy(krad_compositor_t *compositor);
 
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
 
+void kr_compositor_setup_init(kr_compositor_setup *setup);
+
+
 #endif

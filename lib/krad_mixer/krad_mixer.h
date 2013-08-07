@@ -40,17 +40,17 @@ struct kr_mixer_path_audio_cb_arg {
   void *user;
 };
 
+struct kr_mixer_path_setup {
+  kr_mixer_path_info info;
+  void *user;
+  kr_mixer_path_audio_cb *cb;
+};
+
 struct kr_mixer_setup {
   uint32_t period_size;
   uint32_t sample_rate;
   void *user;
   kr_mixer_info_cb *cb;
-};
-
-struct kr_mixer_path_setup {
-  kr_mixer_path_info info;
-  void *user;
-  kr_mixer_path_audio_cb *cb;
 };
 
 //FIXME the below strucst should be opauqe
@@ -119,6 +119,8 @@ void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *l, kr_mixer_path *r);
 void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *unit, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
+
+void kr_mixer_setup_init(kr_mixer_setup *setup);
 
 /* Mixer as a whole funcs */
 kr_mixer *kr_mixer_create(kr_mixer_setup *setup);//FIXME max paths?

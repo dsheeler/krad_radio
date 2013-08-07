@@ -74,6 +74,9 @@ static void radio_shutdown(kr_radio *radio) {
 static kr_radio *radio_create(char *sysname) {
 
   kr_radio *radio;
+  kr_mixer_setup mixer_setup;
+  kr_compositor_setup compositor_setup;
+  kr_transponder_setup transponder_setup;
 
   radio = calloc(1, sizeof(kr_radio));
 
@@ -85,34 +88,44 @@ static kr_radio *radio_create(char *sysname) {
     radio_shutdown(radio);
     return NULL;
   }
-  //FIXME use setup arg
-  radio->mixer = kr_mixer_create(NULL);
+
+  radio->app = krad_app_server_create("krad_radio", radio->sysname,
+   krad_radio_client_create, krad_radio_client_destroy,
+   krad_radio_client_handler, radio);
+
+  if (radio->app == NULL) {
+    radio_shutdown(radio);
+    return NULL;
+  }
+
+  kr_mixer_setup_init(&mixer_setup);
+//HRMZ its possible a callback is not needed for mixer info?
+//  mixer_setup.user = radio->app;
+//  mixer_setup.cb = kr_mixer_asi_info;
+
+  radio->mixer = kr_mixer_create(&mixer_setup);
   if (radio->mixer == NULL) {
     radio_shutdown(radio);
     return NULL;
   }
-  //FIXME use setup arg
-  radio->compositor = kr_compositor_create(NULL);
+
+  kr_compositor_setup_init(&compositor_setup);
+  //same as above and hrm also enable mix/comp from AS
+  radio->compositor = kr_compositor_create(&compositor_setup);
   if (radio->compositor == NULL) {
     radio_shutdown(radio);
     return NULL;
   }
-  //FIXME use setup arg
-  radio->transponder = kr_transponder_create(NULL);
+
+  transponder_setup.mixer = radio->mixer;
+  transponder_setup.compositor = radio->compositor;
+  radio->transponder = kr_transponder_create(&transponder_setup);
   if (radio->transponder == NULL) {
     radio_shutdown(radio);
     return NULL;
   }
   radio->remote.osc = krad_osc_create(radio->sysname);
   if (radio->remote.osc == NULL) {
-    radio_shutdown(radio);
-    return NULL;
-  }
-  radio->app = krad_app_server_create("krad_radio", radio->sysname,
-   krad_radio_client_create, krad_radio_client_destroy,
-   krad_radio_client_handler, radio);
-
-  if (radio->app == NULL) {
     radio_shutdown(radio);
     return NULL;
   }
@@ -139,7 +152,7 @@ static void radio_start(kr_radio *radio) {
    (void (*)(void *, uint32_t))radio_cpu_monitor_callback);
   clock_gettime(CLOCK_MONOTONIC, &start_sync);
   start_sync = timespec_add_ms(start_sync, 100);
-  krad_compositor_start_ticker_at(radio->compositor, start_sync);
+  //krad_compositor_start_ticker_at(radio->compositor, start_sync);
   //FIXMEkr_mixer_start_ticker_at(radio->mixer, start_sync);
   krad_app_server_run(radio->app);
   if (radio->log.startup_timer != NULL) {

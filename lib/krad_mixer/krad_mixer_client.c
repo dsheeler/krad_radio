@@ -551,7 +551,7 @@ static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *
 //  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->direction);
 //  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->output_type);
 
-  kr_ebml2_unpack_element_string (ebml, NULL, string, sizeof(string));
+//  kr_ebml2_unpack_element_string (ebml, NULL, string, sizeof(string));
 /*
   if (strncmp (string, "Jack", 4) == 0) {
     portgroup_rep->io_type = 0;
