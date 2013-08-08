@@ -119,10 +119,10 @@ int krad_player_check_av_ports (krad_player_t *player) {
 
 void krad_player_close (krad_player_t *player) {
   if (player->videoport) {
-    kr_videoport_deactivate (player->videoport);
+    //kr_videoport_deactivate (player->videoport);
   }
   if (player->audioport) {
-    kr_audioport_disconnect(player->audioport);
+    //kr_audioport_deactivate (player->audioport);
   }
   if (player->avc.aframe != NULL) {  
     av_frame_free (&player->avc.aframe);
@@ -345,7 +345,7 @@ int audioport_process(uint32_t nframes, void *arg) {
 }
 
 int krad_player_open(krad_player_t *player, char *input) {
-
+/*
   int i;
   int pc;
   int err;
@@ -408,16 +408,16 @@ int krad_player_open(krad_player_t *player, char *input) {
       fprintf (stderr, "Krad Player: Could not find open the needed codec\n");
     }
     
-    player->audioport = kr_audioport_create (player->client, "kplayer", INPUT);
+    player->audioport = kr_audioport_create (player->client, INPUT);
 
     if (player->audioport == NULL) {
       fprintf (stderr, "Krad Player: could not setup audioport\n");
       return -4;
     }  
     
-    kr_audioport_set_callback(player->audioport, audioport_process, player);
+    kr_audioport_set_callback (player->audioport, audioport_process, player);
     
-    kr_audioport_connect(player->audioport);
+    kr_audioport_activate (player->audioport);
   }
 
   if (player->avc.vid != -1) {
@@ -504,7 +504,7 @@ int krad_player_open(krad_player_t *player, char *input) {
     }
   }
   printf ("\n");
-  
+*/  
   // Handling draining / fadeout here
   return 0;
 }
@@ -535,11 +535,9 @@ void krad_player_destroy (krad_player_t **destroy_player) {
   printf ("Krad Player: Self Destructing\n");
   
   if (player->videoport != NULL) {
-    kr_videoport_deactivate (player->videoport);
     kr_videoport_destroy (player->videoport);
   }
   if (player->audioport != NULL) {
-    kr_audioport_deactivate (player->audioport);
     kr_audioport_destroy (player->audioport);
   }
 
