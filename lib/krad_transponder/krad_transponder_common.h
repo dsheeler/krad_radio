@@ -94,6 +94,23 @@ typedef enum {
 #endif
 } krad_link_video_source_t;
 
+typedef enum {
+  KR_ADP_V4L2,
+  KR_ADP_DECKLINK,
+  KR_ADP_ALSA,
+  KR_ADP_X11,
+  KR_ADP_WAYLAND,
+  KR_ADP_ENCODER,
+  KR_ADP_FLYCAP,
+  KR_ADP_KRAPI,
+  KR_ADP_JACK
+} kr_adapter_api;
+
+typedef enum {
+  KR_XPDR_INPUT,
+  KR_XPDR_OUTPUT
+} kr_xpdr_dir;
+
 struct krad_transponder_rep_St {
   uint16_t receiver_port;
   uint16_t transmitter_port;
@@ -302,6 +319,20 @@ struct krad_transponder_subunit_rep_St {
   kr_txpdr_su_type_t type;
   kr_stat_t stats;
   kr_transponder_subunit_actual_t actual;
+};
+
+struct kr_transponder_path_setup {
+  kr_xpdr_dir direction;
+  kr_adapter_api adapter;
+  char adapter_instance[32];
+  char path_name[128];
+};
+
+struct kr_transponder_path_info {
+  int direction;
+  int adapter;
+  char adapter_instance[32];
+  char path_name[128];
 };
 
 char *krad_opus_signal_to_nice_string (int signal);

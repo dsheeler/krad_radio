@@ -6,16 +6,12 @@ void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
 
   strcpy(unit_rep->name, unit->name);
   unit_rep->channels = unit->channels;
-//  unit_rep->direction = unit->direction;
-//  unit_rep->output_type = unit->output_type;
-//  unit_rep->io_type = unit->io_type;
-
+//unit_rep->io_type = unit->io_type;
   if (unit->bus != NULL) {
     strncpy(unit_rep->bus, unit->bus->name, sizeof(unit_rep->bus));
   } else {
     unit_rep->bus[0] = '\0';
   }
-
   for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
     unit_rep->volume[i] = unit->volume[i];
     unit_rep->map[i] = unit->map[i];
@@ -23,54 +19,10 @@ void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
     unit_rep->rms[i] = unit->avg[i];
     unit_rep->peak[i] = unit->peak_last[i];
   }
-/*
-  if (unit->xmms != NULL) {
-    unit_rep->has_xmms2 = 1;
-    strncpy(unit_rep->xmms2_ipc_path, unit->xmms->ipc_path,
-     sizeof(unit_rep->xmms2_ipc_path));
-  } else {
-    unit_rep->has_xmms2 = 0;
-    unit_rep->xmms2_ipc_path[0] = '\0';
-  }
-*/
- // if (unit->direction == INPUT) {
- /*
-    eq = (kr_eq *)unit->sfx->effect[0].effect[0];
-    lowpass = (kr_lowpass *)unit->sfx->effect[1].effect[0];
-    highpass = (kr_highpass *)unit->sfx->effect[2].effect[0];
-    analog = (kr_analog *)unit->sfx->effect[3].effect[0];
-    for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
-      unit_rep->eq.band[i].db = eq->band[i].db;
-      unit_rep->eq.band[i].bw = eq->band[i].bw;
-      unit_rep->eq.band[i].hz = eq->band[i].hz;
-    }
-    unit_rep->lowpass.hz = lowpass->hz;
-    unit_rep->lowpass.bw = lowpass->bw;
-    unit_rep->highpass.hz = highpass->hz;
-    unit_rep->highpass.bw = highpass->bw;
-    unit_rep->analog.drive = analog->drive;
-    unit_rep->analog.blend = analog->blend;
-*/
-/*  } else {
-    for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
-      unit_rep->eq.band[i].db = 0.0f;
-      unit_rep->eq.band[i].bw = 0.0f;
-      unit_rep->eq.band[i].hz = 0.0f;
-    }
-    unit_rep->lowpass.hz = 0.0f;
-    unit_rep->lowpass.bw = 0.0f;
-    unit_rep->highpass.hz = 0.0f;
-    unit_rep->highpass.bw = 0.0f;
-    unit_rep->analog.drive = 0.0f;
-    unit_rep->analog.blend = 0.0f;
-  }
-*/
-
   kr_sfx_effect_info(unit->sfx, 0, &unit_rep->eq);
   kr_sfx_effect_info(unit->sfx, 1, &unit_rep->lowpass);
   kr_sfx_effect_info(unit->sfx, 2, &unit_rep->highpass);
   kr_sfx_effect_info(unit->sfx, 3, &unit_rep->analog);
-
   if ((unit->crossfader != NULL) && (unit->crossfader->unit[0] == unit)) {
     unit_rep->fade = unit->crossfader->fade;
     strncpy(unit_rep->crossfade_group, unit->crossfader->unit[1]->name,

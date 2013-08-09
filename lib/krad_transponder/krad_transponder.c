@@ -13,24 +13,24 @@ int wayland_display_unit_render_callback(void *user, kr_wayland_event *event) {
 
   updated = 0;
 
-  krad_frame = krad_compositor_port_pull_frame (krad_link->krad_compositor_port2);
+  krad_frame = krad_compositor_port_pull_frame(krad_link->krad_compositor_port2);
 
   if (krad_frame != NULL) {
     //FIXME do this first etc
-    ret = read (krad_link->krad_compositor_port2->socketpair[1], buffer, 1);
+    ret = read(krad_link->krad_compositor_port2->socketpair[1], buffer, 1);
     if (ret != 1) {
       if (ret == 0) {
-        printk ("Krad OTransponder: port read got EOF");
+        printk("Krad OTransponder: port read got EOF");
         return updated;
       }
-      printk ("Krad OTransponder: port read unexpected read return value %d", ret);
+      printk("Krad OTransponder: port read unexpected read return value %d", ret);
     }
 
-    memcpy (event->frame_event.buffer,
-            krad_frame->pixels,
-            krad_link->composite_width * krad_link->composite_height * 4);
+    memcpy(event->frame_event.buffer,
+           krad_frame->pixels,
+           krad_link->composite_width * krad_link->composite_height * 4);
 
-    krad_framepool_unref_frame (krad_frame);
+    krad_framepool_unref_frame(krad_frame);
     updated = 1;
   }
   return updated;

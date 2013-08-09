@@ -276,31 +276,31 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   krad_transponder = krad_radio->transponder;
   app = krad_radio->app;
 
-  if (!(kr_io2_has_in (in))) {
+  if (!(kr_io2_has_in(in))) {
     return 0;
   }
 
-  kr_ebml2_set_buffer ( &ebml_in, in->rd_buf, in->len );
+  kr_ebml2_set_buffer(&ebml_in, in->rd_buf, in->len);
 
-  ret = kr_ebml2_unpack_id (&ebml_in, &command, &size);
+  ret = kr_ebml2_unpack_id(&ebml_in, &command, &size);
   if ((ret < 0) || (command != EBML_ID_KRAD_TRANSPONDER_CMD)) {
     printke ("krad_mixer_command invalid EBML ID Not found");
     return 0;
   }
 
-  ret = kr_ebml2_unpack_id (&ebml_in, &command, &size);
+  ret = kr_ebml2_unpack_id(&ebml_in, &command, &size);
   if (ret < 0) {
     printke ("krad_mixer_command EBML ID Not found");
     return 0;
   }
 
-  kr_ebml2_set_buffer ( &ebml_out, out->buf, out->space );
+  kr_ebml2_set_buffer(&ebml_out, out->buf, out->space);
 
-  switch ( command ) {
+  switch (command) {
 
     case EBML_ID_KRAD_TRANSPONDER_CMD_GET_INFO:
       krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_transponder->address);
-      kr_ebml2_pack_uint32 ( &ebml_out,
+      kr_ebml2_pack_uint32(&ebml_out,
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
@@ -494,38 +494,38 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
           kr_ebml2_pack_uint32 ( &ebml_out,
                                  EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                                  EBML_ID_KRAD_SUBUNIT_INFO);
-          kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          kr_ebml2_pack_string (&ebml_out, EBML_ID_KRAD_TRANSPONDER_DECKLINK_DEVICE_NAME, string);
-          kr_ebml2_finish_element (&ebml_out, payload);
-          kr_ebml2_finish_element (&ebml_out, response);
+          kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+          kr_ebml2_pack_string(&ebml_out, EBML_ID_KRAD_TRANSPONDER_DECKLINK_DEVICE_NAME, string);
+          kr_ebml2_finish_element(&ebml_out, payload);
+          kr_ebml2_finish_element(&ebml_out, response);
         }
       }
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_ENABLE:
-      kr_ebml2_unpack_element_uint16 (&ebml_in, &element, &port);
+      kr_ebml2_unpack_element_uint16(&ebml_in, &element, &port);
       //krad_receiver_listen_on (krad_transponder->krad_receiver, port);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_DISABLE:
       //krad_receiver_stop_listening (krad_transponder->krad_receiver);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_ENABLE:
-      kr_ebml2_unpack_element_uint16 (&ebml_in, &element, &port);
-      krad_transmitter_listen_on (krad_transponder->krad_transmitter, port);
+      kr_ebml2_unpack_element_uint16(&ebml_in, &element, &port);
+      krad_transmitter_listen_on(krad_transponder->krad_transmitter, port);
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_DISABLE:
-      krad_transmitter_stop_listening (krad_transponder->krad_transmitter);
+      krad_transmitter_stop_listening(krad_transponder->krad_transmitter);
       break;
     default:
       return -1;
   }
 
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST)) &&
-       (!krad_app_server_current_client_is_subscriber (app))) {
-    krad_radio_pack_shipment_terminator (&ebml_out);
+       (!krad_app_server_current_client_is_subscriber(app))) {
+    krad_radio_pack_shipment_terminator(&ebml_out);
   }
 
-  kr_io2_pulled (in, ebml_in.pos);
-  kr_io2_advance (out, ebml_out.pos);
+  kr_io2_pulled(in, ebml_in.pos);
+  kr_io2_advance(out, ebml_out.pos);
 
   return 0;
 }

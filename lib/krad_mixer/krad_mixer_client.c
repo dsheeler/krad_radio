@@ -544,51 +544,27 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
 static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *portgroup_rep) {
 
   int i;
-  char string[256];
 
   kr_ebml2_unpack_element_string(ebml, NULL, portgroup_rep->name, sizeof(portgroup_rep->name));
   kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->channels);
-//  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->direction);
 //  kr_ebml2_unpack_element_uint32(ebml, NULL, &portgroup_rep->output_type);
-
-//  kr_ebml2_unpack_element_string (ebml, NULL, string, sizeof(string));
-/*
-  if (strncmp (string, "Jack", 4) == 0) {
-    portgroup_rep->io_type = 0;
-  } else {
-    portgroup_rep->io_type = 1;
-  }
-*/
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->volume[i]);
   }
-
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->peak[i]);
   }
-
   for (i = 0; i < portgroup_rep->channels; i++) {
     kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->rms[i]);
   }
-
   kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->bus, sizeof(portgroup_rep->bus));
   kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->crossfade_group, sizeof(portgroup_rep->crossfade_group));
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->fade);
-
-//  kr_ebml2_unpack_element_uint32 (ebml, NULL, &portgroup_rep->has_xmms2);
-
-//  if (portgroup_rep->has_xmms2 == 1) {
-//    kr_ebml2_unpack_element_string (ebml, NULL, portgroup_rep->xmms2_ipc_path, sizeof(portgroup_rep->xmms2_ipc_path));
-//  }
-
   kr_ebml2_unpack_element_data (ebml, NULL, &portgroup_rep->eq, sizeof (portgroup_rep->eq));
-
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.hz);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->lowpass.bw);
-
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.hz);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->highpass.bw);
-
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.drive);
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.blend);
 
@@ -770,7 +746,6 @@ int kr_mixer_crate_to_string (kr_crate_t *crate, char **string) {
   return 0;
 }
 
-
 int kr_mixer_crate_to_rep (kr_crate_t *crate) {
 
   if ((crate->address.path.subunit.mixer_subunit != KR_PORTGROUP) &&
@@ -799,4 +774,3 @@ int kr_mixer_crate_to_rep (kr_crate_t *crate) {
   }
   return 0;
 }
-
