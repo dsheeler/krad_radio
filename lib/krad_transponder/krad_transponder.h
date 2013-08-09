@@ -40,9 +40,12 @@ struct kr_transponder_setup {
 };
 
 struct kr_transponder {
+  kr_mixer *mixer;
+  kr_compositor *compositor;
+  /* get rid of the below stuff */
   kr_address_t address;
 	krad_link_t *krad_link[KRAD_TRANSPONDER_MAX_SUBUNITS];
-	kr_radio *krad_radio;
+  kr_radio *krad_radio;
 	krad_transmitter_t *krad_transmitter;
 	kr_xpdr_t *xpdr;
 };
@@ -210,6 +213,8 @@ void krad_link_destroy(krad_link_t *krad_link);
 krad_link_t *krad_link_prepare(int linknum);
 void krad_link_start(krad_link_t *krad_link);
 void krad_link_audio_samples_callback(int frames, void *userdata, float **samples);
+
+int kr_transponder_mkpath(kr_transponder *xpdr, kr_xpdr_path_setup *setup);
 
 kr_transponder *kr_transponder_create(kr_transponder_setup *setup);
 int kr_transponder_destroy(kr_transponder *transponder);

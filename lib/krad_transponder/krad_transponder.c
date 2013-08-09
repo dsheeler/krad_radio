@@ -1389,16 +1389,25 @@ krad_tags_t *krad_transponder_get_tags_for_link (krad_transponder_t *krad_transp
   }
 }
 
+int kr_transponder_mkpath(kr_transponder *xpdr, kr_xpdr_path_setup *setup) {
+
+  //look at direction and adapter api
+
+
+}
+
 kr_transponder *kr_transponder_create(kr_transponder_setup *setup) {
 
   kr_transponder *transponder;
 
   transponder = calloc(1, sizeof(kr_transponder));
 
+  transponder->mixer = setup->mixer;
+  transponder->compositor = setup->compositor;
+
+  /* remove the below.. */
   transponder->address.path.unit = KR_TRANSPONDER;
   transponder->address.path.subunit.mixer_subunit = KR_UNIT;
-
-  //FIXME transponder->krad_radio = radio;
   transponder->krad_transmitter = krad_transmitter_create();
   transponder->xpdr = krad_xpdr_create(transponder->krad_radio);
 

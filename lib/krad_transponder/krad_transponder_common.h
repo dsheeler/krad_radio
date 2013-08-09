@@ -321,6 +321,11 @@ struct krad_transponder_subunit_rep_St {
   kr_transponder_subunit_actual_t actual;
 };
 
+typedef struct kr_transponder_path_setup kr_transponder_path_setup;
+typedef struct kr_transponder_path_setup kr_xpdr_path_setup;
+typedef struct kr_transponder_path_info kr_transponder_path_info;
+typedef struct kr_transponder_path_info kr_xdpr_path_info;
+
 struct kr_transponder_path_setup {
   kr_xpdr_dir direction;
   kr_adapter_api adapter;
@@ -329,8 +334,8 @@ struct kr_transponder_path_setup {
 };
 
 struct kr_transponder_path_info {
-  int direction;
-  int adapter;
+  kr_xpdr_dir direction;
+  kr_adapter_api adapter;
   char adapter_instance[32];
   char path_name[128];
 };
