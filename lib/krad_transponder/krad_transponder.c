@@ -86,6 +86,9 @@ int kr_transponder_mkpath(kr_transponder *xpdr, kr_xpdr_path_setup *setup) {
 
   path->xpdr = xpdr;
   path_create(path, setup);
+
+  xpdr->info.active_paths++;
+
   return 0;
 }
 
@@ -101,6 +104,7 @@ int kr_transponder_unlink(kr_xpdr_path *path) {
     if (xpdr->path[i] == path) {
       path_destroy(path);
       xpdr->path[i] = NULL;
+      xpdr->info.active_paths--;
       return 0;
     }
   }
@@ -128,6 +132,18 @@ int kr_transponder_destroy(kr_transponder *xpdr) {
   return 0;
 }
 
+void temp_test(kr_transponder *xpdr) {
+
+  kr_transponder_path_setup setup;
+
+  setup.direction = KR_XPDR_INPUT;
+  setup.adapter = KR_ADP_JACK;
+  snprintf(setup.name, sizeof(setup.name), "Test Path");
+  snprintf(setup.adapter_instance, sizeof(setup.adapter_instance), "%s", "");
+
+  kr_transponder_mkpath(xpdr, &setup);
+}
+
 kr_transponder *kr_transponder_create(kr_transponder_setup *setup) {
 
   kr_transponder *xpdr;
@@ -138,6 +154,8 @@ kr_transponder *kr_transponder_create(kr_transponder_setup *setup) {
 
   xpdr->mixer = setup->mixer;
   xpdr->compositor = setup->compositor;
+
+  temp_test(xpdr);
 
   return xpdr;
 }
