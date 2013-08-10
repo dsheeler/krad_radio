@@ -12,53 +12,46 @@
 
 #include <jack/jack.h>
 
-#include "krad_transponder_common.h"
-#include "krad_mixer_common.h"
+#include "krad_system.h"
+#include "krad_jack_common.h"
 
-#define KR_JACK 343
+#define KR_JACK_CHANNELS_MAX 8
 
 typedef struct kr_jack kr_jack;
-typedef struct kr_jack_portgroup kr_jack_portgroup;
+typedef struct kr_jack_setup kr_jack_setup;
+typedef struct kr_jack_path_setup kr_jack_path_setup;
+typedef struct kr_jack_path kr_jack_path;
+typedef struct kr_jack_path kr_jack_input;
+typedef struct kr_jack_path kr_jack_output;
 
-struct kr_jack_portgroup {
-  kr_jack *kr_jack;
-  char name[256];
-  jack_port_t *ports[8];
-  float *samples[8];
-  int direction;
+struct kr_jack_setup {
+  char client_name[64];
+  char server_name[64];
+  //state callback - server shutdown/xrun/period-sampleratechange
+  //callpack pointer
+};
+
+struct kr_jack_path_setup {
+  char name[64];
+  kr_jack_direction direction;
   int channels;
+  //samples callback?
+  //state callback - connection/disconnection
+  //callpack pointer
 };
 
-struct kr_jack {
-  int active;
-  int set_thread_name_process;
-  int xruns;
-  char server_name[256];
-  const char *name;
-  jack_options_t options;
-  jack_status_t status;
-  jack_client_t *client;
-  uint32_t sample_rate;
-  uint32_t period_size;
-  char *stay_connected[256];
-  char *stay_connected_to[256];
-};
-
-int kr_jack_detect();
-int kr_jack_detect_for_jack_server_name(char *server_name);
-void kr_jack_portgroup_samples_callback(int frames, void *user, float **smpls);
+/*
 void kr_jack_portgroup_plug(kr_jack_portgroup *portgroup, char *remote_name);
 void kr_jack_portgroup_unplug(kr_jack_portgroup *portgroup, char *remote_name);
-void kr_jack_portgroup_destroy(kr_jack_portgroup *portgroup);
-kr_jack_portgroup *kr_jack_portgroup_create(kr_jack *jack, char *name,
- int direction, int channels);
+*/
 
-void kr_jack_destroy(kr_jack *jack);
-kr_jack *kr_jack_create();
-kr_jack *kr_jack_create_for_jack_server_name(char *server_name);
+int kr_jack_detect();
+int kr_jack_detect_server_name(char *name);
 
-int kr_jack_process(jack_nframes_t nframes, void *arg);
-void kr_jack_shutdown(void *arg);
-int kr_jack_xrun(void *arg);
+int kr_jack_path_unlink(kr_jack_path *path);
+kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup);
+
+int kr_jack_destroy(kr_jack *jack);
+kr_jack *kr_jack_create(kr_jack_setup *setup);
 
 #endif
