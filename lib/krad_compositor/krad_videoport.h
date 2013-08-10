@@ -3,7 +3,8 @@
 
 #include "krad_compositor_subunit.h"
 #include "krad_perspective.h"
-#include "krad_radio.h"
+#include "krad_framepool.h"
+#include "krad_ring.h"
 
 struct krad_compositor_port_St {
 

@@ -424,8 +424,7 @@ krad_link_transport_mode_t krad_link_string_to_transport_mode (char *string) {
 
 }
 
-char *krad_link_transport_mode_to_string (krad_link_transport_mode_t transport_mode) {
-
+char *krad_link_transport_mode_to_string(krad_link_transport_mode_t transport_mode) {
 	switch (transport_mode) {
 		case TCP:
 			return "TCP";

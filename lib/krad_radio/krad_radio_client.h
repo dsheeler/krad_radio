@@ -1,7 +1,6 @@
 #ifndef KRAD_CLIENT_H
 #define KRAD_CLIENT_H
 
-
 /**
  * @file krad_radio_client.h
  * @brief Krad Radio Client API
@@ -22,12 +21,9 @@
  *
  */
 
-
 #include <inttypes.h>
 
-
 #define ALL_BROADCASTS 1
-
 
 /** @defgroup krad_radio_client Krad Radio Client API
  * @brief Get and Manage general client functions like API-connection,
@@ -45,16 +41,16 @@
   * @brief Type to identify a single API-connection to a station
   * @see kr_connect,kr_disconnect
   */
+
 typedef struct kr_client_St kr_client_t;
+typedef struct kr_client_St kr_client;
 
 #include "krad_easing_common.h"
 #include "krad_mixer_common.h"
 #include "krad_compositor_common.h"
 #include "krad_radio_common.h"
 
-
 //typedef void (*rep_callback_t)( void *, void * );
-
 
 /** Shared memory buffer.
  * @brief Variable sized buffer used to get data in and out of local A/V ports
@@ -75,6 +71,7 @@ typedef struct kr_unit_control_St kr_unit_control_t;
 */
 
 typedef struct kr_address_St kr_address_t;
+typedef struct kr_address_St kr_address;
 
 /* Top level Units */
 

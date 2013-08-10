@@ -26,10 +26,12 @@ typedef void (kr_compositor_info_cb)(kr_compositor_info_cb_arg *);
 typedef void (kr_compositor_path_info_cb)(kr_compositor_path_info_cb_arg *);
 typedef void (kr_compositor_path_frame_cb)(kr_compositor_path_frame_cb_arg *);
 
-#include "krad_radio.h"
 #include "krad_compositor_subunit.h"
 #include "krad_videoport.h"
 #include "krad_text.h"
+#include "krad_sprite.h"
+#include "krad_vector.h"
+#include "krad_framepool.h"
 #include "krad_compositor_interface.h"
 
 #define KR_COMPOSITOR_WIDTH_DEF 960

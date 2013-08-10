@@ -59,12 +59,15 @@ void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_info *mixer_rep) {
   mixer_rep->period_size = kr_mixer_period(mixer);
   mixer_rep->sample_rate = kr_mixer_sample_rate(mixer);
 
+  strncpy(mixer_rep->clock, "Something", sizeof(mixer_rep->clock));
+/*
   if (mixer->pusher == KR_JACK) {
     strncpy(mixer_rep->clock, "Jack", sizeof(mixer_rep->clock));
   } else {
     strncpy(mixer_rep->clock, "Internal Chronometer",
      sizeof(mixer_rep->clock));
   }
+*/
 }
 
 void kr_mixer_rep_to_ebml(kr_ebml2_t *ebml, kr_mixer_info *mxr) {

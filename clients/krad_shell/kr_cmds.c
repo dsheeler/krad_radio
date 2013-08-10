@@ -164,7 +164,7 @@ int krad_shell_cmd (kr_shell_t *kr_shell , char *sysname ,int argc , char *argv[
     kr_compositor_info (client);
     kr_client_response_wait_print_curses (client);
     printf ("\n");
-    kr_transponder_info (client);
+    kr_transponder_info_get (client);
     kr_client_response_wait_print_curses (client);
   }
 

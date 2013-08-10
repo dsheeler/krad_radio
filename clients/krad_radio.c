@@ -17,11 +17,11 @@ int get_logname (kr_client_t *client, char *logname, int max) {
   int wait_ms;
   int ret;
 
-  kr_system_info (client);
+  kr_system_info(client);
   wait_ms = 250;
   ret = 0;
 
-  while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
+  while (kr_delivery_get_until_final(client, &crate, wait_ms)) {
     if (crate != NULL) {
       if (kr_crate_loaded (crate)) {
         if ((crate->addr->path.unit == KR_STATION) && (crate->addr->path.subunit.zero == KR_STATION_UNIT)) {
@@ -46,7 +46,7 @@ void print_logname (kr_client_t *client) {
 
   char logname[256];
 
-  if (get_logname (client, logname, 256)) {
+  if (get_logname(client, logname, 256)) {
     printf ("%s\n", logname);
   }
 }
@@ -64,7 +64,7 @@ void tail_log (kr_client_t *client, int lines, int dofollow) {
 
   snprintf (last, sizeof (last), "%d", lines);
 
-  if (get_logname (client, logname, 256)) {
+  if (get_logname(client, logname, 256)) {
     kr_client_destroy (&client);
     args[0] = "tail";
     args[1] = "-n";
@@ -168,12 +168,12 @@ int main (int argc, char *argv[]) {
 
   client = kr_client_create ("krad command line client");
 
-  if (client == NULL) {
+  if(client == NULL) {
     fprintf (stderr, "Could create client\n");
     return 1;
   }
 
-  if (!kr_connect (client, sysname)) {
+  if (!kr_connect(client, sysname)) {
     fprintf (stderr, "Could not connect to %s krad radio daemon\n", sysname);
     kr_client_destroy (&client);
     return 1;
@@ -184,14 +184,14 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "ls", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
 
-      kr_mixer_portgroup_list (client);
-      kr_delivery_accept_and_report (client);
+      kr_mixer_portgroup_list(client);
+      kr_delivery_accept_and_report(client);
 
-      kr_compositor_subunit_list (client);
-      kr_delivery_accept_and_report (client);
+      kr_compositor_subunit_list(client);
+      kr_delivery_accept_and_report(client);
 
-      kr_transponder_subunit_list (client);
-      kr_delivery_accept_and_report (client);
+      kr_transponder_subunit_list(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
@@ -200,104 +200,104 @@ int main (int argc, char *argv[]) {
         (strncmp(argv[2], "lsa", 3) == 0)) &&
         (strlen(argv[2]) == 3)) || (strncmp(argv[2], "adapters", 8) == 0)) {
     if (argc == 3) {
-      kr_transponder_adapters (client);
-      kr_delivery_accept_and_report (client);
+      kr_transponder_adapters(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
   if ((strlen(argv[2]) == 4) && (strncmp(argv[2], "info", 4) == 0)) {
-    kr_system_info (client);
-    kr_delivery_accept_and_report (client);
+    kr_system_info(client);
+    kr_delivery_accept_and_report(client);
     printf ("\n");
-    kr_mixer_info_get (client);
-    kr_delivery_accept_and_report (client);
+    kr_mixer_info_get(client);
+    kr_delivery_accept_and_report(client);
     printf ("\n");
-    kr_compositor_info (client);
-    kr_delivery_accept_and_report (client);
+    kr_compositor_info(client);
+    kr_delivery_accept_and_report(client);
     printf ("\n");
-    kr_transponder_info (client);
-    kr_delivery_accept_and_report (client);
+    kr_transponder_info_get(client);
+    kr_delivery_accept_and_report(client);
   }
 
   if ((strlen(argv[2]) == 7) && (strncmp(argv[2], "sysinfo", 7) == 0)) {
-    kr_system_info (client);
-    kr_delivery_accept_and_report (client);
+    kr_system_info(client);
+    kr_delivery_accept_and_report(client);
   }
 
   if (strncmp(argv[2], "setdir", 6) == 0) {
     if (argc == 4) {
-      kr_set_dir (client, argv[3]);
+      kr_set_dir(client, argv[3]);
     }
   }
 
   if (strncmp(argv[2], "log", 3) == 0) {
-    print_logname (client);
+    print_logname(client);
   }
 
   if ((strncmp(argv[2], "tailf", 5) == 0) || (strncmp(argv[2], "ftail", 5) == 0)) {
     if (argc == 3) {
-      tail_log (client, 25, 1);
+      tail_log(client, 25, 1);
     }
     if (argc == 4) {
-      tail_log (client, atoi(argv[3]), 1);
+      tail_log(client, atoi(argv[3]), 1);
     }
   }
 
   if (strncmp(argv[2], "tail", 4) == 0) {
     if (argc == 3) {
-      tail_log (client, 25, 0);
+      tail_log(client, 25, 0);
     }
     if (argc == 4) {
-      tail_log (client, atoi(argv[3]), 0);
+      tail_log(client, atoi(argv[3]), 0);
     }
   }
 
   if (strncmp(argv[2], "tags", 4) == 0) {
 
     if (argc == 3) {
-      kr_tags (client, NULL);
-      kr_delivery_accept_and_report (client);
+      kr_tags(client, NULL);
+      kr_delivery_accept_and_report(client);
     }
     if (argc == 4) {
-      kr_tags (client, argv[3]);
-      kr_delivery_accept_and_report (client);
+      kr_tags(client, argv[3]);
+      kr_delivery_accept_and_report(client);
     }
 
   } else {
     if (strncmp(argv[2], "tag", 3) == 0) {
       if (argc == 4) {
-        kr_tag (client, NULL, argv[3]);
-        kr_delivery_accept_and_report (client);
+        kr_tag(client, NULL, argv[3]);
+        kr_delivery_accept_and_report(client);
       }
       if (argc == 5) {
-        kr_tag (client, argv[3], argv[4]);
-        kr_delivery_accept_and_report (client);
+        kr_tag(client, argv[3], argv[4]);
+        kr_delivery_accept_and_report(client);
       }
     }
   }
 
   if (strncmp(argv[2], "stag", 4) == 0) {
     if (argc == 5) {
-      kr_set_tag (client, NULL, argv[3], argv[4]);
+      kr_set_tag(client, NULL, argv[3], argv[4]);
     }
     if (argc == 6) {
-      kr_set_tag (client, argv[3], argv[4], argv[5]);
+      kr_set_tag(client, argv[3], argv[4], argv[5]);
     }
   }
 
   if (((strlen(argv[2]) == 6) && (strncmp(argv[2], "remote", 6) == 0)) ||
       ((strlen(argv[2]) == 7) && (strncmp(argv[2], "remotes", 7) == 0))) {
-    kr_remote_list (client);
-    kr_delivery_accept_and_report (client);
+    kr_remote_list(client);
+    kr_delivery_accept_and_report(client);
   }
 
   if ((strncmp(argv[2], "remoteon", 8) == 0) || (strncmp(argv[2], "remote_on", 9) == 0)) {
     ret = 0;
     if (argc == 4) {
-      ret = kr_remote_on (client, NULL, atoi(argv[3]));
+      ret = kr_remote_on(client, NULL, atoi(argv[3]));
     }
     if (argc == 5) {
-      ret = kr_remote_on (client, argv[3], atoi(argv[4]));
+      ret = kr_remote_on(client, argv[3], atoi(argv[4]));
     }
     if (ret == -1) {
       printf ("Invalid Port Specified\n");
@@ -307,13 +307,13 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "remoteoff", 9) == 0) || (strncmp(argv[2], "remote_off", 10) == 0)) {
     ret = 0;
     if (argc == 3) {
-      ret = kr_remote_off (client, NULL, 0);
+      ret = kr_remote_off(client, NULL, 0);
     }
     if (argc == 4) {
-      ret = kr_remote_off (client, NULL, atoi(argv[3]));
+      ret = kr_remote_off(client, NULL, atoi(argv[3]));
     }
     if (argc == 5) {
-      ret = kr_remote_off (client, argv[3], atoi(argv[4]));
+      ret = kr_remote_off(client, argv[3], atoi(argv[4]));
     }
     if (ret == -1) {
       printf ("Invalid Port Specified\n");
@@ -323,34 +323,34 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "webon", 5) == 0) ||
       (strncmp(argv[2], "interweb", 5) == 0)) {
     if (argc == 4) {
-      kr_web_enable (client, atoi(argv[3]), "", "", "");
+      kr_web_enable(client, atoi(argv[3]), "", "", "");
     }
     if (argc == 5) {
-      kr_web_enable (client, atoi(argv[3]), argv[4], "", "");
+      kr_web_enable(client, atoi(argv[3]), argv[4], "", "");
     }
     if (argc == 6) {
-      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], "");
+      kr_web_enable(client, atoi(argv[3]), argv[4], argv[5], "");
     }
     if (argc == 7) {
-      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], argv[6]);
+      kr_web_enable(client, atoi(argv[3]), argv[4], argv[5], argv[6]);
     }
   }
 
   if (strncmp(argv[2], "weboff", 6) == 0) {
     if (argc == 3) {
-      kr_web_disable (client);
+      kr_web_disable(client);
     }
   }
 
   if (strncmp(argv[2], "oscon", 5) == 0) {
     if (argc == 4) {
-      kr_osc_enable (client, atoi(argv[3]));
+      kr_osc_enable(client, atoi(argv[3]));
     }
   }
 
   if (strncmp(argv[2], "oscoff", 6) == 0) {
     if (argc == 3) {
-      kr_osc_disable (client);
+      kr_osc_disable(client);
     }
   }
 
@@ -358,8 +358,8 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "lm", 2) == 0) {
     if (argc == 3) {
-      kr_mixer_portgroup_list (client);
-      kr_delivery_accept_and_report (client);
+      kr_mixer_portgroup_list(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
@@ -367,27 +367,27 @@ int main (int argc, char *argv[]) {
       ((strncmp(argv[2], "mix", 3) == 0) && (strlen(argv[2]) == 3)) ||
       ((strncmp(argv[2], "mixer", 5) == 0) && (strlen(argv[2]) == 5))) {
     if (argc == 3) {
-      kr_mixer_info_get (client);
-      kr_delivery_accept_and_report (client);
+      kr_mixer_info_get(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
   if (strncmp(argv[2], "setrate", 7) == 0) {
     if (argc == 4) {
-      kr_mixer_set_sample_rate (client, atoi(argv[3]));
+      kr_mixer_set_sample_rate(client, atoi(argv[3]));
     }
   }
 
   if (strncmp(argv[2], "tone", 4) == 0) {
     if (argc == 4) {
-      kr_mixer_push_tone (client, argv[3][0]);
+      kr_mixer_push_tone(client, argv[3][0]);
     }
   }
 
   if (strncmp(argv[2], "portinfo", 8) == 0) {
     if (argc == 4) {
       kr_mixer_portgroup_info(client, argv[3]);
-      kr_delivery_accept_and_report (client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
@@ -426,37 +426,37 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "unplug", 6) == 0) {
     if (argc == 4) {
-      kr_mixer_unplug_portgroup (client, argv[3], "");
+      kr_mixer_unplug_portgroup(client, argv[3], "");
     }
     if (argc == 5) {
-      kr_mixer_unplug_portgroup (client, argv[3], argv[4]);
+      kr_mixer_unplug_portgroup(client, argv[3], argv[4]);
     }
   }
 
   if (strncmp(argv[2], "map", 3) == 0) {
     if (argc == 6) {
-      kr_mixer_update_portgroup_map_channel (client, argv[3], atoi(argv[4]), atoi(argv[5]));
+      kr_mixer_update_portgroup_map_channel(client, argv[3], atoi(argv[4]), atoi(argv[5]));
     }
   }
 
   if (strncmp(argv[2], "mixmap", 3) == 0) {
     if (argc == 6) {
-      kr_mixer_update_portgroup_mixmap_channel (client, argv[3], atoi(argv[4]), atoi(argv[5]));
+      kr_mixer_update_portgroup_mixmap_channel(client, argv[3], atoi(argv[4]), atoi(argv[5]));
     }
   }
 
   if (strncmp(argv[2], "crossfade", 9) == 0) {
     if (argc == 4) {
-      kr_mixer_set_portgroup_crossfade_group (client, argv[3], "");
+      kr_mixer_set_portgroup_crossfade_group(client, argv[3], "");
     }
     if (argc == 5) {
-      kr_mixer_set_portgroup_crossfade_group (client, argv[3], argv[4]);
+      kr_mixer_set_portgroup_crossfade_group(client, argv[3], argv[4]);
     }
   }
 
   if ((strncmp(argv[2], "rmcrossfade", 11) == 0) || (strncmp(argv[2], "nocrossfade", 11) == 0)) {
     if (argc == 4) {
-      kr_mixer_set_portgroup_crossfade_group (client, argv[3], "");
+      kr_mixer_set_portgroup_crossfade_group(client, argv[3], "");
     }
   }
 
@@ -465,17 +465,17 @@ int main (int argc, char *argv[]) {
       if ((strncmp(argv[4], "play", 4) == 0) || (strncmp(argv[4], "pause", 5) == 0) ||
         (strncmp(argv[4], "stop", 4) == 0) || (strncmp(argv[4], "next", 4) == 0) ||
         (strncmp(argv[4], "prev", 4) == 0)) {
-        kr_mixer_portgroup_xmms2_cmd (client, argv[3], argv[4]);
+        kr_mixer_portgroup_xmms2_cmd(client, argv[3], argv[4]);
         return 0;
       } else {
-        kr_mixer_bind_portgroup_xmms2 (client, argv[3], argv[4]);
+        kr_mixer_bind_portgroup_xmms2(client, argv[3], argv[4]);
       }
     }
   }
 
   if (strncmp(argv[2], "noxmms2", 7) == 0) {
     if (argc == 4) {
-      kr_mixer_unbind_portgroup_xmms2 (client, argv[3]);
+      kr_mixer_unbind_portgroup_xmms2(client, argv[3]);
     }
   }
 
@@ -493,7 +493,7 @@ int main (int argc, char *argv[]) {
         uc.value.real = atof(argv[4]);
         uc.duration = atoi(argv[5]);
       }
-      kr_unit_control_set (client, &uc);
+      kr_unit_control_set(client, &uc);
     }
   }
 
@@ -507,12 +507,12 @@ int main (int argc, char *argv[]) {
       if (argc == 3) {
         if (kr_address_has_control (&uc.address)) {
           /* FIXME not implemented */
-          /* kr_unit_control_get (client, &uc); */
-          kr_unit_info (client, &uc.address);
+          /* kr_unit_control_get(client, &uc); */
+          kr_unit_info(client, &uc.address);
         } else {
-          kr_unit_info (client, &uc.address);
+          kr_unit_info(client, &uc.address);
         }
-        kr_delivery_accept_and_report (client);
+        kr_delivery_accept_and_report(client);
       }
       if ((argc == 4) || (argc == 5)) {
         if (kr_address_has_control (&uc.address)) {
@@ -535,7 +535,7 @@ int main (int argc, char *argv[]) {
           if (argc == 5) {
             uc.duration = atoi(argv[4]);
           }
-          kr_unit_control_set (client, &uc);
+          kr_unit_control_set(client, &uc);
         }
       }
     }
@@ -547,7 +547,7 @@ int main (int argc, char *argv[]) {
 
     memset (&uc, 0, sizeof (uc));
     if (kr_string_to_address (argv[3], &uc.address)) {
-      kr_unit_destroy (client, &uc.address);
+      kr_unit_destroy(client, &uc.address);
     }
   }
 
@@ -555,139 +555,139 @@ int main (int argc, char *argv[]) {
 
   if ((strncmp(argv[2], "lc", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      kr_compositor_subunit_list (client);
-      kr_delivery_accept_and_report (client);
+      kr_compositor_subunit_list(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
   if ((strlen(argv[2]) == 9) && (strncmp(argv[2], "addsprite", 9) == 0)) {
     if (argc == 4) {
-      kr_compositor_subunit_create (client, KR_SPRITE, argv[3], NULL);
+      kr_compositor_subunit_create(client, KR_SPRITE, argv[3], NULL);
     }
   }
 
   if ((strlen(argv[2]) == 7) && (strncmp(argv[2], "addtext", 7) == 0)) {
     if (argc == 4) {
-      kr_compositor_subunit_create (client, KR_TEXT, argv[3], NULL);
+      kr_compositor_subunit_create(client, KR_TEXT, argv[3], NULL);
     }
     if (argc == 5) {
-      kr_compositor_subunit_create (client, KR_TEXT, argv[3], argv[4]);
+      kr_compositor_subunit_create(client, KR_TEXT, argv[3], argv[4]);
     }
   }
 
   if ((strlen(argv[2]) > 5) && (strncmp(argv[2], "addvec", 6) == 0)) {
     if (argc == 4) {
-      kr_compositor_subunit_create (client, KR_VECTOR, argv[3], NULL);
+      kr_compositor_subunit_create(client, KR_VECTOR, argv[3], NULL);
     }
   }
 
   if ((strncmp(argv[2], "comp", 4) == 0) ||
       ((strncmp(argv[2], "c", 1) == 0) && (strlen(argv[2]) == 1))) {
     if (argc == 3) {
-      kr_compositor_info (client);
-      kr_delivery_accept_and_report (client);
+      kr_compositor_info(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
   if (strncmp(argv[2], "res", 3) == 0) {
     if (argc == 5) {
-      kr_compositor_set_resolution (client, atoi(argv[3]), atoi(argv[4]));
+      kr_compositor_set_resolution(client, atoi(argv[3]), atoi(argv[4]));
     }
   }
 
   if (strncmp(argv[2], "fps", 3) == 0) {
     if (argc == 4) {
-      kr_compositor_set_frame_rate (client, atoi(argv[3]) * 1000, 1000);
+      kr_compositor_set_frame_rate(client, atoi(argv[3]) * 1000, 1000);
     }
     if (argc == 5) {
-      kr_compositor_set_frame_rate (client, atoi(argv[3]), atoi(argv[4]));
+      kr_compositor_set_frame_rate(client, atoi(argv[3]), atoi(argv[4]));
     }
   }
 
   if (strncmp(argv[2], "background", 10) == 0) {
     if (argc == 4) {
-      kr_compositor_background (client, argv[3]);
+      kr_compositor_background(client, argv[3]);
     }
   }
 
   /* Krad Transponder Commands */
 
   if ((strlen(argv[2]) == 4) && (strncmp(argv[2], "xpdr", 4) == 0)) {
-    kr_transponder_info (client);
-    kr_delivery_accept_and_report (client);
+    kr_transponder_info_get(client);
+    kr_delivery_accept_and_report(client);
   }
 
   if ((strncmp(argv[2], "ll", 2) == 0) && (strlen(argv[2]) == 2)) {
     if (argc == 3) {
-      kr_transponder_subunit_list (client);
-      kr_delivery_accept_and_report (client);
+      kr_transponder_subunit_list(client);
+      kr_delivery_accept_and_report(client);
     }
   }
 
   if (strncmp(argv[2], "record", 7) == 0) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, "record", argv[3]);
+      kr_transponder_subunit_create(client, "record", argv[3]);
     }
   }
 
   if (strncmp(argv[2], "encode", 6) == 0) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, "encode", argv[3]);
+      kr_transponder_subunit_create(client, "encode", argv[3]);
     }
   }
 
   if (strncmp(argv[2], "decode", 6) == 0) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, "decode", argv[3]);
+      kr_transponder_subunit_create(client, "decode", argv[3]);
     }
   }
 
   if ((strncmp(argv[2], "play", 4) == 0) ||
       (strncmp(argv[2], "demux", 5) == 0)) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, "demux", argv[3]);
+      kr_transponder_subunit_create(client, "demux", argv[3]);
     }
   }
 
   if (strncmp(argv[2], "mux", 3) == 0) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, "mux", argv[3]);
+      kr_transponder_subunit_create(client, "mux", argv[3]);
     }
   }
 
   if (strncmp(argv[2], "capture", 7) == 0) {
     if (argc == 4) {
-      kr_transponder_subunit_create (client, "rawin", argv[3]);
+      kr_transponder_subunit_create(client, "rawin", argv[3]);
     }
   }
 
   if (strncmp(argv[2], "display", 7) == 0) {
     if (argc == 3) {
-      kr_transponder_subunit_create (client, "rawout", "");
+      kr_transponder_subunit_create(client, "rawout", "");
     }
   }
 
   if (strncmp(argv[2], "receiver_on", 11) == 0) {
     if (argc == 4) {
-      kr_transponder_receiver_enable (client, atoi(argv[3]));
+      kr_transponder_receiver_enable(client, atoi(argv[3]));
     }
   }
 
   if (strncmp(argv[2], "receiver_off", 12) == 0) {
     if (argc == 3) {
-      kr_transponder_receiver_disable (client);
+      kr_transponder_receiver_disable(client);
     }
   }
 
   if (strncmp(argv[2], "transmitter_on", 14) == 0) {
     if (argc == 4) {
-      kr_transponder_transmitter_enable (client, atoi(argv[3]));
+      kr_transponder_transmitter_enable(client, atoi(argv[3]));
     }
   }
 
   if (strncmp(argv[2], "transmitter_off", 15) == 0) {
     if (argc == 3) {
-      kr_transponder_transmitter_disable (client);
+      kr_transponder_transmitter_disable(client);
     }
   }
 

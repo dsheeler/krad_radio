@@ -59,7 +59,6 @@ struct kr_analog_info {
   float blend;
 };
 
-
 char *kr_strsfxeft(kr_sfx_effect_type type);
 char *kr_strsfxeftctl(kr_sfx_effect_control control);
 kr_sfx_effect_type kr_sfxeftstr(char *string);

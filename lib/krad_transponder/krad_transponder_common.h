@@ -326,6 +326,13 @@ typedef struct kr_transponder_path_setup kr_xpdr_path_setup;
 typedef struct kr_transponder_path_info kr_transponder_path_info;
 typedef struct kr_transponder_path_info kr_xdpr_path_info;
 
+typedef struct kr_transponder_info kr_transponder_info;
+typedef struct kr_transponder_info kr_xpdr_info;
+
+struct kr_transponder_info {
+  uint32_t active_paths;
+};
+
 struct kr_transponder_path_setup {
   kr_xpdr_dir direction;
   kr_adapter_api adapter;

@@ -52,8 +52,8 @@ struct krad_app_client_St {
 	struct utsname unixname;
 };
 
-krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms);
-void krad_app_disconnect (krad_app_client_t *client);
-int krad_app_client_send_fd (krad_app_client_t *client, int fd);
+krad_app_client_t *krad_app_connect(char *sysname, int timeout_ms);
+void krad_app_disconnect(krad_app_client_t *client);
+int krad_app_client_send_fd(krad_app_client_t *client, int fd);
 
 #endif
