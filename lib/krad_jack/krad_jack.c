@@ -28,7 +28,7 @@ static int xrun_cb(void *arg) {
   kr_jack *jack = (kr_jack *)arg;
 
   jack->info.xruns++;
-  //printke ("Krad Jack: %s xrun number %d!", jack->name, jack->xruns);
+  //printke("Krad Jack: %s xrun number %d!", jack->name, jack->xruns);
 
   return 0;
 }
@@ -235,7 +235,7 @@ int kr_jack_path_unlink(kr_jack_path *path) {
   return 0;
 }
 
-static int path_setup_valid(kr_jack_path_setup *setup) {
+static int path_setup_check(kr_jack_path_setup *setup) {
   if ((setup->channels < 1) || (setup->channels > KR_JACK_CHANNELS_MAX)) {
     return -1;
   }
@@ -261,7 +261,7 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
 
   if ((jack == NULL) || (setup == NULL)) return NULL;
 
-  if (!path_setup_valid(setup)) return NULL;
+  if (path_setup_check(setup)) return NULL;
 
   path = calloc (1, sizeof(kr_jack_path));
 
@@ -299,13 +299,16 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
   return path;
 }
 
-
 int kr_jack_destroy(kr_jack *jack) {
 
   //int p;
 
   if (jack == NULL) return -1;
-  jack_client_close(jack->client);
+  if (jack->client != NULL) {
+    jack_client_close(jack->client);
+    jack->client = NULL;
+    jack->info.active = 0;
+  }
   /*
   for (p = 0; p < 256; p++) {
     if (jack->stay_connected[p] != NULL) {
@@ -319,35 +322,6 @@ int kr_jack_destroy(kr_jack *jack) {
 
   free(jack);
   return 0;
-}
-
-int kr_jack_detect() {
-  return kr_jack_detect_server_name(NULL);
-}
-
-int kr_jack_detect_server_name(char *name) {
-
-  jack_client_t *client;
-  jack_options_t options;
-  jack_status_t status;
-  char client_name[128];
-
-  sprintf(client_name, "kr_jack_detect_%d", rand());
-
-  if (name != NULL) {
-    options = JackNoStartServer | JackServerName;
-  } else {
-    options = JackNoStartServer;
-  }
-
-  client = jack_client_open(client_name, options, &status, name);
-
-  if (client == NULL) {
-    return 0;
-  } else {
-    jack_client_close(client);
-    return 1;
-  }
 }
 
 kr_jack *kr_jack_create(kr_jack_setup *setup) {
@@ -408,4 +382,33 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
   }
 
   return jack;
+}
+
+int kr_jack_detect() {
+  return kr_jack_detect_server_name(NULL);
+}
+
+int kr_jack_detect_server_name(char *name) {
+
+  jack_client_t *client;
+  jack_options_t options;
+  jack_status_t status;
+  char client_name[128];
+
+  sprintf(client_name, "kr_jack_detect_%d", rand());
+
+  if (name != NULL) {
+    options = JackNoStartServer | JackServerName;
+  } else {
+    options = JackNoStartServer;
+  }
+
+  client = jack_client_open(client_name, options, &status, name);
+
+  if (client == NULL) {
+    return 0;
+  } else {
+    jack_client_close(client);
+    return 1;
+  }
 }

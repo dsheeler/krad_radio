@@ -26,7 +26,31 @@ struct kr_transponder_path {
 #include "adapters/audio_encoder.c"
 */
 
+static int path_setup_check(kr_xpdr_path_setup *setup);
+static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
 static void path_destroy(kr_xpdr_path *path);
+
+static int path_setup_check(kr_xpdr_path_setup *setup) {
+  //look at direction and adapter api
+
+  if ((setup->direction != KR_XPDR_INPUT)
+      && (setup->direction != KR_XPDR_OUTPUT)) {
+    return -1;
+  }
+  if (setup->adapter != KR_ADP_JACK) return -1;
+
+  if (memchr(setup->name + 1, '\0', sizeof(setup->name) - 1) == NULL) {
+    return -2;
+  }
+
+  if (strlen(setup->name) == 0) return -3;
+
+  return 0;
+}
+
+static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
+
+}
 
 static void path_destroy(kr_xpdr_path *path) {
 
@@ -49,16 +73,19 @@ int kr_transponder_mkpath(kr_transponder *xpdr, kr_xpdr_path_setup *setup) {
 
   for (i = 0; i < KR_XPDR_PATHS_MAX; i++) {
     if (xpdr->path[i] == NULL) {
+      if (path_setup_check(setup)) {
+        return -2;
+      }
       path = calloc(1, sizeof(kr_transponder_path));
       xpdr->path[i] = path;
       break;
     }
   }
 
+  if (path == NULL) return -3;
+
   path->xpdr = xpdr;
-
-  //look at direction and adapter api
-
+  path_create(path, setup);
   return 0;
 }
 

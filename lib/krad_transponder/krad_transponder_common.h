@@ -337,14 +337,14 @@ struct kr_transponder_path_setup {
   kr_xpdr_dir direction;
   kr_adapter_api adapter;
   char adapter_instance[32];
-  char path_name[128];
+  char name[128];
 };
 
 struct kr_transponder_path_info {
   kr_xpdr_dir direction;
   kr_adapter_api adapter;
   char adapter_instance[32];
-  char path_name[128];
+  char name[128];
 };
 
 char *krad_opus_signal_to_nice_string (int signal);
@@ -369,7 +369,7 @@ krad_codec_t krad_string_to_audio_codec (char *string);
 krad_codec_t krad_string_to_video_codec (char *string);
 krad_codec_t krad_string_to_codec_full (char *string, krad_link_av_mode_t av_mode);
 
-int krad_codec_is_video (krad_codec_t codec);
-int krad_codec_is_audio (krad_codec_t codec);
+int krad_codec_is_video(krad_codec_t codec);
+int krad_codec_is_audio(krad_codec_t codec);
 
 #endif
