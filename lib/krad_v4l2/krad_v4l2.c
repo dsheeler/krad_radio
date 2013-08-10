@@ -197,7 +197,7 @@ int video_set_quality(krad_v4l2_t *krad_v4l2, unsigned int quality) {
 */
 
 void krad_v4l2_start_capturing (krad_v4l2_t *krad_v4l2) {
-        
+
   unsigned int i;
   enum v4l2_buf_type type;
 
@@ -221,11 +221,11 @@ void krad_v4l2_start_capturing (krad_v4l2_t *krad_v4l2) {
   if (-1 == xioctl (krad_v4l2->fd, VIDIOC_STREAMON, &type)) {
     errno_exit ("Krad V4L2: VIDIOC_STREAMON");
   }
-		
+
   //if (krad_v4l2->mode == V4L2_PIX_FMT_MJPEG) {
   //  video_set_quality(krad_v4l2, 55);
   //}
-  
+
   //krad_v4l2_uvc_bluelight (krad_v4l2);
 
 	if (krad_v4l2->mode == V4L2_PIX_FMT_H264) {
@@ -301,10 +301,10 @@ void krad_v4l2_init_mmap (krad_v4l2_t *krad_v4l2) {
 		if (-1 == xioctl (krad_v4l2->fd, VIDIOC_QUERYBUF, &buf)) {
 			errno_exit ("Krad V4L2: VIDIOC_QUERYBUF");
 		}
-		
+
 		krad_v4l2->buffers[krad_v4l2->n_buffers].length = buf.length;
 		krad_v4l2->buffers[krad_v4l2->n_buffers].offset = buf.m.offset;
-		
+
 		krad_v4l2->buffers[krad_v4l2->n_buffers].start = mmap (NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, krad_v4l2->fd, buf.m.offset);
 
 		if (MAP_FAILED == krad_v4l2->buffers[krad_v4l2->n_buffers].start) {
@@ -359,18 +359,18 @@ void krad_v4l2_init_device (krad_v4l2_t *krad_v4l2) {
           break;
       }
     }
-  } else {	
+  } else {
     /* Errors ignored. */
   }
 
 	CLEAR (fmt);
 
 	fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	fmt.fmt.pix.width       = krad_v4l2->width; 
+	fmt.fmt.pix.width       = krad_v4l2->width;
 	fmt.fmt.pix.height      = krad_v4l2->height;
 	fmt.fmt.pix.bytesperline = krad_v4l2->width;
 	fmt.fmt.pix.sizeimage = 96000;
-	
+
 	fmt.fmt.pix.pixelformat = krad_v4l2->mode;
 	fmt.fmt.pix.field       = V4L2_FIELD_ANY;
 
@@ -382,10 +382,10 @@ void krad_v4l2_init_device (krad_v4l2_t *krad_v4l2) {
 	fourcc[4] = '\0';
 	memcpy(&fourcc, (char *)&fmt.fmt.pix.pixelformat, 4);
 
-	printkd ("Krad V4L2: %ux%u FMT %s Stride: %u Size: %u", fmt.fmt.pix.width, fmt.fmt.pix.height, fourcc, 
+	printkd ("Krad V4L2: %ux%u FMT %s Stride: %u Size: %u", fmt.fmt.pix.width, fmt.fmt.pix.height, fourcc,
 														fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
 
-	krad_v4l2->width = fmt.fmt.pix.width; 
+	krad_v4l2->width = fmt.fmt.pix.width;
 	krad_v4l2->height = fmt.fmt.pix.height;
 
 	struct v4l2_streamparm stream_parameters;
@@ -397,9 +397,9 @@ void krad_v4l2_init_device (krad_v4l2_t *krad_v4l2) {
 		errno_exit ("Krad V4L2: VIDIOC_G_PARM");
 	}
 
-	printkd ("Krad V4L2: G Frameinterval %u/%u", stream_parameters.parm.capture.timeperframe.numerator, 
+	printkd ("Krad V4L2: G Frameinterval %u/%u", stream_parameters.parm.capture.timeperframe.numerator,
 										  stream_parameters.parm.capture.timeperframe.denominator);
-	
+
 	stream_parameters.parm.capture.timeperframe.numerator = 1;
 	stream_parameters.parm.capture.timeperframe.denominator = krad_v4l2->fps;
 
@@ -408,12 +408,12 @@ void krad_v4l2_init_device (krad_v4l2_t *krad_v4l2) {
     printke ("Krad V4L2: error %d, %s", errno, strerror (errno));
 	}
 
-	printkd ("Krad V4L2: S Frameinterval %u/%u", stream_parameters.parm.capture.timeperframe.numerator, 
+	printkd ("Krad V4L2: S Frameinterval %u/%u", stream_parameters.parm.capture.timeperframe.numerator,
 										  stream_parameters.parm.capture.timeperframe.denominator);
-									  
+
 	if (stream_parameters.parm.capture.timeperframe.denominator != krad_v4l2->fps) {
 		printkd ("Krad V4L2: failed to get proper capture fps!");
-	}					
+	}
 
 	krad_v4l2_init_mmap (krad_v4l2);
 }
@@ -430,7 +430,6 @@ int xioctl (int fd, int request, void *arg) {
   while (-1 == r && EINTR == errno);
 
   return r;
-
 }
 
 void krad_v4l2_close (krad_v4l2_t *krad_v4l2) {
@@ -440,14 +439,14 @@ void krad_v4l2_close (krad_v4l2_t *krad_v4l2) {
 
 void krad_v4l2_open (krad_v4l2_t *krad_v4l2, char *device, int width, int height, int fps) {
 
-	struct stat st; 
+	struct stat st;
 
 	strncpy(krad_v4l2->device, device, 512);
 
 	krad_v4l2->width = width;
 	krad_v4l2->height = height;
 	krad_v4l2->fps = fps;
-	
+
 	if (-1 == stat (krad_v4l2->device, &st)) {
 		failfast ("Krad V4L2: Cannot identify '%s': %d, %s", krad_v4l2->device, errno, strerror (errno));
 	}
@@ -461,9 +460,9 @@ void krad_v4l2_open (krad_v4l2_t *krad_v4l2, char *device, int width, int height
 	if (-1 == krad_v4l2->fd) {
 		failfast ("Krad V4L2: Cannot open '%s': %d, %s", krad_v4l2->device, errno, strerror (errno));
 	}
-	
+
 	krad_v4l2_init_device (krad_v4l2);
-	
+
 }
 
 void krad_v4l2_alloc_codec_buffer (krad_v4l2_t *krad_v4l2) {
@@ -487,7 +486,7 @@ void krad_v4l2_free_codec_buffer (krad_v4l2_t *krad_v4l2) {
 
 void krad_v4l2_yuv_mode (krad_v4l2_t *krad_v4l2) {
 	krad_v4l2->mode = V4L2_PIX_FMT_YUYV;
-	krad_v4l2_free_codec_buffer (krad_v4l2);	
+	krad_v4l2_free_codec_buffer (krad_v4l2);
 }
 
 void krad_v4l2_mjpeg_mode (krad_v4l2_t *krad_v4l2) {
@@ -564,32 +563,32 @@ void krad_v4l2_mjpeg_to_rgb (krad_v4l2_t *krad_v4l2, unsigned char *argb_buffer,
 	unsigned long jpeg_size_long;
 	int stride;
 	int ret;
-	
+
 	jpeg_size_long = mjpeg_size;
 	stride = krad_v4l2->width * 4;
-	
+
 	int jpg_hedsize = sizeof(jpeg_header);
 	int hufsize = sizeof(mjpg_dht);
- 
+
  	//printf("sizeof jpeghed %d \n", jpg_hedsize);
  	//printf("sizeof huf %d \n", hufsize);
- 
+
 	memcpy (krad_v4l2->codec_buffer, jpeg_header, jpg_hedsize);
 
  	jpeg_size_long += jpg_hedsize;
  	jpeg_size_long += hufsize;
- 	
+
 	//removing avi header
 	int tmp = *((char *)mjpeg_buffer + 4);
 	// 	printf("sizeof temp %d \n", tmp);
 	tmp <<= 8;
 	//	printf("sizeof temp %d \n", tmp);
 	tmp += *((char *)mjpeg_buffer + 5) + 4;
- 	
+
  	//printf("sizeof temp %d \n", tmp);
 
  	int x = 0;
- 	
+
  	while (!((mjpeg_buffer[tmp + x] == 0xFF) && (mjpeg_buffer[tmp + x + 1] == 0xDA))) {
  		x++;
  	}
@@ -599,10 +598,10 @@ void krad_v4l2_mjpeg_to_rgb (krad_v4l2_t *krad_v4l2, unsigned char *argb_buffer,
 	memcpy (krad_v4l2->codec_buffer + jpg_hedsize, mjpeg_buffer + tmp, x);
 	memcpy (krad_v4l2->codec_buffer + jpg_hedsize + x, mjpg_dht, hufsize);
 	memcpy (krad_v4l2->codec_buffer + jpg_hedsize + x + hufsize, mjpeg_buffer + tmp + x, mjpeg_size - tmp - x);
- 	
+
  	jpeg_size_long = jpg_hedsize + x + hufsize + (mjpeg_size - tmp - x);
- 	
-	ret = tjDecompress2 ( krad_v4l2->jpeg_dec, krad_v4l2->codec_buffer, jpeg_size_long, argb_buffer, krad_v4l2->width, 
+
+	ret = tjDecompress2 ( krad_v4l2->jpeg_dec, krad_v4l2->codec_buffer, jpeg_size_long, argb_buffer, krad_v4l2->width,
 						  stride, krad_v4l2->height, TJPF_BGRA, 0 );
 
 	if (ret != 0) {
@@ -618,13 +617,13 @@ void krad_v4l2_mjpeg_to_rgb (krad_v4l2_t *krad_v4l2, unsigned char *argb_buffer,
 int krad_v4l2_mjpeg_to_jpeg (krad_v4l2_t *krad_v4l2, unsigned char *jpeg_buffer, unsigned char *mjpeg_buffer, unsigned int mjpeg_size) {
 
 	unsigned long jpeg_size_long;
-	
+
 	jpeg_size_long = mjpeg_size;
 
-	
+
 	int jpg_hedsize = sizeof(jpeg_header);
 	int hufsize = sizeof(mjpg_dht);
- 
+
 	memcpy (jpeg_buffer, jpeg_header, jpg_hedsize);
  	jpeg_size_long += jpg_hedsize;
  	jpeg_size_long += hufsize;
@@ -635,11 +634,11 @@ int krad_v4l2_mjpeg_to_jpeg (krad_v4l2_t *krad_v4l2, unsigned char *jpeg_buffer,
 	tmp <<= 8;
 	//	printf("sizeof temp %d \n", tmp);
 	tmp += *((char *)mjpeg_buffer + 5) + 4;
- 	
+
  	//printf("sizeof temp %d \n", tmp);
 
  	int x = 0;
- 	
+
  	while (!((mjpeg_buffer[tmp + x] == 0xFF) && (mjpeg_buffer[tmp + x + 1] == 0xDA))) {
  		x++;
  	}
@@ -649,10 +648,10 @@ int krad_v4l2_mjpeg_to_jpeg (krad_v4l2_t *krad_v4l2, unsigned char *jpeg_buffer,
 	memcpy (jpeg_buffer + jpg_hedsize, mjpeg_buffer + tmp, x);
 	memcpy (jpeg_buffer + jpg_hedsize + x, mjpg_dht, hufsize);
 	memcpy (jpeg_buffer + jpg_hedsize + x + hufsize, mjpeg_buffer + tmp + x, mjpeg_size - tmp - x);
- 	
+
  	jpeg_size_long = jpg_hedsize + x + hufsize + (mjpeg_size - tmp - x);
- 	
- 	
+
+
  	return jpeg_size_long;
 }
 
@@ -662,16 +661,16 @@ int krad_v4l2_detect_devices () {
 	DIR *dp;
 	struct dirent *ep;
 	int count;
-	
+
 	count = 0;
 
 	dp = opendir ("/dev");
-	
+
 	if (dp == NULL) {
 		printke ("Couldn't open the /dev directory");
 		return 0;
 	}
-	
+
 	while ((ep = readdir(dp))) {
 		if (memcmp(ep->d_name, "video", 5) == 0) {
 			printk("Found V4L2 Device: /dev/%s", ep->d_name);
@@ -689,16 +688,16 @@ int krad_v4l2_get_device_filename (int device_num, char *device_name) {
 	DIR *dp;
 	struct dirent *ep;
 	int count;
-	
+
 	count = 0;
 
 	dp = opendir ("/dev");
-	
+
 	if (dp == NULL) {
 		printke ("Couldn't open the /dev directory");
 		return 0;
 	}
-	
+
 	while ((ep = readdir(dp))) {
 		if (memcmp(ep->d_name, "video", 5) == 0) {
 			if (count == device_num) {

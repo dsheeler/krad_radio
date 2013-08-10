@@ -5,6 +5,7 @@
 #include <opus_defines.h>
 #include "krad_ebml2.h"
 #include "krad_codec_header.h"
+#include "krad_jack_common.h"
 
 #define KR_AIN 0
 #define KR_AOUT 1
@@ -333,18 +334,36 @@ struct kr_transponder_info {
   uint32_t active_paths;
 };
 
+typedef union {
+ kr_jack_info jack;
+/*
+ kr_alsa_info alsa;
+ kr_v4l2_info v4l2;
+ kr_decklink_info decklink;
+*/
+} kr_adapter_info;
+
+typedef union {
+ kr_jack_path_info jack;
+/*
+ kr_alsa_path_info alsa;
+ kr_v4l2_path_info v4l2;
+ kr_decklink_path_info decklink;
+*/
+} kr_adapter_path_info;
+
 struct kr_transponder_path_setup {
+  char name[128];
   kr_xpdr_dir direction;
   kr_adapter_api adapter;
   char adapter_instance[32];
-  char name[128];
 };
 
 struct kr_transponder_path_info {
+  char name[128];
   kr_xpdr_dir direction;
   kr_adapter_api adapter;
-  char adapter_instance[32];
-  char name[128];
+  kr_adapter_path_info info;
 };
 
 char *krad_opus_signal_to_nice_string (int signal);

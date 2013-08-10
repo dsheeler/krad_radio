@@ -1,37 +1,96 @@
 #include "krad_transponder.h"
 
-struct kr_transponder {
-  kr_mixer *mixer;
-  kr_compositor *compositor;
-  kr_transponder_path *path[KR_XPDR_PATHS_MAX];
-  kr_transponder_info info;
-};
+/*
+#include "adapters/alsa.c"
+instance per card, can hold and set rate/ duplex,period etc
+create options: card, samplerate, duplex, period,
+
+#include "adapters/wayland.c"
+instance per compositor, multiple windows
+create options: compositor path, window size
+
+#include "adapters/x11.c"
+instance per path..
+create options: path, res, x/y pos
+
+#include "adapters/flycap.c"
+
+#include "adapters/v4l2.c"
+instance per camera, can hold and open in frame_size/frame_rate
+create options: device/fps/frame size
+
+#include "adapters/decklink.c"
+instance per card, can set * and open
+// create options: card, res/fps a+v, connector
+
+#include "adapters/video_encoder.c"
+#include "adapters/audio_encoder.c"
+allways unique instance
+
+#include "adapters/krshmapi.c"
+//create options: name .. unique adapter instance per path?
+*/
+#include "adapters/jack.c"
+
+typedef struct kr_adapter kr_adapter;
+
+typedef union {
+  kr_jack *jack;
+/*
+  kr_alsa *alsa;
+  kr_decklink *decklink;
+  kr_fc2 *flycap;
+  kr_jack *x11;
+  kr_wayland *wayland;
+  kr_v4l2 *v4l2;
+  kr_encoder *encoder;
+  kr_shmapi krad;
+*/
+} adapter_handle;
+
+typedef union {
+  kr_jack_path *jack;
+/*
+  kr_alsa_path *alsa;
+  kr_decklink_path *decklink;
+  kr_fc2_path *flycap;
+  kr_x11_path *x11;
+  kr_wayland_path *wayland;
+  kr_v4l2_path *v4l2;
+  kr_encoder_path *encoder;
+  kr_shmapi_path krad;
+*/
+} adapter_path;
 
 struct kr_transponder_path {
   kr_transponder_path_info info;
-  krad_tags_t *krad_tags;
+  adapter_path *adapter_path;
   kr_mixer_path *mixer_path;
+	kr_compositor_path *compositor_path;
+  kr_adapter *adapter;
   kr_transponder *xpdr;
-  //krad_link_av_mode_t av_mode;
-	//krad_compositor_port_t *krad_compositor_port;
 };
 
-/*
-#include "adapters/wayland.c"
-#include "adapters/v4l2.c"
-#include "adapters/x11.c"
-#include "adapters/flycap.c"
-#include "adapters/decklink.c"
-#include "adapters/video_encoder.c"
-#include "adapters/audio_encoder.c"
-*/
+struct kr_adapter {
+  kr_adapter_api api;
+  kr_adapter_info info;
+  adapter_handle adapter;
+  kr_transponder *xpdr;
+};
+
+struct kr_transponder {
+  kr_mixer *mixer;
+  kr_compositor *compositor;
+  kr_transponder_info info;
+  kr_adapter *adapter[KR_XPDR_PATHS_MAX];
+  kr_transponder_path *path[KR_XPDR_PATHS_MAX];
+};
 
 static int path_setup_check(kr_xpdr_path_setup *setup);
 static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
 static void path_destroy(kr_xpdr_path *path);
 
 static int path_setup_check(kr_xpdr_path_setup *setup) {
-  //look at direction and adapter api
 
   if ((setup->direction != KR_XPDR_INPUT)
       && (setup->direction != KR_XPDR_OUTPUT)) {
@@ -49,10 +108,17 @@ static int path_setup_check(kr_xpdr_path_setup *setup) {
 }
 
 static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
-
+  //find or create adapter instance
+  //
+  //create adapter path
+  //
+  //crate mixer/compositor path
 }
 
 static void path_destroy(kr_xpdr_path *path) {
+
+  // destroy compositor/mixer path
+  // destroy adapter path
 
 }
 

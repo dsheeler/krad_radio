@@ -6,7 +6,7 @@
 #include "krad_framepool.h"
 #include "krad_ring.h"
 
-struct krad_compositor_port_St {
+struct kr_compositor_path {
 
   krad_compositor_t *krad_compositor;
 

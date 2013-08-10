@@ -11,10 +11,12 @@
 
 #include <libswscale/swscale.h>
 
-typedef struct krad_compositor_port_St krad_compositor_port_t;
-typedef struct krad_compositor_port_St kr_comp_port_t;
-typedef struct krad_compositor_St krad_compositor_t;
-typedef struct krad_compositor_St kr_compositor;
+typedef struct kr_compositor_path krad_compositor_port_t;
+typedef struct kr_compositor_path kr_comp_port_t;
+typedef struct kr_compositor_path kr_compositor_path;
+typedef struct kr_compositor_path kr_comp_path;
+typedef struct kr_compositor krad_compositor_t;
+typedef struct kr_compositor kr_compositor;
 
 typedef struct kr_compositor_path_setup kr_compositor_path_setup;
 typedef struct kr_compositor_path_frame_cb_arg kr_compositor_path_frame_cb_arg;
@@ -82,7 +84,7 @@ struct kr_compositor_path_setup {
   kr_compositor_path_frame_cb *cb;
 };
 
-struct krad_compositor_St {
+struct kr_compositor {
 
   cairo_t *cr;
 
