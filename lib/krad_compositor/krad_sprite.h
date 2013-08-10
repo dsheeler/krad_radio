@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cairo.h>
 #include <turbojpeg.h>
-
 #ifdef KRAD_GIF
 #include <gif_lib.h>
 #endif
@@ -14,12 +14,11 @@
 typedef struct krad_sprite_St krad_sprite_t;
 
 #include "krad_compositor_subunit.h"
-#include "krad_radio.h"
+#include "krad_file.h"
 
 #define KRAD_SPRITE_DEFAULT_TICKRATE 4
 
 struct krad_sprite_St {
-
   char filename[256];
   int frames;
   int tick;
@@ -31,7 +30,6 @@ struct krad_sprite_St {
   cairo_pattern_t *sprite_pattern;
   int sheet_width;
   int sheet_height;
-
   krad_compositor_subunit_t subunit;
 };
 

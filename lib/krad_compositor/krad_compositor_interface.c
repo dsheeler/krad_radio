@@ -184,7 +184,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   char string2[512];
   uint32_t numbers[10];
   int32_t direction;
-  krad_app_server_t *app;
+  kr_app_server *app;
 
   krad_radio = client->krad_radio;
   krad_compositor = krad_radio->compositor;

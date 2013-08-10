@@ -302,7 +302,7 @@ int krad_radio_client_command(kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   char string3[512];
   uint32_t numbers[10];
   kr_remote_t remote;
-  krad_app_server_t *app;
+  kr_app_server *app;
   int i;
   krad_tags_t *krad_tags;
 
