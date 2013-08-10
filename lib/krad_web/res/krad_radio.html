@@ -70,15 +70,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .meter {
-  height: 12.5em;
-  width: 1.5em;
+  height: 200px;
+  width: 24px;
 }
 
 #analog_meter_canvas {
   position: relative;
   top: 60%;
-  width: 12.5em;
-  height: 12.5em;
+  width: 200px;
+  height: 200px;
 }
 
 .eq_area, .effect_area {
@@ -674,14 +674,12 @@ li .button_wrap {
     var kr = false;
     $(window).bind('beforeunload', function() {
       if (kr.ws != false) {
-        kr.ws.disconnect();
+        kr.ws_disconnect();
       }
     });
     $(document).ready(function() {
       var websocket_port = ~;
       kr = new Kr();
-      kr.load_interface();
-
     });
   </script>
   ~
