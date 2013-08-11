@@ -452,9 +452,9 @@ static void pointer_handle_button(void *data, struct wl_pointer *pointer,
     if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
       wayland->pointer_window->click = 1;
     }
-    
+
     if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-      wayland->pointer_window->click = 0;    
+      wayland->pointer_window->click = 0;
     }
     wayland_event.type = KR_WL_POINTER;
     wayland_event.pointer_event.x = wayland->pointer_window->pointer_x;
@@ -540,7 +540,7 @@ static int kr_wayland_window_create_shm_buffer(kr_wayland_window *window,
   int stride;
   void *data;
   int b;
-  
+
   b = 0;
 
   fd = mkstemp(filename);
@@ -601,7 +601,7 @@ static void kr_wayland_frame_listener (void *data,
   } else {
     wl_surface_damage(window->surface, 0, 0, 10, 10);
   }
-  
+
   if (callback) {
     wl_callback_destroy(callback);
   }
@@ -664,7 +664,7 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   window->surface_listener.configure = kr_wayland_handle_configure;
   window->surface_listener.popup_done = kr_wayland_handle_popup_done;
   window->surface = wl_compositor_create_surface(wayland->compositor);
-  window->shell_surface = wl_shell_get_shell_surface(wayland->shell, 
+  window->shell_surface = wl_shell_get_shell_surface(wayland->shell,
    window->surface);
 
   opaque = wl_compositor_create_region(wayland->compositor);
@@ -675,9 +675,9 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   /*wl_shell_surface_set_title(wayland->window->shell_surface,
    wayland->window->title);*/
 
-   wl_shell_surface_add_listener(window->shell_surface, 
+   wl_shell_surface_add_listener(window->shell_surface,
     &window->surface_listener, window);
-  
+
   if ((window->width == 1920) && (window->height == 1080)) {
     wl_shell_surface_set_fullscreen(window->shell_surface,
      0, 0, NULL);
@@ -721,7 +721,7 @@ int kr_wayland_window_destroy(kr_wayland_window **win) {
   wl_surface_destroy(window->surface);
   wl_display_sync(wayland->display);
   wayland->window[i].active = 0;
-  *win = NULL;    
+  *win = NULL;
   return 0;
 }
 
