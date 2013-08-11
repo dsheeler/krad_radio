@@ -35,8 +35,8 @@ typedef enum {
 
 typedef struct kr_eq_info kr_eq_info;
 typedef struct kr_eq_band_info kr_eq_band_info;
-typedef struct kr_pass_info kr_lowpass_info;
-typedef struct kr_pass_info kr_highpass_info;
+typedef struct kr_lowpass_info kr_lowpass_info;
+typedef struct kr_highpass_info kr_highpass_info;
 typedef struct kr_analog_info kr_analog_info;
 
 struct kr_eq_band_info {
@@ -49,7 +49,12 @@ struct kr_eq_info {
   kr_eq_band_info band[KR_EQ_MAX_BANDS];
 };
 
-struct kr_pass_info {
+struct kr_lowpass_info {
+  float bw;
+  float hz;
+};
+
+struct kr_highpass_info {
   float bw;
   float hz;
 };

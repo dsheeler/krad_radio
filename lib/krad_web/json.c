@@ -1,3 +1,5 @@
+#include "json_ser.c"
+
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
