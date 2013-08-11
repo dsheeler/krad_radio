@@ -21,16 +21,16 @@
 
 #define KRAD_X11_XCB_ONLY 0
 
-typedef struct krad_x11_St krad_x11_t;
+typedef struct kr_x11 kr_x11;
 
-struct krad_x11_St {
+struct kr_x11 {
 
   int screen_number;
   int pixels_size;
   unsigned char *pixels;
 
   uint64_t frames;
-  
+
   int16_t x;
   int16_t y;
 
@@ -45,32 +45,32 @@ struct krad_x11_St {
   int *krad_x11_shutdown;
 
   // capture stuff
-#ifdef KRAD_USE_X11  
+#ifdef KRAD_USE_X11
   Display *display;
   xcb_screen_t *screen;
-  xcb_screen_iterator_t iter;  
+  xcb_screen_iterator_t iter;
   xcb_connection_t *connection;
-  xcb_window_t window; 
+  xcb_window_t window;
   xcb_shm_segment_info_t shminfo;
   xcb_shm_get_image_cookie_t cookie;
   xcb_shm_get_image_reply_t *reply;
   xcb_image_t *img;
 #endif
-  
+
   uint8_t screen_bit_depth;
   int number;
   int capture_enabled;
-  
+
   int mouse_x;
   int mouse_y;
   int mouse_clicked;
 };
 
-krad_x11_t *krad_x11_create ();
-void krad_x11_destroy(krad_x11_t *x11);
+kr_x11 *kr_x11_create();
+void kr_x11_destroy(kr_x11 *x11);
 
-int krad_x11_capture_getptr (krad_x11_t *x11, uint8_t **buffer);
-int krad_x11_capture (krad_x11_t *x11, uint8_t *buffer);
-void krad_x11_disable_capture (krad_x11_t *x11);
-void krad_x11_enable_capture (krad_x11_t *x11, uint32_t window_id);
+int kr_x11_capture_getptr(kr_x11 *x11, uint8_t **buffer);
+int kr_x11_capture(kr_x11 *x11, uint8_t *buffer);
+void kr_x11_disable_capture(kr_x11 *x11);
+void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id);
 

@@ -1,35 +1,5 @@
 #include "krad_transponder.h"
 
-/*
-#include "adapters/alsa.c"
-instance per card, can hold and set rate/ duplex,period etc
-create options: card, samplerate, duplex, period,
-
-#include "adapters/wayland.c"
-instance per compositor, multiple windows
-create options: compositor path, window size
-
-#include "adapters/x11.c"
-instance per path..
-create options: path, res, x/y pos
-
-#include "adapters/flycap.c"
-
-#include "adapters/v4l2.c"
-instance per camera, can hold and open in frame_size/frame_rate
-create options: device/fps/frame size
-
-#include "adapters/decklink.c"
-instance per card, can set * and open
-// create options: card, res/fps a+v, connector
-
-#include "adapters/video_encoder.c"
-#include "adapters/audio_encoder.c"
-allways unique instance
-
-#include "adapters/krshmapi.c"
-//create options: name .. unique adapter instance per path?
-*/
 #include "adapters/jack.c"
 
 typedef struct kr_adapter kr_adapter;
