@@ -363,6 +363,7 @@ struct kr_transponder_path_info {
   char name[128];
   kr_xpdr_dir direction;
   kr_adapter_api adapter;
+  //kr_adapter_path_kludgeeiinfo klydgeinfokludge;
 };
 
 char *krad_opus_signal_to_nice_string (int signal);
