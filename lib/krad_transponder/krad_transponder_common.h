@@ -108,7 +108,7 @@ typedef enum {
 } kr_adapter_api;
 
 typedef enum {
-  KR_XPDR_INPUT,
+  KR_XPDR_INPUT = 1,
   KR_XPDR_OUTPUT
 } kr_xpdr_dir;
 
@@ -335,7 +335,7 @@ struct kr_transponder_info {
 };
 
 typedef union {
- kr_jack_info jack;
+  kr_jack_info jack;
 /*
  kr_alsa_info alsa;
  kr_v4l2_info v4l2;
@@ -344,7 +344,7 @@ typedef union {
 } kr_adapter_info;
 
 typedef union {
- kr_jack_path_info jack;
+  kr_jack_path_info jack;
 /*
  kr_alsa_path_info alsa;
  kr_v4l2_path_info v4l2;
@@ -355,7 +355,7 @@ typedef union {
 struct kr_transponder_path_setup {
   char name[128];
   kr_xpdr_dir direction;
-  kr_adapter_api adapter;
+  kr_adapter_api adapter_api;
   char adapter_instance[32];
 };
 

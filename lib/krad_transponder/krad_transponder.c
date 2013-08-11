@@ -34,9 +34,9 @@ typedef union {
 
 struct kr_transponder_path {
   kr_transponder_path_info info;
-  adapter_path *adapter_path;
   kr_mixer_path *mixer_path;
 	kr_compositor_path *compositor_path;
+  adapter_path adapter_path;
   kr_adapter *adapter;
   kr_transponder *xpdr;
 };
@@ -44,7 +44,7 @@ struct kr_transponder_path {
 struct kr_adapter {
   kr_adapter_api api;
   kr_adapter_info info;
-  adapter_handle adapter;
+  adapter_handle handle;
   kr_transponder *xpdr;
 };
 
@@ -66,7 +66,7 @@ static int path_setup_check(kr_xpdr_path_setup *setup) {
       && (setup->direction != KR_XPDR_OUTPUT)) {
     return -1;
   }
-  if (setup->adapter != KR_ADP_JACK) return -1;
+  if (setup->adapter_api != KR_ADP_JACK) return -1;
 
   if (memchr(setup->name + 1, '\0', sizeof(setup->name) - 1) == NULL) {
     return -2;
@@ -77,11 +77,95 @@ static int path_setup_check(kr_xpdr_path_setup *setup) {
   return 0;
 }
 
+static void adapter_create(kr_adapter *adapter) {
+
+  kr_jack_setup setup;
+
+  switch (adapter->api) {
+    case KR_ADP_JACK:
+      snprintf(setup.client_name, sizeof(setup.client_name), "kradradio");
+      snprintf(setup.server_name, sizeof(setup.server_name), "%s", "");
+      adapter->handle.jack = kr_jack_create(&setup);
+      break;
+    default:
+      break;
+  }
+}
+
+static void path_adapter_mkpath(kr_xpdr_path *path) {
+
+  kr_jack_path_setup setup;
+
+  switch (path->adapter->api) {
+    case KR_ADP_JACK:
+      snprintf(setup.name, sizeof(setup.name), "%s", path->info.name);
+      setup.channels = 2; //FIXME just this
+      setup.direction = path->info.direction;
+      path->adapter_path.jack = kr_jack_mkpath(path->adapter->handle.jack,
+       &setup);
+      break;
+    default:
+      break;
+  }
+}
+
+static void path_adapter_setup(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
+
+  int i;
+  kr_adapter *adapter;
+  kr_transponder *xpdr;
+
+  xpdr = path->xpdr;
+  path->info.adapter = setup->adapter_api;
+  //find adapter instance
+
+  for (i = 0; i < KR_XPDR_PATHS_MAX; i++) {
+    if (xpdr->adapter[i] != NULL) {
+      adapter = xpdr->adapter[i];
+      if (adapter->api == setup->adapter_api) {
+        //compare instance string
+        //&& (strncmp(xpdr->adapter))) {
+        //if we find it return
+        path->adapter = adapter;
+        return;
+      }
+    }
+  }
+
+  //or create it
+  if (path->adapter == NULL) {
+    for (i = 0; i < KR_XPDR_PATHS_MAX; i++) {
+      if (xpdr->adapter[i] == NULL) {
+        xpdr->adapter[i] = calloc(1, sizeof(kr_adapter));
+        adapter = xpdr->adapter[i];
+        adapter->xpdr = xpdr;
+        adapter->api = setup->adapter_api;
+        adapter_create(adapter);
+        path->adapter = adapter;
+        return;
+      }
+    }
+  }
+}
+
 static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
-  //find or create adapter instance
-  //
-  //create adapter path
-  //
+
+  int i;
+
+  strncpy(path->info.name, setup->name, sizeof(path->info.name));
+  path->info.direction = setup->direction;
+  path_adapter_setup(path, setup);
+  if (path->adapter == NULL) {
+    printke("we failed to create the adapter");
+    return;
+  }
+
+  path_adapter_mkpath(path);
+  if (path->adapter_path.jack == NULL) {
+    printke("we failed to create the adapter path");
+    return;
+  }
+
   //crate mixer/compositor path
 }
 
@@ -173,7 +257,7 @@ void temp_test(kr_transponder *xpdr) {
   kr_transponder_path_setup setup;
 
   setup.direction = KR_XPDR_INPUT;
-  setup.adapter = KR_ADP_JACK;
+  setup.adapter_api = KR_ADP_JACK;
   snprintf(setup.name, sizeof(setup.name), "Test Path");
   snprintf(setup.adapter_instance, sizeof(setup.adapter_instance), "%s", "");
 
