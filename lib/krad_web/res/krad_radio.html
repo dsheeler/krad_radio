@@ -24,6 +24,11 @@
   src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
 }
 
+@font-face {
+  font-family: "DS-DIGI";
+  src: url("http://europa.kradradio.com:8040/ds-digi-webfont.woff");
+}
+
 .rrrred { background-color: #E20A16; }
 .darkgreen { background-color: #08BA15; }
 .yellowgreen { background-color: #CCE831; }
@@ -55,13 +60,23 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
 }
 
+.clock {
+  font-family: DS-DIGI,HelveticaNeueW0195Black,Helvetica,sans;
+  background-color: black;
+  color: red;
+  text-align: center;
+  border-width: 0.125em;
+  border-color: white;
+  text-shadow: red 0 0 0.125em;
+}
+
+.logo {
+  background-color: black;
+}
+
 .volume_control h6 {
   font-size: 115%;
   margin: 4%;
-}
-
-#stack > h2 {
-  position: absolute;
 }
 
 .analog_meter_wrapper {
@@ -124,7 +139,6 @@ h1, h2, h3, h4, h5, h6 {
   width: 60em;
   height: 33.75em;
   float:left;
-  background-color: #333;
 }
 
 .close {
@@ -279,11 +293,6 @@ li.alt {
   background-color: grey*/;
 }
 
-.effects {
-  display: none;
-}
-
-
 .effects h2 {
   position: absolute;
   right: 0;
@@ -315,42 +324,22 @@ li.alt {
 }
 
 #xmms2s h2 {
-    position: absolute;
-    right: 0;
-    font-size: 1.875em;
-    color: grey;
-    top: -1.25em;
+  color: grey;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
-#stack {/*
-  float: right;
-  width: 49%;
-  height: 33.75em;
-*/
-  overflow: hidden;
-  position: relative;
-}
-/*
-#stack > div {
-  float: none;
-  clear: left;
-}
-*/
 .kradcompositor {
-/*  position: relative;
-  float:left;
-  width: 51%;
-  height: 33.75em;*/
   overflow: hidden;
   background-color: grey;
 }
 
-  .kradmixer_control {
-    float: left;
-    font-weight: bold;
-    text-align: center;
-    position: relative;
-  }
+.kradmixer_control {
+  float: left;
+  font-weight: bold;
+  text-align: center;
+  position: relative;
+}
 
 
 .meter_wrapper {

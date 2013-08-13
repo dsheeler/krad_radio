@@ -351,7 +351,7 @@ int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
   size = file_size (filename);
 
   if (size < 0) {
-    printke ("Krad Sprite: File is not right: %s", filename);
+    printke ("Krad Sprite: File does not exist (did you use a full path?): %s", filename);
     return 0;
   }
 
