@@ -45,12 +45,6 @@ struct kr_adapter {
   kr_transponder *xpdr;
 };
 
-typedef enum {
-  KR_XPDR_MIXER,
-  KR_XPDR_COMPOSITOR,
-  KR_XPDER_ADAPTER
-} kr_transponder_path_io_type;
-
 typedef union {
   kr_mixer_path *mixer_path;
 	kr_compositor_path *compositor_path;

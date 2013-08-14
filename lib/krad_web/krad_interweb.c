@@ -19,15 +19,15 @@ void interweb_ws_pack(kr_iws_client_t *client, uint8_t *buffer, size_t len);
 static int handle_json(kr_iws_client_t *client, char *json, size_t len);
 
 int strmatch(char *string1, char *string2) {
-  
+
   int len1;
-  
+
   if ((string1 == NULL) || (string2 == NULL)) {
     if ((string1 == NULL) && (string2 == NULL)) {
       return 1;
     }
     return 0;
-  } 
+  }
 
   len1 = strlen (string1);
 
@@ -118,7 +118,7 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
     kr_io2_set_fd(client->in, client->sd);
     kr_io2_set_fd(client->out, client->sd);
     client->server = server;
-    printk ("Krad Interweb Server: Client accepted!");  
+    printk ("Krad Interweb Server: Client accepted!");
     return client;
   } else {
     printke ("Krad Interweb Server: Client NOT accepted!");
@@ -192,7 +192,7 @@ static void krad_interweb_server_update_pollfds(kr_interweb_server_t *server) {
     }
   }
   server->socket_count = s;
-  //printk ("Krad Interweb Server: sockets rejiggerd!\n");  
+  //printk ("Krad Interweb Server: sockets rejiggerd!\n");
 }
 
 static void *krad_interweb_server_loop(void *arg) {

@@ -334,39 +334,55 @@ struct kr_transponder_info {
   uint32_t active_paths;
 };
 
+typedef enum {
+  KR_XPDR_MIXER,
+  KR_XPDR_COMPOSITOR,
+  KR_XPDER_ADAPTER
+} kr_transponder_path_io_type;
 
-  kr_adapter_api adapter;
+struct kr_adapter_info {
+  kr_adapter_api api;
+  union {
+    kr_jack_info jack;
+    /*
+    kr_alsa_info alsa;
+    kr_v4l2_info v4l2;
+    kr_decklink_info decklink;
+    */
+  } info;
+};
 
+struct kr_adapter_path_info {
+  kr_adapter_api api;
+  union {
+    kr_jack_path_info jack;
+    /*
+    kr_alsa_path_info alsa;
+    kr_v4l2_path_info v4l2;
+    kr_decklink_path_info decklink;
+    */
+  } info;
+};
 
-typedef union {
-  kr_jack_info jack;
-/*
- kr_alsa_info alsa;
- kr_v4l2_info v4l2;
- kr_decklink_info decklink;
-*/
-} kr_adapter_api_info;
-
-typedef union {
-  kr_jack_path_info jack;
-/*
- kr_alsa_path_info alsa;
- kr_v4l2_path_info v4l2;
- kr_decklink_path_info decklink;
-*/
-} kr_adapter_api_path_info;
-
-struct kr_transponder_path_setup {
-  char name[128];
-  kr_xpdr_dir direction;
-  kr_adapter_api adapter_api;
-  char adapter_instance[32];
+struct kr_transponder_path_io_info {
+  kr_transponder_path_io_type type;
+  union {
+    kr_mixer_path_info mixer_path_info;
+    kr_compositor_path_info compositor_path_info;
+    kr_adapter_path_info adapter_path_info;
+  } info;
 };
 
 struct kr_transponder_path_info {
   char name[128];
-  kr_xpdr_dir direction;
-  kr_adapter_path_kludgeeiinfo klydgeinfokludge;
+  kr_transponder_path_io_info input;
+  kr_transponder_path_io_info output;
+};
+
+struct kr_transponder_path_setup {
+  char name[128];
+  kr_transponder_path_io_info input;
+  kr_transponder_path_io_info output;
 };
 
 char *krad_opus_signal_to_nice_string (int signal);

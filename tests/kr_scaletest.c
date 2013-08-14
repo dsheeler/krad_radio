@@ -17,7 +17,7 @@ int main(void) {
   struct utsname unix_info;
 
   uname(&unix_info);
-  
+
   printf("Host: %s\n", unix_info.nodename);
   printf("Machine: %s\n", unix_info.machine);
   printf("Sysname: %s\n", unix_info.sysname);
@@ -28,10 +28,10 @@ int main(void) {
 
   buffer[0] = malloc(framesize);
   buffer[1] = malloc(framesize);
-  
+
   for (i = 0; i < 60; i++) {
     ret = memcmp(buffer[0], buffer[1], framesize);
-    
+
     if (ret == 4444) {
       printf ("I found a monkey!");
     }
