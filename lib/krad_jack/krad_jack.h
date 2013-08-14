@@ -32,9 +32,7 @@ struct kr_jack_setup {
 };
 
 struct kr_jack_path_setup {
-  char name[64];
-  kr_jack_direction direction;
-  int channels;
+  kr_jack_path_info info;
   //samples callback?
   //state callback - connection/disconnection
   //callpack pointer

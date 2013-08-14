@@ -16,7 +16,7 @@ typedef union {
   kr_encoder *encoder;
   kr_shmapi krad;
 */
-} adapter_handle;
+} kr_adapter_handle;
 
 typedef union {
   kr_jack_path *jack;
@@ -30,21 +30,42 @@ typedef union {
   kr_encoder_path *encoder;
   kr_shmapi_path krad;
 */
-} adapter_path;
+} kr_adapter_api_path;
 
-struct kr_transponder_path {
-  kr_transponder_path_info info;
-  kr_mixer_path *mixer_path;
-	kr_compositor_path *compositor_path;
-  adapter_path adapter_path;
+struct kr_adapter_path {
+  kr_adapter_api api;
+  kr_adapter_api_path api_path;
   kr_adapter *adapter;
-  kr_transponder *xpdr;
 };
 
 struct kr_adapter {
   kr_adapter_api api;
   kr_adapter_info info;
-  adapter_handle handle;
+  kr_adapter_handle handle;
+  kr_transponder *xpdr;
+};
+
+typedef enum {
+  KR_XPDR_MIXER,
+  KR_XPDR_COMPOSITOR,
+  KR_XPDER_ADAPTER
+} kr_transponder_path_io_type;
+
+typedef union {
+  kr_mixer_path *mixer_path;
+	kr_compositor_path *compositor_path;
+  kr_adapter_path *adapter_path;
+} kr_transponder_path_io_handle;
+
+struct kr_transponder_path_io {
+  kr_transponder_path_io_type type;
+  kr_transponder_path_io_handle handle;
+};
+
+struct kr_transponder_path {
+  kr_transponder_path_info info;
+  kr_transponder_path_io input;
+  kr_transponder_path_io output;
   kr_transponder *xpdr;
 };
 
@@ -62,10 +83,6 @@ static void path_destroy(kr_xpdr_path *path);
 
 static int path_setup_check(kr_xpdr_path_setup *setup) {
 
-  if ((setup->direction != KR_XPDR_INPUT)
-      && (setup->direction != KR_XPDR_OUTPUT)) {
-    return -1;
-  }
   if (setup->adapter_api != KR_ADP_JACK) return -1;
 
   if (memchr(setup->name + 1, '\0', sizeof(setup->name) - 1) == NULL) {
@@ -98,9 +115,10 @@ static void path_adapter_mkpath(kr_xpdr_path *path) {
 
   switch (path->adapter->api) {
     case KR_ADP_JACK:
-      snprintf(setup.name, sizeof(setup.name), "%s", path->info.name);
-      setup.channels = 2; //FIXME just this
-      setup.direction = path->info.direction;
+      snprintf(setup.info.name, sizeof(setup.info.name), "%s",
+       path->info.name);
+      setup.info.channels = 2; //FIXME just this
+      setup.info.direction = path->info.direction;
       path->adapter_path.jack = kr_jack_mkpath(path->adapter->handle.jack,
        &setup);
       break;
@@ -153,7 +171,6 @@ static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
   int i;
 
   strncpy(path->info.name, setup->name, sizeof(path->info.name));
-  path->info.direction = setup->direction;
   path_adapter_setup(path, setup);
   if (path->adapter == NULL) {
     printke("we failed to create the adapter");
@@ -256,7 +273,6 @@ void temp_test(kr_transponder *xpdr) {
 
   kr_transponder_path_setup setup;
 
-  setup.direction = KR_XPDR_INPUT;
   setup.adapter_api = KR_ADP_JACK;
   snprintf(setup.name, sizeof(setup.name), "Test Path");
   snprintf(setup.adapter_instance, sizeof(setup.adapter_instance), "%s", "");

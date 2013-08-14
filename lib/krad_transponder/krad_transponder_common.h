@@ -334,6 +334,10 @@ struct kr_transponder_info {
   uint32_t active_paths;
 };
 
+
+  kr_adapter_api adapter;
+
+
 typedef union {
   kr_jack_info jack;
 /*
@@ -341,7 +345,7 @@ typedef union {
  kr_v4l2_info v4l2;
  kr_decklink_info decklink;
 */
-} kr_adapter_info;
+} kr_adapter_api_info;
 
 typedef union {
   kr_jack_path_info jack;
@@ -350,7 +354,7 @@ typedef union {
  kr_v4l2_path_info v4l2;
  kr_decklink_path_info decklink;
 */
-} kr_adapter_path_info;
+} kr_adapter_api_path_info;
 
 struct kr_transponder_path_setup {
   char name[128];
@@ -362,8 +366,7 @@ struct kr_transponder_path_setup {
 struct kr_transponder_path_info {
   char name[128];
   kr_xpdr_dir direction;
-  kr_adapter_api adapter;
-  //kr_adapter_path_kludgeeiinfo klydgeinfokludge;
+  kr_adapter_path_kludgeeiinfo klydgeinfokludge;
 };
 
 char *krad_opus_signal_to_nice_string (int signal);

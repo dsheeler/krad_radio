@@ -364,7 +364,7 @@ static int crate_to_json(kr_iws_client_t *client, kr_crate_t *crate) {
   return 0;
 }
 
-static int krad_delivery_handler (kr_iws_client_t *client) {
+static int krad_delivery_handler(kr_iws_client_t *client) {
 
   kr_crate_t *crate;
   char *string;
@@ -374,7 +374,7 @@ static int krad_delivery_handler (kr_iws_client_t *client) {
 
   kr_delivery_recv(client->ws.krclient);
 
-  while ((kr_delivery_get (client->ws.krclient, &crate) > 0) &&
+  while ((kr_delivery_get(client->ws.krclient, &crate) > 0) &&
          (crate != NULL)) {
 
     /* Subunit updated */
