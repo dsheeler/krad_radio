@@ -40,7 +40,7 @@ void kr_vpx_encoder_to_rep (krad_vpx_encoder_t *encoder, kr_vpx_encoder_t *rep) 
 }
 */
 
-int krad_transponder_command(kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client) {
+int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   int i;
   int devices;

@@ -4,8 +4,12 @@
 #include "krad_app_client.h"
 #include "krad_radio_client.h"
 
+/* This should be called kr_radio_client
+ * but we need to rename the client on the server
+ * side and in all the clients then..
+ */
 struct kr_client_St {
-  krad_app_client_t *krad_app_client;
+  kr_app_client *krad_app_client;
   char *name;
   int autosync;
   int subscriber;
@@ -15,14 +19,17 @@ struct kr_client_St {
   kr_io2_t *io;
   kr_ebml2_t *ebml_in;
   kr_io2_t *io_in;
-  
+
+  /* The below should be replaced with a
+   * proper kr_****_info cache
+   */
   uint32_t period_size;
   uint32_t sample_rate;
   uint32_t width;
   uint32_t height;
   uint32_t fps_num;
   uint32_t fps_den;
-  
+
 };
 
 struct kr_shm_St {

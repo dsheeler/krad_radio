@@ -164,7 +164,7 @@ void krad_compositor_videoport_to_ebml2 ( kr_ebml2_t *ebml, krad_compositor_port
   krad_compositor_videoport_rep_to_ebml2 (&videoport_rep, ebml);
 }
 
-int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client ) {
+int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   kr_unit_control_t unit_control;
   int s;

@@ -235,19 +235,19 @@ int kr_jack_path_unlink(kr_jack_path *path) {
   return 0;
 }
 
-static int path_setup_check(kr_jack_path_setup *setup) {
-  if ((setup->channels < 1) || (setup->channels > KR_JACK_CHANNELS_MAX)) {
+static int path_setup_info_check(kr_jack_path_info *info) {
+  if ((info->channels < 1) || (info->channels > KR_JACK_CHANNELS_MAX)) {
     return -1;
   }
-  if ((setup->direction != KR_JACK_INPUT)
-   && (setup->direction != KR_JACK_OUTPUT)) {
+  if ((info->direction != KR_JACK_INPUT)
+   && (info->direction != KR_JACK_OUTPUT)) {
     return -2;
   }
 
-  if (memchr(setup->name + 1, '\0', sizeof(setup->name) - 1) == NULL) {
+  if (memchr(info->name + 1, '\0', sizeof(info->name) - 1) == NULL) {
     return -3;
   }
-  if (strlen(setup->name) == 0) return -4;
+  if (strlen(info->name) == 0) return -4;
 
   return 0;
 }
@@ -261,14 +261,17 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
 
   if ((jack == NULL) || (setup == NULL)) return NULL;
 
-  if (path_setup_check(setup)) return NULL;
+  if (path_setup_info_check(&setup->info)) return NULL;
 
-  path = calloc (1, sizeof(kr_jack_path));
+  path = calloc(1, sizeof(kr_jack_path));
 
   path->jack = jack;
-  path->info.channels = setup->channels;
-  path->info.direction = setup->direction;
-  strncpy(path->info.name, setup->name, sizeof(setup->name));
+  memcpy(&path->info, &setup->info, sizeof(kr_jack_path_info));
+  /*
+  path->info.channels = setup->info.channels;
+  path->info.direction = setup->info.direction;
+  strncpy(path->info.name, setup->info.name, sizeof(setup->info.name));
+  */
 
   if (path->info.direction == KR_JACK_INPUT) {
     port_flags = JackPortIsInput;

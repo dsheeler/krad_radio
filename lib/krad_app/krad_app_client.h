@@ -38,9 +38,10 @@
 #define KRAD_APP_DOCTYPE_READ_VERSION KRAD_VERSION
 #define EBML_ID_KRAD_APP_CMD 0x4444
 
-typedef struct krad_app_client_St krad_app_client_t;
+typedef struct kr_app_client krad_app_client_t;
+typedef struct kr_app_client kr_app_client;
 
-struct krad_app_client_St {
+struct kr_app_client {
 	char sysname[64];
 	int sd;
 	int tcp_port;

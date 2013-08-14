@@ -281,7 +281,7 @@ void krad_radio_to_ebml(kr_ebml2_t *ebml, kr_radio *radio) {
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, krad_system_get_cpu_usage());
 }
 
-int krad_radio_client_command(kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *client) {
+int kr_radio_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   kr_radio *radio;
   kr_address_t address;
@@ -573,13 +573,13 @@ int krad_radio_client_handler(kr_io2_t *in, kr_io2_t *out, void *ptr) {
         ret = kr_mixer_command(in, out, client);
         break;
       case EBML_ID_KRAD_COMPOSITOR_CMD:
-        ret = krad_compositor_command(in, out, client);
+        ret = kr_compositor_cmd(in, out, client);
         break;
       case EBML_ID_KRAD_TRANSPONDER_CMD:
-        ret = krad_transponder_command(in, out, client);
+        ret = kr_transponder_cmd(in, out, client);
         break;
       case EBML_ID_KRAD_RADIO_CMD:
-        ret = krad_radio_client_command(in, out, client);
+        ret = kr_radio_cmd(in, out, client);
         break;
       default:
         ret = -1;

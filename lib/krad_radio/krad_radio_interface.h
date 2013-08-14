@@ -1,9 +1,18 @@
 #include "krad_radio.h"
 #include "krad_radio_client.h"
 #include "krad_mixer_interface.h"
+#include "krad_transponder_interface.h"
 
 #ifndef KRAD_RADIO_INTERFACE_H
 #define KRAD_RADIO_INTERFACE_H
+
+typedef struct kr_radio_client krad_radio_client_t;
+typedef struct kr_radio_client kr_radio_client;
+
+struct kr_radio_client {
+  kr_radio *krad_radio;
+  int valid;
+};
 
 typedef union {
   kr_mixer_path_info *portgroup;
@@ -14,14 +23,6 @@ int krad_radio_broadcast_subunit_created( krad_app_broadcaster_t *broadcaster, k
 int krad_radio_broadcast_subunit_control(krad_app_broadcaster_t *broadcaster, kr_address_t *address_in, int control, float value, void *client);
 int krad_radio_broadcast_subunit_update(krad_app_broadcaster_t *broadcaster, kr_address_t *address_in, int control, int type, void *value, void *client);
 int krad_radio_broadcast_subunit_destroyed(krad_app_broadcaster_t *broadcaster, kr_address_t *address);
-
-typedef struct krad_radio_client_St krad_radio_client_t;
-typedef struct krad_radio_client_St kr_radio_client;
-
-struct krad_radio_client_St {
-  kr_radio *krad_radio;
-  int valid;
-};
 
 void krad_radio_pack_shipment_terminator(kr_ebml2_t *ebml);
 

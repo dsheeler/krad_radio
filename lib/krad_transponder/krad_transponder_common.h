@@ -6,6 +6,8 @@
 #include "krad_ebml2.h"
 #include "krad_codec_header.h"
 #include "krad_jack_common.h"
+#include "krad_mixer_common.h"
+#include "krad_compositor_common.h"
 
 #define KR_AIN 0
 #define KR_AOUT 1
@@ -106,11 +108,6 @@ typedef enum {
   KR_ADP_KRAPI,
   KR_ADP_JACK
 } kr_adapter_api;
-
-typedef enum {
-  KR_XPDR_INPUT = 1,
-  KR_XPDR_OUTPUT
-} kr_xpdr_dir;
 
 struct krad_transponder_rep_St {
   uint16_t receiver_port;
@@ -322,23 +319,25 @@ struct krad_transponder_subunit_rep_St {
   kr_transponder_subunit_actual_t actual;
 };
 
-typedef struct kr_transponder_path_setup kr_transponder_path_setup;
-typedef struct kr_transponder_path_setup kr_xpdr_path_setup;
-typedef struct kr_transponder_path_info kr_transponder_path_info;
-typedef struct kr_transponder_path_info kr_xdpr_path_info;
+typedef struct kr_transponder_info kr_xpdr_info;
+typedef struct kr_transponder_path_info kr_xpdr_path_info;
+typedef struct kr_transponder_path_io_info kr_xpdr_path_io_info;
 
 typedef struct kr_transponder_info kr_transponder_info;
-typedef struct kr_transponder_info kr_xpdr_info;
-
-struct kr_transponder_info {
-  uint32_t active_paths;
-};
+typedef struct kr_transponder_path_info kr_transponder_path_info;
+typedef struct kr_transponder_path_io_info kr_transponder_path_io_info;
+typedef struct kr_adapter_info kr_adapter_info;
+typedef struct kr_adapter_path_info kr_adapter_path_info;
 
 typedef enum {
   KR_XPDR_MIXER,
   KR_XPDR_COMPOSITOR,
   KR_XPDER_ADAPTER
 } kr_transponder_path_io_type;
+
+struct kr_transponder_info {
+  uint32_t active_paths;
+};
 
 struct kr_adapter_info {
   kr_adapter_api api;
@@ -374,12 +373,6 @@ struct kr_transponder_path_io_info {
 };
 
 struct kr_transponder_path_info {
-  char name[128];
-  kr_transponder_path_io_info input;
-  kr_transponder_path_io_info output;
-};
-
-struct kr_transponder_path_setup {
   char name[128];
   kr_transponder_path_io_info input;
   kr_transponder_path_io_info output;
