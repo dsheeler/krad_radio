@@ -24,7 +24,7 @@ struct kr_transponder {
   kr_mixer *mixer;
   kr_compositor *compositor;
   kr_transponder_info info;
-  kr_adapter *adapter[KR_XPDR_PATHS_MAX];
+  kr_adapter *adapter[KR_XPDR_PATHS_MAX * 2];
   kr_transponder_path *path[KR_XPDR_PATHS_MAX];
 };
 
@@ -32,7 +32,6 @@ static int path_setup_io_info_check(kr_xpdr_path_io_info *info);
 static int path_setup_info_check(kr_xpdr_path_info *info);
 static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
 static void path_destroy(kr_xpdr_path *path);
-
 
 static int path_setup_io_info_check(kr_transponder_path_io_info *info) {
 
@@ -166,7 +165,6 @@ void temp_test(kr_transponder *xpdr) {
 
   setup.adapter_api = KR_ADP_JACK;
   snprintf(setup.name, sizeof(setup.name), "Test Path");
-  snprintf(setup.adapter_instance, sizeof(setup.adapter_instance), "%s", "");
 
   kr_transponder_mkpath(xpdr, &setup);
 */
