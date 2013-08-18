@@ -70,13 +70,13 @@ void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_info *mixer_rep) {
 */
 }
 
-void kr_mixer_info_to_ebml(kr_ebml2_t *ebml, kr_mixer_info *mxr) {
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mxr->period_size);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mxr->sample_rate);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->inputs);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->auxes);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->buses);
-  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_TIME_SOURCE, mxr->clock);
+void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
+  kr_ebml2_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->period_size);
+  kr_ebml2_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->sample_rate);
+  kr_ebml2_pack_uint32(e, KR_EID_MIXER_INPUTS, info->inputs);
+  kr_ebml2_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->auxes);
+  kr_ebml2_pack_uint32(e, KR_EID_MIXER_BUSES, info->buses);
+  kr_ebml2_pack_string(e, KR_EID_MIXER_CLOCK, info->clock);
 }
 
 void kr_mixer_to_ebml(kr_ebml *e, kr_mixer *mixer) {
