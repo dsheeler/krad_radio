@@ -1,7 +1,5 @@
 #include "krad_transponder.h"
 
-#include "adapter.c"
-
 typedef union {
   void *exists;
   kr_mixer_path *mixer_path;
@@ -31,6 +29,57 @@ static int path_info_check(kr_xpdr_path_info *info);
 static int path_setup_check(kr_xpdr_path_setup *setup);
 static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
 static void path_destroy(kr_xpdr_path *path);
+static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup);
+static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup);
+
+static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
+
+  int i;
+  kr_adapter *adapter;
+  kr_adapter_info info;
+
+  adapter = NULL;
+
+  //find adapter instance
+  for (i = 0; i < KR_XPDR_PATHS_MAX * 2; i++) {
+    if (xpdr->adapter[i] != NULL) {
+      adapter = xpdr->adapter[i];
+      if (kr_adapter_get_info(adapter, &info)) return NULL;
+      if (info.api == setup->info.api) {
+        //compare instance string
+        //&& (strncmp(xpdr->adapter))) {
+        //if we find it return
+        return adapter;
+      }
+    }
+  }
+  return NULL;
+}
+
+static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
+
+  int i;
+  kr_adapter *adapter;
+  kr_adapter_setup adapter_setup;
+
+  /* Find adapter instance */
+  adapter = find_adapter(xpdr, setup);
+  if (adapter) return adapter;
+
+  /* Otherwise create it */
+  memset(&adapter_setup, 0, sizeof(kr_adapter_setup));
+  for (i = 0; i < KR_XPDR_PATHS_MAX; i++) {
+    if (xpdr->adapter[i] == NULL) {
+      adapter_setup.info.api = setup->info.api;
+      /* FIXME need pointers  */
+      adapter_setup.user = NULL;
+      adapter_setup.cb = NULL;
+      xpdr->adapter[i] = kr_adapter_create(&adapter_setup);
+      return xpdr->adapter[i];
+    }
+  }
+  return NULL;
+}
 
 static int path_io_info_check(kr_transponder_path_io_info *info) {
 
@@ -103,8 +152,10 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
        sizeof(kr_adapter_path_info));
       ap_setup.cb = NULL;
       ap_setup.user = path;
-      /* FIXME find adapter! */
-      //io->adapter_path = kr_adapter_mkpath(adapter, &ap_setup);
+      adapter = get_adapter(path->xpdr, &ap_setup);
+      if (adapter) {
+        io->adapter_path = kr_adapter_mkpath(adapter, &ap_setup);
+      }
       break;
     case KR_XPDR_MIXER:
       memcpy(&mp_setup.info, &info->info.mixer_path_info,

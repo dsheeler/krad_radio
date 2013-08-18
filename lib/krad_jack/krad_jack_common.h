@@ -1,6 +1,8 @@
 #ifndef KR_JACK_COMMON_H
 #define KR_JACK_COMMON_H
 
+#include "inttypes.h"
+
 typedef enum {
   KR_JACK_INPUT = 1,
   KR_JACK_OUTPUT

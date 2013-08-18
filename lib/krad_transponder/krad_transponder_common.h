@@ -5,9 +5,9 @@
 #include <opus_defines.h>
 #include "krad_ebml2.h"
 #include "krad_codec_header.h"
-#include "krad_jack_common.h"
 #include "krad_mixer_common.h"
 #include "krad_compositor_common.h"
+#include "krad_adapter_common.h"
 
 #define KR_AIN 0
 #define KR_AOUT 1
@@ -314,20 +314,6 @@ typedef struct kr_transponder_path_io_info kr_xpdr_path_io_info;
 typedef struct kr_transponder_info kr_transponder_info;
 typedef struct kr_transponder_path_info kr_transponder_path_info;
 typedef struct kr_transponder_path_io_info kr_transponder_path_io_info;
-typedef struct kr_adapter_info kr_adapter_info;
-typedef struct kr_adapter_path_info kr_adapter_path_info;
-
-typedef enum {
-  KR_ADP_V4L2,
-  KR_ADP_DECKLINK,
-  KR_ADP_ALSA,
-  KR_ADP_X11,
-  KR_ADP_WAYLAND,
-  KR_ADP_ENCODER,
-  KR_ADP_FLYCAP,
-  KR_ADP_KRAPI,
-  KR_ADP_JACK
-} kr_adapter_api;
 
 typedef enum {
   KR_XPDR_MIXER,
@@ -339,30 +325,6 @@ typedef kr_transponder_path_io_type kr_xpdr_path_io_type;
 
 struct kr_transponder_info {
   uint32_t active_paths;
-};
-
-struct kr_adapter_info {
-  kr_adapter_api api;
-  union {
-    kr_jack_info jack;
-    /*
-    kr_alsa_info alsa;
-    kr_v4l2_info v4l2;
-    kr_decklink_info decklink;
-    */
-  } info;
-};
-
-struct kr_adapter_path_info {
-  kr_adapter_api api;
-  union {
-    kr_jack_path_info jack;
-    /*
-    kr_alsa_path_info alsa;
-    kr_v4l2_path_info v4l2;
-    kr_decklink_path_info decklink;
-    */
-  } info;
 };
 
 struct kr_transponder_path_io_info {
