@@ -335,6 +335,8 @@ typedef enum {
   KR_XPDR_ADAPTER
 } kr_transponder_path_io_type;
 
+typedef kr_transponder_path_io_type kr_xpdr_path_io_type;
+
 struct kr_transponder_info {
   uint32_t active_paths;
 };
@@ -364,7 +366,7 @@ struct kr_adapter_path_info {
 };
 
 struct kr_transponder_path_io_info {
-  kr_transponder_path_io_type type;
+  kr_xpdr_path_io_type type;
   union {
     kr_mixer_path_info mixer_path_info;
     kr_compositor_path_info compositor_path_info;
