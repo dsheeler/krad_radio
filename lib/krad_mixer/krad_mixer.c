@@ -726,13 +726,16 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   return path;
 }
 
-void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *unit) {
+int kr_mixer_unlink(kr_mixer_path *unit) {
 
   int c;
+  kr_mixer *mixer;
 
   if (unit == NULL) {
-    return;
+    return -1;
   }
+
+  mixer = unit->mixer;
 
   if (unit->crossfader != NULL) {
     kr_mixer_xf_decouple(mixer, unit->crossfader);
@@ -760,6 +763,8 @@ void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *unit) {
 
   unit->destroy_mark = 0;
   unit->active = 0;
+
+  return 0;
 }
 
 kr_mixer_path *kr_mixer_path_from_name(kr_mixer *mixer, char *name) {
@@ -888,13 +893,13 @@ int kr_mixer_destroy(kr_mixer *mixer) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if ((mixer->unit[p]->active != 0) &&
         (mixer->unit[p]->type != KR_MXR_BUS)) {
-      kr_mixer_path_unlink(mixer, mixer->unit[p]);
+      kr_mixer_unlink(mixer->unit[p]);
     }
   }
   mixer->destroying = 2;
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     if (mixer->unit[p]->active != 0) {
-      kr_mixer_path_unlink(mixer, mixer->unit[p]);
+      kr_mixer_unlink(mixer->unit[p]);
     }
   }
   free(mixer->crossfader);

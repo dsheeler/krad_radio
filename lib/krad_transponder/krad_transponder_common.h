@@ -332,7 +332,7 @@ typedef struct kr_adapter_path_info kr_adapter_path_info;
 typedef enum {
   KR_XPDR_MIXER,
   KR_XPDR_COMPOSITOR,
-  KR_XPDER_ADAPTER
+  KR_XPDR_ADAPTER
 } kr_transponder_path_io_type;
 
 struct kr_transponder_info {

@@ -109,8 +109,8 @@ struct kr_mixer {
   int destroying;
 };
 
-kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np);
-void kr_mixer_path_unlink(kr_mixer *mixer, kr_mixer_path *path);
+kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup);
+int kr_mixer_unlink(kr_mixer_path *path);
 kr_mixer_path *kr_mixer_path_from_name(kr_mixer *mixer, char *name);
 
 //FIXME replace with kr_mixer_path_ctl and union type arg
