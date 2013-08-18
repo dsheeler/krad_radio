@@ -99,9 +99,8 @@ static kr_radio *radio_create(char *sysname) {
   }
 
   kr_mixer_setup_init(&mixer_setup);
-//HRMZ its possible a callback is not needed for mixer info?
-//  mixer_setup.user = radio->app;
-//  mixer_setup.cb = kr_mixer_asi_info;
+  mixer_setup.user = radio->app;
+  /* FIXME mixer_setup.cb = kr_mixer_asi_info; */
 
   radio->mixer = kr_mixer_create(&mixer_setup);
   if (radio->mixer == NULL) {

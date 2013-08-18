@@ -106,7 +106,7 @@ struct kr_mixer {
   int frames_since_peak_read;
   int frames_per_peak_broadcast;
   kr_mixer_info_cb *info_cb;
-  void *info_cb_user;
+  void *user;
   int pusher;
   int destroying;
 };

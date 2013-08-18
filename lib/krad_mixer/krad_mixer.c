@@ -662,9 +662,9 @@ static int path_setup_info_check(kr_mixer_path_info *info) {
   if (info->channels < 1) return -1;
   if (info->channels > KR_MXR_MAX_CHANNELS) return -1;
 
-  if ((info->type == KR_MXR_INPUT)
-      || (info->type == KR_MXR_BUS)
-      || (info->type == KR_MXR_AUX)) {
+  if ((info->type != KR_MXR_INPUT)
+      && (info->type != KR_MXR_BUS)
+      && (info->type != KR_MXR_AUX)) {
     return -4;
   }
 
@@ -969,6 +969,9 @@ static void kr_mixer_masterbus_setup(kr_mixer *mixer) {
   mbs.info.channels = 2;
   mbs.info.volume[0] = KR_MXR_DEF_MBUS_LVL;
   mbs.info.volume[1] = KR_MXR_DEF_MBUS_LVL;
+
+  mbs.user = mixer->user;
+
   mixer->master = kr_mixer_mkpath(mixer, &mbs);
 }
 
@@ -979,10 +982,9 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
 
   if (setup == NULL) return NULL;
 
-  if ((mixer = calloc(1, sizeof(kr_mixer))) == NULL) {
-    failfast("Krad Mixer memory alloc failure");
-  }
-
+  mixer = calloc(1, sizeof(kr_mixer));
+  mixer->user = setup->user;
+  mixer->info_cb = setup->cb;
   kr_mixer_period_set(mixer, setup->period_size);
   kr_mixer_sample_rate_set(mixer, setup->sample_rate);
   mixer->avg_window_size = (mixer->sample_rate / 1000) * KR_MXR_RMS_WINDOW_MS;
