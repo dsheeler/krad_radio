@@ -1,36 +1,38 @@
 #include "krad_mixer_interface.h"
 
-void kr_mixer_unit_to_rep(kr_mixer_path *unit, kr_mixer_path_info *unit_rep) {
+int kr_mixer_get_path_info(kr_mixer_path *unit, kr_mixer_path_info *info) {
 
   int i;
 
-  strcpy(unit_rep->name, unit->name);
-  unit_rep->channels = unit->channels;
-//unit_rep->io_type = unit->io_type;
+  if ((unit == NULL) || (info == NULL)) return -1;
+
+  strcpy(info->name, unit->name);
+  info->channels = unit->channels;
   if (unit->bus != NULL) {
-    strncpy(unit_rep->bus, unit->bus->name, sizeof(unit_rep->bus));
+    strncpy(info->bus, unit->bus->name, sizeof(info->bus));
   } else {
-    unit_rep->bus[0] = '\0';
+    info->bus[0] = '\0';
   }
   for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
-    unit_rep->volume[i] = unit->volume[i];
-    unit_rep->map[i] = unit->map[i];
-    unit_rep->mixmap[i] = unit->mixmap[i];
-    unit_rep->rms[i] = unit->avg[i];
-    unit_rep->peak[i] = unit->peak_last[i];
+    info->volume[i] = unit->volume[i];
+    info->map[i] = unit->map[i];
+    info->mixmap[i] = unit->mixmap[i];
+    info->rms[i] = unit->avg[i];
+    info->peak[i] = unit->peak_last[i];
   }
-  kr_sfx_effect_info(unit->sfx, 0, &unit_rep->eq);
-  kr_sfx_effect_info(unit->sfx, 1, &unit_rep->lowpass);
-  kr_sfx_effect_info(unit->sfx, 2, &unit_rep->highpass);
-  kr_sfx_effect_info(unit->sfx, 3, &unit_rep->analog);
+  kr_sfx_effect_info(unit->sfx, 0, &info->eq);
+  kr_sfx_effect_info(unit->sfx, 1, &info->lowpass);
+  kr_sfx_effect_info(unit->sfx, 2, &info->highpass);
+  kr_sfx_effect_info(unit->sfx, 3, &info->analog);
   if ((unit->crossfader != NULL) && (unit->crossfader->path[0] == unit)) {
-    unit_rep->fade = unit->crossfader->fade;
-    strncpy(unit_rep->crossfade_group, unit->crossfader->path[1]->name,
-     sizeof(unit_rep->crossfade_group));
+    info->fade = unit->crossfader->fade;
+    strncpy(info->crossfade_group, unit->crossfader->path[1]->name,
+     sizeof(info->crossfade_group));
   } else {
-    unit_rep->crossfade_group[0] = '\0';
-    unit_rep->fade = 0.0f;
+    info->crossfade_group[0] = '\0';
+    info->fade = 0.0f;
   }
+  return 0;
 }
 
 void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
@@ -53,7 +55,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   kr_mixer_path *path;
   kr_mixer_path *unit;
   kr_mixer_path *unit2;
-  kr_mixer_path_info unit_rep;
+  kr_mixer_path_info info;
   char name[64];
   char controlname[16];
   void *ptr;
@@ -160,8 +162,8 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
                                EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                                EBML_ID_KRAD_SUBUNIT_INFO);
           kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          kr_mixer_unit_to_rep(unit, &unit_rep);
-          kr_mixer_path_info_to_ebml(&unit_rep, &ebml_out);
+          kr_mixer_get_path_info(unit, &info);
+          kr_mixer_path_info_to_ebml(&info, &ebml_out);
           kr_ebml2_finish_element(&ebml_out, payload);
           kr_ebml2_finish_element(&ebml_out, response);
         }
@@ -230,8 +232,8 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_SUBUNIT_INFO);
         kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-        kr_mixer_unit_to_rep(unit, &unit_rep);
-        kr_mixer_path_info_to_ebml(&unit_rep, &ebml_out);
+        kr_mixer_get_path_info(unit, &info);
+        kr_mixer_path_info_to_ebml(&info, &ebml_out);
         kr_ebml2_finish_element(&ebml_out, payload);
         kr_ebml2_finish_element(&ebml_out, response);
       }

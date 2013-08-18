@@ -46,21 +46,22 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
   kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_CREATED);
   kr_ebml2_start_element(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload_loc);
 
-  if ((address->path.unit == KR_MIXER) && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
+  if ((address->path.unit == KR_MIXER)
+      && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     subunit.portgroup = subunit_in;
-    kr_mixer_unit_to_rep(subunit.portgroup, &rep.portgroup);
+    kr_mixer_get_path_info(subunit_in, &rep.portgroup);
     kr_mixer_path_info_to_ebml(&rep.portgroup, &ebml);
   }
 
   if (address->path.unit == KR_COMPOSITOR) {
     if (address->path.subunit.compositor_subunit == KR_SPRITE) {
-      krad_compositor_sprite_to_ebml2 ( &ebml, subunit_in );
+      krad_compositor_sprite_to_ebml2(&ebml, subunit_in);
     }
     if (address->path.subunit.compositor_subunit == KR_TEXT) {
-      krad_compositor_text_to_ebml2 ( &ebml, subunit_in );
+      krad_compositor_text_to_ebml2(&ebml, subunit_in);
     }
     if (address->path.subunit.compositor_subunit == KR_VECTOR) {
-      krad_compositor_vector_to_ebml2 ( &ebml, subunit_in );
+      krad_compositor_vector_to_ebml2(&ebml, subunit_in);
     }
   }
 
@@ -69,13 +70,13 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
     krad_radio_remote_rep_to_ebml (subunit.remote, &ebml);
   }
 
-  kr_ebml2_finish_element (&ebml, payload_loc);
-  kr_ebml2_finish_element (&ebml, message_loc);
+  kr_ebml2_finish_element(&ebml, payload_loc);
+  kr_ebml2_finish_element(&ebml, message_loc);
 
-  broadcast_msg = krad_broadcast_msg_create (broadcaster, buffer, ebml.pos);
+  broadcast_msg = krad_broadcast_msg_create(broadcaster, buffer, ebml.pos);
 
   if (broadcast_msg != NULL) {
-    return krad_app_server_broadcaster_broadcast ( broadcaster, &broadcast_msg );
+    return krad_app_server_broadcaster_broadcast(broadcaster, &broadcast_msg);
   }
 
   return -1;
