@@ -83,10 +83,10 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
   kr_xpdr_path_io *io;
   kr_mixer *mixer;
   //kr_compositor *compositor;
-  //kr_adapter *adapter;
-  kr_mixer_path_setup mps;
+  kr_adapter *adapter;
+  kr_mixer_path_setup mp_setup;
   //kr_compositor_path_setup compositor_path_setup;
-  //kr_adapter_path_setup ap_setup;
+  kr_adapter_path_setup ap_setup;
 
   mixer = path->xpdr->mixer;
   //compositor = path->xpdr->compositor;
@@ -99,12 +99,19 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
 
   switch (info->type) {
     case KR_XPDR_ADAPTER:
+      memcpy(&ap_setup.info, &info->info.adapter_path_info,
+       sizeof(kr_adapter_path_info));
+      ap_setup.cb = NULL;
+      ap_setup.user = path;
+      /* FIXME find adapter! */
+      //io->adapter_path = kr_adapter_mkpath(adapter, &ap_setup);
       break;
     case KR_XPDR_MIXER:
-      memcpy(&mps.info, &info->info.mixer_path_info, sizeof(kr_mixer_path_info));
-      mps.audio_cb = NULL;
-      mps.user = path;
-      io->mixer_path = kr_mixer_mkpath(mixer, &mps);
+      memcpy(&mp_setup.info, &info->info.mixer_path_info,
+       sizeof(kr_mixer_path_info));
+      mp_setup.audio_cb = NULL;
+      mp_setup.user = path;
+      io->mixer_path = kr_mixer_mkpath(mixer, &mp_setup);
       break;
     case KR_XPDR_COMPOSITOR:
       break;

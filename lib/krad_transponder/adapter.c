@@ -2,6 +2,7 @@
 
 typedef struct kr_adapter kr_adapter;
 typedef struct kr_adapter_path kr_adapter_path;
+typedef struct kr_adapter_path_setup kr_adapter_path_setup;
 
 typedef union {
   kr_jack *jack;
@@ -35,6 +36,12 @@ struct kr_adapter_path {
   kr_adapter_api api;
   kr_adapter_api_path api_path;
   kr_adapter *adapter;
+};
+
+struct kr_adapter_path_setup {
+  kr_adapter_path_info info;
+  void *user;
+  void *cb;
 };
 
 struct kr_adapter {
