@@ -656,49 +656,83 @@ void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader) {
   }
 }
 
-kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
+static kr_mixer_path *path_alloc(kr_mixer *mixer) {
 
-  int p;
+  int i;
+
+  for (i = 0; i < KR_MXR_MAX_PATHS; i++) {
+    if (mixer->unit[i]->active == 0) {
+      mixer->unit[i]->mixer = mixer;
+      return mixer->unit[i];
+    }
+  }
+  return NULL;
+}
+
+static int path_setup_info_check(kr_mixer_path_info *info) {
+
+  if (memchr(info->name + 1, '\0', sizeof(info->name) - 1) == NULL) {
+    return -2;
+  }
+  if (strlen(info->name) == 0) return -3;
+
+  if (info->channels < 1) return -1;
+  if (info->channels > KR_MXR_MAX_CHANNELS) return -1;
+
+  if ((info->type == KR_MXR_INPUT)
+      || (info->type == KR_MXR_BUS)
+      || (info->type == KR_MXR_AUX)) {
+    return -4;
+  }
+
+  /* FIXME check all the things 
+   *
+   * bus exists
+   * sfx params
+   * volume
+   * crossfade partner
+   * matrix
+   *
+   * */
+
+  return 0;
+}
+
+static int path_setup_check(kr_mixer_path_setup *setup) {
+  if (setup->user == NULL) return -2;
+  if (setup->cb == NULL) return -3;
+  if (path_setup_info_check(&setup->info)) return -4;
+  return 0;
+}
+
+kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup) {
+
   int c;
-  int len;
   kr_mixer_path *path;
   kr_sfx_setup sfx_setup;
 
-  path = NULL;
-  len = strlen(np->info.name);
-  /* prevent dupe names */
-  for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
-    if (mixer->unit[p]->active != 0) {
-      if (strncmp(np->info.name, mixer->unit[p]->name, len) == 0) {
-        return NULL;
-      }
-    }
-  }
-  for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
-    if (mixer->unit[p]->active == 0) {
-      path = mixer->unit[p];
-      break;
-    }
-  }
-  if (path == NULL) {
-    return NULL;
-  }
-  path->mixer = mixer;
-  strncpy(path->name, np->info.name, sizeof(path->name));
-  path->channels = np->info.channels;
-  path->type = np->info.type;
+  if ((mixer == NULL) || (setup == NULL)) return NULL;
+  if (path_setup_check(setup)) return NULL;
+  path = kr_mixer_path_from_name(mixer, setup->info.name);
+  if (path != NULL) return NULL;
+  path = path_alloc(mixer);
+  if (path == NULL) return NULL;
+
+  strncpy(path->name, setup->info.name, sizeof(path->name));
+  path->channels = setup->info.channels;
+  path->type = setup->info.type;
   //FIXME find my bus by name
   path->bus = mixer->master;
   for (c = 0; c < KR_MXR_MAX_CHANNELS; c++) {
     if (c < path->channels) {
-      //FIXME take mapping from np
+      //FIXME take mapping from setup 
       path->mixmap[c] = c;
     } else {
       path->mixmap[c] = -1;
     }
     path->map[c] = c;
     path->mapped_samples[c] = &path->samples[c];
-    path->volume[c] = np->info.volume[c];
+    path->volume[c] = setup->info.volume[c];
     path->volume_actual[c] = (float)(path->volume[c]/100.0f);
     path->volume_actual[c] *= path->volume_actual[c];
     path->new_volume_actual[c] = path->volume_actual[c];
@@ -719,7 +753,7 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *np) {
   kr_sfx_add(path->sfx, KR_SFX_HIGHPASS);
   kr_sfx_add(path->sfx, KR_SFX_ANALOG);
   //FIXME
-  //set sfx params from np
+  //set sfx params from setup
 
   path->active = 1;
 
@@ -771,24 +805,22 @@ kr_mixer_path *kr_mixer_path_from_name(kr_mixer *mixer, char *name) {
 
   int p;
   int len;
-  kr_mixer_path *unit;
+  kr_mixer_path *path;
+
+  if ((mixer == NULL) || (name == NULL)) return NULL;
 
   len = strlen(name);
+  if (len < 1) return NULL;
 
-  if (len > 0) {
-    for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
-      unit = mixer->unit[p];
-      if ((unit != NULL) && ((unit->active == 1) || (unit->active == 2))) {
-        if ((strlen(unit->name) == len) &&
-            (strncmp(name, unit->name, len) == 0)) {
-          return unit;
-        }
+  for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
+    path = mixer->unit[p];
+    if ((path != NULL) && ((path->active == 1) || (path->active == 2))) {
+      if ((strlen(path->name) == len) &&
+          (strncmp(name, path->name, len) == 0)) {
+        return path;
       }
     }
   }
-
-  printke("Krad Mixer: Could not find unit called %s", name);
-
   return NULL;
 }
 

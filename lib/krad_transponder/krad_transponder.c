@@ -44,7 +44,17 @@ static int path_setup_io_info_check(kr_transponder_path_io_info *info) {
     return -1;
   }
 
-  /* FIXME More checking... */
+  switch (info->type) {
+    case KR_XPDR_ADAPTER:
+      //path->output.handle = ;
+      break;
+    case KR_XPDR_MIXER:
+      //path->output.handle = ;
+      break;
+    case KR_XPDR_COMPOSITOR:
+      //path->output.handle = ;
+      break;
+  }
 
   return 0;
 }
