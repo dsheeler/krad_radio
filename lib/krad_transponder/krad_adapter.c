@@ -65,7 +65,7 @@ kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
   if (adapter->handle.exists == NULL) return NULL;
   if (adapter->api != setup->info.api) return NULL;
 
-  //find path in adapter paths array
+  /* FIXME find free path in adapter paths array */
 
   switch (path->adapter->api) {
     case KR_ADP_JACK:
@@ -85,7 +85,6 @@ kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
 }
 
 int kr_adapter_get_info(kr_adapter *adapter, kr_adapter_info *info) {
-
   if (adapter == NULL) return -1;
   if (info == NULL) return -2;
   memcpy(&adapter->info, info, sizeof(kr_adapter_info));
@@ -96,21 +95,32 @@ int kr_adapter_destroy(kr_adapter *adapter) {
 
   if (adapter == NULL) return -1;
 
+  /* FIXME loop thru paths and destroy */
+
   return 0;
 }
 
-kr_adapter *kr_adapter_create(kr_adapter_setup *setup2) {
+kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
 
   kr_adapter *adapter;
-  kr_jack_setup setup;
+  kr_jack_setup jack_setup;
 
   adapter = calloc(1, sizeof(kr_adapter));
 
-  switch (setup2->info.api) {
+  switch (setup->info.api) {
     case KR_ADP_JACK:
-      snprintf(setup.client_name, sizeof(setup.client_name), "kradradio");
-      snprintf(setup.server_name, sizeof(setup.server_name), "%s", "");
-      adapter->handle.jack = kr_jack_create(&setup);
+      snprintf(jack_setup.client_name,
+       sizeof(setup->info.api_info.jack.client_name),
+       "kradradio");
+      snprintf(jack_setup.server_name,
+       sizeof(setup->info.api_info.jack.server_name),
+       "%s", "");
+      /*
+      memcpy(&jack_setup.info, &setup->info.info.jack, sizeof(kr_jack_info));
+      */
+      jack_setup.user = setup->user;
+      jack_setup.cb = setup->cb;
+      adapter->handle.jack = kr_jack_create(&jack_setup);
       return adapter;
     default:
       break;

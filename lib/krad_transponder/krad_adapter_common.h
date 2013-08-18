@@ -27,7 +27,7 @@ struct kr_adapter_info {
     kr_v4l2_info v4l2;
     kr_decklink_info decklink;
     */
-  } info;
+  } api_info;
 };
 
 struct kr_adapter_path_info {

@@ -27,8 +27,9 @@ typedef struct kr_jack_path kr_jack_output;
 struct kr_jack_setup {
   char client_name[64];
   char server_name[64];
+  void *user;
   //state callback - server shutdown/xrun/period-sampleratechange
-  //callpack pointer
+  void *cb;
 };
 
 struct kr_jack_path_setup {

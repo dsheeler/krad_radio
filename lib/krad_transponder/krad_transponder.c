@@ -182,7 +182,7 @@ static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
 static void path_io_destroy(kr_xpdr_path_io *io, kr_xpdr_path_io_type type) {
   switch (type) {
     case KR_XPDR_ADAPTER:
-      //kr_adapter_unlink(path->input.handle.adapter_path);
+      kr_adapter_unlink(io->adapter_path);
       break;
     case KR_XPDR_MIXER:
       kr_mixer_unlink(io->mixer_path);
