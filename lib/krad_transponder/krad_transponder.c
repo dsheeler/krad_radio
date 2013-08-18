@@ -3,6 +3,7 @@
 #include "adapter.c"
 
 typedef union {
+  void *exists;
   kr_mixer_path *mixer_path;
 	kr_compositor_path *compositor_path;
   kr_adapter_path *adapter_path;
@@ -90,17 +91,17 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
   mixer = path->xpdr->mixer;
   //compositor = path->xpdr->compositor;
 
-  if (path->output) {
-    io = path->input;
+  if (path->output.exists) {
+    io = &path->input;
   } else {
-    io = path->output;
+    io = &path->output;
   }
 
   switch (info->type) {
     case KR_XPDR_ADAPTER:
       break;
     case KR_XPDR_MIXER:
-      memcpy(&mps.info, &info.mixer_path_info, sizeof(kr_mixer_path_info));
+      memcpy(&mps.info, &info->info.mixer_path_info, sizeof(kr_mixer_path_info));
       mps.audio_cb = NULL;
       mps.user = path;
       io->mixer_path = kr_mixer_mkpath(mixer, &mps);
@@ -116,8 +117,8 @@ static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
   path->user = setup->user;
   path->cb = setup->cb;
 
-  path_io_create(path, path->info.output);
-  path_io_create(path path->info.input);
+  path_io_create(path, &path->info.output);
+  path_io_create(path, &path->info.input);
 }
 
 static void path_io_destroy(kr_xpdr_path_io *io, kr_xpdr_path_io_type type) {
