@@ -46,6 +46,7 @@ struct kr_mixer_path_setup {
   kr_mixer_path_audio_cb *cb;
 };
 
+/* FIXME add hard mode/maxpaths */
 struct kr_mixer_setup {
   uint32_t period_size;
   uint32_t sample_rate;
@@ -123,7 +124,7 @@ void kr_mixer_channel_move(kr_mixer_path *unit, int in_chan, int out_chan);
 void kr_mixer_setup_init(kr_mixer_setup *setup);
 
 /* Mixer as a whole funcs */
-kr_mixer *kr_mixer_create(kr_mixer_setup *setup);//FIXME max paths?
+kr_mixer *kr_mixer_create(kr_mixer_setup *setup);
 int kr_mixer_destroy(kr_mixer *mixer);
 int kr_mixer_mix(kr_mixer *mixer);
 

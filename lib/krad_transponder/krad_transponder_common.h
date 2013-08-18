@@ -97,18 +97,6 @@ typedef enum {
 #endif
 } krad_link_video_source_t;
 
-typedef enum {
-  KR_ADP_V4L2,
-  KR_ADP_DECKLINK,
-  KR_ADP_ALSA,
-  KR_ADP_X11,
-  KR_ADP_WAYLAND,
-  KR_ADP_ENCODER,
-  KR_ADP_FLYCAP,
-  KR_ADP_KRAPI,
-  KR_ADP_JACK
-} kr_adapter_api;
-
 struct krad_transponder_rep_St {
   uint16_t receiver_port;
   uint16_t transmitter_port;
@@ -328,6 +316,18 @@ typedef struct kr_transponder_path_info kr_transponder_path_info;
 typedef struct kr_transponder_path_io_info kr_transponder_path_io_info;
 typedef struct kr_adapter_info kr_adapter_info;
 typedef struct kr_adapter_path_info kr_adapter_path_info;
+
+typedef enum {
+  KR_ADP_V4L2,
+  KR_ADP_DECKLINK,
+  KR_ADP_ALSA,
+  KR_ADP_X11,
+  KR_ADP_WAYLAND,
+  KR_ADP_ENCODER,
+  KR_ADP_FLYCAP,
+  KR_ADP_KRAPI,
+  KR_ADP_JACK
+} kr_adapter_api;
 
 typedef enum {
   KR_XPDR_MIXER,

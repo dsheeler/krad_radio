@@ -70,7 +70,7 @@ void kr_mixer_to_rep(kr_mixer *mixer, kr_mixer_info *mixer_rep) {
 */
 }
 
-void kr_mixer_rep_to_ebml(kr_ebml2_t *ebml, kr_mixer_info *mxr) {
+void kr_mixer_info_to_ebml(kr_ebml2_t *ebml, kr_mixer_info *mxr) {
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mxr->period_size);
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_SAMPLE_RATE, mxr->sample_rate);
   kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_MIXER_PORTGROUP_COUNT, mxr->inputs);
@@ -79,11 +79,11 @@ void kr_mixer_rep_to_ebml(kr_ebml2_t *ebml, kr_mixer_info *mxr) {
   kr_ebml2_pack_string(ebml, EBML_ID_KRAD_MIXER_TIME_SOURCE, mxr->clock);
 }
 
-void kr_mixer_to_ebml(kr_ebml *ebml, kr_mixer *mixer) {
-  kr_mixer_info mixer_rep;
-  memset(&mixer_rep, 0, sizeof(kr_mixer_info));
-  kr_mixer_to_rep(mixer, &mixer_rep);
-  kr_mixer_rep_to_ebml(ebml, &mixer_rep);
+void kr_mixer_to_ebml(kr_ebml *e, kr_mixer *mixer) {
+  kr_mixer_info info;
+  memset(&info, 0, sizeof(kr_mixer_info));
+  kr_mixer_to_rep(mixer, &info);
+  kr_mixer_info_to_ebml(e, &info);
 }
 
 static uint32_t ms_to_cycles(int sample_rate, int cycle_frames, int ms) {
@@ -105,6 +105,18 @@ static uint32_t ms_to_cycles(int sample_rate, int cycle_frames, int ms) {
   // samples_ms, cycle_ms);
 
   return cycles;
+}
+
+static uint32_t mixer_ms_to_cycles(kr_mixer *mixer, int ms) {
+
+  int sample_rate;
+  int period_size;
+
+  /* FIXME this should be cached info */
+  sample_rate = kr_mixer_sample_rate(mixer);
+  period_size = kr_mixer_period(mixer);
+
+  return ms_to_cycles(sample_rate, period_size, ms);
 }
 
 int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
@@ -180,7 +192,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       if ((duration == 0) && (krad_app_server_current_client_is_subscriber(as))) {
         ptr = as->current_client;
       } else {
-        duration = ms_to_cycles(mixer->sample_rate, mixer->period_size, duration);
+        duration = mixer_ms_to_cycles(mixer, duration);
       }
       kr_mixer_ctl(mixer, unitname, controlname, floatval, duration, ptr);
       break;
@@ -198,7 +210,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         if ((duration == 0) && (krad_app_server_current_client_is_subscriber(as))) {
           ptr = as->current_client;
         } else {
-          duration = ms_to_cycles(mixer->sample_rate, mixer->period_size, duration);
+          duration = mixer_ms_to_cycles(mixer, duration);
         }
 /*
         kr_sfx_effect_ctl(unit->sfx, numbers[0], numbers[5],
