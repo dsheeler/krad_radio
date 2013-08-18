@@ -827,7 +827,7 @@ int kr_mixer_ctl(kr_mixer_path *path, char *ctl, float value, int ms, void *ptr)
     kr_easer_set(&path->volume_easer, value, duration, EASEINOUTSINE, ptr);
    return 0;
   }
-  //Fixme add bus to bus crossfadin
+  /* FIXME Add bus to bus and output to output crossfading */
   if ((path->type == KR_MXR_INPUT) && (path->type != KR_MXR_BUS)) {
     if ((strncmp(ctl, "crossfade", 9) == 0) && (strlen(ctl) == 9)) {
       if (path->crossfader != NULL) {
