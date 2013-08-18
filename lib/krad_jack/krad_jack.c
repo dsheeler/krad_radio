@@ -216,7 +216,7 @@ void kr_jack_portgroup_unplug(kr_jack_portgroup *portgroup, char *remote_name) {
 }
 */
 
-int kr_jack_path_unlink(kr_jack_path *path) {
+int kr_jack_unlink(kr_jack_path *path) {
 
   int c;
   int ret;

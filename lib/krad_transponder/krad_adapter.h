@@ -1,6 +1,8 @@
 #ifndef KRAD_ADAPTER_H
 #define KRAD_ADAPTER_H
 
+#define KR_ADAPTER_PATHS_MAX 32
+
 typedef struct kr_adapter kr_adapter;
 typedef struct kr_adapter_setup kr_adapter_setup;
 typedef struct kr_adapter_path kr_adapter_path;

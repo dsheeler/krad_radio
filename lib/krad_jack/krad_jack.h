@@ -36,7 +36,8 @@ struct kr_jack_path_setup {
   kr_jack_path_info info;
   //samples callback?
   //state callback - connection/disconnection
-  //callpack pointer
+  void *user;
+  void *cb;
 };
 
 /*
@@ -47,7 +48,7 @@ void kr_jack_portgroup_unplug(kr_jack_portgroup *portgroup, char *remote_name);
 int kr_jack_detect();
 int kr_jack_detect_server_name(char *name);
 
-int kr_jack_path_unlink(kr_jack_path *path);
+int kr_jack_unlink(kr_jack_path *path);
 kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup);
 
 int kr_jack_destroy(kr_jack *jack);

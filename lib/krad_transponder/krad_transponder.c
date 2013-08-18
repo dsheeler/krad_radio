@@ -218,18 +218,18 @@ static kr_xpdr_path *path_alloc(kr_transponder *xpdr) {
   return NULL;
 }
 
-int kr_transponder_mkpath(kr_transponder *xpdr, kr_xpdr_path_setup *setup) {
+kr_xpdr_path *kr_transponder_mkpath(kr_xpdr *xpdr, kr_xpdr_path_setup *setup) {
 
   kr_transponder_path *path;
 
-  if ((xpdr == NULL) || (setup == NULL)) return -1;
-  if (path_setup_check(setup)) return -2;
+  if ((xpdr == NULL) || (setup == NULL)) return NULL;
+  if (path_setup_check(setup)) return NULL;
   path = path_alloc(xpdr);
-  if (path == NULL) return -3;
+  if (path == NULL) return NULL;
   path_create(path, setup);
   xpdr->info.active_paths++;
 
-  return 0;
+  return path;
 }
 
 int kr_transponder_unlink(kr_xpdr_path *path) {
