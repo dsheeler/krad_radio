@@ -705,27 +705,37 @@ static int path_setup_check(kr_mixer_path_setup *setup) {
   return 0;
 }
 
-kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup) {
+static void path_sfx_create(kr_mixer_path *path) {
 
-  int c;
-  kr_mixer_path *path;
   kr_sfx_setup sfx_setup;
 
-  if ((mixer == NULL) || (setup == NULL)) return NULL;
-  if (path_setup_check(setup)) return NULL;
-  path = kr_mixer_path_from_name(mixer, setup->info.name);
-  if (path != NULL) return NULL;
-  path = path_alloc(mixer);
-  if (path == NULL) return NULL;
+  sfx_setup.channels = path->channels;
+  sfx_setup.sample_rate = path->mixer->sample_rate;
+  sfx_setup.user = path;
+  sfx_setup.cb = NULL;
+  /* FIXME actual sfx info callback
+   * have sfx info callback hit path cb that propagates to path info cb
+   * FIXME set sfx params from setup
+   * */
+  path->sfx = kr_sfx_create(&sfx_setup);
+  kr_sfx_add(path->sfx, KR_SFX_EQ);
+  kr_sfx_add(path->sfx, KR_SFX_LOWPASS);
+  kr_sfx_add(path->sfx, KR_SFX_HIGHPASS);
+  kr_sfx_add(path->sfx, KR_SFX_ANALOG);
+}
+
+static void path_create(kr_mixer_path *path, kr_mixer_path_setup *setup) {
+
+  int c;
 
   strncpy(path->name, setup->info.name, sizeof(path->name));
   path->channels = setup->info.channels;
   path->type = setup->info.type;
-  //FIXME find my bus by name
-  path->bus = mixer->master;
+  /* FIXME find my bus by name */
+  path->bus = path->mixer->master;
   for (c = 0; c < KR_MXR_MAX_CHANNELS; c++) {
     if (c < path->channels) {
-      //FIXME take mapping from setup 
+      /* FIXME take mapping from setup */
       path->mixmap[c] = c;
     } else {
       path->mixmap[c] = -1;
@@ -738,27 +748,26 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup) {
     path->new_volume_actual[c] = path->volume_actual[c];
     path->samples[c] = calloc(1, 4096);
   }
-  sfx_setup.channels = path->channels;
-  sfx_setup.sample_rate = path->mixer->sample_rate;
-  sfx_setup.user = path;
-  //FIXME actual sfx info callback
-  //have sfx info callback hit path cb that propagates to path info cb
-  sfx_setup.cb = NULL;
-  path->sfx = kr_sfx_create(&sfx_setup);
-  if (path->sfx == NULL) {
-    failfast ("Oh I couldn't make effects");
-  }
-  kr_sfx_add(path->sfx, KR_SFX_EQ);
-  kr_sfx_add(path->sfx, KR_SFX_LOWPASS);
-  kr_sfx_add(path->sfx, KR_SFX_HIGHPASS);
-  kr_sfx_add(path->sfx, KR_SFX_ANALOG);
-  //FIXME
-  //set sfx params from setup
-
+  path_sfx_create(path);
   path->active = 1;
+  return path;
+}
+
+kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup) {
+
+  kr_mixer_path *path;
+
+  if ((mixer == NULL) || (setup == NULL)) return NULL;
+  if (path_setup_check(setup)) return NULL;
+  path = kr_mixer_path_from_name(mixer, setup->info.name);
+  if (path != NULL) return NULL;
+  path = path_alloc(mixer);
+  if (path == NULL) return NULL;
+  path_create(path, setup);
 
   return path;
 }
+
 
 int kr_mixer_unlink(kr_mixer_path *unit) {
 
