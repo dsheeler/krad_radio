@@ -9,22 +9,37 @@
 #include <math.h>
 #include <inttypes.h>
 
+#include "krad_system.h"
 #include "krad_easing_common.h"
 
 typedef struct {
-  int updating;
+  float target;
+  int duration;
+  kr_easing easing;
+  void *ptr;
+  int rw;
+} kr_easer_update;
+
+
+typedef struct {
+  int newest;
+  int last;
+  kr_easer_update update[2];
+
+//  int updating;
+  float new_target;
+  int new_duration;
+  kr_easing new_easing;
+  void *new_ptr;
+
   int active;
   float target;
-  float new_target;
   float start_value;
   float change_amount;
   int elapsed_time;
   int duration;
-  int new_duration;
   kr_easing easing;
-  kr_easing new_easing;
   void *ptr;
-  void *new_ptr;
 } kr_easer;
 
 kr_easing kr_easing_random();

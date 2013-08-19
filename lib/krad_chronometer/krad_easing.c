@@ -19,41 +19,49 @@ kr_easing kr_easing_random() {
 float kr_easer_process(kr_easer *easer, float current, void **ptr) {
 
   float value;
+  int i;
 
-  if (easer->active == 0) {
-    return current;
-  } else if (easer->active == 2) {
-    while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
-    easer->target = easer->new_target;
-    if (easer->new_duration < 2) {
-      if (ptr != NULL) {
-        *ptr = easer->new_ptr;
+
+  i = __sync_fetch_and_xor(&easer->newest, 0);
+  if (i > 0) {
+    i -= 1;
+    if (__sync_bool_compare_and_swap(&easer->update[i].rw, 0, 1)) {
+      easer->new_ptr = easer->update[i].ptr;
+      easer->new_target = easer->update[i].target;
+      easer->new_duration = easer->update[i].duration;
+      easer->new_easing = easer->update[i].easing;
+      __sync_bool_compare_and_swap(&easer->update[i].rw, 1, 0);
+      easer->target = easer->new_target;
+      if (easer->new_duration < 2) {
+        if (ptr != NULL) {
+          *ptr = easer->new_ptr;
+        }
+        easer->active = 0;
+        return easer->target;
+      } else {
+        easer->active = 1;
+        easer->elapsed_time = 1;
+        easer->duration = easer->new_duration;
+        easer->ptr = easer->new_ptr;
+        easer->start_value = current;
+        easer->change_amount = easer->target - easer->start_value;
+        easer->easing = easer->new_easing;
       }
-      easer->active = 0;
-      while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
-      return easer->target;
     } else {
-      easer->active = 1;
-      easer->elapsed_time = 1;
-      easer->duration = easer->new_duration;
-      easer->ptr = easer->new_ptr;
-      easer->start_value = current;
-      easer->change_amount = easer->target - easer->start_value;
-      easer->easing = easer->new_easing;
-      while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
+      printke("frake failed!!!");
     }
   }
-
+  if (easer->active == 0) {
+    return current;
+  }
   if (easer->elapsed_time == easer->duration) {
     value = easer->target;
     if (ptr != NULL) {
       *ptr = easer->ptr;
     }
-    while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
     if (easer->active == 1) {
       easer->active = 0;
     }
-    while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
   } else {
     value = kr_ease(easer->easing, easer->elapsed_time, easer->start_value,
      easer->change_amount, easer->duration);
@@ -66,13 +74,49 @@ float kr_easer_process(kr_easer *easer, float current, void **ptr) {
 
 void kr_easer_set(kr_easer *easer, float target, int duration,
  kr_easing easing, void *ptr) {
-  while (!__sync_bool_compare_and_swap(&easer->updating, 0, 1));
-  easer->new_ptr = ptr;
-  easer->new_target = target;
-  easer->new_duration = duration;
-  easer->new_easing = easing;
-  easer->active = 2;
-  while (!__sync_bool_compare_and_swap(&easer->updating, 1, 0));
+
+  int updated;
+  int i;
+
+  i = 0;
+  updated = 0;
+
+  if (easer->last == 1) {
+    i = 1;
+  }
+
+  if (__sync_bool_compare_and_swap(&easer->update[i].rw, 0, 2)) {
+    easer->update[i].ptr = ptr;
+    easer->update[i].target = target;
+    easer->update[i].duration = duration;
+    easer->update[i].easing = easing;
+    updated = 1;
+    __sync_bool_compare_and_swap(&easer->update[i].rw, 2, 0);
+    __sync_fetch_and_xor(&easer->newest, i + 1);
+    easer->last = i + 1;
+  } else {
+    if (i == 0) {
+      i = 1;
+    } else {
+      i = 0;
+    }
+    if (__sync_bool_compare_and_swap(&easer->update[i].rw, 0, 2)) {
+      easer->update[i].ptr = ptr;
+      easer->update[i].target = target;
+      easer->update[i].duration = duration;
+      easer->update[i].easing = easing;
+      updated = 1;
+      __sync_bool_compare_and_swap(&easer->update[i].rw, 2, 0);
+      __sync_fetch_and_xor(&easer->newest, i + 1);
+       easer->last = i + 1;
+    }
+  }
+
+  if (updated == 0) {
+    printke("holy crap fail!!");
+  } else {
+    printk("updated using %d", i);
+  }
 }
 
 float kr_ease(kr_easing easing, float time_now, float start_pos,
