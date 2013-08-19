@@ -22,6 +22,7 @@ struct kr_jack_info {
   int active;
   uint32_t sample_rate;
   uint32_t period_size;
+  uint64_t frames;
 };
 
 struct kr_jack_path_info {

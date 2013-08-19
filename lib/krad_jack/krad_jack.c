@@ -46,7 +46,11 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
     jack->set_thread_name = 1;
   }
 
-  //FIXME callback go here
+  jack->info.frames += nframes;
+
+  if ((jack->info.frames % (nframes * 1000)) == 0) {
+    printk("Jacked about %"PRIu64" frames now", jack->info.frames);
+  }
 
   return 0;
 }
