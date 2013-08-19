@@ -25,6 +25,7 @@ struct kr_transponder {
 };
 
 #include "krad_transponder_dev.c"
+#include "krad_transponder_processor.c"
 
 static int path_io_info_check(kr_xpdr_path_io_info *info);
 static int path_info_check(kr_xpdr_path_info *info);
@@ -46,12 +47,17 @@ static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
   for (i = 0; i < KR_XPDR_PATHS_MAX * 2; i++) {
     if (xpdr->adapter[i] != NULL) {
       adapter = xpdr->adapter[i];
-      if (kr_adapter_get_info(adapter, &info)) return NULL;
+      if (kr_adapter_get_info(adapter, &info)) {
+        printke("We failed to get adapter info..");
+        return NULL;
+      }
       if (info.api == setup->info.api) {
         //compare instance string
         //&& (strncmp(xpdr->adapter))) {
         //if we find it return
         return adapter;
+      } else {
+        printk("we skipped an adapter with the wrong api..");
       }
     }
   }
@@ -66,7 +72,10 @@ static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
 
   /* Find adapter instance */
   adapter = find_adapter(xpdr, setup);
-  if (adapter) return adapter;
+  if (adapter) {
+    printk("we found an adapter!");
+    return adapter;
+  }
 
   /* Otherwise create it */
   memset(&adapter_setup, 0, sizeof(kr_adapter_setup));
@@ -77,6 +86,7 @@ static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
       adapter_setup.user = xpdr;
       adapter_setup.cb = xpdr_adapter_info_cb;
       xpdr->adapter[i] = kr_adapter_create(&adapter_setup);
+      printk("we created an adapter!");
       return xpdr->adapter[i];
     }
   }
@@ -121,10 +131,8 @@ static int path_info_check(kr_xpdr_path_info *info) {
 }
 
 static int path_setup_check(kr_xpdr_path_setup *setup) {
-  /*
   if (setup->user == NULL) return -1;
   if (setup->cb == NULL) return -2;
-  */
   if (path_info_check(&setup->info)) return -3;
   return 0;
 }
@@ -133,14 +141,14 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
 
   kr_xpdr_path_io *io;
   kr_mixer *mixer;
-  //kr_compositor *compositor;
+  kr_compositor *compositor;
   kr_adapter *adapter;
   kr_mixer_path_setup mp_setup;
   //kr_compositor_path_setup compositor_path_setup;
   kr_adapter_path_setup ap_setup;
 
   mixer = path->xpdr->mixer;
-  //compositor = path->xpdr->compositor;
+  compositor = path->xpdr->compositor;
 
   if (path->output.exists) {
     io = &path->input;
@@ -152,7 +160,7 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
     case KR_XPDR_ADAPTER:
       memcpy(&ap_setup.info, &info->info.adapter_path_info,
        sizeof(kr_adapter_path_info));
-      ap_setup.cb = NULL;
+      ap_setup.cb = xpdr_adapter_path_info_cb;
       ap_setup.user = path;
       adapter = get_adapter(path->xpdr, &ap_setup);
       if (adapter) {
@@ -162,7 +170,7 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
     case KR_XPDR_MIXER:
       memcpy(&mp_setup.info, &info->info.mixer_path_info,
        sizeof(kr_mixer_path_info));
-      mp_setup.audio_cb = NULL;
+      mp_setup.audio_cb = xpdr_mixer_path_audio_cb;
       mp_setup.user = path;
       io->mixer_path = kr_mixer_mkpath(mixer, &mp_setup);
       break;
@@ -203,6 +211,9 @@ static void path_destroy(kr_xpdr_path *path) {
 int kr_transponder_info_fill(kr_transponder *xpdr, kr_xpdr_info *info) {
   if ((xpdr == NULL) || (info == NULL)) return -1;
   memcpy(info, &xpdr->info, sizeof(kr_transponder_info));
+
+  test_xpdr(xpdr);
+
   return 0;
 }
 
@@ -284,8 +295,6 @@ kr_transponder *kr_transponder_create(kr_transponder_setup *setup) {
 
   xpdr->mixer = setup->mixer;
   xpdr->compositor = setup->compositor;
-
-  test_xpdr(xpdr);
 
   return xpdr;
 }

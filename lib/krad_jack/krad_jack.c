@@ -5,7 +5,8 @@ struct kr_jack_path {
   kr_jack_path_info info;
   jack_port_t *ports[KR_JACK_CHANNELS_MAX];
   //float *samples[8];
-  //callback / user pointer
+  void *user;
+  void *cb;
 };
 
 struct kr_jack {
@@ -15,6 +16,8 @@ struct kr_jack {
   //callback / user pointer
   kr_jack_info info;
   int set_thread_name;
+  void *user;
+  void *cb;
   //char *stay_connected[256];
   //char *stay_connected_to[256];
 };
@@ -28,7 +31,8 @@ static int xrun_cb(void *arg) {
   kr_jack *jack = (kr_jack *)arg;
 
   jack->info.xruns++;
-  //printke("Krad Jack: %s xrun number %d!", jack->name, jack->xruns);
+  printke("Krad Jack: %s xrun number %d!", jack->info.client_name,
+   jack->info.xruns);
 
   return 0;
 }
@@ -261,23 +265,24 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
 
   if ((jack == NULL) || (setup == NULL)) return NULL;
 
-  if (path_setup_info_check(&setup->info)) return NULL;
+  if (path_setup_info_check(&setup->info)) {
+    printke("jack path setup info failed check");
+    return NULL;
+  }
 
   path = calloc(1, sizeof(kr_jack_path));
 
   path->jack = jack;
   memcpy(&path->info, &setup->info, sizeof(kr_jack_path_info));
-  /*
-  path->info.channels = setup->info.channels;
-  path->info.direction = setup->info.direction;
-  strncpy(path->info.name, setup->info.name, sizeof(setup->info.name));
-  */
 
   if (path->info.direction == KR_JACK_INPUT) {
     port_flags = JackPortIsInput;
   } else {
     port_flags = JackPortIsOutput;
   }
+
+  printk("jack mkpath at this point %s %d", path->info.name,
+   path->info.channels);
 
   for (c = 0; c < path->info.channels; c++) {
     if (path->info.channels == 1) {
@@ -327,12 +332,21 @@ int kr_jack_destroy(kr_jack *jack) {
   return 0;
 }
 
+static int jack_setup_check(kr_jack_setup *setup) {
+
+  if (setup->user == NULL) return -1;
+  if (setup->cb == NULL) return -1;
+  /* FIXME check server / client name */
+  return 0;
+}
+
 kr_jack *kr_jack_create(kr_jack_setup *setup) {
 
   kr_jack *jack;
   char *name;
 
   if (setup == NULL) return NULL;
+  if (jack_setup_check(setup)) return NULL;
 
   jack = calloc(1, sizeof(kr_jack));
 
@@ -340,6 +354,8 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
 
   strncpy(jack->info.client_name, setup->client_name,
    sizeof(jack->info.client_name));
+  jack->cb = setup->cb;
+  jack->user = setup->user;
 
   if ((setup->server_name[0] != '\0')
     && (memchr(setup->server_name + 1, '\0', sizeof(setup->server_name) - 1)

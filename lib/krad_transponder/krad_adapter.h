@@ -34,7 +34,6 @@ struct kr_adapter_setup {
   kr_adapter_info_cb *cb;
 };
 
-
 int kr_adapter_unlink(kr_adapter_path *path);
 kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
  kr_adapter_path_setup *setup);
