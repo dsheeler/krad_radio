@@ -24,6 +24,8 @@ struct kr_transponder {
   kr_transponder_path *path[KR_XPDR_PATHS_MAX];
 };
 
+#include "krad_transponder_dev.c"
+
 static int path_io_info_check(kr_xpdr_path_io_info *info);
 static int path_info_check(kr_xpdr_path_info *info);
 static int path_setup_check(kr_xpdr_path_setup *setup);
@@ -31,33 +33,6 @@ static void path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
 static void path_destroy(kr_xpdr_path *path);
 static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup);
 static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup);
-
-/*
-typedef struct {
-  kr_xpdr *xpdr;
-  void *hrm;
-} xpdr_adapter_info_cb_arg;
-*/
-
-static void xpdr_adapter_info_cb(kr_adapter_info_cb_arg *arg) {
-
-  /* xpdr_adapter_cb_arg = arg->user; */
-  kr_xpdr *xpdr;
-
-  xpdr = (kr_xpdr *)arg->user;
-
-  printk("yay adapter!");
-}
-
-static void xpdr_adapter_path_info_cb(kr_adapter_path_info_cb_arg *arg) {
-
-  /* xpdr_adapter_cb_arg = arg->user; */
-  kr_xpdr *xpdr;
-
-  xpdr = (kr_xpdr *)arg->user;
-
-  printk("yay path!");
-}
 
 static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
 
@@ -297,35 +272,6 @@ int kr_transponder_destroy(kr_transponder *xpdr) {
   printk("Krad Transponder: Destroy Completed");
 
   return 0;
-}
-
-void test_xpdr(kr_xpdr *xpdr) {
-
-  kr_xpdr_path_setup setup;
-  kr_xpdr_path *path;
-  char *test_name;
-
-  test_name = "Working";
-
-  memset(&setup, 0, sizeof(kr_xpdr_path_setup));
-
-  setup.user = xpdr;
-  setup.cb = xpdr_adapter_path_info_cb;
-
-  strcpy(setup.info.name, test_name);
-
-  setup.info.input.type = KR_XPDR_ADAPTER;
-  setup.info.input.info.adapter_path_info.api = KR_ADP_JACK;
-  strcpy(setup.info.input.info.adapter_path_info.info.jack.name, test_name);
-  setup.info.input.info.adapter_path_info.info.jack.channels = 2;
-  setup.info.input.info.adapter_path_info.info.jack.direction = KR_JACK_INPUT;
-
-  setup.info.output.type = KR_XPDR_MIXER;
-  strcpy(setup.info.output.info.mixer_path_info.name, test_name);
-  setup.info.output.info.mixer_path_info.channels = 2;
-  setup.info.output.info.mixer_path_info.type = KR_MXR_INPUT;
-
-  path = kr_transponder_mkpath(xpdr, &setup);
 }
 
 kr_transponder *kr_transponder_create(kr_transponder_setup *setup) {
