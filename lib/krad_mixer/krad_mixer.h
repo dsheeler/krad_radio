@@ -84,8 +84,7 @@ struct kr_mixer_path {
   float **mapped_samples[KR_MXR_MAX_CHANNELS];
   int delay;
   int delay_actual;
-  int destroy_mark;
-  int active;
+  int state;
   kr_mixer_path_info_cb *info_cb;
   void *info_cb_user;
   kr_mixer_path_audio_cb *audio_cb;
@@ -94,6 +93,7 @@ struct kr_mixer_path {
   kr_sfx *sfx;
 };
 
+/* FIXME to opaque this all we need is a way to iterate thru all paths */
 struct kr_mixer {
   uint32_t period_size;
   uint32_t new_period_size;
@@ -107,8 +107,7 @@ struct kr_mixer {
   int frames_per_peak_broadcast;
   kr_mixer_info_cb *info_cb;
   void *user;
-  int pusher;
-  int destroying;
+  void *clock;
 };
 
 kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup);
@@ -116,7 +115,7 @@ int kr_mixer_unlink(kr_mixer_path *path);
 kr_mixer_path *kr_mixer_find(kr_mixer *mixer, char *name);
 
 //FIXME replace with kr_mixer_path_ctl and union type arg
-int kr_mixer_ctl(kr_mixer_path *mp, char *ctl, float val, int dr, void *p);
+int kr_mixer_path_ctl(kr_mixer_path *mp, char *ctl, float val, int dr, void *p);
 void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *l, kr_mixer_path *r);
 void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *path, int in_chan, int out_chan);
@@ -129,7 +128,7 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup);
 int kr_mixer_destroy(kr_mixer *mixer);
 int kr_mixer_mix(kr_mixer *mixer);
 
-int kr_mixer_adv_ctl(kr_mixer *mixer, int ctl, int value);
+int kr_mixer_ctl(kr_mixer *mixer, int ctl, void *value);
 int kr_mixer_get_info(kr_mixer *mixer, kr_mixer_info *info);
 //FIXME replace with kr_mixer_ctl
 uint32_t kr_mixer_sample_rate(kr_mixer *mixer);

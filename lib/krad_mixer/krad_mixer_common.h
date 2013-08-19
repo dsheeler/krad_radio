@@ -47,6 +47,12 @@ typedef enum {
   KR_MXR_AUX
 } kr_mixer_path_type;
 
+typedef enum {
+  KR_MXR_SAMPLERATE_SET = 100,
+  KR_MXR_PERIOD_SIZE_SET,
+  KR_MXR_CLOCK_SET
+} kr_mixer_adv_ctl;
+
 struct kr_mixer_info {
   uint32_t period_size;
   uint32_t sample_rate;

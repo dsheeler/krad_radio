@@ -124,7 +124,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       }
       path = kr_mixer_find(mixer, name);
       if (path) {
-        kr_mixer_ctl(path, controlname, floatval, duration, ptr);
+        kr_mixer_path_ctl(path, controlname, floatval, duration, ptr);
       }
       break;
     case EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL:
@@ -153,7 +153,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
     case EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS:
       for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
         unit = mixer->path[p];
-        if ((unit != NULL) && ((unit->active == 1) || (unit->active == 2))) {
+        if ((unit != NULL) && ((unit->state == 1) || (unit->state == 2))) {
           address.path.unit = KR_MIXER;
           address.path.subunit.mixer_subunit = KR_PORTGROUP;
           strcpy(address.id.name, unit->name);
@@ -204,7 +204,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         strcpy(address.id.name, path->name);
         krad_radio_broadcast_subunit_created(as->app_broadcaster, &address,
          (void *)path);
-        kr_mixer_ctl(path, "volume", 100.0f, 500, NULL);
+        kr_mixer_path_ctl(path, "volume", 100.0f, 500, NULL);
       } else {
         printke("Krad Mixer: Failed to create unit: %s", name);
       }
@@ -223,7 +223,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
     case EBML_ID_KRAD_MIXER_CMD_PORTGROUP_INFO:
       kr_ebml2_unpack_element_string(&ebml_in, &element, name, sizeof(name));
       unit = kr_mixer_find(mixer, name);
-      if ((unit != NULL) && ((unit->active == 1) || (unit->active == 2))) {
+      if ((unit != NULL) && ((unit->state == 1) || (unit->state == 2))) {
         address.path.unit = KR_MIXER;
         address.path.subunit.mixer_subunit = KR_PORTGROUP;
         strcpy(address.id.name, unit->name);

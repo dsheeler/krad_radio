@@ -231,6 +231,8 @@ int kr_jack_unlink(kr_jack_path *path) {
 
   if (path == NULL) return -1;
 
+  printk("JACK path unlink called for %s", path->info.name);
+
   for (c = 0; c < path->info.channels; c++) {
     ret = jack_port_unregister(path->jack->client, path->ports[c]);
     if (ret != 0) {
@@ -240,6 +242,7 @@ int kr_jack_unlink(kr_jack_path *path) {
   }
 
   free(path);
+  printk("JACK path unlink finished");
   return 0;
 }
 
@@ -315,6 +318,8 @@ int kr_jack_destroy(kr_jack *jack) {
 
   //int p;
 
+  printk("Jack destroy started");
+
   if (jack == NULL) return -1;
   if (jack->client != NULL) {
     jack_client_close(jack->client);
@@ -333,6 +338,9 @@ int kr_jack_destroy(kr_jack *jack) {
   */
 
   free(jack);
+
+  printk("Jack destroy complete");
+
   return 0;
 }
 

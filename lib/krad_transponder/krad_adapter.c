@@ -161,6 +161,8 @@ int kr_adapter_destroy(kr_adapter *adapter) {
 
   if (adapter == NULL) return -1;
 
+  printk("Adapter destroy started");
+
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] != NULL) {
       kr_adapter_unlink(adapter->path[i]);
@@ -175,6 +177,8 @@ int kr_adapter_destroy(kr_adapter *adapter) {
   }
 
   free(adapter);
+
+  printk("Adapter destroy completed");
 
   return 0;
 }
