@@ -114,3 +114,4 @@ depcomp
 *.la
 tests/cairo_sandbox
 tests/kr_strtest
+*.*.swp
