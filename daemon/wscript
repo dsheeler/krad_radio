@@ -4,7 +4,7 @@ import os
 import binascii
 import sys
 
-daemon = "krad_radio_daemon.c"
+daemon = "krad_radio.c"
 
 depsources = """
 ../lib/krad_calc/krad_base64.c

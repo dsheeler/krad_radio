@@ -4,11 +4,11 @@
 
 #define LISTMAX 4096
 
-static int krad_radio_pid (char *sysname);
+static int krad_radio_pid(char *sysname);
 
 #ifdef FRAK_MACOSX
 
-char *krad_radio_running_stations () {
+char *krad_radio_running_stations() {
 
   static char list[LISTMAX];
   int prelen;
@@ -18,17 +18,17 @@ char *krad_radio_running_stations () {
   DIR *dp;
   struct dirent *ep;
   char *format;
- 
+
   pos = 0;
   prelen = strlen (prefix);
-  
+
   dp = opendir ("/tmp");
-  
+
   if (dp == NULL) {
     printke ("Couldn't open the /tmp directory");
     return 0;
   }
-  
+
   while ((ep = readdir(dp))) {
     if (strlen(ep->d_name) > prelen) {
       if (strncmp (prefix, ep->d_name, prelen) == 0) {
@@ -58,7 +58,7 @@ static int krad_radio_pid (char *sysname) {
   char buf[64];
   char cmd[64];
   pid = 0;
-  
+
   if (!krad_valid_sysname (sysname)) {
     return 0;
   }
@@ -79,7 +79,7 @@ static int krad_radio_pid (char *sysname) {
   }
 
   pclose (fp);
-  
+
   return pid;
 }
 
@@ -96,29 +96,29 @@ char *krad_radio_running_stations () {
   int prelen;
   static char list[LISTMAX];
   char *prefix = "@krad_radio_";
-  
+
   prelen = strlen (prefix);
   memset (list, '\0', sizeof(list));
-  
+
   fd = open ( "/proc/net/unix", O_RDONLY );
-  
+
   if (fd < 1) {
     printke ("krad_radio_list_running_daemons: Could not open /proc/net/unix");
     return NULL;
   }
-  
+
   unix_sockets = malloc (512000);
-  
-  bytes = read (fd, unix_sockets, 512000);  
-  
+
+  bytes = read (fd, unix_sockets, 512000);
+
   if (bytes > 512000) {
     printke("lots of unix sockets oh my");
   }
-  
+
   for (pos = 0; pos < bytes - prelen; pos++) {
     if (unix_sockets[pos] == '@') {
       if (memcmp(unix_sockets + pos, prefix, prelen) == 0) {
-      
+
         /* back up a few spaces and check that its a listening socket */
         flag_pos = 0;
         flag_check = 5;
@@ -136,11 +136,11 @@ char *krad_radio_running_stations () {
       }
     }
   }
-  
+
   list[strlen(list) - 1] = '\0';
-  
+
   free (unix_sockets);
-  
+
   return list;
 }
 
@@ -151,30 +151,30 @@ static int krad_radio_pid (char *sysname) {
   char cmdline[512];
   char search[128];
   int searchlen;
-  char cmdline_file[128];  
+  char cmdline_file[128];
   int fd;
   int bytes;
   int pid;
-  
+
   if (!(krad_valid_sysname(sysname))) {
     return 0;
   }
-  
+
   pid = 0;
-  memset(search, '\0', sizeof(search));  
+  memset(search, '\0', sizeof(search));
   strcpy (search, "krad_radio_daemon");
   strcpy (search + 18, sysname);
   searchlen = 18 + strlen(sysname);
   memset(cmdline, '\0', sizeof(cmdline));
   memset(cmdline_file, '\0', sizeof(cmdline_file));
-  
+
   dp = opendir ("/proc");
-  
+
   if (dp == NULL) {
     printke ("Couldn't open the /proc directory");
     return 0;
   }
-  
+
   while ((ep = readdir(dp))) {
     if (isdigit(ep->d_name[0])) {
       sprintf (cmdline_file, "/proc/%s/cmdline", ep->d_name);
@@ -202,28 +202,28 @@ static int krad_radio_pid (char *sysname) {
 #endif
 
 
-int krad_radio_running (char *sysname) {
-  if ((krad_radio_pid (sysname)) > 0) {
+int krad_radio_running(char *sysname) {
+  if ((krad_radio_pid(sysname)) > 0) {
     return 1;
   }
-  
-  return 0; 
+
+  return 0;
 }
 
-int krad_radio_destroy (char *sysname) {
+int krad_radio_destroy(char *sysname) {
 
   int pid;
   int wait_time_total;
-  int wait_time_interval;  
+  int wait_time_interval;
   int clean_shutdown_wait_time_limit;
-  
+
   pid = 0;
   wait_time_total = 0;
   clean_shutdown_wait_time_limit = 1500000;
   wait_time_interval = clean_shutdown_wait_time_limit / 40;
-    
+
   pid = krad_radio_pid (sysname);
-  
+
   if (pid != 0) {
     kill (pid, 15);
     while ((pid != 0) && (wait_time_total < clean_shutdown_wait_time_limit)) {
@@ -244,17 +244,17 @@ int krad_radio_destroy (char *sysname) {
       return 0;
     }
   }
-  
+
   return -1;
 }
 
-void krad_radio_launch (char *sysname) {
+void krad_radio_launch(char *sysname) {
 
   pid_t pid;
   FILE *refp;
 
 #ifdef FRAK_MACOSX
-  if (krad_radio_running (sysname)) {
+  if (krad_radio_running(sysname)) {
     return;
   }
 #endif
@@ -281,21 +281,19 @@ void krad_radio_launch (char *sysname) {
   if (pid > 0) {
     exit (0);
   }
-  
+
   refp = freopen ("/dev/null", "r", stdin);
   if (refp == NULL) {
     exit(5);
-  }  
+  }
   refp = freopen ("/dev/null", "w", stdout);
   if (refp == NULL) {
     exit(6);
-  }  
-  refp = freopen ("/dev/null", "w", stderr);  
+  }
+  refp = freopen ("/dev/null", "w", stderr);
   if (refp == NULL) {
     exit(7);
-  }  
+  }
 
-  execlp ("krad_radio_daemon", "krad_radio_daemon", sysname, (char *)NULL);
-
+  execlp("krad_radio", "krad_radio", sysname, (char *)NULL);
 }
-

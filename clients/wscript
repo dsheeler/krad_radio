@@ -3,7 +3,7 @@
 import os
 
 programs = """
-krad_radio.c
+kr.c
 krad_radio_simple.c
 kr_api_demo.c
 """.split()

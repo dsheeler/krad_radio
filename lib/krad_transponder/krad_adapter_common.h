@@ -7,15 +7,15 @@ typedef struct kr_adapter_path_info kr_adapter_path_info;
 #include "krad_jack_common.h"
 
 typedef enum {
-  KR_ADP_V4L2,
-  KR_ADP_DECKLINK,    /* A  Input only */
-  KR_ADP_ALSA,        /* A  */
-  KR_ADP_X11,
-  KR_ADP_WAYLAND,
-  KR_ADP_ENCODER,     /* A Ouput via pushing only */
-  KR_ADP_FLYCAP,
-  KR_ADP_KRAPI,       /* A  */
-  KR_ADP_JACK         /* A  */
+  KR_ADP_X11,         /* V      Input iPull                  */
+  KR_ADP_V4L2,        /* V      Input ePush                  */
+  KR_ADP_FLYCAP,      /* V      Input ePush only             */
+  KR_ADP_WAYLAND,     /* V      Output iPush, ePull pos      */
+  KR_ADP_ENCODER,     /* V + A  Output iPush only            */
+  KR_ADP_DECKLINK,    /* V + A  Input ePush                  */
+  KR_ADP_KRAPI,       /* V + A  I/O ANY ePush/ePull          */
+  KR_ADP_ALSA,        /*     A  I/O ePush/ePull              */
+  KR_ADP_JACK         /*     A  I/O ePush/ePull              */
 } kr_adapter_api;
 
 struct kr_adapter_info {
