@@ -26,11 +26,14 @@ typedef void (kr_mixer_path_info_cb)(kr_mixer_path_info_cb_arg *);
 typedef void (kr_mixer_path_audio_cb)(kr_mixer_path_audio_cb_arg *);
 
 struct kr_mixer_info_cb_arg {
+  /* EVENT INFO */
   void *user;
 };
 
 struct kr_mixer_path_info_cb_arg {
+  /* PATH EVENT INFO */
   void *user;
+  kr_mixer_path *path;
 };
 
 struct kr_mixer_path_audio_cb_arg {
@@ -38,11 +41,13 @@ struct kr_mixer_path_audio_cb_arg {
   uint32_t nframes;
   float **samples;
   void *user;
+  kr_mixer_path *path;
 };
 
 struct kr_mixer_path_setup {
   kr_mixer_path_info info;
   void *user;
+  kr_mixer_path_info_cb *info_cb;
   kr_mixer_path_audio_cb *audio_cb;
 };
 
@@ -54,7 +59,7 @@ struct kr_mixer_setup {
   kr_mixer_info_cb *cb;
 };
 
-//FIXME the below strucst should be opauqe
+//FIXME the below structs should be opauqe
 struct kr_mixer_crossfader {
   kr_mixer_path *path[2];
   float fade;
@@ -86,9 +91,8 @@ struct kr_mixer_path {
   int delay_actual;
   int state;
   kr_mixer_path_info_cb *info_cb;
-  void *info_cb_user;
   kr_mixer_path_audio_cb *audio_cb;
-  void *audio_cb_user;
+  void *user;
   kr_mixer *mixer;
   kr_sfx *sfx;
 };
@@ -100,7 +104,6 @@ struct kr_mixer {
   uint32_t sample_rate;
   uint32_t new_sample_rate;
   int avg_window_size;
-  kr_mixer_bus *master;
   kr_mixer_path *path[KR_MXR_MAX_PATHS];
   kr_mixer_crossfader *crossfader;
   int frames_since_peak_read;

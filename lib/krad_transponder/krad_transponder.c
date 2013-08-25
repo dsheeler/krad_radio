@@ -213,11 +213,13 @@ static int path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup) {
     path_io_create(path, &path->info.input);
   }
 
+/*
   if ((path->output.exists == NULL) || (path->input.exists == NULL)) {
     printke("oh no could not create the output, bailing!");
     path_destroy(path);
     return -1;
   }
+*/
   return 0;
 }
 

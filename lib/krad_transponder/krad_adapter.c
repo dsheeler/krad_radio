@@ -110,6 +110,7 @@ int kr_adapter_unlink(kr_adapter_path *path) {
   adapter = path->adapter;
 
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
+    if (adapter->path[i] == NULL) continue;
     if (adapter->path[i] == path) {
       path_destroy(path);
       free(path);

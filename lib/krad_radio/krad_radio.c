@@ -71,6 +71,34 @@ static void radio_shutdown(kr_radio *radio) {
   krad_system_log_off();
 }
 
+static void radio_mixer_info_cb(kr_mixer_info_cb_arg *arg) {
+  printk("got a mixer info cb");
+}
+
+static void radio_mixer_bus_info_cb(kr_mixer_path_info_cb_arg *arg) {
+  printk("got a mixer bus info cb");
+}
+
+static void kr_mixer_masterbus_setup(kr_radio *radio, kr_mixer *mixer) {
+
+  kr_mixer_path *masterbus;
+  kr_mixer_path_setup mbs;
+
+  memset(&mbs, 0, sizeof(kr_mixer_path_setup));
+  mbs.info.type = KR_MXR_BUS;
+  strncpy(mbs.info.name, "Master", sizeof(mbs.info.name));
+  mbs.info.channels = 2;
+  mbs.info.volume[0] = KR_MXR_DEF_MBUS_LVL;
+  mbs.info.volume[1] = KR_MXR_DEF_MBUS_LVL;
+  mbs.info_cb = radio_mixer_bus_info_cb;
+  mbs.user = radio;
+
+  masterbus = kr_mixer_mkpath(mixer, &mbs);
+  if (masterbus == NULL) {
+    printke("radio couldn't create mixer master bus");
+  }
+}
+
 static kr_radio *radio_create(char *sysname) {
 
   kr_radio *radio;
@@ -99,14 +127,14 @@ static kr_radio *radio_create(char *sysname) {
   }
 
   kr_mixer_setup_init(&mixer_setup);
-  mixer_setup.user = radio->app;
-  /* FIXME mixer_setup.cb = kr_mixer_asi_info; */
-
+  mixer_setup.user = radio;
+  mixer_setup.cb = radio_mixer_info_cb;
   radio->mixer = kr_mixer_create(&mixer_setup);
   if (radio->mixer == NULL) {
     radio_shutdown(radio);
     return NULL;
   }
+  kr_mixer_masterbus_setup(radio, radio->mixer);
 
   kr_compositor_setup_init(&compositor_setup);
   //same as above and hrm also enable mix/comp from AS
