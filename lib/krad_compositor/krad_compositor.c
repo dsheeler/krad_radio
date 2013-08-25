@@ -340,20 +340,20 @@ static inline void krad_compositor_tick (krad_compositor_t *compositor) {
   compositor->frames++;
 }
 
-void krad_compositor_process (krad_compositor_t *compositor) {
-  krad_compositor_tick (compositor);
-
+int krad_compositor_process(kr_compositor *compositor) {
+  if (compositor == NULL) return -1;
+  krad_compositor_tick(compositor);
   if (compositor->had_a_subunit == 1) {
-    krad_compositor_alloc_framepool (compositor);
+    krad_compositor_alloc_framepool(compositor);
     compositor->had_a_subunit = 2;
   }
-
   if (compositor->had_a_subunit == 2) {
-    krad_compositor_prepare (compositor);
-    krad_compositor_composite (compositor);
-    krad_compositor_output (compositor);
-    krad_compositor_finish (compositor);
+    krad_compositor_prepare(compositor);
+    krad_compositor_composite(compositor);
+    krad_compositor_output(compositor);
+    krad_compositor_finish(compositor);
   }
+  return 0;
 }
 
 void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
@@ -1705,7 +1705,11 @@ static void krad_compositor_prepare_subunits (krad_compositor_t *compositor) {
   }
 }
 
-void kr_compositor_destroy(kr_compositor *compositor) {
+int kr_compositor_destroy(kr_compositor *compositor) {
+
+  if (compositor == NULL) {
+    return -1;
+  }
 
   printk("Krad Compositor: Destroy Started");
 
@@ -1721,6 +1725,8 @@ void kr_compositor_destroy(kr_compositor *compositor) {
   free(compositor);
 
   printk("Krad Compositor: Destroy Complete");
+
+  return 0;
 }
 
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
@@ -1746,6 +1752,7 @@ kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
 }
 
 void kr_compositor_setup_init(kr_compositor_setup *setup) {
+  if (setup == NULL) return;
   setup->fps_num = KR_COMPOSITOR_FPS_NUM_DEF;
   setup->fps_den = KR_COMPOSITOR_FPS_DEN_DEF;
   setup->width = KR_COMPOSITOR_WIDTH_DEF;

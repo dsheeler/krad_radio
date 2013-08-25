@@ -150,21 +150,15 @@ void krad_compositor_set_background (krad_compositor_t *compositor,
                                      char *filename);
 
 void krad_compositor_unset_background (krad_compositor_t *compositor);
-
 void krad_compositor_start_ticker (krad_compositor_t *compositor);
-
 void krad_compositor_start_ticker_at (krad_compositor_t *compositor,
                                       struct timespec start_time);
-
 void krad_compositor_stop_ticker (krad_compositor_t *compositor);
-
 void krad_compositor_port_destroy (krad_compositor_t *compositor,
                                    krad_compositor_port_t *port);
-
 kr_comp_port_t *krad_compositor_port_create (krad_compositor_t *compositor,
                                              char *sysname, int direction,
                                              int width, int height);
-
 kr_comp_port_t *krad_compositor_port_create_full (krad_compositor_t *compositor,
                                                   char *sysname, int direction,
                                                   int width, int height,
@@ -173,35 +167,27 @@ krad_compositor_port_t *
 krad_compositor_local_port_create (krad_compositor_t *compositor,
                                    char *sysname, int direction,
                                    int shm_sd, int msg_sd);
-
 void krad_compositor_port_set_source_size (kr_comp_port_t *port,
                                            int width, int height);
-
 void krad_compositor_port_set_comp_params (krad_compositor_port_t *port,
                                            int x, int y,
                                            int width, int height,
                                            int crop_x, int crop_y,
                                            int crop_width, int crop_height,
                                            float opacity, float rotation);
-
 int krad_compositor_port_get_fd (krad_compositor_port_t *port);
 int krad_compositor_port_frames_avail (krad_compositor_port_t *port);
-
 void krad_compositor_port_push_rgba_frame (kr_comp_port_t *port,
                                            krad_frame_t *krad_frame);
-
 void krad_compositor_port_push_yuv_frame (kr_comp_port_t *port,
                                           krad_frame_t *krad_frame);
-
 void krad_compositor_port_push_frame (kr_comp_port_t *port,
                                       krad_frame_t *krad_frame);
 krad_frame_t *krad_compositor_port_pull_frame (kr_comp_port_t *port);
-
 krad_frame_t *krad_compositor_port_pull_yuv_frame (kr_comp_port_t *port,
                                                    uint8_t *yuv_pixels[4],
                                                    int yuv_strides[4],
                                                    int color_depth);
-
 void krad_compositor_get_frame_rate (krad_compositor_t *compositor,
                                      int *fps_numerator, int *fps_denominator);
 void krad_compositor_get_resolution (krad_compositor_t *compositor,
@@ -209,12 +195,33 @@ void krad_compositor_get_resolution (krad_compositor_t *compositor,
 void krad_compositor_set_resolution (krad_compositor_t *comp,
                                      uint32_t width, uint32_t height);
 
-void krad_compositor_process(krad_compositor_t *compositor);
-void kr_compositor_destroy(krad_compositor_t *compositor);
-
-kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
+/* Below looks good, above replace */
 
 void kr_compositor_setup_init(kr_compositor_setup *setup);
+kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
+int kr_compositor_destroy(kr_compositor *compositor);
+int kr_compositor_process(kr_compositor *compositor);
 
+/*
+
+ ***Thinky..
+ kr_mixr_path
+ kr_xpdr_path
+ kr_cmpr_path *kr_cmpr_mkpath(kr_cmpr *cmpr, kr_cmpr_path_setup *setup);
+
+ ***Paths
+ kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
+  kr_compositor_path_setup *setup);
+ int kr_compositor_unlink(kr_compositor_path *path);
+ kr_compositor_path *kr_compositor_find(kr_compositor *compositor, char *name);
+ int kr_compositor_path_ctl(kr_compositor_path *p, XXX);
+ int kr_compositor_path_get_info(kr_compositor_path *path,
+  kr_compositor_path_info *info);
+
+ ***Compositor as a whole
+ int kr_compositor_ctl(kr_compositor *compr, XXX);
+ int kr_compositor_get_info(kr_compositor *compr, kr_compositor_info *info);
+
+*/
 
 #endif

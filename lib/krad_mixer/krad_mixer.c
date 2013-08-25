@@ -902,7 +902,7 @@ int kr_mixer_sample_rate_set(kr_mixer *mixer, uint32_t sample_rate) {
   return mixer->new_sample_rate;
 }
 
-int kr_mixer_mix(kr_mixer *mixer) {
+int kr_mixer_process(kr_mixer *mixer) {
   if (mixer == NULL) return -1;
   mixer_process(mixer, mixer->period_size);
   return mixer->period_size;

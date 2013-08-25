@@ -121,12 +121,11 @@ void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader);
 void kr_mixer_channel_copy(kr_mixer_path *path, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *path, int in_chan, int out_chan);
 
-void kr_mixer_setup_init(kr_mixer_setup *setup);
-
 /* Mixer as a whole funcs */
+void kr_mixer_setup_init(kr_mixer_setup *setup);
 kr_mixer *kr_mixer_create(kr_mixer_setup *setup);
 int kr_mixer_destroy(kr_mixer *mixer);
-int kr_mixer_mix(kr_mixer *mixer);
+int kr_mixer_process(kr_mixer *mixer);
 
 int kr_mixer_ctl(kr_mixer *mixer, int ctl, void *value);
 int kr_mixer_get_info(kr_mixer *mixer, kr_mixer_info *info);
