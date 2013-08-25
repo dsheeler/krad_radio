@@ -35,7 +35,10 @@ static int xrun_cb(void *arg) {
 
 static int process_cb(jack_nframes_t nframes, void *arg) {
 
-  kr_jack *jack = (kr_jack *)arg;
+  kr_jack *jack;
+  kr_jack_cb_arg cb_arg;
+
+  jack = (kr_jack *)arg;
 
   if (jack->set_thread_name == 0) {
     krad_system_set_thread_name("kr_jack_io");
@@ -47,6 +50,11 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
   if ((jack->info.frames % (nframes * 1000)) == 0) {
     printk("Jacked about %"PRIu64" frames now", jack->info.frames);
   }
+
+  cb_arg.user = jack->user;
+  cb_arg.event = KR_JACK_PROCESS;
+  cb_arg.path = NULL;
+  jack->process_cb(&cb_arg);
 
   return 0;
 }

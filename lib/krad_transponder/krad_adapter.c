@@ -47,6 +47,8 @@ struct kr_adapter {
   kr_adapter_event_cb *ev_cb;
 };
 
+#include "adapters/jack.c"
+
 static int path_setup_check(kr_adapter_path_setup *setup);
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup);
 static void path_destroy(kr_adapter_path *path);
@@ -59,25 +61,17 @@ static int path_setup_check(kr_adapter_path_setup *setup) {
 
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
 
-  memcpy(&path->info, &setup->info, sizeof(kr_adapter_path_info));
-
   path->user = setup->user;
   path->ev_cb = setup->ev_cb;
   path->av_cb = setup->av_cb;
-
-  kr_jack_path_setup jack_path_setup;
+  memcpy(&path->info, &setup->info, sizeof(kr_adapter_path_info));
 
   printk("ok we are going to create an adapter path");
 
   switch (path->adapter->info.api) {
     case KR_ADP_JACK:
-      memcpy(&jack_path_setup.info, &setup->info.info.jack,
-       sizeof(kr_jack_path_info));
-      jack_path_setup.audio_cb = setup->av_cb;
-      jack_path_setup.event_cb = setup->ev_cb;
-      jack_path_setup.user = setup->user;
-      path->api_path.jack = kr_jack_mkpath(path->adapter->handle.jack,
-       &jack_path_setup);
+      jack_adapter_path_create(path);
+      break;
     default:
       break;
   }
@@ -118,6 +112,7 @@ int kr_adapter_unlink(kr_adapter_path *path) {
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] == path) {
       path_destroy(path);
+      free(path);
       adapter->path[i] = NULL;
       /* adapter->info.active_paths--; */
       return 0;
@@ -192,27 +187,22 @@ int kr_adapter_destroy(kr_adapter *adapter) {
 kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
 
   kr_adapter *adapter;
-  kr_jack_setup jack_setup;
+
+  if (setup == NULL) return NULL;
 
   adapter = calloc(1, sizeof(kr_adapter));
+  adapter->user = setup->user;
+  adapter->ev_cb = setup->ev_cb;
+  adapter->av_cb = setup->av_cb;
   memcpy(&adapter->info, &setup->info, sizeof(kr_adapter_info));
 
   switch (adapter->info.api) {
     case KR_ADP_JACK:
-      snprintf(jack_setup.client_name,
-       sizeof(setup->info.api_info.jack.client_name), "kradradio");
-      snprintf(jack_setup.server_name,
-       sizeof(setup->info.api_info.jack.server_name), "%s", "");
-      /*
-      memcpy(&jack_setup.info, &setup->info.info.jack, sizeof(kr_jack_info));
-      */
-      jack_setup.user = setup->user;
-      jack_setup.process_cb = setup->av_cb;
-      jack_setup.event_cb = setup->ev_cb;
-      adapter->handle.jack = kr_jack_create(&jack_setup);
+      jack_adapter_create(adapter);
       return adapter;
     default:
       break;
   }
+  /* Should never make it this far. */
   return NULL;
 }
