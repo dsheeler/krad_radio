@@ -27,15 +27,18 @@ struct kr_transponder {
 #include "krad_transponder_dev.c"
 #include "krad_transponder_processor.c"
 
+static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps);
+static kr_adapter *adapter_create(kr_xpdr *xpdr, kr_adapter_path_setup *ps);
+static kr_adapter *adapter_get(kr_xpdr *xpdr, kr_adapter_path_setup *ps);
 static int path_io_info_check(kr_xpdr_path_io_info *info);
 static int path_info_check(kr_xpdr_path_info *info);
 static int path_setup_check(kr_xpdr_path_setup *setup);
+static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info);
 static int path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
+static void path_io_destroy(kr_xpdr_path_io *io, kr_xpdr_path_io_type type);
 static void path_destroy(kr_xpdr_path *path);
-static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup);
-static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup);
 
-static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
+static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
 
   int i;
   kr_adapter *adapter;
@@ -51,7 +54,7 @@ static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
         printke("We failed to get adapter info..");
         return NULL;
       }
-      if (info.api == setup->info.api) {
+      if (info.api == ps->info.api) {
         //compare instance string
         //&& (strncmp(xpdr->adapter))) {
         //if we find it return
@@ -64,33 +67,39 @@ static kr_adapter *find_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
   return NULL;
 }
 
-static kr_adapter *get_adapter(kr_xpdr *xpdr, kr_adapter_path_setup *setup) {
+static kr_adapter *adapter_create(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
 
   int i;
-  kr_adapter *adapter;
   kr_adapter_setup adapter_setup;
 
-  /* Find adapter instance */
-  adapter = find_adapter(xpdr, setup);
-  if (adapter) {
-    printk("we found an adapter!");
-    return adapter;
-  }
-
-  /* Otherwise create it */
   memset(&adapter_setup, 0, sizeof(kr_adapter_setup));
+  adapter_setup.info.api = ps->info.api;
+
   for (i = 0; i < KR_XPDR_PATHS_MAX; i++) {
     if (xpdr->adapter[i] == NULL) {
-      adapter_setup.info.api = setup->info.api;
       /* Some or all adapters we want to use as clock sources.. */
       adapter_setup.user = xpdr;
       adapter_setup.cb = xpdr_adapter_info_cb;
       xpdr->adapter[i] = kr_adapter_create(&adapter_setup);
-      printk("we created an adapter!");
+      printk("created an adapter");
       return xpdr->adapter[i];
     }
   }
+  printke("cant create adapter, out of mem");
   return NULL;
+}
+
+static kr_adapter *adapter_get(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
+
+  kr_adapter *adapter;
+
+  adapter = adapter_find(xpdr, ps);
+  if (adapter) {
+    printk("found an adapter");
+  } else {
+    adapter = adapter_create(xpdr, ps);
+  }
+  return adapter;
 }
 
 static int path_io_info_check(kr_transponder_path_io_info *info) {
@@ -162,7 +171,7 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
        sizeof(kr_adapter_path_info));
       ap_setup.cb = xpdr_adapter_path_info_cb;
       ap_setup.user = path;
-      adapter = get_adapter(path->xpdr, &ap_setup);
+      adapter = adapter_get(path->xpdr, &ap_setup);
       if (adapter == NULL) {
         printke("get_adapter returned NULL");
       } else {
