@@ -22,14 +22,15 @@ float kr_easer_process(kr_easer *easer, float current, void **ptr) {
   int i;
 
 
-  i = __sync_fetch_and_xor(&easer->newest, 0);
+  i = __sync_fetch_and_add(&easer->newest, 0);
   if (i > 0) {
-    i -= 1;
+    i %= 2;
     if (__sync_bool_compare_and_swap(&easer->update[i].rw, 0, 1)) {
       easer->new_ptr = easer->update[i].ptr;
       easer->new_target = easer->update[i].target;
       easer->new_duration = easer->update[i].duration;
       easer->new_easing = easer->update[i].easing;
+      easer->newest = 0;
       __sync_bool_compare_and_swap(&easer->update[i].rw, 1, 0);
       easer->target = easer->new_target;
       if (easer->new_duration < 2) {
@@ -91,8 +92,9 @@ void kr_easer_set(kr_easer *easer, float target, int duration,
     easer->update[i].duration = duration;
     easer->update[i].easing = easing;
     updated = 1;
+    easer->active = 1;
     __sync_bool_compare_and_swap(&easer->update[i].rw, 2, 0);
-    __sync_fetch_and_xor(&easer->newest, i + 1);
+    __sync_fetch_and_add(&easer->newest, i + 1);
     easer->last = i + 1;
   } else {
     if (i == 0) {
@@ -106,8 +108,9 @@ void kr_easer_set(kr_easer *easer, float target, int duration,
       easer->update[i].duration = duration;
       easer->update[i].easing = easing;
       updated = 1;
+      easer->active = 1;
       __sync_bool_compare_and_swap(&easer->update[i].rw, 2, 0);
-      __sync_fetch_and_xor(&easer->newest, i + 1);
+      __sync_fetch_and_add(&easer->newest, i + 1);
        easer->last = i + 1;
     }
   }
