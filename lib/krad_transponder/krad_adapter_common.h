@@ -8,14 +8,14 @@ typedef struct kr_adapter_path_info kr_adapter_path_info;
 
 typedef enum {
   KR_ADP_V4L2,
-  KR_ADP_DECKLINK,
-  KR_ADP_ALSA,
+  KR_ADP_DECKLINK,    /* A  Input only */
+  KR_ADP_ALSA,        /* A  */
   KR_ADP_X11,
   KR_ADP_WAYLAND,
-  KR_ADP_ENCODER,
+  KR_ADP_ENCODER,     /* A Ouput via pushing only */
   KR_ADP_FLYCAP,
-  KR_ADP_KRAPI,
-  KR_ADP_JACK
+  KR_ADP_KRAPI,       /* A  */
+  KR_ADP_JACK         /* A  */
 } kr_adapter_api;
 
 struct kr_adapter_info {
