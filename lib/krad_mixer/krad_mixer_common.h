@@ -20,7 +20,7 @@ typedef struct kr_mixer_info kr_mixer_info;
 typedef struct kr_mixer_path_info kr_mixer_path_info;
 typedef struct kr_mixer_path_info kr_mixer_input_info;
 typedef struct kr_mixer_path_info kr_mixer_bus_info;
-typedef struct kr_mixer_path_info kr_mixer_aux_info;
+typedef struct kr_mixer_path_info kr_mixer_output_info;
 
 typedef enum {
   NIL,
@@ -44,7 +44,7 @@ typedef enum {
 typedef enum {
   KR_MXR_INPUT,
   KR_MXR_BUS,
-  KR_MXR_AUX
+  KR_MXR_OUTPUT
 } kr_mixer_path_type;
 
 typedef enum {
@@ -58,7 +58,7 @@ struct kr_mixer_info {
   uint32_t sample_rate;
   uint32_t inputs;
   uint32_t buses;
-  uint32_t auxes;
+  uint32_t outputs;
   uint64_t frames;
   uint64_t timecode;
   char clock[32];

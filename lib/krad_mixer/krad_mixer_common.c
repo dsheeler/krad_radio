@@ -57,8 +57,8 @@ char *kr_mixer_pathtypetostr(kr_mixer_path_type type) {
       return "INPUT";
     case KR_MXR_BUS:
       return "BUS";
-    case KR_MXR_AUX:
-      return "AUX";
+    case KR_MXR_OUTPUT:
+      return "OUTPUT";
   }
   return "Unknown";
 }

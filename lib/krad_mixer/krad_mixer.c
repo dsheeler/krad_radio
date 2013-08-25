@@ -509,7 +509,7 @@ static void mixer_process(kr_mixer *mixer, uint32_t nframes) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     path = mixer->path[p];
     if ((path != NULL) && (path->state == KR_MXP_ACTIVE)
-        && (path->type == KR_MXR_AUX)) {
+        && (path->type == KR_MXR_OUTPUT)) {
       copy_frames(path, path->bus, nframes);
       apply_volume(path, nframes);
       limit(path, nframes);
@@ -520,7 +520,7 @@ static void mixer_process(kr_mixer *mixer, uint32_t nframes) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     path = mixer->path[p];
     if ((path != NULL) && (path->state == KR_MXP_ACTIVE)
-        && (path->type == KR_MXR_AUX)) {
+        && (path->type == KR_MXR_OUTPUT)) {
       push_frames(path, nframes);
     }
   }
@@ -689,11 +689,11 @@ static int path_setup_info_check(kr_mixer_path_info *info) {
 
   if ((info->type != KR_MXR_INPUT)
       && (info->type != KR_MXR_BUS)
-      && (info->type != KR_MXR_AUX)) {
+      && (info->type != KR_MXR_OUTPUT)) {
     return -4;
   }
 
-  /* FIXME check all the things 
+  /* FIXME check all the things
    *
    * bus exists
    * sfx params
@@ -923,8 +923,8 @@ int kr_mixer_get_info(kr_mixer *mixer, kr_mixer_info *info) {
       if (path->type == KR_MXR_INPUT) {
         info->inputs++;
       }
-      if (path->type == KR_MXR_AUX) {
-        info->auxes++;
+      if (path->type == KR_MXR_OUTPUT) {
+        info->outputs++;
       }
       if (path->type == KR_MXR_BUS) {
         info->buses++;

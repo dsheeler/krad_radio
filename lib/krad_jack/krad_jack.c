@@ -47,9 +47,11 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
 
   jack->info.frames += nframes;
 
+  /*
   if ((jack->info.frames % (nframes * 1000)) == 0) {
     printk("Jacked about %"PRIu64" frames now", jack->info.frames);
   }
+  */
 
   cb_arg.user = jack->user;
   cb_arg.event = KR_JACK_PROCESS;
@@ -63,7 +65,7 @@ static void shutdown_cb(void *arg) {
 
   kr_jack *jack = (kr_jack *)arg;
 
-  jack->info.active = 0;
+  jack->info.state = KR_JACK_OFFLINE;
   printke("Krad Jack: shutdown callback, oh dear!");
 }
 
@@ -287,6 +289,7 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
   int c;
   kr_jack_path *path;
   int port_flags;
+  char *port_suffix;
   char port_name[192];
 
   if ((jack == NULL) || (setup == NULL)) return NULL;
@@ -301,30 +304,30 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
   path->jack = jack;
   memcpy(&path->info, &setup->info, sizeof(kr_jack_path_info));
 
+  if (jack->info.state != KR_JACK_ONLINE) {
+    printke("Not creating JACK API ports because jack server is offline");
+    return path;
+  }
+
   if (path->info.direction == KR_JACK_INPUT) {
     port_flags = JackPortIsInput;
+    port_suffix = "audio_in";
   } else {
     port_flags = JackPortIsOutput;
+    port_suffix = "audio_out";
   }
 
   printk("JACK mkpath: %s (%d chan)", path->info.name, path->info.channels);
 
   for (c = 0; c < path->info.channels; c++) {
-    if (path->info.channels == 1) {
-      strncpy(port_name, path->info.name, sizeof(path->info.name));
-    } else {
-      snprintf(port_name, sizeof(port_name), "%s_%d", path->info.name, c + 1);
-      //strcat(port_name, kr_mixer_channeltostr(c));
-    }
-
+    snprintf(port_name, sizeof(port_name), "%s/%s %d", path->info.name,
+     port_suffix, c + 1);
     path->ports[c] = jack_port_register(path->jack->client, port_name,
      JACK_DEFAULT_AUDIO_TYPE, port_flags, 0);
 
     if (path->ports[c] == NULL) {
       printke("JACK: port register failure: %s", port_name);
       //FIXME fail better
-      //free(portgroup);
-      //return NULL;
     }
   }
 
@@ -341,7 +344,7 @@ int kr_jack_destroy(kr_jack *jack) {
   if (jack->client != NULL) {
     jack_client_close(jack->client);
     jack->client = NULL;
-    jack->info.active = 0;
+    jack->info.state = KR_JACK_OFFLINE;
   }
   /*
   for (p = 0; p < 256; p++) {
@@ -428,9 +431,9 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
   //jack_set_port_connect_callback(jack->client, port_connection, jack);
 
   if (jack_activate(jack->client)) {
-    jack->info.active = 0;
+    jack->info.state = KR_JACK_OFFLINE;
   } else {
-    jack->info.active = 1;
+    jack->info.state = KR_JACK_ONLINE;
   }
 
   krad_system_set_thread_name(old_thread_name);

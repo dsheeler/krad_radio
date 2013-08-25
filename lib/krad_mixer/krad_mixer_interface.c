@@ -39,7 +39,7 @@ void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
   kr_ebml2_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->period_size);
   kr_ebml2_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->sample_rate);
   kr_ebml2_pack_uint32(e, KR_EID_MIXER_INPUTS, info->inputs);
-  kr_ebml2_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->auxes);
+  kr_ebml2_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->outputs);
   kr_ebml2_pack_uint32(e, KR_EID_MIXER_BUSES, info->buses);
   kr_ebml2_pack_string(e, KR_EID_MIXER_CLOCK, info->clock);
 }

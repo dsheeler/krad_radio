@@ -575,7 +575,7 @@ static void kr_ebml_to_mixer_rep(kr_ebml *ebml, kr_mixer_info *mixer) {
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->period_size);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->sample_rate);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->inputs);
-  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->auxes);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->outputs);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->buses);
   kr_ebml2_unpack_element_string(ebml, NULL, mixer->clock,
    sizeof(mixer->clock));
@@ -619,7 +619,7 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
   pos += sprintf(*string + pos, "Mixer Status:\n");
   pos += sprintf(*string + pos, "Sample Rate: %u\n", mixer.sample_rate);
   pos += sprintf(*string + pos, "Inputs: %u\n", mixer.inputs);
-  pos += sprintf(*string + pos, "Auxes: %u\n", mixer.auxes);
+  pos += sprintf(*string + pos, "Outputs: %u\n", mixer.outputs);
   pos += sprintf(*string + pos, "Buses: %u\n", mixer.buses);
   pos += sprintf(*string + pos, "Time Source: %s", mixer.clock);
 
