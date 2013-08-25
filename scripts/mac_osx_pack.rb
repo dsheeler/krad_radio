@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-krad_binaries = ["krad_radio", "krad_radio_daemon"]
+krad_binaries = ["kr", "krad_radio"]
 krad_binaries_path = "/usr/local/bin"
 krad_clientlib = "libkradradio_client.15.dylib"
 krad_clientlib_path = "/usr/local/lib"
@@ -59,7 +59,7 @@ end
 
 # install_name_tool -id @executable_path/../Frameworks/Jackmp.framework/Jackmp Jackmp
 
-`install_name_tool -change /Library/Frameworks/Jackmp.framework/Versions/A/Jackmp @executable_path/../Frameworks/Jackmp.framework/Versions/A/Jackmp #{krad_appfolder_exec_path}krad_radio_daemon`
+`install_name_tool -change /Library/Frameworks/Jackmp.framework/Versions/A/Jackmp @executable_path/../Frameworks/Jackmp.framework/Versions/A/Jackmp #{krad_appfolder_exec_path}krad_radio`
 `install_name_tool -change /Library/Frameworks/Jackmp.framework/Versions/A/Jackmp @executable_path/../Frameworks/Jackmp.framework/Versions/A/Jackmp #{krad_appfolder_exec_path}libavutil.51.dylib`
 `install_name_tool -change /Library/Frameworks/Jackmp.framework/Versions/A/Jackmp @executable_path/../Frameworks/Jackmp.framework/Versions/A/Jackmp #{krad_appfolder_exec_path}libswscale.2.dylib`
 

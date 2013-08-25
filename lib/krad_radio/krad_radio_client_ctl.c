@@ -64,7 +64,7 @@ static int krad_radio_pid (char *sysname) {
   }
 
   memset (buf, 0, sizeof(buf));
-  snprintf (cmd, sizeof(cmd), "pgrep -fx \"%s %s\"", "krad_radio_daemon", sysname);
+  snprintf (cmd, sizeof(cmd), "pgrep -fx \"%s %s\"", "krad_radio", sysname);
 
   fp = popen(cmd, "r");
   if (fp == NULL) {
@@ -85,7 +85,7 @@ static int krad_radio_pid (char *sysname) {
 
 #else
 
-char *krad_radio_running_stations () {
+char *krad_radio_running_stations() {
 
   char *unix_sockets;
   int fd;
@@ -144,7 +144,7 @@ char *krad_radio_running_stations () {
   return list;
 }
 
-static int krad_radio_pid (char *sysname) {
+static int krad_radio_pid(char *sysname) {
 
   DIR *dp;
   struct dirent *ep;
@@ -155,16 +155,18 @@ static int krad_radio_pid (char *sysname) {
   int fd;
   int bytes;
   int pid;
-
+  static const char *daemon_name = "krad_radio";
+  int daemon_name_len;
   if (!(krad_valid_sysname(sysname))) {
     return 0;
   }
 
+  daemon_name_len = strlen(daemon_name);
   pid = 0;
   memset(search, '\0', sizeof(search));
-  strcpy (search, "krad_radio_daemon");
-  strcpy (search + 18, sysname);
-  searchlen = 18 + strlen(sysname);
+  strcpy(search, daemon_name);
+  strcpy(search + daemon_name_len + 1, sysname);
+  searchlen = daemon_name_len + 1 + strlen(sysname);
   memset(cmdline, '\0', sizeof(cmdline));
   memset(cmdline_file, '\0', sizeof(cmdline_file));
 
