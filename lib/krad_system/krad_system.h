@@ -158,7 +158,8 @@ void krad_system_daemonize ();
 void krad_system_daemon_wait ();
 void krad_system_init ();
 
-void krad_system_set_thread_name (char *name);
+void kr_systm_get_thread_name(char *name);
+void krad_system_set_thread_name(char *name);
 int krad_system_set_socket_nonblocking (int sd);
 int krad_system_set_socket_blocking (int sd);
 int dir_exists (char *dir);

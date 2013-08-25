@@ -18,9 +18,9 @@ struct kr_jack {
   kr_jack_process_cb *process_cb;
 };
 
+static int xrun_cb(void *arg);
 static int process_cb(jack_nframes_t nframes, void *arg);
 static void shutdown_cb(void *arg);
-static int xrun_cb(void *arg);
 
 static int xrun_cb(void *arg) {
 
@@ -366,15 +366,15 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
 
   kr_jack *jack;
   char *name;
+  char old_thread_name[16];
   jack_status_t status;
   jack_options_t options;
 
   if (setup == NULL) return NULL;
   if (jack_setup_check(setup)) return NULL;
 
+  memset(old_thread_name, 0, sizeof(old_thread_name));
   jack = calloc(1, sizeof(kr_jack));
-
-  krad_system_set_thread_name("kr_jack");
 
   strncpy(jack->info.client_name, setup->client_name,
    sizeof(jack->info.client_name));
@@ -393,6 +393,8 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
     options = JackNoStartServer;
   }
 
+  kr_systm_get_thread_name(old_thread_name);
+  krad_system_set_thread_name("kr_jack");
   jack->client = jack_client_open(jack->info.client_name, options, &status,
    jack->info.server_name);
   if (jack->client == NULL) {
@@ -422,6 +424,8 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
   } else {
     jack->info.active = 1;
   }
+
+  krad_system_set_thread_name(old_thread_name);
 
   return jack;
 }

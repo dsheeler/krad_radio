@@ -450,10 +450,17 @@ void krad_system_daemonize () {
   }
 }
 
-void krad_system_set_thread_name (char *name) {
-  if ((name == NULL || strlen (name) >= 15) ||
-      (prctl (PR_SET_NAME, (unsigned long) name, 0, 0, 0) != 0)) {
-    printke ("Could not set thread name: %s", name);
+void kr_systm_get_thread_name(char *name) {
+  if ((name == NULL)
+   || (prctl(PR_GET_NAME, (unsigned long)name, 0, 0, 0) != 0)) {
+    printke("Could not get thread name");
+  }
+}
+
+void krad_system_set_thread_name(char *name) {
+  if ((name == NULL || strlen(name) > 15) ||
+      (prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0) != 0)) {
+    printke("Could not set thread name: %s", name);
   }
 }
 
