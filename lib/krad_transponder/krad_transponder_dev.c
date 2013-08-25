@@ -31,14 +31,12 @@ void test_xpdr(kr_xpdr *xpdr) {
   kr_xpdr_path *path;
   char *test_name;
 
-  test_name = "Working";
-
   memset(&setup, 0, sizeof(kr_xpdr_path_setup));
 
+  test_name = "Working";
+  strcpy(setup.info.name, test_name);
   setup.user = xpdr;
   setup.cb = xpdr_adapter_path_info_cb;
-
-  strcpy(setup.info.name, test_name);
 
   setup.info.input.type = KR_XPDR_ADAPTER;
   setup.info.input.info.adapter_path_info.api = KR_ADP_JACK;

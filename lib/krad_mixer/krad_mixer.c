@@ -765,13 +765,21 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup) {
   kr_mixer_path *path;
 
   if ((mixer == NULL) || (setup == NULL)) return NULL;
-  if (path_setup_check(setup)) return NULL;
+  if (path_setup_check(setup)) {
+    printke("mixer mkpath failed setup check");
+    return NULL;
+  }
   path = kr_mixer_find(mixer, setup->info.name);
-  if (path != NULL) return NULL;
+  if (path != NULL) {
+    printke("mixer mkpath path with that name already exists");
+    return NULL;
+  }
   path = path_alloc(mixer);
-  if (path == NULL) return NULL;
+  if (path == NULL) {
+    printke("mixer mkpath could not alloc new path");
+    return NULL;
+  }
   path_create(path, setup);
-
   return path;
 }
 

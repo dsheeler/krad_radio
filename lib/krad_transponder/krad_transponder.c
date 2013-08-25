@@ -163,8 +163,13 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
       ap_setup.cb = xpdr_adapter_path_info_cb;
       ap_setup.user = path;
       adapter = get_adapter(path->xpdr, &ap_setup);
-      if (adapter) {
+      if (adapter == NULL) {
+        printke("get_adapter returned NULL");
+      } else {
         io->adapter_path = kr_adapter_mkpath(adapter, &ap_setup);
+        if (io->adapter_path == NULL) {
+          printke("adapter mkpath returned NULL");
+        }
       }
       break;
     case KR_XPDR_MIXER:
@@ -173,7 +178,9 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
       mp_setup.audio_cb = xpdr_mixer_path_audio_cb;
       mp_setup.user = path;
       io->mixer_path = kr_mixer_mkpath(mixer, &mp_setup);
-      printke("mixer path was NULL!");
+      if (io->mixer_path == NULL) {
+        printke("mixer mkpath returned NULL");
+      }
       break;
     case KR_XPDR_COMPOSITOR:
       break;
