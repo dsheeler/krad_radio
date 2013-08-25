@@ -24,20 +24,39 @@ typedef struct kr_jack_path kr_jack_path;
 typedef struct kr_jack_path kr_jack_input;
 typedef struct kr_jack_path kr_jack_output;
 
+typedef enum {
+  KR_JACK_SHUTDOWN,
+  KR_JACK_PROCESS,
+  KR_JACK_AUDIO_INPUT,
+  KR_JACK_AUDIO_OUTPUT,
+  KR_JACK_INFO, /* FIXME what info.. how to get .. */
+  KR_JACK_PATH_INFO /* FIXME what info.. how to get .. */
+} kr_jack_event;
+
+typedef struct {
+  kr_jack_event event;
+  void *user;
+  kr_jack_path *path;
+} kr_jack_cb_arg;
+
+typedef void (kr_jack_event_cb)(kr_jack_cb_arg *);
+typedef void (kr_jack_process_cb)(kr_jack_cb_arg *);
+typedef void (kr_jack_path_event_cb)(kr_jack_cb_arg *);
+typedef void (kr_jack_path_audio_cb)(kr_jack_cb_arg *);
+
 struct kr_jack_setup {
   char client_name[64];
   char server_name[64];
   void *user;
-  //state callback - server shutdown/xrun/period-sampleratechange
-  void *cb;
+  kr_jack_event_cb *event_cb;
+  kr_jack_process_cb *process_cb;
 };
 
 struct kr_jack_path_setup {
   kr_jack_path_info info;
-  //samples callback?
-  //state callback - connection/disconnection
   void *user;
-  void *cb;
+  kr_jack_path_event_cb *event_cb;
+  kr_jack_path_audio_cb *audio_cb;
 };
 
 /*

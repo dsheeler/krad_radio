@@ -4,22 +4,18 @@ struct kr_jack_path {
   kr_jack *jack;
   kr_jack_path_info info;
   jack_port_t *ports[KR_JACK_CHANNELS_MAX];
-  //float *samples[8];
   void *user;
-  void *cb;
+  kr_jack_path_event_cb *event_cb;
+  kr_jack_path_audio_cb *audio_cb;
 };
 
 struct kr_jack {
   jack_client_t *client;
-  jack_status_t status;
-  jack_options_t options;
-  //callback / user pointer
   kr_jack_info info;
   int set_thread_name;
   void *user;
-  void *cb;
-  //char *stay_connected[256];
-  //char *stay_connected_to[256];
+  kr_jack_event_cb *event_cb;
+  kr_jack_process_cb *process_cb;
 };
 
 static int process_cb(jack_nframes_t nframes, void *arg);
@@ -303,8 +299,7 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
     port_flags = JackPortIsOutput;
   }
 
-  printk("jack mkpath at this point %s %d", path->info.name,
-   path->info.channels);
+  printk("JACK mkpath: %s (%d chan)", path->info.name, path->info.channels);
 
   for (c = 0; c < path->info.channels; c++) {
     if (path->info.channels == 1) {
@@ -318,8 +313,7 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
      JACK_DEFAULT_AUDIO_TYPE, port_flags, 0);
 
     if (path->ports[c] == NULL) {
-      printke("Krad Jack: Could not reg port, prolly a dupe reg: %s",
-       port_name);
+      printke("JACK: port register failure: %s", port_name);
       //FIXME fail better
       //free(portgroup);
       //return NULL;
@@ -362,7 +356,8 @@ int kr_jack_destroy(kr_jack *jack) {
 static int jack_setup_check(kr_jack_setup *setup) {
 
   if (setup->user == NULL) return -1;
-  if (setup->cb == NULL) return -1;
+  if (setup->process_cb == NULL) return -2;
+  if (setup->event_cb == NULL) return -3;
   /* FIXME check server / client name */
   return 0;
 }
@@ -371,6 +366,8 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
 
   kr_jack *jack;
   char *name;
+  jack_status_t status;
+  jack_options_t options;
 
   if (setup == NULL) return NULL;
   if (jack_setup_check(setup)) return NULL;
@@ -381,33 +378,32 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
 
   strncpy(jack->info.client_name, setup->client_name,
    sizeof(jack->info.client_name));
-  jack->cb = setup->cb;
+  jack->process_cb = setup->process_cb;
+  jack->event_cb = setup->event_cb;
   jack->user = setup->user;
 
   if ((setup->server_name[0] != '\0')
-    && (memchr(setup->server_name + 1, '\0', sizeof(setup->server_name) - 1)
+   && (memchr(setup->server_name + 1, '\0', sizeof(setup->server_name) - 1)
     != NULL)) {
     strncpy(jack->info.server_name, setup->server_name,
      sizeof(jack->info.server_name));
-    jack->options = JackNoStartServer | JackServerName;
+    options = JackNoStartServer | JackServerName;
   } else {
     jack->info.server_name[0] = '\0';
-    jack->options = JackNoStartServer;
+    options = JackNoStartServer;
   }
 
-  jack->client = jack_client_open(jack->info.client_name, jack->options,
-   &jack->status, jack->info.server_name);
+  jack->client = jack_client_open(jack->info.client_name, options, &status,
+   jack->info.server_name);
   if (jack->client == NULL) {
-    //FIXME fail err msg
-    printke("Krad Jack: jack_client_open() failed, status = 0x%2.0x",
-     jack->status);
-    if (jack->status & JackServerFailed) {
+    printke("Krad Jack: jack_client_open() failed, status = 0x%2.0x", status);
+    if (status & JackServerFailed) {
       printke("Krad Jack: Unable to connect to JACK server");
     }
     return jack;
   }
 
-  if (jack->status & JackNameNotUnique) {
+  if (status & JackNameNotUnique) {
     name = jack_get_client_name(jack->client);
     strncpy(jack->info.client_name, name, sizeof(jack->info.client_name));
     printke("Krad Jack: unique name `%s' assigned", jack->info.client_name);

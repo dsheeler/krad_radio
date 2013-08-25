@@ -1,30 +1,3 @@
-/*
-typedef struct {
-  kr_xpdr *xpdr;
-  void *hrm;
-} xpdr_adapter_info_cb_arg;
-*/
-
-static void xpdr_adapter_info_cb(kr_adapter_info_cb_arg *arg) {
-
-  /* xpdr_adapter_cb_arg = arg->user; */
-  kr_xpdr *xpdr;
-
-  xpdr = (kr_xpdr *)arg->user;
-
-  printk("yay adapter!");
-}
-
-static void xpdr_adapter_path_info_cb(kr_adapter_path_info_cb_arg *arg) {
-
-  /* xpdr_adapter_cb_arg = arg->user; */
-  kr_xpdr *xpdr;
-
-  xpdr = (kr_xpdr *)arg->user;
-
-  printk("yay path!");
-}
-
 void test_xpdr(kr_xpdr *xpdr) {
 
   kr_xpdr_path_setup setup;
@@ -36,7 +9,7 @@ void test_xpdr(kr_xpdr *xpdr) {
   test_name = "Working";
   strcpy(setup.info.name, test_name);
   setup.user = xpdr;
-  setup.cb = xpdr_adapter_path_info_cb;
+  setup.ev_cb = xpdr_path_event_cb;
 
   setup.info.input.type = KR_XPDR_ADAPTER;
   setup.info.input.info.adapter_path_info.api = KR_ADP_JACK;
@@ -50,4 +23,7 @@ void test_xpdr(kr_xpdr *xpdr) {
   setup.info.output.info.mixer_path_info.type = KR_MXR_INPUT;
 
   path = kr_transponder_mkpath(xpdr, &setup);
+  if (path == NULL) {
+    printke("could not create xpdr path");
+  }
 }

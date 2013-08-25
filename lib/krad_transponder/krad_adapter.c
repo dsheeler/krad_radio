@@ -30,11 +30,12 @@ typedef union {
 } kr_adapter_api_path;
 
 struct kr_adapter_path {
-  kr_adapter_api_path api_path;
   void *user;
-  void *cb;
-  kr_adapter_path_info info;
+  kr_adapter_path_av_cb *av_cb;
+  kr_adapter_path_event_cb *ev_cb;
   kr_adapter *adapter;
+  kr_adapter_api_path api_path;
+  kr_adapter_path_info info;
 };
 
 struct kr_adapter {
@@ -42,7 +43,8 @@ struct kr_adapter {
   kr_adapter_handle handle;
   kr_adapter_path *path[KR_ADAPTER_PATHS_MAX];
   void *user;
-  void *cb;
+  kr_adapter_av_cb *av_cb;
+  kr_adapter_event_cb *ev_cb;
 };
 
 static int path_setup_check(kr_adapter_path_setup *setup);
@@ -58,8 +60,11 @@ static int path_setup_check(kr_adapter_path_setup *setup) {
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
 
   memcpy(&path->info, &setup->info, sizeof(kr_adapter_path_info));
+
   path->user = setup->user;
-  path->cb = setup->cb;
+  path->ev_cb = setup->ev_cb;
+  path->av_cb = setup->av_cb;
+
   kr_jack_path_setup jack_path_setup;
 
   printk("ok we are going to create an adapter path");
@@ -68,7 +73,8 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
     case KR_ADP_JACK:
       memcpy(&jack_path_setup.info, &setup->info.info.jack,
        sizeof(kr_jack_path_info));
-      jack_path_setup.cb = setup->cb;
+      jack_path_setup.audio_cb = setup->av_cb;
+      jack_path_setup.event_cb = setup->ev_cb;
       jack_path_setup.user = setup->user;
       path->api_path.jack = kr_jack_mkpath(path->adapter->handle.jack,
        &jack_path_setup);
@@ -201,7 +207,8 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
       memcpy(&jack_setup.info, &setup->info.info.jack, sizeof(kr_jack_info));
       */
       jack_setup.user = setup->user;
-      jack_setup.cb = setup->cb;
+      jack_setup.process_cb = setup->av_cb;
+      jack_setup.event_cb = setup->ev_cb;
       adapter->handle.jack = kr_jack_create(&jack_setup);
       return adapter;
     default:

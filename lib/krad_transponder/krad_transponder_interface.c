@@ -7,7 +7,7 @@ static void kr_transponder_info_to_ebml(kr_ebml *ebml, kr_xpdr_info *info) {
 static void transponder_info_ebml(kr_ebml *ebml, kr_transponder *xpdr) {
   kr_transponder_info info;
   //memset(&info, 0, sizeof (kr_transponder_info));
-  kr_transponder_info_fill(xpdr, &info);
+  kr_transponder_get_info(xpdr, &info);
   kr_transponder_info_to_ebml(ebml, &info);
 }
 
