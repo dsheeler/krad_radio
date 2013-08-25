@@ -57,7 +57,7 @@ AM_CPPFLAGS = \
 lib_krad_radio_libkradclient_la_CFLAGS = $(OPUS_CFLAGS)
 lib_krad_radio_libkradclient_la_LIBADD = $(OPUS_LIBS)
 lib_krad_radio_libkradclient_la_LDFLAGS = -shared -no-undefined \
- -version-info @OD_LT_CURRENT@:@OD_LT_REVISION@:@OD_LT_AGE@
+ -version-info @KR_LT_CURRENT@:@KR_LT_REVISION@:@KR_LT_AGE@
 lib_krad_radio_libkradclient_la_LDFLAGS += 
 lib_krad_radio_libkradclient_la_SOURCES = \
 lib/krad_ebml/krad_ebml2.c \

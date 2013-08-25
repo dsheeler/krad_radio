@@ -1,7 +1,4 @@
-# autoconf source script for generating configure
-
-#FIXME unify version number nonsense
-AC_INIT([kradradio], [22], [kradradio@gmail.com])
+AC_INIT([kradradio], m4_esyscmd([scripts/krad_ver.sh]), [kradradio@gmail.com])
 AC_CONFIG_SRCDIR([tests/krad_webm_dash_vod_test.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
@@ -9,21 +6,13 @@ AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
 AM_MAINTAINER_MODE([enable])
 LT_INIT
 
-dnl Library versioning for libtool.
-dnl Please update these for releases.
-dnl CURRENT, REVISION, AGE
-dnl - library source changed -> increment REVISION
-dnl - interfaces added/removed/changed -> increment CURRENT, REVISION = 0
-dnl - interfaces added -> increment AGE
-dnl - interfaces removed -> AGE = 0
+KR_LT_CURRENT=$PACKAGE_VERSION
+KR_LT_REVISION=1
+KR_LT_AGE=0
 
-OD_LT_CURRENT=22
-OD_LT_REVISION=1
-OD_LT_AGE=0
-
-AC_SUBST(OD_LT_CURRENT)
-AC_SUBST(OD_LT_REVISION)
-AC_SUBST(OD_LT_AGE)
+AC_SUBST(KR_LT_CURRENT)
+AC_SUBST(KR_LT_REVISION)
+AC_SUBST(KR_LT_AGE)
 
 CFLAGS="-g -Wall $CFLAGS"
 CXXFLAGS="-g -Wall $CXXFLAGS"
