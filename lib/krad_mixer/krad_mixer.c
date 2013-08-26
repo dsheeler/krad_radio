@@ -130,14 +130,56 @@ static int handle_delay(kr_mixer_path *path, uint32_t nframes) {
   return nframes;
 }
 
+static void import_frames(kr_mixer_path *dest, kr_audio *src) {
+
+  int s;
+  int c;
+  int frames;
+  int channels;
+
+  frames = MIN(dest->mixer->period_size, src->count);
+  channels = MIN(dest->channels, src->channels);
+
+  for (c = 0; c < channels; c++) {
+    for (s = 0; s < frames; s++) {
+      dest->samples[c][s] = src->samples[c][s];
+    }
+  }
+}
+
+static void export_frames(kr_audio *dest, kr_mixer_path *src) {
+
+  int s;
+  int c;
+  int frames;
+  int channels;
+
+  frames = dest->count;
+  channels = dest->channels;
+
+  for (c = 0; c < channels; c++) {
+    for (s = 0; s < frames; s++) {
+      dest->samples[c][s] = src->samples[c][s];
+    }
+  }
+}
+
 static void audio_cb(kr_mixer_path *path, uint32_t nframes) {
+
   kr_mixer_path_audio_cb_arg cb_arg;
-  cb_arg.samples = path->samples;
-  cb_arg.channels = path->channels; /* Hrm maybe we dont want this one */
-  cb_arg.nframes = nframes;
+
+  cb_arg.audio.channels = path->channels;
+  cb_arg.audio.count = nframes;
+  cb_arg.audio.rate = path->mixer->sample_rate;
+  cb_arg.type = path->type;
   cb_arg.user = path->user;
   cb_arg.path = path;
   path->audio_cb(&cb_arg);
+  if (path->type == KR_MXR_INPUT) {
+    import_frames(path, &cb_arg.audio);
+  } else {
+    export_frames(&cb_arg.audio, path);
+  }
 }
 
 static void pull_frames(kr_mixer_path *path, uint32_t nframes) {

@@ -1,6 +1,8 @@
 #ifndef KRAD_AV_H
 #define KRAD_AV_H
 
+#include <inttypes.h>
+
 typedef struct kr_image kr_image;
 typedef struct kr_audio kr_audio;
 

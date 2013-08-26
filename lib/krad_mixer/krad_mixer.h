@@ -17,6 +17,7 @@ typedef struct kr_mixer_setup kr_mixer_setup;
 
 #define KR_MXR_MAX_MINIWINS 192
 
+#include "krad_av.h"
 #include "krad_mixer_common.h"
 #include "krad_mixer_interface.h"
 #include "krad_sfx.h"
@@ -37,9 +38,8 @@ struct kr_mixer_path_info_cb_arg {
 };
 
 struct kr_mixer_path_audio_cb_arg {
-  uint32_t channels;
-  uint32_t nframes;
-  float **samples;
+  kr_audio audio;
+  kr_mixer_path_type type;
   void *user;
   kr_mixer_path *path;
 };

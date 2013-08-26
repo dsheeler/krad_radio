@@ -75,23 +75,24 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
   return 0;
 }
 
-int kr_jack_path_process(kr_jack_path *path) {
+int kr_jack_path_prepare(kr_jack_path *path) {
 
   kr_jack_cb_arg cb_arg;
   int i;
+  int s;
+  float *port_output;
+
+  cb_arg.user = path->user;
+  cb_arg.path = path;
+  cb_arg.audio.channels = path->info.channels;
+  cb_arg.audio.rate = path->jack->info.sample_rate;
+  cb_arg.audio.count = path->jack->info.period_size;
 
   if (path->info.direction == KR_JACK_INPUT) {
     cb_arg.event = KR_JACK_AUDIO_INPUT;
   } else {
     cb_arg.event = KR_JACK_AUDIO_OUTPUT;
   }
-  cb_arg.user = path->user;
-  cb_arg.path = path;
-
-  cb_arg.audio.channels = path->info.channels;
-  cb_arg.audio.rate = path->jack->info.sample_rate;
-  cb_arg.audio.count = path->jack->info.period_size;
-
   for (i = 0; i < path->info.channels; i++) {
     cb_arg.audio.samples[i] = jack_port_get_buffer(path->ports[i],
      path->jack->info.period_size);
