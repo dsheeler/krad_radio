@@ -9,11 +9,11 @@ void krad_decklink_info (krad_decklink_t *decklink) {
 void krad_decklink_destroy (krad_decklink_t *decklink) {
 
   int c;
-	
+
   krad_decklink_stop (decklink);
 
   for (c = 0; c < 2; c++) {
-    free (decklink->samples[c]);	
+    free (decklink->samples[c]);
   }
  free (decklink);
 }
@@ -25,7 +25,7 @@ krad_decklink_t *krad_decklink_create (char *device) {
   krad_decklink_t *decklink;
 
   decklink = calloc(1, sizeof(krad_decklink_t));
-	
+
   decklink->devicenum = atoi (device);
   if (decklink->devicenum > 0) {
     sprintf (decklink->simplename, "Decklink%d", decklink->devicenum);
@@ -36,20 +36,20 @@ krad_decklink_t *krad_decklink_create (char *device) {
   for (c = 0; c < 2; c++) {
     decklink->samples[c] = malloc(4 * 8192);
   }
-	
+
   decklink->krad_decklink_capture = krad_decklink_capture_create (decklink->devicenum);
-	
+
   return decklink;
 }
 
 void krad_decklink_set_video_mode (krad_decklink_t *krad_decklink, int width, int height,
-								   int fps_numerator, int fps_denominator) {			  
+								   int fps_numerator, int fps_denominator) {
 
   printk ("Krad Decklink set video mode: %dx%d - %d / %d",
 	       width, height, fps_numerator, fps_denominator);
 
   krad_decklink_capture_set_video_mode (krad_decklink->krad_decklink_capture, width, height,
-										fps_numerator, fps_denominator);					  
+										fps_numerator, fps_denominator);
 }
 
 void krad_decklink_set_audio_input (krad_decklink_t *krad_decklink, char *audio_input) {

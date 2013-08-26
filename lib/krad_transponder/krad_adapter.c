@@ -3,13 +3,13 @@
 typedef union {
   void *exists;
   kr_jack *jack;
+  kr_v4l2 *v4l2;
 /*
   kr_alsa *alsa;
   kr_decklink *decklink;
   kr_fc2 *flycap;
   kr_jack *x11;
   kr_wayland *wayland;
-  kr_v4l2 *v4l2;
   kr_encoder *encoder;
   kr_shmapi krad;
 */
@@ -17,13 +17,13 @@ typedef union {
 
 typedef union {
   kr_jack_path *jack;
+  kr_v4l2_path *v4l2;
 /*
   kr_alsa_path *alsa;
   kr_decklink_path *decklink;
   kr_fc2_path *flycap;
   kr_x11_path *x11;
   kr_wayland_path *wayland;
-  kr_v4l2_path *v4l2;
   kr_encoder_path *encoder;
   kr_shmapi_path krad;
 */
@@ -48,10 +48,12 @@ struct kr_adapter {
 };
 
 #include "adapters/jack.c"
+#include "adapters/v4l2.c"
 
 static int path_setup_check(kr_adapter_path_setup *setup);
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup);
 static void path_destroy(kr_adapter_path *path);
+static int path_prepare(kr_adapter_path *path);
 
 static int path_setup_check(kr_adapter_path_setup *setup) {
   if (setup == NULL) return -1;
@@ -101,7 +103,7 @@ static kr_adapter_path *path_alloc(kr_adapter *adapter) {
   return NULL;
 }
 
-int kr_adapter_path_prepare(kr_adapter_path *path) {
+static int path_prepare(kr_adapter_path *path) {
   switch (path->info.api) {
     case KR_ADP_JACK:
       kr_jack_path_prepare(path->api_path.jack);
@@ -121,7 +123,7 @@ int kr_adapter_prepare(kr_adapter *adapter) {
 
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] != NULL) {
-      kr_adapter_path_prepare(adapter->path[i]);
+      path_prepare(adapter->path[i]);
       processed++;
     }
   }

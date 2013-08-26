@@ -1,34 +1,62 @@
-#ifndef __MACH__
 /*
-void v4l2_loopout_unit_create (void *arg) {
-
-  krad_link_t *krad_link = (krad_link_t *)arg;
-
-  krad_system_set_thread_name ("kr_v4l2_lo");
-
-  printk ("V4L2 Loop Output thread begins");
-
-
+void v4l2_adapter_path_av_cb(kr_v4l2_cb_arg *arg) {
+  kr_adapter_path_av_cb_arg cb_arg;
+  cb_arg.path = (kr_adapter_path *)arg->user;
+  cb_arg.user = cb_arg.path->user;
+  cb_arg.audio = arg->audio;
+  cb_arg.path->av_cb(&cb_arg);
 }
 
-int v4l2_loopout_unit_process (void *arg) {
-
-  krad_link_t *krad_link = (krad_link_t *)arg;
-
-  return 0;
+void v4l2_adapter_path_event_cb(kr_v4l2_cb_arg *arg) {
+  kr_adapter_path_event_cb_arg cb_arg;
+  cb_arg.path = (kr_adapter_path *)arg->user;
+  cb_arg.user = cb_arg.path->user;
+  cb_arg.path->ev_cb(&cb_arg);
 }
 
-void v4l2_loopout_unit_destroy (void *arg) {
+void v4l2_adapter_process_cb(kr_v4l2_cb_arg *arg) {
+  kr_adapter_av_cb_arg cb_arg;
+  cb_arg.adapter = (kr_adapter *)arg->user;
+  cb_arg.user = cb_arg.adapter->user;
+  cb_arg.adapter->av_cb(&cb_arg);
+}
 
-  krad_link_t *krad_link = (krad_link_t *)arg;
+void v4l2_adapter_event_cb(kr_v4l2_cb_arg *arg) {
+  kr_adapter_event_cb_arg cb_arg;
+  cb_arg.adapter = (kr_adapter *)arg->user;
+  cb_arg.user = cb_arg.adapter->user;
+  cb_arg.adapter->ev_cb(&cb_arg);
+}
 
+void v4l2_adapter_path_create(kr_adapter_path *path) {
 
+  kr_v4l2_path_setup vps;
 
-  printk ("V4L2 Loop Output thread exited");
+  vps.audio_cb = v4l2_adapter_path_av_cb;
+  vps.event_cb = v4l2_adapter_path_event_cb;
+  vps.user = path;
+  memcpy(&vps.info, &path->info.info.v4l2, sizeof(kr_v4l2_path_info));
+  path->api_path.v4l2 = kr_v4l2_mkpath(path->adapter->handle.v4l2, &vps);
+}
 
+void v4l2_adapter_create(kr_adapter *adapter) {
+
+  kr_v4l2_setup v4l2_setup;
+
+  snprintf(v4l2_setup.client_name,
+   sizeof(adapter->info.api_info.v4l2.client_name), "kradradio");
+  snprintf(v4l2_setup.server_name,
+   sizeof(adapter->info.api_info.v4l2.server_name), "%s", "");
+  *//*
+  memcpy(&v4l2_setup.info, &setup->info.info.v4l2, sizeof(kr_v4l2_info));
+  *//*
+  v4l2_setup.user = adapter;
+  v4l2_setup.process_cb = v4l2_adapter_process_cb;
+  v4l2_setup.event_cb = v4l2_adapter_event_cb;
+  adapter->handle.v4l2 = kr_v4l2_create(&v4l2_setup);
 }
 */
-
+/*
 void v4l2_capture_unit_create (void *arg) {
   //krad_system_set_thread_name ("kr_cap_v4l2");
 
@@ -156,5 +184,4 @@ void v4l2_capture_unit_destroy (void *arg) {
 
   printk ("v4l2 capture unit destroy");
 }
-
-#endif
+*/

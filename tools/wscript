@@ -308,10 +308,10 @@ def build(bld):
       break
   f.close()
 
-  # we use "KRAD_VERSION.0.0" for now as vnum. this basically means 
-  # that we advise to rebuild clients every new version due to 
+  # we use "KRAD_VERSION.0.0" for now as vnum. this basically means
+  # that we advise to rebuild clients every new version due to
   # possible API-breakages. closest to reality currently.
-  # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only 
+  # plan for later: "API_VERSION.KRAD_VERSION.0" so rebuild is only
   # needed when we _really_ break the API
 
   if bld.env['FRAK_MACOSX']:
@@ -320,22 +320,22 @@ def build(bld):
       source = [p] + krdlcapmacsrces,
       includes = includedirs,
       target = p.replace(".c", ""),
-      framework = ["CoreFoundation", "CoreServices"], 
+      framework = ["CoreFoundation", "CoreServices"],
       uselib = krdlcapmaclibs)
 
   if bld.env['KR_LINUX']:
     for p in programs:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
 
     for p in programs2:
-      bld(features = 'c cprogram', 
+      bld(features = 'c cprogram',
       source = [p] + krmkvhdrsources,
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
@@ -343,7 +343,7 @@ def build(bld):
     for p in programs3:
       bld(features = 'c cprogram',
       source = krmkvhdrsources + [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
@@ -351,7 +351,7 @@ def build(bld):
     for p in programs4:
       bld(features = 'c cprogram',
       source = krmuxpdrsources + krmkvhdrsources + [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs + plibs)
@@ -364,18 +364,18 @@ def build(bld):
       use = ["krad_mkv"],
       uselib = syslibs + kmkvshlibs + kmkvhdrshlibs + shlibs + stlibs + plibs)
 
-    for p in programs6:
-      bld(features = 'c cprogram',
-      source = krv4l2capsrces + krmuxpdrsources + krmkvhdrsources + [p],
-      includes = includedirs, 
-      target = p.replace(".c", ""),
-      use = ["krad_mkv"],
-      uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
+#    for p in programs6:
+#      bld(features = 'c cprogram',
+#      source = krv4l2capsrces + krmuxpdrsources + krmkvhdrsources + [p],
+#      includes = includedirs,
+#      target = p.replace(".c", ""),
+#      use = ["krad_mkv"],
+#      uselib = kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
 
     for p in programs7:
       bld(features = 'c cprogram',
       source = krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
@@ -383,7 +383,7 @@ def build(bld):
     for p in programs7p:
       bld(features = 'c cprogram',
       source = krperspsrces + krx11capsrces + krmuxpdrsources + krmkvhdrsources + [p],
-      includes = includedirs, 
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["krad_mkv"],
       uselib = shlibsx11 + kmkvshlibs + kmkvhdrshlibs + stlibs + syslibs3 + syslibs + plibs)
@@ -391,14 +391,14 @@ def build(bld):
   for p in programs8:
     bld(features = 'c cprogram',
     source = krmachinetestsources + [p],
-    includes = includedirs, 
+    includes = includedirs,
     target = p.replace(".c", ""),
     use = [""],
     uselib = kmkvshlibs + syslibs + plibs)
 
     bld.shlib(
-      source = krmkvlibsources, 
-      includes = includedirs, 
+      source = krmkvlibsources,
+      includes = includedirs,
       target = "krad_mkv",
       vnum = krad_version + ".0.0",
       uselib = kmkvshlibs + stlibs + syslibs)

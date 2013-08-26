@@ -22,16 +22,16 @@ struct krad_decklink_St {
 	int (*video_frame_callback)(void *, void *, int);
 	int (*audio_frames_callback)(void *, void *, int);
 	void *callback_pointer;
-	
+
 	int verbose;
-	
+
 	float *samples[16];
-	
+
 	unsigned char *captured_frame_rgb;
-	
+
 	int devicenum;
 	char simplename[64];
-	
+
 };
 
 

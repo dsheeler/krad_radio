@@ -61,12 +61,6 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
     /* callback event?? */
   }
 
-  /*
-  if ((jack->info.frames % (nframes * 1000)) == 0) {
-    printk("Jacked about %"PRIu64" frames now", jack->info.frames);
-  }
-  */
-
   cb_arg.user = jack->user;
   cb_arg.event = KR_JACK_PROCESS;
   cb_arg.path = NULL;
@@ -79,8 +73,6 @@ int kr_jack_path_prepare(kr_jack_path *path) {
 
   kr_jack_cb_arg cb_arg;
   int i;
-  int s;
-  float *port_output;
 
   cb_arg.user = path->user;
   cb_arg.path = path;
@@ -102,92 +94,6 @@ int kr_jack_path_prepare(kr_jack_path *path) {
 }
 
 /*
-void kr_jack_portgroup_samples_callback(int frames, void *user, float **smpls);
-void kr_jack_portgroup_samples_callback(int frames, void *userdata,
- float **samples) {
-
-  kr_jack_portgroup *portgroup = (kr_jack_portgroup *)userdata;
-  int c;
-  float *temp;
-
-  for (c = 0; c < portgroup->channels; c++) {
-    if (portgroup->direction == KR_AIN) {
-      temp = jack_port_get_buffer (portgroup->ports[c], frames);
-      memcpy (portgroup->samples[c], temp, frames * 4);
-      samples[c] = portgroup->samples[c];
-    } else {
-      samples[c] = jack_port_get_buffer (portgroup->ports[c], frames);
-    }
-  }
-}
-*/
-
-/*
-void kr_jack_check_connection(kr_jack *jack, char *remote_port) {
-
-  int p;
-  int flags;
-  jack_port_t *port;
-
-  if (strlen(remote_port)) {
-    for (p = 0; p < 256; p++) {
-      if ((jack->stay_connected[p] != NULL)
-          && (jack->stay_connected_to[p] != NULL)) {
-        if ((strncmp(jack->stay_connected_to[p], remote_port,
-            strlen(remote_port))) == 0) {
-          port = jack_port_by_name (jack->client, remote_port);
-          flags = jack_port_flags (port);
-          if (flags == JackPortIsOutput) {
-            //printk("Krad Jack: Replugging %s to %s", remote_port,
-            //jack->stay_connected[p]);
-            jack_connect(jack->client, remote_port, jack->stay_connected[p]);
-          } else {
-            //printk("Krad Jack: Replugging %s to %s", jack->stay_connected[p],
-            //remote_port);
-            jack_connect(jack->client, jack->stay_connected[p], remote_port);
-          }
-        }
-      }
-    }
-  }
-}
-
-void kr_jack_stay_connection(kr_jack *jack, char *port, char *remote_port) {
-
-  int p;
-
-  if (strlen(port) && strlen(remote_port)) {
-    for (p = 0; p < 256; p++) {
-      if (jack->stay_connected[p] == NULL) {
-        jack->stay_connected[p] = strdup(port);
-        jack->stay_connected_to[p] = strdup(remote_port);
-        break;
-      }
-    }
-  }
-}
-
-void kr_jack_unstay_connection(kr_jack *jack, char *port, char *remote_port) {
-
-  int p;
-
-  for (p = 0; p < 256; p++) {
-    if (jack->stay_connected[p] != NULL) {
-      if ((jack->stay_connected[p] != NULL)
-          && (jack->stay_connected_to[p] != NULL)) {
-        if (((strncmp(jack->stay_connected[p], port, strlen(port))) == 0) &&
-           ((strlen(remote_port) == 0)
-           || (strncmp(jack->stay_connected_to[p], remote_port,
-               strlen(remote_port)) == 0))) {
-          free (jack->stay_connected[p]);
-          free (jack->stay_connected_to[p]);
-          break;
-        }
-      }
-    }
-  }
-}
-
 void kr_jack_port_registration_callback(jack_port_id_t portid, int regged,
  void *arg) {
 
@@ -289,7 +195,7 @@ int kr_jack_unlink(kr_jack_path *path) {
   for (c = 0; c < path->info.channels; c++) {
     ret = jack_port_unregister(path->jack->client, path->ports[c]);
     if (ret != 0) {
-      //FIXME deal with it?
+      //FIXME watcha gonna do bout that? deal with it?
     }
     path->ports[c] = NULL;
   }
@@ -381,8 +287,6 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
 }
 
 int kr_jack_destroy(kr_jack *jack) {
-
-  //int p;
 
   printk("Jack destroy started");
 

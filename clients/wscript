@@ -5,8 +5,9 @@ import os
 programs = """
 kr.c
 krad_radio_simple.c
-kr_api_demo.c
 """.split()
+
+#kr_api_demo.c
 
 programs2 = """
 khaos_monkey.c
@@ -462,6 +463,14 @@ def build(bld):
     use = ["kradradio_client"],
     uselib = shlibs + stlibs + syslibs)
 
+  bld.shlib(
+    source = libsources,
+    includes = includedirs,
+    target = "kradradio_client",
+    vnum = krad_version + ".0.0",
+    uselib = shlibs + stlibs + syslibs)
+
+"""
   for p in programs2:
     bld(features = 'c cprogram',
       source = [p] + depsources2,
@@ -618,11 +627,4 @@ def build(bld):
         target = p.replace(".c", ""),
         use = ["kradradio_client"],
         uselib = shlibs + shlibs2 + stlibs + syslibs)
-
-  bld.shlib(
-    source = libsources,
-    includes = includedirs,
-    target = "kradradio_client",
-    vnum = krad_version + ".0.0",
-    uselib = shlibs + stlibs + syslibs)
-
+"""

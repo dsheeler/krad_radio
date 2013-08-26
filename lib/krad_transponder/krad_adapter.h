@@ -9,9 +9,10 @@ typedef struct kr_adapter_path kr_adapter_path;
 typedef struct kr_adapter_path_setup kr_adapter_path_setup;
 
 #include "krad_adapter_common.h"
-
 #include "krad_av.h"
+
 #include "krad_jack.h"
+#include "krad_v4l2.h"
 
 typedef struct {
   kr_adapter *adapter;
@@ -57,7 +58,6 @@ struct kr_adapter_setup {
 };
 
 int kr_adapter_prepare(kr_adapter *adapter);
-int kr_adapter_path_process(kr_adapter_path *path);
 
 int kr_adapter_unlink(kr_adapter_path *path);
 kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
