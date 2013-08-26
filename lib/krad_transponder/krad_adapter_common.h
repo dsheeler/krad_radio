@@ -7,6 +7,11 @@ typedef struct kr_adapter_path_info kr_adapter_path_info;
 #include "krad_jack_common.h"
 
 typedef enum {
+  KR_ADP_PATH_INPUT = 1,
+  KR_ADP_PATH_OUTPUT
+} kr_adapter_path_direction;
+
+typedef enum {
   KR_ADP_X11,         /* V      Input iPull                  */
   KR_ADP_V4L2,        /* V      Input ePush                  */
   KR_ADP_FLYCAP,      /* V      Input ePush only             */
@@ -33,6 +38,7 @@ struct kr_adapter_info {
 struct kr_adapter_path_info {
   kr_adapter_api api;
   char name[64];
+  kr_adapter_path_direction dir;
   union {
     kr_jack_path_info jack;
     /*

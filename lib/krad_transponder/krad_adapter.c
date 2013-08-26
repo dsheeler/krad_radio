@@ -101,6 +101,41 @@ static kr_adapter_path *path_alloc(kr_adapter *adapter) {
   return NULL;
 }
 
+int kr_adapter_path_process(kr_adapter_path *path) {
+  printk("processed an adapter path wee!");
+  if (path->info.dir == KR_ADP_PATH_INPUT) {
+    printk("im an input!");
+  } else {
+    printk("im an output!");
+  }
+  switch (path->info.api) {
+    case KR_ADP_JACK:
+      kr_jack_path_process(path->api_path.jack);
+      break;
+    default:
+      break;
+  }
+  return 0;
+}
+
+int kr_adapter_process_inputs(kr_adapter *adapter) {
+
+  int i;
+  int processed;
+
+  processed = 0;
+
+  for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
+    if (adapter->path[i] == NULL) continue;
+    if ((adapter->path[i] != NULL)
+     && (adapter->path[i]->info.dir == KR_ADP_PATH_INPUT)) {
+      kr_adapter_path_process(adapter->path[i]);
+      processed++;
+    }
+  }
+  return processed;
+}
+
 int kr_adapter_unlink(kr_adapter_path *path) {
 
   int i;

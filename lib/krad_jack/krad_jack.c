@@ -69,6 +69,22 @@ static void shutdown_cb(void *arg) {
   printke("Krad Jack: shutdown callback, oh dear!");
 }
 
+int kr_jack_path_process(kr_jack_path *path) {
+
+  kr_jack_cb_arg cb_arg;
+
+  if (path->info.direction == KR_JACK_INPUT) {
+    cb_arg.event = KR_JACK_AUDIO_INPUT;
+  } else {
+    cb_arg.event = KR_JACK_AUDIO_OUTPUT;
+  }
+  cb_arg.user = path->user;
+  cb_arg.path = path;
+  path->audio_cb(&cb_arg);
+
+  return 0;
+}
+
 /*
 void kr_jack_portgroup_samples_callback(int frames, void *user, float **smpls);
 void kr_jack_portgroup_samples_callback(int frames, void *userdata,
@@ -284,6 +300,17 @@ static int path_setup_info_check(kr_jack_path_info *info) {
   return 0;
 }
 
+static int path_setup_check(kr_jack_path_setup *setup) {
+  if (setup->user == NULL) return -1;
+  if (setup->audio_cb == NULL) return -2;
+  if (setup->event_cb == NULL) return -3;
+  if (path_setup_info_check(&setup->info)) {
+    printke("jack path setup info failed check");
+    return -4;
+  }
+  return 0;
+}
+
 kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
 
   int c;
@@ -294,14 +321,17 @@ kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup) {
 
   if ((jack == NULL) || (setup == NULL)) return NULL;
 
-  if (path_setup_info_check(&setup->info)) {
-    printke("jack path setup info failed check");
+  if (path_setup_check(setup)) {
+    printke("jack path setup failed check");
     return NULL;
   }
 
   path = calloc(1, sizeof(kr_jack_path));
 
   path->jack = jack;
+  path->user = setup->user;
+  path->audio_cb = setup->audio_cb;
+  path->event_cb = setup->event_cb;
   memcpy(&path->info, &setup->info, sizeof(kr_jack_path_info));
 
   if (jack->info.state != KR_JACK_ONLINE) {

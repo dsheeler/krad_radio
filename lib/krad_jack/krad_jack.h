@@ -64,6 +64,8 @@ void kr_jack_portgroup_plug(kr_jack_portgroup *portgroup, char *remote_name);
 void kr_jack_portgroup_unplug(kr_jack_portgroup *portgroup, char *remote_name);
 */
 
+int kr_jack_path_process(kr_jack_path *path);
+
 int kr_jack_unlink(kr_jack_path *path);
 kr_jack_path *kr_jack_mkpath(kr_jack *jack, kr_jack_path_setup *setup);
 

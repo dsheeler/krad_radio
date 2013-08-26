@@ -53,6 +53,9 @@ struct kr_adapter_setup {
   kr_adapter_av_cb *av_cb;
 };
 
+int kr_adapter_process_inputs(kr_adapter *adapter);
+int kr_adapter_path_process(kr_adapter_path *path);
+
 int kr_adapter_unlink(kr_adapter_path *path);
 kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
  kr_adapter_path_setup *setup);

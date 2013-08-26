@@ -174,6 +174,11 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
     case KR_XPDR_ADAPTER:
       memcpy(&ap_setup.info, &info->info.adapter_path_info,
        sizeof(kr_adapter_path_info));
+      if (io == &path->input) {
+        ap_setup.info.dir = KR_ADP_PATH_INPUT;
+      } else {
+        ap_setup.info.dir = KR_ADP_PATH_OUTPUT;
+      }
       ap_setup.ev_cb = xpdr_adapter_path_event_cb;
       ap_setup.av_cb = xpdr_adapter_path_av_cb;
       ap_setup.user = path;

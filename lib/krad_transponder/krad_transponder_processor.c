@@ -30,19 +30,13 @@ void xpdr_adapter_path_av_cb(kr_adapter_path_av_cb_arg *arg) {
 void xpdr_adapter_av_cb(kr_adapter_av_cb_arg *arg) {
 
   kr_xpdr *xpdr;
-  int i;
   uint32_t ret;
 
   xpdr = (kr_xpdr *)arg->user;
 
   /* Trigger all inputs on this adapter */
-/*
-  for (i = 0; i < ; i++) {
-    if (input type == adapter && this adapter) {
-      adapter_path_process(); this hits the adapter path av cb
-    }
-  }
-*/
+  kr_adapter_process_inputs(arg->adapter);
+
   /* if we are the audio or video clock do a process .. */
   if (1) {
     ret = kr_mixer_process(xpdr->mixer);
