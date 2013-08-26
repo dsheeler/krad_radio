@@ -148,7 +148,7 @@ void get_delivery(kr_client_t *client) {
 
   while((kr_delivery_get(client, &crate) > 0) &&
         (crate != NULL)) {
-    printf("Time is: %zu\n", time(NULL));
+    printf("Time is: %"PRIu64"\n", krad_unixtime(NULL));
     handle_crate(crate);
     kr_crate_recycle(&crate);
   }
