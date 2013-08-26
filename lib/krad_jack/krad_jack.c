@@ -19,8 +19,8 @@ struct kr_jack {
 };
 
 static int xrun_cb(void *arg);
-static int process_cb(jack_nframes_t nframes, void *arg);
 static void shutdown_cb(void *arg);
+static int process_cb(jack_nframes_t nframes, void *arg);
 
 static int xrun_cb(void *arg) {
 
@@ -31,6 +31,14 @@ static int xrun_cb(void *arg) {
    jack->info.xruns);
 
   return 0;
+}
+
+static void shutdown_cb(void *arg) {
+
+  kr_jack *jack = (kr_jack *)arg;
+
+  jack->info.state = KR_JACK_OFFLINE;
+  printke("Krad Jack: shutdown callback, oh dear!");
 }
 
 static int process_cb(jack_nframes_t nframes, void *arg) {
@@ -46,6 +54,12 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
   }
 
   jack->info.frames += nframes;
+  if (jack->info.period_size != nframes) {
+    printke("whoa doggie period size changed w/o warning! %u -> %u",
+     jack->info.period_size, nframes);
+    jack->info.period_size = nframes;
+    /* callback event?? */
+  }
 
   /*
   if ((jack->info.frames % (nframes * 1000)) == 0) {
@@ -61,17 +75,10 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
   return 0;
 }
 
-static void shutdown_cb(void *arg) {
-
-  kr_jack *jack = (kr_jack *)arg;
-
-  jack->info.state = KR_JACK_OFFLINE;
-  printke("Krad Jack: shutdown callback, oh dear!");
-}
-
 int kr_jack_path_process(kr_jack_path *path) {
 
   kr_jack_cb_arg cb_arg;
+  int i;
 
   if (path->info.direction == KR_JACK_INPUT) {
     cb_arg.event = KR_JACK_AUDIO_INPUT;
@@ -80,8 +87,16 @@ int kr_jack_path_process(kr_jack_path *path) {
   }
   cb_arg.user = path->user;
   cb_arg.path = path;
-  path->audio_cb(&cb_arg);
 
+  cb_arg.audio.channels = path->info.channels;
+  cb_arg.audio.rate = path->jack->info.sample_rate;
+  cb_arg.audio.count = path->jack->info.period_size;
+
+  for (i = 0; i < path->info.channels; i++) {
+    cb_arg.audio.samples[i] = jack_port_get_buffer(path->ports[i],
+     path->jack->info.period_size);
+  }
+  path->audio_cb(&cb_arg);
   return 0;
 }
 
@@ -376,21 +391,14 @@ int kr_jack_destroy(kr_jack *jack) {
     jack->client = NULL;
     jack->info.state = KR_JACK_OFFLINE;
   }
-  /*
-  for (p = 0; p < 256; p++) {
-    if (jack->stay_connected[p] != NULL) {
-      free(jack->stay_connected[p]);
-    }
-    if (jack->stay_connected_to[p] != NULL) {
-      free(jack->stay_connected_to[p]);
-    }
+  if (jack->info.xruns == 0) {
+    printk("JACK had no xruns processing %"PRIu64" frames!",
+      jack->info.frames);
+  } else {
+    printke("JACK had %u xruns by destroy :/", jack->info.xruns);
   }
-  */
-
   free(jack);
-
   printk("Jack destroy complete");
-
   return 0;
 }
 
@@ -457,6 +465,7 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
   jack_set_process_callback(jack->client, process_cb, jack);
   jack_on_shutdown(jack->client, shutdown_cb, jack);
   jack_set_xrun_callback (jack->client, xrun_cb, jack);
+  /* FIXME sample rate / period size callbacks */
   //jack_set_port_registration_callback(jack->client, port_registration, jack);
   //jack_set_port_connect_callback(jack->client, port_connection, jack);
 

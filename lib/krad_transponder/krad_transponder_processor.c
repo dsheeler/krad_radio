@@ -23,6 +23,11 @@ void xpdr_adapter_path_av_cb(kr_adapter_path_av_cb_arg *arg) {
   printk("yay adapter path av cb!");
 
   /* This will push to some tube space with pointers for adapter input */
+  path->audio = arg->audio;
+
+  if (path->audio.count > 0) {
+    printk("pushed %u audio frames!", path->audio.count);
+  }
 
   /* if it is an adapter wanting output, it will pull from the tube space */
 }

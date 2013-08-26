@@ -10,6 +10,7 @@ typedef struct kr_adapter_path_setup kr_adapter_path_setup;
 
 #include "krad_adapter_common.h"
 
+#include "krad_av.h"
 #include "krad_jack.h"
 
 typedef struct {
@@ -31,6 +32,8 @@ typedef struct {
 
 typedef struct {
   kr_adapter_path *path;
+  kr_image image;
+  kr_audio audio;
   void *user;
 } kr_adapter_path_av_cb_arg;
 

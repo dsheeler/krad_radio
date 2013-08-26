@@ -1,4 +1,5 @@
 #include "krad_transponder.h"
+#include "krad_av.h"
 
 typedef union {
   void *exists;
@@ -11,6 +12,10 @@ struct kr_transponder_path {
   kr_transponder_path_info info;
   kr_xpdr_path_io input;
   kr_xpdr_path_io output;
+
+  kr_audio audio;
+  kr_image image;
+
   void *user;
   kr_transponder_path_event_cb *ev_cb;
   kr_transponder *xpdr;

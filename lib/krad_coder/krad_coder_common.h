@@ -36,7 +36,7 @@ struct kr_codeme_St {
   kr_codec_t codec;
   kr_codec_hdr_t *hdr;
   int32_t key;
-  uint32_t trk;  
+  uint32_t trk;
 };
 
 struct kr_image_St {
@@ -54,13 +54,13 @@ struct kr_audio_St {
   float *samples[8];
   uint32_t channels;
   int32_t count;
-  int32_t rate;  
+  int32_t rate;
   uint64_t stc;
 };
 
 struct kr_medium_St {
   uint8_t *data;
-  size_t sz;  
+  size_t sz;
   kr_audio_t a;
   kr_image_t v;
   kr_mtype_t mt;

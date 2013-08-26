@@ -2,6 +2,7 @@ void jack_adapter_path_av_cb(kr_jack_cb_arg *arg) {
   kr_adapter_path_av_cb_arg cb_arg;
   cb_arg.path = (kr_adapter_path *)arg->user;
   cb_arg.user = cb_arg.path->user;
+  cb_arg.audio = arg->audio;
   cb_arg.path->av_cb(&cb_arg);
 }
 

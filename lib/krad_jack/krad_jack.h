@@ -14,6 +14,7 @@
 
 #include "krad_system.h"
 #include "krad_jack_common.h"
+#include "krad_av.h"
 
 #define KR_JACK_CHANNELS_MAX 8
 
@@ -37,6 +38,7 @@ typedef struct {
   kr_jack_event event;
   void *user;
   kr_jack_path *path;
+  kr_audio audio;
 } kr_jack_cb_arg;
 
 typedef void (kr_jack_event_cb)(kr_jack_cb_arg *);
