@@ -24,8 +24,6 @@ static void xpdr_adapter_event_cb(kr_adapter_event_cb_arg *arg) {
 
   xpdr = (kr_xpdr *)arg->user;
 
-  printk("yay adapter event!");
-
   kr_adapter_prepare(arg->adapter);
 
   /* if we are the audio or video clock do a process .. */
