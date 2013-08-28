@@ -2,7 +2,6 @@
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
-typedef struct kr_v4l2_ret_buffer_St kr_v4l2_ret_buffer_t;
 typedef struct kr_v4l2_buffer_St kr_v4l2_buffer_t;
 
 struct kr_v4l2_buffer_St {
@@ -12,29 +11,27 @@ struct kr_v4l2_buffer_St {
 };
 
 struct kr_v4l2 {
-	int width;
-	int height;
-	int fps;
-	int mode;
-	int frames;
-	int fd;
-	struct timeval timestamp;
-	kr_v4l2_buffer_t *buffers;
-	unsigned int n_buffers;
-	struct v4l2_buffer buf;
+  int fd;
+  kr_v4l2_info info;
+  int width;
+  int height;
+  int fps;
+  int mode;
+  int frames;
+  struct timeval timestamp;
+  kr_v4l2_buffer_t *buffers;
+  unsigned int n_buffers;
+  struct v4l2_buffer buf;
   char device[512];
 };
 
-/*
-void kr_v4l2_free_codec_buffer(kr_v4l2 *v4l2);
-void kr_v4l2_alloc_codec_buffer(kr_v4l2 *v4l2);
 void kr_v4l2_init_device(kr_v4l2 *v4l2);
 void kr_v4l2_uninit_device(kr_v4l2 *v4l2);
 void kr_v4l2_init_mmap(kr_v4l2 *v4l2);
 void errno_exit(const char *s);
 
 void kr_v4l2_close(kr_v4l2 *v4l2);
-void kr_v4l2_open(kr_v4l2 *v4l2, char *device, int width, int height, int fps);
+void kr_v4l2_open(kr_v4l2 *v4l2);
 
 void kr_v4l2_stop_capturing(kr_v4l2 *v4l2);
 void kr_v4l2_start_capturing(kr_v4l2 *v4l2);
@@ -43,14 +40,13 @@ char *kr_v4l2_read(kr_v4l2 *v4l2);
 void kr_v4l2_frame_done(kr_v4l2 *v4l2);
 int xioctl(int fd, int request, void *arg);
 
-
-void kr_v4l2_frame_done (kr_v4l2 *v4l2) {
-  if (-1 == xioctl (v4l2->fd, VIDIOC_QBUF, &v4l2->buf)) {
+void kr_v4l2_frame_done(kr_v4l2 *v4l2) {
+  if (-1 == xioctl(v4l2->fd, VIDIOC_QBUF, &v4l2->buf)) {
     errno_exit ("Krad V4L2: VIDIOC_QBUF");
   }
 }
 
-char *kr_v4l2_read (kr_v4l2 *v4l2) {
+char *kr_v4l2_read(kr_v4l2 *v4l2) {
 
   v4l2->buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   v4l2->buf.memory = V4L2_MEMORY_MMAP;
@@ -66,26 +62,21 @@ char *kr_v4l2_read (kr_v4l2 *v4l2) {
   }
 
   v4l2->timestamp = v4l2->buf.timestamp;
-  v4l2->encoded_size = v4l2->buf.bytesused;
 
   return v4l2->buffers[v4l2->buf.index].start;
 }
 
-void kr_v4l2_start_capturing (kr_v4l2 *v4l2) {
+void kr_v4l2_start_capturing(kr_v4l2 *v4l2) {
 
   unsigned int i;
   enum v4l2_buf_type type;
 
   for (i = 0; i < v4l2->n_buffers; ++i) {
-
     struct v4l2_buffer buf;
-
     CLEAR (buf);
-
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = i;
-
     if (-1 == xioctl (v4l2->fd, VIDIOC_QBUF, &buf)) {
       errno_exit ("Krad V4L2: VIDIOC_QBUF");
     }
@@ -96,22 +87,9 @@ void kr_v4l2_start_capturing (kr_v4l2 *v4l2) {
   if (-1 == xioctl (v4l2->fd, VIDIOC_STREAMON, &type)) {
     errno_exit ("Krad V4L2: VIDIOC_STREAMON");
   }
-
-  //if (v4l2->mode == V4L2_PIX_FMT_MJPEG) {
-  //  video_set_quality(kr_v4l2, 55);
-  //}
-
-  //kr_v4l2_uvc_bluelight (kr_v4l2);
-
-	if (v4l2->mode == V4L2_PIX_FMT_H264) {
-		kr_v4l2_uvc_h264_reset (kr_v4l2);
-		kr_v4l2_uvc_h264_set_rc_mode (kr_v4l2, RATECONTROL_VBR);
-		kr_v4l2_uvc_h264_set_bitrate (kr_v4l2, 300);
-		printk ("Krad V4L2: Set H264 mode to VBR");
-	}
 }
 
-void kr_v4l2_stop_capturing (kr_v4l2 *v4l2) {
+void kr_v4l2_stop_capturing(kr_v4l2 *v4l2) {
 
   enum v4l2_buf_type type;
 
@@ -120,17 +98,6 @@ void kr_v4l2_stop_capturing (kr_v4l2 *v4l2) {
   if (-1 == xioctl (v4l2->fd, VIDIOC_STREAMOFF, &type)) {
     errno_exit ("Krad V4L2: VIDIOC_STREAMOFF");
   }
-}
-
-void kr_v4l2_uninit_device (kr_v4l2 *v4l2) {
-
-  unsigned int i;
-
-  for (i = 0; i < v4l2->n_buffers; ++i)
-		if (-1 == munmap (v4l2->buffers[i].start, v4l2->buffers[i].length))
-					errno_exit ("Krad V4L2: munmap");
-
-  free (v4l2->buffers);
 }
 
 void kr_v4l2_init_mmap (kr_v4l2 *v4l2) {
@@ -190,7 +157,7 @@ void kr_v4l2_init_mmap (kr_v4l2 *v4l2) {
 	v4l2->n_buffers = req.count;
 }
 
-void kr_v4l2_init_device (kr_v4l2 *v4l2) {
+void kr_v4l2_init_device(kr_v4l2 *v4l2) {
 
 	struct v4l2_capability cap;
 	struct v4l2_cropcap cropcap;
@@ -285,56 +252,46 @@ void kr_v4l2_init_device (kr_v4l2 *v4l2) {
 		printkd ("Krad V4L2: failed to get proper capture fps!");
 	}
 
-	kr_v4l2_init_mmap (kr_v4l2);
+	kr_v4l2_init_mmap(v4l2);
 }
 
-void errno_exit (const char *s) {
-  failfast ("%s error %d, %s", s, errno, strerror (errno));
+void kr_v4l2_close(kr_v4l2 *v4l2) {
+
+  unsigned int i;
+
+  if (v4l2->fd > -1) {
+    for (i = 0; i < v4l2->n_buffers; ++i)
+		  if (-1 == munmap(v4l2->buffers[i].start, v4l2->buffers[i].length))
+			  		errno_exit("Krad V4L2: munmap");
+
+    free(v4l2->buffers);
+    close(v4l2->fd);
+  }
 }
 
-int xioctl (int fd, int request, void *arg) {
-
-  int r;
-
-  do r = ioctl (fd, request, arg);
-  while (-1 == r && EINTR == errno);
-
-  return r;
-}
-
-void kr_v4l2_close (kr_v4l2 *v4l2) {
-  kr_v4l2_uninit_device (kr_v4l2);
-  close (v4l2->fd);
-}
-
-void kr_v4l2_open (kr_v4l2 *v4l2, char *device, int width, int height, int fps) {
+void kr_v4l2_open(kr_v4l2 *v4l2) {
 
 	struct stat st;
 
-	strncpy(v4l2->device, device, 512);
-
-	v4l2->width = width;
-	v4l2->height = height;
-	v4l2->fps = fps;
-
-	if (-1 == stat (v4l2->device, &st)) {
-		failfast ("Krad V4L2: Cannot identify '%s': %d, %s", v4l2->device, errno, strerror (errno));
+	if (-1 == stat(v4l2->device, &st)) {
+		printke("Krad V4L2: Cannot identify '%s': %d, %s", v4l2->device, errno,
+     strerror(errno));
 	}
 
-	if (!S_ISCHR (st.st_mode)) {
-		failfast ("Krad V4L2: %s is no device", v4l2->device);
+	if (!S_ISCHR(st.st_mode)) {
+		printke("Krad V4L2: %s is no device", v4l2->device);
 	}
 
-	v4l2->fd = open (v4l2->device, O_RDWR | O_NONBLOCK, 0);
+	v4l2->fd = open(v4l2->device, O_RDWR | O_NONBLOCK, 0);
 
 	if (-1 == v4l2->fd) {
-		failfast ("Krad V4L2: Cannot open '%s': %d, %s", v4l2->device, errno, strerror (errno));
+    printke("Krad V4L2: Cannot open '%s': %d, %s", v4l2->device, errno,
+     strerror(errno));
 	}
 
-	kr_v4l2_init_device (kr_v4l2);
-
+	kr_v4l2_init_device(v4l2);
 }
-*/
+
 int kr_v4l2_destroy(kr_v4l2 *v4l2) {
   if (v4l2 == NULL) return -1;
   free(v4l2);
@@ -350,7 +307,27 @@ kr_v4l2 *kr_v4l2_create(kr_v4l2_setup *setup) {
 	v4l2 = calloc(1, sizeof(kr_v4l2));
 	v4l2->mode = V4L2_PIX_FMT_YUYV;
 
+  /* FIXME temp */
+  strcpy(v4l2->device, "/dev/video0");
+  v4l2->width = 640;
+  v4l2->height = 480;
+  /* FIXME end */
+
 	return v4l2;
+}
+
+void errno_exit(const char *s) {
+  failfast("%s error %d, %s", s, errno, strerror(errno));
+}
+
+int xioctl(int fd, int request, void *arg) {
+
+  int r;
+
+  do r = ioctl(fd, request, arg);
+  while (-1 == r && EINTR == errno);
+
+  return r;
 }
 
 int kr_v4l2_dev_count() {

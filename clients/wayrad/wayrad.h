@@ -14,7 +14,7 @@ struct cratezone_St {
 struct wayrad_St {
 
   kr_wayland *wayland;
-  kr_wayland_window *window;
+  kr_wayland_path *window;
 
   int width;
   int height;
@@ -25,7 +25,7 @@ struct wayrad_St {
   cratezone_t cratezone;
   pthread_t deliveries_thread;
   int done;
-  
+
   float current_level;
   float master_peak;
 };

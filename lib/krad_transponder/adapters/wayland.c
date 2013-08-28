@@ -85,11 +85,6 @@ void wayland_display_unit_destroy (void *arg) {
   krad_link_t *krad_link = (krad_link_t *)arg;
 
   kr_wayland_window_destroy(&krad_link->window);
-  kr_wayland_destroy(&krad_link->wayland);
-  krad_compositor_port_destroy (krad_link->krad_radio->compositor,
-                                krad_link->krad_compositor_port2);
-
-  printk ("Wayland display thread exited");
 }
 
 #endif

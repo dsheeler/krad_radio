@@ -18,6 +18,7 @@
 #include <linux/uvcvideo.h>
 
 #include "krad_system.h"
+#include "krad_v4l2_common.h"
 
 typedef struct kr_v4l2 kr_v4l2;
 typedef struct kr_v4l2_path kr_v4l2_path;
@@ -27,6 +28,7 @@ typedef struct kr_v4l2_path_setup kr_v4l2_path_setup;
 
 struct kr_v4l2_setup {
   int devnum;
+  kr_v4l2_info info;
 };
 
 struct kr_v4l2_path_setup {

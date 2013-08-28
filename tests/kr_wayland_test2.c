@@ -9,7 +9,7 @@ typedef struct kr_wayland_test kr_wayland_test;
 typedef struct kr_wayland_test_window kr_wayland_test_window;
 
 struct kr_wayland_test_window {
-  kr_wayland_window *window;
+  kr_wayland_path *window;
   int width;
   int height;
   void *buffer;
@@ -44,23 +44,23 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
   wayland_test_window = (kr_wayland_test_window *)user;
 
   updated = 0;
-  
+
   if (wayland_test_window == NULL) {
     /* Its bad */
     return -1;
-  }  
+  }
 
   cst = cairo_image_surface_create_for_data ((unsigned char *)event->frame_event.buffer,
                          CAIRO_FORMAT_ARGB32,
                          wayland_test_window->width,
                          wayland_test_window->height,
                          wayland_test_window->width * 4);
-  
+
   cr = cairo_create (cst);
 
   cairo_save (cr);
   cairo_set_source_rgba (cr, BGCOLOR_CLR);
-  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);  
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint (cr);
   cairo_restore (cr);
 
@@ -90,7 +90,7 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
 
     cairo_save (cr);
     cairo_set_source_rgba (cr, BGCOLOR_CLR);
-    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);  
+    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
     cairo_paint (cr);
     cairo_restore (cr);
 
@@ -117,10 +117,10 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
       krad_compositor_subunit_set_rotation(&wayland_test_window->vector[2].subunit,
        rot, 0);
       cairo_save(cr);
-      cairo_translate (cr, wayland_test_window->vector[2].subunit.x, wayland_test_window->vector[0].subunit.y);  
+      cairo_translate (cr, wayland_test_window->vector[2].subunit.x, wayland_test_window->vector[0].subunit.y);
       cairo_translate (cr, wayland_test_window->pointer_x / 2, wayland_test_window->pointer_y / 2);
       cairo_rotate (cr, rot - 9.0 * (M_PI/180.0));
-      cairo_translate (cr, wayland_test_window->pointer_x / -2, wayland_test_window->pointer_y / -2);    
+      cairo_translate (cr, wayland_test_window->pointer_x / -2, wayland_test_window->pointer_y / -2);
       cairo_translate (cr, wayland_test_window->vector[0].subunit.x * -1, wayland_test_window->vector[2].subunit.x * -1);
     }
     krad_vector_render (&wayland_test_window->vector[0], cr);
@@ -240,7 +240,7 @@ int kr_wl_test_cb(void *user, kr_wayland_event *event) {
 }
 
 void wayland_test_loop(kr_wayland_test *wayland_test) {
-  
+
   int count;
   int ret;
   count = 0;
@@ -261,13 +261,13 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
 
   for (i = 0; i < TEST_WINDOWS; i++) {
     printf("Destroying window %d\n", i);
-    ret = kr_wayland_window_destroy(&wayland_test->windows[i].window);
+    ret = kr_wayland_unlink(&wayland_test->windows[i].window);
     if (ret < 0) {
       fprintf(stderr, "Could not destroy window %dx%d\n",
        wayland_test->windows[i].width, wayland_test->windows[i].height);
       exit(1);
     }
-    krad_vector_destroy_arr(wayland_test->windows[i].vector, NUM_VECTORS);  
+    krad_vector_destroy_arr(wayland_test->windows[i].vector, NUM_VECTORS);
   }
 
   kr_wayland_destroy(&wayland_test->wayland);
@@ -278,15 +278,15 @@ kr_wayland_test *wayland_test_create(int width, int height) {
 
   int i;
   kr_wayland_test *wayland_test;
-  kr_wayland_window_params window_params;
+  kr_wayland_path_setup window_params;
 
   wayland_test = calloc(1, sizeof(kr_wayland_test));
-  
+
   wayland_test->wayland = kr_wayland_create();
 
   if (wayland_test->wayland == NULL) {
     fprintf(stderr, "Could not connect to wayland\n");
-    exit(1);  
+    exit(1);
   }
 
 	signal (SIGINT, signal_recv);
@@ -315,7 +315,7 @@ kr_wayland_test *wayland_test_create(int width, int height) {
     krad_compositor_subunit_set_red (&wayland_test->windows[i].vector[3].subunit, 0.2, 255);
 
     wayland_test->windows[i].window =
-     kr_wayland_window_create(wayland_test->wayland, &window_params);
+     kr_wayland_mkpath(wayland_test->wayland, &window_params);
     if (wayland_test->windows[i].window == NULL) {
       fprintf(stderr, "Could not create window %dx%d\n", width, height);
       exit(1);

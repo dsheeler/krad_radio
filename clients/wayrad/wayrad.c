@@ -8,9 +8,9 @@ int wayrad_frame(void *pointer, kr_wayland_event *event) {
   int updated;
 
   updated = 0;
-  
+
   wayrad_t *wayrad = (wayrad_t *)pointer;
-  
+
   //hexagon (wayrad->width, wayrad->height,
   //         wayrad->krad_wayland->display->pointer_x,
   //         wayrad->krad_wayland->display->pointer_y,
@@ -49,18 +49,18 @@ static void render_peak_meter (wayrad_t *wayrad, uint8_t *buffer) {
   cairo_surface_t *cst;
   cairo_t *cr;
   float fall_rate;
-  
+
   cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
                          CAIRO_FORMAT_ARGB32,
                          wayrad->width,
                          wayrad->height,
                          wayrad->width * 4);
-  
+
   cr = cairo_create (cst);
 
   cairo_save (cr);
   cairo_set_source_rgba (cr, BGCOLOR_CLR);
-  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);  
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint (cr);
   cairo_restore (cr);
 
@@ -94,12 +94,12 @@ static void render_cratezone (wayrad_t *wayrad, uint8_t *buffer) {
                          wayrad->width,
                          wayrad->height,
                          wayrad->width * 4);
-  
+
   cr = cairo_create (cst);
 
   cairo_save (cr);
   cairo_set_source_rgba (cr, BGCOLOR_CLR);
-  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);  
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
   cairo_paint (cr);
   cairo_restore (cr);
 
@@ -109,7 +109,7 @@ static void render_cratezone (wayrad_t *wayrad, uint8_t *buffer) {
   cairo_select_font_face (cr, "Helvetica", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_font_size (cr, 100);
   cairo_set_source_rgba (cr, GREY2, 0.8);
-  
+
   cairo_move_to (cr, 128, 120);
   cairo_show_text (cr, text);
   cairo_stroke (cr);
@@ -127,16 +127,16 @@ void get_delivery (wayrad_t *wayrad) {
   kr_delivery_get (wayrad->client, &crate);
 
   if (crate != NULL) {
-    if ((crate->addr->path.unit == KR_MIXER) && 
-        (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP) && 
+    if ((crate->addr->path.unit == KR_MIXER) &&
+        (crate->addr->path.subunit.mixer_subunit == KR_PORTGROUP) &&
         (crate->addr->control.portgroup_control == KR_PEAK)) {
       if (kr_uncrate_float (crate, &wayrad->master_peak)) {
 
       }
     }
-    
+
     if (kr_crate_loaded (crate)) {
-    
+
     }
 
     wayrad->cratezone.crates++;
@@ -151,20 +151,20 @@ void *deliveries_thread (void *arg) {
   uint64_t max;
   unsigned int timeout_ms;
   wayrad_t *wayrad;
-  
+
   wayrad = (wayrad_t *)arg;
-    
+
   ret = 0;
   b = 0;
   max = 50000000;
   timeout_ms = 3000;
-  
+
 
   kr_subscribe_all (wayrad->client);
-  
+
   printf ("Waiting for up to %"PRIu64" deliveries for up to %ums each\n",
           max, timeout_ms);
-  
+
   for (b = 0; b < max; b++) {
     ret = kr_wait (wayrad->client, timeout_ms);
     if (ret > 0) {
@@ -174,17 +174,17 @@ void *deliveries_thread (void *arg) {
       fflush (stdout);
     }
   }
-  
+
   wayrad->done = 1;
-  return NULL;  
+  return NULL;
 }
 
 void wayrad_run (wayrad_t *wayrad) {
-  
+
   int count;
   //kr_unit_control_t uc;
   //char address[128];
-  
+
   count = 0;
 
 
@@ -197,7 +197,7 @@ void wayrad_run (wayrad_t *wayrad) {
 
   while (!wayrad->done) {
     kr_wayland_process (wayrad->wayland);
-    
+
 /*
     if ((wayrad->wayland->mousein) && (wayrad->wayland->click)) {
       memset (&uc, 0, sizeof (uc));
@@ -216,14 +216,14 @@ void wayrad_run (wayrad_t *wayrad) {
 */
     count++;
   }
-    
+
   printf ("bye bye now!\n");
-    
+
 }
 
 void wayrad_destroy (wayrad_t *wayrad) {
 
-  kr_wayland_window_destroy(&wayrad->window);
+  kr_wayland_unlink(&wayrad->window);
   kr_wayland_destroy(&wayrad->wayland);
 
   printf ("Disconnecting from %s..\n", wayrad->sysname);
@@ -238,10 +238,10 @@ void wayrad_destroy (wayrad_t *wayrad) {
 wayrad_t *wayrad_create (char *sysname) {
 
   wayrad_t *wayrad;
-  kr_wayland_window_params window_params;
+  kr_wayland_path_setup window_params;
 
   wayrad = calloc (1, sizeof (wayrad_t));
-  
+
   strncpy (wayrad->sysname, sysname, sizeof(wayrad->sysname));
   wayrad->width = 1280;
   wayrad->height = 720;
@@ -268,7 +268,7 @@ wayrad_t *wayrad_create (char *sysname) {
   window_params.callback = window_cb;
   window_params.user = wayrad;
 
-  wayrad->window = kr_wayland_window_create(wayrad->wayland, &window_params);
+  wayrad->window = kr_wayland_mkpath(wayrad->wayland, &window_params);
 
   printk("Wayland display running");
 

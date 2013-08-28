@@ -1,6 +1,6 @@
 #include "krad_wayland.h"
 
-struct kr_wayland_window_st {
+struct kr_wayland_path {
   int width;
   int height;
   int pointer_x;
@@ -24,11 +24,11 @@ struct kr_wayland_window_st {
   kr_wayland *wayland;
 };
 
-struct kr_wayland_st {
+struct kr_wayland {
   int display_fd;
-  kr_wayland_window window[KR_WL_MAX_WINDOWS];
-  kr_wayland_window *key_window;
-  kr_wayland_window *pointer_window;
+  kr_wayland_path window[KR_WL_MAX_WINDOWS];
+  kr_wayland_path *key_window;
+  kr_wayland_path *pointer_window;
   struct wl_display *display;
   struct wl_registry *registry;
   struct wl_compositor *compositor;
@@ -54,7 +54,7 @@ struct kr_wayland_st {
   } xkb;
 };
 
-static int kr_wayland_window_create_shm_buffer (kr_wayland_window *window,
+static int kr_wayland_path_create_shm_buffer (kr_wayland_path *window,
  int width, int height, int frames, uint32_t format, void **data_out);
 static void kr_wayland_handle_ping (void *data,
  struct wl_shell_surface *shell_surface, uint32_t serial);
@@ -530,7 +530,7 @@ static void kr_wayland_handle_global(void *data, struct wl_registry *registry,
   }
 }
 
-static int kr_wayland_window_create_shm_buffer(kr_wayland_window *window,
+static int kr_wayland_path_create_shm_buffer(kr_wayland_path *window,
  int width, int height, int frames, uint32_t format, void **data_out) {
 
   char filename[] = "/tmp/wayland-shm-XXXXXX";
@@ -580,7 +580,7 @@ static int kr_wayland_window_create_shm_buffer(kr_wayland_window *window,
 static void kr_wayland_frame_listener (void *data,
  struct wl_callback *callback, uint32_t time) {
 
-  kr_wayland_window *window;
+  kr_wayland_path *window;
   kr_wayland_event wayland_event;
   int updated;
 
@@ -613,21 +613,21 @@ static void kr_wayland_frame_listener (void *data,
   wl_surface_commit(window->surface);
 }
 
-kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
- kr_wayland_window_params *params) {
+kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
+ kr_wayland_path_setup *setup) {
 
-  kr_wayland_window *window;
+  kr_wayland_path *window;
   struct wl_region *opaque;
   int ret;
   int i;
 
-  if ((wayland == NULL) || (params == NULL)) {
+  if ((wayland == NULL) || (setup == NULL)) {
     return NULL;
   }
 
-  if ((params->width == 0) || (params->height == 0) ||
-      (params->width > 8192) || (params->height > 8192)
-      || params->callback == NULL) {
+  if ((setup->width == 0) || (setup->height == 0) ||
+      (setup->width > 8192) || (setup->height > 8192)
+      || setup->callback == NULL) {
     return NULL;
   }
 
@@ -643,12 +643,12 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   window = &wayland->window[i];
 
   window->wayland = wayland;
-  window->user_callback = params->callback;
-  window->user = params->user;
-  window->width = params->width;
-  window->height = params->height;
+  window->user_callback = setup->callback;
+  window->user = setup->user;
+  window->width = setup->width;
+  window->height = setup->height;
 
-  ret = kr_wayland_window_create_shm_buffer(window, window->width,
+  ret = kr_wayland_path_create_shm_buffer(window, window->width,
    window->height, KR_WL_BUFFER_COUNT, WL_SHM_FORMAT_XRGB8888,
    &window->shm_data);
 
@@ -693,10 +693,10 @@ kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
   return window;
 }
 
-int kr_wayland_window_destroy(kr_wayland_window **win) {
+int kr_wayland_unlink(kr_wayland_path **win) {
 
   int i;
-  kr_wayland_window *window;
+  kr_wayland_path *window;
   kr_wayland *wayland;
 
   if ((win == NULL) || (*win == NULL)) {

@@ -6,7 +6,7 @@ typedef struct kr_wayland_test kr_wayland_test;
 typedef struct kr_wayland_test_window kr_wayland_test_window;
 
 struct kr_wayland_test_window {
-  kr_wayland_window *window;
+  kr_wayland_path *window;
   int width;
   int height;
   void *buffer;
@@ -37,11 +37,11 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
   wayland_test_window = (kr_wayland_test_window *)user;
 
   updated = 0;
-  
+
   if (wayland_test_window == NULL) {
     /* Its bad */
     return -1;
-  }  
+  }
 
   time = rand();
   p = (uint32_t *)event->frame_event.buffer;
@@ -109,7 +109,7 @@ int kr_wl_test_cb(void *user, kr_wayland_event *event) {
 }
 
 void wayland_test_loop(kr_wayland_test *wayland_test) {
-  
+
   int count;
   int ret;
   count = 0;
@@ -130,7 +130,7 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
 
   for (i = 0; i < TEST_WINDOWS/2; i++) {
     printf("Destroying window %d\n", i);
-    ret = kr_wayland_window_destroy(&wayland_test->windows[i].window);
+    ret = kr_wayland_unlink(&wayland_test->windows[i].window);
     if (ret < 0) {
       fprintf(stderr, "Could not destroy window %dx%d\n",
        wayland_test->windows[i].width, wayland_test->windows[i].height);
@@ -148,10 +148,10 @@ kr_wayland_test *wayland_test_create() {
   int width;
   int height;
   kr_wayland_test *wayland_test;
-  kr_wayland_window_params window_params;
+  kr_wayland_path_setup window_params;
 
   wayland_test = calloc(1, sizeof(kr_wayland_test));
-  
+
   width = 160;
   height = 120;
 
@@ -159,7 +159,7 @@ kr_wayland_test *wayland_test_create() {
 
   if (wayland_test->wayland == NULL) {
     fprintf(stderr, "Could not connect to wayland\n");
-    exit(1);  
+    exit(1);
   }
 
 	signal (SIGINT, signal_recv);
@@ -173,7 +173,7 @@ kr_wayland_test *wayland_test_create() {
     window_params.user = &wayland_test->windows[i];
     window_params.callback = kr_wl_test_cb;
     wayland_test->windows[i].window =
-     kr_wayland_window_create(wayland_test->wayland, &window_params);
+     kr_wayland_mkpath(wayland_test->wayland, &window_params);
     if (wayland_test->windows[i].window == NULL) {
       fprintf(stderr, "Could not create window %dx%d\n", width, height);
       exit(1);
