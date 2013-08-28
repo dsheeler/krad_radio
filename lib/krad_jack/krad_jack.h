@@ -38,20 +38,29 @@ typedef struct {
   kr_jack_event event;
   void *user;
   kr_jack_path *path;
-  kr_audio audio;
-} kr_jack_cb_arg;
+} kr_jack_path_event_cb_arg;
 
-typedef void (kr_jack_event_cb)(kr_jack_cb_arg *);
-typedef void (kr_jack_process_cb)(kr_jack_cb_arg *);
-typedef void (kr_jack_path_event_cb)(kr_jack_cb_arg *);
-typedef void (kr_jack_path_audio_cb)(kr_jack_cb_arg *);
+typedef struct {
+  kr_jack_event event;
+  void *user;
+  kr_jack_path *path;
+  kr_audio audio;
+} kr_jack_path_audio_cb_arg;
+
+typedef struct {
+  kr_jack_event event;
+  void *user;
+} kr_jack_event_cb_arg;
+
+typedef void (kr_jack_event_cb)(kr_jack_event_cb_arg *);
+typedef void (kr_jack_path_event_cb)(kr_jack_path_event_cb_arg *);
+typedef void (kr_jack_path_audio_cb)(kr_jack_path_audio_cb_arg *);
 
 struct kr_jack_setup {
   char client_name[64];
   char server_name[64];
   void *user;
   kr_jack_event_cb *event_cb;
-  kr_jack_process_cb *process_cb;
 };
 
 struct kr_jack_path_setup {

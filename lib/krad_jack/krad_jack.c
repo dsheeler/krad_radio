@@ -15,7 +15,6 @@ struct kr_jack {
   int set_thread_name;
   void *user;
   kr_jack_event_cb *event_cb;
-  kr_jack_process_cb *process_cb;
 };
 
 static int xrun_cb(void *arg);
@@ -44,7 +43,7 @@ static void shutdown_cb(void *arg) {
 static int process_cb(jack_nframes_t nframes, void *arg) {
 
   kr_jack *jack;
-  kr_jack_cb_arg cb_arg;
+  kr_jack_event_cb_arg cb_arg;
 
   jack = (kr_jack *)arg;
 
@@ -63,15 +62,14 @@ static int process_cb(jack_nframes_t nframes, void *arg) {
 
   cb_arg.user = jack->user;
   cb_arg.event = KR_JACK_PROCESS;
-  cb_arg.path = NULL;
-  jack->process_cb(&cb_arg);
+  jack->event_cb(&cb_arg);
 
   return 0;
 }
 
 int kr_jack_path_prepare(kr_jack_path *path) {
 
-  kr_jack_cb_arg cb_arg;
+  kr_jack_path_audio_cb_arg cb_arg;
   int i;
 
   cb_arg.user = path->user;
@@ -310,8 +308,7 @@ int kr_jack_destroy(kr_jack *jack) {
 static int jack_setup_check(kr_jack_setup *setup) {
 
   if (setup->user == NULL) return -1;
-  if (setup->process_cb == NULL) return -2;
-  if (setup->event_cb == NULL) return -3;
+  if (setup->event_cb == NULL) return -2;
   /* FIXME check server / client name */
   return 0;
 }
@@ -332,7 +329,6 @@ kr_jack *kr_jack_create(kr_jack_setup *setup) {
 
   strncpy(jack->info.client_name, setup->client_name,
    sizeof(jack->info.client_name));
-  jack->process_cb = setup->process_cb;
   jack->event_cb = setup->event_cb;
   jack->user = setup->user;
 

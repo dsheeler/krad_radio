@@ -13,12 +13,15 @@ typedef enum {
   KR_JACK_ONLINE
 } kr_jack_state;
 
-typedef struct kr_jack_path_info kr_jack_path_info;
 typedef struct kr_jack_path_info kr_jack_input_info;
 typedef struct kr_jack_path_info kr_jack_output_info;
-typedef struct kr_jack_info kr_jack_info;
 
-struct kr_jack_info {
+typedef struct {
+  char client_name[64];
+  char server_name[64];
+} kr_jack_setup_info;
+
+typedef struct {
   char client_name[64];
   char server_name[64];
   kr_jack_state state;
@@ -28,13 +31,13 @@ struct kr_jack_info {
   uint32_t period_size;
   uint32_t xruns;
   uint64_t frames;
-};
+} kr_jack_info;
 
-struct kr_jack_path_info {
+typedef struct {
   char name[64];
   int channels;
   kr_jack_direction direction;
   /* Connections? */
-};
+} kr_jack_path_info;
 
 #endif

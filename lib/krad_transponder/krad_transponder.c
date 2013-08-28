@@ -89,7 +89,6 @@ static kr_adapter *adapter_create(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
       /* Some or all adapters we want to use as clock sources.. */
       adapter_setup.user = xpdr;
       adapter_setup.ev_cb = xpdr_adapter_event_cb;
-      adapter_setup.av_cb = xpdr_adapter_av_cb;
       xpdr->adapter[i] = kr_adapter_create(&adapter_setup);
       printk("created an adapter");
       return xpdr->adapter[i];

@@ -16,17 +16,6 @@ typedef struct kr_adapter_path_setup kr_adapter_path_setup;
 #include "krad_v4l2.h"
 
 typedef struct {
-  kr_adapter *adapter;
-  void *user;
-  /* ADAPTER EVENT INFO */
-} kr_adapter_event_cb_arg;
-
-typedef struct {
-  kr_adapter *adapter;
-  void *user;
-} kr_adapter_av_cb_arg;
-
-typedef struct {
   kr_adapter_path *path;
   void *user;
   /* ADAPTER PATH EVENT INFO */
@@ -39,9 +28,14 @@ typedef struct {
   void *user;
 } kr_adapter_path_av_cb_arg;
 
+typedef struct {
+  kr_adapter *adapter;
+  void *user;
+  /* ADAPTER EVENT INFO */
+} kr_adapter_event_cb_arg;
+
 typedef void (kr_adapter_event_cb)(kr_adapter_event_cb_arg *);
 typedef void (kr_adapter_path_event_cb)(kr_adapter_path_event_cb_arg *);
-typedef void (kr_adapter_av_cb)(kr_adapter_av_cb_arg *);
 typedef void (kr_adapter_path_av_cb)(kr_adapter_path_av_cb_arg *);
 
 struct kr_adapter_path_setup {
@@ -55,7 +49,6 @@ struct kr_adapter_setup {
   kr_adapter_info info;
   void *user;
   kr_adapter_event_cb *ev_cb;
-  kr_adapter_av_cb *av_cb;
 };
 
 int kr_adapter_prepare(kr_adapter *adapter);

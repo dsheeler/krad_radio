@@ -43,7 +43,6 @@ struct kr_adapter {
   kr_adapter_handle handle;
   kr_adapter_path *path[KR_ADAPTER_PATHS_MAX];
   void *user;
-  kr_adapter_av_cb *av_cb;
   kr_adapter_event_cb *ev_cb;
 };
 
@@ -72,6 +71,9 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
   printk("ok we are going to create an adapter path");
 
   switch (path->adapter->info.api) {
+    case KR_ADP_WAYLAND:
+      wayland_adapter_path_create(path);
+      break;
     case KR_ADP_JACK:
       jack_adapter_path_create(path);
       break;
@@ -82,8 +84,11 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
 
 static void path_destroy(kr_adapter_path *path) {
   switch (path->info.api) {
+    case KR_ADP_WAYLAND:
+      kr_wayland_unlink(&path->api_path.wayland);
+      break;
     case KR_ADP_JACK:
-      kr_jack_unlink(path->api_path.jack);
+      jack_adapter_path_destroy(path);
       break;
     default:
       break;
@@ -202,8 +207,12 @@ int kr_adapter_destroy(kr_adapter *adapter) {
   }
 
   switch (adapter->info.api) {
+    case KR_ADP_WAYLAND:
+      kr_wayland_destroy(&adapter->handle.wayland);
+      break;
     case KR_ADP_JACK:
-      kr_jack_destroy(adapter->handle.jack);
+      jack_adapter_destroy(adapter);
+      break;
     default:
       break;
   }
@@ -224,10 +233,12 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
   adapter = calloc(1, sizeof(kr_adapter));
   adapter->user = setup->user;
   adapter->ev_cb = setup->ev_cb;
-  adapter->av_cb = setup->av_cb;
   memcpy(&adapter->info, &setup->info, sizeof(kr_adapter_info));
 
   switch (adapter->info.api) {
+    case KR_ADP_WAYLAND:
+      wayland_adapter_create(adapter);
+      return adapter;
     case KR_ADP_JACK:
       jack_adapter_create(adapter);
       return adapter;
