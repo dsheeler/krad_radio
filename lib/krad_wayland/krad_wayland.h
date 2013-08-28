@@ -59,11 +59,14 @@ typedef struct {
   /* FIXME dupe */
   uint32_t width;
   uint32_t height;
-
-
+  /* FIXME end */
   int (*callback)(void *, kr_wayland_event *);
   void *user;
 } kr_wayland_path_setup;
+
+/* FIXME
+ * ok how about a setup info struct and
+ * a wayland event for adapter .. */
 
 typedef struct {
   kr_wayland_info info;

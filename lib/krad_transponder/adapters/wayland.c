@@ -24,28 +24,17 @@ void wayland_adapter_path_event_cb(kr_wayland_cb_arg *arg) {
   cb_arg.path->ev_cb(&cb_arg);
 }
 
-/*
-void wayland_adapter_process_cb(kr_wayland_cb_arg *arg) {
-  kr_adapter_av_cb_arg cb_arg;
-  cb_arg.adapter = (kr_adapter *)arg->user;
-  cb_arg.user = cb_arg.adapter->user;
-  cb_arg.adapter->av_cb(&cb_arg);
-}
-
 void wayland_adapter_event_cb(kr_wayland_cb_arg *arg) {
   kr_adapter_event_cb_arg cb_arg;
   cb_arg.adapter = (kr_adapter *)arg->user;
   cb_arg.user = cb_arg.adapter->user;
   cb_arg.adapter->ev_cb(&cb_arg);
 }
-*/
 
 int wayland_adapter_path_cb(void *user, kr_wayland_event *event) {
-
   kr_wayland_cb_arg cb_arg;
   cb_arg.event = *event;
   cb_arg.user = user;
-
   if (cb_arg.event.type == KR_WL_FRAME) {
     wayland_adapter_path_av_cb(&cb_arg);
   } else {
@@ -57,6 +46,10 @@ int wayland_adapter_path_cb(void *user, kr_wayland_event *event) {
 int wayland_adapter_process(kr_adapter *adapter) {
 
   return 0;
+}
+
+void wayland_adapter_path_destroy(kr_adapter_path *path) {
+  kr_wayland_unlink(&path->api_path.wayland);
 }
 
 void wayland_adapter_path_create(kr_adapter_path *path) {
@@ -72,15 +65,18 @@ void wayland_adapter_path_create(kr_adapter_path *path) {
    &wps);
 }
 
+void wayland_adapter_destroy(kr_adapter *adapter) {
+  kr_wayland_destroy(&adapter->handle.wayland);
+}
+
 void wayland_adapter_create(kr_adapter *adapter) {
 
   kr_wayland_setup wayland_setup;
 
   snprintf(wayland_setup.info.server_path,
    sizeof(adapter->info.api_info.wayland.server_path), "%s", "");
-  /*
-  memcpy(&wayland_setup.info, &setup->info.info.wayland, sizeof(kr_wayland_info));
-  */
+  /*  memcpy(&wayland_setup.info, &setup->info.info.wayland,
+   *   sizeof(kr_wayland_info)); */
   wayland_setup.user = adapter;
   adapter->handle.wayland = kr_wayland_create(&wayland_setup);
 

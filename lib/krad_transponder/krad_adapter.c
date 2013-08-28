@@ -85,7 +85,7 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
 static void path_destroy(kr_adapter_path *path) {
   switch (path->info.api) {
     case KR_ADP_WAYLAND:
-      kr_wayland_unlink(&path->api_path.wayland);
+      wayland_adapter_path_destroy(path);
       break;
     case KR_ADP_JACK:
       jack_adapter_path_destroy(path);
@@ -109,6 +109,7 @@ static kr_adapter_path *path_alloc(kr_adapter *adapter) {
   return NULL;
 }
 
+/* FIXME get rid of this prepare jank */
 static int path_prepare(kr_adapter_path *path) {
   switch (path->info.api) {
     case KR_ADP_JACK:
@@ -150,7 +151,6 @@ int kr_adapter_unlink(kr_adapter_path *path) {
       path_destroy(path);
       free(path);
       adapter->path[i] = NULL;
-      /* adapter->info.active_paths--; */
       return 0;
     }
   }
@@ -164,23 +164,14 @@ kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
 
   path = NULL;
 
-  printk("we got this far");
-
   if (adapter == NULL) return NULL;
-  printk("we got this far 1");
   if (setup == NULL) return NULL;
-  printk("we got this far 2");
   if (adapter->handle.exists == NULL) return NULL;
-  printk("we got this far 3");
   if (adapter->info.api != setup->info.api) return NULL;
-
-  printk("we are this close");
-
   if (path_setup_check(setup)) return NULL;
   path = path_alloc(adapter);
   if (path == NULL) return NULL;
   path_create(path, setup);
-  /* adapter->info.active_paths++; */
 
   return path;
 }
@@ -208,7 +199,7 @@ int kr_adapter_destroy(kr_adapter *adapter) {
 
   switch (adapter->info.api) {
     case KR_ADP_WAYLAND:
-      kr_wayland_destroy(&adapter->handle.wayland);
+      wayland_adapter_destroy(adapter);
       break;
     case KR_ADP_JACK:
       jack_adapter_destroy(adapter);
