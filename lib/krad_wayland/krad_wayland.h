@@ -13,6 +13,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "krad_system.h"
+#include "krad_wayland_common.h"
 
 #ifndef KRAD_WAYLAND_H
 #define KRAD_WAYLAND_H
@@ -54,11 +55,20 @@ typedef struct {
 } kr_wayland_event;
 
 typedef struct {
+  kr_wayland_path_info info;
+  /* FIXME dupe */
   uint32_t width;
   uint32_t height;
+
+
   int (*callback)(void *, kr_wayland_event *);
   void *user;
 } kr_wayland_path_setup;
+
+typedef struct {
+  kr_wayland_info info;
+  void *user;
+} kr_wayland_setup;
 
 kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
  kr_wayland_path_setup *setup);

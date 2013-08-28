@@ -4,12 +4,12 @@ typedef union {
   void *exists;
   kr_jack *jack;
   kr_v4l2 *v4l2;
+  kr_wayland *wayland;
 /*
   kr_alsa *alsa;
   kr_decklink *decklink;
   kr_fc2 *flycap;
   kr_jack *x11;
-  kr_wayland *wayland;
   kr_encoder *encoder;
   kr_shmapi krad;
 */
@@ -18,12 +18,12 @@ typedef union {
 typedef union {
   kr_jack_path *jack;
   kr_v4l2_path *v4l2;
+  kr_wayland_path *wayland;
 /*
   kr_alsa_path *alsa;
   kr_decklink_path *decklink;
   kr_fc2_path *flycap;
   kr_x11_path *x11;
-  kr_wayland_path *wayland;
   kr_encoder_path *encoder;
   kr_shmapi_path krad;
 */
@@ -48,6 +48,7 @@ struct kr_adapter {
 };
 
 #include "adapters/jack.c"
+#include "adapters/wayland.c"
 #include "adapters/v4l2.c"
 
 static int path_setup_check(kr_adapter_path_setup *setup);

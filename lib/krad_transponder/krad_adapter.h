@@ -12,6 +12,7 @@ typedef struct kr_adapter_path_setup kr_adapter_path_setup;
 #include "krad_av.h"
 
 #include "krad_jack.h"
+#include "krad_wayland.h"
 #include "krad_v4l2.h"
 
 typedef struct {
