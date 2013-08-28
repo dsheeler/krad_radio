@@ -1,29 +1,13 @@
 #include "krad_easing.h"
 
-void kr_easer_destroy(kr_easer *easer) {
-	free(easer);
-}
-
-kr_easer *kr_easer_create() {
-
-  kr_easer *easer;
-
-  easer = calloc(1, sizeof(kr_easer));
-  return easer;
-}
-
-kr_easing kr_easing_random() {
-	return rand () % (LASTEASING - FIRSTEASING) + FIRSTEASING;
-}
-
 float kr_easer_process(kr_easer *easer, float current, void **ptr) {
 
   float value;
   int i;
 
-
   i = __sync_fetch_and_add(&easer->newest, 0);
   if (i > 0) {
+    i -= 1;
     i %= 2;
     if (__sync_bool_compare_and_swap(&easer->update[i].rw, 0, 1)) {
       easer->new_ptr = easer->update[i].ptr;
@@ -177,4 +161,18 @@ float kr_ease(kr_easing easing, float time_now, float start_pos,
     default:
 	    return change_amt*time_now/duration + start_pos;
   }
+}
+
+kr_easing kr_easing_random() {
+	return rand () % (LASTEASING - FIRSTEASING) + FIRSTEASING;
+}
+
+void kr_easer_destroy(kr_easer *easer) {
+	free(easer);
+}
+
+kr_easer *kr_easer_create() {
+  kr_easer *easer;
+  easer = calloc(1, sizeof(kr_easer));
+  return easer;
 }
