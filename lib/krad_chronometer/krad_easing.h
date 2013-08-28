@@ -17,29 +17,19 @@ typedef struct {
   int duration;
   kr_easing easing;
   void *ptr;
-  int rw;
 } kr_easer_update;
 
-
 typedef struct {
-  int newest;
-  int last;
-  kr_easer_update update[2];
-
-//  int updating;
-  float new_target;
-  int new_duration;
-  kr_easing new_easing;
-  void *new_ptr;
-
   int active;
+  volatile int updated;
+  int updating;
+  kr_easer_update update;
   float target;
   float start_value;
   float change_amount;
   int elapsed_time;
   int duration;
   kr_easing easing;
-  void *ptr;
 } kr_easer;
 
 kr_easing kr_easing_random();

@@ -247,7 +247,7 @@ static void update_controls(kr_mixer *mixer) {
     if ((crossfader != NULL) &&
         ((crossfader->path[0] != NULL) &&
         (crossfader->path[1] != NULL))) {
-      if (crossfader->easer.active) {
+      if ((crossfader->easer.active) || (crossfader->easer.updated)) {
         set_crossfade(crossfader->path[0], kr_easer_process(&crossfader->easer,
          crossfader->fade, &client));
        /* krad_radio_broadcast_subpath_control(mixer->broadcaster,
@@ -261,7 +261,7 @@ static void update_controls(kr_mixer *mixer) {
   for (p = 0; p < KR_MXR_MAX_PATHS; p++) {
     path = mixer->path[p];
     if ((path != NULL) && (path->state == KR_MXP_ACTIVE) &&
-        (path->volume_easer.active)) {
+        ((path->volume_easer.active) || (path->volume_easer.updated))) {
       set_volume(path,
       kr_easer_process(&path->volume_easer, path->volume[0], &client));
      /* krad_radio_broadcast_subpath_control(mixer->broadcaster,
