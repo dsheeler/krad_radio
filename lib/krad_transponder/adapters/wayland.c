@@ -3,9 +3,7 @@ typedef struct {
   void *user;
 } kr_wayland_cb_arg;
 
-void wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
-
-  printk("wayland adapter path av cb happens!");
+int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
 
   kr_adapter_path_av_cb_arg cb_arg;
   kr_image image;
@@ -18,6 +16,23 @@ void wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
   cb_arg.user = cb_arg.path->user;
   cb_arg.image = image;
   cb_arg.path->av_cb(&cb_arg);
+
+  if (((time(NULL)) % 5) == 0) {
+    uint32_t *p;
+    int i;
+    int end;
+    int offset;
+    int time;
+    p = (uint32_t *)image.px;
+    end = image.w * image.h;
+    offset = rand() >> 4;
+    for (i = 0; i < end; i++) {
+      p[i] = (i + offset) * 0x0080401;
+    }
+    return 1;
+  }
+
+  return 0;
 }
 
 void wayland_adapter_path_event_cb(kr_wayland_cb_arg *arg) {
@@ -37,14 +52,11 @@ void wayland_adapter_event_cb(kr_wayland_cb_arg *arg) {
 }
 
 int wayland_adapter_path_cb(void *user, kr_wayland_event *event) {
-
-  printk("wayland adapter path cb happens!");
-
   kr_wayland_cb_arg cb_arg;
   cb_arg.event = *event;
   cb_arg.user = user;
   if (cb_arg.event.type == KR_WL_FRAME) {
-    wayland_adapter_path_av_cb(&cb_arg);
+    return wayland_adapter_path_av_cb(&cb_arg);
   } else {
     wayland_adapter_path_event_cb(&cb_arg);
   }
@@ -52,7 +64,7 @@ int wayland_adapter_path_cb(void *user, kr_wayland_event *event) {
 }
 
 int wayland_adapter_process(kr_adapter *adapter) {
-  usleep(500000);
+  krad_system_set_thread_name("kr_wayland");
   while (1) {
     kr_wayland_process(adapter->handle.wayland);
   }
