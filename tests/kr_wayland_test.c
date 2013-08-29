@@ -7,8 +7,7 @@ typedef struct kr_wayland_test_window kr_wayland_test_window;
 
 struct kr_wayland_test_window {
   kr_wayland_path *window;
-  int width;
-  int height;
+  kr_wayland_path_info info;
   void *buffer;
   char name[32];
 };
@@ -45,7 +44,7 @@ int kr_wl_test_frame_cb(void *user, kr_wayland_event *event) {
 
   time = rand();
   p = (uint32_t *)event->frame_event.buffer;
-  end = wayland_test_window->width * wayland_test_window->height;
+  end = wayland_test_window->info.width * wayland_test_window->info.height;
   offset = time >> 4;
   for (i = 0; i < end; i++) {
     p[i] = (i + offset) * 0x0080401;
@@ -133,7 +132,7 @@ void wayland_test_destroy (kr_wayland_test *wayland_test) {
     ret = kr_wayland_unlink(&wayland_test->windows[i].window);
     if (ret < 0) {
       fprintf(stderr, "Could not destroy window %dx%d\n",
-       wayland_test->windows[i].width, wayland_test->windows[i].height);
+       wayland_test->windows[i].info.width, wayland_test->windows[i].info.height);
       exit(1);
     }
   }
@@ -155,7 +154,7 @@ kr_wayland_test *wayland_test_create() {
   width = 160;
   height = 120;
 
-  wayland_test->wayland = kr_wayland_create();
+  wayland_test->wayland = kr_wayland_create(NULL);
 
   if (wayland_test->wayland == NULL) {
     fprintf(stderr, "Could not connect to wayland\n");
@@ -166,10 +165,9 @@ kr_wayland_test *wayland_test_create() {
   signal (SIGTERM, signal_recv);
 
   for (i = 0; i < TEST_WINDOWS; i++) {
-    wayland_test->windows[i].width = width;
-    wayland_test->windows[i].height = height;
-    window_params.width = wayland_test->windows[i].width;
-    window_params.height = wayland_test->windows[i].height;
+    wayland_test->windows[i].info.width = width;
+    wayland_test->windows[i].info.height = height;
+    window_params.info = wayland_test->windows[i].info;
     window_params.user = &wayland_test->windows[i];
     window_params.callback = kr_wl_test_cb;
     wayland_test->windows[i].window =

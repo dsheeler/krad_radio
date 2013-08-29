@@ -261,10 +261,10 @@ wayrad_t *wayrad_create (char *sysname) {
 
   printf ("Connected to %s!\n", wayrad->sysname);
 
-  wayrad->wayland = kr_wayland_create();
+  wayrad->wayland = kr_wayland_create(NULL);
 
-  window_params.width = wayrad->width;
-  window_params.height = wayrad->height;
+  window_params.info.width = wayrad->width;
+  window_params.info.height = wayrad->height;
   window_params.callback = window_cb;
   window_params.user = wayrad;
 

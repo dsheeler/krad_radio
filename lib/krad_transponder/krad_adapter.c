@@ -44,7 +44,20 @@ struct kr_adapter {
   kr_adapter_path *path[KR_ADAPTER_PATHS_MAX];
   void *user;
   kr_adapter_event_cb *ev_cb;
+  kr_adapter_process_function *process_function;
+  pthread_t process_thread;
 };
+
+void *adapter_process_thread(void *arg) {
+  kr_adapter *adapter;
+  adapter = (kr_adapter *)arg;
+  adapter->process_function(adapter);
+  return NULL;
+}
+
+void adapter_process_thread_start(kr_adapter *adapter) {
+  pthread_create(&adapter->process_thread, NULL, adapter_process_thread, adapter);
+}
 
 #include "adapters/jack.c"
 #include "adapters/wayland.c"

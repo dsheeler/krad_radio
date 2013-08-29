@@ -56,21 +56,12 @@ typedef struct {
 
 typedef struct {
   kr_wayland_path_info info;
-  /* FIXME dupe */
-  uint32_t width;
-  uint32_t height;
-  /* FIXME end */
   int (*callback)(void *, kr_wayland_event *);
   void *user;
 } kr_wayland_path_setup;
 
-/* FIXME
- * ok how about a setup info struct and
- * a wayland event for adapter .. */
-
 typedef struct {
   kr_wayland_info info;
-  void *user;
 } kr_wayland_setup;
 
 kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
@@ -79,7 +70,6 @@ int kr_wayland_unlink(kr_wayland_path **path);
 int kr_wayland_get_fd(kr_wayland *wayland);
 int kr_wayland_process(kr_wayland *wayland);
 int kr_wayland_destroy(kr_wayland **wl);
-kr_wayland *kr_wayland_create();
-kr_wayland *kr_wayland_create_for_server(char *server);
+kr_wayland *kr_wayland_create(kr_wayland_setup *setup);
 
 #endif

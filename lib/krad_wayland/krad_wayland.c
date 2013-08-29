@@ -52,6 +52,7 @@ struct kr_wayland {
     xkb_mod_mask_t alt_mask;
     xkb_mod_mask_t shift_mask;
   } xkb;
+  kr_wayland_info info;
 };
 
 static int kr_wayland_path_create_shm_buffer (kr_wayland_path *window,
@@ -625,8 +626,8 @@ kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
     return NULL;
   }
 
-  if ((setup->width == 0) || (setup->height == 0) ||
-      (setup->width > 8192) || (setup->height > 8192)
+  if ((setup->info.width == 0) || (setup->info.height == 0) ||
+      (setup->info.width > 8192) || (setup->info.height > 8192)
       || setup->callback == NULL) {
     return NULL;
   }
@@ -645,8 +646,8 @@ kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
   window->wayland = wayland;
   window->user_callback = setup->callback;
   window->user = setup->user;
-  window->width = setup->width;
-  window->height = setup->height;
+  window->width = setup->info.width;
+  window->height = setup->info.height;
 
   ret = kr_wayland_path_create_shm_buffer(window, window->width,
    window->height, KR_WL_BUFFER_COUNT, WL_SHM_FORMAT_XRGB8888,
@@ -802,13 +803,21 @@ int kr_wayland_destroy(kr_wayland **wl) {
   return 0;
 }
 
-kr_wayland *kr_wayland_create() {
-  return kr_wayland_create_for_server(NULL);
-}
+kr_wayland *kr_wayland_create(kr_wayland_setup *setup) {
 
-kr_wayland *kr_wayland_create_for_server(char *server) {
-  kr_wayland *wayland = calloc(1, sizeof(kr_wayland));
-  wayland->display = wl_display_connect(server);
+  kr_wayland *wayland;
+
+  wayland = calloc(1, sizeof(kr_wayland));
+  if (setup != NULL) {
+    wayland->info = setup->info;
+  }
+  if (strlen(wayland->info.display_name)) {
+    wayland->display = wl_display_connect(wayland->info.display_name);
+  } else {
+    wayland->display = wl_display_connect(NULL);
+  }
+
+  /* FIXME fail better */
   if (wayland->display == NULL) {
     free(wayland);
     return NULL;
