@@ -3,10 +3,11 @@
 
 typedef struct {
   int state;
-  char server_path[128];
+  char display_name[128];
 } kr_wayland_info;
 
 typedef struct {
+  char display_name[128];
   int state;
   int width;
   int height;

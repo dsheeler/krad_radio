@@ -73,8 +73,8 @@ void wayland_adapter_create(kr_adapter *adapter) {
 
   kr_wayland_setup wayland_setup;
 
-  snprintf(wayland_setup.info.server_path,
-   sizeof(adapter->info.api_info.wayland.server_path), "%s", "");
+  snprintf(wayland_setup.info.display_name,
+   sizeof(adapter->info.api_info.wayland.display_name), "%s", "");
   /*  memcpy(&wayland_setup.info, &setup->info.info.wayland,
    *   sizeof(kr_wayland_info)); */
   wayland_setup.user = adapter;
