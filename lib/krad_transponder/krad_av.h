@@ -15,6 +15,7 @@ struct kr_image {
   uint32_t h;
   int32_t fmt;
   uint64_t tc;
+  void *owner;
 };
 
 struct kr_audio {
@@ -23,6 +24,7 @@ struct kr_audio {
   int32_t count;
   int32_t rate;
   uint64_t stc;
+  void *owner;
 };
 
 #endif

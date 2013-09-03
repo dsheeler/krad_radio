@@ -17,7 +17,7 @@ typedef union {
 
 typedef union {
   kr_jack_path *jack;
-  kr_v4l2_path *v4l2;
+  kr_v4l2 *v4l2;
   kr_wayland_path *wayland;
 /*
   kr_alsa_path *alsa;
@@ -45,6 +45,7 @@ struct kr_adapter {
   void *user;
   kr_adapter_event_cb *ev_cb;
   kr_adapter_process_function *process_function;
+  kr_adapter_path_process_function *path_process_function;
   pthread_t process_thread;
 };
 
@@ -55,8 +56,19 @@ void *adapter_process_thread(void *arg) {
   return NULL;
 }
 
+void *adapter_path_process_thread(void *arg) {
+  kr_adapter_path *path;
+  path = (kr_adapter_path *)arg;
+  path->adapter->path_process_function(path);
+  return NULL;
+}
+
 void adapter_process_thread_start(kr_adapter *adapter) {
   pthread_create(&adapter->process_thread, NULL, adapter_process_thread, adapter);
+}
+
+void adapter_path_process_thread_start(kr_adapter_path *path) {
+  pthread_create(&path->adapter->process_thread, NULL, adapter_path_process_thread, path);
 }
 
 #include "adapters/jack.c"
@@ -86,6 +98,9 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
   switch (path->adapter->info.api) {
     case KR_ADP_WAYLAND:
       wayland_adapter_path_create(path);
+      break;
+    case KR_ADP_V4L2:
+      v4l2_adapter_path_create(path);
       break;
     case KR_ADP_JACK:
       jack_adapter_path_create(path);
@@ -214,6 +229,9 @@ int kr_adapter_destroy(kr_adapter *adapter) {
     case KR_ADP_WAYLAND:
       wayland_adapter_destroy(adapter);
       break;
+    case KR_ADP_V4L2:
+      v4l2_adapter_destroy(adapter);
+      break;
     case KR_ADP_JACK:
       jack_adapter_destroy(adapter);
       break;
@@ -242,6 +260,9 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
   switch (adapter->info.api) {
     case KR_ADP_WAYLAND:
       wayland_adapter_create(adapter);
+      return adapter;
+    case KR_ADP_V4L2:
+      v4l2_adapter_create(adapter);
       return adapter;
     case KR_ADP_JACK:
       jack_adapter_create(adapter);

@@ -70,15 +70,15 @@ void test_wayland_output_create(kr_xpdr *xpdr) {
 
   kr_xpdr_path_setup setup;
   kr_xpdr_path *path;
-  char *device_name;
+  int device_num;
   char *display_name;
   int width;
   int height;
 
   display_name = "";
-  device_name = "/dev/video0";
-  width = 1280;
-  height = 720;
+  device_num = 0;
+  width = 640;
+  height = 480;
 
   memset(&setup, 0, sizeof(kr_xpdr_path_setup));
   strcpy(setup.info.name, "V4L2 to Wayland Test");
@@ -87,8 +87,7 @@ void test_wayland_output_create(kr_xpdr *xpdr) {
 
   setup.info.input.type = KR_XPDR_ADAPTER;
   setup.info.input.info.adapter_path_info.api = KR_ADP_V4L2;
-  strcpy(setup.info.input.info.adapter_path_info.info.v4l2.device_name,
-   device_name);
+ // setup.info.input.info.adapter_path_info.info.v4l2.dev = device_num;
   setup.info.input.info.adapter_path_info.info.v4l2.width = width;
   setup.info.input.info.adapter_path_info.info.v4l2.height = height;
 
@@ -106,9 +105,9 @@ void test_wayland_output_create(kr_xpdr *xpdr) {
 }
 
 void test_xpdr(kr_xpdr *xpdr) {
-/*
-  test_jack_output_create(xpdr);
-  test_jack_input_create(xpdr);
-*/
+  /*
+    test_jack_output_create(xpdr);
+    test_jack_input_create(xpdr);
+  */
   test_wayland_output_create(xpdr);
 }

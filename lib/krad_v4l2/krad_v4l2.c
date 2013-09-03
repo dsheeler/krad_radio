@@ -1,299 +1,266 @@
 #include "krad_v4l2.h"
 
-#define CLEAR(x) memset (&(x), 0, sizeof (x))
+#define KR_V4L2_BUFS 12
 
-typedef struct kr_v4l2_buffer_St kr_v4l2_buffer_t;
-
-struct kr_v4l2_buffer_St {
-	void *start;
-	size_t length;
-	size_t offset;
-};
+typedef struct {
+  void *start;
+  size_t length;
+  size_t offset;
+  struct timeval timestamp;
+  struct v4l2_buffer buf;
+} kr_v4l2_frame;
 
 struct kr_v4l2 {
   int fd;
   kr_v4l2_info info;
-  int width;
-  int height;
-  int fps;
-  int mode;
-  int frames;
-  struct timeval timestamp;
-  kr_v4l2_buffer_t *buffers;
-  unsigned int n_buffers;
-  struct v4l2_buffer buf;
-  char device[512];
+  uint32_t nframes;
+  kr_v4l2_frame frames[KR_V4L2_BUFS];
 };
 
-void kr_v4l2_init_device(kr_v4l2 *v4l2);
-void kr_v4l2_uninit_device(kr_v4l2 *v4l2);
-void kr_v4l2_init_mmap(kr_v4l2 *v4l2);
-void errno_exit(const char *s);
+static int xioctl(int fd, int request, void *arg);
+static void kr_v4l2_unmap(kr_v4l2 *v4l2);
+static void kr_v4l2_map(kr_v4l2 *v4l2);
+static void kr_v4l2_close(kr_v4l2 *v4l2);
+static void kr_v4l2_open(kr_v4l2 *v4l2);
 
-void kr_v4l2_close(kr_v4l2 *v4l2);
-void kr_v4l2_open(kr_v4l2 *v4l2);
-
-void kr_v4l2_stop_capturing(kr_v4l2 *v4l2);
-void kr_v4l2_start_capturing(kr_v4l2 *v4l2);
-
-char *kr_v4l2_read(kr_v4l2 *v4l2);
-void kr_v4l2_frame_done(kr_v4l2 *v4l2);
-int xioctl(int fd, int request, void *arg);
-
-void kr_v4l2_frame_done(kr_v4l2 *v4l2) {
-  if (-1 == xioctl(v4l2->fd, VIDIOC_QBUF, &v4l2->buf)) {
-    errno_exit ("Krad V4L2: VIDIOC_QBUF");
-  }
+static int xioctl(int fd, int request, void *arg) {
+  int r;
+  do r = ioctl(fd, request, arg);
+  while (-1 == r && EINTR == errno);
+  return r;
 }
 
-char *kr_v4l2_read(kr_v4l2 *v4l2) {
+int kr_v4l2_release(kr_v4l2 *v4l2, kr_image *image) {
+  if (image == NULL) return -1;
+  if (image->owner == NULL) return -1;
+  if (-1 == xioctl(v4l2->fd, VIDIOC_QBUF, image->owner)) {
+    printke("Krad V4L2: VIDIOC_QBUF");
+  }
+  image->owner = NULL;
+  return 0;
+}
 
-  v4l2->buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  v4l2->buf.memory = V4L2_MEMORY_MMAP;
+int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image) {
 
-  if (-1 == xioctl (v4l2->fd, VIDIOC_DQBUF, &v4l2->buf)) {
+  struct v4l2_buffer buf;
+
+  if (v4l2 == NULL) return -1;
+  if (image == NULL) return -1;
+
+  memset(&buf, 0, sizeof(buf));
+  buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  buf.memory = V4L2_MEMORY_MMAP;
+
+  if (-1 == xioctl(v4l2->fd, VIDIOC_DQBUF, &buf)) {
     switch (errno) {
       case EAGAIN:
         return 0;
-      case EIO:
       default:
-        errno_exit ("Krad V4L2: VIDIOC_DQBUF");
+        printke("Krad V4L2: VIDIOC_DQBUF");
+        return -1;
     }
   }
 
-  v4l2->timestamp = v4l2->buf.timestamp;
-
-  return v4l2->buffers[v4l2->buf.index].start;
+  /*  v4l2->timestamp = buf.timestamp;
+  return v4l2->buffers[buf.index].start; */
+  image->owner = &v4l2->frames[buf.index];
+  return 1;
 }
 
-void kr_v4l2_start_capturing(kr_v4l2 *v4l2) {
+int kr_v4l2_capture(kr_v4l2 *v4l2, int on) {
 
-  unsigned int i;
+  uint32_t i;
+  struct v4l2_buffer buf;
   enum v4l2_buf_type type;
 
-  for (i = 0; i < v4l2->n_buffers; ++i) {
-    struct v4l2_buffer buf;
-    CLEAR (buf);
-    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+  if (v4l2 == NULL) return -1;
+  if (v4l2->fd == -1) return -1;
+
+  if (on == 0) {
+    if (v4l2->info.state != KR_V4L2_CAPTURE) {
+      return 0;
+    }
+    if (-1 == xioctl (v4l2->fd, VIDIOC_STREAMOFF, &type)) {
+      printke("Krad V4L2: VIDIOC_STREAMOFF");
+      v4l2->info.state = KR_V4L2_VOID;
+      return -1;
+    }
+    v4l2->info.state = KR_V4L2_VOID;
+    return 0;
+  }
+
+  if (v4l2->nframes == 0) return -1;
+  for (i = 0; i < v4l2->nframes; i++) {
+    memset(&buf, 0, sizeof(buf));
+    buf.type = type;
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = i;
-    if (-1 == xioctl (v4l2->fd, VIDIOC_QBUF, &buf)) {
-      errno_exit ("Krad V4L2: VIDIOC_QBUF");
+    if (-1 == xioctl(v4l2->fd, VIDIOC_QBUF, &buf)) {
+      printke("Krad V4L2: VIDIOC_QBUF");
+      return -1;
     }
   }
 
-  type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (-1 == xioctl(v4l2->fd, VIDIOC_STREAMON, &type)) {
+    printke("Krad V4L2: VIDIOC_STREAMON");
+    return -1;
+  }
+  v4l2->info.state = KR_V4L2_CAPTURE;
+  return 0;
+}
 
-  if (-1 == xioctl (v4l2->fd, VIDIOC_STREAMON, &type)) {
-    errno_exit ("Krad V4L2: VIDIOC_STREAMON");
+static void kr_v4l2_unmap(kr_v4l2 *v4l2) {
+  int i;
+  if (v4l2->nframes > 0) {
+    kr_v4l2_capture(v4l2, 0);
+    for (i = 0; i < v4l2->nframes; i++) {
+  	  if (-1 == munmap(v4l2->frames[i].start, v4l2->frames[i].length)) {
+        printke("Krad V4L2: munmap %d", i);
+      }
+    }
+    v4l2->nframes = 0;
   }
 }
 
-void kr_v4l2_stop_capturing(kr_v4l2 *v4l2) {
+static void kr_v4l2_map(kr_v4l2 *v4l2) {
 
-  enum v4l2_buf_type type;
-
-  type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-  if (-1 == xioctl (v4l2->fd, VIDIOC_STREAMOFF, &type)) {
-    errno_exit ("Krad V4L2: VIDIOC_STREAMOFF");
-  }
-}
-
-void kr_v4l2_init_mmap (kr_v4l2 *v4l2) {
-
+  int i;
+  struct v4l2_buffer buf;
   struct v4l2_requestbuffers req;
 
-  CLEAR (req);
-
-  req.count = 24;
+  memset(&req, 0, sizeof(req));
+  req.count = KR_V4L2_BUFS;
   req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   req.memory = V4L2_MEMORY_MMAP;
 
-	if (-1 == xioctl (v4l2->fd, VIDIOC_REQBUFS, &req)) {
-		if (EINVAL == errno) {
-		    failfast ("Krad V4L2: %s does not support memory mapping", v4l2->device);
-		} else {
-		        errno_exit ("Krad V4L2: VIDIOC_REQBUFS");
-		}
-	}
-
-	if (req.count < 2) {
-		failfast ("Krad V4L2: Insufficient buffer memory on %s\n", v4l2->device);
-	}
-
-	printk ("Krad V4L2: v4l2 says %d buffers", req.count);
-
-	v4l2->buffers = calloc (req.count, sizeof (*v4l2->buffers));
-
-	if (!v4l2->buffers) {
-		failfast ("Krad V4L2: Out of memory");
-	}
-
-	for (v4l2->n_buffers = 0; v4l2->n_buffers < req.count; ++v4l2->n_buffers) {
-
-		struct v4l2_buffer buf;
-
-		CLEAR (buf);
-
-		buf.type        = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		buf.memory      = V4L2_MEMORY_MMAP;
-		buf.index       = v4l2->n_buffers;
-
+  if (-1 == xioctl(v4l2->fd, VIDIOC_REQBUFS, &req)) {
+    if (EINVAL == errno) {
+      printke("Krad V4L2: device does not support memory mapping");
+    } else {
+      printke("Krad V4L2: VIDIOC_REQBUFS");
+    }
+    return;
+  }
+  if (req.count < 2) {
+    printke("Krad V4L2: Insufficient buffer memory");
+    return;
+  }
+  v4l2->nframes = req.count;
+	printk("Krad V4L2: %d buffers", v4l2->nframes);
+	for (i = 0; i < v4l2->nframes; i++) {
+    memset(&buf, 0, sizeof(buf));
+		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		buf.memory = V4L2_MEMORY_MMAP;
+		buf.index = i;
 		if (-1 == xioctl (v4l2->fd, VIDIOC_QUERYBUF, &buf)) {
-			errno_exit ("Krad V4L2: VIDIOC_QUERYBUF");
+			printke("Krad V4L2: VIDIOC_QUERYBUF");
+      v4l2->nframes = 0;
+      return;
 		}
-
-		v4l2->buffers[v4l2->n_buffers].length = buf.length;
-		v4l2->buffers[v4l2->n_buffers].offset = buf.m.offset;
-
-		v4l2->buffers[v4l2->n_buffers].start = mmap (NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, v4l2->fd, buf.m.offset);
-
-		if (MAP_FAILED == v4l2->buffers[v4l2->n_buffers].start) {
-			errno_exit ("Krad V4L2: mmap");
+		v4l2->frames[i].length = buf.length;
+		v4l2->frames[i].offset = buf.m.offset;
+		v4l2->frames[i].start = mmap(NULL, buf.length,
+     PROT_READ | PROT_WRITE, MAP_SHARED, v4l2->fd, buf.m.offset);
+		if (MAP_FAILED == v4l2->frames[i].start) {
+			printke("Krad V4L2: mmap");
+      v4l2->nframes = 0;
+      return;
 		}
 	}
-
-	v4l2->n_buffers = req.count;
 }
 
-void kr_v4l2_init_device(kr_v4l2 *v4l2) {
+int kr_v4l2_mode_set(kr_v4l2 *v4l2, kr_v4l2_mode *mode) {
 
-	struct v4l2_capability cap;
-	struct v4l2_cropcap cropcap;
-	struct v4l2_crop crop;
 	struct v4l2_format fmt;
-
-  if (-1 == xioctl (v4l2->fd, VIDIOC_QUERYCAP, &cap)) {
-    if (EINVAL == errno) {
-      failfast ("Krad V4L2: %s is no V4L2 device", v4l2->device);
-    } else {
-      errno_exit ("Krad V4L2: VIDIOC_QUERYCAP");
-    }
-  }
-
-	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-    failfast ("Krad V4L2: %s is no video capture device", v4l2->device);
-	}
-
-	if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-		failfast ("Krad V4L2: %s does not support streaming i/o", v4l2->device);
-	}
-
-	CLEAR (cropcap);
-
-  cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-  if (0 == xioctl (v4l2->fd, VIDIOC_CROPCAP, &cropcap)) {
-
-    crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    crop.c = cropcap.defrect;
-
-    if (-1 == xioctl (v4l2->fd, VIDIOC_S_CROP, &crop)) {
-      switch (errno) {
-        case EINVAL:
-          break;
-        default:
-          break;
-      }
-    }
-  } else {
-  }
-
-	CLEAR (fmt);
-
-	fmt.type                = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	fmt.fmt.pix.width       = v4l2->width;
-	fmt.fmt.pix.height      = v4l2->height;
-	fmt.fmt.pix.bytesperline = v4l2->width;
-	fmt.fmt.pix.sizeimage = 96000;
-
-	fmt.fmt.pix.pixelformat = v4l2->mode;
-	fmt.fmt.pix.field       = V4L2_FIELD_ANY;
-
-	if (-1 == xioctl (v4l2->fd, VIDIOC_S_FMT, &fmt)) {
-		errno_exit ("Krad V4L2: VIDIOC_S_FMT");
-	}
-
-	char fourcc[5];
-	fourcc[4] = '\0';
-	memcpy(&fourcc, (char *)&fmt.fmt.pix.pixelformat, 4);
-
-	printkd ("Krad V4L2: %ux%u FMT %s Stride: %u Size: %u", fmt.fmt.pix.width, fmt.fmt.pix.height, fourcc,
-														fmt.fmt.pix.bytesperline, fmt.fmt.pix.sizeimage);
-
-	v4l2->width = fmt.fmt.pix.width;
-	v4l2->height = fmt.fmt.pix.height;
-
 	struct v4l2_streamparm stream_parameters;
 
-	CLEAR (stream_parameters);
-	stream_parameters.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-	if (-1 == xioctl (v4l2->fd, VIDIOC_G_PARM, &stream_parameters)) {
-		errno_exit ("Krad V4L2: VIDIOC_G_PARM");
-	}
-
-	printkd ("Krad V4L2: G Frameinterval %u/%u", stream_parameters.parm.capture.timeperframe.numerator,
-										  stream_parameters.parm.capture.timeperframe.denominator);
-
-	stream_parameters.parm.capture.timeperframe.numerator = 1;
-	stream_parameters.parm.capture.timeperframe.denominator = v4l2->fps;
-
-	if (-1 == xioctl (v4l2->fd, VIDIOC_S_PARM, &stream_parameters)) {
-    printke ("Krad V4L2: unable to set stream parameters as speced");
-    printke ("Krad V4L2: error %d, %s", errno, strerror (errno));
-	}
-
-	printkd ("Krad V4L2: S Frameinterval %u/%u", stream_parameters.parm.capture.timeperframe.numerator,
-										  stream_parameters.parm.capture.timeperframe.denominator);
-
-	if (stream_parameters.parm.capture.timeperframe.denominator != v4l2->fps) {
-		printkd ("Krad V4L2: failed to get proper capture fps!");
-	}
-
-	kr_v4l2_init_mmap(v4l2);
+  kr_v4l2_unmap(v4l2);
+  memset(&stream_parameters, 0, sizeof(stream_parameters));
+	memset(&fmt, 0, sizeof(fmt));
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  stream_parameters.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  fmt.fmt.pix.width = mode->width;
+  fmt.fmt.pix.height = mode->height;
+  fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+  fmt.fmt.pix.field = V4L2_FIELD_ANY;
+  if (-1 == xioctl (v4l2->fd, VIDIOC_S_FMT, &fmt)) {
+    printke("Krad V4L2: VIDIOC_S_FMT");
+    return -1;
+  }
+  if (-1 == xioctl (v4l2->fd, VIDIOC_G_PARM, &stream_parameters)) {
+    printke("Krad V4L2: VIDIOC_G_PARM");
+    return -1;
+  }
+  stream_parameters.parm.capture.timeperframe.numerator = mode->num;
+  stream_parameters.parm.capture.timeperframe.denominator = mode->den;
+  if (-1 == xioctl (v4l2->fd, VIDIOC_S_PARM, &stream_parameters)) {
+    printke("Krad V4L2: unable to set stream parameters as speced");
+    printke("Krad V4L2: error %d, %s", errno, strerror (errno));
+    return -1;
+  }
+  kr_v4l2_map(v4l2);
+  if (v4l2->nframes == 0) {
+    return -1;
+  }
+  return 0;
 }
 
-void kr_v4l2_close(kr_v4l2 *v4l2) {
-
-  unsigned int i;
-
+static void kr_v4l2_close(kr_v4l2 *v4l2) {
   if (v4l2->fd > -1) {
-    for (i = 0; i < v4l2->n_buffers; ++i)
-		  if (-1 == munmap(v4l2->buffers[i].start, v4l2->buffers[i].length))
-			  		errno_exit("Krad V4L2: munmap");
-
-    free(v4l2->buffers);
+    kr_v4l2_unmap(v4l2);
     close(v4l2->fd);
+    v4l2->fd = -1;
+    v4l2->info.state = KR_V4L2_VOID;
   }
 }
 
-void kr_v4l2_open(kr_v4l2 *v4l2) {
+static void kr_v4l2_open(kr_v4l2 *v4l2) {
 
 	struct stat st;
+  char device[128];
+	struct v4l2_capability cap;
 
-	if (-1 == stat(v4l2->device, &st)) {
-		printke("Krad V4L2: Cannot identify '%s': %d, %s", v4l2->device, errno,
+  snprintf(device, sizeof(device), "/dev/video%d", v4l2->info.dev);
+	if (-1 == stat(device, &st)) {
+		printke("Krad V4L2: Cannot identify '%s': %d, %s", device, errno,
      strerror(errno));
-	}
-
+    return;
+  }
 	if (!S_ISCHR(st.st_mode)) {
-		printke("Krad V4L2: %s is no device", v4l2->device);
+		printke("Krad V4L2: %s is no device", device);
+    return;
 	}
-
-	v4l2->fd = open(v4l2->device, O_RDWR | O_NONBLOCK, 0);
-
+	v4l2->fd = open(device, O_RDWR | O_NONBLOCK, 0);
 	if (-1 == v4l2->fd) {
-    printke("Krad V4L2: Cannot open '%s': %d, %s", v4l2->device, errno,
+    printke("Krad V4L2: Cannot open '%s': %d, %s", device, errno,
      strerror(errno));
+    return;
 	}
 
-	kr_v4l2_init_device(v4l2);
+  if (-1 == xioctl(v4l2->fd, VIDIOC_QUERYCAP, &cap)) {
+    printke("Krad V4L2: VIDIOC_QUERYCAP");
+    kr_v4l2_close(v4l2);
+    return;
+  } else {
+  	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
+      printke("Krad V4L2: %s is no video capture device", device);
+      kr_v4l2_close(v4l2);
+      return;
+  	}
+  	if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
+	  	printke("Krad V4L2: %s does not support streaming i/o", device);
+      kr_v4l2_close(v4l2);
+      return;
+    }
+  }
+  v4l2->info.state = KR_V4L2_OPEN;
 }
 
 int kr_v4l2_destroy(kr_v4l2 *v4l2) {
   if (v4l2 == NULL) return -1;
+  kr_v4l2_close(v4l2);
   free(v4l2);
   return 0;
 }
@@ -305,29 +272,11 @@ kr_v4l2 *kr_v4l2_create(kr_v4l2_setup *setup) {
   if (setup == NULL) return NULL;
 
 	v4l2 = calloc(1, sizeof(kr_v4l2));
-	v4l2->mode = V4L2_PIX_FMT_YUYV;
-
-  /* FIXME temp */
-  strcpy(v4l2->device, "/dev/video0");
-  v4l2->width = 640;
-  v4l2->height = 480;
-  /* FIXME end */
+  v4l2->info.dev = setup->dev;
+  v4l2->info.priority = setup->priority;
+  kr_v4l2_open(v4l2);
 
 	return v4l2;
-}
-
-void errno_exit(const char *s) {
-  failfast("%s error %d, %s", s, errno, strerror(errno));
-}
-
-int xioctl(int fd, int request, void *arg) {
-
-  int r;
-
-  do r = ioctl(fd, request, arg);
-  while (-1 == r && EINTR == errno);
-
-  return r;
 }
 
 int kr_v4l2_dev_count() {

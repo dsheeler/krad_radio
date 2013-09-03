@@ -35,6 +35,7 @@ typedef struct {
 } kr_adapter_event_cb_arg;
 
 typedef int (kr_adapter_process_function)(kr_adapter *);
+typedef int (kr_adapter_path_process_function)(kr_adapter_path *);
 typedef void (kr_adapter_event_cb)(kr_adapter_event_cb_arg *);
 typedef void (kr_adapter_path_event_cb)(kr_adapter_path_event_cb_arg *);
 typedef void (kr_adapter_path_av_cb)(kr_adapter_path_av_cb_arg *);

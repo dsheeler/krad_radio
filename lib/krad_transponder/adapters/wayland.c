@@ -8,8 +8,8 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
   kr_adapter_path_av_cb_arg cb_arg;
   kr_image image;
 
-  image.w = 1280;
-  image.h = 720;
+  image.w = 640;
+  image.h = 480;
   image.px = arg->event.frame_event.buffer;
 
   cb_arg.path = (kr_adapter_path *)arg->user;
@@ -22,7 +22,6 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
     int i;
     int end;
     int offset;
-    int time;
     p = (uint32_t *)image.px;
     end = image.w * image.h;
     offset = rand() >> 4;
@@ -65,7 +64,7 @@ int wayland_adapter_path_cb(void *user, kr_wayland_event *event) {
 
 int wayland_adapter_process(kr_adapter *adapter) {
   krad_system_set_thread_name("kr_wayland");
-  while (1) {
+  for(;;) {
     kr_wayland_process(adapter->handle.wayland);
   }
   return 0;
