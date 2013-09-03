@@ -12,4 +12,5 @@ void xpdr_adapter_path_av_cb(kr_adapter_path_av_cb_arg *arg) {
   kr_xpdr_path *path;
   path = (kr_xpdr_path *)arg->user;
   path->audio = arg->audio;
+  path->image = arg->image;
 }

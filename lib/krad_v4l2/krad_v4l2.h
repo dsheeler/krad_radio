@@ -29,6 +29,7 @@ typedef struct {
 
 int kr_v4l2_release(kr_v4l2 *v4l2, kr_image *image);
 int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image);
+int kr_v4l2_poll(kr_v4l2 *v4l2, int ms);
 int kr_v4l2_capture(kr_v4l2 *v4l2, int on);
 int kr_v4l2_mode_set(kr_v4l2 *v4l2, kr_v4l2_mode *mode);
 /* set control

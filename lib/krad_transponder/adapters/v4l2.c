@@ -28,6 +28,7 @@ int v4l2_adapter_process(kr_adapter_path *path) {
   krad_system_set_thread_name("kr_v4l2");
   kr_v4l2_capture(path->adapter->handle.v4l2, 1);
   for(;;) {
+    kr_v4l2_poll(path->adapter->handle.v4l2, 0);
     ret = kr_v4l2_read(path->adapter->handle.v4l2, &image);
     if (ret == 1) {
       cb_arg.path = path;
@@ -35,8 +36,7 @@ int v4l2_adapter_process(kr_adapter_path *path) {
       cb_arg.image = image;
       cb_arg.path->av_cb(&cb_arg);
       printk("wee!");
-    } else {
-      usleep(25000);
+      kr_v4l2_release(path->adapter->handle.v4l2, &image);
     }
   }
   return 0;

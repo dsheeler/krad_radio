@@ -35,9 +35,23 @@ int kr_v4l2_release(kr_v4l2 *v4l2, kr_image *image) {
   if (image->owner == NULL) return -1;
   if (-1 == xioctl(v4l2->fd, VIDIOC_QBUF, image->owner)) {
     printke("Krad V4L2: VIDIOC_QBUF");
+    return -1;
   }
   image->owner = NULL;
   return 0;
+}
+
+int kr_v4l2_poll(kr_v4l2 *v4l2, int ms) {
+
+  struct pollfd fds[1];
+
+  if (v4l2 == NULL) return -1;
+  if (v4l2->fd == -1) return -1;
+  if (v4l2->info.state != KR_V4L2_CAPTURE) return -1;
+  fds[0].fd = v4l2->fd;
+  fds[0].events = POLLIN;
+
+  return poll(fds, 1, ms);
 }
 
 int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image) {
@@ -63,7 +77,7 @@ int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image) {
 
   /*  v4l2->timestamp = buf.timestamp;
   return v4l2->buffers[buf.index].start; */
-  image->owner = &v4l2->frames[buf.index];
+  image->owner = &v4l2->frames[buf.index].buf;
   return 1;
 }
 
@@ -158,7 +172,8 @@ static void kr_v4l2_map(kr_v4l2 *v4l2) {
 			printke("Krad V4L2: VIDIOC_QUERYBUF");
       v4l2->nframes = 0;
       return;
-		}
+    }
+    v4l2->frames[i].buf = buf;
 		v4l2->frames[i].length = buf.length;
 		v4l2->frames[i].offset = buf.m.offset;
 		v4l2->frames[i].start = mmap(NULL, buf.length,
@@ -189,10 +204,12 @@ int kr_v4l2_mode_set(kr_v4l2 *v4l2, kr_v4l2_mode *mode) {
     printke("Krad V4L2: VIDIOC_S_FMT");
     return -1;
   }
+  /*
   if (-1 == xioctl (v4l2->fd, VIDIOC_G_PARM, &stream_parameters)) {
     printke("Krad V4L2: VIDIOC_G_PARM");
     return -1;
   }
+  */
   stream_parameters.parm.capture.timeperframe.numerator = mode->num;
   stream_parameters.parm.capture.timeperframe.denominator = mode->den;
   if (-1 == xioctl (v4l2->fd, VIDIOC_S_PARM, &stream_parameters)) {
