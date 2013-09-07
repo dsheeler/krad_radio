@@ -25,6 +25,7 @@ typedef struct {
   kr_adapter_path *path;
   kr_image image;
   kr_audio audio;
+  int put;
   void *user;
 } kr_adapter_path_av_cb_arg;
 

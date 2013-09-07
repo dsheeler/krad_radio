@@ -16,6 +16,8 @@ struct kr_transponder_path {
   kr_audio audio;
   kr_image image;
 
+  uint8_t pixels[4000000];
+
   void *user;
   kr_transponder_path_event_cb *ev_cb;
   kr_transponder *xpdr;

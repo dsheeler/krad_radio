@@ -15,6 +15,7 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
   cb_arg.path = (kr_adapter_path *)arg->user;
   cb_arg.user = cb_arg.path->user;
   cb_arg.image = image;
+  cb_arg.put = 0;
   cb_arg.path->av_cb(&cb_arg);
 
   if (((time(NULL)) % 5) == 0) {
@@ -31,7 +32,7 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
     return 1;
   }
 
-  return 0;
+  return 1;
 }
 
 void wayland_adapter_path_event_cb(kr_wayland_cb_arg *arg) {

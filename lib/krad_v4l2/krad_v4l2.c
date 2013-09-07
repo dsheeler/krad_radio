@@ -75,8 +75,8 @@ int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image) {
     }
   }
 
-  /*  v4l2->timestamp = buf.timestamp;
-  return v4l2->buffers[buf.index].start; */
+  /*  v4l2->timestamp = buf.timestamp; */
+  image->px = v4l2->frames[buf.index].start;
   image->owner = &v4l2->frames[buf.index].buf;
   return 1;
 }

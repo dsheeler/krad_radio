@@ -54,6 +54,10 @@ typedef void (kr_compositor_path_frame_cb)(kr_compositor_path_frame_cb_arg *);
 #define GREY 0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255 * 1.0
 #define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.255 / 0.255   * 1.0
 
+//FIXME
+#define KR_CMP_INPUT 667
+#define KR_CMP_OUTPUT 666
+
 struct kr_compositor_info_cb_arg {
   void *user;
 };
