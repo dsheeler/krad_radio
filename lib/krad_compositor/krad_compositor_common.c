@@ -1,7 +1,18 @@
 #include "krad_compositor_common.h"
 
-kr_compositor_control_t krad_string_to_compositor_control (char *string) {
+void kr_aspect_upscale(int sw, int sh, int dw, int dh, int *w, int *h) {
 
+  double scale_x, scale_y, scale;
+
+  scale_x = (float)dw  / sw;
+  scale_y = (float)dh / sh;
+  scale = MIN(scale_x, scale_y);
+
+  *w = sw * scale;
+  *h = sh * scale;
+}
+
+kr_compositor_control_t krad_string_to_compositor_control(char *string) {
   if (strncmp (string, "xscale", 2) == 0) {
     return KR_XSCALE;
   }
@@ -47,8 +58,7 @@ kr_compositor_control_t krad_string_to_compositor_control (char *string) {
   return 0;
 }
 
-krad_vector_type_t krad_string_to_vector_type (char *string) {
-
+krad_vector_type_t krad_string_to_vector_type(char *string) {
   if (strncmp (string, "hex", 3) == 0) {
     return HEX;
   }
@@ -85,7 +95,7 @@ krad_vector_type_t krad_string_to_vector_type (char *string) {
   return NOTHING;
 }
 
-char *kr_compositor_control_to_string (kr_compositor_control_t control) {
+char *kr_compositor_control_to_string(kr_compositor_control_t control) {
   switch ( control ) {
     case KR_NO:
       break;
@@ -116,15 +126,14 @@ char *kr_compositor_control_to_string (kr_compositor_control_t control) {
     case KR_ALPHA:
       return "alpha";
     case KR_TICKRATE:
-      return "tickrate";   
+      return "tickrate";
   }
 
   return "Unknown";
 }
 
-char *krad_vector_type_to_string (krad_vector_type_t type) {
-
-  switch ( type ) {
+char *krad_vector_type_to_string(krad_vector_type_t type) {
+  switch (type) {
     case HEX:
       return "hex";
     case CIRCLE:
@@ -148,15 +157,14 @@ char *krad_vector_type_to_string (krad_vector_type_t type) {
     case SHADOW:
       return "shadow";
     default:
-      break;    
+      break;
   }
 
   return "Unknown";
 }
 
-char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type) {
-
-  switch ( type ) {
+char *kr_compositor_subunit_type_to_string(kr_compositor_subunit_t type) {
+  switch (type) {
     case KR_SPRITE:
       return "sprite";
     case KR_TEXT:
@@ -166,14 +174,12 @@ char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type) {
     case KR_VIDEOPORT:
       return "videoport";
     default:
-      break;    
+      break;
   }
-
   return "Unknown";
 }
 
-kr_compositor_subunit_t kr_string_to_comp_subunit_type (char *string) {
-
+kr_compositor_subunit_t kr_string_to_comp_subunit_type(char *string) {
   if (strncmp (string, "sprite", 6) == 0) {
     return KR_SPRITE;
   }
@@ -186,6 +192,5 @@ kr_compositor_subunit_t kr_string_to_comp_subunit_type (char *string) {
   if (strncmp (string, "videoport", 9) == 0) {
     return KR_VIDEOPORT;
   }
-
   return 0;
 }

@@ -131,6 +131,9 @@ struct krad_compositor_rep_St {
   uint64_t frames;
   char background_filename[256];
 };
+
+void kr_aspect_upscale(int srcw, int srch, int dstw, int dsth, int *w, int *h);
+
 char *kr_compositor_control_to_string (kr_compositor_control_t control);
 char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
 krad_vector_type_t krad_string_to_vector_type (char *string);
