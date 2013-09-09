@@ -68,30 +68,30 @@ void kr_vector_type_set(kr_vector *vector, char *type) {
   }
 }
 
-int kr_vector_to_rep(kr_vector *vector, krad_vector_rep_t *vector_rep) {
+int kr_vector_to_info(kr_vector *vector, kr_vector_info *vector_info) {
 
-  if ((vector == NULL) || (vector_rep == NULL)) {
+  if ((vector == NULL) || (vector_info == NULL)) {
     return 0;
   }
 
-  vector_rep->type = vector->type;
+  vector_info->type = vector->type;
 
-  //vector_rep->controls.red = vector->subunit->red;
-  //vector_rep->controls.green = vector->subunit->green;
-  //vector_rep->controls.blue = vector->subunit->blue;
+  //vector_info->controls.red = vector->subunit->red;
+  //vector_info->controls.green = vector->subunit->green;
+  //vector_info->controls.blue = vector->subunit->blue;
 
-  vector_rep->controls.x = vector->subunit.x;
-  vector_rep->controls.y = vector->subunit.y;
-  vector_rep->controls.z = vector->subunit.z;
+  vector_info->controls.x = vector->subunit.x;
+  vector_info->controls.y = vector->subunit.y;
+  vector_info->controls.z = vector->subunit.z;
 
-  vector_rep->controls.width = vector->subunit.width;
-  vector_rep->controls.height = vector->subunit.height;
+  vector_info->controls.width = vector->subunit.width;
+  vector_info->controls.height = vector->subunit.height;
 
-  vector_rep->controls.xscale = vector->subunit.xscale;
-  vector_rep->controls.yscale = vector->subunit.yscale;
+  vector_info->controls.xscale = vector->subunit.xscale;
+  vector_info->controls.yscale = vector->subunit.yscale;
 
-  vector_rep->controls.rotation = vector->subunit.rotation;
-  vector_rep->controls.opacity = vector->subunit.opacity;
+  vector_info->controls.rotation = vector->subunit.rotation;
+  vector_info->controls.opacity = vector->subunit.opacity;
 
   return 1;
 }

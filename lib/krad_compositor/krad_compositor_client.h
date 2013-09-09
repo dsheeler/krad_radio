@@ -15,7 +15,7 @@
 
 typedef struct kr_videoport_St kr_videoport_t;
 
-int kr_compositor_crate_to_rep (kr_crate_t *crate);
+int kr_compositor_crate_to_info (kr_crate_t *crate);
 int kr_compositor_crate_to_string (kr_crate_t *crate, char **string);
 
 // Public
@@ -27,7 +27,7 @@ int kr_compositor_subunit_create (kr_client_t *client,
                                   char *option2);
 void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address);
 void kr_compositor_subunit_info (kr_client_t *client, kr_address_t *address);
-void kr_compositor_info (kr_client_t *client);
+void kr_compositor_info_get(kr_client_t *client);
 void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denominator);
 int kr_compositor_set_resolution (kr_client_t *client, uint32_t width, uint32_t height);
 

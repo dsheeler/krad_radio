@@ -32,6 +32,6 @@ void krad_text_set_text (kr_text *krad_text, char *text, char *font);
 void krad_text_prerender_cancel(kr_text *krad_text, cairo_t *cr);
 void krad_text_prerender(kr_text *krad_text, cairo_t *cr);
 void kr_text_render(kr_text *text, cairo_t *cr);
-int kr_text_to_rep(kr_text *text, krad_text_rep_t *text_rep);
+int kr_text_to_info(kr_text *text, kr_text_info *text_rep);
 
 #endif

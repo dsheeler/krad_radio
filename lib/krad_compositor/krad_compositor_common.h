@@ -56,21 +56,16 @@ typedef enum {
   KR_VIEW_BR_Y
 } kr_compositor_control_t;
 
-typedef struct krad_text_rep_St krad_text_rep_t;
-typedef struct krad_text_rep_St kr_text_t;
-typedef struct krad_sprite_rep_St krad_sprite_rep_t;
-typedef struct krad_sprite_rep_St kr_sprite_t;
-typedef struct krad_vector_rep_St krad_vector_rep_t;
-typedef struct krad_vector_rep_St kr_vector_t;
-typedef struct krad_port_rep_St krad_port_rep_t;
-typedef struct krad_port_rep_St kr_port_t;
-typedef struct krad_port_rep_St kr_compositor_path_info;
-typedef struct kr_compositor_subunit_controls_St kr_compositor_subunit_controls_t;
-typedef struct kr_compositor_subunit_controls_St kr_comp_controls_t;
-typedef struct krad_compositor_rep_St krad_compositor_rep_t;
-typedef struct krad_compositor_rep_St kr_compositor_t;
+typedef struct kr_text_info kr_text_info;
+typedef struct kr_sprite_info kr_sprite_info;
+typedef struct kr_vector_info kr_vector_info;
+typedef struct kr_compositor_path_info kr_compositor_path_info;
 
-struct kr_compositor_subunit_controls_St {
+typedef struct kr_compositor_subunit_controls kr_compositor_subunit_controls_t;
+typedef struct kr_compositor_subunit_controls kr_comp_controls_t;
+typedef struct kr_compositor_info kr_compositor_info;
+
+struct kr_compositor_subunit_controls {
   int32_t x;
   int32_t y;
   uint32_t z;
@@ -83,12 +78,12 @@ struct kr_compositor_subunit_controls_St {
   float opacity;
 };
 
-struct krad_sprite_rep_St {
+struct kr_sprite_info {
   char filename[256];
   kr_comp_controls_t controls;
 };
 
-struct krad_text_rep_St {
+struct kr_text_info {
   char text[1024];
   char font[128];
   float red;
@@ -97,7 +92,7 @@ struct krad_text_rep_St {
   kr_comp_controls_t controls;
 };
 
-struct krad_vector_rep_St {
+struct kr_vector_info {
   krad_vector_type_t type;
   float red;
   float green;
@@ -105,7 +100,7 @@ struct krad_vector_rep_St {
   kr_comp_controls_t controls;
 };
 
-struct krad_port_rep_St {
+struct kr_compositor_path_info {
   char sysname[128];
   int32_t direction;
   uint32_t source_width;
@@ -118,7 +113,7 @@ struct krad_port_rep_St {
   kr_comp_controls_t controls;
 };
 
-struct krad_compositor_rep_St {
+struct kr_compositor_info {
   uint32_t width;
   uint32_t height;
   uint32_t fps_numerator;
@@ -134,12 +129,12 @@ struct krad_compositor_rep_St {
 
 void kr_aspect_upscale(int srcw, int srch, int dstw, int dsth, int *w, int *h);
 
-char *kr_compositor_control_to_string (kr_compositor_control_t control);
-char *kr_compositor_subunit_type_to_string (kr_compositor_subunit_t type);
-krad_vector_type_t krad_string_to_vector_type (char *string);
-kr_compositor_control_t krad_string_to_compositor_control (char *string);
-char *krad_vector_type_to_string (krad_vector_type_t type);
-kr_compositor_subunit_t kr_string_to_comp_subunit_type (char *string);
+char *kr_compositor_control_to_string(kr_compositor_control_t control);
+char *kr_compositor_subunit_type_to_string(kr_compositor_subunit_t type);
+krad_vector_type_t krad_string_to_vector_type(char *string);
+kr_compositor_control_t krad_string_to_compositor_control(char *string);
+char *krad_vector_type_to_string(krad_vector_type_t type);
+kr_compositor_subunit_t kr_string_to_comp_subunit_type(char *string);
 
 #define kr_comp_strfsubtype kr_compositor_subunit_type_to_string
 

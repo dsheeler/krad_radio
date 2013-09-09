@@ -181,12 +181,12 @@ typedef union {
   kr_remote_t *remote;
   kr_mixer_info *mixer;
   kr_mixer_path_info *portgroup;
-  kr_compositor_t *compositor;
+  kr_compositor_info *compositor;
   kr_radio_t *radio;
-  kr_sprite_t *sprite;
-  kr_text_t *text;
-  kr_vector_t *vector;
-  kr_port_t *videoport;
+  kr_sprite_info *sprite;
+  kr_text_info *text;
+  kr_vector_info *vector;
+  kr_compositor_path_info *videoport;
 } kr_rep_ptr_t;
 
 
@@ -196,11 +196,11 @@ typedef union {
   kr_remote_t remote;
   kr_mixer_info mixer;
   kr_mixer_path_info portgroup;
-  kr_compositor_t compositor;
-  kr_sprite_t sprite;
-  kr_text_t text;
-  kr_vector_t vector;
-  kr_port_t videoport;
+  kr_compositor_info compositor;
+  kr_sprite_info sprite;
+  kr_text_info text;
+  kr_vector_info vector;
+  kr_compositor_path_info videoport;
   kr_radio_t radio;
 } kr_rep_actual_t;
 

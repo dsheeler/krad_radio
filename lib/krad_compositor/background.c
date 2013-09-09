@@ -1,4 +1,4 @@
-void krad_compositor_unset_background(krad_compositor_t *compositor) {
+void krad_compositor_unset_background(kr_compositor *compositor) {
   if (compositor->background->subunit.active != 1) {
     return;
   }
@@ -8,7 +8,7 @@ void krad_compositor_unset_background(krad_compositor_t *compositor) {
   compositor->background->subunit.active = 0;
 }
 
-void krad_compositor_set_background(krad_compositor_t *compositor,
+void krad_compositor_set_background(kr_compositor *compositor,
  char *filename) {
   krad_compositor_unset_background(compositor);
   if ((filename == NULL) || (strlen(filename) == 0)) {
@@ -21,7 +21,7 @@ void krad_compositor_set_background(krad_compositor_t *compositor,
   }
 }
 
-int krad_compositor_get_background_name(krad_compositor_t *compositor,
+int krad_compositor_get_background_name(kr_compositor *compositor,
  char **filename) {
 
   if ((filename == NULL) || (compositor->background->subunit.active != 1)) {
@@ -31,7 +31,7 @@ int krad_compositor_get_background_name(krad_compositor_t *compositor,
   return 1;
 }
 
-static void krad_compositor_render_background(krad_compositor_t *compositor) {
+static void krad_compositor_render_background(kr_compositor *compositor) {
   if (compositor->background->subunit.active != 1) {
     return;
   }
@@ -46,14 +46,14 @@ static void krad_compositor_render_background(krad_compositor_t *compositor) {
   cairo_restore(compositor->cr);
 }
 
-int krad_compositor_has_background(krad_compositor_t *compositor) {
+int krad_compositor_has_background(kr_compositor *compositor) {
   if (compositor->background->subunit.active == 1) {
     return 1;
   }
   return 0;
 }
 
-void krad_compositor_render_no_input(krad_compositor_t *compositor) {
+void krad_compositor_render_no_input(kr_compositor *compositor) {
   cairo_save(compositor->cr);
   if ((compositor->frames % 24) < 12) {
     cairo_set_source_rgba(compositor->cr, RED, 0.0f + ((compositor->frames % 12) * 0.09f));
@@ -69,7 +69,7 @@ void krad_compositor_render_no_input(krad_compositor_t *compositor) {
   cairo_restore(compositor->cr);
 }
 
-void krad_compositor_clear_frame(krad_compositor_t *compositor) {
+void krad_compositor_clear_frame(kr_compositor *compositor) {
   cairo_save(compositor->cr);
   cairo_set_source_rgba(compositor->cr, BGCOLOR_CLR);
   cairo_set_operator(compositor->cr, CAIRO_OPERATOR_SOURCE);

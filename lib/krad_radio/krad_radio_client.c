@@ -742,7 +742,7 @@ int kr_uncrate_rep (kr_crate_t *crate) {
       kr_mixer_crate_to_rep (crate);
       return 1;
     case KR_COMPOSITOR:
-      kr_compositor_crate_to_rep (crate);
+      kr_compositor_crate_to_info(crate);
       return 1;
     case KR_TRANSPONDER:
       break;

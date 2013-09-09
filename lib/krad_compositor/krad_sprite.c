@@ -566,28 +566,28 @@ void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr) {
 }
 
 
-int kr_sprite_to_rep(kr_sprite *sprite, krad_sprite_rep_t *sprite_rep) {
+int kr_sprite_to_info(kr_sprite *sprite, kr_sprite_info *info) {
 
-  if ((sprite == NULL) || (sprite_rep == NULL)) {
+  if ((sprite == NULL) || (info == NULL)) {
     return 0;
   }
 
-  strcpy (sprite_rep->filename, sprite->filename);
+  strcpy(info->filename, sprite->filename);
 
-  sprite_rep->controls.x = sprite->subunit.x;
-  sprite_rep->controls.y = sprite->subunit.y;
-  sprite_rep->controls.z = sprite->subunit.z;
+  info->controls.x = sprite->subunit.x;
+  info->controls.y = sprite->subunit.y;
+  info->controls.z = sprite->subunit.z;
 
-  sprite_rep->controls.tickrate = sprite->tickrate;
+  info->controls.tickrate = sprite->tickrate;
 
-  sprite_rep->controls.width = sprite->subunit.width;
-  sprite_rep->controls.height = sprite->subunit.height;
+  info->controls.width = sprite->subunit.width;
+  info->controls.height = sprite->subunit.height;
 
-  sprite_rep->controls.xscale = sprite->subunit.xscale;
-  sprite_rep->controls.yscale = sprite->subunit.yscale;
+  info->controls.xscale = sprite->subunit.xscale;
+  info->controls.yscale = sprite->subunit.yscale;
 
-  sprite_rep->controls.rotation = sprite->subunit.rotation;
-  sprite_rep->controls.opacity = sprite->subunit.opacity;
+  info->controls.rotation = sprite->subunit.rotation;
+  info->controls.opacity = sprite->subunit.opacity;
 
   return 1;
 }

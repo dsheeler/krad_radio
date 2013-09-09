@@ -2,7 +2,7 @@
 #include "krad_radio_client_internal.h"
 #include "krad_compositor_common.h"
 
-static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *comp);
+static void kr_ebml_to_compositor_info(kr_ebml2_t *ebml, kr_compositor_info *comp);
 static int kr_compositor_crate_get_string_from_subunit (kr_crate_t *crate, char **string);
 
 typedef struct kr_videoport_St kr_videoport_t;
@@ -135,7 +135,7 @@ int kr_compositor_set_resolution (kr_client_t *client, uint32_t width, uint32_t 
   return 0;
 }
 
-void kr_compositor_info (kr_client_t *client) {
+void kr_compositor_info_get(kr_client_t *client) {
 
   unsigned char *command;
   unsigned char *info_command;
@@ -148,7 +148,7 @@ void kr_compositor_info (kr_client_t *client) {
   kr_client_push (client);
 }
 
-static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *comp) {
+static void kr_ebml_to_compositor_info(kr_ebml2_t *ebml, kr_compositor_info *comp) {
 
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &comp->height);
@@ -168,7 +168,7 @@ static void kr_ebml_to_compositor_rep (kr_ebml2_t *ebml, kr_compositor_t *comp) 
                                   sizeof(comp->background_filename));
 }
 
-static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
+static void kr_ebml_to_videoport_info(kr_ebml2_t *ebml, kr_compositor_path_info *port) {
   kr_ebml2_unpack_element_string (ebml, NULL,
                                   port->sysname, sizeof(port->sysname));
   kr_ebml2_unpack_element_int32 (ebml, NULL, &port->direction );
@@ -195,7 +195,7 @@ static void kr_ebml_to_videoport_rep (kr_ebml2_t *ebml, kr_port_t *port) {
   kr_ebml2_unpack_element_float (ebml, NULL, &port->controls.rotation);
 }
 
-static void kr_ebml_to_sprite_rep (kr_ebml2_t *ebml, kr_sprite_t *sprite) {
+static void kr_ebml_to_sprite_info(kr_ebml2_t *ebml, kr_sprite_info *sprite) {
 
   kr_ebml2_unpack_element_string (ebml, NULL,
                                   sprite->filename, sizeof(sprite->filename));
@@ -212,7 +212,7 @@ static void kr_ebml_to_sprite_rep (kr_ebml2_t *ebml, kr_sprite_t *sprite) {
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.rotation);
 }
 
-static void kr_ebml_to_vector_rep (kr_ebml2_t *ebml, kr_vector_t *vector) {
+static void kr_ebml_to_vector_info(kr_ebml2_t *ebml, kr_vector_info *vector) {
 
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->type);
 
@@ -230,7 +230,7 @@ static void kr_ebml_to_vector_rep (kr_ebml2_t *ebml, kr_vector_t *vector) {
   kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.rotation);
 }
 
-static void kr_ebml_to_text_rep (kr_ebml2_t *ebml, kr_text_t *text) {
+static void kr_ebml_to_text_info(kr_ebml2_t *ebml, kr_text_info *text) {
 
   kr_ebml2_unpack_element_string (ebml, NULL, text->text, sizeof(text->text));
   kr_ebml2_unpack_element_string (ebml, NULL, text->font, sizeof(text->font));
@@ -253,11 +253,11 @@ static void kr_ebml_to_text_rep (kr_ebml2_t *ebml, kr_text_t *text) {
 int kr_compositor_crate_to_string_from_compositor (kr_crate_t *crate, char **string) {
 
   int pos;
-  kr_compositor_t kr_compositor;
+  kr_compositor_info kr_compositor;
 
   pos = 0;
 
-  kr_ebml_to_compositor_rep (&crate->payload_ebml, &kr_compositor);
+  kr_ebml_to_compositor_info (&crate->payload_ebml, &kr_compositor);
   pos += sprintf (*string + pos, "Compositor Status:\n");
   pos += sprintf (*string + pos, "Resolution: %ux%u\n", kr_compositor.width, kr_compositor.height);
   pos += sprintf (*string + pos, "Frame Rate: %u / %u\n",
@@ -279,11 +279,11 @@ int kr_compositor_crate_to_string_from_compositor (kr_crate_t *crate, char **str
 int kr_compositor_crate_to_string_from_sprite (kr_crate_t *crate, char **string) {
 
   int pos;
-  kr_sprite_t sprite;
+  kr_sprite_info sprite;
 
   pos = 0;
 
-  kr_ebml_to_sprite_rep (&crate->payload_ebml, &sprite);
+  kr_ebml_to_sprite_info (&crate->payload_ebml, &sprite);
   pos += sprintf (*string + pos, "Sprite: %s\n", sprite.filename);
   pos += sprintf (*string + pos, "X: %d\n", sprite.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", sprite.controls.y);
@@ -300,11 +300,11 @@ int kr_compositor_crate_to_string_from_sprite (kr_crate_t *crate, char **string)
 int kr_compositor_crate_to_string_from_text (kr_crate_t *crate, char **string) {
 
   int pos;
-  kr_text_t text;
+  kr_text_info text;
 
   pos = 0;
 
-  kr_ebml_to_text_rep (&crate->payload_ebml, &text);
+  kr_ebml_to_text_info (&crate->payload_ebml, &text);
   pos += sprintf (*string + pos, "Text: %s\n", text.text);
   pos += sprintf (*string + pos, "Font: %s\n", text.font);
   pos += sprintf (*string + pos, "Red: %4.2f Green: %4.2f Blue: %4.2f\n",
@@ -324,11 +324,11 @@ int kr_compositor_crate_to_string_from_text (kr_crate_t *crate, char **string) {
 int kr_compositor_crate_to_string_from_vector (kr_crate_t *crate, char **string) {
 
   int pos;
-  kr_vector_t vector;
+  kr_vector_info vector;
 
   pos = 0;
 
-  kr_ebml_to_vector_rep (&crate->payload_ebml, &vector);
+  kr_ebml_to_vector_info (&crate->payload_ebml, &vector);
   pos += sprintf (*string + pos, "Vector: %s\n", krad_vector_type_to_string (vector.type));
   pos += sprintf (*string + pos, "Width: %d\n", vector.controls.width);
   pos += sprintf (*string + pos, "Height: %d\n", vector.controls.height);
@@ -346,11 +346,11 @@ int kr_compositor_crate_to_string_from_vector (kr_crate_t *crate, char **string)
 int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **string) {
 
   int pos;
-  kr_port_t port;
+  kr_compositor_path_info port;
 
   pos = 0;
 
-  kr_ebml_to_videoport_rep (&crate->payload_ebml, &port);
+  kr_ebml_to_videoport_info (&crate->payload_ebml, &port);
   //FIXME
   if (port.direction == 0) {
     pos += sprintf (*string + pos, "Video Output Port: %s\n", port.sysname);
@@ -400,11 +400,11 @@ static int kr_compositor_crate_get_string_from_subunit (kr_crate_t *crate, char 
   return 0;
 }
 
-int kr_compositor_crate_to_rep (kr_crate_t *crate) {
+int kr_compositor_crate_to_info (kr_crate_t *crate) {
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_UNIT) &&
       (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
     crate->contains = KR_COMPOSITOR;
-    kr_ebml_to_compositor_rep (&crate->payload_ebml, &crate->rep.compositor);
+    kr_ebml_to_compositor_info (&crate->payload_ebml, &crate->rep.compositor);
 
     crate->client->width = crate->rep.compositor.width;
     crate->client->height = crate->rep.compositor.height;
@@ -416,25 +416,25 @@ int kr_compositor_crate_to_rep (kr_crate_t *crate) {
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_SPRITE) &&
       ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_SPRITE;
-    kr_ebml_to_sprite_rep (&crate->payload_ebml, &crate->rep.sprite);
+    kr_ebml_to_sprite_info (&crate->payload_ebml, &crate->rep.sprite);
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_TEXT) &&
       ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_TEXT;
-    kr_ebml_to_text_rep (&crate->payload_ebml, &crate->rep.text);
+    kr_ebml_to_text_info (&crate->payload_ebml, &crate->rep.text);
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_VECTOR) &&
       ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_VECTOR;
-    kr_ebml_to_vector_rep (&crate->payload_ebml, &crate->rep.vector);
+    kr_ebml_to_vector_info (&crate->payload_ebml, &crate->rep.vector);
     return 1;
   }
   if ((crate->address.path.unit == KR_COMPOSITOR) && (crate->address.path.subunit.zero == KR_VIDEOPORT) &&
       ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO))) {
     crate->contains = KR_VIDEOPORT;
-    kr_ebml_to_videoport_rep (&crate->payload_ebml, &crate->rep.videoport);
+    kr_ebml_to_videoport_info (&crate->payload_ebml, &crate->rep.videoport);
     return 1;
   }
   return 0;
@@ -774,7 +774,7 @@ int kr_compositor_get_info_wait (kr_client_t *client,
   crate = NULL;
   wait_ms = 750;
 
-  kr_compositor_info (client);
+  kr_compositor_info_get(client);
 
   while (kr_delivery_get_until_final (client, &crate, wait_ms)) {
     if (crate != NULL) {

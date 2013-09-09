@@ -55,6 +55,6 @@ void kr_vector_reset(kr_vector *vector);
 void kr_vector_type_set(kr_vector *vector, char *type);
 void kr_vector_render(kr_vector *vector, cairo_t *cr);
 
-int kr_vector_to_rep(kr_vector *vector, krad_vector_rep_t *krad_vector_rep);
+int kr_vector_to_info(kr_vector *vector, kr_vector_info *info);
 
 #endif

@@ -43,6 +43,6 @@ int krad_sprite_open_file(kr_sprite *krad_sprite, char *filename);
 
 void krad_sprite_set_tickrate(kr_sprite *krad_sprite, int tickrate);
 void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr);
-int kr_sprite_to_rep(kr_sprite *sprite, krad_sprite_rep_t *sprite_rep);
+int kr_sprite_to_info(kr_sprite *sprite, kr_sprite_info *info);
 
 #endif

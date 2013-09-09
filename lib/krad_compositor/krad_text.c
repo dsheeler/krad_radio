@@ -132,7 +132,7 @@ void kr_text_render(kr_text *krad_text, cairo_t *cr) {
   krad_compositor_subunit_tick (&krad_text->subunit);
 }
 
-int kr_text_to_rep(kr_text *text, krad_text_rep_t *text_rep) {
+int kr_text_to_info(kr_text *text, kr_text_info *text_rep) {
 
   if ((text == NULL) || (text_rep == NULL)) {
     return 0;

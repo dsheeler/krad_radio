@@ -1,5 +1,5 @@
-#ifndef KRAD_COMPOSITOR_PORT_H
-#define KRAD_COMPOSITOR_PORT_H
+#ifndef KRAD_COMPOSITOR_PATH_H
+#define KRAD_COMPOSITOR_PATH_H
 
 #include "krad_compositor_subunit.h"
 #include "krad_perspective.h"
@@ -8,7 +8,7 @@
 
 struct kr_compositor_path {
 
-  krad_compositor_t *krad_compositor;
+  kr_compositor *compositor;
 
   char sysname[128];
   int direction;
@@ -57,4 +57,4 @@ struct kr_compositor_path {
   int socketpair[2];
 };
 
-#endif // KRAD_COMPOSITOR_PORT_H
+#endif
