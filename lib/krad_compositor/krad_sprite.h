@@ -11,14 +11,14 @@
 #include <gif_lib.h>
 #endif
 
-typedef struct krad_sprite_St krad_sprite_t;
+typedef struct kr_sprite kr_sprite;
 
 #include "krad_compositor_subunit.h"
 #include "krad_file.h"
 
 #define KRAD_SPRITE_DEFAULT_TICKRATE 4
 
-struct krad_sprite_St {
+struct kr_sprite {
   char filename[256];
   int frames;
   int tick;
@@ -33,15 +33,16 @@ struct krad_sprite_St {
   krad_compositor_subunit_t subunit;
 };
 
-krad_sprite_t *krad_sprite_create ();
-krad_sprite_t *krad_sprite_create_arr (int count);
-void krad_sprite_destroy (krad_sprite_t *krad_sprite);
-void krad_sprite_destroy_arr (krad_sprite_t *krad_sprite, int count);
-krad_sprite_t *krad_sprite_create_from_file (char *filename);
-void krad_sprite_reset (krad_sprite_t *krad_sprite);
-int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename);
+kr_sprite *krad_sprite_create();
+kr_sprite *krad_sprite_create_arr(int count);
+void krad_sprite_destroy(kr_sprite *krad_sprite);
+void krad_sprite_destroy_arr(kr_sprite *krad_sprite, int count);
+kr_sprite *krad_sprite_create_from_file(char *filename);
+void krad_sprite_reset(kr_sprite *krad_sprite);
+int krad_sprite_open_file(kr_sprite *krad_sprite, char *filename);
 
-void krad_sprite_set_tickrate (krad_sprite_t *krad_sprite, int tickrate);
-void krad_sprite_render (krad_sprite_t *krad_sprite, cairo_t *cr);
-int krad_sprite_to_rep (krad_sprite_t *sprite, krad_sprite_rep_t *sprite_rep);
+void krad_sprite_set_tickrate(kr_sprite *krad_sprite, int tickrate);
+void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr);
+int kr_sprite_to_rep(kr_sprite *sprite, krad_sprite_rep_t *sprite_rep);
+
 #endif

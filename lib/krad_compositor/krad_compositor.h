@@ -105,13 +105,13 @@ struct kr_compositor {
 
   int frame_byte_size;
 
-  krad_sprite_t *sprite;
+  kr_sprite *sprite;
   int active_sprites;
 
-  krad_text_t *text;
+  kr_text *text;
   int active_texts;
 
-  krad_vector_t *vector;
+  kr_vector *vector;
   int active_vectors;
 
   krad_compositor_port_t *port;
@@ -121,7 +121,7 @@ struct kr_compositor {
 
   krad_compositor_subunit_t *subunit[KC_MAX_SUBUNITS];
 
-  krad_sprite_t *background;
+  kr_sprite *background;
 
   krad_ticker_t *krad_ticker;
   int ticker_running;

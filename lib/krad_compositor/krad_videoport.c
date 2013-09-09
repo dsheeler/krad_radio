@@ -1,6 +1,5 @@
-static int krad_compositor_local_videoport_notify(krad_compositor_port_t *port);
-static void krad_compositor_port_destroy_actual(kr_compositor *compositor,
- krad_compositor_port_t *port);
+static int local_videoport_notify(krad_compositor_port_t *port);
+static void port_destroy_actual(kr_compositor *compositor, krad_compositor_port_t *port);
 
 void krad_compositor_port_tick(krad_compositor_port_t *port) {
   krad_compositor_subunit_tick(&port->subunit);
@@ -14,7 +13,7 @@ void krad_compositor_port_tick(krad_compositor_port_t *port) {
   }
 }
 
-void krad_compositor_videoport_render(krad_compositor_port_t *port, cairo_t *cr) {
+void kr_videoport_render(krad_compositor_port_t *port, cairo_t *cr) {
 
   krad_frame_t *frame;
 
@@ -75,7 +74,7 @@ static void krad_compositor_notify_local_ports(kr_compositor *compositor) {
     if ((compositor->port[i].subunit.active == 1) &&
         (compositor->port[i].direction == KR_CMP_INPUT) &&
         (compositor->port[i].local == 1)) {
-      ret = krad_compositor_local_videoport_notify(&compositor->port[i]);
+      ret = local_videoport_notify(&compositor->port[i]);
       if (ret == -2) {
         krad_compositor_port_destroy(compositor, &compositor->port[i]);
       }
@@ -396,7 +395,7 @@ void krad_compositor_port_push_frame(krad_compositor_port_t *port,
   }
 }
 
-static int krad_compositor_local_videoport_notify(krad_compositor_port_t *port) {
+static int local_videoport_notify(krad_compositor_port_t *port) {
 
   int ret;
   int wrote;
@@ -559,8 +558,8 @@ krad_compositor_port_t *krad_compositor_port_create(kr_compositor *compositor,
   return krad_compositor_port_create_full(compositor, sysname, direction, width, height, 0, 0);
 }
 
-krad_compositor_port_t *krad_compositor_port_create_full (kr_compositor *krad_compositor, char *sysname, int direction,
-                           int width, int height, int holdlock, int local) {
+krad_compositor_port_t *krad_compositor_port_create_full(kr_compositor *krad_compositor,
+ char *sysname, int direction, int width, int height, int holdlock, int local) {
 
   krad_compositor_port_t *port;
   int p;
@@ -667,7 +666,7 @@ krad_compositor_port_t *krad_compositor_port_create_full (kr_compositor *krad_co
   return port;
 }
 
-krad_compositor_port_t *krad_compositor_local_port_create (kr_compositor *krad_compositor,
+krad_compositor_port_t *krad_compositor_local_port_create(kr_compositor *krad_compositor,
                                char *sysname, int direction, int shm_sd, int msg_sd) {
 
   krad_compositor_port_t *port;
@@ -683,7 +682,7 @@ krad_compositor_port_t *krad_compositor_local_port_create (kr_compositor *krad_c
   port->shm_sd = shm_sd;
   port->msg_sd = msg_sd;
 
-  port->local_buffer = mmap (NULL, port->local_buffer_size,
+  port->local_buffer = mmap(NULL, port->local_buffer_size,
                          PROT_READ | PROT_WRITE, MAP_SHARED,
                          port->shm_sd, 0);
 
@@ -724,7 +723,7 @@ void krad_compositor_port_destroy(kr_compositor *krad_compositor, krad_composito
   port->subunit.active = 2;
 }
 
-static void krad_compositor_port_destroy_actual(kr_compositor *krad_compositor, krad_compositor_port_t *port) {
+static void port_destroy_actual(kr_compositor *krad_compositor, krad_compositor_port_t *port) {
 
   if (port->direction == KR_CMP_INPUT) {
     krad_compositor->active_input_ports--;

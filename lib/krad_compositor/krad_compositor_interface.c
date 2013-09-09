@@ -1,6 +1,6 @@
 #include "krad_compositor_interface.h"
 
-void krad_compositor_videoport_rep_to_ebml2 (kr_port_t *port, kr_ebml2_t *ebml) {
+void kr_videoport_rep_to_ebml(kr_port_t *port, kr_ebml *ebml) {
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, port->sysname);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->direction);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, port->controls.x);
@@ -29,8 +29,7 @@ void krad_compositor_videoport_rep_to_ebml2 (kr_port_t *port, kr_ebml2_t *ebml) 
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, port->controls.rotation);
 }
 
-void krad_compositor_text_rep_to_ebml2 (krad_text_rep_t *text, kr_ebml2_t *ebml) {
-
+void kr_text_rep_to_ebml(krad_text_rep_t *text, kr_ebml *ebml) {
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, text->text);
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_FONT, text->font);
   kr_ebml2_pack_float (ebml,
@@ -52,7 +51,7 @@ void krad_compositor_text_rep_to_ebml2 (krad_text_rep_t *text, kr_ebml2_t *ebml)
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, text->controls.rotation);
 }
 
-void krad_compositor_sprite_rep_to_ebml2 (krad_sprite_rep_t *sprite, kr_ebml2_t *ebml) {
+void kr_sprite_rep_to_ebml(krad_sprite_rep_t *sprite, kr_ebml *ebml) {
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, sprite->filename);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, sprite->controls.x);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.y);
@@ -66,7 +65,7 @@ void krad_compositor_sprite_rep_to_ebml2 (krad_sprite_rep_t *sprite, kr_ebml2_t 
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, sprite->controls.rotation);
 }
 
-void krad_compositor_vector_rep_to_ebml2 (krad_vector_rep_t *vector, kr_ebml2_t *ebml) {
+void kr_vector_rep_to_ebml(krad_vector_rep_t *vector, kr_ebml *ebml) {
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->type);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.width);
   kr_ebml2_pack_int32 (ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.height);
@@ -79,7 +78,7 @@ void krad_compositor_vector_rep_to_ebml2 (krad_vector_rep_t *vector, kr_ebml2_t 
   kr_ebml2_pack_float (ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, vector->controls.rotation);
 }
 
-int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videoport_rep) {
+int kr_videoport_to_rep(krad_compositor_port_t *videoport, kr_port_t *videoport_rep) {
 
   if ((videoport == NULL) || (videoport_rep == NULL)) {
     return 0;
@@ -112,7 +111,7 @@ int krad_videoport_to_rep (krad_compositor_port_t *videoport, kr_port_t *videopo
   return 1;
 }
 
-void krad_compositor_to_ebml ( kr_ebml2_t *ebml, krad_compositor_t *krad_compositor ) {
+void kr_compositor_to_ebml(kr_ebml *ebml, kr_compositor *krad_compositor) {
 
   char *name;
 
@@ -140,28 +139,28 @@ void krad_compositor_to_ebml ( kr_ebml2_t *ebml, krad_compositor_t *krad_composi
   kr_ebml2_pack_string (ebml, EBML_ID_KRAD_COMPOSITOR_LAST_SNAPSHOT_NAME, name);
 }
 
-void krad_compositor_sprite_to_ebml2 ( kr_ebml2_t *ebml, krad_sprite_t *sprite ) {
+void kr_sprite_to_ebml(kr_ebml *ebml, kr_sprite *sprite) {
   krad_sprite_rep_t sprite_rep;
-  krad_sprite_to_rep (sprite, &sprite_rep);
-  krad_compositor_sprite_rep_to_ebml2 (&sprite_rep, ebml);
+  kr_sprite_to_rep(sprite, &sprite_rep);
+  kr_sprite_rep_to_ebml(&sprite_rep, ebml);
 }
 
-void krad_compositor_text_to_ebml2 ( kr_ebml2_t *ebml, krad_text_t *text ) {
+void kr_text_to_ebml(kr_ebml *ebml, kr_text *text) {
   krad_text_rep_t text_rep;
-  krad_text_to_rep (text, &text_rep);
-  krad_compositor_text_rep_to_ebml2 (&text_rep, ebml);
+  kr_text_to_rep(text, &text_rep);
+  kr_text_rep_to_ebml(&text_rep, ebml);
 }
 
-void krad_compositor_vector_to_ebml2 ( kr_ebml2_t *ebml, krad_vector_t *vector ) {
+void kr_vector_to_ebml(kr_ebml *ebml, kr_vector *vector) {
   krad_vector_rep_t vector_rep;
-  krad_vector_to_rep (vector, &vector_rep);
-  krad_compositor_vector_rep_to_ebml2 (&vector_rep, ebml);
+  kr_vector_to_rep(vector, &vector_rep);
+  kr_vector_rep_to_ebml(&vector_rep, ebml);
 }
 
-void krad_compositor_videoport_to_ebml2 ( kr_ebml2_t *ebml, krad_compositor_port_t *videoport ) {
+void kr_videoport_to_ebml(kr_ebml *ebml, krad_compositor_port_t *videoport) {
   kr_port_t videoport_rep;
-  krad_videoport_to_rep (videoport, &videoport_rep);
-  krad_compositor_videoport_rep_to_ebml2 (&videoport_rep, ebml);
+  kr_videoport_to_rep(videoport, &videoport_rep);
+  kr_videoport_rep_to_ebml(&videoport_rep, ebml);
 }
 
 int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
@@ -283,50 +282,42 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_LIST_SUBUNITS:
       for (s = 0; s < KC_MAX_SPRITES; s++) {
         if (krad_compositor->sprite[s].subunit.active == 1) {
-          krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->sprite[s].subunit.address);
-          kr_ebml2_pack_uint32 ( &ebml_out,
-                                 EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                 EBML_ID_KRAD_SUBUNIT_INFO);
-          kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          krad_compositor_sprite_to_ebml2 ( &ebml_out, &krad_compositor->sprite[s]);
-          kr_ebml2_finish_element (&ebml_out, payload);
-          kr_ebml2_finish_element (&ebml_out, response);
+          krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->sprite[s].subunit.address);
+          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+          kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+          kr_sprite_to_ebml(&ebml_out, &krad_compositor->sprite[s]);
+          kr_ebml2_finish_element(&ebml_out, payload);
+          kr_ebml2_finish_element(&ebml_out, response);
         }
       }
       for (s = 0; s < KC_MAX_TEXTS; s++) {
         if (krad_compositor->text[s].subunit.active == 1) {
-          krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->text[s].subunit.address);
-          kr_ebml2_pack_uint32 ( &ebml_out,
-                                 EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                 EBML_ID_KRAD_SUBUNIT_INFO);
+          krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->text[s].subunit.address);
+          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
           kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          krad_compositor_text_to_ebml2 ( &ebml_out, &krad_compositor->text[s]);
-          kr_ebml2_finish_element (&ebml_out, payload);
-          kr_ebml2_finish_element (&ebml_out, response);
+          kr_text_to_ebml(&ebml_out, &krad_compositor->text[s]);
+          kr_ebml2_finish_element(&ebml_out, payload);
+          kr_ebml2_finish_element(&ebml_out, response);
         }
       }
       for (s = 0; s < KC_MAX_VECTORS; s++) {
         if (krad_compositor->vector[s].subunit.active == 1) {
-          krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->vector[s].subunit.address);
-          kr_ebml2_pack_uint32 ( &ebml_out,
-                                 EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                 EBML_ID_KRAD_SUBUNIT_INFO);
-          kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          krad_compositor_vector_to_ebml2 ( &ebml_out, &krad_compositor->vector[s]);
-          kr_ebml2_finish_element (&ebml_out, payload);
-          kr_ebml2_finish_element (&ebml_out, response);
+          krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->vector[s].subunit.address);
+          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+          kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+          kr_vector_to_ebml(&ebml_out, &krad_compositor->vector[s]);
+          kr_ebml2_finish_element(&ebml_out, payload);
+          kr_ebml2_finish_element(&ebml_out, response);
         }
       }
       for (s = 0; s < KC_MAX_PORTS; s++) {
         if (krad_compositor->port[s].subunit.active == 1) {
-          krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->port[s].subunit.address);
-          kr_ebml2_pack_uint32 ( &ebml_out,
-                                 EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                 EBML_ID_KRAD_SUBUNIT_INFO);
+          krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->port[s].subunit.address);
+          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
           kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          krad_compositor_videoport_to_ebml2 ( &ebml_out, &krad_compositor->port[s]);
-          kr_ebml2_finish_element (&ebml_out, payload);
-          kr_ebml2_finish_element (&ebml_out, response);
+          kr_videoport_to_ebml(&ebml_out, &krad_compositor->port[s]);
+          kr_ebml2_finish_element(&ebml_out, payload);
+          kr_ebml2_finish_element(&ebml_out, response);
         }
       }
       break;
@@ -340,50 +331,42 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       switch (address.path.subunit.compositor_subunit) {
         case KR_VIDEOPORT:
           if (krad_compositor->port[s].subunit.active == 1) {
-            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->port[s].subunit.address);
-            kr_ebml2_pack_uint32 ( &ebml_out,
-                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                   EBML_ID_KRAD_SUBUNIT_INFO);
-            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-            krad_compositor_videoport_to_ebml2 ( &ebml_out, &krad_compositor->port[s]);
-            kr_ebml2_finish_element (&ebml_out, payload);
-            kr_ebml2_finish_element (&ebml_out, response);
+            krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->port[s].subunit.address);
+            kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            kr_videoport_to_ebml(&ebml_out, &krad_compositor->port[s]);
+            kr_ebml2_finish_element(&ebml_out, payload);
+            kr_ebml2_finish_element(&ebml_out, response);
           }
           break;
         case KR_SPRITE:
           if (krad_compositor->sprite[s].subunit.active == 1) {
-            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->sprite[s].subunit.address);
-            kr_ebml2_pack_uint32 ( &ebml_out,
-                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                   EBML_ID_KRAD_SUBUNIT_INFO);
-            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-            krad_compositor_sprite_to_ebml2 ( &ebml_out, &krad_compositor->sprite[s]);
-            kr_ebml2_finish_element (&ebml_out, payload);
-            kr_ebml2_finish_element (&ebml_out, response);
+            krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->sprite[s].subunit.address);
+            kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            kr_sprite_to_ebml(&ebml_out, &krad_compositor->sprite[s]);
+            kr_ebml2_finish_element(&ebml_out, payload);
+            kr_ebml2_finish_element(&ebml_out, response);
           }
           break;
         case KR_TEXT:
           if (krad_compositor->text[s].subunit.active == 1) {
-            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->text[s].subunit.address);
-            kr_ebml2_pack_uint32 ( &ebml_out,
-                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                   EBML_ID_KRAD_SUBUNIT_INFO);
-            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-            krad_compositor_text_to_ebml2 ( &ebml_out, &krad_compositor->text[s]);
-            kr_ebml2_finish_element (&ebml_out, payload);
-            kr_ebml2_finish_element (&ebml_out, response);
+            krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->text[s].subunit.address);
+            kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            kr_text_to_ebml(&ebml_out, &krad_compositor->text[s]);
+            kr_ebml2_finish_element(&ebml_out, payload);
+            kr_ebml2_finish_element(&ebml_out, response);
           }
           break;
         case KR_VECTOR:
           if (krad_compositor->vector[s].subunit.active == 1) {
-            krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_compositor->vector[s].subunit.address);
-            kr_ebml2_pack_uint32 ( &ebml_out,
-                                   EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
-                                   EBML_ID_KRAD_SUBUNIT_INFO);
-            kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-            krad_compositor_vector_to_ebml2 ( &ebml_out, &krad_compositor->vector[s]);
-            kr_ebml2_finish_element (&ebml_out, payload);
-            kr_ebml2_finish_element (&ebml_out, response);
+            krad_radio_address_to_ebml2(&ebml_out, &response, &krad_compositor->vector[s].subunit.address);
+            kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+            kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+            kr_vector_to_ebml(&ebml_out, &krad_compositor->vector[s]);
+            kr_ebml2_finish_element(&ebml_out, payload);
+            kr_ebml2_finish_element(&ebml_out, response);
           }
           break;
       }
@@ -395,7 +378,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
        EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-      krad_compositor_to_ebml(&ebml_out, krad_compositor);
+      kr_compositor_to_ebml(&ebml_out, krad_compositor);
       kr_ebml2_finish_element(&ebml_out, payload);
       kr_ebml2_finish_element(&ebml_out, response);
       break;

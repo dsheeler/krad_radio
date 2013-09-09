@@ -1,13 +1,13 @@
 #include "krad_sprite.h"
 
-static void krad_sprite_tick (krad_sprite_t *krad_sprite);
+static void kr_sprite_tick (kr_sprite *krad_sprite);
 
-void krad_sprite_destroy (krad_sprite_t *krad_sprite) {
+void krad_sprite_destroy (kr_sprite *krad_sprite) {
   krad_sprite_reset (krad_sprite);
   free (krad_sprite);
 }
 
-void krad_sprite_destroy_arr (krad_sprite_t *krad_sprite, int count) {
+void krad_sprite_destroy_arr (kr_sprite *krad_sprite, int count) {
 
   int s;
 
@@ -20,14 +20,14 @@ void krad_sprite_destroy_arr (krad_sprite_t *krad_sprite, int count) {
   free (krad_sprite);
 }
 
-krad_sprite_t *krad_sprite_create_arr (int count) {
+kr_sprite *krad_sprite_create_arr (int count) {
 
   int s;
-  krad_sprite_t *krad_sprite;
+  kr_sprite *krad_sprite;
 
   s = 0;
 
-  if ((krad_sprite = calloc (count, sizeof (krad_sprite_t))) == NULL) {
+  if ((krad_sprite = calloc (count, sizeof (kr_sprite))) == NULL) {
     failfast ("Krad Sprite mem alloc fail");
   }
 
@@ -41,14 +41,14 @@ krad_sprite_t *krad_sprite_create_arr (int count) {
   return krad_sprite;
 }
 
-krad_sprite_t *krad_sprite_create () {
+kr_sprite *krad_sprite_create () {
   return krad_sprite_create_arr (1);
 }
 
 
-krad_sprite_t *krad_sprite_create_from_file (char *filename) {
+kr_sprite *krad_sprite_create_from_file (char *filename) {
 
-  krad_sprite_t *krad_sprite;
+  kr_sprite *krad_sprite;
 
   krad_sprite = krad_sprite_create ();
   krad_sprite_open_file (krad_sprite, filename);
@@ -336,7 +336,7 @@ cairo_surface_t **gif2surface (char *filename, int *frames) {
 }
 #endif
 
-int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
+int krad_sprite_open_file (kr_sprite *krad_sprite, char *filename) {
 
   int64_t size;
 
@@ -461,7 +461,7 @@ int krad_sprite_open_file (krad_sprite_t *krad_sprite, char *filename) {
   return 1;
 }
 
-void krad_sprite_reset (krad_sprite_t *krad_sprite) {
+void krad_sprite_reset (kr_sprite *krad_sprite) {
 
   int i;
 
@@ -489,11 +489,11 @@ void krad_sprite_reset (krad_sprite_t *krad_sprite) {
   krad_compositor_subunit_reset (&krad_sprite->subunit);
 }
 
-void krad_sprite_set_tickrate (krad_sprite_t *krad_sprite, int tickrate) {
+void krad_sprite_set_tickrate (kr_sprite *krad_sprite, int tickrate) {
   krad_sprite->tickrate = tickrate;
 }
 
-static void krad_sprite_tick (krad_sprite_t *krad_sprite) {
+static void kr_sprite_tick(kr_sprite *krad_sprite) {
 
   krad_sprite->tick++;
 
@@ -510,7 +510,7 @@ static void krad_sprite_tick (krad_sprite_t *krad_sprite) {
   krad_compositor_subunit_tick (&krad_sprite->subunit);
 }
 
-void krad_sprite_render (krad_sprite_t *krad_sprite, cairo_t *cr) {
+void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr) {
 
   cairo_save (cr);
 
@@ -562,11 +562,11 @@ void krad_sprite_render (krad_sprite_t *krad_sprite, cairo_t *cr) {
 
   cairo_restore (cr);
 
-  krad_sprite_tick (krad_sprite);
+  kr_sprite_tick(krad_sprite);
 }
 
 
-int krad_sprite_to_rep (krad_sprite_t *sprite, krad_sprite_rep_t *sprite_rep) {
+int kr_sprite_to_rep(kr_sprite *sprite, krad_sprite_rep_t *sprite_rep) {
 
   if ((sprite == NULL) || (sprite_rep == NULL)) {
     return 0;

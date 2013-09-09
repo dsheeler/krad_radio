@@ -1,13 +1,13 @@
 #include "krad_text.h"
 
-static void krad_text_set_font (krad_text_t *text, char *font);
+static void krad_text_set_font (kr_text *text, char *font);
 
-void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
-  
+void krad_text_destroy_arr (kr_text *krad_text, int count) {
+
   int s;
-  
+
   s = 0;
-  
+
   for (s = 0; s < count; s++) {
     krad_text_reset (&krad_text[s]);
   }
@@ -15,17 +15,17 @@ void krad_text_destroy_arr (krad_text_t *krad_text, int count) {
   free (krad_text);
 }
 
-krad_text_t *krad_text_create_arr (FT_Library *ft_library, int count) {
+kr_text *krad_text_create_arr (FT_Library *ft_library, int count) {
 
   int s;
-  krad_text_t *krad_text;
+  kr_text *krad_text;
 
   s = 0;
 
-  if ((krad_text = calloc (count, sizeof (krad_text_t))) == NULL) {
+  if ((krad_text = calloc (count, sizeof (kr_text))) == NULL) {
     failfast ("Krad Text mem alloc fail");
   }
-  
+
   for (s = 0; s < count; s++) {
     krad_text[s].ft_library = ft_library;
     krad_text[s].subunit.address.path.unit = KR_COMPOSITOR;
@@ -33,11 +33,11 @@ krad_text_t *krad_text_create_arr (FT_Library *ft_library, int count) {
     krad_text[s].subunit.address.id.number = s;
     krad_text_reset (&krad_text[s]);
   }
-  
+
   return krad_text;
 }
 
-void krad_text_reset (krad_text_t *krad_text) {
+void krad_text_reset (kr_text *krad_text) {
 
   if (krad_text->cr_face != NULL) {
     cairo_font_face_destroy (krad_text->cr_face);
@@ -48,13 +48,13 @@ void krad_text_reset (krad_text_t *krad_text) {
   krad_compositor_subunit_reset (&krad_text->subunit);
 }
 
-void krad_text_set_text (krad_text_t *krad_text, char *text, char *font) {
+void krad_text_set_text (kr_text *krad_text, char *text, char *font) {
   strcpy (krad_text->text_actual, text);
   krad_text->subunit.xscale = 42.0f;
   krad_text_set_font (krad_text, font);
 }
 
-static void krad_text_set_font (krad_text_t *text, char *font) {
+static void krad_text_set_font (kr_text *text, char *font) {
 
   static const cairo_user_data_key_t key;
   int status;
@@ -79,14 +79,14 @@ static void krad_text_set_font (krad_text_t *text, char *font) {
   }
 }
 
-void krad_text_prerender_cancel(krad_text_t *krad_text, cairo_t *cr) {
+void krad_text_prerender_cancel(kr_text *krad_text, cairo_t *cr) {
   if (krad_text->prerendered == 1) {
     cairo_restore(cr);
     krad_text->prerendered = 0;
   }
 }
 
-void krad_text_prerender(krad_text_t *krad_text, cairo_t *cr) {
+void krad_text_prerender(kr_text *krad_text, cairo_t *cr) {
 
   cairo_text_extents_t extents;
 
@@ -101,7 +101,7 @@ void krad_text_prerender(krad_text_t *krad_text, cairo_t *cr) {
   } else {
     cairo_select_font_face (cr, krad_text->font,
                             CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_NORMAL);  
+                            CAIRO_FONT_WEIGHT_NORMAL);
   }
   cairo_set_font_size (cr, krad_text->subunit.xscale);
   cairo_set_source_rgba (cr,
@@ -111,19 +111,19 @@ void krad_text_prerender(krad_text_t *krad_text, cairo_t *cr) {
                          krad_text->subunit.opacity);
   cairo_text_extents (cr, krad_text->text_actual, &extents);
   krad_text->subunit.width = extents.width;
-  krad_text->subunit.height = extents.height;  
+  krad_text->subunit.height = extents.height;
   cairo_translate (cr, krad_text->subunit.x, krad_text->subunit.y);
   if (krad_text->subunit.rotation != 0.0f) {
     cairo_translate (cr, krad_text->subunit.width / 2,
                      krad_text->subunit.height / -2);
     cairo_rotate (cr, krad_text->subunit.rotation * (M_PI/180.0));
     cairo_translate (cr, krad_text->subunit.width / -2,
-                     krad_text->subunit.height / 2);    
+                     krad_text->subunit.height / 2);
   }
   krad_text->prerendered = 1;
 }
 
-void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
+void kr_text_render(kr_text *krad_text, cairo_t *cr) {
   krad_text_prerender(krad_text, cr);
   cairo_show_text(cr, krad_text->text_actual);
   cairo_stroke (cr);
@@ -132,30 +132,30 @@ void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
   krad_compositor_subunit_tick (&krad_text->subunit);
 }
 
-int krad_text_to_rep (krad_text_t *text, krad_text_rep_t *text_rep) {
-  
+int kr_text_to_rep(kr_text *text, krad_text_rep_t *text_rep) {
+
   if ((text == NULL) || (text_rep == NULL)) {
     return 0;
   }
-  
+
   strncpy (text_rep->text, text->text_actual, sizeof(text_rep->text));
   strncpy (text_rep->font, text->font, sizeof(text_rep->font));
-  
+
   text_rep->red = text->subunit.red;
   text_rep->green = text->subunit.green;
   text_rep->blue = text->subunit.blue;
-  
+
   text_rep->controls.x = text->subunit.x;
   text_rep->controls.y = text->subunit.y;
   text_rep->controls.z = text->subunit.z;
-  
+
   text_rep->controls.width = text->subunit.width;
   text_rep->controls.height = text->subunit.height;
-    
+
   text_rep->controls.xscale = text->subunit.xscale;
-    
+
   text_rep->controls.rotation = text->subunit.rotation;
   text_rep->controls.opacity = text->subunit.opacity;
-   
+
   return 1;
 }

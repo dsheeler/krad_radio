@@ -27,46 +27,45 @@ static void setup(kr_compositor *compositor) {
     compositor->frame = krad_framepool_getframe(compositor->framepool);
     if (compositor->frame == NULL) {
       printke("Compositor wanted a frame but could not get one right away!");
-      usleep(5000);
+      usleep(1000);
     }
   }
   compositor->cr = cairo_create(compositor->frame->cst);
-  if (krad_compositor_has_background(compositor)) {
-    krad_compositor_render_background(compositor);
-  } else {
-    krad_compositor_clear_frame(compositor);
-  }
 }
 
 static void composite(kr_compositor *compositor) {
   int i;
-  /* Handle situation of maybe having absolutly no input */
-  if ((compositor->active_input_ports == 0) &&
-      (compositor->active_sprites == 0) &&
-      (compositor->active_texts == 0) &&
-      (compositor->active_vectors == 0) &&
-      (compositor->background->subunit.active == 0)) {
-      krad_compositor_render_no_input(compositor);
+  if (krad_compositor_has_background(compositor)) {
+    krad_compositor_render_background(compositor);
+  } else {
+    krad_compositor_clear_frame(compositor);
+    if ((compositor->active_input_ports == 0) &&
+        (compositor->active_sprites == 0) &&
+        (compositor->active_texts == 0) &&
+        (compositor->active_vectors == 0) &&
+        (compositor->background->subunit.active == 0)) {
+        krad_compositor_render_no_input(compositor);
+    }
   }
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if ((compositor->port[i].subunit.active == 1) &&
         (compositor->port[i].direction == KR_CMP_INPUT)) {
-        krad_compositor_videoport_render(&compositor->port[i], compositor->cr);
+        kr_videoport_render(&compositor->port[i], compositor->cr);
     }
   }
   for (i = 0; i < KC_MAX_SPRITES; i++) {
     if (compositor->sprite[i].subunit.active == 1) {
-      krad_sprite_render(&compositor->sprite[i], compositor->cr);
+      kr_sprite_render(&compositor->sprite[i], compositor->cr);
     }
   }
   for (i = 0; i < KC_MAX_VECTORS; i++) {
     if (compositor->vector[i].subunit.active == 1) {
-      krad_vector_render(&compositor->vector[i], compositor->cr);
+      kr_vector_render(&compositor->vector[i], compositor->cr);
     }
   }
   for (i = 0; i < KC_MAX_TEXTS; i++) {
     if (compositor->text[i].subunit.active == 1) {
-      krad_text_render(&compositor->text[i], compositor->cr);
+      kr_text_render(&compositor->text[i], compositor->cr);
     }
   }
 }
@@ -84,10 +83,8 @@ static void output(kr_compositor *compositor) {
 static void cleanup(kr_compositor *compositor) {
   krad_compositor_notify_local_ports(compositor);
   krad_framepool_unref_frame(compositor->frame);
-  if (compositor->cr != NULL) {
-    cairo_destroy(compositor->cr);
-  }
   compositor->frame = NULL;
+  cairo_destroy(compositor->cr);
   subunits_state_update(compositor);
 }
 
@@ -104,7 +101,7 @@ static void subunits_state_update(kr_compositor *compositor) {
   int i;
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if (compositor->port[i].subunit.active == 2) {
-        krad_compositor_port_destroy_actual(compositor, &compositor->port[i]);
+        port_destroy_actual(compositor, &compositor->port[i]);
         krad_compositor_subunit_reset(&compositor->port[i].subunit);
         compositor->port[i].subunit.active = 0;
     }
@@ -125,7 +122,7 @@ static void subunits_state_update(kr_compositor *compositor) {
   }
   for (i = 0; i < KC_MAX_VECTORS; i++) {
     if (compositor->vector[i].subunit.active == 2) {
-      krad_vector_reset(&compositor->vector[i]);
+      kr_vector_reset(&compositor->vector[i]);
       compositor->active_vectors--;
       compositor->vector[i].subunit.active = 0;
     }
@@ -451,7 +448,7 @@ int krad_compositor_subunit_create(kr_compositor *compositor,
       for (i = 0; i < KC_MAX_VECTORS; i++) {
         if (compositor->vector[i].subunit.active == 0) {
           if (krad_string_to_vector_type(option) != NOTHING) {
-            krad_vector_set_type(&compositor->vector[i], option);
+            kr_vector_type_set(&compositor->vector[i], option);
             compositor->vector[i].subunit.active = 1;
             compositor->active_vectors++;
             return i;
@@ -540,7 +537,7 @@ static void ports_free(kr_compositor *compositor) {
   int i;
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if (compositor->port[i].subunit.active == 1) {
-      krad_compositor_port_destroy_actual(compositor, &compositor->port[i]);
+      port_destroy_actual(compositor, &compositor->port[i]);
     }
   }
   free(compositor->port);
@@ -564,7 +561,7 @@ static void subunits_free(kr_compositor *compositor) {
   ports_free(compositor);
   krad_sprite_destroy_arr(compositor->sprite, KC_MAX_SPRITES);
   krad_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
-  krad_vector_destroy_arr(compositor->vector, KC_MAX_VECTORS);
+  kr_vectors_free(compositor->vector, KC_MAX_VECTORS);
 }
 
 static void subunits_init(kr_compositor *compositor) {
@@ -592,7 +589,7 @@ static void subunits_create(kr_compositor *compositor) {
   ports_create(compositor);
   compositor->sprite = krad_sprite_create_arr(KC_MAX_SPRITES);
   compositor->text = krad_text_create_arr(&compositor->ft_library, KC_MAX_TEXTS);
-  compositor->vector = krad_vector_create_arr(KC_MAX_VECTORS);
+  compositor->vector = kr_vectors_create(KC_MAX_VECTORS);
   subunits_init(compositor);
 }
 

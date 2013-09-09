@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <fcntl.h>  
+#include <fcntl.h>
 #include <time.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -41,21 +41,20 @@
 #define BGCOLOR_TRANS  0.033 / 0.255 * 1.0, 0.033 / 0.255 * 1.0, 0.033 / 0.255 * 1.0, 0.144 / 0.255 * 1.0
 #define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255   * 1.0, 0.255 / 0.255   * 1.0
 
-typedef struct krad_vector_St krad_vector_t;
+typedef struct kr_vector kr_vector;
 
-struct krad_vector_St {
+struct kr_vector {
   krad_vector_type_t type;
   krad_compositor_subunit_t subunit;
 };
 
-krad_vector_t *krad_vector_create_arr (int count);
-void krad_vector_destroy_arr (krad_vector_t *vector, int count);
+kr_vector *kr_vectors_create(int count);
+void kr_vectors_free(kr_vector *vector, int count);
 
-void krad_vector_reset (krad_vector_t *vector);
-void krad_vector_set_type (krad_vector_t *vector, char *type);
+void kr_vector_reset(kr_vector *vector);
+void kr_vector_type_set(kr_vector *vector, char *type);
+void kr_vector_render(kr_vector *vector, cairo_t *cr);
 
-void krad_vector_render (krad_vector_t *krad_vector, cairo_t *cr);
-
-int krad_vector_to_rep (krad_vector_t *krad_vector, krad_vector_rep_t *krad_vector_rep);
+int kr_vector_to_rep(kr_vector *vector, krad_vector_rep_t *krad_vector_rep);
 
 #endif

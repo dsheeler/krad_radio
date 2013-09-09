@@ -55,13 +55,13 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
 
   if (address->path.unit == KR_COMPOSITOR) {
     if (address->path.subunit.compositor_subunit == KR_SPRITE) {
-      krad_compositor_sprite_to_ebml2(&ebml, subunit_in);
+      kr_sprite_to_ebml(&ebml, subunit_in);
     }
     if (address->path.subunit.compositor_subunit == KR_TEXT) {
-      krad_compositor_text_to_ebml2(&ebml, subunit_in);
+      kr_text_to_ebml(&ebml, subunit_in);
     }
     if (address->path.subunit.compositor_subunit == KR_VECTOR) {
-      krad_compositor_vector_to_ebml2(&ebml, subunit_in);
+      kr_vector_to_ebml(&ebml, subunit_in);
     }
   }
 
