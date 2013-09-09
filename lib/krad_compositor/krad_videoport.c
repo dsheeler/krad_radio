@@ -659,10 +659,6 @@ krad_compositor_port_t *krad_compositor_port_create_full(kr_compositor *krad_com
     port->subunit.active = 1;
   }
 
-  if (krad_compositor->had_a_subunit == 0) {
-    krad_compositor->had_a_subunit = 1;
-  }
-
   return port;
 }
 

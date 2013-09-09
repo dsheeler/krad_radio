@@ -89,11 +89,11 @@ struct kr_compositor_path_setup {
 };
 
 struct kr_compositor {
-
   cairo_t *cr;
 
   krad_frame_t *frame;
   krad_framepool_t *framepool;
+  int frame_byte_size;
 
   int width;
   int height;
@@ -103,7 +103,8 @@ struct kr_compositor {
   uint64_t frames;
   uint64_t timecode;
 
-  int frame_byte_size;
+  FT_Library ft_library;
+  kr_sprite *background;
 
   kr_sprite *sprite;
   int active_sprites;
@@ -120,21 +121,6 @@ struct kr_compositor {
   int active_input_ports;
 
   krad_compositor_subunit_t *subunit[KC_MAX_SUBUNITS];
-
-  kr_sprite *background;
-
-  krad_ticker_t *krad_ticker;
-  int ticker_running;
-  int ticker_period;
-  pthread_t ticker_thread;
-
-  struct timespec start_time;
-  kr_address_t address;
-
-  FT_Library ft_library;
-
-  int had_a_subunit;
-
 };
 
 int krad_compositor_subunit_create (krad_compositor_t *compositor,
