@@ -489,7 +489,7 @@ void krad_sprite_reset (kr_sprite *krad_sprite) {
   krad_compositor_subunit_reset (&krad_sprite->subunit);
 }
 
-void krad_sprite_set_tickrate (kr_sprite *krad_sprite, int tickrate) {
+void krad_sprite_set_tickrate(kr_sprite *krad_sprite, int tickrate) {
   krad_sprite->tickrate = tickrate;
 }
 

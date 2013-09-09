@@ -136,7 +136,7 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
   }
 
   if (uc->address.path.unit == KR_COMPOSITOR) {
-    switch ( uc->address.path.subunit.compositor_subunit ) {
+    switch (uc->address.path.subunit.compositor_subunit) {
       case KR_SPRITE:
         if (uc->address.id.number < KC_MAX_SPRITES) {
           if (compositor->sprite[uc->address.id.number].subunit.active == 1) {
@@ -144,16 +144,16 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
               case KR_NO:
                 break;
               case KR_X:
-                krad_compositor_subunit_set_x (&compositor->sprite[uc->address.id.number].subunit,
-                                               uc->value.integer, uc->duration);
+                krad_compositor_subunit_set_x(&compositor->sprite[uc->address.id.number].subunit,
+                                              uc->value.integer, uc->duration);
                 break;
               case KR_Y:
-                krad_compositor_subunit_set_y (&compositor->sprite[uc->address.id.number].subunit,
-                                               uc->value.integer, uc->duration);
+                krad_compositor_subunit_set_y(&compositor->sprite[uc->address.id.number].subunit,
+                                              uc->value.integer, uc->duration);
                 break;
               case KR_Z:
-                krad_compositor_subunit_set_z (&compositor->sprite[uc->address.id.number].subunit,
-                                               uc->value.integer);
+                krad_compositor_subunit_set_z(&compositor->sprite[uc->address.id.number].subunit,
+                                              uc->value.integer);
                 break;
               case KR_WIDTH:
                 krad_compositor_subunit_set_width (&compositor->sprite[uc->address.id.number].subunit,
@@ -560,8 +560,9 @@ static void paths_create(kr_compositor *compositor) {
 static void subunits_free(kr_compositor *compositor) {
   paths_free(compositor);
   krad_sprite_destroy_arr(compositor->sprite, KC_MAX_SPRITES);
-  krad_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
   kr_vectors_free(compositor->vector, KC_MAX_VECTORS);
+  krad_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
+  FT_Done_FreeType(compositor->ftlib);
 }
 
 static void subunits_init(kr_compositor *compositor) {
@@ -587,8 +588,9 @@ static void subunits_init(kr_compositor *compositor) {
 
 static void subunits_create(kr_compositor *compositor) {
   paths_create(compositor);
+  FT_Init_FreeType(&compositor->ftlib);
+  compositor->text = krad_text_create_arr(&compositor->ftlib, KC_MAX_TEXTS);
   compositor->sprite = krad_sprite_create_arr(KC_MAX_SPRITES);
-  compositor->text = krad_text_create_arr(&compositor->ft_library, KC_MAX_TEXTS);
   compositor->vector = kr_vectors_create(KC_MAX_VECTORS);
   subunits_init(compositor);
 }
@@ -602,7 +604,6 @@ int kr_compositor_destroy(kr_compositor *compositor) {
   subunits_free(compositor);
   krad_framepool_destroy(&compositor->framepool);
   krad_sprite_destroy(compositor->background);
-  FT_Done_FreeType(compositor->ft_library);
   free(compositor);
 
   printk("Krad Compositor: Destroy Complete");
@@ -617,7 +618,6 @@ kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
   if (setup == NULL) return NULL;
 
   compositor = calloc(1, sizeof(kr_compositor));
-  FT_Init_FreeType(&compositor->ft_library);
   krad_compositor_set_resolution(compositor, setup->width, setup->height);
   krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
   subunits_create(compositor);

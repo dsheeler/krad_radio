@@ -11,15 +11,15 @@
 
 #include <libswscale/swscale.h>
 
-typedef struct kr_compositor_path kr_compositor_path;
-typedef struct kr_compositor_path kr_comp_path;
 typedef struct kr_compositor kr_compositor;
+typedef struct kr_compositor_path kr_compositor_path;
+
+typedef struct kr_compositor_setup kr_compositor_setup;
+typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
 
 typedef struct kr_compositor_path_setup kr_compositor_path_setup;
 typedef struct kr_compositor_path_frame_cb_arg kr_compositor_path_frame_cb_arg;
 typedef struct kr_compositor_path_info_cb_arg kr_compositor_path_info_cb_arg;
-typedef struct kr_compositor_setup kr_compositor_setup;
-typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
 
 typedef void (kr_compositor_info_cb)(kr_compositor_info_cb_arg *);
 typedef void (kr_compositor_path_info_cb)(kr_compositor_path_info_cb_arg *);
@@ -100,7 +100,7 @@ struct kr_compositor {
   uint64_t frames;
   uint64_t timecode;
 
-  FT_Library ft_library;
+  FT_Library ftlib;
   kr_sprite *background;
 
   kr_sprite *sprite;
@@ -116,52 +116,34 @@ struct kr_compositor {
   int active_paths;
   int active_output_paths;
   int active_input_paths;
-
   krad_compositor_subunit_t *subunit[KC_MAX_SUBUNITS];
 };
 
-int krad_compositor_subunit_create (kr_compositor *compositor,
-                                    kr_compositor_subunit_t type,
-                                    char *option,
-                                    char *option2);
+int krad_compositor_subunit_create(kr_compositor *compositor, kr_compositor_subunit_t type, char *option, char *option2);
+int krad_compositor_subunit_destroy(kr_compositor *compositor, kr_address_t *address);
+void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t *uc);
 
-int krad_compositor_subunit_destroy (kr_compositor *compositor,
-                                     kr_address_t *address);
+int krad_compositor_get_background_name(kr_compositor *compositor, char **filename);
+void krad_compositor_set_background(kr_compositor *compositor, char *filename);
+void krad_compositor_unset_background(kr_compositor *compositor);
 
-void krad_compositor_subunit_update (kr_compositor *compositor,
-                                     kr_unit_control_t *uc);
+void krad_compositor_path_destroy(kr_compositor *compositor, kr_compositor_path *path);
 
-int krad_compositor_get_background_name (kr_compositor *compositor,
-                                         char **filename);
-void krad_compositor_set_background (kr_compositor *compositor,
-                                     char *filename);
+kr_compositor_path *krad_compositor_path_create(kr_compositor *compositor,
+ char *sysname, int direction, int width, int height);
+kr_compositor_path *krad_compositor_path_create_full(kr_compositor *compositor,
+ char *sysname, int direction, int width, int height, int holdlock, int local);
+kr_compositor_path *krad_compositor_local_path_create (kr_compositor *compositor,
+ char *sysname, int direction, int shm_sd, int msg_sd);
 
-void krad_compositor_unset_background (kr_compositor *compositor);
-void krad_compositor_start_ticker (kr_compositor *compositor);
-void krad_compositor_start_ticker_at (kr_compositor *compositor,
-                                      struct timespec start_time);
-void krad_compositor_stop_ticker (kr_compositor *compositor);
-void krad_compositor_path_destroy (kr_compositor *compositor,
-                                   kr_compositor_path *path);
-kr_compositor_path *krad_compositor_path_create (kr_compositor *compositor,
-                                             char *sysname, int direction,
-                                             int width, int height);
-kr_compositor_path *krad_compositor_path_create_full (kr_compositor *compositor,
-                                                  char *sysname, int direction,
-                                                  int width, int height,
-                                                  int holdlock, int local);
-kr_compositor_path *
-krad_compositor_local_path_create (kr_compositor *compositor,
-                                   char *sysname, int direction,
-                                   int shm_sd, int msg_sd);
-void krad_compositor_path_set_source_size (kr_compositor_path *path,
-                                           int width, int height);
+void krad_compositor_path_set_source_size (kr_compositor_path *path, int width, int height);
 void krad_compositor_path_set_comp_params (kr_compositor_path *path,
                                            int x, int y,
                                            int width, int height,
                                            int crop_x, int crop_y,
                                            int crop_width, int crop_height,
                                            float opacity, float rotation);
+
 int krad_compositor_path_get_fd (kr_compositor_path *path);
 int krad_compositor_path_frames_avail (kr_compositor_path *path);
 void krad_compositor_path_push_rgba_frame (kr_compositor_path *path,
@@ -175,6 +157,12 @@ krad_frame_t *krad_compositor_path_pull_yuv_frame (kr_compositor_path *path,
                                                    uint8_t *yuv_pixels[4],
                                                    int yuv_strides[4],
                                                    int color_depth);
+
+
+
+
+
+
 void krad_compositor_get_frame_rate (kr_compositor *compositor,
                                      int *fps_numerator, int *fps_denominator);
 void krad_compositor_get_resolution (kr_compositor *compositor,
