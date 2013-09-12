@@ -9,9 +9,8 @@
 struct kr_compositor_path {
   kr_compositor *compositor;
   char sysname[128];
-  int direction;
-  krad_frame_t *last_frame;
-  krad_ringbuffer_t *frame_ring;
+  int type;
+  krad_frame_t *frame;
   int source_width;
   int source_height;
   int crop_x;
@@ -22,47 +21,18 @@ struct kr_compositor_path {
   kr_easer crop_y_easer;
   kr_easer crop_width_easer;
   kr_easer crop_height_easer;
-  int crop_start_pixel[4];
-  struct SwsContext *sws_converter;
+  struct SwsContext *converter;
   int sws_algorithm;
-  int yuv_color_depth;
-  int io_params_updated;
-  int comp_params_updated;
-  uint64_t start_timecode;
-  int local;
-  int localframe_state;
-  int shm_sd;
-  int msg_sd;
-  char *local_buffer;
-  int local_buffer_size;
-  krad_frame_t *local_frame;
-  krad_compositor_subunit_t subunit;
   krad_perspective_t *perspective;
   kr_perspective_view_t view;
-  int socketpair[2];
+  krad_compositor_subunit_t subunit;
 };
 
-kr_compositor_path *krad_compositor_path_create(kr_compositor *compositor,
- char *sysname, int direction, int width, int height);
-kr_compositor_path *krad_compositor_path_create_full(kr_compositor *compositor,
- char *sysname, int direction, int width, int height, int holdlock, int local);
-kr_compositor_path *krad_compositor_local_path_create(kr_compositor *compositor,
- char *sysname, int direction, int shm_sd, int msg_sd);
+void kr_compositor_path_render(kr_compositor_path *path, cairo_t *cr);
+void path_release(kr_compositor *compositor, kr_compositor_path *path);
 
-void krad_compositor_path_set_source_size(kr_compositor_path *path, int width, int height);
-void krad_compositor_path_set_comp_params(kr_compositor_path *path, int x, int y,
-                                           int width, int height,
-                                           int crop_x, int crop_y,
-                                           int crop_width, int crop_height,
-                                           float opacity, float rotation);
-
-int krad_compositor_path_get_fd(kr_compositor_path *path);
-int krad_compositor_path_frames_avail(kr_compositor_path *path);
-void krad_compositor_path_push_rgba_frame(kr_compositor_path *path, krad_frame_t *frame);
-void krad_compositor_path_push_yuv_frame(kr_compositor_path *path, krad_frame_t *frame);
-void krad_compositor_path_push_frame(kr_compositor_path *path, krad_frame_t *krad_frame);
-krad_frame_t *krad_compositor_path_pull_frame(kr_compositor_path *path);
-krad_frame_t *krad_compositor_path_pull_yuv_frame(kr_compositor_path *path,
- uint8_t *yuv_pixels[4], int yuv_strides[4], int color_depth);
+int kr_compositor_unlink(kr_compositor_path *path);
+kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
+ kr_compositor_path_setup *setup);
 
 #endif

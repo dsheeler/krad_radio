@@ -98,7 +98,7 @@ static void kr_ebml_to_compositor_info(kr_ebml2_t *ebml, kr_compositor_info *com
 static void kr_ebml_to_videoport_info(kr_ebml2_t *ebml, kr_compositor_path_info *port) {
   kr_ebml2_unpack_element_string (ebml, NULL,
                                   port->sysname, sizeof(port->sysname));
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->direction );
+  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->type);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.x);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.z);
@@ -133,8 +133,6 @@ static void kr_ebml_to_sprite_info(kr_ebml2_t *ebml, kr_sprite_info *sprite) {
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.height);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.tickrate);
-  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.xscale);
-  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.yscale);
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.opacity);
   kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.rotation);
 }
@@ -142,17 +140,11 @@ static void kr_ebml_to_sprite_info(kr_ebml2_t *ebml, kr_sprite_info *sprite) {
 static void kr_ebml_to_vector_info(kr_ebml2_t *ebml, kr_vector_info *vector) {
 
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->type);
-
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.height);
-
   kr_ebml2_unpack_element_int32 (ebml, NULL, &vector->controls.x);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &vector->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.z);
-
-  kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.xscale);
-  kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.yscale);
-
   kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.opacity);
   kr_ebml2_unpack_element_float (ebml, NULL, &vector->controls.rotation);
 }
@@ -171,8 +163,6 @@ static void kr_ebml_to_text_info(kr_ebml2_t *ebml, kr_text_info *text) {
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.z);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.width);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.height);
-
-  kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.xscale);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.opacity);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.rotation);
 }
@@ -215,8 +205,6 @@ int kr_compositor_crate_to_string_from_sprite (kr_crate_t *crate, char **string)
   pos += sprintf (*string + pos, "X: %d\n", sprite.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", sprite.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", sprite.controls.z);
-  pos += sprintf (*string + pos, "Y Scale: %4.2f\n", sprite.controls.yscale);
-  pos += sprintf (*string + pos, "X Scale: %4.2f\n", sprite.controls.xscale);
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", sprite.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", sprite.controls.rotation);
   pos += sprintf (*string + pos, "Tickrate: %d\n", sprite.controls.tickrate);
@@ -241,7 +229,6 @@ int kr_compositor_crate_to_string_from_text (kr_crate_t *crate, char **string) {
   pos += sprintf (*string + pos, "Z: %d\n", text.controls.z);
   pos += sprintf (*string + pos, "Width: %d\n", text.controls.width);
   pos += sprintf (*string + pos, "Height: %d\n", text.controls.height);
-  pos += sprintf (*string + pos, "Size: %4.2f\n", text.controls.xscale);
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", text.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", text.controls.rotation);
 
@@ -262,8 +249,6 @@ int kr_compositor_crate_to_string_from_vector (kr_crate_t *crate, char **string)
   pos += sprintf (*string + pos, "X: %d\n", vector.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", vector.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", vector.controls.z);
-  pos += sprintf (*string + pos, "Y Scale: %4.2f\n", vector.controls.yscale);
-  pos += sprintf (*string + pos, "X Scale: %4.2f\n", vector.controls.xscale);
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", vector.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", vector.controls.rotation);
 
@@ -279,7 +264,7 @@ int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **stri
 
   kr_ebml_to_videoport_info (&crate->payload_ebml, &port);
   //FIXME
-  if (port.direction == 0) {
+  if (port.type == 0) {
     pos += sprintf (*string + pos, "Video Output Port: %s\n", port.sysname);
     pos += sprintf (*string + pos, "Width: %d\n", port.controls.width);
     pos += sprintf (*string + pos, "Height: %d\n", port.controls.height);
@@ -482,7 +467,7 @@ void kr_videoport_destroy_cmd (kr_client_t *client) {
   kr_client_push (client);
 }
 
-void kr_videoport_create_cmd (kr_client_t *client, int32_t direction) {
+void kr_videoport_create_cmd (kr_client_t *client, int32_t type) {
 
   unsigned char *compositor_command;
   unsigned char *create_videoport;
@@ -491,7 +476,7 @@ void kr_videoport_create_cmd (kr_client_t *client, int32_t direction) {
   kr_ebml2_start_element (client->ebml2,
                           EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE,
                           &create_videoport);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_PORT_DIRECTION, direction);
+  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_PORT_DIRECTION, type);
   kr_ebml2_finish_element (client->ebml2, create_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
 
@@ -618,7 +603,7 @@ int kr_videoport_error (kr_videoport_t *videoport) {
   return -1;
 }
 
-kr_videoport_t *kr_videoport_create (kr_client_t *client, int32_t direction) {
+kr_videoport_t *kr_videoport_create (kr_client_t *client, int32_t type) {
 
   kr_videoport_t *videoport;
   int sockets[2];
@@ -657,7 +642,7 @@ kr_videoport_t *kr_videoport_create (kr_client_t *client, int32_t direction) {
   krad_system_set_socket_nonblocking (videoport->sd);
 
   krad_system_set_socket_blocking (videoport->client->krad_app_client->sd);
-  kr_videoport_create_cmd (videoport->client, direction);
+  kr_videoport_create_cmd (videoport->client, type);
   usleep (5000);
   kr_send_fd (videoport->client, videoport->kr_shm->fd);
   kr_send_fd (videoport->client, sockets[1]);

@@ -49,8 +49,8 @@ static void composite(kr_compositor *compositor) {
   }
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if ((compositor->path[i].subunit.active == 1) &&
-        (compositor->path[i].direction == KR_CMP_INPUT)) {
-        kr_videopath_render(&compositor->path[i], compositor->cr);
+        (compositor->path[i].type == KR_CMP_INPUT)) {
+        kr_compositor_path_render(&compositor->path[i], compositor->cr);
     }
   }
   for (i = 0; i < KC_MAX_SPRITES; i++) {
@@ -74,14 +74,13 @@ static void output(kr_compositor *compositor) {
   int p;
   for (p = 0; p < KC_MAX_PORTS; p++) {
     if ((compositor->path[p].subunit.active == 1) &&
-        (compositor->path[p].direction == KR_CMP_OUTPUT)) {
-      krad_compositor_path_push_frame(&compositor->path[p], compositor->frame);
+        (compositor->path[p].type == KR_CMP_OUTPUT)) {
+  //krad_compositor_path_push_frame(&compositor->path[p], compositor->frame);
     }
   }
 }
 
 static void cleanup(kr_compositor *compositor) {
-  krad_compositor_notify_local_paths(compositor);
   krad_framepool_unref_frame(compositor->frame);
   compositor->frame = NULL;
   cairo_destroy(compositor->cr);
@@ -101,7 +100,7 @@ static void subunits_state_update(kr_compositor *compositor) {
   int i;
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if (compositor->path[i].subunit.active == 2) {
-        path_destroy_actual(compositor, &compositor->path[i]);
+        path_release(compositor, &compositor->path[i]);
         krad_compositor_subunit_reset(&compositor->path[i].subunit);
         compositor->path[i].subunit.active = 0;
     }
@@ -171,14 +170,6 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
                 krad_compositor_subunit_set_opacity (&compositor->sprite[uc->address.id.number].subunit,
                                                      uc->value.real, uc->duration);
                 break;
-              case KR_XSCALE:
-                krad_compositor_subunit_set_xscale (&compositor->sprite[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
-              case KR_YSCALE:
-                krad_compositor_subunit_set_yscale (&compositor->sprite[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
               case KR_RED:
                 krad_compositor_subunit_set_red (&compositor->sprite[uc->address.id.number].subunit,
                                                  uc->value.real, uc->duration);
@@ -238,14 +229,6 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
                 krad_compositor_subunit_set_opacity (&compositor->text[uc->address.id.number].subunit,
                                                      uc->value.real, uc->duration);
                 break;
-              case KR_XSCALE:
-                krad_compositor_subunit_set_xscale (&compositor->text[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
-              case KR_YSCALE:
-                krad_compositor_subunit_set_yscale (&compositor->text[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
               case KR_RED:
                 krad_compositor_subunit_set_red (&compositor->text[uc->address.id.number].subunit,
                                                  uc->value.real, uc->duration);
@@ -301,14 +284,6 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
                 krad_compositor_subunit_set_opacity (&compositor->vector[uc->address.id.number].subunit,
                                                      uc->value.real, uc->duration);
                 break;
-              case KR_XSCALE:
-                krad_compositor_subunit_set_xscale (&compositor->vector[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
-              case KR_YSCALE:
-                krad_compositor_subunit_set_yscale (&compositor->vector[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
               case KR_RED:
                 krad_compositor_subunit_set_red (&compositor->vector[uc->address.id.number].subunit,
                                                  uc->value.real, uc->duration);
@@ -332,7 +307,7 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
       case KR_VIDEOPORT:
         if (uc->address.id.number < KC_MAX_PORTS) {
           if ((compositor->path[uc->address.id.number].subunit.active == 1) &&
-              (compositor->path[uc->address.id.number].direction == KR_CMP_INPUT)) {
+              (compositor->path[uc->address.id.number].type == KR_CMP_INPUT)) {
             switch (uc->address.control.compositor_control) {
               case KR_NO:
               case KR_TICKRATE:
@@ -376,14 +351,6 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
               case KR_OPACITY:
                 krad_compositor_subunit_set_opacity (&compositor->path[uc->address.id.number].subunit,
                                                      uc->value.real, uc->duration);
-                break;
-              case KR_XSCALE:
-                krad_compositor_subunit_set_xscale (&compositor->path[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
-                break;
-              case KR_YSCALE:
-                krad_compositor_subunit_set_yscale (&compositor->path[uc->address.id.number].subunit,
-                                                    uc->value.real, uc->duration);
                 break;
               case KR_RED:
                 krad_compositor_subunit_set_red (&compositor->path[uc->address.id.number].subunit,
@@ -527,7 +494,7 @@ static void paths_free(kr_compositor *compositor) {
   int i;
   for (i = 0; i < KC_MAX_PORTS; i++) {
     if (compositor->path[i].subunit.active == 1) {
-      path_destroy_actual(compositor, &compositor->path[i]);
+      path_release(compositor, &compositor->path[i]);
     }
   }
   free(compositor->path);

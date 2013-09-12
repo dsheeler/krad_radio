@@ -50,7 +50,6 @@ void krad_text_reset (kr_text *krad_text) {
 
 void krad_text_set_text (kr_text *krad_text, char *text, char *font) {
   strcpy (krad_text->text_actual, text);
-  krad_text->subunit.xscale = 42.0f;
   krad_text_set_font (krad_text, font);
 }
 
@@ -103,7 +102,7 @@ void krad_text_prerender(kr_text *krad_text, cairo_t *cr) {
                             CAIRO_FONT_SLANT_NORMAL,
                             CAIRO_FONT_WEIGHT_NORMAL);
   }
-  cairo_set_font_size (cr, krad_text->subunit.xscale);
+  cairo_set_font_size(cr, krad_text->subunit.height);
   cairo_set_source_rgba (cr,
                          krad_text->subunit.red,
                          krad_text->subunit.green,
@@ -140,22 +139,15 @@ int kr_text_to_info(kr_text *text, kr_text_info *text_rep) {
 
   strncpy (text_rep->text, text->text_actual, sizeof(text_rep->text));
   strncpy (text_rep->font, text->font, sizeof(text_rep->font));
-
   text_rep->red = text->subunit.red;
   text_rep->green = text->subunit.green;
   text_rep->blue = text->subunit.blue;
-
   text_rep->controls.x = text->subunit.x;
   text_rep->controls.y = text->subunit.y;
   text_rep->controls.z = text->subunit.z;
-
   text_rep->controls.width = text->subunit.width;
   text_rep->controls.height = text->subunit.height;
-
-  text_rep->controls.xscale = text->subunit.xscale;
-
   text_rep->controls.rotation = text->subunit.rotation;
   text_rep->controls.opacity = text->subunit.opacity;
-
   return 1;
 }

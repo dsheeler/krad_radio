@@ -514,15 +514,6 @@ void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr) {
 
   cairo_save (cr);
 
-  if ((krad_sprite->subunit.xscale != 1.0f) || (krad_sprite->subunit.yscale != 1.0f)) {
-    cairo_translate (cr, krad_sprite->subunit.x, krad_sprite->subunit.y);
-    cairo_translate (cr, ((krad_sprite->subunit.width / 2) * krad_sprite->subunit.xscale),
-            ((krad_sprite->subunit.height / 2) * krad_sprite->subunit.yscale));
-    cairo_scale (cr, krad_sprite->subunit.xscale, krad_sprite->subunit.yscale);
-    cairo_translate (cr, krad_sprite->subunit.width / -2, krad_sprite->subunit.height / -2);
-    cairo_translate (cr, krad_sprite->subunit.x * -1, krad_sprite->subunit.y * -1);
-  }
-
   if (krad_sprite->subunit.rotation != 0.0f) {
     cairo_translate (cr, krad_sprite->subunit.x, krad_sprite->subunit.y);
     cairo_translate (cr, krad_sprite->subunit.width / 2, krad_sprite->subunit.height / 2);
@@ -573,21 +564,13 @@ int kr_sprite_to_info(kr_sprite *sprite, kr_sprite_info *info) {
   }
 
   strcpy(info->filename, sprite->filename);
-
   info->controls.x = sprite->subunit.x;
   info->controls.y = sprite->subunit.y;
   info->controls.z = sprite->subunit.z;
-
   info->controls.tickrate = sprite->tickrate;
-
   info->controls.width = sprite->subunit.width;
   info->controls.height = sprite->subunit.height;
-
-  info->controls.xscale = sprite->subunit.xscale;
-  info->controls.yscale = sprite->subunit.yscale;
-
   info->controls.rotation = sprite->subunit.rotation;
   info->controls.opacity = sprite->subunit.opacity;
-
   return 1;
 }

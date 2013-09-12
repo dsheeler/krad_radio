@@ -39,8 +39,6 @@ typedef enum {
   KR_HEIGHT,
   KR_ROTATION,
   KR_OPACITY,
-  KR_XSCALE,
-  KR_YSCALE,
   KR_RED,
   KR_GREEN,
   KR_BLUE,
@@ -72,8 +70,6 @@ struct kr_compositor_subunit_controls {
   int32_t tickrate;
   uint32_t width;
   uint32_t height;
-  float xscale;
-  float yscale;
   float rotation;
   float opacity;
 };
@@ -102,7 +98,7 @@ struct kr_vector_info {
 
 struct kr_compositor_path_info {
   char sysname[128];
-  int32_t direction;
+  int32_t type;
   uint32_t source_width;
   uint32_t source_height;
   uint32_t crop_x;

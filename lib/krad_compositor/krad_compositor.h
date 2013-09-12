@@ -129,8 +129,6 @@ void kr_compositor_resolution_set(kr_compositor *comp, uint32_t w, uint32_t h);
 
 /* Below looks good, above replace */
 
-int kr_compositor_unlink(kr_compositor_path *path);
-
 void kr_compositor_setup_init(kr_compositor_setup *setup);
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
 int kr_compositor_destroy(kr_compositor *compositor);
@@ -139,8 +137,6 @@ int kr_compositor_process(kr_compositor *compositor);
 /*
 
  ***Paths
- kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
-  kr_compositor_path_setup *setup);
  kr_compositor_path *kr_compositor_find(kr_compositor *compositor, char *name);
  int kr_compositor_path_ctl(kr_compositor_path *p, XXX);
  int kr_compositor_path_get_info(kr_compositor_path *path,

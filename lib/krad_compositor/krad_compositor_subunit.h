@@ -4,9 +4,9 @@
 #include "krad_radio_client.h"
 #include "krad_easing.h"
 
-typedef struct krad_compositor_subunit_St krad_compositor_subunit_t;
+typedef struct kr_compositor_subunit krad_compositor_subunit_t;
 
-struct krad_compositor_subunit_St {
+struct kr_compositor_subunit {
 
   kr_compositor_subunit_t type;
   kr_address_t address;
@@ -23,9 +23,6 @@ struct krad_compositor_subunit_St {
   float rotation;
   float opacity;
 
-  float xscale;
-  float yscale;
-
   float red;
   float green;
   float blue;
@@ -37,18 +34,14 @@ struct krad_compositor_subunit_St {
   kr_easer height_easer;
   kr_easer rotation_easer;
   kr_easer opacity_easer;
-  kr_easer xscale_easer;
-  kr_easer yscale_easer;
   kr_easer red_easer;
   kr_easer green_easer;
   kr_easer blue_easer;
   kr_easer alpha_easer;
 };
 
-
 void krad_compositor_subunit_reset(krad_compositor_subunit_t *subunit);
 void krad_compositor_subunit_tick(krad_compositor_subunit_t *subunit);
-
 void krad_compositor_subunit_set_x(krad_compositor_subunit_t *subunit, int x, int duration);
 void krad_compositor_subunit_set_y(krad_compositor_subunit_t *subunit, int y, int duration);
 void krad_compositor_subunit_set_xy(krad_compositor_subunit_t *subunit, int x, int y, int duration);
@@ -57,12 +50,9 @@ void krad_compositor_subunit_set_width(krad_compositor_subunit_t *subunit, int w
 void krad_compositor_subunit_set_height(krad_compositor_subunit_t *subunit, int height, int duration);
 void krad_compositor_subunit_set_opacity(krad_compositor_subunit_t *subunit, float opacity, int duration);
 void krad_compositor_subunit_set_rotation(krad_compositor_subunit_t *subunit, float rotation, int duration);
-void krad_compositor_subunit_set_xscale(krad_compositor_subunit_t *subunit, float xscale, int duration);
-void krad_compositor_subunit_set_yscale(krad_compositor_subunit_t *subunit, float yscale, int duration);
-void krad_compositor_subunit_set_scale(krad_compositor_subunit_t *subunit, float scale, int duration);
 void krad_compositor_subunit_set_red(krad_compositor_subunit_t *subunit, float red, int duration);
 void krad_compositor_subunit_set_green(krad_compositor_subunit_t *subunit, float green, int duration);
 void krad_compositor_subunit_set_blue(krad_compositor_subunit_t *subunit, float blue, int duration);
 void krad_compositor_subunit_set_alpha(krad_compositor_subunit_t *subunit, float alpha, int duration);
 
-#endif // KRAD_COMPOSITOR_SUBUNIT_H
+#endif

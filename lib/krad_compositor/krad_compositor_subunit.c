@@ -12,8 +12,6 @@ void krad_compositor_subunit_reset(krad_compositor_subunit_t *subunit) {
   subunit->blue = 0.255 / 0.255 * 1.0;
   subunit->green = 0.255 / 0.255 * 1.0;
 
-  subunit->xscale = 1.0f;
-  subunit->yscale = 1.0f;
   subunit->opacity = 0.0f;
   //subunit->opacity = 1.0f;
   krad_compositor_subunit_set_opacity (subunit, 1.0f, 24);
@@ -43,19 +41,6 @@ void krad_compositor_subunit_set_width (krad_compositor_subunit_t *subunit, int 
 
 void krad_compositor_subunit_set_height (krad_compositor_subunit_t *subunit, int height, int duration) {
   kr_easer_set (&subunit->height_easer, height, duration, EASEINOUTSINE, NULL);
-}
-
-void krad_compositor_subunit_set_xscale (krad_compositor_subunit_t *subunit, float xscale, int duration) {
-  kr_easer_set (&subunit->xscale_easer, xscale, duration, EASEINOUTSINE, NULL);
-}
-
-void krad_compositor_subunit_set_yscale (krad_compositor_subunit_t *subunit, float yscale, int duration) {
-  kr_easer_set (&subunit->yscale_easer, yscale, duration, EASEINOUTSINE, NULL);
-}
-
-void krad_compositor_subunit_set_scale (krad_compositor_subunit_t *subunit, float scale, int duration) {
-  kr_easer_set (&subunit->xscale_easer, scale, duration, EASEINOUTSINE, NULL);
-  kr_easer_set (&subunit->yscale_easer, scale, duration, EASEINOUTSINE, NULL);
 }
 
 void krad_compositor_subunit_set_opacity (krad_compositor_subunit_t *subunit, float opacity, int duration) {
@@ -94,12 +79,6 @@ void krad_compositor_subunit_tick (krad_compositor_subunit_t *subunit) {
   }
   if (subunit->height_easer.active) {
     subunit->height = kr_easer_process(&subunit->height_easer, subunit->height, NULL);
-  }
-  if (subunit->xscale_easer.active) {
-    subunit->xscale = kr_easer_process(&subunit->xscale_easer, subunit->xscale, NULL);
-  }
-  if (subunit->yscale_easer.active) {
-    subunit->yscale = kr_easer_process(&subunit->yscale_easer, subunit->yscale, NULL);
   }
   if (subunit->opacity_easer.active) {
     subunit->opacity = kr_easer_process(&subunit->opacity_easer, subunit->opacity, NULL);

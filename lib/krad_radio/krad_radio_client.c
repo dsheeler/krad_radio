@@ -562,8 +562,6 @@ int kr_compositor_crate_to_float (kr_crate_t *crate, float *real) {
   switch ( crate->address.control.compositor_control ) {
     case KR_ROTATION:
     case KR_OPACITY:
-    case KR_XSCALE:
-    case KR_YSCALE:
     case KR_RED:
     case KR_GREEN:
     case KR_BLUE:

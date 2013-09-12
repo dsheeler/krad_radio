@@ -281,7 +281,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
       break;
     case KR_VIDEOPORT:
       controls = crate->inside.videoport->controls;
-      if (crate->inside.videoport->direction == 0) { //FIXME
+      if (crate->inside.videoport->type == 0) { //FIXME
         pos += snprintf(json + pos, sizeof(json) - pos,
          "\"port_name\":\"%s\",\"direction\":\"%s\",",
          crate->inside.videoport->sysname, "output");
@@ -300,9 +300,9 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
   }
 
   pos += snprintf(json + pos, sizeof(json) - pos,
-   "\"xscale\":%g,\"yscale\":%g,\"x\":%d,\"y\":%d,"
+   "\"x\":%d,\"y\":%d,"
    "\"z\":%d,\"r\":%g,\"o\":%g,\"width\":%d,\"height\":%d",
-   controls.xscale, controls.yscale, controls.x, controls.y, controls.z,
+   controls.x, controls.y, controls.z,
    controls.rotation, controls.opacity, controls.width, controls.height);
 
   pos += snprintf(json + pos, sizeof(json) - pos, "}]");
