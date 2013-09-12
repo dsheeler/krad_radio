@@ -9,10 +9,16 @@
 #include "krad_perspective.h"
 
 typedef enum {
+  KR_CMP_OUTPUT = 666,
+  KR_CMP_INPUT,
+  KR_CMP_BUS
+} kr_compositor_path_type;
+
+typedef enum {
   KR_VIDEOPORT = 31,
   KR_SPRITE,
   KR_TEXT,
-  KR_VECTOR,
+  KR_VECTOR
 } kr_compositor_subunit_t;
 
 typedef enum {
@@ -27,7 +33,7 @@ typedef enum {
   CURVE,
   ARROW,
   CLOCK,
-  SHADOW,
+  SHADOW
 } krad_vector_type_t;
 
 typedef enum {

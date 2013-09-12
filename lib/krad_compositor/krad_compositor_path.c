@@ -90,6 +90,13 @@ void path_release(kr_compositor *compositor, kr_compositor_path *path) {
   compositor->active_paths--;
 }
 
+kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
+ kr_compositor_path_setup *setup) {
+
+
+  return NULL;
+}
+
 int kr_compositor_unlink(kr_compositor_path *path) {
   if (path == NULL) return -1;
   if (path->subunit.active != 1) return -2;
