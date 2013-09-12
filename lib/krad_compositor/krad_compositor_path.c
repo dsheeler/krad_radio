@@ -1,7 +1,7 @@
 static int local_videopath_notify(kr_compositor_path *path);
 static void path_destroy_actual(kr_compositor *compositor, kr_compositor_path *path);
 
-void kr_compositor_pathick(kr_compositor_path *path) {
+void kr_compositor_path_tick(kr_compositor_path *path) {
   krad_compositor_subunit_tick(&path->subunit);
   if (path->crop_width_easer.active) {
     path->crop_width = kr_easer_process(&path->crop_width_easer,
@@ -205,7 +205,7 @@ void krad_compositor_path_push_yuv_frame(kr_compositor_path *path,
   int rgb_stride_arr[3] = {4*dststride, 0, 0};
   unsigned char *dst[4];
 
-  kr_compositor_pathick(path);
+  kr_compositor_path_tick(path);
 
   if (path->yuv_color_depth != krad_frame->format) {
     path->yuv_color_depth = krad_frame->format;
@@ -245,7 +245,7 @@ void krad_compositor_path_push_rgba_frame(kr_compositor_path *path,
 
   krad_frame->format = PIX_FMT_RGB32;
 
-  kr_compositor_pathick(path);
+  kr_compositor_path_tick(path);
 
   if ((path->source_width != path->subunit.width) ||
       (path->source_height != path->subunit.height)) {
@@ -406,7 +406,7 @@ static int local_videopath_notify(kr_compositor_path *path) {
   wrote = 0;
   buf[0] = 0;
 
-  kr_compositor_pathick(path);
+  kr_compositor_path_tick(path);
 
   if (path->localframe_state == 1) {
     return 0;

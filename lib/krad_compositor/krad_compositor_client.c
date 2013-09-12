@@ -3,7 +3,7 @@
 #include "krad_compositor_common.h"
 
 static void kr_ebml_to_compositor_info(kr_ebml2_t *ebml, kr_compositor_info *comp);
-static int kr_compositor_crate_get_string_from_subunit (kr_crate_t *crate, char **string);
+static int kr_compositor_crate_get_string_from_subunit(kr_crate_t *crate, char **string);
 
 typedef struct kr_videoport_St kr_videoport_t;
 
@@ -22,80 +22,7 @@ struct kr_videoport_St {
   pthread_t process_thread;
 };
 
-int kr_compositor_background (kr_client_t *client, char *filename) {
-
-  unsigned char *command;
-  unsigned char *background;
-
-  if ((filename == NULL) || (!(strlen(filename)))) {
-    return 0;
-  }
-
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_BACKGROUND, &background);
-
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FILENAME, filename);
-
-  kr_ebml2_finish_element (client->ebml2, background);
-  kr_ebml2_finish_element (client->ebml2, command);
-
-  kr_client_push (client);
-
-  return 1;
-}
-
-void kr_compositor_close_display (kr_client_t *client) {
-
-  unsigned char *command;
-  unsigned char *display;
-
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_CLOSE_DISPLAY, &display);
-  kr_ebml2_finish_element (client->ebml2, display);
-  kr_ebml2_finish_element (client->ebml2, command);
-
-  kr_client_push (client);
-}
-
-void kr_compositor_open_display (kr_client_t *client, int width, int height) {
-
-  unsigned char *compositor_command;
-  unsigned char *display;
-
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_OPEN_DISPLAY, &display);
-  kr_ebml2_finish_element (client->ebml2, display);
-  kr_ebml2_finish_element (client->ebml2, compositor_command);
-
-  kr_client_push (client);
-}
-
-void kr_compositor_snapshot (kr_client_t *client) {
-
-  unsigned char *command;
-  unsigned char *snap_command;
-
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT, &snap_command);
-  kr_ebml2_finish_element (client->ebml2, snap_command);
-  kr_ebml2_finish_element (client->ebml2, command);
-
-  kr_client_push (client);
-}
-
-void kr_compositor_snapshot_jpeg (kr_client_t *client) {
-
-  unsigned char *command;
-  unsigned char *snap_command;
-
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SNAPSHOT_JPEG, &snap_command);
-  kr_ebml2_finish_element (client->ebml2, snap_command);
-  kr_ebml2_finish_element (client->ebml2, command);
-  kr_client_push (client);
-}
-
-void kr_compositor_set_frame_rate (kr_client_t *client, int numerator, int denominator) {
+void kr_compositor_set_frame_rate(kr_client_t *client, int numerator, int denominator) {
 
   unsigned char *compositor_command;
   unsigned char *set_frame_rate;
@@ -760,7 +687,7 @@ void kr_videoport_destroy (kr_videoport_t *kr_videoport) {
   }
 }
 
-int kr_compositor_get_info_wait (kr_client_t *client,
+int kr_compositor_get_info_wait(kr_client_t *client,
                             uint32_t *width,
                             uint32_t *height,
                             uint32_t *fps_num,

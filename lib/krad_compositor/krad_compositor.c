@@ -511,17 +511,7 @@ int krad_compositor_subunit_destroy(kr_compositor *compositor, kr_address_t *add
   return 0;
 }
 
-void krad_compositor_get_frame_rate(kr_compositor *cmpr, int *num, int *den) {
-  *num = cmpr->fps_numerator;
-  *den = cmpr->fps_denominator;
-}
-
-void kr_compositor_resolution(kr_compositor *cmpr, int *width, int *height) {
-  *width = cmpr->width;
-  *height = cmpr->height;
-}
-
-void krad_compositor_set_resolution(kr_compositor *comp, uint32_t width,
+void kr_compositor_resolution_set(kr_compositor *comp, uint32_t width,
  uint32_t height) {
   comp->width = width;
   comp->height = height;
@@ -618,7 +608,7 @@ kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
   if (setup == NULL) return NULL;
 
   compositor = calloc(1, sizeof(kr_compositor));
-  krad_compositor_set_resolution(compositor, setup->width, setup->height);
+  kr_compositor_resolution_set(compositor, setup->width, setup->height);
   krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
   subunits_create(compositor);
   compositor->background = krad_sprite_create();

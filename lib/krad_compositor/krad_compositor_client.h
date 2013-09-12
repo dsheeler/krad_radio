@@ -34,11 +34,10 @@ int kr_compositor_set_resolution (kr_client_t *client, uint32_t width, uint32_t 
 void kr_compositor_close_display (kr_client_t *client);
 void kr_compositor_open_display (kr_client_t *client, int width, int height);
 
-int kr_compositor_background (kr_client_t *client, char *filename);
-void kr_compositor_snapshot (kr_client_t *client);
-void kr_compositor_snapshot_jpeg (kr_client_t *client);
+void kr_compositor_snapshot(kr_client_t *client);
+void kr_compositor_snapshot_jpeg(kr_client_t *client);
 
-int kr_compositor_get_info_wait (kr_client_t *client,
+int kr_compositor_get_info_wait(kr_client_t *client,
                             uint32_t *width,
                             uint32_t *height,
                             uint32_t *fps_num,

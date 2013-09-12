@@ -8,8 +8,7 @@ void krad_compositor_unset_background(kr_compositor *compositor) {
   compositor->background->subunit.active = 0;
 }
 
-void krad_compositor_set_background(kr_compositor *compositor,
- char *filename) {
+void kr_compositor_background_set(kr_compositor *compositor, char *filename) {
   krad_compositor_unset_background(compositor);
   if ((filename == NULL) || (strlen(filename) == 0)) {
     return;
@@ -21,9 +20,7 @@ void krad_compositor_set_background(kr_compositor *compositor,
   }
 }
 
-int krad_compositor_get_background_name(kr_compositor *compositor,
- char **filename) {
-
+int kr_compositor_background(kr_compositor *compositor, char **filename) {
   if ((filename == NULL) || (compositor->background->subunit.active != 1)) {
     return 0;
   }

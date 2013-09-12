@@ -166,7 +166,7 @@ int main (int argc, char *argv[]) {
     return 0;
   }
 
-  client = kr_client_create ("krad command line client");
+  client = kr_client_create("krad command line client");
 
   if(client == NULL) {
     fprintf (stderr, "Could create client\n");
@@ -606,7 +606,7 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "background", 10) == 0) {
     if (argc == 4) {
-      kr_compositor_background(client, argv[3]);
+      //kr_compositor_background(client, argv[3]);
     }
   }
 
