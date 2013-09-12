@@ -76,7 +76,7 @@ static void krad_compositor_notify_local_paths(kr_compositor *compositor) {
         (compositor->path[i].local == 1)) {
       ret = local_videopath_notify(&compositor->path[i]);
       if (ret == -2) {
-        krad_compositor_path_destroy(compositor, &compositor->path[i]);
+        //krad_compositor_path_destroy(compositor, &compositor->path[i]);
       }
     }
   }
@@ -391,7 +391,7 @@ void krad_compositor_path_push_frame(kr_compositor_path *path,
   }
   // not good, not that bad tho
   if (ret < 0) {
-    krad_compositor_path_destroy(path->compositor, path);
+    //krad_compositor_path_destroy(path->compositor, path);
   }
 }
 
@@ -706,17 +706,13 @@ kr_compositor_path *krad_compositor_local_path_create(kr_compositor *krad_compos
     path->subunit.active = 1;
   } else {
     printke ("Krad Compositor: failed to create local path");
-    krad_compositor_path_destroy (krad_compositor, path);
+    //krad_compositor_path_destroy (krad_compositor, path);
     return NULL;
   }
 
   printk("HIO!");
 
   return path;
-}
-
-void krad_compositor_path_destroy(kr_compositor *krad_compositor, kr_compositor_path *path) {
-  path->subunit.active = 2;
 }
 
 static void path_destroy_actual(kr_compositor *krad_compositor, kr_compositor_path *path) {
@@ -774,4 +770,11 @@ static void path_destroy_actual(kr_compositor *krad_compositor, kr_compositor_pa
     path->last_frame = NULL;
   }
   krad_compositor->active_paths--;
+}
+
+int kr_compositor_unlink(kr_compositor_path *path) {
+  if (path == NULL) return -1;
+  if (path->subunit.active != 1) return -2;
+  path->subunit.active = 2;
+  return 0;
 }

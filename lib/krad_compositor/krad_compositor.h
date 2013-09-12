@@ -49,7 +49,7 @@ typedef void (kr_compositor_path_frame_cb)(kr_compositor_path_frame_cb_arg *);
 
 #define RED 0.244 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0
 #define GREY 0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255 * 1.0
-#define BGCOLOR_CLR  0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.0 / 0.255 * 1.0, 0.255 / 0.255   * 1.0
+#define BGCOLOR_CLR 0.0, 0.0, 0.0, 1.0
 
 //FIXME
 #define KR_CMP_INPUT 667
@@ -172,6 +172,8 @@ void krad_compositor_set_resolution (kr_compositor *comp,
 
 /* Below looks good, above replace */
 
+int kr_compositor_unlink(kr_compositor_path *path);
+
 void kr_compositor_setup_init(kr_compositor_setup *setup);
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
 int kr_compositor_destroy(kr_compositor *compositor);
@@ -187,7 +189,6 @@ int kr_compositor_process(kr_compositor *compositor);
  ***Paths
  kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
   kr_compositor_path_setup *setup);
- int kr_compositor_unlink(kr_compositor_path *path);
  kr_compositor_path *kr_compositor_find(kr_compositor *compositor, char *name);
  int kr_compositor_path_ctl(kr_compositor_path *p, XXX);
  int kr_compositor_path_get_info(kr_compositor_path *path,

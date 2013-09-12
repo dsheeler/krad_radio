@@ -405,7 +405,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_DESTROY:
       for (p = 0; p < KC_MAX_PORTS; p++) {
         if(compositor->path[p].local == 1) {
-          krad_compositor_path_destroy(compositor, &compositor->path[p]);
+          //krad_compositor_path_destroy(compositor, &compositor->path[p]);
           break;
         }
       }
