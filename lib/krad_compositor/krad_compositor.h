@@ -1,29 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <math.h>
-#include <inttypes.h>
-
 #ifndef KRAD_COMPOSITOR_H
 #define KRAD_COMPOSITOR_H
 
 #include <libswscale/swscale.h>
 
 typedef struct kr_compositor kr_compositor;
-typedef struct kr_compositor_path kr_compositor_path;
-
 typedef struct kr_compositor_setup kr_compositor_setup;
 typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
-
-typedef struct kr_compositor_path_setup kr_compositor_path_setup;
-typedef struct kr_compositor_path_frame_cb_arg kr_compositor_path_frame_cb_arg;
-typedef struct kr_compositor_path_info_cb_arg kr_compositor_path_info_cb_arg;
-
-typedef void (kr_compositor_info_cb)(kr_compositor_info_cb_arg *);
-typedef void (kr_compositor_path_info_cb)(kr_compositor_path_info_cb_arg *);
-typedef void (kr_compositor_path_frame_cb)(kr_compositor_path_frame_cb_arg *);
 
 #include "krad_compositor_subunit.h"
 #include "krad_compositor_path.h"
@@ -55,17 +37,6 @@ struct kr_compositor_info_cb_arg {
   void *user;
 };
 
-struct kr_compositor_path_info_cb_arg {
-  void *user;
-};
-
-struct kr_compositor_path_frame_cb_arg {
-  uint32_t channels;
-  uint32_t nframes;
-  float **samples;
-  void *user;
-};
-
 struct kr_compositor_setup {
   uint32_t width;
   uint32_t height;
@@ -73,12 +44,6 @@ struct kr_compositor_setup {
   uint32_t fps_den;
   void *user;
   kr_compositor_info_cb *cb;
-};
-
-struct kr_compositor_path_setup {
-  kr_compositor_path_info info;
-  void *user;
-  kr_compositor_path_frame_cb *cb;
 };
 
 struct kr_compositor {
@@ -131,17 +96,9 @@ int kr_compositor_destroy(kr_compositor *compositor);
 int kr_compositor_process(kr_compositor *compositor);
 
 /*
-
- ***Paths
- kr_compositor_path *kr_compositor_find(kr_compositor *compositor, char *name);
- int kr_compositor_path_ctl(kr_compositor_path *p, XXX);
- int kr_compositor_path_get_info(kr_compositor_path *path,
-  kr_compositor_path_info *info);
-
  ***Compositor as a whole
  int kr_compositor_ctl(kr_compositor *compr, XXX);
  int kr_compositor_get_info(kr_compositor *compr, kr_compositor_info *info);
-
 */
 
 #endif

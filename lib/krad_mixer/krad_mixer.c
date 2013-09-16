@@ -25,7 +25,7 @@ static void update_volume(kr_mixer_path *path);
 static void set_channel_volume(kr_mixer_path *path, int channel, float value);
 static void set_volume(kr_mixer_path *path, float value);
 static void set_crossfade(kr_mixer_path *path, float value);
-static void path_destroy(kr_mixer_path *path);
+static void path_release(kr_mixer_path *path);
 
 #include "metering.c"
 
@@ -284,7 +284,7 @@ static void update_state(kr_mixer *mixer) {
           path->state = KR_MXP_ACTIVE;
           break;
         case KR_MXP_TERM:
-          path_destroy(path);
+          path_release(path);
           break;
         default:
           break;
@@ -571,7 +571,7 @@ void kr_mixer_xf_decouple(kr_mixer *mixer, kr_mixer_crossfader *crossfader) {
   }
 }
 
-static void path_destroy(kr_mixer_path *path) {
+static void path_release(kr_mixer_path *path) {
 
   int c;
 

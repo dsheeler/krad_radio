@@ -104,7 +104,7 @@ struct kr_vector_info {
 
 struct kr_compositor_path_info {
   char sysname[128];
-  int32_t type;
+  kr_compositor_path_type type;
   uint32_t source_width;
   uint32_t source_height;
   uint32_t crop_x;

@@ -73,7 +73,7 @@ void kr_compositor_path_render(kr_compositor_path *path, cairo_t *cr) {
   */
 }
 
-void path_release(kr_compositor *compositor, kr_compositor_path *path) {
+void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path) {
   if (path->perspective != NULL) {
     kr_perspective_destroy(&path->perspective);
   }
@@ -92,7 +92,6 @@ void path_release(kr_compositor *compositor, kr_compositor_path *path) {
 
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
  kr_compositor_path_setup *setup) {
-
 
   return NULL;
 }

@@ -10,7 +10,12 @@ programs2 = """
 kr_wayland_test2.c
 """.split()
 
+programs3 = """
+kr_pool_test.c
+""".split()
+
 includedirs = """
+../../lib/krad_mem/
 ../../lib/krad_calc/
 ../../lib/krad_compositor/
 ../../lib/krad_chronometer/
@@ -65,6 +70,8 @@ depsources2 = ["../lib/krad_compositor/krad_vector.c",
                "../lib/krad_compositor/krad_compositor_subunit.c",
                "../lib/krad_chronometer/krad_easing.c"]
 
+depsources3 = ["../lib/krad_mem/krad_pool.c"]
+
 stlibs = []
 syslibs = ['m', 'dl', 'z']
 syslibs2 = ['rt']
@@ -73,7 +80,7 @@ def configure(conf):
 
   global programs
   global shlibs
-  global shlibs2  
+  global shlibs2
   global syslibs
 
   if conf.env['KRAD_USE_WAYLAND']:
@@ -90,25 +97,32 @@ def build(bld):
 
   global programs
   global shlibs
-  global shlibs2  
+  global shlibs2
   global syslibs
   global syslibs2
 
   if bld.env['KRAD_USE_WAYLAND']:
     for p in programs:
-      bld(features = 'c cprogram', 
-      source = [p] + depsources, 
-      includes = includedirs, 
+      bld(features = 'c cprogram',
+      source = [p] + depsources,
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs + stlibs + syslibs)
 
   if bld.env['KRAD_USE_WAYLAND']:
     for p in programs2:
-      bld(features = 'c cprogram', 
-      source = [p] + depsources + depsources2, 
-      includes = includedirs, 
+      bld(features = 'c cprogram',
+      source = [p] + depsources + depsources2,
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs + stlibs + syslibs)
 
+  for p in programs3:
+    bld(features = 'c cprogram',
+    source = [p] + depsources3,
+    includes = includedirs,
+    target = p.replace(".c", ""),
+    use = ["kradradio_client"],
+    uselib = shlibs + stlibs + syslibs)
