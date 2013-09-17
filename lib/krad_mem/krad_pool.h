@@ -27,6 +27,8 @@ struct kr_pool_setup {
   int shared;
 };
 
+void *kr_pool_iterate_active(kr_pool *pool, int *count);
+
 int kr_pool_recycle(kr_pool *pool, void *slice);
 void *kr_pool_slice(kr_pool *pool);
 

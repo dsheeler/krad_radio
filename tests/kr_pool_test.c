@@ -2,11 +2,14 @@
 
 int main(int argc, char *argv[]) {
 
+  int i;
   int ret;
   kr_pool *pool;
   kr_pool_setup pool_setup;
   void *slice[128];
+  void *aslice;
 
+  aslice = NULL;
   memset(&slice, 0, sizeof(slice));
 
   pool_setup.shared = 1;
@@ -35,12 +38,23 @@ int main(int argc, char *argv[]) {
   }
   kr_pool_debug(pool);
 
+  i = 0;
+  while ((aslice = kr_pool_iterate_active(pool, &i))) {
+    printf("slice %d is active!\n", i - 1);
+  }
+
   ret = kr_pool_recycle(pool, slice[1]);
   if (ret != 0) {
     fprintf(stderr, "failed to return slice %d\n", ret);
     return 1;
   }
   kr_pool_debug(pool);
+
+  i = 0;
+  while ((aslice = kr_pool_iterate_active(pool, &i))) {
+    printf("slice %d is active!\n", i - 1);
+  }
+
   ret = kr_pool_recycle(pool, slice[0]);
   if (ret != 0) {
     fprintf(stderr, "failed to return slice %d\n", ret);

@@ -111,9 +111,9 @@ void test_wayland_output_create(kr_xpdr *xpdr) {
 }
 
 void test_xpdr(kr_xpdr *xpdr) {
-  /*
-    test_jack_output_create(xpdr);
-    test_jack_input_create(xpdr);
-  */
-  test_wayland_output_create(xpdr);
+
+  test_jack_output_create(xpdr);
+  test_jack_input_create(xpdr);
+
+//  test_wayland_output_create(xpdr);
 }
