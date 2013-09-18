@@ -7,6 +7,7 @@ typedef struct kr_compositor kr_compositor;
 typedef struct kr_compositor_setup kr_compositor_setup;
 typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
 
+#include "krad_pool.h"
 #include "krad_compositor_subunit.h"
 #include "krad_compositor_path.h"
 #include "krad_text.h"
@@ -73,6 +74,7 @@ struct kr_compositor {
   kr_vector *vector;
   int active_vectors;
 
+  kr_pool *path_pool;
   kr_compositor_path *path;
   int active_paths;
   int active_output_paths;

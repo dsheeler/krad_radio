@@ -71,13 +71,8 @@ static void composite(kr_compositor *compositor) {
 }
 
 static void output(kr_compositor *compositor) {
-  int p;
-  for (p = 0; p < KC_MAX_PORTS; p++) {
-    if ((compositor->path[p].subunit.active == 1) &&
-        (compositor->path[p].type == KR_CMP_OUTPUT)) {
+  // pool iterater thru le outputs
   //krad_compositor_path_push_frame(&compositor->path[p], compositor->frame);
-    }
-  }
 }
 
 static void cleanup(kr_compositor *compositor) {
@@ -491,27 +486,18 @@ void krad_compositor_set_frame_rate(kr_compositor *cmpr, int num, int den) {
 }
 
 static void paths_free(kr_compositor *compositor) {
-  int i;
-  for (i = 0; i < KC_MAX_PORTS; i++) {
-    if (compositor->path[i].subunit.active == 1) {
-      cmper_path_release(compositor, &compositor->path[i]);
-    }
-  }
-  free(compositor->path);
+  kr_pool_destroy(compositor->path_pool);
 }
 
 static void paths_create(kr_compositor *compositor) {
 
-  int i;
+  kr_pool_setup setup;
 
-  compositor->path = calloc(KC_MAX_PORTS, sizeof(kr_compositor_path));
+  setup.shared = 1;
+  setup.size = sizeof(kr_compositor_path);
+  setup.slices = KC_MAX_PORTS;
 
-  for (i = 0; i < KC_MAX_PORTS; i++) {
-    compositor->path[i].subunit.address.path.unit = KR_COMPOSITOR;
-    compositor->path[i].subunit.address.path.subunit.compositor_subunit = KR_VIDEOPORT;
-    compositor->path[i].subunit.address.id.number = i;
-    krad_compositor_subunit_reset(&compositor->path[i].subunit);
-  }
+  compositor->path_pool = kr_pool_create(&setup);
 }
 
 static void subunits_free(kr_compositor *compositor) {

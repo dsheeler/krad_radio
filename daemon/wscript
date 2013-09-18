@@ -71,6 +71,7 @@ depsources = """
 
 includedirs = """
 ../../lib/krad_calc/
+../lib/krad_mem/
 ../lib/krad_compositor/
 ../lib/krad_muxponder/
 ../lib/krad_chronometer/

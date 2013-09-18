@@ -161,14 +161,14 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
 
   kr_xpdr_path_io *io;
   kr_mixer *mixer;
-  //kr_compositor *compositor;
+  kr_compositor *compositor;
   kr_adapter *adapter;
   kr_mixer_path_setup mp_setup;
-  //kr_compositor_path_setup compositor_path_setup;
+  kr_compositor_path_setup compositor_path_setup;
   kr_adapter_path_setup ap_setup;
 
   mixer = path->xpdr->mixer;
-  //compositor = path->xpdr->compositor;
+  compositor = path->xpdr->compositor;
 
   if (path->output.exists) {
     io = &path->input;
@@ -209,6 +209,7 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info) {
       }
       break;
     case KR_XPDR_COMPOSITOR:
+      /*make me exist */
       break;
   }
 }
