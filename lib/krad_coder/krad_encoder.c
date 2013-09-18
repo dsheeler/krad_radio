@@ -1,7 +1,6 @@
 #include "krad_encoder.h"
 
 typedef union {
-  krad_vhs_t *kvhs;
 	krad_vpx_encoder_t *vpx;
   krad_theora_encoder_t *theora;
   krad_flac_t *flac;
@@ -18,7 +17,7 @@ void kr_encoder_destroy_instance_encoder (kr_encoder2_t *encoder) {
 
   switch (encoder->codec) {
     case OPUS:
-      //krad_opus_encoder_destroy (encoder->enc.opus);  
+      //krad_opus_encoder_destroy (encoder->enc.opus);
       break;
     case FLAC:
       //krad_flac_encoder_destroy (encoder->enc.flac);
@@ -27,7 +26,6 @@ void kr_encoder_destroy_instance_encoder (kr_encoder2_t *encoder) {
       krad_vorbis_encoder_destroy (&encoder->enc.vorbis);
       break;
     case KVHS:
-      //krad_vhs_encoder_destroy (encoder->enc.kvhs);
       break;
     case VP8:
       krad_vpx_encoder_destroy (&encoder->enc.vpx);
@@ -56,7 +54,6 @@ void kr_encoder_create_instance_encoder (kr_encoder2_t *encoder) {
       encoder->enc.vorbis = krad_vorbis_encoder_create (2, 44100, 0.5);
       break;
     case KVHS:
-      //encoder->enc.kvhs = krad_vhs_create_encoder ();
       break;
     case VP8:
       encoder->enc.vpx = krad_vpx_encoder_create (640, 360, 30, 1, 1000);
@@ -91,12 +88,12 @@ int kr_encoder_encode_direct (kr_encoder2_t *encoder,
                               kr_medium_t *medium,
                               kr_codeme_t *codeme) {
   int ret;
-  
+
   ret = kr_encoder_check (encoder, codeme, medium);
   if (ret < 0) {
     return ret;
   }
-  
+
   switch (codeme->codec) {
     case OPUS:
       //kr_opus_encode (encoder->enc.opus, codeme, medium);
@@ -112,7 +109,6 @@ int kr_encoder_encode_direct (kr_encoder2_t *encoder,
       kr_vorbis_encode (encoder->enc.vorbis, codeme, medium);
       break;
     case KVHS:
-      //kr_vhs_encode (encoder->enc.kvhs, codeme, medium);
       break;
     case VP8:
       kr_vpx_encode (encoder->enc.vpx, codeme, medium);

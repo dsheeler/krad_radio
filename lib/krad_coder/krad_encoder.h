@@ -17,7 +17,6 @@
 #include "krad_ring.h"
 #include "krad_resample_ring.h"
 
-#include "krad_vhs.h"
 #include "krad_theora.h"
 #include "krad_vpx.h"
 

@@ -64,9 +64,6 @@ depsources = """
 ../lib/krad_udp/krad_udp.c
 ../lib/krad_decklink/krad_decklink.c
 ../lib/krad_decklink/krad_decklink_capture.cpp
-../lib/krad_vhs/ext/imagezero/libiz.cpp
-../lib/krad_vhs/ext/imagezero/table.cpp
-../lib/krad_vhs/krad_vhs.cpp
 """.split()
 
 includedirs = """
@@ -82,7 +79,6 @@ includedirs = """
 ../lib/krad_web/ext/
 ../lib/krad_web/res/
 ../lib/krad_sfx/
-../lib/krad_vhs/
 ../lib/krad_coder/
 ../lib/krad_tone/
 ../lib/krad_app/
@@ -113,7 +109,6 @@ includedirs = """
 ../lib/krad_udp/
 ../lib/krad_system/
 ../lib/krad_decklink/
-../lib/krad_vhs/ext/imagezero/
 ../lib/krad_ebml/
 ../lib/krad_mkv/
 ../lib/krad_legacy/
@@ -137,7 +132,7 @@ def hexilate_file(filename):
 
   with open(filename, 'rb') as f:
       content = f.read()
-      
+
   hexed = binascii.hexlify(content)
   hexed_len = len(hexed)
   hexed_txt = "static unsigned char " + varname + "[] = {\n "
@@ -174,10 +169,10 @@ def check_system(systm):
   global depsources
   global shlibs
   global syslibs
-  global syslibs2    
+  global syslibs2
 
   if systm.env['KR_LINUX']:
-    shlibs = shlibs + ["alsa"]    
+    shlibs = shlibs + ["alsa"]
     depsources = ["../lib/krad_v4l2/krad_v4l2.c", "../lib/krad_alsa/krad_alsa.c",
     "../lib/krad_alsa/krad_alsa_seq.c"] + depsources
     includedirs = ["../lib/krad_decklink/vendor/linux/"] + includedirs
@@ -211,7 +206,7 @@ def check_way(way):
     depsources += ["../lib/krad_fc2/krad_fc2.c"]
     syslibs += ["flycapture-c"]
     includedirs += ["/usr/include/flycapture"]
-    
+
 def check_x11(x11):
 
   global depsources
@@ -238,7 +233,7 @@ def configure(conf):
   global shlibs
   global syslibs
   global syslibs2
-  check_x11(conf)  
+  check_x11(conf)
   check_way(conf)
   check_system(conf)
   check_gif(conf)
@@ -256,7 +251,7 @@ def build(bld):
 
   global shlibs
   global syslibs
-  global syslibs2  
+  global syslibs2
   remake_webres(bld)
   check_gif(bld)
   check_x11(bld)
@@ -265,9 +260,9 @@ def build(bld):
 
   for p in [daemon]:
 
-    bld(features = 'c cprogram cxx cxxprogram', 
-      source = depsources + [p], 
-      includes = includedirs, 
+    bld(features = 'c cprogram cxx cxxprogram',
+      source = depsources + [p],
+      includes = includedirs,
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
       uselib = shlibs + stlibs + syslibs)
