@@ -112,7 +112,7 @@ int main (int argc, char *argv[]) {
           ((strlen(argv[1]) == 4) && (strncmp(argv[1], "--vg", 4) == 0)) ||
           ((strlen(argv[1]) == 6) && (strncmp(argv[1], "gitver", 6) == 0)) ||
           ((strlen(argv[1]) == 10) && (strncmp(argv[1], "gitversion", 10) == 0))) {
-          printf("%s\n", KRAD_GIT_VERSION);
+          printf("%s\n", "KRAD_GIT_VERSION");
           return 0;
       }
 

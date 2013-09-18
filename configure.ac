@@ -41,7 +41,9 @@ case $host in
   *-linux*)
   CFLAGS="-DKR_LINUX $CFLAGS"
   CXXFLAGS="-DKR_LINUX $CXXFLAGS"
+  AM_CONDITIONAL(LINUX, true)
 esac
+
 
 # Checks for libraries.
 AC_CHECK_LIB(m, sin, [], AC_MSG_ERROR([library m not found]))
@@ -49,7 +51,7 @@ AC_CHECK_LIB(dl, dlopen, [], AC_MSG_ERROR([library dl not found]))
 AC_CHECK_LIB(z, compress, [], AC_MSG_ERROR([library z not found]))
 AC_CHECK_LIB(pthread, pthread_create, [], AC_MSG_ERROR([pthread not found]))
 AC_CHECK_LIB(rt, clock_gettime, [], AC_MSG_ERROR([library rt not found]))
-AC_CHECK_LIB(turbojpeg, tjInitDecompress, [], [])
+AC_CHECK_LIB(turbojpeg, tjInitDecompress, [AM_CONDITIONAL(HAVE_TURBOJPEG, true)], [])
 AC_CHECK_LIB(gif, DGifOpenFileName, [], [])
 
 PKG_CHECK_MODULES([HOBGOBLINFIRECAKE], [hobgoblinfirecake],
@@ -76,6 +78,10 @@ PKG_CHECK_MODULES([X11], [x11,x11-xcb,xcb-image,xcb-shm])
 PKG_CHECK_MODULES([XMMS2], [xmms2-client])
 
 # AC_CONFIG_SUBDIRS([lib/krad_vhs/ext/imagezero])
+
+AC_PROG_CC
+AC_PROG_CXX
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
