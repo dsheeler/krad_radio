@@ -673,7 +673,7 @@ static void path_create(kr_mixer_path *path, kr_mixer_path_setup *setup) {
     path->volume_actual[c] = (float)(path->volume[c]/100.0f);
     path->volume_actual[c] *= path->volume_actual[c];
     path->new_volume_actual[c] = path->volume_actual[c];
-    path->samples[c] = calloc(1, 4096);
+    path->samples[c] = calloc(1, KR_MXR_PERIOD_MAX * sizeof(float));
   }
   path_sfx_create(path);
   path->state = KR_MXP_READY;
@@ -695,7 +695,7 @@ kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup) {
   }
   path = kr_pool_slice(mixer->path_pool);
   if (path == NULL) {
-    printke("mixer mkpath could not alloc new path");
+    printke("mixer mkpath could not slice new path");
     return NULL;
   }
   path->mixer = mixer;

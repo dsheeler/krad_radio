@@ -75,7 +75,6 @@ struct kr_compositor {
   int active_vectors;
 
   kr_pool *path_pool;
-  kr_compositor_path *path;
   int active_paths;
   int active_output_paths;
   int active_input_paths;

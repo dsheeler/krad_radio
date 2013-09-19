@@ -1,35 +1,32 @@
 #include "krad_compositor_interface.h"
 
-void kr_compositor_path_info_to_ebml(kr_compositor_path_info *path, kr_ebml *ebml) {
-  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, path->sysname);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, path->type);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, path->controls.x);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->controls.y);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->controls.z);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->source_width);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->source_height);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->crop_x);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->crop_y);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->crop_width);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->crop_height);
-
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.top_left.x);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.top_left.y);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.top_right.x);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.top_right.y);
-
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.bottom_left.x);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.bottom_left.y);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.bottom_right.x);
-  kr_ebml2_pack_uint32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->view.bottom_right.y);
-
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->controls.width);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, path->controls.height);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, path->controls.opacity);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, path->controls.rotation);
+void path_info_to_ebml(kr_ebml *e, kr_compositor_path_info *info) {
+  kr_ebml2_pack_string(e, EBML_ID_KRAD_COMPOSITOR_TEXT, info->sysname);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, info->type);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, info->controls.x);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.y);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.z);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->source_width);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->source_height);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_x);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_y);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_width);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_height);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.top_left.x);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.top_left.y);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.top_right.x);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.top_right.y);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_left.x);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_left.y);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_right.x);
+  kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_right.y);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.width);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.height);
+  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, info->controls.opacity);
+  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, info->controls.rotation);
 }
 
-void kr_text_info_to_ebml(kr_text_info *text, kr_ebml *ebml) {
+void kr_text_info_to_ebml(kr_ebml *ebml, kr_text_info *text) {
   kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, text->text);
   kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_FONT, text->font);
   kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_RED, text->red);
@@ -44,7 +41,7 @@ void kr_text_info_to_ebml(kr_text_info *text, kr_ebml *ebml) {
   kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, text->controls.rotation);
 }
 
-void kr_sprite_info_to_ebml(kr_sprite_info *sprite, kr_ebml *ebml) {
+void kr_sprite_info_to_ebml(kr_ebml *ebml, kr_sprite_info *sprite) {
   kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, sprite->filename);
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, sprite->controls.x);
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.y);
@@ -56,7 +53,7 @@ void kr_sprite_info_to_ebml(kr_sprite_info *sprite, kr_ebml *ebml) {
   kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, sprite->controls.rotation);
 }
 
-void kr_vector_info_to_ebml(kr_vector_info *vector, kr_ebml *ebml) {
+void kr_vector_info_to_ebml(kr_ebml *ebml, kr_vector_info *vector) {
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, vector->type);
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.width);
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.height);
@@ -65,39 +62,6 @@ void kr_vector_info_to_ebml(kr_vector_info *vector, kr_ebml *ebml) {
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, vector->controls.z);
   kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, vector->controls.opacity);
   kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, vector->controls.rotation);
-}
-
-int kr_compositor_path_to_info(kr_compositor_path *videopath, kr_compositor_path_info *videopath_rep) {
-
-  if ((videopath == NULL) || (videopath_rep == NULL)) {
-    return 0;
-  }
-
-  strncpy (videopath_rep->sysname, videopath->sysname, sizeof(videopath_rep->sysname));
-  videopath_rep->type = videopath->type;
-  videopath_rep->controls.x = videopath->subunit.x;
-  videopath_rep->controls.y = videopath->subunit.y;
-  videopath_rep->controls.z = videopath->subunit.z;
-  videopath_rep->source_width = videopath->source_width;
-  videopath_rep->source_height = videopath->source_height;
-  videopath_rep->crop_x = videopath->crop_x;
-  videopath_rep->crop_y = videopath->crop_y;
-  videopath_rep->crop_width = videopath->crop_width;
-  videopath_rep->crop_height = videopath->crop_height;
-  videopath_rep->view.top_left.x = videopath->view.top_left.x;
-  videopath_rep->view.top_left.y = videopath->view.top_left.y;
-  videopath_rep->view.top_right.x = videopath->view.top_right.x;
-  videopath_rep->view.top_right.y = videopath->view.top_right.y;
-  videopath_rep->view.bottom_left.x = videopath->view.bottom_left.x;
-  videopath_rep->view.bottom_left.y = videopath->view.bottom_left.y;
-  videopath_rep->view.bottom_right.x = videopath->view.bottom_right.x;
-  videopath_rep->view.bottom_right.y = videopath->view.bottom_right.y;
-  videopath_rep->controls.width = videopath->subunit.width;
-  videopath_rep->controls.height = videopath->subunit.height;
-  videopath_rep->controls.rotation = videopath->subunit.rotation;
-  videopath_rep->controls.opacity = videopath->subunit.opacity;
-
-  return 1;
 }
 
 void kr_compositor_to_ebml(kr_ebml *ebml, kr_compositor *compositor) {
@@ -131,25 +95,23 @@ void kr_compositor_to_ebml(kr_ebml *ebml, kr_compositor *compositor) {
 void kr_sprite_to_ebml(kr_ebml *ebml, kr_sprite *sprite) {
   kr_sprite_info sprite_rep;
   kr_sprite_to_info(sprite, &sprite_rep);
-  kr_sprite_info_to_ebml(&sprite_rep, ebml);
+  kr_sprite_info_to_ebml(ebml, &sprite_rep);
 }
 
 void kr_text_to_ebml(kr_ebml *ebml, kr_text *text) {
   kr_text_info text_rep;
   kr_text_to_info(text, &text_rep);
-  kr_text_info_to_ebml(&text_rep, ebml);
+  kr_text_info_to_ebml(ebml, &text_rep);
 }
 
 void kr_vector_to_ebml(kr_ebml *ebml, kr_vector *vector) {
   kr_vector_info vector_rep;
   kr_vector_to_info(vector, &vector_rep);
-  kr_vector_info_to_ebml(&vector_rep, ebml);
+  kr_vector_info_to_ebml(ebml, &vector_rep);
 }
 
 void kr_compositor_path_to_ebml(kr_ebml *ebml, kr_compositor_path *path) {
-  kr_compositor_path_info videopath_rep;
-  kr_compositor_path_to_info(path, &videopath_rep);
-  kr_compositor_path_info_to_ebml(&videopath_rep, ebml);
+  path_info_to_ebml(ebml, &path->info);
 }
 
 int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
@@ -322,6 +284,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       s = address.id.number;
       switch (address.path.subunit.compositor_subunit) {
         case KR_VIDEOPORT:
+          /*
           if(compositor->path[s].subunit.active == 1) {
             krad_radio_address_to_ebml2(&ebml_out, &response, &compositor->path[s].subunit.address);
             kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
@@ -330,6 +293,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
             kr_ebml2_finish_element(&ebml_out, payload);
             kr_ebml2_finish_element(&ebml_out, response);
           }
+          */
           break;
         case KR_SPRITE:
           if(compositor->sprite[s].subunit.active == 1) {

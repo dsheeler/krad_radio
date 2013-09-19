@@ -3,20 +3,20 @@ static void kr_compositor_path_tick(kr_compositor_path *path);
 static void kr_compositor_path_tick(kr_compositor_path *path) {
   krad_compositor_subunit_tick(&path->subunit);
   if (path->crop_x_easer.active) {
-    path->crop_x = kr_easer_process(&path->crop_x_easer,
-     path->crop_x, NULL);
+    path->info.crop_x = kr_easer_process(&path->crop_x_easer,
+     path->info.crop_x, NULL);
   }
   if (path->crop_y_easer.active) {
-    path->crop_y = kr_easer_process(&path->crop_y_easer,
-     path->crop_y, NULL);
+    path->info.crop_y = kr_easer_process(&path->crop_y_easer,
+     path->info.crop_y, NULL);
   }
   if (path->crop_width_easer.active) {
-    path->crop_width = kr_easer_process(&path->crop_width_easer,
-     path->crop_width, NULL);
+    path->info.crop_width = kr_easer_process(&path->crop_width_easer,
+     path->info.crop_width, NULL);
   }
   if (path->crop_height_easer.active) {
-    path->crop_height = kr_easer_process(&path->crop_height_easer,
-     path->crop_height, NULL);
+    path->info.crop_height = kr_easer_process(&path->crop_height_easer,
+     path->info.crop_height, NULL);
   }
 }
 
@@ -73,6 +73,61 @@ void kr_compositor_path_render(kr_compositor_path *path, cairo_t *cr) {
   */
 }
 
+int path_setup_check(kr_compositor_path_setup *setup) {
+
+  kr_compositor_path_info *info;
+  info = &setup->info;
+
+  if ((setup->user == NULL) || (setup->cb == NULL)) {
+    /* FIXME HRMMM */
+  }
+
+  if ((info->source_width == 0) || (info->source_height == 0)) {
+    return -1;
+  }
+  if ((info->type != KR_CMP_OUTPUT) && (info->type != KR_CMP_OUTPUT)) {
+    return -2;
+  }
+  /* FIXME check more things out */
+  return 0;
+}
+
+static void path_create(kr_compositor_path *path,
+ kr_compositor_path_setup *setup) {
+
+  path->info = setup->info;
+  path->user = setup->user;
+  path->cb = setup->cb;
+  krad_compositor_subunit_reset(&path->subunit);
+}
+
+kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
+ kr_compositor_path_setup *setup) {
+
+  kr_compositor_path *path;
+
+  if ((compositor == NULL) || (setup == NULL)) return NULL;
+  if (path_setup_check(setup)) {
+    printke("compositor mkpath failed setup check");
+    return NULL;
+  }
+  /*
+  path = kr_mixer_find(mixer, setup->info.name);
+  if (path != NULL) {
+    printke("mixer mkpath path with that name already exists");
+    return NULL;
+  }
+  */
+  path = kr_pool_slice(compositor->path_pool);
+  if (path == NULL) {
+    printke("compositor mkpath could not slice new path");
+    return NULL;
+  }
+  path->compositor = compositor;
+  path_create(path, setup);
+  return path;
+}
+
 void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path) {
   if (path->perspective != NULL) {
     kr_perspective_destroy(&path->perspective);
@@ -81,19 +136,14 @@ void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path) {
     sws_freeContext(path->converter);
     path->converter = NULL;
   }
-  if (path->type == KR_CMP_INPUT) {
+  if (path->info.type == KR_CMP_INPUT) {
     compositor->active_input_paths--;
   }
-  if (path->type == KR_CMP_OUTPUT) {
+  if (path->info.type == KR_CMP_OUTPUT) {
     compositor->active_output_paths--;
   }
+  kr_pool_recycle(path->compositor->path_pool, path);
   compositor->active_paths--;
-}
-
-kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
- kr_compositor_path_setup *setup) {
-
-  return NULL;
 }
 
 int kr_compositor_unlink(kr_compositor_path *path) {

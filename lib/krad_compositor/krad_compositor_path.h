@@ -40,16 +40,11 @@ struct kr_compositor_path_setup {
 };
 
 struct kr_compositor_path {
+  kr_compositor_path_info info;
+  void *user;
+  kr_compositor_path_frame_cb *cb;
   kr_compositor *compositor;
-  char sysname[128];
-  kr_compositor_path_type type;
   krad_frame_t *frame;
-  int source_width;
-  int source_height;
-  int crop_x;
-  int crop_y;
-  int crop_width;
-  int crop_height;
   kr_easer crop_x_easer;
   kr_easer crop_y_easer;
   kr_easer crop_width_easer;
