@@ -91,7 +91,42 @@ void signal_recv (int sig) {
   destroy = 1;
 }
 
-void render_hex (cairo_t *cr, int x, int y, int w) {
+void render_smilie (cairo_t *cr, int x_in, int y_in, int width, int height) {
+  double pi = 3.14f;
+  double w = 1.5 * (double) width;
+  double h = 1.5 * (double) height;
+  
+  double x = x_in -  0.18*w;
+  double y = y_in -  0.18*h;
+
+
+  cairo_save(cr);
+  cairo_set_line_width(cr, 6);
+
+  cairo_set_source_rgb(cr, 0.2, 0.4, 0.8 );
+
+  //eyes
+  cairo_move_to(cr, x + w/3.f, y + h/3.f );
+  cairo_rel_line_to(cr, 0.f, h/6.f );
+  cairo_move_to(cr, x + 2*(w/3.f), y + h/3.f );
+  cairo_rel_line_to(cr, 0.f, h/6.f );
+  cairo_stroke(cr);
+
+  cairo_set_source_rgb(cr, 1.f, 1.f, 0.f );
+
+  double rad = (w > h) ? h : w;
+  //face
+  cairo_arc(cr, x + w/2.f, y + h/2.f, (rad/2.f) - 20.f,0.f,2.f * pi );
+  cairo_stroke(cr);
+  //smile  
+  cairo_arc(cr, x + w/2.f, y + h/2.f, (rad/3.f) -10.f, pi/3.f, 2.f * (pi/3.f));
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+}
+
+  
+  void render_hex (cairo_t *cr, int x, int y, int w) {
 
 	//cairo_pattern_t *pat;
 	static float hexrot = 0;
@@ -181,23 +216,6 @@ int videoport_process (void *buffer, void *user) {
     close(demo->snapshot->sd[1]);
   }
 
-	/*cst = cairo_image_surface_create_for_data ((unsigned char *)buffer,
-												 CAIRO_FORMAT_ARGB32,
-												 demo->width,
-												 demo->height,
-												 demo->width * 4);
-	
-	cr = cairo_create (cst);
-	cairo_save (cr);
-	cairo_set_source_rgba (cr, BGCOLOR_CLR);
-	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);	
-	cairo_paint (cr);
-	cairo_restore (cr);
-	render_hex (cr, demo->width / 2, demo->height / 2, 66);
-	cairo_surface_flush (cst);
-	cairo_destroy (cr);
-	cairo_surface_destroy (cst);
-*/
   demo->frames++;
 
 	return 0;
@@ -304,13 +322,8 @@ int main (int argc, char *argv[]) {
          CAIRO_FORMAT_ARGB32, snapshot->width, snapshot->height,
          snapshot->width * 4);
       	cr = cairo_create (surface);
-	      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-        cairo_set_line_width(cr, 1);
-            
-        cairo_rectangle(cr, comp->rect.x, comp->rect.y, comp->rect.width,
+	      render_smilie(cr, comp->rect.x, comp->rect.y, comp->rect.width,
          comp->rect.height);
-        cairo_stroke_preserve(cr);
-        cairo_fill(cr);
         cairo_surface_flush (surface);
 	      cairo_destroy (cr);
         if (cairo_surface_status(surface) != 0) {

@@ -1,4 +1,4 @@
-bin_PROGRAMS = krad_radio krad_radio_daemon krad_radio_vp kr_display
+bin_PROGRAMS = krad_radio krad_radio_daemon krad_radio_facial_rec kr_display
 krad_radio_SOURCES = clients/krad_radio.c
 krad_radio_CFLAGS = $(OPUS_CFLAGS)
 krad_radio_LDFLAGS = lib/krad_radio/libkradclient.la 
@@ -8,9 +8,9 @@ krad_radio_daemon_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(O
 krad_radio_daemon_LDFLAGS = lib/krad_radio/libkradclient.la lib/krad_radio/libkradradio.la  
 krad_radio_daemon_LDADD = -lkradradio $(XKBCOMMON_LIBS)
 
-krad_radio_vp_SOURCES = clients/krad_radio_vp.c
-krad_radio_vp_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(OPUS_CFLAGS) $(XMMS2_CFLAGS)
-krad_radio_vp_LDADD = $(CAIRO_LIBS) lib/krad_radio/libkradclient.la -lccv -lm -ljpeg -lpng -lz -lgsl -lfftw3f -lfftw3 -llinear -lgslcblas -lblas
+krad_radio_facial_rec_SOURCES = clients/krad_radio_facial_rec.c
+krad_radio_facial_rec_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(OPUS_CFLAGS) $(XMMS2_CFLAGS)
+krad_radio_facial_rec_LDADD = $(CAIRO_LIBS) lib/krad_radio/libkradclient.la -lccv -lm -ljpeg -lpng -lz -lgsl -lfftw3f -lfftw3 -llinear -lgslcblas -lblas
 
 kr_display_SOURCES = clients/kr_display.c
 kr_display_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(OPUS_CFLAGS) $(XMMS2_CFLAGS)
@@ -73,7 +73,9 @@ AM_CPPFLAGS = \
 -Ilib/krad_rc \
 -Ilib/krad_fc2 \
 -DKRAD_USE_X11 \
--DKRAD_USE_WAYLAND
+-DKRAD_USE_WAYLAND \
+-DGIT_VERSION="$(GIT_VERSION)" \
+-DVERSION_NUMBER=$(VERSION)
 
 lib_krad_radio_libkradradio_la_CXXFLAGS = -fPIC
 lib_krad_radio_libkradradio_la_CFLAGS = -fPIC $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(XMMS2_CFLAGS) $(OPUS_CFLAGS)

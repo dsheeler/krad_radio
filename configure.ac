@@ -25,6 +25,11 @@ AC_SUBST(OD_LT_CURRENT)
 AC_SUBST(OD_LT_REVISION)
 AC_SUBST(OD_LT_AGE)
 
+VERSION=`./scripts/krad_ver.sh`
+
+AC_SUBST(VERSION)
+AC_SUBST(GIT_VERSION, m4_esyscmd([git describe --tags]))
+
 CFLAGS="-g -Wall $CFLAGS"
 CXXFLAGS="-g -Wall $CXXFLAGS"
 
