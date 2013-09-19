@@ -19,18 +19,6 @@ typedef struct kr_snapshot {
   int got_frame;
 } kr_snapshot;
 
-
-typedef struct videoport_demo_St videoport_demo_t;
-
-struct videoport_demo_St {
-  uint32_t width;
-  uint32_t height;
-  uint32_t frames;
-  ccv_dense_matrix_t *image;
-  ccv_bbf_classifier_cascade_t* cascade;
-  kr_snapshot *snapshot;
-};
-
 static int destroy = 0;
 
 int kr_snapshot_take(kr_snapshot *snapshot, char *filename) {
@@ -59,29 +47,7 @@ int kr_snapshot_take(kr_snapshot *snapshot, char *filename) {
 	    } else {
         fprintf(stderr, "It didn't work!\n");
       }
-	  } /*else {
-      if ((pollfds[0].revents) && (snapshot->got_frame == 1)) {
-        surface = cairo_image_surface_create_for_data(snapshot->rgba,
-         CAIRO_FORMAT_ARGB32, snapshot->width, snapshot->height,
-         snapshot->width * 4);
-        if (cairo_surface_status(surface) != 0) {
-          fprintf(stderr, "Could not make cairo surface: %s :/\n",
-           cairo_status_to_string(cairo_surface_status(surface)));
-        } else {
-          usleep (50000);
-          ret = cairo_surface_write_to_png(surface, filename);
-          if (ret == 0) {
-            printf("Yay! We took: %s\n", filename);
-          } else {
-            fprintf(stderr, "Damn! Error %s writing %s\n",
-             cairo_status_to_string(ret), filename);
-            fprintf(stderr, "Surface Status: %s\n",
-airo_status_to_string(cairo_surface_status(surface)));
-          }
-          cairo_surface_destroy(surface);
-        }
-      }
-	  }*/
+	  } 
     close(snapshot->sd[0]);
   }
 	  return ret;
@@ -91,7 +57,7 @@ void signal_recv (int sig) {
   destroy = 1;
 }
 
-void render_smilie (cairo_t *cr, int x_in, int y_in, int width, int height) {
+void render_smiley (cairo_t *cr, int x_in, int y_in, int width, int height) {
   double pi = 3.14f;
   double w = 1.5 * (double) width;
   double h = 1.5 * (double) height;
@@ -124,99 +90,21 @@ void render_smilie (cairo_t *cr, int x_in, int y_in, int width, int height) {
   cairo_restore(cr);
 
 }
-
   
-  void render_hex (cairo_t *cr, int x, int y, int w) {
-
-	//cairo_pattern_t *pat;
-	static float hexrot = 0;
-	int r1;
-	//float scale;
-		
-	cairo_save(cr);
-	cairo_set_line_width(cr, 1);
-	cairo_set_source_rgb(cr, ORANGE);
-
-	//scale = 2.5;
-	r1 = ((w)/2 * sqrt(3));
-
-	cairo_translate (cr, x, y);
-	cairo_rotate (cr, hexrot * (M_PI/180.0));
-	cairo_translate (cr, -(w/2), -r1);
-
-	cairo_move_to (cr, 0, 0);
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	hexrot += 1.5;
-	cairo_fill (cr);
-	
-	cairo_restore(cr);
-
-/*
-	cairo_save(cr);
-		
-	cairo_set_line_width(cr, 1.5);
-	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-	cairo_set_source_rgb(cr, GREY);
-
-
-	cairo_translate (cr, x, y);
-	cairo_rotate (cr, hexrot * (M_PI/180.0));
-	cairo_translate (cr, -((w * scale)/2), -r1 * scale);
-	cairo_scale(cr, scale, scale);
-
-	cairo_move_to (cr, 0, 0);
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-	cairo_rel_line_to (cr, w, 0);
-	
-	cairo_rotate (cr, 60 * (M_PI/180.0));
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-	pat = cairo_pattern_create_radial (w/2, r1, 3, w/2, r1, r1*scale);
-	cairo_pattern_add_color_stop_rgba (pat, 0, 0, 0, 1, 1);
-	cairo_pattern_add_color_stop_rgba (pat, 0.4, 0, 0, 0, 0);
-	cairo_set_source (cr, pat);
-	
-	cairo_fill (cr);
-	cairo_pattern_destroy (pat);
-	cairo_restore(cr);
-*/
-}
-
 int videoport_process (void *buffer, void *user) {
 
 	cairo_surface_t *cst;
 	cairo_t *cr;
-  videoport_demo_t *demo;
+  kr_snapshot *snapshot;
   
-  demo = (videoport_demo_t *)user;
+  snapshot = (kr_shapshot *)user;
 
-  if (demo->snapshot->got_frame == 0) {
-    memcpy(demo->snapshot->rgba, buffer, demo->snapshot->width * 
-     demo->snapshot->height * 4);
-    demo->snapshot->got_frame = 1;
-    close(demo->snapshot->sd[1]);
+  if (snapshot->got_frame == 0) {
+    memcpy(snapshot->rgba, buffer, snapshot->width * 
+     snapshot->height * 4);
+    snapshot->got_frame = 1;
+    close(snapshot->sd[1]);
   }
-
-  demo->frames++;
 
 	return 0;
 }
@@ -230,8 +118,8 @@ int main (int argc, char *argv[]) {
 	uint32_t height;
 	kr_client_t *client;
 	kr_videoport_t *videoport;
-  videoport_demo_t *demo;
   kr_snapshot *snapshot;
+  ccv_bbf_classifier_cascade_t* cascade;
   ret = 0;
   ccv_dense_matrix_t *image = 0;
   cairo_surface_t *surface;
@@ -280,11 +168,7 @@ int main (int argc, char *argv[]) {
 
   ccv_enable_default_cache();
 
-  demo = calloc (1, sizeof (videoport_demo_t));
-  
-  demo->cascade = ccv_load_bbf_classifier_cascade(argv[2]);
-  demo->width = width;
-  demo->height = height;
+  cascade = ccv_load_bbf_classifier_cascade(argv[2]);
  
   snapshot = calloc(1, sizeof(kr_snapshot));
   snapshot->client = client;
@@ -294,9 +178,7 @@ int main (int argc, char *argv[]) {
   snapshot->rgba = malloc(snapshot->width * snapshot->height * 4);
 	snapshot->videoport = videoport;
  
-  demo->snapshot = snapshot;
-
-	kr_videoport_set_callback (videoport, videoport_process, demo);
+	kr_videoport_set_callback (videoport, videoport_process, snapshot);
 
   signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);	
@@ -312,38 +194,38 @@ int main (int argc, char *argv[]) {
     image = 0;
     ccv_read(snapshot->rgba, &image, CCV_IO_ARGB_RAW
      | CCV_IO_GRAY, snapshot->height, snapshot->width, snapshot->width * 4);
-    //ccv_read(filename, &image, CCV_IO_GRAY | CCV_IO_ANY_FILE);
     if (image != 0) {
-		ccv_array_t* seq = ccv_bbf_detect_objects(image, &demo->cascade, 1, ccv_bbf_default_params);
+		ccv_array_t* seq = ccv_bbf_detect_objects(image, &cascade, 1,
+     ccv_bbf_default_params);
     for (j = 0; j < seq->rnum; j++) {
 			ccv_comp_t* comp = (ccv_comp_t*)ccv_array_get(seq, j);
-			printf("%d %d %d %d %f\n", comp->rect.x, comp->rect.y, comp->rect.width, comp->rect.height, comp->confidence);
-        surface = cairo_image_surface_create_for_data(snapshot->rgba,
-         CAIRO_FORMAT_ARGB32, snapshot->width, snapshot->height,
-         snapshot->width * 4);
-      	cr = cairo_create (surface);
-	      render_smilie(cr, comp->rect.x, comp->rect.y, comp->rect.width,
-         comp->rect.height);
-        cairo_surface_flush (surface);
-	      cairo_destroy (cr);
-        if (cairo_surface_status(surface) != 0) {
-          fprintf(stderr, "Could not make cairo surface: %s :/\n",
-           cairo_status_to_string(cairo_surface_status(surface)));
-        } else {
-          usleep (50000);
+			printf("%d %d %d %d %f\n", comp->rect.x, comp->rect.y, comp->rect.width,
+       comp->rect.height, comp->confidence);
+      surface = cairo_image_surface_create_for_data(snapshot->rgba,
+       CAIRO_FORMAT_ARGB32, snapshot->width, snapshot->height,
+       snapshot->width * 4);
+     	cr = cairo_create (surface);
+	    render_smiley(cr, comp->rect.x, comp->rect.y, comp->rect.width,
+      comp->rect.height);
+      cairo_surface_flush (surface);
+	    cairo_destroy (cr);
+      if (cairo_surface_status(surface) != 0) {
+        fprintf(stderr, "Could not make cairo surface: %s :/\n",
+        cairo_status_to_string(cairo_surface_status(surface)));
+      } else {
+        usleep (50000);
 
-          ret = cairo_surface_write_to_png(surface, filename);
-          if (ret == 0) {
-            printf("Yay! We rewrote: %s\n", filename);
-          } else {
-            fprintf(stderr, "Damn! Error %s writing %s\n",
-             cairo_status_to_string(ret), filename);
-            fprintf(stderr, "Surface Status: %s\n",
-             cairo_status_to_string(cairo_surface_status(surface)));
-          }
-          cairo_surface_destroy(surface);
+        ret = cairo_surface_write_to_png(surface, filename);
+        if (ret == 0) {
+          printf("Yay! We rewrote: %s\n", filename);
+        } else {
+          fprintf(stderr, "Damn! Error %s writing %s\n",
+           cairo_status_to_string(ret), filename);
+          fprintf(stderr, "Surface Status: %s\n",
+           cairo_status_to_string(cairo_surface_status(surface)));
         }
-     
+        cairo_surface_destroy(surface);
+      }
     }
 		printf("total : %d\n", seq->rnum);
 		ccv_array_free(seq);
@@ -368,17 +250,6 @@ int main (int argc, char *argv[]) {
   
   free(snapshot->rgba);
   free(snapshot);
-
-
-	if (demo->frames > 0) {
-		printf ("Rendered %d frames!\n", demo->frames);
-	}
-
-  free (demo);
-
-	if (ret == 0) {
-		printf ("Worked!\n");
-	}
 
 	return ret;	
 }
