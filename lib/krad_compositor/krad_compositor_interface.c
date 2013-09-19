@@ -156,10 +156,12 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   kr_unit_control_t unit_control;
   int s;
+  int i;
   int type;
   kr_radio *radio;
   kr_compositor *compositor;
   kr_address_t address;
+  kr_compositor_path *path;
   unsigned char *response;
   unsigned char *payload;
   kr_ebml2_t ebml_in;
@@ -173,6 +175,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   uint32_t numbers[10];
   kr_app_server *app;
 
+  address.path.unit = KR_MIXER;
   radio = client->krad_radio;
   compositor = radio->compositor;
   app = radio->app;
@@ -298,15 +301,16 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
           kr_ebml2_finish_element(&ebml_out, response);
         }
       }
-      for (s = 0; s < KC_MAX_PORTS; s++) {
-        if(compositor->path[s].subunit.active == 1) {
-          krad_radio_address_to_ebml2(&ebml_out, &response, &compositor->path[s].subunit.address);
-          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
-          kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-          kr_compositor_path_to_ebml(&ebml_out, &compositor->path[s]);
-          kr_ebml2_finish_element(&ebml_out, payload);
-          kr_ebml2_finish_element(&ebml_out, response);
-        }
+      address.path.subunit.mixer_subunit = KR_PORTGROUP;
+      i = 0;
+      while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
+        address.id.number = i - 1;
+        krad_radio_address_to_ebml2(&ebml_out, &response, &address);
+        kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE, EBML_ID_KRAD_SUBUNIT_INFO);
+        kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
+        kr_compositor_path_to_ebml(&ebml_out, path);
+        kr_ebml2_finish_element(&ebml_out, payload);
+        kr_ebml2_finish_element(&ebml_out, response);
       }
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SUBUNIT_INFO:
