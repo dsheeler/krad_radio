@@ -52,12 +52,13 @@ struct kr_mixer_path_setup {
   kr_mixer_path_audio_cb *audio_cb;
 };
 
-/* FIXME add hard mode/maxpaths */
 struct kr_mixer_setup {
   uint32_t period_size;
   uint32_t sample_rate;
+  uint32_t path_count;
   void *user;
   kr_mixer_info_cb *cb;
+  void *mem;
 };
 
 //FIXME the below structs should be opauqe
@@ -98,24 +99,10 @@ struct kr_mixer_path {
   kr_sfx *sfx;
 };
 
-struct kr_mixer {
-  uint32_t period_size;
-  uint32_t new_period_size;
-  uint32_t sample_rate;
-  uint32_t new_sample_rate;
-  int avg_window_size;
-  kr_pool *path_pool;
-  kr_mixer_crossfader *crossfader;
-  int frames_since_peak_read;
-  int frames_per_peak_broadcast;
-  kr_mixer_info_cb *info_cb;
-  void *user;
-  void *clock;
-};
-
 kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup);
 int kr_mixer_unlink(kr_mixer_path *path);
 kr_mixer_path *kr_mixer_find(kr_mixer *mixer, char *name);
+kr_mixer_path *kr_mixer_path_iter(kr_mixer *mixer, int *count);
 
 //FIXME replace with kr_mixer_path_ctl and union type arg
 int kr_mixer_path_ctl(kr_mixer_path *mp, char *ctl, float val, int dr, void *p);
@@ -125,6 +112,7 @@ void kr_mixer_channel_copy(kr_mixer_path *path, int in_chan, int out_chan);
 void kr_mixer_channel_move(kr_mixer_path *path, int in_chan, int out_chan);
 
 /* Mixer as a whole funcs */
+size_t kr_mixer_size(void);
 void kr_mixer_setup_init(kr_mixer_setup *setup);
 kr_mixer *kr_mixer_create(kr_mixer_setup *setup);
 int kr_mixer_destroy(kr_mixer *mixer);

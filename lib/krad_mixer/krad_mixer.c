@@ -7,6 +7,22 @@ typedef enum {
   KR_MXP_TERM
 } mixer_path_state;
 
+struct kr_mixer {
+  uint32_t period_size;
+  uint32_t new_period_size;
+  uint32_t sample_rate;
+  uint32_t new_sample_rate;
+  int avg_window_size;
+  uint32_t path_count;
+  kr_pool *path_pool;
+  kr_mixer_crossfader *crossfader;
+  int frames_since_peak_read;
+  int frames_per_peak_broadcast;
+  kr_mixer_info_cb *info_cb;
+  void *user;
+  void *clock;
+};
+
 static float get_fade_in(float crossfade_value);
 static float get_fade_out(float crossfade_value);
 static float get_crossfade(kr_mixer_path *path);
@@ -244,7 +260,7 @@ static void update_controls(kr_mixer *mixer) {
   path = NULL;
   crossfader = NULL;
 
-  for (p = 0; p < KR_MXR_MAX_PATHS / 2; p++) {
+  for (p = 0; p < mixer->path_count / 2; p++) {
     crossfader = &mixer->crossfader[p];
     if ((crossfader != NULL) &&
         ((crossfader->path[0] != NULL) &&
@@ -504,7 +520,7 @@ void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *path1,
   if (path2->crossfader != NULL) {
     kr_mixer_xf_decouple(mixer, path2->crossfader);
   }
-  for (i = 0; i < KR_MXR_MAX_PATHS / 2; i++) {
+  for (i = 0; i < mixer->path_count / 2; i++) {
     crossfader = &mixer->crossfader[i];
     if ((crossfader != NULL) && ((crossfader->path[0] == NULL) &&
         (crossfader->path[1] == NULL))) {
@@ -709,6 +725,20 @@ int kr_mixer_unlink(kr_mixer_path *path) {
   return 0;
 }
 
+kr_mixer_path *kr_mixer_path_iter(kr_mixer *mixer, int *count) {
+
+  kr_mixer_path *path;
+
+  if (mixer == NULL) return NULL;
+
+  while ((path = kr_pool_iterate_active(mixer->path_pool, count))) {
+    if ((path->state == KR_MXP_READY) || (path->state == KR_MXP_ACTIVE)) {
+      return path;
+    }
+  }
+  return NULL;
+}
+
 kr_mixer_path *kr_mixer_find(kr_mixer *mixer, char *name) {
 
   int i;
@@ -875,6 +905,10 @@ int kr_mixer_destroy(kr_mixer *mixer) {
   return 0;
 }
 
+size_t kr_mixer_size(void) {
+  return sizeof(kr_mixer);
+}
+
 kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
 
   kr_mixer *mixer;
@@ -884,15 +918,16 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
   mixer = calloc(1, sizeof(kr_mixer));
   mixer->user = setup->user;
   mixer->info_cb = setup->cb;
+  mixer->path_count = setup->path_count;
   kr_mixer_period_set(mixer, setup->period_size);
   kr_mixer_sample_rate_set(mixer, setup->sample_rate);
   mixer->avg_window_size = (mixer->sample_rate / 1000) * KR_MXR_RMS_WINDOW_MS;
   mixer->frames_per_peak_broadcast = 1536;
-  mixer->crossfader = calloc(KR_MXR_MAX_PATHS / 2,
+  mixer->crossfader = calloc(mixer->path_count / 2,
    sizeof(kr_mixer_crossfader));
   pool_setup.shared = 0;
   pool_setup.size = sizeof(kr_mixer_path);
-  pool_setup.slices = KR_MXR_MAX_PATHS;
+  pool_setup.slices = setup->path_count;
   mixer->path_pool = kr_pool_create(&pool_setup);
   return mixer;
 }
@@ -903,6 +938,8 @@ void kr_mixer_setup_init(kr_mixer_setup *setup) {
 
   setup->period_size = KR_MXR_PERIOD_DEF;
   setup->sample_rate = KR_MXR_SRATE_DEF;
+  setup->path_count = KR_MXR_PATHS_DEF;
   setup->user = NULL;
   setup->cb = NULL;
+  setup->mem = NULL;
 }
