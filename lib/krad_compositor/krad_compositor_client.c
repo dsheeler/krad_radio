@@ -264,8 +264,8 @@ int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **stri
   kr_ebml_to_videoport_info (&crate->payload_ebml, &port);
   if (port.type == KR_CMP_OUTPUT) {
     pos += sprintf (*string + pos, "Video Output Port: %s\n", port.name);
-    pos += sprintf (*string + pos, "Width: %d\n", port.controls.width);
-    pos += sprintf (*string + pos, "Height: %d\n", port.controls.height);
+    pos += sprintf (*string + pos, "Width: %d\n", port.width);
+    pos += sprintf (*string + pos, "Height: %d\n", port.height);
   } else {
     pos += sprintf (*string + pos, "Video Input Port: %s\n", port.name);
     pos += sprintf (*string + pos, "X: %d\n", port.controls.x);

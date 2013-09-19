@@ -73,8 +73,17 @@ static void composite(kr_compositor *compositor) {
 }
 
 static void output(kr_compositor *compositor) {
-  // pool iterater thru le outputs
-  //krad_compositor_path_push_frame(&compositor->path[p], compositor->frame);
+
+  kr_compositor_path *path;
+  int i;
+
+  i = 0;
+
+  while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
+    if (path->info.type == KR_CMP_OUTPUT) {
+      path_output(path, compositor->frame);
+    }
+  }
 }
 
 static void cleanup(kr_compositor *compositor) {

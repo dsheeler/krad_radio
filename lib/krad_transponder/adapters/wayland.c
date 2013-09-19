@@ -17,6 +17,7 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
   cb_arg.image = image;
   cb_arg.path->av_cb(&cb_arg);
 
+  /*
   if (((time(NULL)) % 5) == 0) {
     uint32_t *p;
     int i;
@@ -30,12 +31,12 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
     }
     return 1;
   }
-
+  */
   return 1;
 }
 
 void wayland_adapter_path_event_cb(kr_wayland_cb_arg *arg) {
-  printk("wayland adapter path event cb happens!");
+  /*printk("wayland adapter path event cb happens!");*/
   kr_adapter_path_event_cb_arg cb_arg;
   cb_arg.path = (kr_adapter_path *)arg->user;
   cb_arg.user = cb_arg.path->user;
@@ -43,7 +44,7 @@ void wayland_adapter_path_event_cb(kr_wayland_cb_arg *arg) {
 }
 
 void wayland_adapter_event_cb(kr_wayland_cb_arg *arg) {
-  printk("wayland adapter event cb happens!");
+  /*printk("wayland adapter event cb happens!");*/
   kr_adapter_event_cb_arg cb_arg;
   cb_arg.adapter = (kr_adapter *)arg->user;
   cb_arg.user = cb_arg.adapter->user;

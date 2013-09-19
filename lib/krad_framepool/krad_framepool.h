@@ -26,7 +26,7 @@ struct krad_frame_St {
 	uint8_t *yuv_pixels[4];
 	int yuv_strides[4];
 	cairo_surface_t *cst;
-	cairo_t *cr;	
+	cairo_t *cr;
 	uint64_t timecode;
 	int width;
 	int height;

@@ -20,6 +20,13 @@ static void kr_compositor_path_tick(kr_compositor_path *path) {
   }
 }
 
+void path_output(kr_compositor_path *path, krad_frame_t *frame) {
+  kr_compositor_path_frame_cb_arg cb_arg;
+  cb_arg.user = path->user;
+  path->frame_cb(&cb_arg);
+  memcpy(cb_arg.image.px, frame->pixels, frame->width * frame->height * 4);
+}
+
 void kr_compositor_path_render(kr_compositor_path *path, cairo_t *cr) {
 /*
   krad_frame_t *frame;
@@ -99,6 +106,13 @@ static void path_create(kr_compositor_path *path,
   path->user = setup->user;
   path->frame_cb = setup->frame_cb;
   krad_compositor_subunit_reset(&path->subunit);
+  if (path->info.type == KR_CMP_INPUT) {
+    path->compositor->active_input_paths++;
+  }
+  if (path->info.type == KR_CMP_OUTPUT) {
+    path->compositor->active_output_paths++;
+  }
+  path->compositor->active_paths++;
 }
 
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,

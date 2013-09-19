@@ -187,9 +187,7 @@ static void audio_cb(kr_mixer_path *path, uint32_t nframes) {
   cb_arg.audio.channels = path->channels;
   cb_arg.audio.count = nframes;
   cb_arg.audio.rate = path->mixer->sample_rate;
-  cb_arg.type = path->type;
   cb_arg.user = path->user;
-  cb_arg.path = path;
   path->audio_cb(&cb_arg);
   if (path->type == KR_MXR_INPUT) {
     import_frames(path, &cb_arg.audio);
