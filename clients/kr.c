@@ -101,7 +101,7 @@ int main (int argc, char *argv[]) {
       if (((strlen(argv[1]) == 2) && (strncmp(argv[1], "vn", 2) == 0)) ||
           ((strlen(argv[1]) == 3) && (strncmp(argv[1], "-vn", 3) == 0)) ||
           ((strlen(argv[1]) == 4) && (strncmp(argv[1], "--vn", 4) == 0))) {
-          printf("%d\n", VERSION_NUMBER);
+          printf("%d\n", KR_VERSION);
           return 0;
       }
 
@@ -112,7 +112,7 @@ int main (int argc, char *argv[]) {
           ((strlen(argv[1]) == 4) && (strncmp(argv[1], "--vg", 4) == 0)) ||
           ((strlen(argv[1]) == 6) && (strncmp(argv[1], "gitver", 6) == 0)) ||
           ((strlen(argv[1]) == 10) && (strncmp(argv[1], "gitversion", 10) == 0))) {
-          printf("%s\n", KRAD_GIT_VERSION);
+          printf("%s\n", KR_GIT_VERSION);
           return 0;
       }
 
@@ -120,7 +120,7 @@ int main (int argc, char *argv[]) {
           ((strlen(argv[1]) == 2) && (strncmp(argv[1], "-v", 2) == 0)) ||
           ((strlen(argv[1]) >= 3) && (strncmp(argv[1], "--v", 3) == 0))) {
 
-          printf (KRAD_VERSION_STRING "\n");
+          printf (KR_VERSION_STR_FULL "\n");
           return 0;
       }
 

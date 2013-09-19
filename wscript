@@ -31,17 +31,17 @@ def options(opt):
   opt.load('compiler_cxx')
 
   opt.add_option('--optimize', action='store_true', default=False,
-    help='Compile with -O3 rather than -g')  
+    help='Compile with -O3 rather than -g')
 
-  opt.add_option('--without-x11', action='store_true', default=False, dest='nox11', 
+  opt.add_option('--without-x11', action='store_true', default=False, dest='nox11',
     help='Don\'t build anything depending on X11 (X11 capture)')
-    
-  opt.add_option('--without-wayland', action='store_true', default=False, dest='nowayland', 
+
+  opt.add_option('--without-wayland', action='store_true', default=False, dest='nowayland',
     help='Don\'t build anything depending on Wayland')
-    
+
   opt.add_option('--without-gtk', action='store_true', default=True, dest='nogtk',
     help='Don\'t build anything depending on gtk+ (GUI)')
-    
+
   opt.add_option('--without-gif', action='store_true', default=False, dest='nogif',
     help='Don\'t build anything depending on giflib')
 
@@ -72,7 +72,7 @@ def check_x11(x11):
 def get_git_ver(conf):
   try:
     gitver = check_output(["git", "describe", "--tags"])
-    flag = '-DGIT_VERSION="' + gitver.decode('utf8').strip() + '"'
+    flag = '-DKR_GIT_VERSION="' + gitver.decode('utf8').strip() + '"'
     conf.env.append_unique('CFLAGS', [flag])
     conf.env.append_unique('CXXLAGS', [flag])
   except OSError as e:
@@ -103,7 +103,7 @@ def configure(conf):
   check_way(conf)
   get_git_ver(conf)
 
-  conf.load('compiler_c')  
+  conf.load('compiler_c')
   conf.load('compiler_cxx')
 
   conf.link_add_flags
@@ -120,11 +120,11 @@ def configure(conf):
     conf.env.append_unique('CFLAGS', ['-O3', '-Wall'])
 
   conf.recurse(subdirs, mandatory = False)
-  
+
 def build(bld):
   bld.recurse(subdirs, mandatory = False)
   bld.add_post_fun(post)
 
 def post(pst):
-  if pst.cmd == 'install' and pst.env['KR_LINUX'] == True: 
+  if pst.cmd == 'install' and pst.env['KR_LINUX'] == True:
     pst.exec_command('/sbin/ldconfig')

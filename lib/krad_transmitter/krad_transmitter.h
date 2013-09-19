@@ -21,7 +21,7 @@
 
 #ifdef KRAD_RADIO
 #include "krad_radio_version.h"
-#define KRAD_TRANSMITTER_SERVER APPVERSION
+#define KRAD_TRANSMITTER_SERVER KR_VERSION_STR_FULL
 #else
 #define KRAD_TRANSMITTER_SERVER "Krad Transmitter 21"
 #endif

@@ -43,20 +43,20 @@ static int kr_mkv_check_ebml_header (kr_mkv_t *mkv) {
   char doctype[64];
   uint32_t version;
   uint32_t read_version;
-  
+
 
   if (0 > kr_ebml2_unpack_header (mkv->e, doctype, 64,
                                   &version, &read_version)) {
     printke ("Could not read EBML header");
-    return -1;                            
+    return -1;
   }
 
   if ((strncmp(doctype, "webm", 4) != 0) &&
       (strncmp(doctype, "matroska", 8) != 0)) {
     printke ("Invalid Doctype: %s", doctype);
-    return -1;      
+    return -1;
   }
-  
+
   if ((version < 2) || (version > 4) ||
       (read_version < 2) || (read_version > 4)) {
     printke ("Crazy Version Number: %u - %u",
@@ -80,7 +80,7 @@ static int kr_mkv_parse_segment_info (kr_mkv_t *mkv, uint64_t max_pos) {
     if (mkv->e->pos >= max_pos) {
       printk ("Got to end of segment info");
       break;
-    }  
+    }
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
     if (ret < 0) {
       printke ("Read error..");
@@ -140,11 +140,11 @@ static int kr_mkv_parse_segment_header (kr_mkv_t *mkv) {
     printke ("No Segment :/");
     return -1;
   }
-  
+
   printk ("Got Segment");
 
   while (1) {
-  
+
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
     if (ret < 0) {
       printke ("Read error..");
@@ -167,7 +167,7 @@ static int kr_mkv_parse_segment_header (kr_mkv_t *mkv) {
         if (kr_mkv_parse_segment_info (mkv, mkv->e->pos + size) < 0) {
           return -1;
         }
-        break;        
+        break;
       default:
         printk ("Skipping unknown element: %"PRIu64" bytes", size);
         kr_ebml2_advance (mkv->e, size);
@@ -187,7 +187,7 @@ static int kr_mkv_parse_tracks (kr_mkv_t *mkv, uint64_t max_pos) {
     if (mkv->e->pos >= max_pos) {
       printk ("Got to end of tracks info");
       break;
-    }  
+    }
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
     if (ret < 0) {
       printke ("Read error...");
@@ -223,7 +223,7 @@ static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
     printke ("Got codec data size %"PRIu64". To big!", size);
     return -1;
   }
-  
+
   if (size == 0) {
     printke ("Got codec data size of zero!");
     return -1;
@@ -248,15 +248,15 @@ static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
     track->header_len[0] = track->codec_data_size;
     track->header[0] = track->codec_data;
   }
-  
+
   if ((track->codec == VORBIS) || (track->codec == THEORA)) {
-    
+
     uint8_t byte;
-    uint32_t bytes_read;    
+    uint32_t bytes_read;
     uint32_t value;
     uint32_t maxlen;
     uint32_t current_header;
-    
+
     current_header = 0;
     bytes_read = 0;
     value = 0;
@@ -296,7 +296,7 @@ static int kr_mkv_track_read_codec_hdr (kr_mkv_t *mkv,
         break;
       }
     }
-    
+
     if ((track->header_len[0] == 0) ||
         (track->header_len[1] == 0) ||
         (track->header_len[2] == 0)) {
@@ -329,7 +329,7 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
   uint8_t type;
   char codec_id[32];
   float samplerate;
-  
+
   samplerate = 0;
   number = 0;
   type = 0;
@@ -340,7 +340,7 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
     if (mkv->e->pos >= max_pos) {
       printk ("Got to end of track info");
       break;
-    }  
+    }
     ret = kr_ebml2_unpack_id (mkv->e, &id, &size);
     if (ret < 0) {
       printke ("Read error..");
@@ -396,7 +396,7 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
         break;
       case MKV_BITDEPTH:
         kr_ebml2_unpack_uint32 (mkv->e, &track.bit_depth, size);
-        break; 
+        break;
       default:
         printk ("Skipping unknown element: %"PRIu64" bytes", size);
         kr_ebml2_advance (mkv->e, size);
@@ -420,7 +420,7 @@ static void kr_mkv_rebuild_header_for_streaming (kr_mkv_t *mkv) {
   uint8_t *segment_info;
   kr_mkv_t *shdr;
   char *title;
-  
+
   len = mkv->e->pos;
   mkv->stream_hdr = malloc (len);
 
@@ -436,12 +436,12 @@ static void kr_mkv_rebuild_header_for_streaming (kr_mkv_t *mkv) {
   kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_TITLE, title);
   kr_ebml2_pack_int32 (shdr->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
   kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
-  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_WRITINGAPP, KRAD_VERSION_STRING);
+  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_WRITINGAPP, KR_VERSION_STR);
   kr_ebml2_finish_element (shdr->e, segment_info);
 
   kr_ebml2_pack_data (shdr->e, MKV_TRACKS,
                       mkv->tracks_info_data, mkv->tracks_info_data_size);
-    
+
   mkv->stream_hdr_len = shdr->e->pos;
   memcpy (mkv->stream_hdr, shdr->e->bufstart, mkv->stream_hdr_len);
 
@@ -457,7 +457,7 @@ static int kr_mkv_parse_header (kr_mkv_t *mkv) {
   }
 
   kr_mkv_rebuild_header_for_streaming (mkv);
-  
+
   return 0;
 }
 
@@ -486,7 +486,7 @@ static int kr_mkv_parse_simpleblock ( kr_mkv_t *mkv,
   if (timecode != NULL) {
     *timecode = mkv->current_timecode;
   }
-  
+
   kr_ebml2_unpack_data ( mkv->e, &flags_tmp, 1 );
 
   if (flags != NULL) {
@@ -502,16 +502,16 @@ kr_mkv_t *kr_mkv_open_stream (char *host, int port, char *mount) {
 }
 
 kr_mkv_t *kr_mkv_open_file (char *filename) {
-  
+
   kr_mkv_t *mkv;
   kr_file_t *file;
 
-  file = kr_file_open (filename);  
+  file = kr_file_open (filename);
 
   if (file == NULL) {
     return NULL;
   }
-  
+
   mkv = kr_mkv_create_bufsize (file->size);
   mkv->file = file;
   mkv->fd = file->fd;
@@ -614,5 +614,5 @@ int kr_mkv_read_packet (kr_mkv_t *mkv, uint32_t *track,
         break;
     }
   }
-  return 0;      
+  return 0;
 }

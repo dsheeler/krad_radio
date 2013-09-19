@@ -271,7 +271,7 @@ void kr_radio_set_dir(kr_radio *radio, char *dir) {
   sprintf(radio->log.filename, "%s/%s_%"PRIu64".log", dir, radio->sysname,
    krad_unixtime());
   krad_system_log_on(radio->log.filename);
-  printk(APPVERSION);
+  printk(KR_VERSION_STR_FULL);
   printk("Station: %s", radio->sysname);
   if (radio->log.startup_timer != NULL) {
     printk("Krad Radio took %"PRIu64"ms to startup",

@@ -1,4 +1,4 @@
-AC_INIT([kradradio], m4_esyscmd([scripts/krad_ver.sh]), [kradradio@gmail.com])
+AC_INIT([kradradio], m4_esyscmd([scripts/kr_version.sh]), [kradradio@gmail.com])
 AC_CONFIG_SRCDIR([tests/krad_webm_dash_vod_test.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
@@ -14,6 +14,8 @@ AC_SUBST(KR_LT_CURRENT)
 AC_SUBST(KR_LT_REVISION)
 AC_SUBST(KR_LT_AGE)
 
+AC_SUBST(KR_GIT_VERSION, m4_esyscmd([git describe --tags]))
+
 CFLAGS="-g -Wall $CFLAGS"
 CXXFLAGS="-g -Wall $CXXFLAGS"
 
@@ -28,18 +30,21 @@ AS_IF([test "$enable_optimize" = "yes"], [
 
 case $host in
   *-linux*)
+  AM_CONDITIONAL(LINUX, true)
   CFLAGS="-DKR_LINUX $CFLAGS"
   CXXFLAGS="-DKR_LINUX $CXXFLAGS"
 esac
 
-# Checks for libraries.
-AC_CHECK_LIB(m, sin, [], AC_MSG_ERROR([library m not found]))
-AC_CHECK_LIB(dl, dlopen, [], AC_MSG_ERROR([library dl not found]))
-AC_CHECK_LIB(z, compress, [], AC_MSG_ERROR([library z not found]))
-AC_CHECK_LIB(pthread, pthread_create, [], AC_MSG_ERROR([pthread not found]))
-AC_CHECK_LIB(rt, clock_gettime, [], AC_MSG_ERROR([library rt not found]))
-AC_CHECK_LIB(turbojpeg, tjInitDecompress, [], [])
-AC_CHECK_LIB(gif, DGifOpenFileName, [], [])
+
+AC_CHECK_LIB([m], [dl], [z], [pthread], [rt])
+
+AC_CHECK_LIB(turbojpeg, tjInitDecompress,
+ [AM_CONDITIONAL([HAVE_TURBOJPEG], true)],
+ [AM_CONDITIONAL([HAVE_TURBOJPEG], false)])
+
+AC_CHECK_LIB(gif, DGifOpenFileName,
+ [AM_CONDITIONAL([HAVE_GIF], true)],
+ [AM_CONDITIONAL([HAVE_GIF], false)])
 
 PKG_CHECK_MODULES([HOBGOBLINFIRECAKE], [hobgoblinfirecake],
    [AC_DEFINE([HAVE_HOBGOBLINFIRECAKE], [1], [Use HOBGOBLINFIRECAKE])],
@@ -47,6 +52,7 @@ PKG_CHECK_MODULES([HOBGOBLINFIRECAKE], [hobgoblinfirecake],
        [AC_DEFINE([HAVE_ALSA], [1], [Use ALSA])
     ])
 ])
+
 PKG_CHECK_MODULES([JACK], [jack])
 PKG_CHECK_MODULES([OPUS], [opus])
 PKG_CHECK_MODULES([VORBIS], [vorbis,vorbisenc])
@@ -60,11 +66,16 @@ PKG_CHECK_MODULES([FREETYPE2], [freetype2])
 PKG_CHECK_MODULES([CAIRO], [cairo,cairo-ft])
 PKG_CHECK_MODULES([NCURSES], [ncurses,panel,menu,form])
 PKG_CHECK_MODULES([XKBCOMMON], [xkbcommon])
-PKG_CHECK_MODULES([WAYLAND], [wayland-client])
-PKG_CHECK_MODULES([X11], [x11,x11-xcb,xcb-image,xcb-shm])
+PKG_CHECK_MODULES([WAYLAND], [wayland-client], [AM_CONDITIONAL(HAVE_WAYLAND, true)])
+PKG_CHECK_MODULES([X11], [x11,x11-xcb,xcb-image,xcb-shm],
+                  [AM_CONDITIONAL(HAVE_X11, true)])
 PKG_CHECK_MODULES([XMMS2], [xmms2-client])
 
-# AC_CONFIG_SUBDIRS([lib/krad_vhs/ext/imagezero])
+LT_LIB_M
+
+AC_PROG_CC
+AC_PROG_CXX
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

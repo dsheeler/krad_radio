@@ -20,13 +20,13 @@ static char *kr_codec_to_mkv_codec (krad_codec_t codec) {
     case VP8:
       return "V_VP8";
     case KVHS:
-      return "V_KVHS";  
+      return "V_KVHS";
     case THEORA:
       return "V_THEORA";
     case MJPEG:
       return "V_MJPEG";
     case H264:
-      return "V_MPEG4/ISO/AVC";  
+      return "V_MPEG4/ISO/AVC";
     default:
       return "No Codec";
   }
@@ -53,7 +53,7 @@ static int kr_mkv_generate_track_uid (int track_number) {
   uint64_t t;
   uint64_t r;
   uint64_t rval;
-  
+
   t = time (NULL) * track_number;
   r = rand ();
   r = r << 32;
@@ -66,7 +66,7 @@ static int kr_mkv_generate_track_uid (int track_number) {
 static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
 
   //FIXME temp
-  
+
   if ((mkv->stream_hdr_len == 0) && (mkv->e->pos > 0)) {
     mkv->stream_hdr_len = mkv->e->pos;
     mkv->stream_hdr = malloc (mkv->stream_hdr_len);
@@ -75,24 +75,24 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
       krad_transmitter_transmission_set_header (mkv->transmission,
                                                 mkv->stream_hdr,
                                                 mkv->stream_hdr_len);
-      kr_io2_advance (mkv->io, mkv->e->pos); 
-      kr_io2_restart (mkv->io);  
+      kr_io2_advance (mkv->io, mkv->e->pos);
+      kr_io2_restart (mkv->io);
       kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
       return 0;
     }
     if (mkv->io_cb_ptr != NULL) {
       mkv->io_callback (mkv->stream_hdr, mkv->stream_hdr_len, splicepoint, mkv->io_cb_ptr);
-      kr_io2_advance (mkv->io, mkv->e->pos); 
+      kr_io2_advance (mkv->io, mkv->e->pos);
       kr_io2_restart (mkv->io);
       kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
       return 0;
     }
   }
-  
+
   kr_io2_advance (mkv->io, mkv->e->pos);
   if (mkv->io_cb_ptr != NULL) {
     mkv->io_callback (mkv->io->buffer, mkv->io->len, splicepoint, mkv->io_cb_ptr);
-    kr_io2_restart (mkv->io);  
+    kr_io2_restart (mkv->io);
   } else {
     if (mkv->transmission != NULL) {
       krad_transmitter_transmission_add_data_opt (mkv->transmission,
@@ -102,7 +102,7 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
       kr_io2_restart (mkv->io);
     } else {
       if (mkv->stream != NULL) {
- 
+
         ssize_t ret;
         ssize_t sent;
         ssize_t bytes;
@@ -111,7 +111,7 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
         sent = 0;
         buffer = mkv->io->buffer;
         bytes = mkv->io->len;
-          
+
         while (sent != bytes) {
           kr_stream_i_am_a_blocking_subscripter (mkv->stream);
           ret = kr_stream_send (mkv->stream, buffer + sent, bytes - sent);
@@ -131,13 +131,13 @@ static int kr_mkv_sync (kr_mkv_t *mkv, int splicepoint) {
         if (mkv->stream->connected == 1) {
           kr_io2_restart (mkv->io);
         }
-      } else {    
+      } else {
         kr_io2_sync (mkv->io);
       }
     }
   }
   kr_ebml2_set_buffer (mkv->e, mkv->io->buf, mkv->io->space);
-  
+
   return 0;
 }
 
@@ -164,7 +164,7 @@ static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode) {
 static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
 
   uint8_t *segment_info;
-  
+
   if (title == NULL) {
     title = "A Krad Radio Creation";
   }
@@ -184,7 +184,7 @@ static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
   kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_TITLE, title);
   kr_ebml2_pack_uint64 (mkv->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
   kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
-  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_WRITINGAPP, KRAD_VERSION_STRING);
+  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_WRITINGAPP, KR_VERSION_STR);
   kr_ebml2_finish_element (mkv->e, segment_info);
 
   mkv->current_track = 1;
@@ -228,7 +228,7 @@ int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
   kr_ebml2_pack_int16 (mkv->e, MKV_WIDTH, mkv->tracks[t].width);
   kr_ebml2_pack_int16 (mkv->e, MKV_HEIGHT, mkv->tracks[t].height);
   kr_ebml2_finish_element (mkv->e, video_info);
-  kr_ebml2_finish_element (mkv->e, track_info);  
+  kr_ebml2_finish_element (mkv->e, track_info);
 
   return t;
 }
@@ -350,7 +350,7 @@ void kr_mkv_add_video_tc (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   track->total_video_frames++;
 
   /* Must be after clustering esp. in case of keyframe */
-  block_timecode = timecode - mkv->cluster_timecode;  
+  block_timecode = timecode - mkv->cluster_timecode;
 
   if (timecode > mkv->segment_timecode) {
     mkv->segment_timecode = timecode;
@@ -363,7 +363,7 @@ void kr_mkv_add_video_tc (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
   kr_ebml2_pack (mkv->e, &flags, 1);
   kr_ebml2_pack (mkv->e, buffer, len);
-    
+
   kr_mkv_sync (mkv, 0);
 }
 
@@ -403,7 +403,7 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
     mkv->audio_init_cluster = 1;
     kr_mkv_cluster (mkv, timecode);
   }
-  
+
   timecode = round ((1000000000 *
                      track->total_audio_frames /
                      track->sample_rate / mkv->timecode_scale));
@@ -413,7 +413,7 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
       (mkv->track_count == 1)) {
     kr_mkv_cluster (mkv, timecode);
     track->audio_frames_since_cluster = 0;
-  }  
+  }
 
   block_timecode = timecode - mkv->cluster_timecode;
 
@@ -428,21 +428,21 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
   kr_ebml2_pack (mkv->e, &flags, 1);
   kr_ebml2_pack (mkv->e, buffer, buffer_len);
-  
+
   kr_mkv_sync (mkv, 0);
 }
 
 kr_mkv_t *kr_mkv_create_file (char *filename) {
-  
+
   kr_mkv_t *mkv;
   kr_file_t *file;
 
-  file = kr_file_create (filename);  
+  file = kr_file_create (filename);
 
   if (file == NULL) {
     return NULL;
   }
-  
+
   mkv = kr_mkv_create ();
   mkv->file = file;
   mkv->fd = file->fd;
@@ -456,19 +456,19 @@ kr_mkv_t *kr_mkv_create_file (char *filename) {
 
 kr_mkv_t *kr_mkv_create_stream (char *host, int port,
                                 char *mount, char *password) {
-  
+
   kr_mkv_t *mkv;
   krad_stream_t *stream;
-  
+
   /* Temp */
   char *content_type = "video/webm";
-  
+
   stream = kr_stream_create (host, port, mount, content_type, password);
-  
+
   if (stream == NULL) {
     return NULL;
   }
-  
+
   while (stream->ready != 1) {
     kr_stream_handle_headers (stream);
   }
@@ -476,11 +476,11 @@ kr_mkv_t *kr_mkv_create_stream (char *host, int port,
   //printk ("Krad MKV: %s %d %s %s - SD %s",
   //        host, port, mount, password, stream->sd);
   //printk ("Krad MKV: SD %d", stream->sd);
-  
+
   mkv = kr_mkv_create ();
   mkv->stream = stream;
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
-  mkv->fd = stream->sd;  
+  mkv->fd = stream->sd;
   kr_io2_set_fd (mkv->io, mkv->fd);
 
   kr_mkv_start_segment (mkv, "A Krad Radio Stream");
@@ -505,7 +505,7 @@ kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
                                       char *mount,
                                       char *content_type) {
 
-  
+
   kr_mkv_t *mkv;
   krad_transmission_t *transmission;
 
@@ -518,7 +518,7 @@ kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
   if (transmission == NULL) {
     return NULL;
   }
-  
+
   mkv = kr_mkv_create ();
   mkv->transmission = transmission;
   kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
@@ -535,7 +535,7 @@ kr_mkv_t *kr_mkv_create_io_callback (mkv_io_callback cb, void *ptr) {
   if ((cb == NULL) || (ptr == NULL)) {
     return NULL;
   }
-  
+
   mkv = kr_mkv_create ();
   mkv->io_callback = cb;
   mkv->io_cb_ptr = ptr;

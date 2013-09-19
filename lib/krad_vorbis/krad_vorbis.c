@@ -6,7 +6,7 @@ static krad_vorbis_t *krad_vorbis_decoder_hdr_error (krad_vorbis_t *vorbis,
 int krad_vorbis_test_headers (krad_codec_header_t *hdr) {
 
   krad_vorbis_t *vorbis_dec;
-  
+
   vorbis_dec = NULL;
 
   vorbis_dec = krad_vorbis_decoder_create (hdr);
@@ -42,7 +42,7 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   ogg_packet header_main;
   ogg_packet header_comments;
   ogg_packet header_codebooks;
-  
+
   vorbis = calloc (1, sizeof(krad_vorbis_t));
 
   pos = 0;
@@ -52,8 +52,8 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
 
   vorbis->channels = channels;
   vorbis->sample_rate = sample_rate;
-  vorbis->quality = quality;  
-  
+  vorbis->quality = quality;
+
   vorbis_info_init (&vorbis->vinfo);
 
   printk ("KR Vorbis Encoder Version: %s", vorbis_version_string());
@@ -88,13 +88,13 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   vorbis_block_init (&vorbis->vdsp, &vorbis->vblock);
   vorbis_comment_init (&vorbis->vc);
 
-#ifdef APPVERSION
-  vorbis_comment_add_tag (&vorbis->vc, "ENCODER", APPVERSION);
+#ifdef KR_VERSION_STR_FULL
+  vorbis_comment_add_tag (&vorbis->vc, "ENCODER", KR_VERSION_STR_FULL);
 #endif
 
   vorbis->header.codec = VORBIS;
   vorbis_analysis_headerout (&vorbis->vdsp,
-                             &vorbis->vc, 
+                             &vorbis->vc,
                              &header_main,
                              &header_comments,
                              &header_codebooks);
@@ -104,7 +104,7 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   vorbis->hdrdata[2] = (char)header_comments.bytes;
 
   pos = 3;
-  
+
   memcpy (vorbis->hdrdata + pos,
           header_main.packet,
           header_main.bytes);
@@ -124,9 +124,9 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   memcpy (vorbis->hdrdata + pos,
           header_codebooks.packet,
           header_codebooks.bytes);
-          
+
   vorbis->header.data[2] = vorbis->hdrdata + pos;
-  vorbis->header.sz[2] = header_codebooks.bytes;    
+  vorbis->header.sz[2] = header_codebooks.bytes;
   pos += header_codebooks.bytes;
 
   //vorbis->header.header_combined = vorbis->hdrdata;
@@ -134,10 +134,10 @@ krad_vorbis_t *krad_vorbis_encoder_create (int channels,
   vorbis->header.count = 3;
 
   if (1) {
-    printk ("KR Vorbis Encoder Setup: header test start"); 
+    printk ("KR Vorbis Encoder Setup: header test start");
     krad_vorbis_test_headers (&vorbis->header);
-    printk ("KR Vorbis Encoder Setup: header test end");   
-  }  
+    printk ("KR Vorbis Encoder Setup: header test end");
+  }
 
   vorbis->state_str = "Krad Vorbis Encoder: Init OK";
 
@@ -192,14 +192,14 @@ int32_t kr_vorbis_encode (krad_vorbis_t *vorbis,
     codeme->sz = op.bytes;
     codeme->count = op.granulepos - vorbis->frames;
     vorbis->frames = op.granulepos;
-    
+
     memcpy (codeme->data, op.packet, codeme->sz);
-    
+
     //printk ("KR Vorbis Encoder: codeme size: %zu Count: %d",
     //        codeme->sz, codeme->count);
   }
 
-  return bo_ret;                         
+  return bo_ret;
 }
 
 /* Decoding */
@@ -245,7 +245,7 @@ krad_vorbis_t *krad_vorbis_decoder_create (kr_codec_hdr_t *header) {
   krad_vorbis_t *vorbis;
   int ret;
   ogg_packet op;
-  
+
   vorbis = calloc (1, sizeof(krad_vorbis_t));
 
   vorbis->error = 0;
@@ -253,7 +253,7 @@ krad_vorbis_t *krad_vorbis_decoder_create (kr_codec_hdr_t *header) {
 
   vorbis_info_init (&vorbis->vinfo);
   vorbis_comment_init (&vorbis->vc);
-  
+
   op.packet = header->data[0];
   op.bytes = header->sz[0];
   op.b_o_s = 1;
@@ -293,18 +293,18 @@ krad_vorbis_t *krad_vorbis_decoder_create (kr_codec_hdr_t *header) {
     printke (vorbis->state_str);
     return vorbis;
   }
-  
+
   vorbis_block_init (&vorbis->vdsp, &vorbis->vblock);
-  
+
   printk ("KR Vorbis Decoder: Info - Version: %d Channels: %d Sample Rate: %ld",
           vorbis->vinfo.version, vorbis->vinfo.channels, vorbis->vinfo.rate);
 
   if (((vorbis->vinfo.bitrate_lower == 0) ||
-       (vorbis->vinfo.bitrate_lower == 4294967295U)) && 
+       (vorbis->vinfo.bitrate_lower == 4294967295U)) &&
       ((vorbis->vinfo.bitrate_upper == 0) ||
        (vorbis->vinfo.bitrate_upper == 4294967295U))) {
     printk ("KR Vorbis Decoder: Nominal Bitrate: %ld",
-            vorbis->vinfo.bitrate_nominal);  
+            vorbis->vinfo.bitrate_nominal);
   } else {
     printk ("KR Vorbis Decoder: Bitrate: Low: %ld Nominal: %ld High: %ld",
             vorbis->vinfo.bitrate_lower,
@@ -366,10 +366,10 @@ int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
     }
     printke (vorbis->state_str);
     return vorbis->error;
-  }  
+  }
 
   sample_count = vorbis_synthesis_pcmout (&vorbis->vdsp, &pcm);
-  
+
   if (sample_count > 0) {
 
     vorbis->frames += sample_count;
@@ -396,6 +396,6 @@ int32_t kr_vorbis_decode (krad_vorbis_t *vorbis,
       return vorbis->error;
     }
   }
- 
-  return 0;                     
+
+  return 0;
 }
