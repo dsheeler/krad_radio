@@ -84,7 +84,7 @@ static void cleanup(kr_compositor *compositor) {
   subunits_state_update(compositor);
 }
 
-int krad_compositor_process(kr_compositor *compositor) {
+int kr_compositor_process(kr_compositor *compositor) {
   if (compositor == NULL) return -1;
   setup(compositor);
   composite(compositor);

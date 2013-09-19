@@ -3,6 +3,7 @@ void jack_adapter_path_audio_cb(kr_jack_path_audio_cb_arg *arg) {
   cb_arg.path = (kr_adapter_path *)arg->user;
   cb_arg.user = cb_arg.path->user;
   cb_arg.audio = arg->audio;
+  memset(&cb_arg.image, 0, sizeof(kr_image));
   cb_arg.path->av_cb(&cb_arg);
 }
 
