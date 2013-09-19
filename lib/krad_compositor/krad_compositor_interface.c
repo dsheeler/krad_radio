@@ -175,7 +175,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   uint32_t numbers[10];
   kr_app_server *app;
 
-  address.path.unit = KR_MIXER;
+  address.path.unit = KR_COMPOSITOR;
   radio = client->krad_radio;
   compositor = radio->compositor;
   app = radio->app;
@@ -301,7 +301,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
           kr_ebml2_finish_element(&ebml_out, response);
         }
       }
-      address.path.subunit.mixer_subunit = KR_PORTGROUP;
+      address.path.subunit.compositor_subunit = KR_VIDEOPORT;
       i = 0;
       while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
         address.id.number = i - 1;

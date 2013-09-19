@@ -17,6 +17,7 @@ typedef struct kr_mixer_setup kr_mixer_setup;
 
 #define KR_MXR_MAX_MINIWINS 192
 
+#include "krad_pool.h"
 #include "krad_av.h"
 #include "krad_mixer_common.h"
 #include "krad_mixer_interface.h"
@@ -97,14 +98,13 @@ struct kr_mixer_path {
   kr_sfx *sfx;
 };
 
-/* FIXME to opaque this all we need is a way to iterate thru all paths */
 struct kr_mixer {
   uint32_t period_size;
   uint32_t new_period_size;
   uint32_t sample_rate;
   uint32_t new_sample_rate;
   int avg_window_size;
-  kr_mixer_path *path[KR_MXR_MAX_PATHS];
+  kr_pool *path_pool;
   kr_mixer_crossfader *crossfader;
   int frames_since_peak_read;
   int frames_per_peak_broadcast;

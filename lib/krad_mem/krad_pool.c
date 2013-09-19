@@ -43,12 +43,14 @@ void *kr_pool_iterate_active(kr_pool *pool, int *count) {
   mask = 1;
   mask = mask << ((*count));
   while (*count < pool->slices) {
-    (*count)++;
     if ((pool->use & mask) != 0) {
-      return pool->data + (pool->slice_size * (*count));
+      return pool->data + (pool->slice_size * (*count)++);
+    } else {
+      (*count)++;
+      mask = mask << 1;
     }
-    mask = mask << 1;
   }
+  (*count) = 0;
   return NULL;
 }
 /*

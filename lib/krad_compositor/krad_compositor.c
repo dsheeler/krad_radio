@@ -490,13 +490,10 @@ static void paths_free(kr_compositor *compositor) {
 }
 
 static void paths_create(kr_compositor *compositor) {
-
   kr_pool_setup setup;
-
-  setup.shared = 1;
+  setup.shared = 0;
   setup.size = sizeof(kr_compositor_path);
   setup.slices = KC_MAX_PORTS;
-
   compositor->path_pool = kr_pool_create(&setup);
 }
 
