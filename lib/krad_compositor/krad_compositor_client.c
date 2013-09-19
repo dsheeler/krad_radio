@@ -96,14 +96,13 @@ static void kr_ebml_to_compositor_info(kr_ebml2_t *ebml, kr_compositor_info *com
 }
 
 static void kr_ebml_to_videoport_info(kr_ebml2_t *ebml, kr_compositor_path_info *port) {
-  kr_ebml2_unpack_element_string (ebml, NULL,
-                                  port->sysname, sizeof(port->sysname));
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->type);
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.x);
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &port->controls.y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.z);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->source_width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->source_height);
+  kr_ebml2_unpack_element_string(ebml, NULL, port->name, sizeof(port->name));
+  kr_ebml2_unpack_element_int32(ebml, NULL, &port->type);
+  kr_ebml2_unpack_element_int32(ebml, NULL, &port->controls.x);
+  kr_ebml2_unpack_element_int32(ebml, NULL, &port->controls.y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->controls.z);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->width);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->height);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_x);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_width);
@@ -263,18 +262,17 @@ int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **stri
   pos = 0;
 
   kr_ebml_to_videoport_info (&crate->payload_ebml, &port);
-  //FIXME
-  if (port.type == 0) {
-    pos += sprintf (*string + pos, "Video Output Port: %s\n", port.sysname);
+  if (port.type == KR_CMP_OUTPUT) {
+    pos += sprintf (*string + pos, "Video Output Port: %s\n", port.name);
     pos += sprintf (*string + pos, "Width: %d\n", port.controls.width);
     pos += sprintf (*string + pos, "Height: %d\n", port.controls.height);
   } else {
-    pos += sprintf (*string + pos, "Video Input Port: %s\n", port.sysname);
+    pos += sprintf (*string + pos, "Video Input Port: %s\n", port.name);
     pos += sprintf (*string + pos, "X: %d\n", port.controls.x);
     pos += sprintf (*string + pos, "Y: %d\n", port.controls.y);
     pos += sprintf (*string + pos, "Z: %d\n", port.controls.z);
-    pos += sprintf (*string + pos, "Source Width: %d\n", port.source_width);
-    pos += sprintf (*string + pos, "Source Height: %d\n", port.source_height);
+    pos += sprintf (*string + pos, "Source Width: %d\n", port.width);
+    pos += sprintf (*string + pos, "Source Height: %d\n", port.height);
     pos += sprintf (*string + pos, "Crop X: %d\n", port.crop_x);
     pos += sprintf (*string + pos, "Crop Y: %d\n", port.crop_y);
     pos += sprintf (*string + pos, "Crop Width: %d\n", port.crop_width);

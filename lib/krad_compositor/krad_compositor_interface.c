@@ -1,13 +1,13 @@
 #include "krad_compositor_interface.h"
 
 void path_info_to_ebml(kr_ebml *e, kr_compositor_path_info *info) {
-  kr_ebml2_pack_string(e, EBML_ID_KRAD_COMPOSITOR_TEXT, info->sysname);
+  kr_ebml2_pack_string(e, EBML_ID_KRAD_COMPOSITOR_TEXT, info->name);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, info->type);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, info->controls.x);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.y);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.z);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->source_width);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->source_height);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->width);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->height);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_x);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_y);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_width);

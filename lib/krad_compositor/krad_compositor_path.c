@@ -78,11 +78,11 @@ int path_setup_check(kr_compositor_path_setup *setup) {
   kr_compositor_path_info *info;
   info = &setup->info;
 
-  if ((setup->user == NULL) || (setup->cb == NULL)) {
+  if ((setup->user == NULL) || (setup->frame_cb == NULL)) {
     /* FIXME HRMMM */
   }
 
-  if ((info->source_width == 0) || (info->source_height == 0)) {
+  if ((info->width == 0) || (info->height == 0)) {
     return -1;
   }
   if ((info->type != KR_CMP_OUTPUT) && (info->type != KR_CMP_OUTPUT)) {
@@ -97,7 +97,7 @@ static void path_create(kr_compositor_path *path,
 
   path->info = setup->info;
   path->user = setup->user;
-  path->cb = setup->cb;
+  path->frame_cb = setup->frame_cb;
   krad_compositor_subunit_reset(&path->subunit);
 }
 

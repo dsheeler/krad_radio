@@ -8,14 +8,13 @@ int wayland_adapter_path_av_cb(kr_wayland_cb_arg *arg) {
   kr_adapter_path_av_cb_arg cb_arg;
   kr_image image;
 
-  image.w = 640;
-  image.h = 480;
+  image.w = 1280;
+  image.h = 720;
   image.px = arg->event.frame_event.buffer;
 
   cb_arg.path = (kr_adapter_path *)arg->user;
   cb_arg.user = cb_arg.path->user;
   cb_arg.image = image;
-  cb_arg.put = 0;
   cb_arg.path->av_cb(&cb_arg);
 
   if (((time(NULL)) % 5) == 0) {

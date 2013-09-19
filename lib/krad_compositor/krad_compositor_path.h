@@ -1,6 +1,7 @@
 #ifndef KRAD_COMPOSITOR_PATH_H
 #define KRAD_COMPOSITOR_PATH_H
 
+#include "krad_av.h"
 #include "krad_compositor_subunit.h"
 #include "krad_perspective.h"
 #include "krad_framepool.h"
@@ -27,22 +28,20 @@ struct kr_compositor_path_info_cb_arg {
 };
 
 struct kr_compositor_path_frame_cb_arg {
-  uint32_t channels;
-  uint32_t nframes;
-  float **samples;
+  kr_image image;
   void *user;
 };
 
 struct kr_compositor_path_setup {
   kr_compositor_path_info info;
   void *user;
-  kr_compositor_path_frame_cb *cb;
+  kr_compositor_path_frame_cb *frame_cb;
 };
 
 struct kr_compositor_path {
   kr_compositor_path_info info;
   void *user;
-  kr_compositor_path_frame_cb *cb;
+  kr_compositor_path_frame_cb *frame_cb;
   kr_compositor *compositor;
   krad_frame_t *frame;
   kr_easer crop_x_easer;

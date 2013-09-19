@@ -34,7 +34,6 @@ int v4l2_adapter_process(kr_adapter_path *path) {
       cb_arg.path = path;
       cb_arg.user = cb_arg.path->user;
       cb_arg.image = image;
-      cb_arg.put = 1;
       cb_arg.path->av_cb(&cb_arg);
       printk("wee!");
       kr_v4l2_release(path->adapter->handle.v4l2, &image);

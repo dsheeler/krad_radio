@@ -281,14 +281,14 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
       break;
     case KR_VIDEOPORT:
       controls = crate->inside.videoport->controls;
-      if (crate->inside.videoport->type == 0) { //FIXME
+      if (crate->inside.videoport->type == KR_CMP_OUTPUT) {
         pos += snprintf(json + pos, sizeof(json) - pos,
          "\"port_name\":\"%s\",\"direction\":\"%s\",",
-         crate->inside.videoport->sysname, "output");
+         crate->inside.videoport->name, "output");
       } else {
         pos += snprintf(json + pos, sizeof(json) - pos,
          "\"port_name\":\"%s\",\"direction\":\"%s\",",
-         crate->inside.videoport->sysname, "input");
+         crate->inside.videoport->name, "input");
       }
       break;
     case KR_VECTOR:

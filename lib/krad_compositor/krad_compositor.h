@@ -16,8 +16,8 @@ typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
 #include "krad_framepool.h"
 #include "krad_compositor_interface.h"
 
-#define KR_COMPOSITOR_WIDTH_DEF 960
-#define KR_COMPOSITOR_HEIGHT_DEF 540
+#define KR_COMPOSITOR_WIDTH_DEF 1280
+#define KR_COMPOSITOR_HEIGHT_DEF 720
 #define KR_COMPOSITOR_FPS_DEF 30
 #define KR_COMPOSITOR_FPS_NUM_DEF KR_COMPOSITOR_FPS_DEF * 1000
 #define KR_COMPOSITOR_FPS_DEN_DEF 1 * 1000
