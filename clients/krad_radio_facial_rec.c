@@ -97,7 +97,7 @@ int videoport_process (void *buffer, void *user) {
 	cairo_t *cr;
   kr_snapshot *snapshot;
   
-  snapshot = (kr_shapshot *)user;
+  snapshot = (kr_snapshot *)user;
 
   if (snapshot->got_frame == 0) {
     memcpy(snapshot->rgba, buffer, snapshot->width * 
@@ -145,11 +145,6 @@ int main (int argc, char *argv[]) {
 	  return 1;
   }
 	
-  if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
-	  kr_client_destroy (&client);
-	  return 1;
-  }
-  
   if (kr_compositor_get_info_wait (client, &width, &height, NULL, NULL) != 1) {
     fprintf (stderr, "Could not get compositor info!\n");
 	  kr_client_destroy (&client);
