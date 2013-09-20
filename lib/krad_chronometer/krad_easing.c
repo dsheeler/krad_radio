@@ -1,5 +1,9 @@
 #include "krad_easing.h"
 
+int kr_easer_active(kr_easer *easer) {
+  return ((easer->active) || (easer->updated));
+}
+
 float kr_easer_process(kr_easer *easer, float current, void **ptr) {
 
   float value;

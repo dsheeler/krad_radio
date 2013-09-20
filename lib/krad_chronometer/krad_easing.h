@@ -36,6 +36,7 @@ kr_easing kr_easing_random();
 float kr_ease(kr_easing easing, float now, float start, float amt, float dur);
 void kr_easer_set(kr_easer *easer, float target, int dur, kr_easing easing, void *ptr);
 float kr_easer_process(kr_easer *easer, float current, void **ptr);
+int kr_easer_active(kr_easer *easer);
 void kr_easer_destroy(kr_easer *easer);
 kr_easer *kr_easer_create();
 

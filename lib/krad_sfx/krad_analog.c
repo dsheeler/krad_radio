@@ -82,7 +82,7 @@ void kr_analog_process2(kr_analog *analog, float *input, float *output,
 
 	ptr = NULL;
 
-  if (analog->blend_easer.active) {
+  if (kr_easer_active(&analog->blend_easer)) {
     analog->blend = kr_easer_process(&analog->blend_easer, analog->blend,
      &ptr);
     if (broadcast == 1) {
@@ -90,7 +90,7 @@ void kr_analog_process2(kr_analog *analog, float *input, float *output,
 //       &analog->address, BLEND, analog->blend, ptr);
     }
   }
-  if (analog->drive_easer.active) {
+  if (kr_easer_active(&analog->drive_easer)) {
     analog->drive = kr_easer_process(&analog->drive_easer, analog->drive,
      &ptr);
     if (broadcast == 1) {

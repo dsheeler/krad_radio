@@ -204,6 +204,8 @@ int kr_compositor_crate_to_string_from_sprite (kr_crate_t *crate, char **string)
   pos += sprintf (*string + pos, "X: %d\n", sprite.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", sprite.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", sprite.controls.z);
+  pos += sprintf (*string + pos, "Width: %d\n", sprite.controls.width);
+  pos += sprintf (*string + pos, "Height: %d\n", sprite.controls.height);
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", sprite.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", sprite.controls.rotation);
   pos += sprintf (*string + pos, "Tickrate: %d\n", sprite.controls.tickrate);

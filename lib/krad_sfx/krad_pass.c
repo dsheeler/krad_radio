@@ -46,7 +46,7 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
     recompute = 1;
   }
 
-  if (pass->bw_easer.active) {
+  if (kr_easer_active(&pass->bw_easer)) {
     pass->bw = kr_easer_process(&pass->bw_easer, pass->bw, &ptr);
     recompute = 1;
     if (broadcast == 1) {
@@ -54,8 +54,7 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
 //       &pass->address, BW, pass->bw, ptr);
     }
   }
-
-  if (pass->hz_easer.active) {
+  if (kr_easer_active(&pass->hz_easer)) {
     pass->hz = kr_easer_process(&pass->hz_easer, pass->hz, &ptr);
     recompute = 1;
     if (broadcast == 1) {

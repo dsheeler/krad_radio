@@ -55,25 +55,19 @@ krad_framepool_t *krad_framepool_create_for_upscale (int width, int height, int 
   krad_framepool->width = width;
   krad_framepool->height = height;
   krad_framepool->count = count;
-
   if (upscale_width > width) {
     krad_framepool->upscale_width = upscale_width;
   } else {
     krad_framepool->upscale_width = width;
   }
-
   if (upscale_height > height) {
     krad_framepool->upscale_height = upscale_height;
   } else {
     krad_framepool->upscale_height = height;
   }
-
   krad_framepool->stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, krad_framepool->upscale_width);
-
   krad_framepool->frame_byte_size = krad_framepool->stride * krad_framepool->upscale_height;
-
   krad_framepool->frames = calloc(krad_framepool->count, sizeof(krad_frame_t));
-
   for (f = 0; f < krad_framepool->count; f++ ) {
     krad_framepool->frames[f].width = krad_framepool->width;
     krad_framepool->frames[f].height = krad_framepool->height;

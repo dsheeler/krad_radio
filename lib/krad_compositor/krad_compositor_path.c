@@ -2,19 +2,19 @@ static void kr_compositor_path_tick(kr_compositor_path *path);
 
 static void kr_compositor_path_tick(kr_compositor_path *path) {
   krad_compositor_subunit_tick(&path->subunit);
-  if (path->crop_x_easer.active) {
+  if (kr_easer_active(&path->crop_x_easer)) {
     path->info.crop_x = kr_easer_process(&path->crop_x_easer,
      path->info.crop_x, NULL);
   }
-  if (path->crop_y_easer.active) {
+  if (kr_easer_active(&path->crop_y_easer)) {
     path->info.crop_y = kr_easer_process(&path->crop_y_easer,
      path->info.crop_y, NULL);
   }
-  if (path->crop_width_easer.active) {
+  if (kr_easer_active(&path->crop_width_easer)) {
     path->info.crop_width = kr_easer_process(&path->crop_width_easer,
      path->info.crop_width, NULL);
   }
-  if (path->crop_height_easer.active) {
+  if (kr_easer_active(&path->crop_height_easer)) {
     path->info.crop_height = kr_easer_process(&path->crop_height_easer,
      path->info.crop_height, NULL);
   }

@@ -68,34 +68,34 @@ void krad_compositor_subunit_set_alpha (krad_compositor_subunit_t *subunit, floa
 }
 
 void krad_compositor_subunit_tick (krad_compositor_subunit_t *subunit) {
-  if (subunit->x_easer.active) {
+  if (kr_easer_active(&subunit->x_easer)) {
     subunit->x = kr_easer_process(&subunit->x_easer, subunit->x, NULL);
   }
-  if (subunit->y_easer.active) {
+  if (kr_easer_active(&subunit->y_easer)) {
     subunit->y = kr_easer_process(&subunit->y_easer, subunit->y, NULL);
   }
-  if (subunit->width_easer.active) {
+  if (kr_easer_active(&subunit->width_easer)) {
     subunit->width = kr_easer_process(&subunit->width_easer, subunit->width, NULL);
   }
-  if (subunit->height_easer.active) {
+  if (kr_easer_active(&subunit->height_easer)) {
     subunit->height = kr_easer_process(&subunit->height_easer, subunit->height, NULL);
   }
-  if (subunit->opacity_easer.active) {
+  if (kr_easer_active(&subunit->opacity_easer)) {
     subunit->opacity = kr_easer_process(&subunit->opacity_easer, subunit->opacity, NULL);
   }
-  if (subunit->rotation_easer.active) {
+  if (kr_easer_active(&subunit->rotation_easer)) {
     subunit->rotation = kr_easer_process(&subunit->rotation_easer, subunit->rotation, NULL);
   }
-  if (subunit->red_easer.active) {
+  if (kr_easer_active(&subunit->red_easer)) {
     subunit->red = kr_easer_process(&subunit->red_easer, subunit->red, NULL);
   }
-  if (subunit->green_easer.active) {
+  if (kr_easer_active(&subunit->green_easer)) {
     subunit->green = kr_easer_process(&subunit->green_easer, subunit->green, NULL);
   }
-  if (subunit->blue_easer.active) {
+  if (kr_easer_active(&subunit->blue_easer)) {
     subunit->blue = kr_easer_process(&subunit->blue_easer, subunit->blue, NULL);
   }
-  if (subunit->alpha_easer.active) {
+  if (kr_easer_active(&subunit->alpha_easer)) {
     subunit->alpha = kr_easer_process(&subunit->alpha_easer, subunit->alpha, NULL);
   }
 }

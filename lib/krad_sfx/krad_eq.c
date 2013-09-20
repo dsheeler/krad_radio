@@ -46,7 +46,7 @@ void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
     //}
    // eq->address.sub_id2 = b;
     recompute = recompute_default;
-    if (eq->band[b].hz_easer.active) {
+    if (kr_easer_active(&eq->band[b].hz_easer)) {
       eq->band[b].hz = kr_easer_process(&eq->band[b].hz_easer, eq->band[b].hz, &ptr);
       recompute = 1;
       if (broadcast == 1) {
@@ -54,14 +54,14 @@ void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
 //         &eq->address, HZ, eq->band[b].hz, ptr);
       }
     }
-    if (eq->band[b].db_easer.active) {
+    if (kr_easer_active(&eq->band[b].db_easer)) {
       eq->band[b].db = kr_easer_process(&eq->band[b].db_easer, eq->band[b].db, &ptr);
       recompute = 1;
       if (broadcast == 1) {
 //        krad_radio_broadcast_subunit_control(eq->mixer->broadcaster, &eq->address, DB, eq->band[b].db, ptr);
       }
     }
-    if (eq->band[b].bw_easer.active) {
+    if (kr_easer_active(&eq->band[b].bw_easer)) {
       eq->band[b].bw = kr_easer_process(&eq->band[b].bw_easer, eq->band[b].bw, &ptr);
       recompute = 1;
       if (broadcast == 1) {
