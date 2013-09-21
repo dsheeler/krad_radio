@@ -314,6 +314,17 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
         return;
       case KR_VIDEOPORT:
         /*
+  kr_compositor_path *path;
+  int i;
+
+  i = 0;
+
+  while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
+    if (path->info.type == KR_CMP_INPUT) {
+      path_output(path, compositor->frame);
+    }
+  }
+
         if (uc->address.id.number < KC_MAX_PORTS) {
           if ((compositor->path[uc->address.id.number].subunit.active == 1) &&
               (compositor->path[uc->address.id.number].type == KR_CMP_INPUT)) {
@@ -523,7 +534,9 @@ static void subunits_free(kr_compositor *compositor) {
 }
 
 static void subunits_init(kr_compositor *compositor) {
+
   int i;
+
   for (i = 0; i < KC_MAX_SUBUNITS; i++) {
     if (i < KC_MAX_PORTS) {
       /* compositor->subunit[i] = &compositor->path[i].subunit; */

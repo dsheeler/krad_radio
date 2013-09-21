@@ -65,19 +65,19 @@ void test_jack_output_create(kr_xpdr *xpdr) {
     printke("could not create xpdr path");
   }
 }
-/*
+
 void test_v4l2_input_create(kr_xpdr *xpdr) {
 
   kr_xpdr_path_setup setup;
   kr_xpdr_path *path;
   int device_num;
-  char *display_name;
+  char *test_name;
   int width;
   int height;
   int num;
   int den;
 
-  display_name = "";
+  test_name = "V4L2 Test";
   device_num = 0;
   width = 640;
   height = 480;
@@ -85,7 +85,7 @@ void test_v4l2_input_create(kr_xpdr *xpdr) {
   den = 1;
 
   memset(&setup, 0, sizeof(kr_xpdr_path_setup));
-  strcpy(setup.info.name, "V4L2 Test");
+  strcpy(setup.info.name, test_name);
   setup.user = xpdr;
   setup.ev_cb = xpdr_path_event_cb;
 
@@ -97,14 +97,18 @@ void test_v4l2_input_create(kr_xpdr *xpdr) {
   setup.info.input.info.adapter_path_info.info.v4l2.width = width;
   setup.info.input.info.adapter_path_info.info.v4l2.height = height;
 
-  // make me exist
+  setup.info.output.type = KR_XPDR_COMPOSITOR;
+  strcpy(setup.info.output.info.compositor_path_info.name, test_name);
+  setup.info.output.info.compositor_path_info.width = width;
+  setup.info.output.info.compositor_path_info.height = height;
+  setup.info.output.info.compositor_path_info.type = KR_CMP_INPUT;
 
   path = kr_transponder_mkpath(xpdr, &setup);
   if (path == NULL) {
     printke("could not create xpdr path");
   }
 }
-*/
+
 void test_wayland_output_create(kr_xpdr *xpdr) {
 
   kr_xpdr_path_setup setup;
@@ -144,8 +148,8 @@ void test_wayland_output_create(kr_xpdr *xpdr) {
 }
 
 void test_xpdr(kr_xpdr *xpdr) {
-  test_jack_output_create(xpdr);
+/*  test_jack_output_create(xpdr);
   test_jack_input_create(xpdr);
-  /*test_v4l2_input_create(xpdr);*/
+  test_v4l2_input_create(xpdr);*/
   test_wayland_output_create(xpdr);
 }

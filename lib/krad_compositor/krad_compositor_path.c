@@ -92,7 +92,7 @@ int path_setup_check(kr_compositor_path_setup *setup) {
   if ((info->width == 0) || (info->height == 0)) {
     return -1;
   }
-  if ((info->type != KR_CMP_OUTPUT) && (info->type != KR_CMP_OUTPUT)) {
+  if ((info->type != KR_CMP_INPUT) && (info->type != KR_CMP_OUTPUT)) {
     return -2;
   }
   /* FIXME check more things out */
