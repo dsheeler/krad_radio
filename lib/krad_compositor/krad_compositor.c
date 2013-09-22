@@ -35,6 +35,8 @@ static void setup(kr_compositor *compositor) {
 
 static void composite(kr_compositor *compositor) {
   int i;
+  kr_compositor_path *path;
+  i = 0;
   if (krad_compositor_has_background(compositor)) {
     krad_compositor_render_background(compositor);
   } else {
@@ -47,14 +49,11 @@ static void composite(kr_compositor *compositor) {
         krad_compositor_render_no_input(compositor);
     }
   }
-  /*
-  for (i = 0; i < KC_MAX_PORTS; i++) {
-    if ((compositor->path[i].subunit.active == 1) &&
-        (compositor->path[i].info.type == KR_CMP_INPUT)) {
-        kr_compositor_path_render(&compositor->path[i], compositor->cr);
+  while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
+    if (path->info.type == KR_CMP_INPUT) {
+      kr_compositor_path_render(path, compositor->cr);
     }
   }
-  */
   for (i = 0; i < KC_MAX_SPRITES; i++) {
     if (compositor->sprite[i].subunit.active == 1) {
       kr_sprite_render(&compositor->sprite[i], compositor->cr);

@@ -2,6 +2,7 @@
 #define KRAD_COMPOSITOR_PATH_H
 
 #include "krad_av.h"
+#include "krad_convert.h"
 #include "krad_compositor_subunit.h"
 #include "krad_perspective.h"
 #include "krad_framepool.h"

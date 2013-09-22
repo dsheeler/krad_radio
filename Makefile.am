@@ -82,6 +82,7 @@ lib/krad_mkv/krad_mkv_demux.c \
 lib/krad_io/krad_stream.c \
 lib/krad_io/krad_file.c \
 lib/krad_compositor/krad_compositor_subunit.c \
+lib/krad_compositor/krad_convert.c \
 lib/krad_compositor/krad_compositor_interface.c \
 lib/krad_compositor/krad_vector.c \
 lib/krad_compositor/krad_sprite.c \

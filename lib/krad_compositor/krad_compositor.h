@@ -1,8 +1,6 @@
 #ifndef KRAD_COMPOSITOR_H
 #define KRAD_COMPOSITOR_H
 
-#include <libswscale/swscale.h>
-
 typedef struct kr_compositor kr_compositor;
 typedef struct kr_compositor_setup kr_compositor_setup;
 typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;

@@ -15,7 +15,7 @@ void xpdr_adapter_path_av_cb(kr_adapter_path_av_cb_arg *arg) {
   path = (kr_xpdr_path *)arg->user;
   path->audio = arg->audio;
   path->image = arg->image;
-  if (arg->image.w) {
+  if (path->info.output.type == KR_XPDR_ADAPTER) {
     kr_compositor_process(path->xpdr->compositor);
   }
 }
