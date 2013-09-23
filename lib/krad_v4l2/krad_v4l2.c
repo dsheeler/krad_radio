@@ -76,7 +76,19 @@ int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image) {
   }
 
   /*  v4l2->timestamp = buf.timestamp; */
-  image->px = v4l2->frames[buf.index].start;
+  image->ppx[0] = v4l2->frames[buf.index].start;
+  image->px = image->ppx[0];
+  image->ppx[1] = NULL;
+  image->ppx[2] = NULL;
+  image->ppx[3] = NULL;
+  image->pps[0] = v4l2->info.mode.width;
+  image->pps[1] = v4l2->info.mode.width/2;
+  image->pps[2] = v4l2->info.mode.width/2;
+  image->pps[3] = 0;
+  image->w = v4l2->info.mode.width;
+  image->h = v4l2->info.mode.height;
+  //image->fmt = ;
+
   image->owner = &v4l2->frames[buf.index].buf;
   return 1;
 }
