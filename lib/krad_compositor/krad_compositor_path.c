@@ -27,28 +27,38 @@ void path_output(kr_compositor_path *path, krad_frame_t *frame) {
   memcpy(cb_arg.image.px, frame->pixels, frame->width * frame->height * 4);
 }
 
-void kr_compositor_path_render(kr_compositor_path *path, cairo_t *cr) {
+int path_render(kr_compositor_path *path, kr_image *image, cairo_t *cr) {
+  int ret;
+  kr_compositor_path_frame_cb_arg cb_arg;
+  cb_arg.user = path->user;
   path_tick(path);
-//  if (path->subunit.opacity > 0.0f) {
-    cairo_save(cr);
-/*     cairo_set_source_surface(cr, frame->cst, path->subunit.x - path->crop_x,
-     path->subunit.y - path->crop_y);
-*/
-    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-    cairo_rectangle(cr, path->subunit.x, path->subunit.y, path->info.width,
-     path->info.height);
-//    cairo_clip(cr);
-    cairo_fill(cr);
-    printk("eek!");
-    /*
-    if (path->subunit.opacity == 1.0f) {
-      cairo_paint(cr);
-    } else {
-      cairo_paint_with_alpha(cr, path->subunit.opacity);
-    }
-    */
-    cairo_restore(cr);
- // }
+  /* if (path->subunit.opacity > 0.0f) { */
+  cairo_save(cr);
+  path->frame_cb(&cb_arg);
+  ret = kr_image_convert(&path->converter, image, &cb_arg.image);
+  if (ret != 0) {
+    printke("kr_image convert returned %d :/", ret);
+  }
+  /*tmp
+  cairo_surface_t *cst;
+  cst = cairo_image_surface_create_for_data(cb_arg.image.px,
+   CAIRO_FORMAT_ARGB32, 160, 120, 640);
+  cairo_set_source_surface(cr, cst, path->subunit.x, path->subunit.y);
+  cairo_rectangle(cr, path->subunit.x, path->subunit.y, path->info.width,
+  path->info.height);
+  cairo_fill(cr);
+  cairo_surface_destroy(cst);
+  tmp*/
+  /*
+  if (path->subunit.opacity == 1.0f) {
+    cairo_paint(cr);
+  } else {
+    cairo_paint_with_alpha(cr, path->subunit.opacity);
+  }
+  */
+  cairo_restore(cr);
+  // }
+  return 0;
 }
 
 int path_setup_check(kr_compositor_path_setup *setup) {
@@ -77,6 +87,7 @@ static void path_create(kr_compositor_path *path,
   path->user = setup->user;
   path->frame_cb = setup->frame_cb;
   krad_compositor_subunit_reset(&path->subunit);
+  kr_image_convert_init(&path->converter);
   if (path->info.type == KR_CMP_INPUT) {
     path->compositor->active_input_paths++;
   }
@@ -117,10 +128,7 @@ void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path) {
   if (path->perspective != NULL) {
     kr_perspective_destroy(&path->perspective);
   }
-  if (path->converter != NULL) {
-    sws_freeContext(path->converter);
-    path->converter = NULL;
-  }
+  kr_image_convert_clear(&path->converter);
   if (path->info.type == KR_CMP_INPUT) {
     compositor->active_input_paths--;
   }

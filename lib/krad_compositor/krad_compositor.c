@@ -51,7 +51,14 @@ static void composite(kr_compositor *compositor) {
   }
   while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
     if (path->info.type == KR_CMP_INPUT) {
-      kr_compositor_path_render(path, compositor->cr);
+      kr_image image;
+      memset(&image, 0, sizeof(kr_image));
+      image.px = (uint8_t *)compositor->frame->pixels;
+      image.ppx[0] = image.px;
+      image.w = compositor->frame->width;
+      image.h = compositor->frame->height;
+      image.pps[0] = compositor->frame->width * 4;
+      path_render(path, &image, compositor->cr);
     }
   }
   for (i = 0; i < KC_MAX_SPRITES; i++) {

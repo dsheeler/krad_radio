@@ -1,5 +1,8 @@
 #include "krad_pool.h"
 
+/* FIXME TEMP */
+#include "../krad_transponder/krad_av.c"
+
 #define KR_POOL_MAX 64
 
 struct kr_pool {

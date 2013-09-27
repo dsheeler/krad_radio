@@ -34,7 +34,7 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFram
   IDeckLinkTimecode *timecode;
   BMDTimecodeFormat timecodeFormat;
   int audio_frames;
-  
+
 #ifdef KR_LINUX
   const char *timecodeString;
 #endif
@@ -52,7 +52,7 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFram
     }
     krad_decklink_capture->skipped_frames++;
   }
-  
+
   if (krad_decklink_capture->skipped_frames > 0) {
     printke ("Decklink A/V Capture got a frame after skipping %d", krad_decklink_capture->skipped_frames);
     krad_decklink_capture->skipped_frames = 0;
@@ -119,36 +119,36 @@ krad_decklink_capture_t *krad_decklink_capture_create (int device) {
 
   int d;
   krad_decklink_capture_t *krad_decklink_capture = (krad_decklink_capture_t *)calloc(1, sizeof(krad_decklink_capture_t));
-  
+
   krad_decklink_capture->device = device;
   krad_decklink_capture->inputFlags = 0;
   krad_decklink_capture_set_audio_input (krad_decklink_capture, "");
-  krad_decklink_capture_set_video_input (krad_decklink_capture, "");  
+  krad_decklink_capture_set_video_input (krad_decklink_capture, "");
   krad_decklink_capture->audio_sample_rate = bmdAudioSampleRate48kHz;
   krad_decklink_capture->audio_channels = 2;
   krad_decklink_capture->audio_bit_depth = 16;
-  
+
   krad_decklink_capture->deckLinkIterator = CreateDeckLinkIteratorInstance();
-  
+
   if (!krad_decklink_capture->deckLinkIterator) {
     printke("Krad Decklink: No DeckLink drivers installed.");
     free (krad_decklink_capture);
     return NULL;
   }
-  
+
   for (d = 0; d < 64; d++) {
-  
+
     krad_decklink_capture->result = krad_decklink_capture->deckLinkIterator->Next(&krad_decklink_capture->deckLink);
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: No DeckLink devices found.");
       free (krad_decklink_capture);
       return NULL;
     }
-    
+
     if (d == krad_decklink_capture->device) {
       break;
     }
-    
+
   }
   return krad_decklink_capture;
 }
@@ -163,9 +163,9 @@ void krad_decklink_capture_set_audio_input (krad_decklink_capture_t *krad_deckli
       krad_decklink_capture->audio_input = bmdAudioConnectionAnalog;
       return;
     }
-    if ((strstr(audio_input, "AESEBU") != NULL) || (strstr(audio_input, "aesebu") != NULL) || 
+    if ((strstr(audio_input, "AESEBU") != NULL) || (strstr(audio_input, "aesebu") != NULL) ||
       (strstr(audio_input, "SPDIF") != NULL) || (strstr(audio_input, "spdif") != NULL)) {
-      printk ("Krad Decklink: Selected AESEBU Audio Input");    
+      printk ("Krad Decklink: Selected AESEBU Audio Input");
       krad_decklink_capture->audio_input = bmdAudioConnectionAESEBU;
       return;
     }
@@ -190,19 +190,19 @@ void krad_decklink_capture_set_video_input (krad_decklink_capture_t *krad_deckli
       krad_decklink_capture->video_input = bmdVideoConnectionOpticalSDI;
       return;
     }
-    
+
     if ((strstr(video_input, "Component") != NULL) || (strstr(video_input, "component") != NULL)) {
       printk ("Krad Decklink: Selected Component Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionComponent;
       return;
     }
-    
+
     if ((strstr(video_input, "Composite") != NULL) || (strstr(video_input, "composite") != NULL)) {
       printk ("Krad Decklink: Selected Composite Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionComposite;
       return;
     }
-    
+
     if ((strstr(video_input, "svideo") != NULL) || (strstr(video_input, "Svideo") != NULL)) {
       printk ("Krad Decklink: Selected svideo Video Input");
       krad_decklink_capture->video_input = bmdVideoConnectionSVideo;
@@ -224,7 +224,7 @@ void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklin
   krad_decklink_capture->fps_denominator = fps_denominator;
 
   krad_decklink_capture->pixel_format = bmdFormat8BitYUV;
-  //krad_decklink_capture->pixel_format = bmdFormat8BitARGB;  
+  //krad_decklink_capture->pixel_format = bmdFormat8BitARGB;
 
   if ((krad_decklink_capture->width == 720) && (krad_decklink_capture->height == 486)) {
     if ((krad_decklink_capture->fps_numerator == 30000) && (krad_decklink_capture->fps_denominator == 1001)) {
@@ -236,71 +236,71 @@ void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklin
   }
 
   if ((krad_decklink_capture->width == 720) && (krad_decklink_capture->height == 576)) {
-    if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 25000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModePAL;
     }
-    if (((krad_decklink_capture->fps_numerator == 50) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 50) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 50000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModePALp;
     }
-  }  
+  }
 
   if ((krad_decklink_capture->width == 1280) && (krad_decklink_capture->height == 720)) {
-    if (((krad_decklink_capture->fps_numerator == 50) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 50) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 50000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD720p50;
     }
     if ((krad_decklink_capture->fps_numerator == 60000) && (krad_decklink_capture->fps_denominator == 1001)) {
       krad_decklink_capture->display_mode = bmdModeHD720p5994;
     }
-    if (((krad_decklink_capture->fps_numerator == 60) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 60) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 60000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD720p60;
     }
   }
-  
+
   if ((krad_decklink_capture->width == 1920) && (krad_decklink_capture->height == 1080)) {
     if ((krad_decklink_capture->fps_numerator == 24000) && (krad_decklink_capture->fps_denominator == 1001)) {
       krad_decklink_capture->display_mode = bmdModeHD1080p2398;
     }
-    if (((krad_decklink_capture->fps_numerator == 24) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 24) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 24000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD1080p24;
     }
-    if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 25000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD1080p25;
     }
     if ((krad_decklink_capture->fps_numerator == 30000) && (krad_decklink_capture->fps_denominator == 1001)) {
       krad_decklink_capture->display_mode = bmdModeHD1080p2997;
     }
-    if (((krad_decklink_capture->fps_numerator == 30) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 30) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 30000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD1080p30;
     }
-    if (((krad_decklink_capture->fps_numerator == 50) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 50) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 50000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD1080p50;
     }
     if ((krad_decklink_capture->fps_numerator == 60000) && (krad_decklink_capture->fps_denominator == 1001)) {
       krad_decklink_capture->display_mode = bmdModeHD1080p5994;
     }
-    if (((krad_decklink_capture->fps_numerator == 60) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 60) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 60000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdModeHD1080p6000;
     }
-  }  
+  }
 
   if ((krad_decklink_capture->width == 2048) && (krad_decklink_capture->height == 1556)) {
     if ((krad_decklink_capture->fps_numerator == 24000) && (krad_decklink_capture->fps_denominator == 1001)) {
       krad_decklink_capture->display_mode = bmdMode2k2398;
     }
-    if (((krad_decklink_capture->fps_numerator == 24) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 24) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 24000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdMode2k24;
     }
-    if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) || 
+    if (((krad_decklink_capture->fps_numerator == 25) && (krad_decklink_capture->fps_denominator == 1)) ||
        ((krad_decklink_capture->fps_numerator == 25000) && (krad_decklink_capture->fps_denominator == 1000))) {
       krad_decklink_capture->display_mode = bmdMode2k25;
     }
@@ -324,7 +324,7 @@ void krad_decklink_capture_set_verbose (krad_decklink_capture_t *krad_decklink_c
 }
 
 void krad_decklink_capture_start (krad_decklink_capture_t *krad_decklink_capture) {
-    
+
   krad_decklink_capture->result = krad_decklink_capture->deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&krad_decklink_capture->deckLinkInput);
   if (krad_decklink_capture->result != S_OK) {
     printke ("Krad Decklink: Fail QueryInterface\n");
@@ -339,7 +339,7 @@ void krad_decklink_capture_start (krad_decklink_capture_t *krad_decklink_capture
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Failed to set audio input connection");
     }
-    
+
     krad_decklink_capture->result = krad_decklink_capture->deckLinkConfiguration->SetInt(bmdDeckLinkConfigVideoInputConnection, krad_decklink_capture->video_input);
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Failed to set video input connection");
@@ -369,11 +369,11 @@ void krad_decklink_capture_start (krad_decklink_capture_t *krad_decklink_capture
 void krad_decklink_capture_stop (krad_decklink_capture_t *krad_decklink_capture) {
 
     if (krad_decklink_capture->deckLinkInput != NULL) {
-    
+
     krad_decklink_capture->result = krad_decklink_capture->deckLinkInput->StopStreams ();
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Fail StopStreams\n");
-    }    
+    }
     krad_decklink_capture->result = krad_decklink_capture->deckLinkInput->DisableVideoInput ();
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Fail DisableVideoInput\n");
@@ -382,13 +382,13 @@ void krad_decklink_capture_stop (krad_decklink_capture_t *krad_decklink_capture)
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Fail DisableAudioInput\n");
     }
-    
+
     krad_decklink_capture->result = krad_decklink_capture->deckLinkConfiguration->Release();
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Fail to Release deckLinkConfiguration\n");
     }
     krad_decklink_capture->deckLinkConfiguration = NULL;
-    
+
     krad_decklink_capture->result = krad_decklink_capture->deckLinkInput->Release();
     if (krad_decklink_capture->result != S_OK) {
       printke ("Krad Decklink: Fail Release\n");
@@ -416,31 +416,31 @@ void krad_decklink_capture_info () {
   IDeckLinkIterator *deckLinkIterator;
   IDeckLinkDisplayModeIterator *displayModeIterator;
   IDeckLinkDisplayMode *displayMode;
-  
+
   HRESULT result;
   int displayModeCount;
   char *displayModeString;
 
   displayModeString = NULL;
   displayModeCount = 0;
-  
+
   deckLinkIterator = CreateDeckLinkIteratorInstance();
-  
+
   if (!deckLinkIterator) {
     printke ("Krad Decklink: This application requires the DeckLink drivers installed.\n");
   }
-  
+
   /* Connect to the first DeckLink instance */
   result = deckLinkIterator->Next(&deckLink);
   if (result != S_OK) {
     printke ("Krad Decklink: No DeckLink PCI cards found.\n");
   }
-    
+
   result = deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput);
   if (result != S_OK) {
     printke ("Krad Decklink: Fail QueryInterface\n");
   }
-  
+
   result = deckLinkInput->GetDisplayModeIterator(&displayModeIterator);
   if (result != S_OK) {
     printke ("Krad Decklink: Could not obtain the video output display mode iterator - result = %08x\n", result);
@@ -449,23 +449,23 @@ void krad_decklink_capture_info () {
   while (displayModeIterator->Next(&displayMode) == S_OK) {
 
     result = displayMode->GetName((const char **) &displayModeString);
-        
+
     if (result == S_OK) {
-      
+
       BMDTimeValue frameRateDuration, frameRateScale;
       displayMode->GetFrameRate(&frameRateDuration, &frameRateScale);
 
-      printk ("%2d:  %-20s \t %li x %li \t %g FPS\n", 
-        displayModeCount, displayModeString, displayMode->GetWidth(), displayMode->GetHeight(), 
+      printk ("%2d:  %-20s \t %li x %li \t %g FPS\n",
+        displayModeCount, displayModeString, displayMode->GetWidth(), displayMode->GetHeight(),
         (double)frameRateScale / (double)frameRateDuration);
-      
+
             free (displayModeString);
       displayModeCount++;
     }
-    
+
     displayMode->Release();
   }
-  
+
   if (displayModeIterator != NULL) {
     displayModeIterator->Release();
     displayModeIterator = NULL;
@@ -493,23 +493,23 @@ int krad_decklink_cpp_detect_devices () {
   IDeckLink *deckLink;
   int device_count;
   //HRESULT result;
-  
+
   device_count = 0;
-  
+
   deckLinkIterator = CreateDeckLinkIteratorInstance();
-  
+
   if (deckLinkIterator == NULL) {
     printke ("krad_decklink_detect_devices: The DeckLink drivers may not be installed.");
     return 0;
   }
-  
+
   while (deckLinkIterator->Next(&deckLink) == S_OK) {
     device_count++;
     deckLink->Release();
   }
 
   deckLinkIterator->Release();
-  
+
   return device_count;
 }
 
@@ -530,14 +530,14 @@ int krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
   device_name_temp = NULL;
   device_count = 0;
   ret = 0;
-  
+
   deckLinkIterator = CreateDeckLinkIteratorInstance();
-  
+
   if (deckLinkIterator == NULL) {
     printke ("krad_decklink_detect_devices: The DeckLink drivers may not be installed.");
     return ret;
   }
-  
+
   while (deckLinkIterator->Next(&deckLink) == S_OK) {
 
     if (device_count == device_num) {
@@ -567,7 +567,7 @@ int krad_decklink_cpp_get_device_name (int device_num, char *device_name) {
       device_count++;
       deckLink->Release();
     }
-    
+
     deckLinkIterator->Release();
     sprintf(device_name, "Could not get a device name for device %d", device_num);
     return ret;

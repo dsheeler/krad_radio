@@ -6,6 +6,11 @@
 typedef struct kr_image kr_image;
 typedef struct kr_audio kr_audio;
 
+typedef int (kr_buf_release_cb)(void *ptr);
+
+int kr_image_ref(kr_image *image);
+int kr_image_unref(kr_image *image);
+
 struct kr_image {
   uint8_t *px;
   uint8_t *ppx[4];
@@ -16,6 +21,8 @@ struct kr_image {
   int32_t fmt;
   uint64_t tc;
   void *owner;
+  int32_t refs;
+  kr_buf_release_cb *release_cb;
 };
 
 struct kr_audio {

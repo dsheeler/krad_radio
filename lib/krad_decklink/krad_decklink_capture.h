@@ -44,23 +44,23 @@ struct krad_decklink_capture_St {
   int inputFlags;
   DeckLinkCaptureDelegate *delegate;
   HRESULT result;
-  
+
   int verbose;
 
   int skip_frame;
   int skipped_frames;
-  
+
   BMDDisplayMode display_mode;
   BMDPixelFormat pixel_format;
   BMDAudioSampleRate audio_sample_rate;
   BMDAudioConnection audio_input;
-  BMDVideoConnection video_input;  
+  BMDVideoConnection video_input;
   int audio_channels;
   int audio_bit_depth;
-  
+
   uint64_t video_frames;
   uint64_t audio_frames;
-  
+
   int (*video_frame_callback)(void *, void *, int);
   int (*audio_frames_callback)(void *, void *, int);
   void *callback_pointer;
@@ -69,7 +69,7 @@ struct krad_decklink_capture_St {
   int height;
   int fps_numerator;
   int fps_denominator;
-  
+
   int device;
 };
 #endif

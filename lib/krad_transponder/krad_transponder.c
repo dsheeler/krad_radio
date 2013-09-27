@@ -31,7 +31,6 @@ struct kr_transponder {
 
 #include "krad_transponder_event.c"
 #include "krad_transponder_processor.c"
-
 #include "krad_transponder_test.c"
 
 static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps);

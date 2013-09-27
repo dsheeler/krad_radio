@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
   kr_adapter_path *path;
   kr_image image;
+  kr_image *image_in;
   kr_audio audio;
   void *user;
 } kr_adapter_path_av_cb_arg;
@@ -62,6 +63,5 @@ kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
 int kr_adapter_get_info(kr_adapter *adapter, kr_adapter_info *info);
 int kr_adapter_destroy(kr_adapter *adapter);
 kr_adapter *kr_adapter_create(kr_adapter_setup *setup);
-
 
 #endif
