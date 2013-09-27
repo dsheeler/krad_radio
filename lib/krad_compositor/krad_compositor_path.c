@@ -27,37 +27,74 @@ void path_output(kr_compositor_path *path, krad_frame_t *frame) {
   memcpy(cb_arg.image.px, frame->pixels, frame->width * frame->height * 4);
 }
 
-int path_render(kr_compositor_path *path, kr_image *image, cairo_t *cr) {
+int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   int ret;
+  int cached;
+  kr_image image;
   kr_compositor_path_frame_cb_arg cb_arg;
+  cairo_surface_t *src;
+
+
+  static uint8_t scratch[1280*720*4];
+
+  cached = 0;
   cb_arg.user = path->user;
+
+  path->subunit.opacity = 1.0f;
+  static int first = 0;
+
+  if (first == 0) {
+    krad_compositor_subunit_set_rotation(&path->subunit, 720.0f, 720);
+    first = 1;
+  }
   path_tick(path);
-  /* if (path->subunit.opacity > 0.0f) { */
-  cairo_save(cr);
+  if (path->subunit.opacity == 0.0f) return 0;
+
   path->frame_cb(&cb_arg);
-  ret = kr_image_convert(&path->converter, image, &cb_arg.image);
+  /* After the frame_cb if the parameters (crop, size)
+   *  have not changed we should see if the image has also not changed 
+   *  in which case we can use a cached version -- this function can be
+   *   used perhaps beforehand so output can wait on new input
+   */
+  if ((path->subunit.opacity == 1.0f) && (path->subunit.rotation == 0.0f)) {
+  //  image = subimage(dst, params);
+    image = *dst;
+    ret = kr_image_convert(&path->converter, &image, &cb_arg.image);
+    if (ret != 0) {
+      printke("kr_image convert returned %d :/", ret);
+      return -1;
+    }
+    return 0;
+  }
+
+//  image = subimage(path_scratch_image, params);
+  image = *dst;
+  image.px = scratch;
+  image.ppx[0] = image.px;
+
+  ret = kr_image_convert(&path->converter, &image, &cb_arg.image);
   if (ret != 0) {
     printke("kr_image convert returned %d :/", ret);
+    return -1;
   }
-  /*tmp
-  cairo_surface_t *cst;
-  cst = cairo_image_surface_create_for_data(cb_arg.image.px,
-   CAIRO_FORMAT_ARGB32, 160, 120, 640);
-  cairo_set_source_surface(cr, cst, path->subunit.x, path->subunit.y);
-  cairo_rectangle(cr, path->subunit.x, path->subunit.y, path->info.width,
-  path->info.height);
-  cairo_fill(cr);
-  cairo_surface_destroy(cst);
-  tmp*/
-  /*
+ 
+  cairo_save(cr);
+  src = cairo_image_surface_create_for_data(image.px, CAIRO_FORMAT_ARGB32,
+   image.w, image.h, image.pps[0]);
+  if (path->subunit.rotation != 0.0f) {
+    cairo_translate(cr, (int)image.w * 0.5, (int)image.h * 0.5);
+    cairo_rotate(cr, path->subunit.rotation * (M_PI/180.0));
+    cairo_translate(cr, (int)-image.w * 0.5, (int)-image.h * 0.5);
+  }
+  cairo_set_source_surface(cr, src, 0, 0);
+  cairo_rectangle(cr, path->subunit.x, path->subunit.y, image.w, image.h);
   if (path->subunit.opacity == 1.0f) {
     cairo_paint(cr);
   } else {
-    cairo_paint_with_alpha(cr, path->subunit.opacity);
+   cairo_paint_with_alpha(cr, path->subunit.opacity);
   }
-  */
   cairo_restore(cr);
-  // }
+  cairo_surface_destroy(src);
   return 0;
 }
 

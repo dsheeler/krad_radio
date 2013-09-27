@@ -80,7 +80,7 @@ void test_v4l2_input_create(kr_xpdr *xpdr) {
   test_name = "V4L2 Test";
   device_num = 0;
   width = 640;
-  height = 480;
+  height = 360;
   num = 30;
   den = 1;
 
