@@ -24,5 +24,7 @@ rm -f compile
 rm -f config.h.in
 rm -f config.log
 rm -f configure
-rm -f install-sh
 rm -f missing
+rm -f install-sh
+rm -f kr
+rm -f krad_radio
