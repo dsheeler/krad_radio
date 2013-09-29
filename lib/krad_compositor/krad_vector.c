@@ -78,8 +78,8 @@ int kr_vector_to_info(kr_vector *vector, kr_vector_info *vector_info) {
   vector_info->controls.x = vector->subunit.x;
   vector_info->controls.y = vector->subunit.y;
   vector_info->controls.z = vector->subunit.z;
-  vector_info->controls.width = vector->subunit.width;
-  vector_info->controls.height = vector->subunit.height;
+  vector_info->controls.w = vector->subunit.width;
+  vector_info->controls.h = vector->subunit.height;
   vector_info->controls.rotation = vector->subunit.rotation;
   vector_info->controls.opacity = vector->subunit.opacity;
   return 1;

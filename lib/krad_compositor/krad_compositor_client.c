@@ -101,46 +101,43 @@ static void kr_ebml_to_videoport_info(kr_ebml2_t *ebml, kr_compositor_path_info 
   kr_ebml2_unpack_element_int32(ebml, NULL, &port->controls.x);
   kr_ebml2_unpack_element_int32(ebml, NULL, &port->controls.y);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &port->controls.z);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->height);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->crop_height);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_left.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_left.y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_right.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.top_right.y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_left.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_left.y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_right.x);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->view.bottom_right.y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &port->controls.height);
-  kr_ebml2_unpack_element_float (ebml, NULL, &port->controls.opacity);
-  kr_ebml2_unpack_element_float (ebml, NULL, &port->controls.rotation);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->width);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->height);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->crop_x);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->crop_y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->crop_width);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->crop_height);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.top_left.x);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.top_left.y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.top_right.x);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.top_right.y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.bottom_left.x);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.bottom_left.y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.bottom_right.x);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->view.bottom_right.y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->controls.w);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &port->controls.h);
+  kr_ebml2_unpack_element_float(ebml, NULL, &port->controls.opacity);
+  kr_ebml2_unpack_element_float(ebml, NULL, &port->controls.rotation);
 }
 
 static void kr_ebml_to_sprite_info(kr_ebml2_t *ebml, kr_sprite_info *sprite) {
-
-  kr_ebml2_unpack_element_string (ebml, NULL,
-                                  sprite->filename, sizeof(sprite->filename));
-
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.x);
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.y);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.z);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &sprite->controls.height);
-  kr_ebml2_unpack_element_int32 (ebml, NULL, &sprite->controls.tickrate);
-  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.opacity);
-  kr_ebml2_unpack_element_float (ebml, NULL, &sprite->controls.rotation);
+  kr_ebml2_unpack_element_string(ebml, NULL, sprite->filename,
+   sizeof(sprite->filename));
+  kr_ebml2_unpack_element_int32(ebml, NULL, &sprite->controls.x);
+  kr_ebml2_unpack_element_int32(ebml, NULL, &sprite->controls.y);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &sprite->controls.z);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &sprite->controls.w);
+  kr_ebml2_unpack_element_uint32(ebml, NULL, &sprite->controls.h);
+  kr_ebml2_unpack_element_int32(ebml, NULL, &sprite->tickrate);
+  kr_ebml2_unpack_element_float(ebml, NULL, &sprite->controls.opacity);
+  kr_ebml2_unpack_element_float(ebml, NULL, &sprite->controls.rotation);
 }
 
 static void kr_ebml_to_vector_info(kr_ebml2_t *ebml, kr_vector_info *vector) {
-
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->type);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.height);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.w);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.h);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &vector->controls.x);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &vector->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &vector->controls.z);
@@ -149,45 +146,43 @@ static void kr_ebml_to_vector_info(kr_ebml2_t *ebml, kr_vector_info *vector) {
 }
 
 static void kr_ebml_to_text_info(kr_ebml2_t *ebml, kr_text_info *text) {
-
   kr_ebml2_unpack_element_string (ebml, NULL, text->text, sizeof(text->text));
   kr_ebml2_unpack_element_string (ebml, NULL, text->font, sizeof(text->font));
-
   kr_ebml2_unpack_element_float (ebml, NULL, &text->red);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->green);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->blue);
-
   kr_ebml2_unpack_element_int32 (ebml, NULL, &text->controls.x);
   kr_ebml2_unpack_element_int32 (ebml, NULL, &text->controls.y);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.z);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.width);
-  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.height);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.w);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &text->controls.h);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.opacity);
   kr_ebml2_unpack_element_float (ebml, NULL, &text->controls.rotation);
 }
 
-int kr_compositor_crate_to_string_from_compositor (kr_crate_t *crate, char **string) {
+int kr_compositor_crate_to_string_from_compositor(kr_crate_t *crate,
+ char **string) {
 
   int pos;
-  kr_compositor_info kr_compositor;
+  kr_compositor_info info;
 
   pos = 0;
 
-  kr_ebml_to_compositor_info (&crate->payload_ebml, &kr_compositor);
-  pos += sprintf (*string + pos, "Compositor Status:\n");
-  pos += sprintf (*string + pos, "Resolution: %ux%u\n", kr_compositor.width, kr_compositor.height);
-  pos += sprintf (*string + pos, "Frame Rate: %u / %u\n",
-                  kr_compositor.fps_numerator, kr_compositor.fps_denominator);
-  pos += sprintf (*string + pos, "Sprites: %u\n", kr_compositor.sprites);
-  pos += sprintf (*string + pos, "Vectors: %u\n", kr_compositor.vectors);
-  pos += sprintf (*string + pos, "Texts: %u\n", kr_compositor.texts);
-  pos += sprintf (*string + pos, "Inputs: %u\n", kr_compositor.inputs);
-  pos += sprintf (*string + pos, "Outputs: %u\n", kr_compositor.outputs);
-  pos += sprintf (*string + pos, "Frames: %"PRIu64"\n", kr_compositor.frames);
-  if (strlen(kr_compositor.background_filename)) {
-    pos += sprintf (*string + pos, "Background: %s", kr_compositor.background_filename);
+  kr_ebml_to_compositor_info(&crate->payload_ebml, &info);
+  pos += sprintf(*string + pos, "Compositor Status:\n");
+  pos += sprintf(*string + pos, "Resolution: %ux%u\n", info.width, info.height);
+  pos += sprintf(*string + pos, "Frame Rate: %u / %u\n", info.fps_numerator,
+   info.fps_denominator);
+  pos += sprintf(*string + pos, "Sprites: %u\n", info.sprites);
+  pos += sprintf(*string + pos, "Vectors: %u\n", info.vectors);
+  pos += sprintf(*string + pos, "Texts: %u\n", info.texts);
+  pos += sprintf(*string + pos, "Inputs: %u\n", info.inputs);
+  pos += sprintf(*string + pos, "Outputs: %u\n", info.outputs);
+  pos += sprintf(*string + pos, "Frames: %"PRIu64"\n", info.frames);
+  if (strlen(info.background_filename)) {
+    pos += sprintf(*string + pos, "Background: %s", info.background_filename);
   } else {
-    pos += sprintf (*string + pos, "Background: Unset");
+    pos += sprintf(*string + pos, "Background: Unset");
   }
   return pos;
 }
@@ -204,11 +199,11 @@ int kr_compositor_crate_to_string_from_sprite (kr_crate_t *crate, char **string)
   pos += sprintf (*string + pos, "X: %d\n", sprite.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", sprite.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", sprite.controls.z);
-  pos += sprintf (*string + pos, "Width: %d\n", sprite.controls.width);
-  pos += sprintf (*string + pos, "Height: %d\n", sprite.controls.height);
+  pos += sprintf (*string + pos, "Width: %d\n", sprite.controls.w);
+  pos += sprintf (*string + pos, "Height: %d\n", sprite.controls.h);
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", sprite.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", sprite.controls.rotation);
-  pos += sprintf (*string + pos, "Tickrate: %d\n", sprite.controls.tickrate);
+  pos += sprintf (*string + pos, "Tickrate: %d\n", sprite.tickrate);
 
   return pos;
 }
@@ -228,8 +223,8 @@ int kr_compositor_crate_to_string_from_text (kr_crate_t *crate, char **string) {
   pos += sprintf (*string + pos, "X: %d\n", text.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", text.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", text.controls.z);
-  pos += sprintf (*string + pos, "Width: %d\n", text.controls.width);
-  pos += sprintf (*string + pos, "Height: %d\n", text.controls.height);
+  pos += sprintf (*string + pos, "Width: %d\n", text.controls.w);
+  pos += sprintf (*string + pos, "Height: %d\n", text.controls.h);
   pos += sprintf (*string + pos, "Opacity: %4.2f\n", text.controls.opacity);
   pos += sprintf (*string + pos, "Rotation: %4.2f\n", text.controls.rotation);
 
@@ -245,8 +240,8 @@ int kr_compositor_crate_to_string_from_vector (kr_crate_t *crate, char **string)
 
   kr_ebml_to_vector_info (&crate->payload_ebml, &vector);
   pos += sprintf (*string + pos, "Vector: %s\n", krad_vector_type_to_string (vector.type));
-  pos += sprintf (*string + pos, "Width: %d\n", vector.controls.width);
-  pos += sprintf (*string + pos, "Height: %d\n", vector.controls.height);
+  pos += sprintf (*string + pos, "Width: %d\n", vector.controls.w);
+  pos += sprintf (*string + pos, "Height: %d\n", vector.controls.h);
   pos += sprintf (*string + pos, "X: %d\n", vector.controls.x);
   pos += sprintf (*string + pos, "Y: %d\n", vector.controls.y);
   pos += sprintf (*string + pos, "Z: %d\n", vector.controls.z);
@@ -287,8 +282,8 @@ int kr_compositor_crate_to_string_from_videoport (kr_crate_t *crate, char **stri
                     port.view.bottom_left.x, port.view.bottom_left.y,
                     port.view.bottom_right.x, port.view.bottom_right.y);
 
-    pos += sprintf (*string + pos, "Width: %d\n", port.controls.width);
-    pos += sprintf (*string + pos, "Height: %d\n", port.controls.height);
+    pos += sprintf (*string + pos, "Width: %d\n", port.controls.w);
+    pos += sprintf (*string + pos, "Height: %d\n", port.controls.h);
     pos += sprintf (*string + pos, "Opacity: %4.2f\n", port.controls.opacity);
     pos += sprintf (*string + pos, "Rotation: %4.2f\n", port.controls.rotation);
   }

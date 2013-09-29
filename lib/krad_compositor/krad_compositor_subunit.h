@@ -5,6 +5,7 @@
 #include "krad_easing.h"
 
 typedef struct kr_compositor_subunit krad_compositor_subunit_t;
+typedef struct kr_compositor_control_easers kr_compositor_control_easers;
 
 struct kr_compositor_subunit {
 
@@ -38,6 +39,15 @@ struct kr_compositor_subunit {
   kr_easer green_easer;
   kr_easer blue_easer;
   kr_easer alpha_easer;
+};
+
+struct kr_compositor_control_easers {
+  kr_easer x;
+  kr_easer y;
+  kr_easer w;
+  kr_easer h;
+  kr_easer rotation;
+  kr_easer opacity;
 };
 
 void krad_compositor_subunit_reset(krad_compositor_subunit_t *subunit);

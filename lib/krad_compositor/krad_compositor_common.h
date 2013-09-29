@@ -65,23 +65,24 @@ typedef struct kr_sprite_info kr_sprite_info;
 typedef struct kr_vector_info kr_vector_info;
 typedef struct kr_compositor_path_info kr_compositor_path_info;
 
-typedef struct kr_compositor_subunit_controls kr_compositor_subunit_controls_t;
-typedef struct kr_compositor_subunit_controls kr_comp_controls_t;
+typedef struct kr_compositor_controls kr_compositor_subunit_controls_t;
+typedef struct kr_compositor_controls kr_compositor_controls;
+typedef struct kr_compositor_controls kr_comp_controls_t;
 typedef struct kr_compositor_info kr_compositor_info;
 
-struct kr_compositor_subunit_controls {
+struct kr_compositor_controls {
   int32_t x;
   int32_t y;
   uint32_t z;
-  int32_t tickrate;
-  uint32_t width;
-  uint32_t height;
+  uint32_t w;
+  uint32_t h;
   float rotation;
   float opacity;
 };
 
 struct kr_sprite_info {
   char filename[256];
+  int32_t tickrate;
   kr_comp_controls_t controls;
 };
 

@@ -19,10 +19,10 @@ typedef struct kr_sprite kr_sprite;
 #define KRAD_SPRITE_DEFAULT_TICKRATE 4
 
 struct kr_sprite {
-  char filename[256];
+  kr_sprite_info info;
+  kr_compositor_control_easers easers;
   int frames;
   int tick;
-  int tickrate;
   int frame;
   cairo_surface_t *sprite;
   cairo_surface_t **sprite_frames;
@@ -30,19 +30,17 @@ struct kr_sprite {
   cairo_pattern_t *sprite_pattern;
   int sheet_width;
   int sheet_height;
-  krad_compositor_subunit_t subunit;
 };
 
-kr_sprite *krad_sprite_create();
-kr_sprite *krad_sprite_create_arr(int count);
-void krad_sprite_destroy(kr_sprite *krad_sprite);
-void krad_sprite_destroy_arr(kr_sprite *krad_sprite, int count);
-kr_sprite *krad_sprite_create_from_file(char *filename);
-void krad_sprite_reset(kr_sprite *krad_sprite);
-int krad_sprite_open_file(kr_sprite *krad_sprite, char *filename);
-
-void krad_sprite_set_tickrate(kr_sprite *krad_sprite, int tickrate);
-void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr);
+kr_sprite *kr_sprite_create();
+kr_sprite *kr_sprite_create_arr(int count);
+void kr_sprite_destroy(kr_sprite *sprite);
+void kr_sprite_destroy_arr(kr_sprite *sprite, int count);
+kr_sprite *kr_sprite_create_from_file(char *filename);
+void kr_sprite_reset(kr_sprite *sprite);
+int kr_sprite_open_file(kr_sprite *sprite, char *filename);
+void kr_sprite_set_tickrate(kr_sprite *sprite, int tickrate);
+void kr_sprite_render(kr_sprite *sprite, cairo_t *cr);
 int kr_sprite_to_info(kr_sprite *sprite, kr_sprite_info *info);
 
 #endif

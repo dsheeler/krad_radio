@@ -1,6 +1,4 @@
 #include "krad_compositor.h"
-
-#include "background.c"
 #include "krad_compositor_path.c"
 
 static void tick(kr_compositor *compositor);
@@ -14,6 +12,32 @@ static void paths_create(kr_compositor *compositor);
 static void subunits_free(kr_compositor *compositor);
 static void subunits_create(kr_compositor *compositor);
 static void subunits_state_update(kr_compositor *compositor);
+
+static void kr_compositor_render_no_input(kr_compositor *compositor) {
+  int f;
+  f = compositor->frames;
+  cairo_save(compositor->cr);
+  if ((compositor->frames % 24) < 12) {
+    cairo_set_source_rgba(compositor->cr, RED, 0.0f + ((f % 12) * 0.09f));
+  } else {
+    cairo_set_source_rgba(compositor->cr, RED, 1.0f + ((f % 12) * -0.09f));
+  }
+  cairo_select_font_face(compositor->cr, "", CAIRO_FONT_SLANT_NORMAL,
+   CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size(compositor->cr, 42.0);
+  cairo_move_to(compositor->cr, 64, 64 + 42);
+  cairo_show_text(compositor->cr, "KR: No Input!");
+  cairo_stroke(compositor->cr);
+  cairo_restore(compositor->cr);
+}
+
+static void kr_compositor_clear_frame(kr_compositor *compositor) {
+  cairo_save(compositor->cr);
+  cairo_set_source_rgba(compositor->cr, BGCOLOR_CLR);
+  cairo_set_operator(compositor->cr, CAIRO_OPERATOR_SOURCE);
+  cairo_paint(compositor->cr);
+  cairo_restore(compositor->cr);
+}
 
 static void tick(kr_compositor *compositor) {
   compositor->timecode = round(1000000000 * compositor->frames
@@ -37,17 +61,12 @@ static void composite(kr_compositor *compositor) {
   int i;
   kr_compositor_path *path;
   i = 0;
-  if (krad_compositor_has_background(compositor)) {
-    krad_compositor_render_background(compositor);
-  } else {
-    krad_compositor_clear_frame(compositor);
-    if ((compositor->active_input_paths == 0) &&
-        (compositor->active_sprites == 0) &&
-        (compositor->active_texts == 0) &&
-        (compositor->active_vectors == 0) &&
-        (compositor->background->subunit.active == 0)) {
-        krad_compositor_render_no_input(compositor);
-    }
+  kr_compositor_clear_frame(compositor);
+  if ((compositor->active_input_paths == 0)
+   && (compositor->active_sprites == 0)
+   && (compositor->active_texts == 0)
+   && (compositor->active_vectors == 0)) {
+    kr_compositor_render_no_input(compositor);
   }
   while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
     if (path->info.type == KR_CMP_INPUT) {
@@ -62,9 +81,10 @@ static void composite(kr_compositor *compositor) {
     }
   }
   for (i = 0; i < KC_MAX_SPRITES; i++) {
-    if (compositor->sprite[i].subunit.active == 1) {
+    /*if (compositor->sprite[i].subunit.active == 1) {
       kr_sprite_render(&compositor->sprite[i], compositor->cr);
     }
+    */
   }
   for (i = 0; i < KC_MAX_VECTORS; i++) {
     if (compositor->vector[i].subunit.active == 1) {
@@ -119,16 +139,18 @@ static void subunits_state_update(kr_compositor *compositor) {
     }
   }
   */
+  /*
   for (i = 0; i < KC_MAX_SPRITES; i++) {
     if (compositor->sprite[i].subunit.active == 2) {
-      krad_sprite_reset(&compositor->sprite[i]);
+      kr_sprite_reset(&compositor->sprite[i]);
       compositor->active_sprites--;
       compositor->sprite[i].subunit.active = 0;
     }
   }
+  */
   for (i = 0; i < KC_MAX_TEXTS; i++) {
     if (compositor->text[i].subunit.active == 2) {
-      krad_text_reset(&compositor->text[i]);
+      kr_text_reset(&compositor->text[i]);
       compositor->active_texts--;
       compositor->text[i].subunit.active = 0;
     }
@@ -152,6 +174,7 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
     switch (uc->address.path.subunit.compositor_subunit) {
       case KR_SPRITE:
         if (uc->address.id.number < KC_MAX_SPRITES) {
+        /*
           if (compositor->sprite[uc->address.id.number].subunit.active == 1) {
             switch (uc->address.control.compositor_control) {
               case KR_NO:
@@ -201,11 +224,12 @@ void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t
                                                   uc->value.real, uc->duration);
                 break;
               case KR_TICKRATE:
-                krad_sprite_set_tickrate(&compositor->sprite[uc->address.id.number],
+                kr_sprite_set_tickrate(&compositor->sprite[uc->address.id.number],
                                          uc->value.integer);
                 break;
             }
           }
+          */
         }
         return;
       case KR_TEXT:
@@ -418,20 +442,22 @@ int krad_compositor_subunit_create(kr_compositor *compositor,
   switch (type) {
     case KR_SPRITE:
       for (i = 0; i < KC_MAX_SPRITES; i++) {
+/*
         if (compositor->sprite[i].subunit.active == 0) {
-          if (krad_sprite_open_file(&compositor->sprite[i], option)) {
+          if (kr_sprite_open_file(&compositor->sprite[i], option)) {
             compositor->sprite[i].subunit.active = 1;
             compositor->active_sprites++;
             return i;
           }
           break;
         }
+*/      
       }
       return -1;
     case KR_TEXT:
       for (i = 0; i < KC_MAX_TEXTS; i++) {
         if (compositor->text[i].subunit.active == 0) {
-          krad_text_set_text(&compositor->text[i], option, option2);
+          kr_text_set_text(&compositor->text[i], option, option2);
           compositor->text[i].subunit.active = 1;
           compositor->active_texts++;
           return i;
@@ -468,10 +494,12 @@ int krad_compositor_subunit_destroy(kr_compositor *compositor, kr_address_t *add
     switch (address->path.subunit.compositor_subunit) {
       case KR_SPRITE:
         if (address->id.number < KC_MAX_SPRITES) {
+/*
           if (compositor->sprite[address->id.number].subunit.active == 1) {
             compositor->sprite[address->id.number].subunit.active = 2;
             return 1;
           }
+*/
         }
         return 0;
       case KR_TEXT:
@@ -533,9 +561,9 @@ static void paths_create(kr_compositor *compositor) {
 
 static void subunits_free(kr_compositor *compositor) {
   paths_free(compositor);
-  krad_sprite_destroy_arr(compositor->sprite, KC_MAX_SPRITES);
+  kr_sprite_destroy_arr(compositor->sprite, KC_MAX_SPRITES);
   kr_vectors_free(compositor->vector, KC_MAX_VECTORS);
-  krad_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
+  kr_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
   FT_Done_FreeType(compositor->ftlib);
 }
 
@@ -548,7 +576,7 @@ static void subunits_init(kr_compositor *compositor) {
       /* compositor->subunit[i] = &compositor->path[i].subunit; */
     } else {
       if (i < (KC_MAX_SPRITES + KC_MAX_PORTS)) {
-        compositor->subunit[i] = &compositor->sprite[i - KC_MAX_PORTS].subunit;
+        //compositor->subunit[i] = &compositor->sprite[i - KC_MAX_PORTS].subunit;
       } else {
         if (i < (KC_MAX_TEXTS + KC_MAX_SPRITES + KC_MAX_PORTS)) {
           compositor->subunit[i] = &compositor->text[i - (KC_MAX_PORTS + KC_MAX_SPRITES)].subunit;
@@ -565,8 +593,8 @@ static void subunits_init(kr_compositor *compositor) {
 static void subunits_create(kr_compositor *compositor) {
   paths_create(compositor);
   FT_Init_FreeType(&compositor->ftlib);
-  compositor->text = krad_text_create_arr(&compositor->ftlib, KC_MAX_TEXTS);
-  compositor->sprite = krad_sprite_create_arr(KC_MAX_SPRITES);
+  compositor->text = kr_text_create_arr(&compositor->ftlib, KC_MAX_TEXTS);
+  compositor->sprite = kr_sprite_create_arr(KC_MAX_SPRITES);
   compositor->vector = kr_vectors_create(KC_MAX_VECTORS);
   subunits_init(compositor);
 }
@@ -579,7 +607,6 @@ int kr_compositor_destroy(kr_compositor *compositor) {
 
   subunits_free(compositor);
   krad_framepool_destroy(&compositor->framepool);
-  krad_sprite_destroy(compositor->background);
   free(compositor);
 
   printk("Krad Compositor: Destroy Complete");
@@ -597,7 +624,6 @@ kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
   kr_compositor_resolution_set(compositor, setup->width, setup->height);
   krad_compositor_set_frame_rate(compositor, setup->fps_num, setup->fps_den);
   subunits_create(compositor);
-  compositor->background = krad_sprite_create();
   compositor->framepool = krad_framepool_create(compositor->width,
    compositor->height, DEFAULT_COMPOSITOR_BUFFER_FRAMES);
 

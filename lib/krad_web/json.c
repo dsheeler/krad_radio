@@ -267,7 +267,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
       controls = crate->inside.sprite->controls;
       pos += snprintf(json + pos, sizeof(json) - pos,
        "\"filename\":\"%s\",\"rate\":%d,",
-       crate->inside.sprite->filename, controls.tickrate);
+       crate->inside.sprite->filename, crate->inside.sprite->tickrate);
       break;
     case KR_TEXT:
       controls = crate->inside.text->controls;
@@ -303,7 +303,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
    "\"x\":%d,\"y\":%d,"
    "\"z\":%d,\"r\":%g,\"o\":%g,\"width\":%d,\"height\":%d",
    controls.x, controls.y, controls.z,
-   controls.rotation, controls.opacity, controls.width, controls.height);
+   controls.rotation, controls.opacity, controls.w, controls.h);
 
   pos += snprintf(json + pos, sizeof(json) - pos, "}]");
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));

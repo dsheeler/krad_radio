@@ -25,12 +25,12 @@ struct kr_text {
   krad_compositor_subunit_t subunit;
 };
 
-void krad_text_destroy_arr(kr_text *krad_text, int count);
-kr_text *krad_text_create_arr(FT_Library *ft_library, int count);
-void krad_text_reset(kr_text *krad_text);
-void krad_text_set_text(kr_text *krad_text, char *text, char *font);
-void krad_text_prerender_cancel(kr_text *krad_text, cairo_t *cr);
-void krad_text_prerender(kr_text *krad_text, cairo_t *cr);
+void kr_text_destroy_arr(kr_text *text, int count);
+kr_text *kr_text_create_arr(FT_Library *ft_library, int count);
+void kr_text_reset(kr_text *text);
+void kr_text_set_text(kr_text *text, char *str, char *font);
+void kr_text_prerender_cancel(kr_text *text, cairo_t *cr);
+void kr_text_prerender(kr_text *text, cairo_t *cr);
 void kr_text_render(kr_text *text, cairo_t *cr);
 int kr_text_to_info(kr_text *text, kr_text_info *text_rep);
 

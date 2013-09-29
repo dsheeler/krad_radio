@@ -1,59 +1,45 @@
 #include "krad_sprite.h"
 
-static void kr_sprite_tick (kr_sprite *krad_sprite);
+static void sprite_tick(kr_sprite *sprite);
 
-void krad_sprite_destroy (kr_sprite *krad_sprite) {
-  krad_sprite_reset (krad_sprite);
-  free (krad_sprite);
+void kr_sprite_destroy(kr_sprite *sprite) {
+  kr_sprite_reset(sprite);
+  free(sprite);
 }
 
-void krad_sprite_destroy_arr (kr_sprite *krad_sprite, int count) {
-
+void kr_sprite_destroy_arr(kr_sprite *sprite, int count) {
   int s;
-
-  s = 0;
-
   for (s = 0; s < count; s++) {
-    krad_sprite_reset (&krad_sprite[s]);
+    kr_sprite_reset(&sprite[s]);
   }
-
-  free (krad_sprite);
+  free(sprite);
 }
 
-kr_sprite *krad_sprite_create_arr (int count) {
-
+kr_sprite *kr_sprite_create_arr(int count) {
   int s;
-  kr_sprite *krad_sprite;
-
-  s = 0;
-
-  if ((krad_sprite = calloc (count, sizeof (kr_sprite))) == NULL) {
-    failfast ("Krad Sprite mem alloc fail");
+  kr_sprite *sprite;
+  if ((sprite = calloc(count, sizeof(kr_sprite))) == NULL) {
+    failfast("Krad Sprite mem alloc fail");
   }
-
   for (s = 0; s < count; s++) {
-    krad_sprite[s].subunit.address.path.unit = KR_COMPOSITOR;
-    krad_sprite[s].subunit.address.path.subunit.compositor_subunit = KR_SPRITE;
-    krad_sprite[s].subunit.address.id.number = s;
-    krad_sprite_reset (&krad_sprite[s]);
+    kr_sprite_reset(&sprite[s]);
   }
-
-  return krad_sprite;
+  return sprite;
 }
 
-kr_sprite *krad_sprite_create () {
-  return krad_sprite_create_arr (1);
+kr_sprite *kr_sprite_create() {
+  return kr_sprite_create_arr(1);
 }
 
 
-kr_sprite *krad_sprite_create_from_file (char *filename) {
+kr_sprite *kr_sprite_create_from_file(char *filename) {
 
-  kr_sprite *krad_sprite;
+  kr_sprite *sprite;
 
-  krad_sprite = krad_sprite_create ();
-  krad_sprite_open_file (krad_sprite, filename);
+  sprite = kr_sprite_create();
+  kr_sprite_open_file(sprite, filename);
 
-  return krad_sprite;
+  return sprite;
 }
 
 #ifdef KRAD_GIF
@@ -92,7 +78,7 @@ int DGifExtensionToGCB (const size_t GifExtensionLength,
 
 #endif
 
-cairo_surface_t **gif2surface (char *filename, int *frames) {
+cairo_surface_t **gif2surface(char *filename, int *frames) {
 
   int  i, j, Size, Row, Col, Width, Height, ExtCode, Count;
   int InterlacedOffset[] = { 0, 4, 2, 1 };
@@ -336,53 +322,59 @@ cairo_surface_t **gif2surface (char *filename, int *frames) {
 }
 #endif
 
-int krad_sprite_open_file (kr_sprite *krad_sprite, char *filename) {
+int kr_sprite_open_file(kr_sprite *sprite, char *filename) {
 
   int64_t size;
+  kr_compositor_controls *ctrl;
 
-  if (krad_sprite->sprite != NULL) {
-    krad_sprite_reset (krad_sprite);
+  ctrl = &sprite->info.controls;
+
+  if (sprite->sprite != NULL) {
+    kr_sprite_reset(sprite);
   }
 
-  if ( filename == NULL ) {
+  if (filename == NULL) {
     return 0;
   }
 
-  size = file_size (filename);
+  size = file_size(filename);
 
   if (size < 0) {
-    printke ("Krad Sprite: File is not right: %s", filename);
+    printke("Krad Sprite: File is not right: %s", filename);
     return 0;
   }
 
   if (size < 1) {
-    printke ("Krad Sprite: File is zero bytes: %s", filename);
+    printke("Krad Sprite: File is zero bytes: %s", filename);
     return 0;
   }
 
   if (size > 50000000) {
-    printke ("Krad Sprite: File is too frigging big IMO: %"PRIi64" for %s",
-             size, filename);
+    printke("Krad Sprite: File is too frigging big IMO: %"PRIi64" for %s",
+     size, filename);
     return 0;
   }
 
-  if (strstr (filename, "_frames_") != NULL) {
-    krad_sprite->frames = atoi (strstr (filename, "_frames_") + 8);
+  if (strstr(filename, "_frames_") != NULL) {
+    sprite->frames = atoi(strstr(filename, "_frames_") + 8);
   }
 
-  if ((strstr (filename, ".png") != NULL) || (strstr (filename, ".PNG") != NULL)) {
-    krad_sprite->sprite = cairo_image_surface_create_from_png ( filename );
+  if ((strstr(filename, ".png") != NULL)
+   || (strstr(filename, ".PNG") != NULL)) {
+    sprite->sprite = cairo_image_surface_create_from_png(filename);
   }
 
 #ifdef KRAD_GIF
-  if ((strstr (filename, ".gif") != NULL) || (strstr (filename, ".GIF") != NULL)) {
-    krad_sprite->sprite_frames = gif2surface(filename, &krad_sprite->frames);
-    krad_sprite->sprite = krad_sprite->sprite_frames[0];
-    krad_sprite->multisurface = 1;
+  if ((strstr(filename, ".gif") != NULL)
+   || (strstr(filename, ".GIF") != NULL)) {
+    sprite->sprite_frames = gif2surface(filename, &sprite->frames);
+    sprite->sprite = sprite->sprite_frames[0];
+    sprite->multisurface = 1;
   }
 #endif
 
-  if ((strstr (filename, ".jpg") != NULL) || (strstr (filename, ".JPG") != NULL)) {
+  if ((strstr(filename, ".jpg") != NULL)
+   || (strstr(filename, ".JPG") != NULL)) {
 
     tjhandle jpeg_dec;
     int jpegsubsamp;
@@ -392,185 +384,156 @@ int krad_sprite_open_file (kr_sprite *krad_sprite, char *filename) {
     int jpeg_fd;
     int stride;
 
-
-    jpeg_buffer = malloc (size);
+    jpeg_buffer = malloc(size);
     if (jpeg_buffer == NULL) {
       return 0;
     }
 
-    jpeg_fd = open (filename, O_RDONLY);
+    jpeg_fd = open(filename, O_RDONLY);
 
     if (jpeg_fd < 1) {
-      free (jpeg_buffer);
+      free(jpeg_buffer);
       return 0;
     }
 
-    jpeg_size = read (jpeg_fd, jpeg_buffer, size);
+    jpeg_size = read(jpeg_fd, jpeg_buffer, size);
 
-    jpeg_dec = tjInitDecompress ();
+    jpeg_dec = tjInitDecompress();
 
-    if (tjDecompressHeader2 (jpeg_dec, jpeg_buffer, jpeg_size, &krad_sprite->sheet_width, &krad_sprite->sheet_height, &jpegsubsamp)) {
-      printke ("JPEG header decoding error: %s", tjGetErrorStr());
+    if (tjDecompressHeader2(jpeg_dec, jpeg_buffer, jpeg_size, &sprite->sheet_width, &sprite->sheet_height, &jpegsubsamp)) {
+      printke("JPEG header decoding error: %s", tjGetErrorStr());
     } else {
-      krad_sprite->sprite = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, krad_sprite->sheet_width, krad_sprite->sheet_height);
-      stride = cairo_image_surface_get_stride (krad_sprite->sprite);
-      argb_buffer = cairo_image_surface_get_data (krad_sprite->sprite);
-      cairo_surface_flush (krad_sprite->sprite);
-      if (tjDecompress2 ( jpeg_dec, jpeg_buffer, jpeg_size,
-                argb_buffer, krad_sprite->sheet_width, stride, krad_sprite->sheet_height, TJPF_BGRA, 0 )) {
+      sprite->sprite = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, sprite->sheet_width, sprite->sheet_height);
+      stride = cairo_image_surface_get_stride(sprite->sprite);
+      argb_buffer = cairo_image_surface_get_data(sprite->sprite);
+      cairo_surface_flush(sprite->sprite);
+      if (tjDecompress2(jpeg_dec, jpeg_buffer, jpeg_size,
+                argb_buffer, sprite->sheet_width, stride, sprite->sheet_height, TJPF_BGRA, 0 )) {
         printke ("JPEG decoding error: %s", tjGetErrorStr());
-        cairo_surface_destroy ( krad_sprite->sprite );
-        krad_sprite->sprite = NULL;
+        cairo_surface_destroy ( sprite->sprite );
+        sprite->sprite = NULL;
       } else {
-        tjDestroy ( jpeg_dec );
-        cairo_surface_mark_dirty (krad_sprite->sprite);
+        tjDestroy(jpeg_dec);
+        cairo_surface_mark_dirty(sprite->sprite);
       }
     }
 
-    free (jpeg_buffer);
-    close (jpeg_fd);
+    free(jpeg_buffer);
+    close(jpeg_fd);
   }
 
-  if (cairo_surface_status (krad_sprite->sprite) != CAIRO_STATUS_SUCCESS) {
-    krad_sprite->sprite = NULL;
+  if (cairo_surface_status(sprite->sprite) != CAIRO_STATUS_SUCCESS) {
+    sprite->sprite = NULL;
     return 0;
   }
 
-  krad_sprite->sheet_width = cairo_image_surface_get_width ( krad_sprite->sprite );
-  krad_sprite->sheet_height = cairo_image_surface_get_height ( krad_sprite->sprite );
-  if ((krad_sprite->frames > 1) && (krad_sprite->multisurface == 0)) {
-    if (krad_sprite->frames >= 10) {
-      krad_sprite->subunit.width = krad_sprite->sheet_width / 10;
-      krad_sprite->subunit.height = krad_sprite->sheet_height / ((krad_sprite->frames / 10) + MIN (1, (krad_sprite->frames % 10)));
+  sprite->sheet_width = cairo_image_surface_get_width(sprite->sprite);
+  sprite->sheet_height = cairo_image_surface_get_height(sprite->sprite);
+  if ((sprite->frames > 1) && (sprite->multisurface == 0)) {
+    if (sprite->frames >= 10) {
+      ctrl->w = sprite->sheet_width / 10;
+      ctrl->h = sprite->sheet_height / ((sprite->frames / 10) + MIN (1, (sprite->frames % 10)));
     } else {
-      krad_sprite->subunit.width = krad_sprite->sheet_width / krad_sprite->frames;
-      krad_sprite->subunit.height = krad_sprite->sheet_height;
+      ctrl->w = sprite->sheet_width / sprite->frames;
+      ctrl->h = sprite->sheet_height;
     }
   } else {
-    krad_sprite->subunit.width = krad_sprite->sheet_width;
-    krad_sprite->subunit.height = krad_sprite->sheet_height;
+    ctrl->w = sprite->sheet_width;
+    ctrl->h = sprite->sheet_height;
   }
-  krad_sprite->sprite_pattern = cairo_pattern_create_for_surface (krad_sprite->sprite);
-  cairo_pattern_set_extend (krad_sprite->sprite_pattern, CAIRO_EXTEND_REPEAT);
-
-  printk ("Loaded Sprite: %s Sheet Width: %d Frames: %d Width: %d Height: %d",
-      filename, krad_sprite->sheet_width, krad_sprite->frames,
-      krad_sprite->subunit.width, krad_sprite->subunit.height);
-  strcpy(krad_sprite->filename, filename);
-
+  sprite->sprite_pattern = cairo_pattern_create_for_surface(sprite->sprite);
+  cairo_pattern_set_extend(sprite->sprite_pattern, CAIRO_EXTEND_REPEAT);
+  strcpy(sprite->info.filename, filename);
+  printk("Loaded Sprite: %s Sheet Width: %d Frames: %d Width: %d Height: %d",
+   sprite->info.filename, sprite->sheet_width, sprite->frames, ctrl->w,
+   ctrl->h);
   return 1;
 }
 
-void krad_sprite_reset (kr_sprite *krad_sprite) {
+void kr_sprite_reset(kr_sprite *sprite) {
 
   int i;
 
-  if (krad_sprite->multisurface == 1) {
-    for (i = 0; i < krad_sprite->frames; i++) {
-      cairo_surface_destroy (krad_sprite->sprite_frames[i]);
+  if (sprite->multisurface == 1) {
+    for (i = 0; i < sprite->frames; i++) {
+      cairo_surface_destroy(sprite->sprite_frames[i]);
     }
-    krad_sprite->sprite = NULL;
+    sprite->sprite = NULL;
   } else {
-    if (krad_sprite->sprite_pattern != NULL) {
-      cairo_pattern_destroy ( krad_sprite->sprite_pattern );
-      krad_sprite->sprite_pattern = NULL;
+    if (sprite->sprite_pattern != NULL) {
+      cairo_pattern_destroy(sprite->sprite_pattern);
+      sprite->sprite_pattern = NULL;
     }
-    if (krad_sprite->sprite != NULL) {
-      cairo_surface_destroy ( krad_sprite->sprite );
-      krad_sprite->sprite = NULL;
+    if (sprite->sprite != NULL) {
+      cairo_surface_destroy(sprite->sprite);
+      sprite->sprite = NULL;
     }
   }
 
-  krad_sprite->multisurface = 0;
-  krad_sprite->frame = 0;
-  krad_sprite->frames = 1;
-  krad_sprite->tickrate = KRAD_SPRITE_DEFAULT_TICKRATE;
-  krad_sprite->tick = 0;
-  krad_compositor_subunit_reset (&krad_sprite->subunit);
+  sprite->multisurface = 0;
+  sprite->frame = 0;
+  sprite->frames = 1;
+  sprite->info.tickrate = KRAD_SPRITE_DEFAULT_TICKRATE;
+  sprite->tick = 0;
+  memset(&sprite->info.controls, 0, sizeof(kr_compositor_controls));
 }
 
-void krad_sprite_set_tickrate(kr_sprite *krad_sprite, int tickrate) {
-  krad_sprite->tickrate = tickrate;
+void kr_sprite_set_tickrate(kr_sprite *sprite, int tickrate) {
+  sprite->info.tickrate = tickrate;
 }
 
-static void kr_sprite_tick(kr_sprite *krad_sprite) {
-
-  krad_sprite->tick++;
-
-  if (krad_sprite->tick >= krad_sprite->tickrate) {
-    krad_sprite->tick = 0;
-    krad_sprite->frame++;
-    if (krad_sprite->frame == krad_sprite->frames) {
-      krad_sprite->frame = 0;
+static void sprite_tick(kr_sprite *sprite) {
+  sprite->tick++;
+  if (sprite->tick >= sprite->info.tickrate) {
+    sprite->tick = 0;
+    sprite->frame++;
+    if (sprite->frame == sprite->frames) {
+      sprite->frame = 0;
     }
-    if (krad_sprite->multisurface == 1) {
-      krad_sprite->sprite = krad_sprite->sprite_frames[krad_sprite->frame];
+    if (sprite->multisurface == 1) {
+      sprite->sprite = sprite->sprite_frames[sprite->frame];
     }
   }
-  krad_compositor_subunit_tick (&krad_sprite->subunit);
+  /*krad_compositor_subunit_tick(&sprite->subunit);*/
 }
 
-void kr_sprite_render(kr_sprite *krad_sprite, cairo_t *cr) {
+void kr_sprite_render(kr_sprite *sprite, cairo_t *cr) {
 
-  cairo_save (cr);
+  kr_compositor_controls *ctrl;
 
-  if (krad_sprite->subunit.rotation != 0.0f) {
-    cairo_translate (cr, krad_sprite->subunit.x, krad_sprite->subunit.y);
-    cairo_translate (cr, krad_sprite->subunit.width / 2, krad_sprite->subunit.height / 2);
-    cairo_rotate (cr, krad_sprite->subunit.rotation * (M_PI/180.0));
-    cairo_translate (cr, krad_sprite->subunit.width / -2, krad_sprite->subunit.height / -2);
-    cairo_translate (cr, krad_sprite->subunit.x * -1, krad_sprite->subunit.y * -1);
+  ctrl = &sprite->info.controls;
+  cairo_save(cr);
+  if (ctrl->rotation != 0.0f) {
+    cairo_translate(cr, ctrl->x, ctrl->y);
+    cairo_translate(cr, ctrl->w / 2, ctrl->h / 2);
+    cairo_rotate(cr, ctrl->rotation * (M_PI/180.0));
+    cairo_translate(cr, ctrl->w / -2, ctrl->h / -2);
+    cairo_translate(cr, ctrl->x * -1, ctrl->y * -1);
   }
-
-  if (krad_sprite->multisurface == 0) {
-
-    cairo_set_source_surface (cr,
-                  krad_sprite->sprite,
-                  krad_sprite->subunit.x - (krad_sprite->subunit.width * (krad_sprite->frame % 10)),
-                  krad_sprite->subunit.y - (krad_sprite->subunit.height * (krad_sprite->frame / 10)));
+  if (sprite->multisurface == 0) {
+    cairo_set_source_surface(cr, sprite->sprite,
+     ctrl->x - (ctrl->w * (sprite->frame % 10)),
+     ctrl->y - (ctrl->h * (sprite->frame / 10)));
   } else {
-    cairo_set_source_surface (cr,
-                  krad_sprite->sprite,
-                  krad_sprite->subunit.x,
-                  krad_sprite->subunit.y);
+    cairo_set_source_surface(cr, sprite->sprite, ctrl->x, ctrl->y);
   }
-
-  cairo_rectangle (cr,
-           krad_sprite->subunit.x,
-           krad_sprite->subunit.y,
-           krad_sprite->subunit.width,
-           krad_sprite->subunit.height);
-
-  cairo_clip (cr);
-
-  cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_FAST);
-
-  if (krad_sprite->subunit.opacity == 1.0f) {
-    cairo_paint ( cr );
+  cairo_rectangle(cr, ctrl->x, ctrl->y, ctrl->w, ctrl->h);
+  cairo_clip(cr);
+  /*cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_FAST);*/
+  if (ctrl->opacity == 1.0f) {
+    cairo_paint(cr);
   } else {
-    cairo_paint_with_alpha ( cr, krad_sprite->subunit.opacity );
+    cairo_paint_with_alpha(cr, ctrl->opacity);
   }
-
-  cairo_restore (cr);
-
-  kr_sprite_tick(krad_sprite);
+  cairo_restore(cr);
+  sprite_tick(sprite);
 }
 
 
 int kr_sprite_to_info(kr_sprite *sprite, kr_sprite_info *info) {
-
   if ((sprite == NULL) || (info == NULL)) {
     return 0;
   }
-
-  strcpy(info->filename, sprite->filename);
-  info->controls.x = sprite->subunit.x;
-  info->controls.y = sprite->subunit.y;
-  info->controls.z = sprite->subunit.z;
-  info->controls.tickrate = sprite->tickrate;
-  info->controls.width = sprite->subunit.width;
-  info->controls.height = sprite->subunit.height;
-  info->controls.rotation = sprite->subunit.rotation;
-  info->controls.opacity = sprite->subunit.opacity;
+  *info = sprite->info;
   return 1;
 }
