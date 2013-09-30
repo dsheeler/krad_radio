@@ -7,6 +7,7 @@ import sys
 daemon = "krad_radio_daemon.c"
 
 depsources = """
+../lib/krad_calc/krad_base64.c
 ../lib/krad_container/krad_container.c
 ../lib/krad_radio/krad_radio_interface.c
 ../lib/krad_radio/krad_radio.c
@@ -33,19 +34,7 @@ depsources = """
 ../lib/krad_compositor/krad_compositor.c
 ../lib/krad_framepool/krad_framepool.c
 ../lib/krad_osc/krad_osc.c
-../lib/krad_web/ext/cJSON.c
-../lib/krad_web/ext/libwebsockets/base64-decode.c
-../lib/krad_web/ext/libwebsockets/output.c
-../lib/krad_web/ext/libwebsockets/extension.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-stream.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-frame.c
-../lib/krad_web/ext/libwebsockets/handshake.c
-../lib/krad_web/ext/libwebsockets/server.c
-../lib/krad_web/ext/libwebsockets/server-handshake.c
-../lib/krad_web/ext/libwebsockets/sha-1.c
-../lib/krad_web/ext/libwebsockets/libwebsockets.c
-../lib/krad_web/ext/libwebsockets/parsers.c
-../lib/krad_web/krad_websocket.c
+../lib/krad_calc/krad_sha1.c
 ../lib/krad_sfx/krad_eq.c
 ../lib/krad_sfx/krad_analog.c
 ../lib/krad_sfx/krad_pass.c
@@ -81,6 +70,7 @@ depsources = """
 """.split()
 
 includedirs = """
+../../lib/krad_calc/
 ../lib/krad_compositor/
 ../lib/krad_muxponder/
 ../lib/krad_chronometer/
@@ -89,7 +79,6 @@ includedirs = """
 ../lib/krad_framepool/
 ../lib/krad_web/
 ../lib/krad_web/ext/
-../lib/krad_web/ext/libwebsockets/
 ../lib/krad_web/res/
 ../lib/krad_sfx/
 ../lib/krad_vhs/
@@ -140,6 +129,15 @@ stlibs = []
 syslibs = ['m', 'dl', 'z', 'pthread']
 syslibs2 = ['rt', 'turbojpeg']
 
+def combine_javascript_interface():
+  outfile = open("lib/krad_web/res/kr_interface.js", "w")
+  
+  for filename in os.listdir("lib/krad_web/rack"):
+    if filename[-2:] == "js":
+      file = open(os.path.join("lib/krad_web/rack", filename),'r')
+      content = file.read()
+      outfile.write(content + "\n")
+  
 def hexilate_file(filename):
 
   varname = filename.replace("/","_").replace(".","_")
@@ -215,7 +213,7 @@ def check_way(way):
 
   if way.env['KRAD_USE_WAYLAND']:
     depsources += ["../lib/krad_wayland/krad_wayland.c"]
-    shlibs += ["wayland-client"]
+    shlibs += ["wayland-client", "xkbcommon"]
 
   if way.env['KRAD_USE_FLYCAP']:
     depsources += ["../lib/krad_fc2/krad_fc2.c"]
@@ -238,8 +236,11 @@ def check_gif(conf):
     syslibs += ["gif"]
 
 def remake_webres(web):
+  combine_javascript_interface()
   hexilate_file("lib/krad_web/res/krad_radio.html")
-  hexilate_file("lib/krad_web/res/krad_radio.js")  
+  hexilate_file("lib/krad_web/res/kr_api.js")
+  hexilate_file("lib/krad_web/res/kr_interface.js")
+  hexilate_file("lib/krad_web/res/kr_dev_interface.js")
 
 def configure(conf):
 

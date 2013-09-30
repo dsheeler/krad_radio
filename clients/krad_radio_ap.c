@@ -93,22 +93,24 @@ int main (int argc, char *argv[]) {
 		krad_tone_add_preset (krad_tone2, "3");
 	}
 
-	audioport = kr_audioport_create (client, direction);
+  kr_mixer_create_portgroup(client, "testport", "input", "krad", 2);
+
+	audioport = kr_audioport_create(client, "testport", direction);
 
 	if (audioport == NULL) {
 		fprintf (stderr, "Could not make audioport.\n");
 	  kr_client_destroy (&client);
 	  return 1;
 	} else {
-		printf ("Working!\n");
+		printf ("Audioport created!\n");
 	}
 	
-	kr_audioport_set_callback (audioport, audioport_process, audioport);
+	kr_audioport_set_callback(audioport, audioport_process, audioport);
 	
-  signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);	
+  signal(SIGINT, signal_recv);
+  signal(SIGTERM, signal_recv);	
 	
-	kr_audioport_activate (audioport);
+	kr_audioport_connect(audioport);
 	
 	for (i = 0; i < 40; i++) {
 	  usleep (30000);
@@ -123,9 +125,9 @@ int main (int argc, char *argv[]) {
     }
 	}
 		
-	kr_audioport_deactivate (audioport);
+	kr_audioport_disconnect(audioport);
 	
-	kr_audioport_destroy (audioport);
+	kr_audioport_destroy(audioport);
 
 	if (direction == INPUT) {
 		krad_tone_destroy (krad_tone);

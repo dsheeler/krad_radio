@@ -15,9 +15,9 @@
 #ifndef KRAD_RADIO_H
 #define KRAD_RADIO_H
 
-typedef struct krad_radio_St krad_radio_t;
-typedef struct krad_log_St krad_log_t;
-typedef struct krad_remote_control_St krad_remote_control_t;
+typedef struct kr_radio kr_radio;
+typedef struct kr_log kr_log;
+typedef struct kr_remote_control kr_remote_control;
 
 #include "krad_radio_version.h"
 #include "krad_system.h"
@@ -50,7 +50,6 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 #endif
 #include "krad_mixer.h"
 #include "krad_mixer_common.h"
-#include "krad_websocket.h"
 #include "krad_udp.h"
 #include "krad_x11.h"
 #include "krad_theora.h"
@@ -76,29 +75,29 @@ typedef struct krad_remote_control_St krad_remote_control_t;
 
 extern krad_system_t krad_system;
 
-struct krad_remote_control_St {
-	krad_osc_t *osc;	
-	krad_interweb_t *interweb;
+struct kr_remote_control {
+  krad_osc_t *osc;
+  krad_interweb_t *interweb;
 };
 
-struct krad_log_St {
+struct kr_log {
   krad_timer_t *startup_timer;
-  int verbose;  
+  int verbose;
 	char filename[512];
 };
 
-struct krad_radio_St {
-	char sysname[KRAD_SYSNAME_SZ];
-	krad_app_server_t *app;	
-	krad_app_broadcaster_t *system_broadcaster;
-	krad_log_t log;
-	krad_tags_t *krad_tags;
-	krad_remote_control_t remote;
-	krad_transponder_t *krad_transponder;	
-	krad_mixer_t *krad_mixer;
-	krad_compositor_t *krad_compositor;
+struct kr_radio {
+  krad_transponder_t *transponder;
+  kr_mixer *mixer;
+  kr_compositor *compositor;
+  krad_app_server_t *app;
+  krad_app_broadcaster_t *system_broadcaster;
+  kr_remote_control remote;
+  krad_tags *tags;
+  kr_log log;
+  char sysname[KRAD_SYSNAME_SZ];
 };
 
-void krad_radio_daemon (char *sysname);
+int kr_radio_daemon(char *sysname);
 
 #endif

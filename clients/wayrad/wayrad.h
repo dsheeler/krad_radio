@@ -7,20 +7,17 @@ typedef struct wayrad_St wayrad_t;
 typedef struct cratezone_St cratezone_t;
 
 struct cratezone_St {
-
   uint64_t crates;
   uint64_t crates_last;
-
 };
 
 struct wayrad_St {
 
-	krad_wayland_t *krad_wayland;
+  kr_wayland *wayland;
+  kr_wayland_window *window;
 
-	int width;
-	int height;
-
-	void *buffer;  
+  int width;
+  int height;
 
   char sysname[96];
   kr_client_t *client;
@@ -31,7 +28,6 @@ struct wayrad_St {
   
   float current_level;
   float master_peak;
-  
 };
 
 void wayrad_run (wayrad_t *wayrad);

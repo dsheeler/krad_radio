@@ -3,206 +3,463 @@
 <head>
   <title>Krad Radio</title>
   <meta charset="utf-8">
-  <!-- <link rel="shortcut icon" href="/favicon.png"> -->
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="/krad_radio.js"></script>
-  <style>
-    
-    @font-face {
-    font-family: "TradeGothicLTComBoldCondensed";
-    src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
-    }
-    
-    body {
-      font-family: Helvetica,sans-serif; 
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      color: #ccc;
-      background-color: #474747;
-      margin: 0px;
-      margin-left: 10%;
-      margin-right: 5%;      
-    }
-    a { text-decoration: none; }
-    a:visited { color: #222227; }
+  <!--<link rel="shortcut icon" href="/favicon.png"> -->
 
-    button::-moz-focus-outer, ::-moz-focus-inner {
-      border: 1px solid transparent !important;
-    }
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+  <!--  <script type="text/javascript"
+   src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+  /ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js-->
+  <script src="//europa.kradradio.com:8040/mootools-core-1.4.5-full-nocompat.js"></script>
+  <script src="//europa.kradradio.com:8040/mootools-more-1.4.0.1.js"></script>
+  <script type="text/javascript" src="krad.js"></script>
+<style>
 
-    h1, h2, h3, h4, h5, h6 {
-      cursor: default;
-    }
+@font-face {
+  font-family: "HelveticaNeueW0195Black";
+  src: url("http://media.kradradio.com/HelveticaNeueW0195Black.woff");
+}
+
+@font-face {
+  font-family: "TradeGothicLTComBoldCondensed";
+  src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
+}
+
+@font-face {
+  font-family: "DS-DIGI";
+  src: url("http://europa.kradradio.com:8040/ds-digi-webfont.woff");
+}
+
+.rrrred { background-color: #E20A16; }
+.darkgreen { background-color: #08BA15; }
+.yellowgreen { background-color: #CCE831; }
+.yelleryellow { background-color: #FBD327; }
+.orangey { background-color: #EC8037; }
+.deepblue { background-color: #2155A0; }
+.brightblue { background-color: #52AEE1; }
+.coolblue { background-color: #84AAC1; }
+.limegreen { background-color: #02DD4F; }
+.lightorange { background-color: #FFBC61; }
+.ultraviolet { background-color: #EC018D; }
+.ultrablue { background-color: #0083FE; }
+
+body {
+   font-family: HelveticaNeueW0195Black,Helvetica,sans;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  background-color: grey;
+  color: #ccc;
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  cursor: default;
+  margin-left: 0.625em;
+  margin-right: 0.625em;
+  font-weight: normal;
+}
+
+.clock {
+  font-family: DS-DIGI,HelveticaNeueW0195Black,Helvetica,sans;
+  background-color: black;
+  color: red;
+  text-align: center;
+  border-width: 0.125em;
+  border-color: white;
+  text-shadow: red 0 0 0.125em;
+}
+
+.logo {
+  background-color: black;
+}
+
+.volume_control h6 {
+  font-size: 115%;
+  margin: 4%;
+}
+
+.analog_meter_wrapper {
+  position: relative;
+  top: 3.8em;
+}
+
+.meter {
+  height: 200px;
+  width: 24px;
+}
+
+#analog_meter_canvas {
+  position: relative;
+  top: 60%;
+  width: 200px;
+  height: 200px;
+}
+
+.eq_area, .effect_area {
+  margin: 0.625em;
+  float: left;
+  display:none;
+}
+
+.RCU {
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height:0;
+  margin: 0;
+  padding: 0;
+}
+
+#mixers {
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+.chooser .chooser_choice {
+  min-width: 100%;
+  clear: left;
+  background-color: grey;
+}
+
+.chooser_choice {
+  float:left;
+  background-color: rgba(122,122,122,0.5);
+  text-align: center;
+}
+
+.chooser_choice.chooser_chosen {
+  background-color: rgba(233,233,233,0.5);
+}
+
+.kradcompositor_canvas {
+  width: 960px;
+  height: 540px;
+  float:left;
+}
+
+.close {
+  display: none;
+  float: right;
+  position: absolute;
+  top: -0.625em;
+  right: -1.25em;
+}
+
+.minimized_portgroup_wrap {
+  float: left;
+}
+
+.crossfade {
+  position: relative;
+  top: 6.250em;
+}
+
+.fade {
+  position: relative;
+  height: 1.5em;
+  width: 9.375em;
+  background-color: rgb(114, 114, 114);
+  border-radius: 0.125em;
+  box-shadow: 0 -0.75em 1.188em rgb(54, 52, 52) inset;
+}
+
+.fade .handle {
+  top: -1.25em;
+  height: 4em;
+  width: 1.5em;
+}
+
+.effects .handle {
+  background-color: rgb(136, 136, 136);
+  box-shadow: 0 0.031em 0.156em rgb(24, 32, 29);
+  left: -0.625em;
+  width: 2em;
+  height: 0.75em;
+  margin-bottom: 0.156em;
+  z-index: 10;
+}
+
+.effects .volume {
+  width: 0.75em;
+  height: 6.25em;
+  margin-left: 1.875em;
+  margin-right: 0.313em;
+  margin-bottom: 0.313em;
+  border-radius: 0.063em;
+  box-shadow: 0 -1.031em 0.594em rgb(54, 52, 52) inset;
+  position: relative;
+  z-index: 5;
+}
+
+.volume {
+  width: 1.5em;
+  height: 200px;
+  margin-left: 3.750em;
+  margin-right: 0.625em;
+  margin-bottom: 0.625em;
+  background-color: rgb(114, 114, 114);
+  border-radius: 0.125em;
+  box-shadow: 0 -2.063em 1.1875em rgb(54, 52, 52) inset;
+}
+
+.handle {
+  background-color: rgb(136, 136, 136);
+  box-shadow: 0 0.063em 0.313em rgb(24, 32, 29);
+  left: -1.25em;
+  width: 4em;
+  height: 1.5em;
+  margin-bottom: 0.313em;
+}
+
+.volume_control {
+  margin: 0.625em;
+}
+
+.crossfade_control {
+  float: left;
+  position: relative;
+  height: 13.250em;
+  width: 9.375em;
+  top: 4.375em;
+ text-align: center;
+}
+
+a { text-decoration: none; }
+a:visited { color: #222227; }
+
+button::-moz-focus-outer, ::-moz-focus-inner {
+  border: 0.0625em solid transparent !important;
+}
+
+.kradcompositor_subunit_list {
+  float: left;
+  font-size: 0.875em;
+  background-color: rgb(10, 106,89)
+}
+
+li {
+  float: left;
+  border-radius: 0.375em;
+  background-color: rgb(2, 137, 114);
+  padding: 0.3125em;
+}
+
+li.alt {
+  background-color: rgb(8, 123, 98);
+}
+
+.alt.selected, .selected{
+  background-color: rgb(2, 48, 48);
+}
+
+.kradradio_station_info, .kradradio_mixer_info, .kradradio_compositor_info,
+ .kradradio_transponder_info {
+  margin-top: 1.25em;
+  border:0.5em solid #c1c1c1;
+  padding:0.625em 2.5em;
+  background: #383838;
+  border-radius:1.5625em;
+}
+
+.minimized_portgroup_wrap h3, .minimized_crossfade_wrap h3 {
+  float: left;
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  position: relative;
+  font-size: 1.875em;
+  height: 16.25em;
+  width: 0;
+  margin: 1.25em;
+  left: 7.5em;
+}
+
+.chooser {
+  float: none;
+  /*width: 9%;
+  height: 100%;*/
+  background-color: green;
+}
+
+.kradmixer {
+  /*float: right;
+  width: 100%;
+  height: 30%;
+  overflow:hidden;
+  background-color: grey*/;
+}
+
+.effects h2 {
+  position: absolute;
+  right: 0;
+  font-size: 1.875em;
+  color: grey;
+}
+
+.effects h4 {
+  z-index: 0;
+  position: absolute;
+  right: -2.75em;
+  top: 2.25em;
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
+  color: #666;
+  background-color: rgb(222,222,22);
+  text-shadow: 0 0 0 #444;
+  font-weight: bold;
+  font-size: 0.75em;
+  width: 8.25em
+
+}
+
+.xmms2_control {
+  position: relative;
+  float: left;
+  width: 100%;
+}
+
+#xmms2s h2 {
+  color: grey;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.kradcompositor {
+  overflow: hidden;
+  background-color: grey;
+}
+
+.kradmixer_control {
+  float: left;
+  font-weight: bold;
+  text-align: center;
+  position: relative;
+}
 
 
-    .kradcompositor_control {
-      border: 1px solid black;
-      width: 960px;
-      height: 540px;
-      background-color: #ffffff;
-      float: left;
-      margin: 14px;
-      box-shadow: 0px 0px 10px #000;
-    }
-    
+.meter_wrapper {
+  text-align: center;
+  margin-left: 0.625em;
+  float:left;
+}
 
-    .kradcompositor_subunit_list {
-      width: 960px;
-      float: left;
-      margin: 14px;
-    }
+#dtmf_pad {
+  position: absolute;
+}
 
-    ul {
-      list-style:none;
-      border-radius: 6px;
-      background-color: #383838
-    }
+#dtmf {
+  position: absolute;
+  width: 15.5em;
+}
 
-    li {
+#dtmf_pad .close {
+  z-index: 20;
+  position: absolute;
+  top: -0.625em;
+  right: 6.875em;
+}
 
-      border-radius: 6px;
-      color: white;
-      background-color: #2A2A2A; 
-      padding: 20px;
-    }
+.dtmf_pad .button_wrap {
+  float: left;
+}
 
-    li.alt {
-      background-color: #282828;
-    }
-    
-    .alt.selected {
-      background-color: #475b7e;
-    }
 
-    .selected {
-      color: white;
-      background-color: #43587A;
-      font-weight: bold;
-    }
+    .dtmf_button { color: #FFFFFF;
+             background-color: #0000FF; text-align: center; width: 1.375em; height: 1.375em; margin: 0.125em;
+             border: 0.0625em solid grey; cursor: pointer; float: left; }
 
-    
-
-    .kradlink_link h3 {
-      color: #919191;
-      text-shadow: 0px 0px 0px #444;
-      font-weight: bold; 
-      font-size: 26px;
-    }
-    
-    .prepare_link_server_info label, .prepare_link_file_info label {
-      font-weight: bold;
-      position: absolute;
-      width: 110px;
-      padding-top: 7px;
-    }
-    
-    input[type="text"], input[type="password"] {
-      padding: 3px;
-      margin: 6px;
-      margin-left: 120px;
-      background-color: #616161;
-      border: 1px solid #616161;
-    }
-
-    .kradmixer_control {
-      margin-top: 24px;
-      
-    }
-
-     .kradradio_station { margin-top: 20px; }
-
-    .kradmixer_control, .kradlink_control { height: 200px; float: left; margin: 14px; }
-
-    .kradmixer_control h2, .kradlink_control h2, .kradlink_control h3, .masterbus h2 {
-            position: relative;
-            right: 120px;
-            bottom: 120px;
-            -webkit-transform: rotate(-90deg);
-            -moz-transform: rotate(-90deg);
-            -o-transform: rotate(-90deg);
-            color: #666;
-            text-shadow: 0px 0px 0px #444;
-            font-weight: bold; 
-            font-size: 26px;
-        }
-    
-    .crossfade_control {
-            position: relative;
-            text-align: center;
-            margin: 64px;
-            -webkit-transform: none;
-            -moz-transform: none;
-            -o-transform: none;
-    }
-    
-    .crossfade_control h2 {
-            position: static;
-            text-align: left;
-            margin-top: 4px;
-            -webkit-transform: none;
-            -moz-transform: none;
-            -o-transform: none;
-    }
-    .sysname {
-    
-        color: #666;
-            text-shadow: 0px 0px 0px #444;
-            font-weight: bold; 
-            font-size: 42px;
-            margin-left: 42px;
-    }
-    
-    .kradlink_prepare_link {
-      margin-left: 16px;
-    }
-    
-    .meter_wrapper {
-      text-align: center;
-      height: 200px; float: left; margin-top: 0px;
-      padding-left: 28px; margin-left: 20px; margin-right: 20px; padding-right: 20px; width: 50px;
-    }
-    
-    .volume_control, .kradlink_param_control { padding-left: 78px; margin-right: 40px; padding-right: 20px; width: 50px; }
-    .crossfade_control { width: 200px; }
-    .kradmixer_tools, .kradcompositor_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }    
-    .kradlink_tools { display: none; width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
-    .kradlink_info, .kradmixer_info, .kradcompositor_info { display: none; width: 80%; margin: 2px; margin-bottom: 4px; padding: 2px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #505050; }
-    .kradlink_link { width: 80%; margin: 20px; margin-bottom: 32px; padding: 10px; padding-top: 2px; padding-left: 20px;  border-left: 12px solid #616161; }
-    .dtmf_pad { width: 254px; height: 230px; padding: 2px; }
-    .effect_area { margin: 20px; padding: 12px; }
-    .dtmf_button { color: #FFFFFF; 
-             background-color: #0000FF; text-align: center; width: 22px; height: 22px; margin: 2px;
-             border: 1px solid grey; cursor: pointer; float: left; }
-             
     .dtmf_button_mil { color: #FFFFFF;
-               background-color: #FF0000;  text-align: center; width: 22px; height: 22px; margin: 2px;
-               border: 1px solid grey; cursor: pointer; float: left; }
-               
-        .kradlink { display: none; margin-top: 132px; }
-        .tag { cursor: default; white-space: nowrap; font-family: Helvetica,sans-serif; font-size: 14px; color: #ccc; margin-top: 4px}
-        .nowplaying { font-weight: normal; font-size: 18px; margin-left: 6px; white-space: normal; color: #9faa8b; text-shadow: #111112 5px 2px 5px; }
-        .playtime { float: left; margin-left: 6px; margin-top: 9px; margin-bottom: 8px; box-shadow: inset #192122 1px 1px 2px; border-radius: 2px; border: 0px solid #444; padding: 3px; font-weight: normal; font-size: 16px; color: #8aaa03; background-color: #434244; text-align: right; padding-right: 9px; width: 48px; }
+               background-color: #FF0000;  text-align: center; width: 1.375em; height: 1.375em; margin: 0.125em;
+               border: 0.0625em solid grey; cursor: pointer; float: left; }
+
 
   </style>
-  
-  <style>
-  
+    <style>
+
+.krad_button_very_small, .krad_button3 {
+  float: left;
+}
+
     /* d2f700 */
-    
+       .krad_button_very_small {
+
+        /*min-width: 1.25em;*/
+        text-align: center;
+      cursor: default;
+      margin-left: 0.125em;
+      margin-right: 0.125em;
+      margin-top: 0.125em;
+      margin-bottom: 0.125em;
+      padding-left: 0.375em;
+      padding-right: 0.375em;
+      padding-top: 0.125em;
+      padding-bottom: 0.125em;
+      font-size: 1.25em;
+      /*font-weight: bold;*/
+      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
+      color: #484848;
+      background-color: rgba(254,182,69,1);
+      border-color: #553344;
+      border-radius: 0.125em;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 0.0625em 0.125em;
+      border-top: 0 solid rgba(254,182,69,1);
+      border-left: 0 solid rgba(254,182,69,1);
+      border-right: 0.125em solid rgba(254,182,69,1);
+      border-bottom: 0.125em solid rgba(254,182,69,1);
+
+      text-shadow: rgba(22,22,22,.35) 0 0.0625em 0.125em;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 0.1875em, hsl(0, 33%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(171,171,171,0.85) 0 0.0625em 0.3125em; /* drop shadow */
+
+    }
+    .krad_button_very_small:active {
+
+      margin-left: 0.125em;
+      margin-right: 0.125em;
+      margin-top: 0.1875em;
+      margin-bottom: 0.125em;
+      padding-left: 0.375em;
+      padding-right: 0.375em;
+      padding-top: 0.125em;
+      padding-bottom: 0.125em;
+      color: #383838;
+      background-color: rgba(254,182,69,1);
+      border-color: #553344;
+      border-radius: 0.125em;
+      background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
+      text-shadow: rgba(22,22,22,.3) 0 0.0625em 0.125em;
+      border-top: 0 solid rgba(254,182,69,1);
+      border-left: 0 solid rgba(254,182,69,1);
+      border-right: 0.125em solid rgba(229,166,62,1);
+      border-bottom: 0.125em solid rgba(229,166,62,1);
+
+      text-shadow: rgba(22,22,22,.35) 0 0.0625em 0.125em;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 0.1875em, hsl(0, 33%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(171,171,171,0.85) 0 0.0625em 0.3125em; /* drop shadow */
+
+    }
+
     .krad_button_toggle {
-      min-width: 20px;
+      min-width: 1.25em;
       text-align: center;
       cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
+      font-size: 1em;
       font-weight: bold;
       font-family: Helvetica, sans-serif;
       color: #222227;
@@ -210,79 +467,79 @@
       -webkit-user-select: none;
       background-color: rgba(171,171,171,1);
       border-color: #553344;
-      border-radius: 2px;
+      border-radius: 0.125em;
       background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
+      text-shadow: rgba(22,22,22,.3) 0 0.0625em 0.125em;
+      border-top: 0 solid rgba(171,171,171,1);
+      border-left: 0 solid rgba(171,171,171,1);
       border-right: 0.13em solid rgba(171,171,171,0.1);
       border-bottom: 0.13em solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
+            /*hsl(0, 22%, 60%) 0 .1em 0.0625em, hsl(0, 53%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(171,171,171,1) 0 0.0625em 0.3125em; /* drop shadow */
 
     }
 
      .krad_button_toggle:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5625em;
+      margin-bottom: 0.5625em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
       color: #191915;
-      background-color: rgba(22,222,5,1);      
+      background-color: rgba(22,222,5,1);
       background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
-      border-top: 0em solid rgba(22,222,5,1);
-      border-left: 0px solid rgba(22,222,5,1);
+      border-top: 0 solid rgba(22,222,5,1);
+      border-left: 0 solid rgba(22,222,5,1);
       border-right: 0.13em solid rgba(22,222,5,1);
       border-bottom: 0.13em solid rgba(22,222,5,1);
-      text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */    
-     
-     }
-  
-    .krad_button_toggle_on {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      color: #191915;
-      background-color: rgba(22,222,5,1);      
-      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
-      border-top: 0em solid rgba(22,222,5,1);
-      border-left: 0px solid rgba(22,222,5,1);
-      border-right: 0.13em solid rgba(22,222,5,1);
-      border-bottom: 0.13em solid rgba(22,222,5,1);
-      text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
+      text-shadow: rgba(22,22,222,.35) 0 0.0625em 0.125em;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 0.1875em, hsl(0, 33%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(22,222,5,0.85) 0 0.0625em 0.3125em; /* drop shadow */
 
-    }    
-    
+     }
+
+    .krad_button_toggle_on {
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5625em;
+      margin-bottom: 0.5625em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
+      color: #191915;
+      background-color: rgba(22,222,5,1);
+      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
+      border-top: 0 solid rgba(22,222,5,1);
+      border-left: 0 solid rgba(22,222,5,1);
+      border-right: 0.13em solid rgba(22,222,5,1);
+      border-bottom: 0.13em solid rgba(22,222,5,1);
+      text-shadow: rgba(22,22,222,.35) 0 0.0625em 0.125em;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 0.1875em, hsl(0, 33%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(22,222,5,0.85) 0 0.0625em 0.3125em; /* drop shadow */
+
+    }
+
     .krad_button {
-        min-width: 20px;
+        min-width: 1.25em;
         text-align: center;
       cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
+      font-size: 1em;
       font-weight: bold;
       font-family: Helvetica, sans-serif;
       color: #222227;
@@ -290,822 +547,128 @@
       -webkit-user-select: none;
       background-color: rgba(254,182,69,1);
       border-color: #553344;
-      border-radius: 2px;
+      border-radius: 0.125em;
       background: radial-gradient(ellipse at center, rgba(241,231,103,1) 0%,rgba(254,182,69,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(254,182,69,1);
-      border-left: 0px solid rgba(254,182,69,1);
-      border-right: 2px solid rgba(254,182,69,0.1);
-      border-bottom: 2px solid rgba(254,182,69,0.1);
+      text-shadow: rgba(22,22,22,.3) 0 0.0625em 0.125em;
+      border-top: 0 solid rgba(254,182,69,1);
+      border-left: 0 solid rgba(254,182,69,1);
+      border-right: 0.125em solid rgba(254,182,69,0.1);
+      border-bottom: 0.125em solid rgba(254,182,69,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
+            /*hsl(0, 22%, 60%) 0 .1em 0.0625em, hsl(0, 53%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(254,182,69,1) 0 0.0625em 0.3125em; /* drop shadow */
 
     }
-  
+
     .krad_button:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5625em;
+      margin-bottom: 0.5625em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
       color: #111117;
       background: radial-gradient(ellipse at center, rgba(241,231,103,1) 12%,rgba(254,182,69,1) 100%);
-      border-top: 0em solid rgba(254,182,69,1);
-      border-left: 0px solid rgba(254,182,69,1);
-      border-right: 2px solid rgba(254,182,69,1);
-      border-bottom: 2px solid rgba(254,182,69,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(254,182,69,0.85) 0px 1px 5px; /* drop shadow */
+      border-top: 0 solid rgba(254,182,69,1);
+      border-left: 0 solid rgba(254,182,69,1);
+      border-right: 0.125em solid rgba(254,182,69,1);
+      border-bottom: 0.125em solid rgba(254,182,69,1);
+      text-shadow: rgba(22,22,22,.35) 0 0.0625em 0.125em;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 0.1875em, hsl(0, 33%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(254,182,69,0.85) 0 0.0625em 0.3125em; /* drop shadow */
 
     }
 
-    .krad_button2 {
-        min-width: 20px;
-        text-align: center;
-      cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(5,171,224,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(5,171,224,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(5,171,224,1);
-      border-left: 0px solid rgba(5,171,224,1);
-      border-right: 2px solid rgba(5,171,224,0.1);
-      border-bottom: 2px solid rgba(5,171,224,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(5,171,224,1) 0px 1px 5px; /* drop shadow */
-
-    }
-  
-    .krad_button2:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(5,171,224,1) 100%);
-      border-top: 0em solid rgba(5,171,224,1);
-      border-left: 0px solid rgba(5,171,224,1);
-      border-right: 2px solid rgba(5,171,224,1);
-      border-bottom: 2px solid rgba(5,171,224,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(5,171,224,0.85) 0px 1px 5px; /* drop shadow */
-
-    }
-    
     .krad_button3 {
-        min-width: 20px;
+        min-width: 1.25em;
         text-align: center;
       cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
+      font-size: 1em;
       font-weight: bold;
-      font-family: Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
       background-color: rgba(171,171,171,1);
       border-color: #553344;
-      border-radius: 2px;
+      border-radius: 0.125em;
       background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,0.1);
-      border-bottom: 2px solid rgba(171,171,171,0.1);
+      text-shadow: rgba(22,22,22,.3) 0 0.0625em 0.125em;
+      border-top: 0 solid rgba(171,171,171,1);
+      border-left: 0 solid rgba(171,171,171,1);
+      border-right: 0.125em solid rgba(171,171,171,0.1);
+      border-bottom: 0.125em solid rgba(171,171,171,0.1);
 
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
+      box-shadow: inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */
+            /*hsl(0, 22%, 60%) 0 .1em 0.0625em, hsl(0, 53%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(171,171,171,1) 0 0.0625em 0.3125em; /* drop shadow */
 
     }
-  
+
     .krad_button3:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
+      margin-left: 0.625em;
+      margin-right: 0.625em;
+      margin-top: 0.5625em;
+      margin-bottom: 0.5625em;
+      padding-left: 0.625em;
+      padding-right: 0.625em;
+      padding-top: 0.5em;
+      padding-bottom: 0.4375em;
       color: #191915;
       background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,1);
-      border-bottom: 2px solid rgba(171,171,171,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
-
-    }
-    
-    
-    .krad_button4 {
-        min-width: 20px;
-        text-align: center;
-      cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(171,5,224,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(171,5,224,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(171,5,224,1);
-      border-left: 0px solid rgba(171,5,224,1);
-      border-right: 2px solid rgba(171,5,224,0.1);
-      border-bottom: 2px solid rgba(171,5,224,0.1);
-
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,5,224,1) 0px 1px 5px; /* drop shadow */
-
-    }
-  
-    .krad_button4:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(171,5,224,1) 100%);
-      border-top: 0em solid rgba(171,5,224,1);
-      border-left: 0px solid rgba(171,5,224,1);
-      border-right: 2px solid rgba(171,5,224,1);
-      border-bottom: 2px solid rgba(171,5,224,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,5,224,0.85) 0px 1px 5px; /* drop shadow */
-
-    }      
-
-    
-    .krad_button5 {
-        min-width: 20px;
-        text-align: center;
-      cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(244,5,35,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 0%,rgba(244,5,35,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(244,5,35,1);
-      border-left: 0px solid rgba(244,5,35,1);
-      border-right: 2px solid rgba(244,5,35,0.1);
-      border-bottom: 2px solid rgba(244,5,35,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(244,5,35,1) 0px 1px 5px; /* drop shadow */
-
-    }
-  
-    .krad_button5:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(83,203,241,1) 12%,rgba(244,5,35,1) 100%);
-      border-top: 0em solid rgba(244,5,35,1);
-      border-left: 0px solid rgba(244,5,35,1);
-      border-right: 0.13em solid rgba(244,5,35,1);
-      border-bottom: 0.13em solid rgba(244,5,35,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(244,5,35,0.85) 0px 1px 5px; /* drop shadow */
-
-    }
-
-    .krad_button6 {
-        min-width: 20px;
-        text-align: center;
-      cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(222,5,22,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(202,5,22,1) 0%,rgba(222,5,22,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(222,5,22,1);
-      border-left: 0px solid rgba(222,5,22,1);
-      border-right: 0.13em solid rgba(222,5,22,0.1);
-      border-bottom: 0.13em solid rgba(222,5,22,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(222,5,22,1) 0px 1px 5px; /* drop shadow */
-
-    }
-  
-    .krad_button6:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(202,5,22,1) 12%,rgba(222,5,22,1) 100%);
-      border-top: 0em solid rgba(222,5,22,1);
-      border-left: 0px solid rgba(222,5,22,1);
-      border-right: 0.13em solid rgba(222,5,22,1);
-      border-bottom: 0.13em solid rgba(222,5,22,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(222,5,22,0.85) 0px 1px 5px; /* drop shadow */
+      border-top: 0 solid rgba(171,171,171,1);
+      border-left: 0 solid rgba(171,171,171,1);
+      border-right: 0.125em solid rgba(171,171,171,1);
+      border-bottom: 0.125em solid rgba(171,171,171,1);
+      text-shadow: rgba(22,22,22,.35) 0 0.0625em 0.125em;
+      box-shadow: inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */
+            /* hsl(0, 22%, 60%) 0 .1em 0.1875em, hsl(0, 33%, 45%) 0 .1em 0.0625em, /* color border */
+            rgba(171,171,171,0.85) 0 0.0625em 0.3125em; /* drop shadow */
 
     }
 
 
-    .krad_button7 {
-        min-width: 20px;
-        text-align: center;
-      cursor: default;
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(22,222,5,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 0%,rgba(22,222,5,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(22,222,5,1);
-      border-left: 0px solid rgba(22,222,5,1);
-      border-right: 0.13em solid rgba(22,222,5,0.1);
-      border-bottom: 0.13em solid rgba(22,222,5,0.1);
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(22,222,5,1) 0px 1px 5px; /* drop shadow */
-
-    }
-  
-    .krad_button7:active {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 9px;
-      margin-bottom: 9px;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 8px;
-      padding-bottom: 7px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(22,202,5,1) 12%,rgba(22,222,5,1) 100%);
-      border-top: 0em solid rgba(22,222,5,1);
-      border-left: 0px solid rgba(22,222,5,1);
-      border-right: 0.13em solid rgba(22,222,5,1);
-      border-bottom: 0.13em solid rgba(22,222,5,1);
-      text-shadow: rgba(22,22,222,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(22,222,5,0.85) 0px 1px 5px; /* drop shadow */
-
-    }
-
-
-    .krad_button_small {
-        min-width: 20px;
-        text-align: center;
-      cursor: default;
-      margin-left: 6px;
-      margin-right: 6px;
-      margin-top: 4px;
-      margin-bottom: 4px;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 4px;
-      font-size: 24px;
-      font-weight: normal;
-      font-family: "TradeGothicLTComBoldCondensed", "Trade Gothic LT Com", Helvetica, sans-serif;
-      color: #222227;
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      background-color: rgba(171,171,171,1);
-      border-color: #553344;
-      border-radius: 2px;
-      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 0%,rgba(171,171,171,1) 100%);
-      text-shadow: rgba(22,22,22,.3) 0 1px 2px;
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,0.1);
-      border-bottom: 2px solid rgba(171,171,171,0.1);
-
-      box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,1) 0px 1px 5px; /* drop shadow */
-
-    }
-
-    .krad_button_small:active {
-      margin-left: 6px;
-      margin-right: 6px;
-      margin-top: 5px;
-      margin-bottom: 5px;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 4px;
-      color: #191915;
-      background: radial-gradient(ellipse at center, rgba(151,151,151,1) 12%,rgba(171,171,171,1) 100%);
-      border-top: 0em solid rgba(171,171,171,1);
-      border-left: 0px solid rgba(171,171,171,1);
-      border-right: 2px solid rgba(171,171,171,1);
-      border-bottom: 2px solid rgba(171,171,171,1);
-      text-shadow: rgba(22,22,22,.35) 0 1px 2px;
-      box-shadow:  inset rgba(0,0,133,0.13) 0 -0.1em .3em, /* inner shadow */ 
-            /* hsl(0, 22%, 60%) 0 .1em 3px, hsl(0, 33%, 45%) 0 .1em 1px, /* color border */
-            rgba(171,171,171,0.85) 0px 1px 5px; /* drop shadow */
-
-    }
 
     .krad_button a, .krad_button2 a {
       color: #222227;
     }
 
-    .button_wrap {
-      height: 50px;
-      float: left;
-    }
+.button_wrap {
+  height: 3.125em;
+  float: left;
+}
+
+li .button_wrap {
+  height: 2.1875em;
+  float: left;
+}
+
   </style>
-  <style>
-/*
- * jQuery UI CSS Framework 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Theming/API
- */
 
-/* Layout helpers
-----------------------------------*/
-.ui-helper-hidden { display: none; }
-.ui-helper-hidden-accessible { position: absolute !important; clip: rect(1px 1px 1px 1px); clip: rect(1px,1px,1px,1px); }
-.ui-helper-reset { margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }
-.ui-helper-clearfix:before, .ui-helper-clearfix:after { content: ""; display: table; }
-.ui-helper-clearfix:after { clear: both; }
-.ui-helper-clearfix {  }
-.ui-helper-zfix { width: 100%; height: 100%; top: 0; left: 0; position: absolute; opacity: 0; }
-
-
-/* Interaction Cues
-----------------------------------*/
-.ui-state-disabled { cursor: default !important; }
-
-
-/* Icons
-----------------------------------*/
-
-/* states and images */
-.ui-icon { display: block; text-indent: -99999px; overflow: hidden; background-repeat: no-repeat; }
-
-
-/* Misc visuals
-----------------------------------*/
-
-/* Overlays */
-.ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-
-/*
- * jQuery UI CSS Framework 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Theming/API
- *
-
- */
-
-
-/* Component containers
-----------------------------------*/
-.ui-widget { font-family: Verdana,Arial,sans-serif; font-size: 1.1em; }
-.ui-widget .ui-widget { font-size: 1em; }
-.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Verdana,Arial,sans-serif; font-size: 1em; }
-.ui-widget-content { border: 1px solid #aaaaaa; background: #efefef; color: #222222; }
-.ui-widget-content a { color: #222222; }
-.ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc; color: #222222; font-weight: bold; }
-.ui-widget-header a { color: #222222; }
-
-/* Interaction states
-----------------------------------*/
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { outline: none; border: 1px solid #d3d3d3; background: #e6e6e6; font-weight: normal; color: #555555; }
-.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { outline: none; color: #555555; text-decoration: none; }
-.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #999999; background: #dadada; font-weight: normal; color: #212121; }
-.ui-state-hover a, .ui-state-hover a:hover { color: #212121; text-decoration: none; }
-.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { outline: none; border: 1px solid #aaaaaa; background: #ffffff; font-weight: normal; color: #212121; }
-.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { outline: none; color: #212121; text-decoration: none; }
-.ui-widget :active { outline: none; }
-
-/* Interaction Cues
-----------------------------------*/
-.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #fcefa1; background: #fbf9ee; color: #363636; }
-.ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #363636; }
-.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #fef1ec; color: #cd0a0a; }
-.ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #cd0a0a; }
-.ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #cd0a0a; }
-.ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary { font-weight: bold; }
-.ui-priority-secondary, .ui-widget-content .ui-priority-secondary,  .ui-widget-header .ui-priority-secondary { opacity: .7; font-weight: normal; }
-.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled { opacity: .35; background-image: none; }
-
-
-/* Misc visuals
-----------------------------------*/
-
-/* Overlays */
-.ui-widget-overlay { background: #aaaaaa; opacity: .30; }
-.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa; opacity: .30; border-radius: 8px; }/*
- * jQuery UI Resizable 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Resizable#theming
- */
-.ui-resizable { position: relative;}
-.ui-resizable-handle { position: absolute;font-size: 0.1px;z-index: 99999; display: block; }
-.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }
-.ui-resizable-n { cursor: n-resize; height: 7px; width: 100%; top: -5px; left: 0; }
-.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0; }
-.ui-resizable-e { cursor: e-resize; width: 7px; right: -5px; top: 0; height: 100%; }
-.ui-resizable-w { cursor: w-resize; width: 7px; left: -5px; top: 0; height: 100%; }
-.ui-resizable-se { cursor: se-resize; width: 12px; height: 12px; right: 1px; bottom: 1px; }
-.ui-resizable-sw { cursor: sw-resize; width: 9px; height: 9px; left: -5px; bottom: -5px; }
-.ui-resizable-nw { cursor: nw-resize; width: 9px; height: 9px; left: -5px; top: -5px; }
-.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px; top: -5px;}/*
- * jQuery UI Selectable 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Selectable#theming
- */
-.ui-selectable-helper { position: absolute; z-index: 100; border:1px dotted black; }
-/*
- * jQuery UI Accordion 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Accordion#theming
- */
-/* IE/Win - Fix animation bug - #4615 */
-.ui-accordion { width: 100%; }
-.ui-accordion .ui-accordion-header { cursor: pointer; position: relative; margin-top: 1px;  }
-.ui-accordion .ui-accordion-li-fix { display: inline; }
-.ui-accordion .ui-accordion-header-active { border-bottom: 0 !important; }
-.ui-accordion .ui-accordion-header a { display: block; font-size: 1em; padding: .5em .5em .5em .7em; }
-.ui-accordion-icons .ui-accordion-header a { padding-left: 2.2em; }
-.ui-accordion .ui-accordion-header .ui-icon { position: absolute; left: .5em; top: 50%; margin-top: -8px; }
-.ui-accordion .ui-accordion-content { padding: 1em 2.2em; border-top: 0; margin-top: -2px; position: relative; top: 1px; margin-bottom: 2px; overflow: auto; display: none;  }
-.ui-accordion .ui-accordion-content-active { display: block; }
-/*
- * jQuery UI Autocomplete 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Autocomplete#theming
- */
-.ui-autocomplete { position: absolute; cursor: default; }  
-
-
-/*
- * jQuery UI Menu 1.8.18
- *
- * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Menu#theming
- */
-.ui-menu {
-  list-style:none;
-  padding: 2px;
-  margin: 0;
-  display:block;
-  float: left;
-}
-.ui-menu .ui-menu {
-  margin-top: -3px;
-}
-.ui-menu .ui-menu-item {
-  margin:0;
-  padding: 0;
-  
-  float: left;
-  clear: left;
-  width: 100%;
-}
-.ui-menu .ui-menu-item a {
-  text-decoration:none;
-  display:block;
-  padding:.2em .4em;
-  line-height:1.5;
-  
-}
-.ui-menu .ui-menu-item a.ui-state-hover,
-.ui-menu .ui-menu-item a.ui-state-active {
-  font-weight: normal;
-  margin: -1px;
-}
-/*
- * jQuery UI Button 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Button#theming
- */
-.ui-button { display: inline-block; position: relative; background-color: #448824; color: #030303; 
-             padding: 0; margin-right: .1em; text-decoration: none !important; cursor: default;
-             text-align: center; overflow: hidden;
-             text-transform: uppercase;
-             font-weight: bold;
-             font-family: Helvetica;
-             font-size: 14px;
-             text-shadow: rgba(24,12,69,0.4) 1px 1px 5px;
-             border: 1px solid green;
-             box-shadow: 1px 1px 2px green;
-             margin-top: 0px;
-             margin-bottom: 1px;
-            }
-.ui-button:active { margin-top: 1px; margin-bottom: 0px; } 
-.ui-button.ui-state-hover { background-color: #66f944; }
-.ui-button.ui-state-active { background-color: #fcff7f; border: 1px solid gold; box-shadow:  inset rgba(0,0,133,0.15) 0 -0.1em .3em, /* inner shadow */ 
-            /*hsl(0, 22%, 60%) 0 .1em 1px, hsl(0, 53%, 45%) 0 .1em 1px, /* color border */
-            rgba(254,182,69,1) 0px 1px 5px; /* drop shadow */ }
-
-.ui-button-icon-only { width: 2.2em; } /* to make room for the icon, a width needs to be set here */
-button.ui-button-icon-only { width: 2.4em; } /* button elements seem to need a little more width */
-.ui-button-icons-only { width: 3.4em; } 
-button.ui-button-icons-only { width: 3.7em; } 
-
-/*button text element */
-.ui-button .ui-button-text { display: block; line-height: 1.4;  }
-.ui-button-text-only .ui-button-text { padding: .4em 1em; }
-.ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .4em; text-indent: -9999999px; }
-.ui-button-text-icon-primary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 1em .4em 2.1em; }
-.ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 2.1em .4em 1em; }
-.ui-button-text-icons .ui-button-text { padding-left: 2.1em; padding-right: 2.1em; }
-/* no icon support for input elements, provide padding by default */
-input.ui-button { padding: .4em 1em; }
-
-/*button icon element(s) */
-.ui-button-icon-only .ui-icon, .ui-button-text-icon-primary .ui-icon, .ui-button-text-icon-secondary .ui-icon, .ui-button-text-icons .ui-icon, .ui-button-icons-only .ui-icon { position: absolute; top: 50%; margin-top: -8px; }
-.ui-button-icon-only .ui-icon { left: 50%; margin-left: -8px; }
-.ui-button-text-icon-primary .ui-button-icon-primary, .ui-button-text-icons .ui-button-icon-primary, .ui-button-icons-only .ui-button-icon-primary { left: .5em; }
-.ui-button-text-icon-secondary .ui-button-icon-secondary, .ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }
-.ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }
-
-/*button sets*/
-.ui-buttonset { margin-right: 7px; }
-.ui-buttonset .ui-button { margin-left: 0; margin-right: -.3em; }
-
-/* workarounds */
-button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra padding in Firefox */
-/*
- * jQuery UI Dialog 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Dialog#theming
- */
-.ui-dialog { position: absolute; padding: .2em; width: 300px; overflow: hidden; }
-.ui-dialog .ui-dialog-titlebar { padding: .4em 1em; position: relative;  }
-.ui-dialog .ui-dialog-title { float: left; margin: .1em 16px .1em 0; } 
-.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; }
-.ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
-.ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
-.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: .5em 1em; background: none; overflow: auto;  }
-.ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
-.ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }
-.ui-dialog .ui-resizable-se { width: 14px; height: 14px; right: 3px; bottom: 3px; }
-.ui-draggable .ui-dialog-titlebar { cursor: move; }
-/*
- * jQuery UI Slider 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Slider#theming
- */
-.ui-slider {  box-shadow: inset rgba(54,52,52,1) 0px -33px 19px; background-color: #434343; border: 0px; position: relative; text-align: left; border-radius: 2px; }
-.ui-slider .ui-slider-handle { box-shadow: rgba(24,32,29,1) 0px 1px 5px; background-color: #888888; border: 0px; position: absolute; z-index: 2; cursor: default; }
-.ui-slider .ui-slider-range { position: absolute; z-index: 1; font-size: .7em; display: block; border: 0; background-position: 0 0; }
-
-.ui-slider-horizontal { height: 1em; }
-.ui-slider-horizontal .ui-slider-handle { top: -1em; margin-left: -.6em; width: 1.3em; height: 3em; }
-.ui-slider-horizontal .ui-slider-range { top: 0; height: 100%; }
-.ui-slider-horizontal .ui-slider-range-min { left: 0; }
-.ui-slider-horizontal .ui-slider-range-max { right: 0; }
-
-.ui-slider-vertical { width: 1em; height: 200px; }
-.ui-slider-vertical .ui-slider-handle { left: -1em; margin-left: 0; margin-bottom: -.6em; width: 3em; height: 1.3em; }
-.ui-slider-vertical .ui-slider-range { left: 0; width: 100%; }
-.ui-slider-vertical .ui-slider-range-min { bottom: 0; }
-.ui-slider-vertical .ui-slider-range-max { top: 0; }
-/*
- * jQuery UI Tabs 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Tabs#theming
- */
-.ui-tabs { position: relative; padding: .2em;  } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
-.ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }
-.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
-.ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }
-.ui-tabs .ui-tabs-nav li.ui-tabs-selected { margin-bottom: 0; padding-bottom: 1px; }
-.ui-tabs .ui-tabs-nav li.ui-tabs-selected a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a { cursor: text; }
-.ui-tabs .ui-tabs-nav li a, .ui-tabs.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-selected a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */
-.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 1em 1.4em; background: none; }
-.ui-tabs .ui-tabs-hide { display: none !important; }
-/*
- * jQuery UI Datepicker 1.8.18
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Datepicker#theming
- */
-.ui-datepicker { width: 17em; padding: .2em .2em 0; display: none; }
-.ui-datepicker .ui-datepicker-header { position:relative; padding:.2em 0; }
-.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next { position:absolute; top: 2px; width: 1.8em; height: 1.8em; }
-.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover { top: 1px; }
-.ui-datepicker .ui-datepicker-prev { left:2px; }
-.ui-datepicker .ui-datepicker-next { right:2px; }
-.ui-datepicker .ui-datepicker-prev-hover { left:1px; }
-.ui-datepicker .ui-datepicker-next-hover { right:1px; }
-.ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next span { display: block; position: absolute; left: 50%; margin-left: -8px; top: 50%; margin-top: -8px;  }
-.ui-datepicker .ui-datepicker-title { margin: 0 2.3em; line-height: 1.8em; text-align: center; }
-.ui-datepicker .ui-datepicker-title select { font-size:1em; margin:1px 0; }
-.ui-datepicker select.ui-datepicker-month-year {width: 100%;}
-.ui-datepicker select.ui-datepicker-month, 
-.ui-datepicker select.ui-datepicker-year { width: 49%;}
-.ui-datepicker table {width: 100%; font-size: .9em; border-collapse: collapse; margin:0 0 .4em; }
-.ui-datepicker th { padding: .7em .3em; text-align: center; font-weight: bold; border: 0;  }
-.ui-datepicker td { border: 0; padding: 1px; }
-.ui-datepicker td span, .ui-datepicker td a { display: block; padding: .2em; text-align: right; text-decoration: none; }
-.ui-datepicker .ui-datepicker-buttonpane { background-image: none; margin: .7em 0 0 0; padding:0 .2em; border-left: 0; border-right: 0; border-bottom: 0; }
-.ui-datepicker .ui-datepicker-buttonpane button { float: right; margin: .5em .2em .4em; cursor: pointer; padding: .2em .6em .3em .6em; width:auto; overflow:visible; }
-.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current { float:left; }
-
-/* with multiple calendars */
-.ui-datepicker.ui-datepicker-multi { width:auto; }
-.ui-datepicker-multi .ui-datepicker-group { float:left; }
-.ui-datepicker-multi .ui-datepicker-group table { width:95%; margin:0 auto .4em; }
-.ui-datepicker-multi-2 .ui-datepicker-group { width:50%; }
-.ui-datepicker-multi-3 .ui-datepicker-group { width:33.3%; }
-.ui-datepicker-multi-4 .ui-datepicker-group { width:25%; }
-.ui-datepicker-multi .ui-datepicker-group-last .ui-datepicker-header { border-left-width:0; }
-.ui-datepicker-multi .ui-datepicker-group-middle .ui-datepicker-header { border-left-width:0; }
-.ui-datepicker-multi .ui-datepicker-buttonpane { clear:left; }
-.ui-datepicker-row-break { clear:both; width:100%; font-size:0em; }
-
-/* RTL support */
-.ui-datepicker-rtl { direction: rtl; }
-.ui-datepicker-rtl .ui-datepicker-prev { right: 2px; left: auto; }
-.ui-datepicker-rtl .ui-datepicker-next { left: 2px; right: auto; }
-.ui-datepicker-rtl .ui-datepicker-prev:hover { right: 1px; left: auto; }
-.ui-datepicker-rtl .ui-datepicker-next:hover { left: 1px; right: auto; }
-.ui-datepicker-rtl .ui-datepicker-buttonpane { clear:right; }
-.ui-datepicker-rtl .ui-datepicker-buttonpane button { float: left; }
-.ui-datepicker-rtl .ui-datepicker-buttonpane button.ui-datepicker-current { float:right; }
-.ui-datepicker-rtl .ui-datepicker-group { float:right; }
-.ui-datepicker-rtl .ui-datepicker-group-last .ui-datepicker-header { border-right-width:0; border-left-width:1px; }
-.ui-datepicker-rtl .ui-datepicker-group-middle .ui-datepicker-header { border-right-width:0; border-left-width:1px; }
-
-</style>
 
   <script>
-    var kradradio = false;
-    var kradwebsocket = false;
+    var kr = false;
     $(window).bind('beforeunload', function() {
-      if (kradwebsocket != false) {
-        kradwebsocket.disconnect();
+      if (kr.ws != false) {
+        kr.ws_disconnect();
       }
-    });    
+    });
     $(document).ready(function() {
       var websocket_port = ~;
-      kradwebsocket = new Kradwebsocket (websocket_port);
+      kr = new Kr();
     });
   </script>
   ~

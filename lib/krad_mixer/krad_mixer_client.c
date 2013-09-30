@@ -6,8 +6,9 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
 static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char **string);
 static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string);
 
-static void kr_ebml_to_mixer_rep (kr_ebml2_t *ebml, kr_mixer_t *mixer_rep);
-static int kr_ebml_to_mixer_portgroup_rep (kr_ebml2_t *ebml, kr_mixer_portgroup_t *portgroup_rep);
+static void kr_ebml_to_mixer_rep(kr_ebml2_t *ebml, kr_mixer_t *mixer_rep);
+static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml,
+ kr_mixer_portgroup_t *portgroup_rep);
 
 
 typedef struct kr_audioport_St kr_audioport_t;
@@ -45,45 +46,9 @@ void kr_mixer_portgroup_list (kr_client_t *client) {
   kr_client_push (client);
 }
 
-void kr_audioport_destroy_cmd (kr_client_t *client) {
-
-  unsigned char *compositor_command;
-  unsigned char *destroy_audioport;
-  
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &compositor_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_DESTROY, &destroy_audioport);
-
-  kr_ebml2_finish_element (client->ebml2, destroy_audioport);
-  kr_ebml2_finish_element (client->ebml2, compositor_command);
-    
-  kr_client_push (client);
-}
-
-void kr_audioport_create_cmd (kr_client_t *client, krad_mixer_portgroup_direction_t direction) {
-
-  unsigned char *compositor_command;
-  unsigned char *create_audioport;
-  
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &compositor_command);
-  kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_LOCAL_AUDIOPORT_CREATE, &create_audioport);
-
-  if (direction == OUTPUT) {
-    kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, "output");
-  } else {
-    kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, "input");
-  }
-  
-  kr_ebml2_finish_element (client->ebml2, create_audioport);
-  kr_ebml2_finish_element (client->ebml2, compositor_command);
-    
-  kr_client_push (client);
-}
-
-
 float *kr_audioport_get_buffer (kr_audioport_t *audioport, int channel) {
   return (float *)audioport->kr_shm->buffer + (channel * audioport->client->period_size);
 }
-
 
 void kr_audioport_set_callback (kr_audioport_t *kr_audioport, int callback (uint32_t, void *), void *pointer) {
   kr_audioport->callback = callback;
@@ -95,10 +60,14 @@ void *kr_audioport_process_thread (void *arg) {
   kr_audioport_t *audioport = (kr_audioport_t *)arg;
   int ret;
   char buf[1];
+  int max_timeout_ms;
+  int timeout_total_ms;  
   int timeout_ms;
   struct pollfd pollfds[1];
 
-  timeout_ms = 300;
+  timeout_ms = 30;
+  timeout_total_ms = 0;
+  max_timeout_ms = 1000;
 
   pollfds[0].fd = audioport->sd;
 
@@ -110,10 +79,17 @@ void *kr_audioport_process_thread (void *arg) {
     ret = poll (pollfds, 1, timeout_ms);
     
     if (ret == 0) {
-      printke ("krad mixer client: audioport poll read timeout", ret);
-      break;
-    }
-    
+      if (audioport->active == 1) {
+        printke ("krad mixer client: audioport poll read timeout", ret);
+      }
+      timeout_total_ms += timeout_ms;
+      if (timeout_total_ms > max_timeout_ms) {
+        break;
+      }
+      continue;
+    } else {
+      timeout_total_ms = 0;
+    }    
     if (pollfds[0].revents & POLLHUP) {
       printke ("krad mixer client: audioport poll hangup", ret);
       break;
@@ -162,15 +138,14 @@ void *kr_audioport_process_thread (void *arg) {
   return NULL;
 }
 
-void kr_audioport_activate (kr_audioport_t *audioport) {
+void kr_audioport_connect(kr_audioport_t *audioport) {
   if ((audioport->active == 0) && (audioport->callback != NULL)) {
     audioport->active = 1;
     pthread_create (&audioport->process_thread, NULL, kr_audioport_process_thread, (void *)audioport);
   }
 }
 
-void kr_audioport_deactivate (kr_audioport_t *audioport) {
-
+void kr_audioport_disconnect(kr_audioport_t *audioport) {
   if (audioport->active == 1) {
     audioport->active = 2;
     pthread_join (audioport->process_thread, NULL);
@@ -186,7 +161,8 @@ int kr_audioport_error (kr_audioport_t *audioport) {
   return -1;
 }
 
-kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_direction_t direction) {
+kr_audioport_t *kr_audioport_create(kr_client_t *client, char *name,
+ krad_mixer_portgroup_direction_t direction) {
 
   kr_audioport_t *audioport;
   int sockets[2];
@@ -223,23 +199,24 @@ kr_audioport_t *kr_audioport_create (kr_client_t *client, krad_mixer_portgroup_d
   audioport->sd = sockets[0];
   
   krad_system_set_socket_nonblocking (audioport->sd);
-    
+  /*
   krad_system_set_socket_blocking (audioport->client->krad_app_client->sd);
-  kr_audioport_create_cmd (audioport->client, audioport->direction);
+  kr_audioport_create_cmd (audioport->client, name, audioport->direction);
   usleep (5000);
   kr_send_fd (audioport->client, audioport->kr_shm->fd);
   kr_send_fd (audioport->client, sockets[1]);
   krad_system_set_socket_nonblocking (audioport->client->krad_app_client->sd);
+  */
   return audioport;
 }
 
-void kr_audioport_destroy (kr_audioport_t *audioport) {
+void kr_audioport_destroy(kr_audioport_t *audioport) {
 
   if (audioport->active == 1) {
-    kr_audioport_deactivate (audioport);
+    kr_audioport_disconnect(audioport);
   }
 
-  kr_audioport_destroy_cmd (audioport->client);
+  //kr_audioport_destroy_cmd (audioport->client);
 
   if (audioport != NULL) {
     if (audioport->sd != 0) {
@@ -393,7 +370,8 @@ void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_na
   kr_client_push (client);
 }
 
-void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction, int channels) {
+void kr_mixer_create_portgroup(kr_client_t *client, char *name, char *type,
+ char *direction, int channels) {
 
   unsigned char *command;
   unsigned char *create;
@@ -402,6 +380,7 @@ void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_CREATE_PORTGROUP, &create);
 
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, type);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, direction);
   kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, channels);
   kr_ebml2_finish_element (client->ebml2, create);
@@ -411,7 +390,7 @@ void kr_mixer_create_portgroup (kr_client_t *client, char *name, char *direction
 }
 
 
-void kr_mixer_push_tone (kr_client_t *client, char *tone) {
+void kr_mixer_push_tone (kr_client_t *client, int8_t tone) {
 
   unsigned char *command;
   unsigned char *push;
@@ -419,7 +398,7 @@ void kr_mixer_push_tone (kr_client_t *client, char *tone) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PUSH_TONE, &push);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
+  kr_ebml2_pack_int8(client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
   
   kr_ebml2_finish_element (client->ebml2, push);
   kr_ebml2_finish_element (client->ebml2, command);

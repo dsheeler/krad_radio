@@ -98,10 +98,10 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
 
   if (tr->type == ENCODE) {
     tr->actual.encoder.codec = link->codec;
-    
+
     if (krad_codec_is_audio (link->codec)) {
       //FIXME
-	    tr->actual.encoder.av.audio.sample_rate = krad_transponder->krad_radio->krad_mixer->sample_rate;
+	    tr->actual.encoder.av.audio.sample_rate = krad_transponder->krad_radio->mixer->sample_rate;
 	    tr->actual.encoder.av.audio.channels = link->channels;
 
 	    if (link->codec == OPUS) {
@@ -114,16 +114,16 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
 	      kr_flac_encoder_to_rep (link->krad_flac, &tr->actual.encoder.av.audio.codec.flac);
 	    }
     }
-    
+
     if (krad_codec_is_video (link->codec)) {
 	    tr->actual.encoder.av.video.width = link->encoding_width;
 	    tr->actual.encoder.av.video.height = link->encoding_height;
 	    tr->actual.encoder.av.video.fps_numerator = link->encoding_fps_numerator;
 	    tr->actual.encoder.av.video.fps_denominator = link->encoding_fps_denominator;
-	    
+
 	    if (link->codec == THEORA) {
 	      kr_theora_encoder_to_rep (link->krad_theora_encoder, &tr->actual.encoder.av.video.codec.theora);
-	      
+
 	      if (link->krad_theora_encoder->color_depth == TH_PF_420) {
 	        tr->actual.encoder.av.video.color_depth = 420;
 	      }
@@ -150,7 +150,7 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
 
   if (tr->type == DECODE) {
   //  tr->actual.decoder.codec = link->codec;
-  }  
+  }
 
   if (tr->type == RAWIN) {
     //videoport in
@@ -175,19 +175,19 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
       kr_mkv_muxer_to_rep (link->krad_container->mkv, &tr->actual.muxer.container.mkv);
     }
     if (tr->actual.muxer.type == TOGG) {
-      
+
     }
     if (tr->actual.muxer.type == NATIVEFLAC) {
-      
+
     }
     if (tr->actual.muxer.type == Y4MFILE) {
-      
+
     }
     if (tr->actual.muxer.type == KUDP) {
-      
+
     }
   }
-  
+
   if (tr->type == DEMUX) {
   /*
     tr->actual.demuxer.type = link->krad_container->type;
@@ -198,17 +198,17 @@ int krad_transponder_subunit_to_rep ( krad_transponder_t *krad_transponder,
       kr_mkv_muxer_to_rep (link->krad_container->mkv, &tr->actual.muxer.container.mkv);
     }
     if (tr->actual.muxer.type == TOGG) {
-      
+
     }
     if (tr->actual.muxer.type == NATIVEFLAC) {
-      
+
     }
     if (tr->actual.muxer.type == Y4MFILE) {
-      
+
     }
   */
   }
-  
+
   return 1;
 }
 
@@ -250,7 +250,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   int i;
   uint32_t num;
   int devices;
-  krad_radio_t *krad_radio;
+  kr_radio *krad_radio;
   krad_transponder_t *krad_transponder;
   kr_address_t address;
   kr_transponder_subunit_t transponder_subunit_rep;
@@ -264,16 +264,16 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   uint64_t size;
   int ret;
   char string[512];
-  char string2[512];  
+  char string2[512];
   uint16_t port;
   krad_link_t *link;
-  
-  link = NULL;  
+
+  link = NULL;
   string[0] = '\0';
-  string2[0] = '\0';  
+  string2[0] = '\0';
   port = 0;
   krad_radio = client->krad_radio;
-  krad_transponder = krad_radio->krad_transponder;
+  krad_transponder = krad_radio->transponder;
   app = krad_radio->app;
 
   if (!(kr_io2_has_in (in))) {
@@ -297,7 +297,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
   kr_ebml2_set_buffer ( &ebml_out, out->buf, out->space );
 
   switch ( command ) {
-  
+
     case EBML_ID_KRAD_TRANSPONDER_CMD_GET_INFO:
       krad_radio_address_to_ebml2 (&ebml_out, &response, &krad_transponder->address);
       kr_ebml2_pack_uint32 ( &ebml_out,
@@ -336,10 +336,10 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE:
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE:
-    
+
       kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
       kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
-    
+
       if (kr_txpdr_string_to_subunit_type(string) == FAILURE) {
         break;
       }
@@ -365,7 +365,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
         link->transport_mode = FILESYSTEM;
         sprintf (link->input, "%s", string2);
       }
-      
+
       if (link->type == DECODE) {
         printk ("decode!!");
         //link->av_mode = VIDEO_ONLY;
@@ -376,7 +376,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       if (link->type == MUX) {
 
         sprintf (link->input, "%s", string2);
-        
+
         if (strstr(string2, ".udp") != NULL) {
           if (strstr(string2, ".udpre") != NULL) {
               link->port = 44000;
@@ -432,7 +432,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
             } else {
              link->codec = VP8;
             }
-          } 
+          }
         } else {
           link->av_mode = AUDIO_ONLY;
           if (string2[1] == 'o') {
@@ -443,7 +443,7 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
             } else {
              link->codec = VORBIS;
             }
-          }     
+          }
         }
       }
 
@@ -514,9 +514,9 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_DISABLE:
       krad_transmitter_stop_listening (krad_transponder->krad_transmitter);
-      break;      
+      break;
     default:
-      return -1;    
+      return -1;
   }
 
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST)) &&
@@ -526,6 +526,6 @@ int krad_transponder_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t 
 
   kr_io2_pulled (in, ebml_in.pos);
   kr_io2_advance (out, ebml_out.pos);
-  
+
   return 0;
 }

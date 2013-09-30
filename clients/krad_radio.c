@@ -112,7 +112,7 @@ int main (int argc, char *argv[]) {
           ((strlen(argv[1]) == 4) && (strncmp(argv[1], "--vg", 4) == 0)) ||
           ((strlen(argv[1]) == 6) && (strncmp(argv[1], "gitver", 6) == 0)) ||
           ((strlen(argv[1]) == 10) && (strncmp(argv[1], "gitversion", 10) == 0))) {
-          printf("%s\n", KRAD_GIT_VERSION);
+          printf("%s\n", "KRAD_GIT_VERSION");
           return 0;
       }
 
@@ -320,18 +320,19 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  if (strncmp(argv[2], "webon", 5) == 0) {
+  if ((strncmp(argv[2], "webon", 5) == 0) ||
+      (strncmp(argv[2], "interweb", 5) == 0)) {
+    if (argc == 4) {
+      kr_web_enable (client, atoi(argv[3]), "", "", "");
+    }
     if (argc == 5) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), "", "", "");
+      kr_web_enable (client, atoi(argv[3]), argv[4], "", "");
     }
     if (argc == 6) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), argv[5], "", "");
+      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], "");
     }
     if (argc == 7) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), argv[5], argv[6], "");
-    }
-    if (argc == 8) {
-      kr_web_enable (client, atoi(argv[3]), atoi(argv[4]), argv[5], argv[6], argv[7]);
+      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], argv[6]);
     }
   }      
 
@@ -379,47 +380,47 @@ int main (int argc, char *argv[]) {
 
   if (strncmp(argv[2], "tone", 4) == 0) {
     if (argc == 4) {
-      kr_mixer_push_tone (client, argv[3]);
+      kr_mixer_push_tone (client, argv[3][0]);
     }
   }
 
   if (strncmp(argv[2], "portinfo", 8) == 0) {
     if (argc == 4) {
-      kr_mixer_portgroup_info (client, argv[3]);
+      kr_mixer_portgroup_info(client, argv[3]);
       kr_delivery_accept_and_report (client);
     }
   }
 
   if (strncmp(argv[2], "input", 5) == 0) {
     if (argc == 4) {
-      kr_mixer_create_portgroup (client, argv[3], "input", 2);
+      kr_mixer_create_portgroup(client, argv[3], "input", "jack", 2);
     }
     if (argc == 5) {
-      kr_mixer_create_portgroup (client, argv[3], "input", atoi (argv[4]));
+      kr_mixer_create_portgroup(client, argv[3], "input", "jack", atoi(argv[4]));
     }
   }      
 
   if (strncmp(argv[2], "output", 6) == 0) {
     if (argc == 4) {
-      kr_mixer_create_portgroup (client, argv[3], "output", 2);
+      kr_mixer_create_portgroup(client, argv[3], "output", "jack", 2);
     }
     if (argc == 5) {
-      kr_mixer_create_portgroup (client, argv[3], "output", atoi (argv[4]));
+      kr_mixer_create_portgroup(client, argv[3], "output", "jack", atoi(argv[4]));
     }
   }
   
   if (strncmp(argv[2], "auxout", 6) == 0) {
     if (argc == 4) {
-      kr_mixer_create_portgroup (client, argv[3], "auxout", 2);
+      kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", 2);
     }
     if (argc == 5) {
-      kr_mixer_create_portgroup (client, argv[3], "auxout", atoi (argv[4]));
+      kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", atoi(argv[4]));
     }
   }
 
   if (strncmp(argv[2], "plug", 4) == 0) {
     if (argc == 5) {
-      kr_mixer_plug_portgroup (client, argv[3], argv[4]);
+      kr_mixer_plug_portgroup(client, argv[3], argv[4]);
     }
   }
 
@@ -524,6 +525,9 @@ int main (int argc, char *argv[]) {
           }
           if (uc.data_type == KR_STRING) {
             uc.value.string = argv[3];
+          }
+          if (uc.data_type == KR_CHAR) {
+            uc.value.byte = argv[3][0];
           }
           if (argc == 4) {
             uc.duration = 0;

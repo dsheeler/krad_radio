@@ -22,10 +22,6 @@ krad_radio_vp.c
 krad_radio_ap.c
 """.split()
 
-programs5 = """
-krad_radio_web.c
-""".split()
-
 programs6 = """
 kplayer.c
 """.split()
@@ -60,6 +56,22 @@ kr_streamer.c
 
 programs14 = """
 kr_streamer2.c
+""".split()
+
+programs15 = """
+kr_streamer_yuv.c
+""".split()
+
+programs16 = """
+krwplayer.c
+""".split()
+
+programs17 = """
+kr_streamer_oggopus.c
+""".split()
+
+programs18 = """
+kr_snapshot.c
 """.split()
 
 kr_shell = """
@@ -124,6 +136,7 @@ includedirs = """
 ./krad_shell/
 ./krad_radio_mixer/
 ./krad_radio_gnmc/
+../../lib/krad_calc/
 ../lib/krad_compositor/
 ../lib/krad_chronometer/
 ../lib/krad_xmms2/
@@ -131,7 +144,6 @@ includedirs = """
 ../lib/krad_framepool/
 ../lib/krad_web/
 ../lib/krad_web/ext/
-../lib/krad_web/ext/libwebsockets/
 ../lib/krad_web/res/
 ../lib/krad_vhs/
 ../lib/krad_vhs/ext
@@ -173,23 +185,6 @@ includedirs = """
 /usr/include
 """.split()
 
-depsources5 = """
-../lib/krad_web/ext/cJSON.c
-../lib/krad_web/ext/libwebsockets/base64-decode.c
-../lib/krad_web/ext/libwebsockets/output.c
-../lib/krad_web/ext/libwebsockets/extension.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-stream.c
-../lib/krad_web/ext/libwebsockets/extension-deflate-frame.c
-../lib/krad_web/ext/libwebsockets/handshake.c
-../lib/krad_web/ext/libwebsockets/server.c
-../lib/krad_web/ext/libwebsockets/server-handshake.c
-../lib/krad_web/ext/libwebsockets/sha-1.c
-../lib/krad_web/ext/libwebsockets/libwebsockets.c
-../lib/krad_web/ext/libwebsockets/parsers.c
-../lib/krad_web/krad_http.c
-../lib/krad_web/krad_websocket.c
-""".split()
-
 depsources4 = """
 ../lib/krad_sfx/krad_tone.c
 """.split()
@@ -206,6 +201,17 @@ depsources8 = """
 """.split()
 
 depsources9 = """
+../lib/krad_ogg/krad_ogg2.c
+../lib/krad_udp/krad_udp.c
+../lib/krad_vpx/krad_vpx.c
+../lib/krad_wayland/krad_wayland.c
+""".split()
+
+depsourcesd = """
+../lib/krad_wayland/krad_wayland.c
+""".split()
+
+depsourcesdu = """
 ../lib/krad_udp/krad_udp.c
 ../lib/krad_vpx/krad_vpx.c
 ../lib/krad_wayland/krad_wayland.c
@@ -221,6 +227,7 @@ depsources10 = """
 """.split()
 
 depsources11 = """
+../lib/krad_chronometer/krad_timer.c
 ../lib/krad_player/krad_demuxer.c
 ../lib/krad_player/krad_decoder.c
 ../lib/krad_player/krad_machine.c
@@ -234,6 +241,7 @@ depsources11 = """
 ../lib/krad_ogg/krad_ogg.c
 ../lib/krad_io/krad_io2.c
 ../lib/krad_io/krad_file.c
+../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_ring/krad_resample_ring.c
@@ -257,6 +265,7 @@ depsources13 = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_io/krad_io2.c
 ../lib/krad_io/krad_file.c
+../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ebml/krad_ebml2w.c
@@ -269,6 +278,19 @@ depsources13 = """
 ../lib/krad_coder/krad_coder_common.c
 ../lib/krad_framepool/krad_framepool.c
 ../lib/krad_chronometer/krad_timer.c
+""".split()
+
+depsources15 = """
+../lib/krad_y4m/krad_y4m.c
+""".split()
+
+depsources16 = """
+../lib/krad_wayland/krad_wayland.c
+""".split()
+
+depsources17 = """
+../lib/krad_opus/krad_opus.c
+../lib/krad_opus/opus_header.c
 """.split()
 
 #shlibs = ["cairo", "pangocairo", "opus", "xmms2-client", "vpx"]
@@ -287,7 +309,7 @@ shlibs8 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
 
 shlibs9 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice", "vpx",
-           "wayland-client"]
+           "wayland-client", "xkbcommon"]
 
 shlibs10 = ["cairo", "libavutil", "libavformat", "libavfilter", "libavcodec",
            "libavresample", "libswscale", "libavdevice", "vpx", "samplerate"]
@@ -296,6 +318,9 @@ shlibs11 = ["cairo", "cairo-ft", "samplerate",
           "theora", "theoraenc", "theoradec",
           "vorbis", "vorbisenc", "opus", "flac",
           "vpx", "libswscale", "libavutil", 'freetype2']
+
+shlibd = ["daalaenc", "daalabase"]
+shlibd = []
 
 stlibs = []
 syslibs = ['m', 'dl', 'z']
@@ -310,6 +335,7 @@ kr_gnmc_libs = ['ncursesw','panel','form']
 
 def check_system(systm):
 
+  global shlibd
   global programs
   global includedirs
   global libsources
@@ -341,6 +367,7 @@ def configure(conf):
 
   global programs
   global shlibs
+  global shlibd
   global shlibs2
   global shlibs4
   global shlibs6
@@ -389,10 +416,14 @@ def configure(conf):
   for l in kr_gnmc_libs:
     conf.check_cfg(package = l, uselib_store = l, args='--cflags --libs')
 
+  for l in shlibd:
+    conf.check(lib = l, cflags='-Wall', uselib_store = l)
+
 def build(bld):
 
   global libav_dir
   global programs
+  global shlibd
   global shlibs
   global shlibs2
   global shlibs4
@@ -446,14 +477,6 @@ def build(bld):
     use = ["kradradio_client"],
     uselib = shlibs + shlibs4 + stlibs + syslibs)
 
-#  for p in programs5:
-#    bld(features = 'c cprogram', 
-#    source = [p] + depsources5,
-#    includes = includedirs, 
-#    target = p.replace(".c", ""),
-#    use = ["kradradio_client"],
-#    uselib = shlibs + stlibs + syslibs + plibs)
-    
   if bld.env['KPLAYER'] == "yes":
     for p in programs6:
       bld(features = 'c cprogram', 
@@ -483,7 +506,7 @@ def build(bld):
   if bld.env['KR_LINUX'] and bld.env['KRAD_USE_WAYLAND']:
     for p in programs9:
       bld(features = 'c cprogram', 
-      source = [p] + depsources9,
+      source = [p] + depsourcesdu,
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
@@ -491,7 +514,7 @@ def build(bld):
 
     for p in programs12:
       bld(features = 'c cprogram', 
-      source = [p] + depsources9,
+      source = [p] + depsourcesd,
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
@@ -511,7 +534,39 @@ def build(bld):
       includes = includedirs, 
       target = p.replace(".c", ""),
       use = ["kradradio_client"],
+      uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs15:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9 + depsources13 + depsources15,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibd + shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs16:
+      bld(features = 'c cprogram cxx cxxprogram', 
+      source = [p] + depsources11 + depsources16,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs11 + shlibs9 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs17:
+      bld(features = 'c cprogram', 
+      source = [p] + depsources9 + depsources13 + depsources17,
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
       uselib = shlibs9 + shlibs11 + shlibs + stlibs + syslibs + plibs)
+
+    for p in programs18:
+      bld(features = 'c cprogram', 
+      source = [p],
+      includes = includedirs, 
+      target = p.replace(".c", ""),
+      use = ["kradradio_client"],
+      uselib = shlibs4 + syslibs + plibs)
 
   for p in programs10:
     bld(features = 'c cprogram', 

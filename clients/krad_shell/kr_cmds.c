@@ -269,20 +269,20 @@ int krad_shell_cmd (kr_shell_t *kr_shell , char *sysname ,int argc , char *argv[
     }
   }
 
-  if (strncmp(argv[0], "webon", 5) == 0) {
-    if (argc == 3) {
-      kr_web_enable (client, atoi(argv[1]), atoi(argv[2]), "", "", "");
-    }
+  if ((strncmp(argv[2], "webon", 5) == 0) || (strncmp(argv[2], "interweb", 5))) {
     if (argc == 4) {
-      kr_web_enable (client, atoi(argv[1]), atoi(argv[2]), argv[3], "", "");
+      kr_web_enable (client, atoi(argv[3]), "", "", "");
     }
     if (argc == 5) {
-      kr_web_enable (client, atoi(argv[1]), atoi(argv[2]), argv[3], argv[4], "");
+      kr_web_enable (client, atoi(argv[3]), argv[4], "", "");
     }
     if (argc == 6) {
-      kr_web_enable (client, atoi(argv[1]), atoi(argv[2]), argv[3], argv[4], argv[5]);
+      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], "");
     }
-  }      
+    if (argc == 7) {
+      kr_web_enable (client, atoi(argv[3]), argv[4], argv[5], argv[6]);
+    }
+  }     
 
   if (strncmp(argv[0], "weboff", 6) == 0) {
     if (argc == 1) {
@@ -328,7 +328,7 @@ int krad_shell_cmd (kr_shell_t *kr_shell , char *sysname ,int argc , char *argv[
 
   if (strncmp(argv[0], "tone", 4) == 0) {
     if (argc == 2) {
-      kr_mixer_push_tone (client, argv[1]);
+      kr_mixer_push_tone (client, argv[1][0]);
     }
   }
 
@@ -339,30 +339,30 @@ int krad_shell_cmd (kr_shell_t *kr_shell , char *sysname ,int argc , char *argv[
     }
   }
 
-  if (strncmp(argv[0], "input", 5) == 0) {
-    if (argc == 2) {
-      kr_mixer_create_portgroup (client, argv[1], "input", 2);
+  if (strncmp(argv[2], "input", 5) == 0) {
+    if (argc == 4) {
+      kr_mixer_create_portgroup(client, argv[3], "input", "jack", 2);
     }
-    if (argc == 3) {
-      kr_mixer_create_portgroup (client, argv[1], "input", atoi (argv[2]));
+    if (argc == 5) {
+      kr_mixer_create_portgroup(client, argv[3], "input", "jack", atoi(argv[4]));
     }
   }      
 
-  if (strncmp(argv[0], "output", 6) == 0) {
-    if (argc == 2) {
-      kr_mixer_create_portgroup (client, argv[1], "output", 2);
+  if (strncmp(argv[2], "output", 6) == 0) {
+    if (argc == 4) {
+      kr_mixer_create_portgroup(client, argv[3], "output", "jack", 2);
     }
-    if (argc == 3) {
-      kr_mixer_create_portgroup (client, argv[1], "output", atoi (argv[2]));
+    if (argc == 5) {
+      kr_mixer_create_portgroup(client, argv[3], "output", "jack", atoi(argv[4]));
     }
   }
   
-  if (strncmp(argv[0], "auxout", 6) == 0) {
-    if (argc == 2) {
-      kr_mixer_create_portgroup (client, argv[1], "auxout", 2);
+  if (strncmp(argv[2], "auxout", 6) == 0) {
+    if (argc == 4) {
+      kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", 2);
     }
-    if (argc == 3) {
-      kr_mixer_create_portgroup (client, argv[1], "auxout", atoi (argv[2]));
+    if (argc == 5) {
+      kr_mixer_create_portgroup(client, argv[3], "auxout", "jack", atoi(argv[4]));
     }
   }
 

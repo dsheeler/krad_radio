@@ -41,7 +41,7 @@ typedef enum {
 } krad_slice_track_type_t;
 
 struct krad_subslice_St {
-	unsigned char *data;
+	uint8_t *data;
 	int size;
 	int fill;
 	int track;
@@ -51,7 +51,7 @@ struct krad_subslice_St {
 
 struct krad_slicer_St {
 	int sd;
-	unsigned char *data;
+	uint8_t *data;
 	int track_seq[3];
 };
 
@@ -80,11 +80,13 @@ void kr_udp_destroy (krad_udp_t **udp);
 
 krad_slicer_t *krad_slicer_create ();
 void krad_slicer_destroy (krad_slicer_t *krad_slicer);
-void krad_slicer_sendto (krad_slicer_t *krad_slicer, unsigned char *data,
-                         int size, int track, int keyframe, char *ip, int port);
+void krad_slicer_sendto (krad_slicer_t *krad_slicer, uint8_t *data,
+      int size, int track, int keyframe, char *ip, int port);
 
 krad_rebuilder_t *krad_rebuilder_create ();
 void krad_rebuilder_destroy (krad_rebuilder_t *krad_rebuilder);
-void krad_rebuilder_write (krad_rebuilder_t *krad_rebuilder, unsigned char *data, int length);
-int krad_rebuilder_read_packet (krad_rebuilder_t *krad_rebuilder, unsigned char *data, int track, int *keyframe);
+void krad_rebuilder_write (krad_rebuilder_t *krad_rebuilder, uint8_t *data,
+      int length);
+int krad_rebuilder_read_packet (krad_rebuilder_t *krad_rebuilder, uint8_t *data,
+     int track, int *keyframe);
 #endif

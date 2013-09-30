@@ -29,6 +29,8 @@ struct kr_ogg_St {
   uint8_t *hdr;
 };
 
+#include "krad_ogg2_io.h"
+
 kr_ogg_t *kr_ogg_create ();
 int kr_ogg_destroy (kr_ogg_t **ogg);
 

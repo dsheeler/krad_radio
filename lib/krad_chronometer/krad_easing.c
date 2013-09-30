@@ -1,26 +1,27 @@
 #include "krad_easing.h"
 
-void krad_easing_destroy (krad_easing_t *krad_easing) {
-	free (krad_easing);
+void krad_easing_destroy(krad_easing_t *krad_easing) {
+	free(krad_easing);
 }
 
-krad_easing_t *krad_easing_create () {
-	krad_easing_t *krad_easing = calloc (1, sizeof(krad_easing_t));
+krad_easing_t *krad_easing_create() {
+	krad_easing_t *krad_easing = calloc(1, sizeof(krad_easing_t));
 	return krad_easing;
 }
 
-krad_ease_t krad_ease_random () {
+krad_ease_t krad_ease_random() {
 	return rand () % (LASTEASING - FIRSTEASING) + FIRSTEASING;
 }
 
-float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr) {
+float krad_easing_process(krad_easing_t *krad_easing, float current,
+ void **ptr) {
 
   float value;
   
   value = 0.0f;
 
   if (krad_easing->update == 1) {
-    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1 ));
+    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1));
     krad_easing->krad_ease = krad_easing->new_krad_ease;
     krad_easing->duration = krad_easing->new_duration;
     krad_easing->elapsed_time = 0;
@@ -28,7 +29,7 @@ float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr
     krad_easing->target = krad_easing->new_target;
     krad_easing->change_amount = krad_easing->target - krad_easing->start_value;
     krad_easing->update = 0;
-    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 1, 0 ));
+    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 1, 0));
   }
 
   if (krad_easing->duration > 0) {
@@ -50,7 +51,7 @@ float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr
   
   if (krad_easing->elapsed_time == krad_easing->duration) {
     value = krad_easing->target;
-    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1 ));
+    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1));
     // FIXME probably should recheck elapsed_time == duration here but
     // ill leave it alone for now since it appears to work..
     // PS i think what we do is check for update = 1 
@@ -63,13 +64,13 @@ float krad_easing_process (krad_easing_t *krad_easing, float current, void **ptr
     }
     krad_easing->ptr = NULL;
     krad_easing->active = 0;
-    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 1, 0 ));
+    while (!__sync_bool_compare_and_swap( &krad_easing->updating, 1, 0));
   }
 
   return value;
 }
 
-void krad_easing_set_new_value (krad_easing_t *krad_easing, float target, int duration, krad_ease_t krad_ease, void *ptr) {
+void krad_easing_set_new_value(krad_easing_t *krad_easing, float target, int duration, krad_ease_t krad_ease, void *ptr) {
   while (!__sync_bool_compare_and_swap( &krad_easing->updating, 0, 1 ));
   krad_easing->ptr = ptr;
   //if (ptr != NULL) {

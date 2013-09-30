@@ -20,6 +20,8 @@ struct kr_ogg_page_params_St {
 
 static int kr_ogg_generate_page (kr_ogg_page_params_t *params, uint8_t *page);
 
+#include "krad_ogg2_io.c"
+
 int kr_ogg_destroy (kr_ogg_t **ogg) {
 
   if ((ogg == NULL) || (*ogg == NULL)) {

@@ -39,14 +39,14 @@ void kr_effects_set_sample_rate (kr_effects_t *kr_effects, uint32_t sample_rate)
           case KRAD_NOFX:
             break;
           case KRAD_EQ:
-            kr_eq_set_sample_rate (kr_effects->effect[e].effect[c], kr_effects->sample_rate);
+            kr_eq_set_sample_rate(kr_effects->effect[e].effect[c], kr_effects->sample_rate);
             break;
           case KRAD_LOWPASS:
           case KRAD_HIGHPASS:
-            kr_pass_set_sample_rate (kr_effects->effect[e].effect[c], kr_effects->sample_rate);
+            kr_pass_set_sample_rate(kr_effects->effect[e].effect[c], kr_effects->sample_rate);
             break;
           case KRAD_ANALOG:
-            kr_analog_set_sample_rate (kr_effects->effect[e].effect[c], kr_effects->sample_rate);
+            kr_analog_set_sample_rate(kr_effects->effect[e].effect[c], kr_effects->sample_rate);
             break;
         }
       }
@@ -54,7 +54,7 @@ void kr_effects_set_sample_rate (kr_effects_t *kr_effects, uint32_t sample_rate)
   }
 }
 
-void kr_effects_process (kr_effects_t *kr_effects, float **input, float **output, int num_samples) {
+void kr_effects_process(kr_effects_t *kr_effects, float **input, float **output, int num_samples) {
 
   int e, c;
 
@@ -66,16 +66,16 @@ void kr_effects_process (kr_effects_t *kr_effects, float **input, float **output
             break;
           case KRAD_EQ:
             //kr_eq_process (kr_effects->effect[e].effect[c], input[c], output[c], num_samples);
-            kr_eq_process2 (kr_effects->effect[e].effect[c], input[c], output[c], num_samples, c == 0);
+            kr_eq_process2(kr_effects->effect[e].effect[c], input[c], output[c], num_samples, c == 0);
             break;
           case KRAD_LOWPASS:
           case KRAD_HIGHPASS:
             //kr_pass_process (kr_effects->effect[e].effect[c], input[c], output[c], num_samples);
-            kr_pass_process2 (kr_effects->effect[e].effect[c], input[c], output[c], num_samples, c == 0);
+            kr_pass_process2(kr_effects->effect[e].effect[c], input[c], output[c], num_samples, c == 0);
             break;
           case KRAD_ANALOG:
             //kr_analog_process (kr_effects->effect[e].effect[c], input[c], output[c], num_samples);
-            kr_analog_process2 (kr_effects->effect[e].effect[c], input[c], output[c], num_samples, c == 0);
+            kr_analog_process2(kr_effects->effect[e].effect[c], input[c], output[c], num_samples, c == 0);
             break;
         }
       }
@@ -127,19 +127,19 @@ void kr_effects_effect_add2 (kr_effects_t *kr_effects, kr_effect_type_t effect, 
             break;
           case KRAD_EQ:
             //kr_effects->effect[e].effect[c] = kr_eq_create (kr_effects->sample_rate);
-            kr_effects->effect[e].effect[c] = kr_eq_create2 (kr_effects->sample_rate, krad_mixer, portgroupname);
+            kr_effects->effect[e].effect[c] = kr_eq_create2(kr_effects->sample_rate, krad_mixer, portgroupname);
             break;
          case KRAD_LOWPASS:
            //kr_effects->effect[e].effect[c] = kr_pass_create (kr_effects->sample_rate, KRAD_LOWPASS);
-           kr_effects->effect[e].effect[c] = kr_pass_create2 (kr_effects->sample_rate, KRAD_LOWPASS, krad_mixer, portgroupname);
+           kr_effects->effect[e].effect[c] = kr_pass_create2(kr_effects->sample_rate, KRAD_LOWPASS, krad_mixer, portgroupname);
            break;
          case KRAD_HIGHPASS:
            //kr_effects->effect[e].effect[c] = kr_pass_create (kr_effects->sample_rate, KRAD_HIGHPASS);
-           kr_effects->effect[e].effect[c] = kr_pass_create2 (kr_effects->sample_rate, KRAD_HIGHPASS, krad_mixer, portgroupname);
+           kr_effects->effect[e].effect[c] = kr_pass_create2(kr_effects->sample_rate, KRAD_HIGHPASS, krad_mixer, portgroupname);
            break;
          case KRAD_ANALOG:
            //kr_effects->effect[e].effect[c] = kr_analog_create (kr_effects->sample_rate);
-           kr_effects->effect[e].effect[c] = kr_analog_create2 (kr_effects->sample_rate, krad_mixer, portgroupname);
+           kr_effects->effect[e].effect[c] = kr_analog_create2(kr_effects->sample_rate, krad_mixer, portgroupname);
            break;
         }
       }
@@ -175,8 +175,9 @@ void kr_effects_effect_remove (kr_effects_t *kr_effects, int effect_num) {
 }
 
 
-void kr_effects_effect_set_control (kr_effects_t *kr_effects, int effect_num, int control_id, int control, float value,
-                                    int duration, krad_ease_t ease) {
+void kr_effects_effect_set_control(kr_effects_t *kr_effects, int effect_num,
+ int control_id, int control, float value, int duration, krad_ease_t ease,
+ void *user) {
 
   int c;
 
@@ -187,37 +188,41 @@ void kr_effects_effect_set_control (kr_effects_t *kr_effects, int effect_num, in
       case KRAD_EQ:
         switch (control) {
           case KRAD_EQ_CONTROL_DB:
-            kr_eq_band_set_db (kr_effects->effect[effect_num].effect[c], control_id, value, duration, ease);
+            kr_eq_band_set_db(kr_effects->effect[effect_num].effect[c],
+             control_id, value, duration, ease, user);
             break;
           case KRAD_EQ_CONTROL_BANDWIDTH:
-            kr_eq_band_set_bandwidth (kr_effects->effect[effect_num].effect[c], control_id, value, duration, ease);
+            kr_eq_band_set_bandwidth(kr_effects->effect[effect_num].effect[c],
+             control_id, value, duration, ease, user);
             break;
           case KRAD_EQ_CONTROL_HZ:
-            kr_eq_band_set_hz (kr_effects->effect[effect_num].effect[c], control_id, value, duration, ease);
+            kr_eq_band_set_hz(kr_effects->effect[effect_num].effect[c],
+             control_id, value, duration, ease, user);
             break;
         }
         break;
       case KRAD_LOWPASS:
       case KRAD_HIGHPASS:
         switch (control) {
-          //case KRAD_PASS_CONTROL_TYPE:
-          //  kr_pass_set_type (kr_effects->effect[effect_num].effect[c], value);
-          //  break;
           case KRAD_PASS_CONTROL_BANDWIDTH:
-            kr_pass_set_bandwidth (kr_effects->effect[effect_num].effect[c], value, duration, ease);
+            kr_pass_set_bandwidth(kr_effects->effect[effect_num].effect[c],
+             value, duration, ease, user);
             break;
           case KRAD_PASS_CONTROL_HZ:
-            kr_pass_set_hz (kr_effects->effect[effect_num].effect[c], value, duration, ease);
+            kr_pass_set_hz(kr_effects->effect[effect_num].effect[c], value,
+             duration, ease, user);
             break;
         }
         break;
       case KRAD_ANALOG:
         switch (control) {
           case KRAD_ANALOG_CONTROL_BLEND:
-            kr_analog_set_blend (kr_effects->effect[effect_num].effect[c], value, duration, ease);
+            kr_analog_set_blend(kr_effects->effect[effect_num].effect[c],
+             value, duration, ease, user);
             break;
           case KRAD_ANALOG_CONTROL_DRIVE:
-            kr_analog_set_drive (kr_effects->effect[effect_num].effect[c], value, duration, ease);
+            kr_analog_set_drive(kr_effects->effect[effect_num].effect[c],
+             value, duration, ease, user);
             break;
         }
         break;
@@ -243,7 +248,8 @@ kr_effect_type_t kr_effects_string_to_effect (char *string) {
 	return KRAD_NOFX;
 }
 
-int kr_effects_string_to_effect_control (kr_effect_type_t effect_type, char *string) {
+int kr_effects_string_to_effect_control (kr_effect_type_t effect_type,
+ char *string) {
 
   if (effect_type == KRAD_EQ) {
 	  if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
