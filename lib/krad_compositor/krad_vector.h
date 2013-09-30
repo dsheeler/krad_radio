@@ -1,5 +1,3 @@
-#include "krad_radio.h"
-
 #ifndef KRAD_VECTOR_H
 #define KRAD_VECTOR_H
 
@@ -18,6 +16,8 @@
 #include <cairo.h>
 
 #include "krad_system.h"
+#include "krad_compositor_common.h"
+#include "krad_compositor_subunit.h"
 
 #define PRO_REEL_SIZE 26.67
 #define PRO_REEL_SPEED 38.1

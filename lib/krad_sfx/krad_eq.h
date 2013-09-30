@@ -69,8 +69,8 @@ void kr_eq_set_sample_rate (kr_eq_t *kr_eq, int sample_rate);
 //void kr_eq_process (kr_eq_t *kr_eq, float *input, float *output, int num_samples);
 void kr_eq_process2 (kr_eq_t *kr_eq, float *input, float *output, int num_samples, int broadcast);
 
-void kr_eq_band_set_db (kr_eq_t *kr_eq, int band_num, float db, int duration, krad_ease_t ease);
-void kr_eq_band_set_bandwidth (kr_eq_t *kr_eq, int band_num, float bandwidth, int duration, krad_ease_t ease);
-void kr_eq_band_set_hz (kr_eq_t *kr_eq, int band_num, float hz, int duration, krad_ease_t ease);
+void kr_eq_band_set_db (kr_eq_t *kr_eq, int band_num, float db, int duration, krad_ease_t ease, void *user);
+void kr_eq_band_set_bandwidth (kr_eq_t *kr_eq, int band_num, float bandwidth, int duration, krad_ease_t ease, void *user);
+void kr_eq_band_set_hz (kr_eq_t *kr_eq, int band_num, float hz, int duration, krad_ease_t ease, void *user);
 
 #endif

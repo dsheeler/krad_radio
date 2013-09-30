@@ -30,7 +30,11 @@ void frak_print_raw_ebml (unsigned char *buffer, int len) {
 }
 
 int kr_client_sync (kr_client_t *client) {
-  kr_io2_output (client->io);
+  int32_t ret;
+  ret = kr_io2_output (client->io);
+  if (ret != 0) {
+    printke ("oh i am so sad I could not do it all!");
+  }
   kr_ebml2_set_buffer ( client->ebml2, client->io->buf, client->io->space );
   return 0;
 }
@@ -444,8 +448,9 @@ int kr_radio_response_get_string_from_radio (kr_crate_t *crate, char **string) {
   }
   pos += sprintf (*string + pos, "Station Uptime: ");
   pos += kr_radio_uptime_to_string (kr_radio.uptime, *string + pos);
-  pos += sprintf (*string + pos, "\n");  
-  pos += sprintf (*string + pos, "System CPU Usage: %u%%", kr_radio.cpu_usage);  
+  pos += sprintf (*string + pos, "\n");
+  pos += sprintf (*string + pos, "Clients: %u\n", kr_radio.clients);
+  pos += sprintf (*string + pos, "System CPU Usage: %u%%", kr_radio.cpu_usage);
   
   return pos; 
 }
@@ -700,6 +705,7 @@ static int kr_ebml_to_radio_rep (kr_ebml2_t *ebml, kr_radio_t *radio_rep) {
   kr_ebml2_unpack_element_string (ebml, NULL, radio_rep->sysinfo, 666);
   kr_ebml2_unpack_element_string (ebml, NULL, radio_rep->logname, 666);
   kr_ebml2_unpack_element_uint64 (ebml, NULL, &radio_rep->uptime);
+  kr_ebml2_unpack_element_uint32 (ebml, NULL, &radio_rep->clients);
   kr_ebml2_unpack_element_uint32 (ebml, NULL, &radio_rep->cpu_usage);
   return 1;
 }
@@ -1268,7 +1274,7 @@ int kr_remote_off (kr_client_t *client, char *interface, int port) {
   return 1;
 }
 
-void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_port,
+void kr_web_enable (kr_client_t *client, uint32_t port,
                     char *headcode, char *header, char *footer) {
 
   unsigned char *radio_command;
@@ -1276,14 +1282,12 @@ void kr_web_enable (kr_client_t *client, uint32_t http_port, uint32_t websocket_
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD, &radio_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_RADIO_CMD_WEB_ENABLE, &webon);
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_HTTP_PORT, http_port);
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_WEBSOCKET_PORT, websocket_port);
+  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_RADIO_HTTP_PORT, port);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_HEADCODE, headcode);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_HEADER, header);
   kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_WEB_FOOTER, footer);
   kr_ebml2_finish_element (client->ebml2, webon);
   kr_ebml2_finish_element (client->ebml2, radio_command);
-
 
   kr_client_push (client);
 }
@@ -1648,7 +1652,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
         } else {
           if (tokens[0][5] == '\0') {
             if ((tokens[0][0] == 'v') && (tokens[0][1] == 'e') &&
-                (tokens[0][2] == 'c') && (tokens[0][3] == 'o') && (tokens[0][4] == 'r')) {
+                (tokens[0][2] == 'c') && (tokens[0][3] == 't') && (tokens[0][4] == 'o')) {
               *unit = KR_COMPOSITOR;
               subunit->compositor_subunit = KR_VECTOR;
             }
@@ -1658,6 +1662,13 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
             }
           } else {
             if (tokens[0][6] == '\0') {
+              if ((tokens[0][0] == 'v') && (tokens[0][1] == 'e') &&
+                  (tokens[0][2] == 'c') && (tokens[0][3] == 't') && (tokens[0][4] == 'o') &&
+                  (tokens[0][5] == 'r')) {
+                *unit = KR_COMPOSITOR;
+                subunit->compositor_subunit = KR_VECTOR;
+              }
+            
               if ((tokens[0][0] == 's') && (tokens[0][1] == 'p') && (tokens[0][2] == 'r') &&
                   (tokens[0][3] == 'i') && (tokens[0][4] == 't') && (tokens[0][5] == 'e')) {
                 *unit = KR_COMPOSITOR;
@@ -1698,8 +1709,13 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
           if (tokens[2][0] == 'v') {
             control->portgroup_control = KR_VOLUME;
           } else {
-            printf ("Invalid Mixer Portgroup Control\n");
-            return -1;
+            if ((tokens[2][0] == 't')
+                && ((memcmp(id->name, "DTMF\0", 5)) == 0)) {
+              control->portgroup_control = KR_DTMF;
+            } else {
+              printf ("Invalid Mixer Portgroup Control\n");
+              return -1;
+            }
           }
         }
       }
@@ -1811,7 +1827,7 @@ void kr_unit_destroy (kr_client_t *client, kr_address_t *address) {
   }
 }
 
-int32_t kr_address_has_control (kr_address_t *address) {
+int32_t kr_address_has_control(kr_address_t *address) {
 
   if ((address != NULL) && (address->control.unit_control > 0)) {
     return 1;
@@ -1819,12 +1835,19 @@ int32_t kr_address_has_control (kr_address_t *address) {
   return 0;
 }
 
-int kr_unit_control_data_type_from_address (kr_address_t *address, kr_unit_control_data_t *data_type) {
+int kr_unit_control_data_type_from_address(kr_address_t *address,
+ kr_unit_control_data_t *data_type) {
 
   switch (address->path.unit) {
     case KR_MIXER:
-      *data_type = KR_FLOAT;
-      return 1;
+      if ((address->path.subunit.mixer_subunit == KR_PORTGROUP) && 
+          (address->control.portgroup_control == KR_DTMF)) {
+        *data_type = KR_CHAR;
+        return 1;
+      } else {
+        *data_type = KR_FLOAT;
+        return 1;
+      }
     case KR_COMPOSITOR:
       if ((address->control.compositor_control == KR_X) ||
           (address->control.compositor_control == KR_Y) ||
@@ -1899,7 +1922,13 @@ int kr_unit_control_set (kr_client_t *client, kr_unit_control_t *uc) {
           if (uc->address.control.portgroup_control == KR_VOLUME) {
             kr_mixer_set_control (client, uc->address.id.name, "volume", uc->value.real, uc->duration);
           } else {
-            kr_mixer_set_control (client, uc->address.id.name, "crossfade", uc->value.real, uc->duration);
+            if (uc->address.control.portgroup_control == KR_CROSSFADE) {
+              kr_mixer_set_control (client, uc->address.id.name, "crossfade", uc->value.real, uc->duration);
+            } else {
+              if (uc->address.control.portgroup_control == KR_DTMF) {
+                kr_mixer_push_tone(client, uc->value.byte);
+              }
+            }
           }
           break;
         case KR_EFFECT:

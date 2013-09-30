@@ -18,7 +18,8 @@ typedef struct kr_udp_recvr_St kr_udp_recvr_t;
 struct kr_udp_recvr_St {
   uint32_t width;
   uint32_t height;
-	krad_wayland_t *krad_wayland;
+	kr_wayland *wayland;
+  kr_wayland_window *window;
 	krad_vpx_decoder_t *vpxdec;
 	
   uint32_t frame_size;
@@ -28,7 +29,6 @@ struct kr_udp_recvr_St {
   uint32_t consumed;
 	
 	uint32_t repeat;
-	void *buffer;  
 };
 
 static int destroy = 0;
@@ -123,7 +123,7 @@ void kr_udp_recvr_alloc_framebuf (kr_udp_recvr_t *udp_recvr) {
   udp_recvr->rgba = malloc (udp_recvr->frame_size * udp_recvr->framebufsize);
 }
 
-int udp_recvr_frame (void *pointer, uint32_t time) {
+int udp_recvr_frame(void *user, kr_wayland_event *event) {
 
 	int updated;
   int frame;
@@ -132,7 +132,7 @@ int udp_recvr_frame (void *pointer, uint32_t time) {
   
 	updated = 0;
 	
-  udp_recvr = (kr_udp_recvr_t *)pointer;
+  udp_recvr = (kr_udp_recvr_t *)user;
 	
   frame = udp_recvr->frames_dec - 1;
 
@@ -152,7 +152,7 @@ int udp_recvr_frame (void *pointer, uint32_t time) {
 
   pos = (frame % udp_recvr->framebufsize);
 
-  memcpy (udp_recvr->buffer,
+  memcpy (event->frame_event.buffer,
           udp_recvr->rgba + (pos * udp_recvr->frame_size),
           udp_recvr->width * udp_recvr->height * 4);
 
@@ -160,6 +160,17 @@ int udp_recvr_frame (void *pointer, uint32_t time) {
 	return updated;
 }
 
+int window_cb(void *user, kr_wayland_event *event) {
+  switch (event->type) {
+    case KR_WL_FRAME:
+      return udp_recvr_frame(user, event);
+    case KR_WL_POINTER:
+      break;
+    case KR_WL_KEY:
+      break;
+  }
+  return 0;
+}
 
 void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 
@@ -206,7 +217,7 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 	    break;
 	  }
 	  
-    pollfds[0].fd = udp_recvr->krad_wayland->display_fd;
+    pollfds[0].fd = kr_wayland_get_fd(udp_recvr->wayland);
     pollfds[0].events = POLLIN;
 
     pollfds[1].fd = sd;
@@ -219,7 +230,7 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 	  }
 	  
     if (pollfds[0].revents == POLLIN) { 
-      krad_wayland_iterate (udp_recvr->krad_wayland);
+      kr_wayland_process(udp_recvr->wayland);
     }
 	
     if (pollfds[1].revents == POLLIN) {
@@ -298,6 +309,7 @@ void kr_udp_recvr (kr_udp_recvr_t *udp_recvr, int port) {
 int main (int argc, char *argv[]) {
 
   kr_udp_recvr_t *udp_recvr;
+  kr_wayland_window_params window_params;
   int port;
   
   printf ("Options: port width height\n");
@@ -322,22 +334,14 @@ int main (int argc, char *argv[]) {
 
   kr_udp_recvr_alloc_framebuf (udp_recvr);
 
-	udp_recvr->krad_wayland = krad_wayland_create ();
+	udp_recvr->wayland = kr_wayland_create();
 
-	//udp_recvr->krad_wayland->render_test_pattern = 1;
+  window_params.width = udp_recvr->width;
+  window_params.height = udp_recvr->height;
+  window_params.callback = window_cb;
+  window_params.user = udp_recvr;
 
-	krad_wayland_prepare_window (udp_recvr->krad_wayland, udp_recvr->width, udp_recvr->height, &udp_recvr->buffer);
-
-  krad_wayland_set_frame_callback (udp_recvr->krad_wayland, udp_recvr_frame, udp_recvr);
-
-  krad_wayland_prepare_window (udp_recvr->krad_wayland,
-                 udp_recvr->width,
-                 udp_recvr->height,
-                 &udp_recvr->buffer);
-
-  printk("Wayland display prepared");
-
-  krad_wayland_open_window (udp_recvr->krad_wayland);
+  udp_recvr->window = kr_wayland_window_create(udp_recvr->wayland, &window_params);
 	
   kr_udp_recvr (udp_recvr, port);	
 
@@ -345,12 +349,10 @@ int main (int argc, char *argv[]) {
 		printf ("Rendered %d frames!\n", udp_recvr->frames_dec);
 	}
 
+  kr_wayland_window_destroy(&udp_recvr->window);
+	kr_wayland_destroy(&udp_recvr->wayland);
 
-  krad_wayland_close_window (udp_recvr->krad_wayland);
-
-	krad_wayland_destroy (udp_recvr->krad_wayland);
-
-  kr_udp_recvr_free_framebuf (udp_recvr);
+  kr_udp_recvr_free_framebuf(udp_recvr);
 
   free (udp_recvr);
 

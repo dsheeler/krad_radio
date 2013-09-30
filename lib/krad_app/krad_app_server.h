@@ -84,7 +84,7 @@ struct krad_app_server_St {
   int socket_count;
   
   krad_control_t krad_control;
-  
+  uint32_t num_clients;  
   krad_app_server_client_t *clients;
   krad_app_server_client_t *current_client;
 
@@ -132,6 +132,7 @@ int krad_app_server_disable_remote (krad_app_server_t *app_server,
 int krad_app_server_enable_remote (krad_app_server_t *app_server,
                                    char *interface,
                                    uint16_t port);
+uint32_t krad_app_server_num_clients(krad_app_server_t *app_server);
 void krad_app_server_disable (krad_app_server_t *krad_app_server);
 void krad_app_server_destroy (krad_app_server_t *app_server);
 void krad_app_server_run (krad_app_server_t *krad_app_server);

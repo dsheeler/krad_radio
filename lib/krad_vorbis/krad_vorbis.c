@@ -300,9 +300,9 @@ krad_vorbis_t *krad_vorbis_decoder_create (kr_codec_hdr_t *header) {
           vorbis->vinfo.version, vorbis->vinfo.channels, vorbis->vinfo.rate);
 
   if (((vorbis->vinfo.bitrate_lower == 0) ||
-       (vorbis->vinfo.bitrate_lower == 4294967295)) && 
+       (vorbis->vinfo.bitrate_lower == 4294967295U)) && 
       ((vorbis->vinfo.bitrate_upper == 0) ||
-       (vorbis->vinfo.bitrate_upper == 4294967295))) {
+       (vorbis->vinfo.bitrate_upper == 4294967295U))) {
     printk ("KR Vorbis Decoder: Nominal Bitrate: %ld",
             vorbis->vinfo.bitrate_nominal);  
   } else {

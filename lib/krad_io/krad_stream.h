@@ -10,6 +10,7 @@
 #define KRAD_STREAM_H
 
 #include "krad_io2.h"
+#include "krad_base64.h"
 
 typedef struct krad_stream_St krad_stream_t;
 

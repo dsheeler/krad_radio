@@ -169,7 +169,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   kr_unit_control_t unit_control;
   int s;
   int type;
-  krad_radio_t *krad_radio;
+  kr_radio *krad_radio;
   krad_compositor_t *krad_compositor;
   kr_address_t address;
   unsigned char *response;
@@ -187,7 +187,7 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   krad_app_server_t *app;
 
   krad_radio = client->krad_radio;
-  krad_compositor = krad_radio->krad_compositor;
+  krad_compositor = krad_radio->compositor;
   app = krad_radio->app;
   s = 0;
   string[0] = '\0';
@@ -212,8 +212,6 @@ int krad_compositor_command ( kr_io2_t *in, kr_io2_t *out, krad_radio_client_t *
   }
 
   kr_ebml2_set_buffer ( &ebml_out, out->buf, out->space );
-
-  printk ("comp command");
 
   switch ( command ) {
     case EBML_ID_KRAD_COMPOSITOR_CMD_SET_SUBUNIT:

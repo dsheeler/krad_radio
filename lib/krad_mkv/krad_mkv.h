@@ -18,6 +18,15 @@
 #define KRAD_MKV_VERSION "Krad MKV Version 6"
 #define KR_MKV_MAX_TRACKS 10
 
+/*
+  TODO for file writing:
+  Segment Size = file size - ebml head size
+  Seek Head
+  Duration = timecode of last frame "simpleblock"
+  Cues
+*/
+
+
 typedef struct kr_mkv_St kr_mkv_t;
 typedef struct kr_mkv_track_St kr_mkv_track_t;
 

@@ -60,6 +60,7 @@ struct krad_player_St {
   uint32_t fps_num;
   uint32_t width;
   uint32_t height;
+  int32_t seek;
   uint32_t frame_size;
   uint32_t framebufsize;
   unsigned char *rgba;
@@ -118,10 +119,10 @@ int krad_player_check_av_ports (krad_player_t *player) {
 
 void krad_player_close (krad_player_t *player) {
   if (player->videoport) {
-    kr_videoport_deactivate (player->videoport);
+    //kr_videoport_deactivate (player->videoport);
   }
   if (player->audioport) {
-    kr_audioport_deactivate (player->audioport);
+    //kr_audioport_deactivate (player->audioport);
   }
   if (player->avc.aframe != NULL) {  
     av_frame_free (&player->avc.aframe);
@@ -149,7 +150,7 @@ void handle_metadata (krad_player_t *player) {
   }
 }
 
-int decode_video (krad_player_t *player, AVPacket *packet) {
+int decode_video(krad_player_t *player, AVPacket *packet) {
 
   int got_frame;
   int err;
@@ -158,7 +159,7 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
   got_frame = 0;
   
   player->avc.video_packets++;
-
+  if (player->seek) avcodec_flush_buffers(player->avc.vdec);
   err = avcodec_decode_video2 (player->avc.vdec,
                                player->avc.vframe,
                                &got_frame,
@@ -221,13 +222,13 @@ int decode_video (krad_player_t *player, AVPacket *packet) {
   return 1;
 }
 
-int decode_audio (krad_player_t *player, AVPacket *packet) {
+int decode_audio(krad_player_t *player, AVPacket *packet) {
 
   int err;
   int got_frame;
 
   player->avc.audio_packets++;
-
+  if (player->seek) avcodec_flush_buffers(player->avc.adec);
   err = avcodec_decode_audio4 (player->avc.adec,
                                player->avc.aframe,
                                &got_frame,
@@ -280,7 +281,7 @@ int decode_audio (krad_player_t *player, AVPacket *packet) {
   return 1;
 }
 
-int videoport_process (void *buffer, void *arg) {
+int videoport_process(void *buffer, void *arg) {
 
   krad_player_t *player;
   int pos;
@@ -318,7 +319,7 @@ int videoport_process (void *buffer, void *arg) {
   return 0;
 }
 
-int audioport_process (uint32_t nframes, void *arg) {
+int audioport_process(uint32_t nframes, void *arg) {
 
   krad_player_t *player;
 
@@ -343,15 +344,18 @@ int audioport_process (uint32_t nframes, void *arg) {
   return 0;
 }
 
-int krad_player_open (krad_player_t *player, char *input) {
-
+int krad_player_open(krad_player_t *player, char *input) {
+/*
   int i;
   int pc;
   int err;
+  int last_ms;
+  int32_t ret;
   AVPacket packet;
   
   pc = 0;
   err = 0;
+  last_ms = -1000;
   
   player->avc.ctx = avformat_alloc_context ();
   
@@ -439,7 +443,6 @@ int krad_player_open (krad_player_t *player, char *input) {
     kr_videoport_activate (player->videoport);
   }
   printf ("\n");
-  
 
   if (krad_player_check_av_ports (player)) {
     printf ("Error: av ports error\n");
@@ -447,18 +450,28 @@ int krad_player_open (krad_player_t *player, char *input) {
   }  
   
   while (!destroy) {
+    if (player->seek) {
+      int64_t timestamp = rand() % 10000000;
+      ret = avformat_seek_file(player->avc.ctx, -1, INT64_MIN, timestamp,
+       INT64_MAX, 0);
+      if (ret < 0) {
+        fprintf(stderr, "%s: could not seek to position %0.3f\n",
+         input, (double)timestamp / AV_TIME_BASE);
+      } else {
+        fprintf(stderr, "%s: seek to position %0.3f\n",
+         input, (double)timestamp / AV_TIME_BASE);
+      }
+    }
     err = av_read_frame (player->avc.ctx, &packet);
     if (err < 0) {
       printf ("\nGot to EOF\n");
       break;
     }
-
     if ((packet.stream_index != player->avc.aid) && 
         (packet.stream_index != player->avc.vid)) {
       av_free_packet (&packet);
       continue;
     }
-
     if (packet.stream_index == player->avc.vid) {
       err = decode_video (player, &packet);
       if (err < -1) {
@@ -472,23 +485,26 @@ int krad_player_open (krad_player_t *player, char *input) {
         break;
       }
     }
-    
+    if (player->seek) player->seek = 0;
+
     if (krad_player_check_av_ports (player)) {
         printf ("\r\nError: %s\n", "Avports error");
       return -7;
     }     
-    
-    pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d "
-                 "VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
-                player->ms, player->last_frame_time,
-                player->repeated, player->skipped,
-                player->avc.video_frames, player->avc.video_packets,
-                (float)player->samples_consumed / (float)player->sample_rate,
-                player->avc.audio_packets);
-    fflush (stdout);
+    if (last_ms < (player->ms - 80)) {
+      pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d "
+                   "VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
+                  player->ms, player->last_frame_time,
+                  player->repeated, player->skipped,
+                  player->avc.video_frames, player->avc.video_packets,
+                  (float)player->samples_consumed / (float)player->sample_rate,
+                  player->avc.audio_packets);
+      fflush (stdout);
+      last_ms = player->ms;
+    }
   }
   printf ("\n");
-  
+*/  
   // Handling draining / fadeout here
   return 0;
 }
@@ -519,11 +535,9 @@ void krad_player_destroy (krad_player_t **destroy_player) {
   printf ("Krad Player: Self Destructing\n");
   
   if (player->videoport != NULL) {
-    kr_videoport_deactivate (player->videoport);
     kr_videoport_destroy (player->videoport);
   }
   if (player->audioport != NULL) {
-    kr_audioport_deactivate (player->audioport);
     kr_audioport_destroy (player->audioport);
   }
 

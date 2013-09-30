@@ -479,7 +479,8 @@ int main (int argc, char *argv[]) {
   krad_opus_encoder_destroy (tmphack);
   
 	udp_recvr->direction = INPUT;
-	udp_recvr->audioport = kr_audioport_create (client, udp_recvr->direction);
+	udp_recvr->audioport = kr_audioport_create(client, "udp recvr",
+	 udp_recvr->direction);
 
 	if (udp_recvr->audioport == NULL) {
 		fprintf (stderr, "Could not make audioport.\n");
@@ -494,12 +495,12 @@ int main (int argc, char *argv[]) {
   signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);	
 	
-	kr_audioport_activate (udp_recvr->audioport);
+	kr_audioport_connect(udp_recvr->audioport);
 	
   kr_udp_recvr (udp_recvr, port);	
 	
 	
-	kr_audioport_deactivate (udp_recvr->audioport);
+	kr_audioport_disconnect (udp_recvr->audioport);
 	
 	kr_audioport_destroy (udp_recvr->audioport);
 	

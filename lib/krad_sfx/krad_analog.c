@@ -18,14 +18,18 @@ static inline float D(float x) {
 		return 0.0f;
 }
 
-void kr_analog_set_blend (kr_analog_t *kr_analog, float blend, int duration, krad_ease_t ease) {
+void kr_analog_set_blend(kr_analog_t *kr_analog, float blend, int duration,
+ krad_ease_t ease, void *user) {
 	blend = LIMIT(blend, KRAD_ANALOG_BLEND_MIN, KRAD_ANALOG_BLEND_MAX);
-  krad_easing_set_new_value (&kr_analog->krad_easing_blend, blend, duration, ease, NULL);
+  krad_easing_set_new_value (&kr_analog->krad_easing_blend, blend, duration,
+   ease, user);
 }
 
-void kr_analog_set_drive (kr_analog_t *kr_analog, float drive, int duration, krad_ease_t ease) {
+void kr_analog_set_drive(kr_analog_t *kr_analog, float drive, int duration,
+ krad_ease_t ease, void *user) {
 	drive = LIMIT(drive, KRAD_ANALOG_DRIVE_MIN_OFF, KRAD_ANALOG_DRIVE_MAX);
-  krad_easing_set_new_value (&kr_analog->krad_easing_drive, drive, duration, ease, NULL);
+  krad_easing_set_new_value (&kr_analog->krad_easing_drive, drive, duration,
+   ease, user);
 }
 
 void kr_analog_set_sample_rate (kr_analog_t *kr_analog, int sample_rate) {
@@ -65,7 +69,7 @@ kr_analog_t *kr_analog_create2 (int sample_rate, krad_mixer_t *krad_mixer, char 
 }
 
 void kr_analog_destroy(kr_analog_t *kr_analog) {
-  free (kr_analog);
+  free(kr_analog);
 }
 
 //void kr_analog_process (kr_analog_t *kr_analog, float *input, float *output, int num_samples) {
@@ -103,15 +107,15 @@ void kr_analog_process2 (kr_analog_t *kr_analog, float *input, float *output, in
 	ptr = NULL;
 	
   if (kr_analog->krad_easing_blend.active) {
-    kr_analog->blend = krad_easing_process (&kr_analog->krad_easing_blend, kr_analog->blend, &ptr);
+    kr_analog->blend = krad_easing_process(&kr_analog->krad_easing_blend, kr_analog->blend, &ptr);
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control (kr_analog->krad_mixer->broadcaster, &kr_analog->address, BLEND, kr_analog->blend, NULL);     
+      krad_radio_broadcast_subunit_control(kr_analog->krad_mixer->broadcaster, &kr_analog->address, BLEND, kr_analog->blend, ptr);     
     }
   }
   if (kr_analog->krad_easing_drive.active) {
-    kr_analog->drive = krad_easing_process (&kr_analog->krad_easing_drive, kr_analog->drive, &ptr);
+    kr_analog->drive = krad_easing_process(&kr_analog->krad_easing_drive, kr_analog->drive, &ptr);
     if (broadcast == 1) {
-      krad_radio_broadcast_subunit_control (kr_analog->krad_mixer->broadcaster, &kr_analog->address, DRIVE, kr_analog->drive, NULL);
+      krad_radio_broadcast_subunit_control(kr_analog->krad_mixer->broadcaster, &kr_analog->address, DRIVE, kr_analog->drive, ptr);
     }
   }
 

@@ -8,6 +8,7 @@ typedef struct kr_player_user_msg_St kr_player_user_msg_t;
 static void kr_player_start (void *actual);
 static int32_t kr_player_process (void *msgin, void *actual);
 static void kr_player_destroy_actual (void *actual);
+static void kr_player_station_connect(kr_player_t *player);
 
 typedef enum {
   THEUSER,
@@ -40,6 +41,10 @@ struct kr_player_St {
   int64_t position;
   kr_player_playback_state_t state;
   kr_direction_t direction;
+
+  kr_player_playback_state_t last_state;
+  int64_t rel_ms;
+  krad_timer_t *timer;
 
   kr_demuxer_state_t demuxer_state;  
 
@@ -82,6 +87,37 @@ struct kr_player_St {
 };
 
 /* Private Functions */
+
+int krad_player_get_frame(kr_player_t *player, void *frame) {
+
+  int pos;
+  
+  if (player->state == PLAYING) {
+    if (player->last_state != PLAYING) {
+      player->rel_ms = 0;
+      krad_timer_start(player->timer);
+    } else {
+      player->rel_ms = krad_timer_current_ms(player->timer);
+    }
+
+    if (player->frames_dec > player->consumed) {
+      pos = (player->consumed % player->framebufsize);
+      player->ms += 1600;
+      //if (player->ms >= player->frame_time[pos]) {
+     //   player->last_frame_time = player->frame_time[pos];
+        memcpy (frame,
+                player->rgba + (pos * player->frame_size),
+                player->width * player->height * 4);
+        player->consumed++;
+      //} else {
+      //  player->repeated++;
+      //}
+      return 1;
+    }
+  }
+  
+  return 0;
+}
 
 int videoport_process (void *buffer, void *arg) {
 
@@ -238,7 +274,7 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
   uint32_t pos;
   player = (kr_player_t *)actual;
 
-  //printf ("Codeme sized %zu track %d!\n", codeme->sz, codeme->trk);
+  printf ("Codeme sized %zu track %d!\n", codeme->sz, codeme->trk);
   
   if (codeme->trk == 1) {
 
@@ -252,8 +288,10 @@ static int kr_player_process_codeme (kr_codeme_t *codeme, void *actual) {
 
       if (player->frames_dec - player->consumed + 5 >= player->framebufsize) {
         usleep (100000);
-        if (krad_player_check_av_ports (player)) {
-          return -3;
+        if (player->station != NULL) {
+          if (krad_player_check_av_ports (player)) {
+            return -3;
+          }
         }
         continue;
       }
@@ -369,15 +407,21 @@ static void kr_player_destroy_actual (void *actual) {
   kr_player_t *player;
 
   player = (kr_player_t *)actual;
-  kr_videoport_destroy (player->videoport);
-  kr_audioport_destroy (player->audioport);
-  
+
+  if (player->station != NULL) {
+    kr_videoport_destroy (player->videoport);
+    kr_audioport_destroy (player->audioport);
+    kr_client_destroy (&player->client);
+    if (player->station != NULL) {
+      free (player->station);
+      player->station = NULL;
+    }
+  }
+
   for (c = 0; c < player->channels; c++) {
     krad_resample_ring_destroy (player->resample_ring[c]);
     free (player->samples[c]);
   }
-  
-  kr_client_destroy (&player->client);
 
   //kr_decoder_destroy (&player->decoder);
   kr_demuxer_destroy (&player->demuxer);
@@ -388,7 +432,6 @@ static void kr_player_destroy_actual (void *actual) {
 
   sws_freeContext (player->scaler);
 
-  free (player->station);
   free (player->url);
 }
 
@@ -408,19 +451,8 @@ void krad_player_alloc_framebuf (kr_player_t *player) {
   player->frame_time = calloc (player->framebufsize, sizeof(int64_t));
 }
 
-static void kr_player_start (void *actual) {
-  
-  kr_player_t *player;
+static void kr_player_station_connect(kr_player_t *player) {
 
-  player = (kr_player_t *)actual;
-
-  player->direction = FORWARD;
-  player->speed = 100.0f;
-  player->state = IDLE;
-
-  int c;
-
-  player->channels = 2;
   player->client = kr_client_create ("Krad player");
 
   if (player->client == NULL) {
@@ -450,20 +482,14 @@ static void kr_player_start (void *actual) {
 	  kr_client_destroy (&player->client);
     exit (1);
   }
-  krad_player_alloc_framebuf (player);
-  for (c = 0; c < player->channels; c++) {
-    player->resample_ring[c] = krad_resample_ring_create (1600000, 48000,
-                                                          player->sample_rate);
-    player->samples[c] = malloc(4 * 8192);
-  }
   
-  player->audioport = kr_audioport_create (player->client, INPUT);
+  player->audioport = kr_audioport_create (player->client, "krad player", INPUT);
   if (player->audioport == NULL) {
     fprintf (stderr, "Krad player: could not setup audioport\n");
     exit (1);
   }
   kr_audioport_set_callback (player->audioport, audioport_process, player);
-  kr_audioport_activate (player->audioport);
+  kr_audioport_connect(player->audioport);
 
   player->videoport = kr_videoport_create (player->client, INPUT);
   if (player->videoport == NULL) {
@@ -473,6 +499,32 @@ static void kr_player_start (void *actual) {
 
   kr_videoport_set_callback (player->videoport, videoport_process, player);
   kr_videoport_activate (player->videoport);
+}
+
+static void kr_player_start (void *actual) {
+  
+  kr_player_t *player;
+  int c;
+
+  player = (kr_player_t *)actual;
+
+  player->direction = FORWARD;
+  player->speed = 100.0f;
+  player->state = IDLE;
+
+  player->channels = 2;
+
+  krad_player_alloc_framebuf (player);
+
+  for (c = 0; c < player->channels; c++) {
+    player->resample_ring[c] = krad_resample_ring_create (1600000, 48000,
+                                                          player->sample_rate);
+    player->samples[c] = malloc(4 * 8192);
+  }
+
+  if (player->station != NULL) {
+    kr_player_station_connect(player);
+  }
 
   player->kvhs = krad_vhs_create_decoder ();
   player->flac = krad_flac_decoder_create (NULL);
@@ -506,14 +558,18 @@ void kr_player_destroy (kr_player_t **player) {
   }
 }
 
-kr_player_t *kr_player_create (char *station, char *url) {
+kr_player_t *kr_player_create(char *station, char *url) {
   
   kr_player_t *player;
   kr_machine_params_t machine_params;
 
   player = calloc (1, sizeof(kr_player_t));
   player->url = strdup (url);
-  player->station = strdup (station);
+  if (station == NULL) {
+    player->station = NULL;
+  } else {
+    player->station = strdup (station);
+  }
 
   machine_params.actual = player;
   machine_params.msg_sz = sizeof (kr_player_msg_t);
@@ -525,6 +581,22 @@ kr_player_t *kr_player_create (char *station, char *url) {
   
   return player;
 };
+
+kr_player_t *kr_player_create_custom_cb(char *url) {
+
+  kr_player_t *player;
+
+  player = kr_player_create(NULL, url);
+
+  if (player == NULL) {
+    return NULL;
+  }
+
+  player->width = 1280;
+  player->height = 720;
+
+  return player;
+}
 
 char *kr_player_playback_state_to_string (kr_player_playback_state_t state) {
   switch (state) {

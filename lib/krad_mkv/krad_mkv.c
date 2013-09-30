@@ -432,7 +432,6 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_mkv_sync (mkv, 0);
 }
 
-
 kr_mkv_t *kr_mkv_create_file (char *filename) {
   
   kr_mkv_t *mkv;

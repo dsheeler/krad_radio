@@ -59,7 +59,7 @@ static void krad_text_set_font (krad_text_t *text, char *font) {
   static const cairo_user_data_key_t key;
   int status;
 
-  if ((font == NULL) && (strlen(font) <= 0)) {
+  if ((font == NULL) || (strlen(font) <= 0)) {
     return;
   }
 
@@ -79,9 +79,22 @@ static void krad_text_set_font (krad_text_t *text, char *font) {
   }
 }
 
-void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
+void krad_text_prerender_cancel(krad_text_t *krad_text, cairo_t *cr) {
+  if (krad_text->prerendered == 1) {
+    cairo_restore(cr);
+    krad_text->prerendered = 0;
+  }
+}
+
+void krad_text_prerender(krad_text_t *krad_text, cairo_t *cr) {
 
   cairo_text_extents_t extents;
+
+  if (krad_text->prerendered == 1) {
+    krad_text_prerender_cancel(krad_text, cr);
+  }
+
+  cairo_save(cr);
 
   if (krad_text->cr_face != NULL) {
     cairo_set_font_face (cr, krad_text->cr_face);
@@ -107,14 +120,15 @@ void krad_text_prepare (krad_text_t *krad_text, cairo_t *cr) {
     cairo_translate (cr, krad_text->subunit.width / -2,
                      krad_text->subunit.height / 2);    
   }
-  cairo_show_text (cr, krad_text->text_actual);
+  krad_text->prerendered = 1;
 }
 
 void krad_text_render (krad_text_t *krad_text, cairo_t *cr) {
-  cairo_save (cr);
-  krad_text_prepare (krad_text, cr);
+  krad_text_prerender(krad_text, cr);
+  cairo_show_text(cr, krad_text->text_actual);
   cairo_stroke (cr);
   cairo_restore (cr);
+  krad_text->prerendered = 0;
   krad_compositor_subunit_tick (&krad_text->subunit);
 }
 

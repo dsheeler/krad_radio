@@ -43,7 +43,7 @@ static int kr_msg_read (kr_msgpair_t *msgpair, void *msgout) {
   int ret;
   kr_msg_t *msg;
 
-  ret = read (msgpair->fd[1], &msg, sizeof(kr_msg_t *));    
+  ret = read (msgpair->fd[1], &msg, sizeof(kr_msg_t *));
 
   if (ret != sizeof(kr_msg_t *)) {
     fprintf (stderr, "Oh dear! read %d", ret);
@@ -90,7 +90,7 @@ static kr_msgpair_t *kr_msgpair_create (kr_msgsys_t *msgsys) {
 static void kr_msgpairs_destroy (kr_msgsys_t *msgsys) {
 
   int i;
-  
+
   if (msgsys->msgpairs != NULL) {
     for (i = 0; i < msgsys->msgpairs_count; i++) {
       kr_msgpair_destroy (&msgsys->msgpairs[i]);
@@ -103,9 +103,9 @@ static kr_msgpair_t **kr_msgpairs_create (kr_msgsys_t *msgsys) {
 
   int i;
   kr_msgpair_t **msgpairs;
-  
+
   msgpairs = calloc (msgsys->msgpairs_count, sizeof (kr_msgpair_t *));
-  
+
   for (i = 0; i < msgsys->msgpairs_count; i++) {
     msgpairs[i] = kr_msgpair_create (msgsys);
     if (msgpairs[i] == NULL) {
@@ -146,18 +146,18 @@ int kr_msgsys_wait (kr_msgsys_t *msgsys, void *msg) {
 }
 
 int kr_msgsys_write (kr_msgsys_t *msgsys, uint32_t msgpair, void *msgin) {
-  
+
   int ret;
   kr_msg_t *msg;
   void *msgcpy;
-  
+
   msg = kr_player_alloc_msg (msgsys->msgpairs[msgpair]);
   msgcpy = kr_player_alloc_user_msg (msgsys->msgpairs[msgpair]);
-  
+
   memcpy (msgcpy, msgin, msgsys->msg_sz);
   msg->ptr = msgcpy;
-      
-  ret = write (msgsys->msgpairs[msgpair]->fd[0], &msg, sizeof(kr_msg_t *));    
+
+  ret = write (msgsys->msgpairs[msgpair]->fd[0], &msg, sizeof(kr_msg_t *));
 
   if (ret != sizeof(kr_msg_t *)) {
     fprintf (stderr, "Oh dear! write %d", ret);
@@ -176,7 +176,7 @@ int kr_msgsys_read (kr_msgsys_t *msgsys, uint32_t msgpair, void *msg) {
 }
 
 void kr_msgsys_destroy (kr_msgsys_t **msgsys) {
-  
+
   if ((msgsys != NULL) && (*msgsys != NULL)) {
     kr_msgpairs_destroy (*msgsys);
     free ((*msgsys)->pollfds);
@@ -188,7 +188,7 @@ void kr_msgsys_destroy (kr_msgsys_t **msgsys) {
 kr_msgsys_t *kr_msgsys_create (uint32_t count, size_t msg_sz) {
 
   kr_msgsys_t *msgsys;
-  
+
   msgsys = calloc (1, sizeof (kr_msgsys_t));
   msgsys->msgpairs_count = count;
   msgsys->msg_sz = msg_sz;

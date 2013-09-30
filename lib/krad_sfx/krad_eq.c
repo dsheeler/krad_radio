@@ -1,23 +1,30 @@
 #include "krad_eq.h"
 
-void kr_eq_band_set_db (kr_eq_t *kr_eq, int band_num, float db, int duration, krad_ease_t ease) {
+void kr_eq_band_set_db (kr_eq_t *kr_eq, int band_num, float db, int duration,
+ krad_ease_t ease, void *user) {
+  if (band_num >= KRAD_EQ_MAX_BANDS) return;
   db = LIMIT(db, KRAD_EQ_DB_MIN, KRAD_EQ_DB_MAX);
-  krad_easing_set_new_value(&kr_eq->band[band_num].krad_easing_db, db, duration, ease, NULL);
+  krad_easing_set_new_value(&kr_eq->band[band_num].krad_easing_db, db, duration, ease, user);
 }
 
-void kr_eq_band_set_bandwidth (kr_eq_t *kr_eq, int band_num, float bandwidth, int duration, krad_ease_t ease) {
+void kr_eq_band_set_bandwidth (kr_eq_t *kr_eq, int band_num, float bandwidth,
+ int duration, krad_ease_t ease, void *user) {
+  if (band_num >= KRAD_EQ_MAX_BANDS) return;
   bandwidth = LIMIT(bandwidth, KRAD_EQ_BANDWIDTH_MIN, KRAD_EQ_BANDWIDTH_MAX);
-  krad_easing_set_new_value(&kr_eq->band[band_num].krad_easing_bandwidth, bandwidth, duration, ease, NULL);
+  krad_easing_set_new_value(&kr_eq->band[band_num].krad_easing_bandwidth, bandwidth, duration, ease, user);
 }
 
-void kr_eq_band_set_hz (kr_eq_t *kr_eq, int band_num, float hz, int duration, krad_ease_t ease) {
+void kr_eq_band_set_hz (kr_eq_t *kr_eq, int band_num, float hz, int duration,
+ krad_ease_t ease, void *user) {
+  if (band_num >= KRAD_EQ_MAX_BANDS) return;
   hz = LIMIT(hz, KRAD_EQ_HZ_MIN, KRAD_EQ_HZ_MAX);
-  krad_easing_set_new_value(&kr_eq->band[band_num].krad_easing_hz, hz, duration, ease, NULL);
+  krad_easing_set_new_value(&kr_eq->band[band_num].krad_easing_hz, hz, duration, ease, user);
 }
 
 //void kr_eq_process (kr_eq_t *kr_eq, float *input, float *output, int num_samples) {
 
-void kr_eq_process2 (kr_eq_t *kr_eq, float *input, float *output, int num_samples, int broadcast) {
+void kr_eq_process2 (kr_eq_t *kr_eq, float *input, float *output,
+ int num_samples, int broadcast) {
 
   int b, s;
   int recompute;
@@ -43,21 +50,21 @@ void kr_eq_process2 (kr_eq_t *kr_eq, float *input, float *output, int num_sample
       kr_eq->band[b].hz = krad_easing_process (&kr_eq->band[b].krad_easing_hz, kr_eq->band[b].hz, &ptr); 
       recompute = 1;
       if (broadcast == 1) {
-        krad_radio_broadcast_subunit_control (kr_eq->krad_mixer->broadcaster, &kr_eq->address, HZ, kr_eq->band[b].hz, NULL);
+        krad_radio_broadcast_subunit_control (kr_eq->krad_mixer->broadcaster, &kr_eq->address, HZ, kr_eq->band[b].hz, ptr);
       }
     }
     if (kr_eq->band[b].krad_easing_db.active) {
       kr_eq->band[b].db = krad_easing_process (&kr_eq->band[b].krad_easing_db, kr_eq->band[b].db, &ptr); 
       recompute = 1;
       if (broadcast == 1) {
-        krad_radio_broadcast_subunit_control (kr_eq->krad_mixer->broadcaster, &kr_eq->address, DB, kr_eq->band[b].db, NULL);
+        krad_radio_broadcast_subunit_control (kr_eq->krad_mixer->broadcaster, &kr_eq->address, DB, kr_eq->band[b].db, ptr);
       }
     }
     if (kr_eq->band[b].krad_easing_bandwidth.active) {
       kr_eq->band[b].bandwidth = krad_easing_process (&kr_eq->band[b].krad_easing_bandwidth, kr_eq->band[b].bandwidth, &ptr); 
       recompute = 1;
       if (broadcast == 1) {
-        krad_radio_broadcast_subunit_control (kr_eq->krad_mixer->broadcaster, &kr_eq->address, BANDWIDTH, kr_eq->band[b].bandwidth, NULL);
+        krad_radio_broadcast_subunit_control (kr_eq->krad_mixer->broadcaster, &kr_eq->address, BANDWIDTH, kr_eq->band[b].bandwidth, ptr);
       }
     }
 

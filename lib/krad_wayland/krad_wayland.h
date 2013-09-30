@@ -10,87 +10,68 @@
 #include <signal.h>
 
 #include <wayland-client.h>
+#include <xkbcommon/xkbcommon.h>
 
 #include "krad_system.h"
-
 
 #ifndef KRAD_WAYLAND_H
 #define KRAD_WAYLAND_H
 
-#define KRAD_WAYLAND_BUFFER_COUNT 2
+#define KR_WL_MAX_WINDOWS 4
+#define KR_WL_BUFFER_COUNT 1
 
-typedef struct krad_wayland_St krad_wayland_t;
-typedef struct krad_wayland_display_St krad_wayland_display_t;
-typedef struct krad_wayland_window_St krad_wayland_window_t;
+typedef struct kr_wayland_st kr_wayland;
+typedef struct kr_wayland_window_st kr_wayland_window;
+typedef struct kr_wayland_window_params_st kr_wayland_window_params;
+typedef struct kr_wayland_event_st kr_wayland_event;
+typedef struct kr_wayland_pointer_event_st kr_wayland_pointer_event;
+typedef struct kr_wayland_key_event_st kr_wayland_key_event;
+typedef struct kr_wayland_frame_event_st kr_wayland_frame_event;
 
-struct krad_wayland_display_St {
-	struct wl_display *display;
-  struct wl_registry *registry;
-	struct wl_compositor *compositor;
-	struct wl_shell *shell;
-	struct wl_shm *shm;
-	uint32_t formats;
-	uint32_t mask;
-
-	struct wl_shm_listener shm_listener;
-
-	struct wl_seat *seat;
-	struct wl_pointer *pointer;
-
-	struct wl_seat_listener seat_listener;
-	struct wl_pointer_listener pointer_listener;
-	
-  struct wl_registry_listener registry_listener;
-	
-	int pointer_x;
-	int pointer_y;
-
+enum kr_wayland_event_type {
+  KR_WL_FRAME,
+  KR_WL_POINTER,
+  KR_WL_KEY
 };
 
-struct krad_wayland_window_St {
-	int width;
-	int height;
-	char title[512];
-	struct wl_surface *surface;
-	struct wl_shell_surface *shell_surface;
-	struct wl_buffer *buffer;
-	void *shm_data;
-	struct wl_callback *callback;
-
-	struct wl_shell_surface_listener surface_listener;
-	struct wl_callback_listener frame_listener;
+struct kr_wayland_pointer_event_st {
+  int x;
+  int y;
+  int click;
+  int pointer_in;
+  int pointer_out;
 };
 
-
-struct krad_wayland_St {
-
-	krad_wayland_window_t *window;
-	krad_wayland_display_t *display;
-	
-	int display_fd;
-
-	int frame_size;
-	struct wl_buffer *buffer[KRAD_WAYLAND_BUFFER_COUNT];
-	int current_buffer;
-
-	int (*frame_callback)(void *, uint32_t);
-	void *callback_pointer;
-
-	int render_test_pattern;
-
-	int click;
-	int mousein;	
-
+struct kr_wayland_key_event_st {
+  int key;
+  int down;
 };
 
+struct kr_wayland_frame_event_st {
+  uint8_t *buffer;
+};
 
-void krad_wayland_set_frame_callback (krad_wayland_t *krad_wayland, int frame_callback (void *, uint32_t), void *pointer);
-void krad_wayland_set_window_title (krad_wayland_t *krad_wayland, char *title);
-int krad_wayland_prepare_window (krad_wayland_t *krad_wayland, int width, int height, void **buffer);
-int krad_wayland_open_window (krad_wayland_t *krad_wayland);
-void krad_wayland_iterate (krad_wayland_t *krad_wayland);
-void krad_wayland_close_window (krad_wayland_t *krad_wayland);
+struct kr_wayland_event_st {
+  int type;
+  kr_wayland_pointer_event pointer_event;
+  kr_wayland_key_event key_event;
+  kr_wayland_frame_event frame_event;
+};
 
-void krad_wayland_destroy (krad_wayland_t *krad_wayland);
-krad_wayland_t *krad_wayland_create ();
+struct kr_wayland_window_params_st {
+  uint32_t width;
+  uint32_t height;
+  int (*callback)(void *, kr_wayland_event *);
+  void *user;
+};
+
+kr_wayland_window *kr_wayland_window_create(kr_wayland *wayland,
+ kr_wayland_window_params *params);
+int kr_wayland_window_destroy(kr_wayland_window **win);
+int kr_wayland_get_fd(kr_wayland *wayland);
+int kr_wayland_process(kr_wayland *wayland);
+int kr_wayland_destroy(kr_wayland **wl);
+kr_wayland *kr_wayland_create();
+kr_wayland *kr_wayland_create_for_server(char *server);
+
 #endif

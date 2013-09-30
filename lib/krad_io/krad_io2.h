@@ -29,7 +29,7 @@
 #ifndef KR_IO2_H
 #define KR_IO2_H
 
-#define KR_IO2_BUF_SZ 8192
+#define KR_IO2_BUF_SZ 8192 * 8
 
 typedef struct kr_io2_St kr_io2_t;
 
@@ -51,19 +51,19 @@ struct kr_io2_St {
   uint8_t *buffer; // actual buffer
 };
 
-int kr_io2_restart (kr_io2_t *io);
+int kr_io2_restart(kr_io2_t *io);
 
-kr_io2_t *kr_io2_create ();
-kr_io2_t *kr_io2_create_size (size_t size);
-int kr_io2_destroy (kr_io2_t **io);
-int kr_io2_set_fd (kr_io2_t *io, int fd);
-int kr_io2_want_out (kr_io2_t *io); // buffer has data ready to be written out
-int kr_io2_has_in (kr_io2_t *io); // buffer has data for buffer user to read
-void kr_io2_advance (kr_io2_t *io, size_t bytes); // (output: notify that data has been packed into buffer for output) (input: N data has been read from socket and is ready for user)
-void kr_io2_pack (kr_io2_t *io, void *buffer, size_t len); // pack data into an output buffer
-int kr_io2_output (kr_io2_t *io); // write as much output buffer as possible
-int kr_io2_sync (kr_io2_t *io); // temp file only kludge
-void kr_io2_pulled (kr_io2_t *io, size_t bytes); // advance the users read pointer by N
-size_t kr_io2_read (kr_io2_t *io); // actually read into buffer
+kr_io2_t *kr_io2_create();
+kr_io2_t *kr_io2_create_size(size_t size);
+int kr_io2_destroy(kr_io2_t **io);
+int kr_io2_set_fd(kr_io2_t *io, int fd);
+int kr_io2_want_out(kr_io2_t *io); // buffer has data ready to be written out
+int kr_io2_has_in(kr_io2_t *io); // buffer has data for buffer user to read
+void kr_io2_advance(kr_io2_t *io, size_t bytes); // (output: notify that data has been packed into buffer for output) (input: N data has been read from socket and is ready for user)
+void kr_io2_pack(kr_io2_t *io, void *buffer, size_t len); // pack data into an output buffer
+int kr_io2_output(kr_io2_t *io); // write as much output buffer as possible
+int kr_io2_sync(kr_io2_t *io); // temp file only kludge
+void kr_io2_pulled(kr_io2_t *io, size_t bytes); // advance the users read pointer by N
+size_t kr_io2_read(kr_io2_t *io); // actually read into buffer
 
 #endif
