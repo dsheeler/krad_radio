@@ -10,8 +10,8 @@ struct kr_muxponder_track_St {
 
 typedef union {
   krad_transmission_t *transmission;
-  krad_stream_t *stream;
-  kr_file_t *file;
+  kr_stream *stream;
+  kr_file *file;
 } kr_muxponder_output_actual;
 
 struct kr_muxponder_output_St {
@@ -26,7 +26,7 @@ struct kr_muxponder_St {
   kr_muxponder_output_t *outputs;
   kr_transmitter_t *transmitter;
   kr_mkv_t *mkv;
-  kr_ogg_t *ogg;
+  kr_ogg *ogg;
   int track_count;
   int current_track;
   int got_hdr;
@@ -39,7 +39,7 @@ struct kr_muxponder_St {
 int kr_muxponder_destroy_output (kr_muxponder_t *muxponder, int num) {
 
   kr_muxponder_output_t *output;
-  
+
   if (num >= KR_MUXPONDER_MAX_OUTPUTS) {
     return -2;
   }
@@ -64,8 +64,8 @@ int kr_muxponder_destroy_output (kr_muxponder_t *muxponder, int num) {
 
   output->wrote_hdr = 0;
   output->active = 0;
-  
-  return 0;  
+
+  return 0;
 }
 
 int kr_muxponder_destroy (kr_muxponder_t **muxponder) {
@@ -74,7 +74,7 @@ int kr_muxponder_destroy (kr_muxponder_t **muxponder) {
     for (o = 0; o < KR_MUXPONDER_MAX_OUTPUTS; o++) {
       if ((*muxponder)->outputs[o].active == 1) {
         kr_muxponder_destroy_output ((*muxponder), o);
-      }    
+      }
     }
     if ((*muxponder)->got_hdr == 1) {
       free ((*muxponder)->mkv_hdr);
@@ -109,7 +109,7 @@ int muxponder_data_cb (uint8_t *data, size_t size, uint32_t sync, void *ptr) {
     muxponder->mkv_hdr_size = size;
     muxponder->mkv_hdr = malloc (muxponder->mkv_hdr_size);
     memcpy (muxponder->mkv_hdr, data, muxponder->mkv_hdr_size);
-    size = 0;       
+    size = 0;
   }
 
   for (o = 0; o < KR_MUXPONDER_MAX_OUTPUTS; o++) {
@@ -173,7 +173,7 @@ kr_muxponder_t *kr_muxponder_create (krad_transmitter_t *transmitter) {
   kr_muxponder_t *muxponder;
   muxponder = calloc (1, sizeof(kr_muxponder_t));
   muxponder->tracks = calloc (KR_MUXPONDER_MAX_TRACKS,
-                              sizeof(kr_muxponder_track_t));  
+                              sizeof(kr_muxponder_track_t));
   muxponder->outputs = calloc (KR_MUXPONDER_MAX_OUTPUTS,
                               sizeof(kr_muxponder_output_t));
 
@@ -214,7 +214,7 @@ int kr_muxponder_create_track (kr_muxponder_t *muxponder,
   if (t == -1) {
     return t;
   }
-  
+
   memcpy (&muxponder->tracks[t].info, track_info, sizeof (kr_track_info_t));
 
   kr_mkv_add_video_track (muxponder->mkv, VP8,
@@ -222,7 +222,7 @@ int kr_muxponder_create_track (kr_muxponder_t *muxponder,
                           1,
                           muxponder->tracks[t].info.params.v.width,
                           muxponder->tracks[t].info.params.v.height);
-  
+
   return t;
 }
 
@@ -282,6 +282,6 @@ int kr_muxponder_add_data (kr_muxponder_t *muxponder,
                            uint8_t *data, size_t size, int sync) {
 
   kr_mkv_add_video (muxponder->mkv, track, data, size, sync);
-  
+
   return 0;
 }

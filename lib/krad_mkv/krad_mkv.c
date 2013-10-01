@@ -432,12 +432,12 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
   kr_mkv_sync (mkv, 0);
 }
 
-kr_mkv_t *kr_mkv_create_file (char *filename) {
+kr_mkv_t *kr_mkv_create_file(char *filename) {
 
   kr_mkv_t *mkv;
-  kr_file_t *file;
+  kr_file *file;
 
-  file = kr_file_create (filename);
+  file = kr_file_create(filename);
 
   if (file == NULL) {
     return NULL;
@@ -458,32 +458,32 @@ kr_mkv_t *kr_mkv_create_stream (char *host, int port,
                                 char *mount, char *password) {
 
   kr_mkv_t *mkv;
-  krad_stream_t *stream;
+  kr_stream *stream;
 
   /* Temp */
   char *content_type = "video/webm";
 
-  stream = kr_stream_create (host, port, mount, content_type, password);
+  stream = kr_stream_create(host, port, mount, content_type, password);
 
   if (stream == NULL) {
     return NULL;
   }
 
   while (stream->ready != 1) {
-    kr_stream_handle_headers (stream);
+    kr_stream_handle_headers(stream);
   }
 
   //printk ("Krad MKV: %s %d %s %s - SD %s",
   //        host, port, mount, password, stream->sd);
   //printk ("Krad MKV: SD %d", stream->sd);
 
-  mkv = kr_mkv_create ();
+  mkv = kr_mkv_create();
   mkv->stream = stream;
-  kr_ebml2_set_buffer ( mkv->e, mkv->io->buf, mkv->io->space );
+  kr_ebml2_set_buffer(mkv->e, mkv->io->buf, mkv->io->space);
   mkv->fd = stream->sd;
   kr_io2_set_fd (mkv->io, mkv->fd);
 
-  kr_mkv_start_segment (mkv, "A Krad Radio Stream");
+  kr_mkv_start_segment(mkv, "A Krad Radio Stream");
 
   return mkv;
 }

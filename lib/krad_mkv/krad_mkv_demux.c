@@ -413,7 +413,7 @@ static int kr_mkv_parse_track (kr_mkv_t *mkv, uint64_t max_pos) {
   return 0;
 }
 
-static void kr_mkv_rebuild_header_for_streaming (kr_mkv_t *mkv) {
+static void kr_mkv_rebuild_header_for_streaming(kr_mkv_t *mkv) {
 
   size_t len;
   uint8_t *segment;
@@ -422,7 +422,7 @@ static void kr_mkv_rebuild_header_for_streaming (kr_mkv_t *mkv) {
   char *title;
 
   len = mkv->e->pos;
-  mkv->stream_hdr = malloc (len);
+  mkv->stream_hdr = malloc(len);
 
   shdr = kr_mkv_create_bufsize (len);
   kr_ebml2_set_buffer (shdr->e, shdr->io->buf, shdr->io->space);
@@ -504,15 +504,15 @@ kr_mkv_t *kr_mkv_open_stream (char *host, int port, char *mount) {
 kr_mkv_t *kr_mkv_open_file (char *filename) {
 
   kr_mkv_t *mkv;
-  kr_file_t *file;
+  kr_file *file;
 
-  file = kr_file_open (filename);
+  file = kr_file_open(filename);
 
   if (file == NULL) {
     return NULL;
   }
 
-  mkv = kr_mkv_create_bufsize (file->size);
+  mkv = kr_mkv_create_bufsize(file->size);
   mkv->file = file;
   mkv->fd = file->fd;
   kr_io2_set_fd (mkv->io, mkv->fd);

@@ -1,15 +1,15 @@
 #include "krad_ogg2.h"
 
-typedef struct kr_ogg_page_params_St kr_ogg_page_params_t;
+typedef struct kr_ogg_page_params kr_ogg_page_params;
 
-struct kr_ogg_track_St {
+struct kr_ogg_track {
   int64_t granule_position;
   uint32_t bitstream_serial;
   uint32_t page_sequence_number;
   krad_codec_header_t *hdr;
 };
 
-struct kr_ogg_page_params_St {
+struct kr_ogg_page_params {
   int64_t granule_position;
   uint32_t bitstream_serial;
   uint32_t page_sequence_number;
@@ -18,11 +18,11 @@ struct kr_ogg_page_params_St {
   size_t size;
 };
 
-static int kr_ogg_generate_page (kr_ogg_page_params_t *params, uint8_t *page);
+static int kr_ogg_generate_page(kr_ogg_page_params *params, uint8_t *page);
 
 #include "krad_ogg2_io.c"
 
-int kr_ogg_destroy (kr_ogg_t **ogg) {
+int kr_ogg_destroy (kr_ogg **ogg) {
 
   if ((ogg == NULL) || (*ogg == NULL)) {
     return -1;
@@ -36,42 +36,42 @@ int kr_ogg_destroy (kr_ogg_t **ogg) {
   return 0;
 }
 
-kr_ogg_t *kr_ogg_create () {
+kr_ogg *kr_ogg_create() {
 
-  kr_ogg_t *ogg;
+  kr_ogg *ogg;
 
-  ogg = calloc (1, sizeof(kr_ogg_t));
-  ogg->tracks = calloc (KRAD_OGG_MAX_TRACKS, sizeof(kr_ogg_track_t));
+  ogg = calloc(1, sizeof(kr_ogg));
+  ogg->tracks = calloc(KRAD_OGG_MAX_TRACKS, sizeof(kr_ogg_track));
 
   return ogg;
 }
 
-int kr_ogg_add_track (kr_ogg_t *ogg, krad_codec_header_t *hdr) {
+int kr_ogg_add_track(kr_ogg *ogg, krad_codec_header_t *hdr) {
 
   int t;
-  
+
   if (ogg->hdr_sz > 0) {
     return -2;
   }
-  
+
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial == 0) {
       ogg->tracks[t].bitstream_serial = rand () + time(NULL);
       ogg->tracks[t].hdr = hdr;
       return t;
-    } 
+    }
   }
   return -1;
 }
 
-int kr_ogg_generate_header (kr_ogg_t *ogg) {
+int kr_ogg_generate_header(kr_ogg *ogg) {
 
   int t;
   int h;
-  size_t sz; 
-  
+  size_t sz;
+
   sz = 0;
-  
+
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial != 0) {
       for (h = 0; h < ogg->tracks[t].hdr->count; h++) {
@@ -85,9 +85,9 @@ int kr_ogg_generate_header (kr_ogg_t *ogg) {
   }
 
   sz += 2048;
-  
+
   ogg->hdr = malloc (sz);
-  
+
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial != 0) {
       for (h = 0; h < 1; h++) {
@@ -98,7 +98,7 @@ int kr_ogg_generate_header (kr_ogg_t *ogg) {
       }
     }
   }
-  
+
   for (t = 0; t < KRAD_OGG_MAX_TRACKS; t++) {
     if (ogg->tracks[t].bitstream_serial != 0) {
       for (h = 1; h < ogg->tracks[t].hdr->count; h++) {
@@ -113,7 +113,7 @@ int kr_ogg_generate_header (kr_ogg_t *ogg) {
   return ogg->hdr_sz;
 }
 
-void kr_ogg_page_crc_set (uint8_t *page, size_t size) {
+void kr_ogg_page_crc_set(uint8_t *page, size_t size) {
 
   uint32_t crc_reg = 0;
   int i;
@@ -133,7 +133,7 @@ void kr_ogg_page_crc_set (uint8_t *page, size_t size) {
   page[25] = (uint8_t)((crc_reg>>24)&0xff);
 }
 
-static int kr_ogg_generate_page (kr_ogg_page_params_t *params, uint8_t *page) {
+static int kr_ogg_generate_page(kr_ogg_page_params *params, uint8_t *page) {
 
   uint8_t oggs[4] = {0x4f, 0x67, 0x67, 0x53};
   uint8_t ogg_version = 0;
@@ -185,10 +185,10 @@ static int kr_ogg_generate_page (kr_ogg_page_params_t *params, uint8_t *page) {
   return page_size;
 }
 
-int kr_ogg_add_data (kr_ogg_t *ogg, int track, int64_t granule_position,
-                     uint8_t *data, size_t size, uint8_t *page) {
+int kr_ogg_add_data(kr_ogg *ogg, int track, int64_t granule_position,
+ uint8_t *data, size_t size, uint8_t *page) {
 
-  kr_ogg_page_params_t params;
+  kr_ogg_page_params params;
   size_t page_size;
 
   params.granule_position = ogg->tracks[track].granule_position;
@@ -207,7 +207,7 @@ int kr_ogg_add_data (kr_ogg_t *ogg, int track, int64_t granule_position,
       params.header_type = 0x00;
     }
   }
-  
+
   page_size = kr_ogg_generate_page (&params, page);
 
   ogg->tracks[track].page_sequence_number++;

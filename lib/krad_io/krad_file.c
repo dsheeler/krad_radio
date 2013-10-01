@@ -1,16 +1,16 @@
 #include "krad_file.h"
 
-static kr_file_t kr_file_stdin;
-static kr_file_t kr_file_stdout;
+static kr_file kr_file_stdin;
+static kr_file kr_file_stdout;
 
-kr_file_t *kr_file_open_stdin () {
+kr_file *kr_file_open_stdin() {
 
   errno = 0;
-  fcntl (STDIN_FILENO, F_GETFD);
+  fcntl(STDIN_FILENO, F_GETFD);
   if (errno == EBADF) {
     return NULL;
   }
-  
+
   kr_file_stdin.fd = STDIN_FILENO;
   kr_file_stdin.path = "STDIN";
   kr_file_stdin.std_stream = 1;
@@ -21,14 +21,14 @@ kr_file_t *kr_file_open_stdin () {
   return &kr_file_stdin;
 }
 
-kr_file_t *kr_file_open_stdout () {
-  
+kr_file *kr_file_open_stdout() {
+
   errno = 0;
   fcntl (STDOUT_FILENO, F_GETFD);
   if (errno == EBADF) {
     return NULL;
   }
-  
+
   kr_file_stdout.fd = STDOUT_FILENO;
   kr_file_stdout.path = "STDOUT";
   kr_file_stdout.std_stream = 1;
@@ -39,12 +39,12 @@ kr_file_t *kr_file_open_stdout () {
   return &kr_file_stdout;
 }
 
-int file_exists (char *path) {
+int file_exists(char *path) {
 
   int err;
   struct stat s;
 
-  err = stat (path, &s);
+  err = stat(path, &s);
 
   if (err == -1) {
     if(ENOENT == errno) {
@@ -66,7 +66,7 @@ int file_exists (char *path) {
   return 0;
 }
 
-int64_t file_size (char *path) {
+int64_t file_size(char *path) {
 
   int err;
   int64_t filesize;
@@ -95,29 +95,28 @@ int64_t file_size (char *path) {
   return -1;
 }
 
-kr_file_t *kr_file_create (char *path) {
-  
-  kr_file_t file;
-  kr_file_t *ofile;
+kr_file *kr_file_create(char *path) {
+
+  kr_file file;
+  kr_file *ofile;
   int err;
   int flags;
   int mode;
-  
+
   flags = O_WRONLY | O_CREAT;
   mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-  
+
   if (path == NULL) {
     return NULL;
   }
 
   if ((strlen(path) == 1) && (path[0] == '-')) {
-    return kr_file_open_stdout ();
+    return kr_file_open_stdout();
   }
 
-  memset (&file, 0, sizeof (kr_file_t));
+  memset(&file, 0, sizeof (kr_file));
+  err = stat(path, &file.st);
 
-  err = stat (path, &file.st);
-  
   if (err == -1) {
     if (errno == ENOENT) {
       // does not exist
@@ -145,8 +144,8 @@ kr_file_t *kr_file_create (char *path) {
   }
 #endif
 
-  file.fd = open ( path, flags, mode );
-  
+  file.fd = open(path, flags, mode);
+
   if (file.fd < 0) {
     return NULL;
   }
@@ -156,33 +155,33 @@ kr_file_t *kr_file_create (char *path) {
   file.writable = 1;
   file.position = 0;
   file.std_stream = 0;
-  //file.seekable;  
+  //file.seekable;
   //file.mapmode;
-  
-  ofile = malloc (sizeof(kr_file_t));
-  memcpy (ofile, &file, sizeof(kr_file_t));
-  ofile->path = strdup (path);
+
+  ofile = malloc(sizeof(kr_file));
+  memcpy(ofile, &file, sizeof(kr_file));
+  ofile->path = strdup(path);
 
   return ofile;
 }
 
-kr_file_t *kr_file_open (char *path) {
-  
-  kr_file_t file;
-  kr_file_t *ofile;
+kr_file *kr_file_open(char *path) {
+
+  kr_file file;
+  kr_file *ofile;
   int err;
-  
+
   if (path == NULL) {
     return NULL;
   }
-  
+
   if ((strlen(path) == 1) && (path[0] == '-')) {
     return kr_file_open_stdin ();
   }
 
-  memset (&file, 0, sizeof (kr_file_t));
+  memset(&file, 0, sizeof (kr_file));
 
-  err = stat (path, &file.st);
+  err = stat(path, &file.st);
 
   if (err == -1) {
     if (errno == ENOENT) {
@@ -194,15 +193,15 @@ kr_file_t *kr_file_open (char *path) {
     }
   } else {
     //FIXME handle symlink
-    if (!(S_ISREG (file.st.st_mode))) {
+    if (!(S_ISREG(file.st.st_mode))) {
       return NULL;
     }
   }
-  
+
   file.size = file.st.st_size;
 
 #ifdef KR_LINUX
-  if (statfs (path, &file.stfs) != -1) {
+  if (statfs(path, &file.stfs) != -1) {
     if (file.stfs.f_type == 0xFF534D42 || /* cifs */
         file.stfs.f_type == 0x6969 || /* nfs */
         file.stfs.f_type == 0x517B) { /* smb */
@@ -214,7 +213,7 @@ kr_file_t *kr_file_open (char *path) {
   }
 #endif
 
-  file.fd = open ( path, O_RDONLY );
+  file.fd = open(path, O_RDONLY);
 
   if (file.fd < 0) {
     return NULL;
@@ -224,25 +223,25 @@ kr_file_t *kr_file_open (char *path) {
   file.readable = 1;
   file.writable = 0;
   file.std_stream = 0;
-  //file.seekable;  
+  //file.seekable;
   //file.mapmode;
-  
-  ofile = malloc (sizeof(kr_file_t));
-  memcpy (ofile, &file, sizeof(kr_file_t));
-  ofile->path = strdup (path);
+
+  ofile = malloc(sizeof(kr_file));
+  memcpy (ofile, &file, sizeof(kr_file));
+  ofile->path = strdup(path);
 
   return ofile;
 }
 
-ssize_t kr_file_read (kr_file_t *file, void *buffer, size_t len) {
-  return read (file->fd, buffer, len);
+ssize_t kr_file_read(kr_file *file, void *buffer, size_t len) {
+  return read(file->fd, buffer, len);
 }
 
-ssize_t kr_file_write (kr_file_t *file, void *buffer, size_t len) {
-  return write (file->fd, buffer, len);
+ssize_t kr_file_write(kr_file *file, void *buffer, size_t len) {
+  return write(file->fd, buffer, len);
 }
 
-int kr_file_close (kr_file_t **file) {
+int kr_file_close(kr_file **file) {
 
   if ((file == NULL) || (*file == NULL)) {
     return -1;
@@ -253,9 +252,9 @@ int kr_file_close (kr_file_t **file) {
     return 0;
   }
 
-  close ((*file)->fd);
-  free ((*file)->path);
-  free (*file);
+  close((*file)->fd);
+  free((*file)->path);
+  free(*file);
   *file = NULL;
   return 0;
 }

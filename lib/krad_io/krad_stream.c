@@ -1,11 +1,11 @@
 #include "krad_stream.h"
 
-static void kr_stream_read_http_headers (krad_stream_t *stream);
-static void kr_stream_send_request_to_stream (krad_stream_t *stream);
-static void kr_stream_send_request_for_stream (krad_stream_t *stream);
-static krad_stream_t *kr_stream_connect (char *host, int port);
+static void kr_stream_read_http_headers(kr_stream *stream);
+static void kr_stream_send_request_to_stream(kr_stream *stream);
+static void kr_stream_send_request_for_stream(kr_stream *stream);
+static kr_stream *kr_stream_connect(char *host, int port);
 
-ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
+ssize_t kr_stream_send(kr_stream *stream, void *buffer, size_t len) {
   ssize_t ret;
   ret = send (stream->sd, buffer, len, 0);
   if (ret > 0) {
@@ -23,7 +23,7 @@ ssize_t kr_stream_send (krad_stream_t *stream, void *buffer, size_t len) {
   return ret;
 }
 
-ssize_t kr_stream_recv (krad_stream_t *stream, void *buffer, size_t len) {
+ssize_t kr_stream_recv(kr_stream *stream, void *buffer, size_t len) {
   ssize_t ret;
   ret = recv (stream->sd, buffer, len, 0);
   if (ret > 0) {
@@ -32,24 +32,23 @@ ssize_t kr_stream_recv (krad_stream_t *stream, void *buffer, size_t len) {
   return ret;
 }
 
-int kr_stream_disconnect (krad_stream_t *stream) {
+int kr_stream_disconnect(kr_stream *stream) {
   if (stream == NULL) {
     return -2;
   }
   if (stream->sd != 0) {
-    close (stream->sd);
+    close(stream->sd);
     stream->sd = 0;
     return 0;
   }
   return -1;
 }
 
-int kr_stream_free (krad_stream_t **stream) {
+int kr_stream_free(kr_stream **stream) {
 
   if ((stream == NULL) || (*stream == NULL)) {
     return -1;
   }
-  
   if ((*stream)->host != NULL) {
     free ((*stream)->host);
     (*stream)->host = NULL;
@@ -68,23 +67,23 @@ int kr_stream_free (krad_stream_t **stream) {
   return 0;
 }
 
-int kr_stream_destroy (krad_stream_t **stream) {
+int kr_stream_destroy(kr_stream **stream) {
   if ((stream == NULL) || (*stream == NULL)) {
     return -1;
   }
-  kr_stream_disconnect (*stream);
-  return kr_stream_free (stream);
+  kr_stream_disconnect(*stream);
+  return kr_stream_free(stream);
 }
 
-int kr_stream_reconnect (krad_stream_t *stream) {
+int kr_stream_reconnect(kr_stream *stream) {
   //kr_stream_disconnect (stream);
   //FIXME RECCONNECTING
   return -1;
 }
 
-static krad_stream_t *kr_stream_connect (char *host, int port) {
+static kr_stream *kr_stream_connect(char *host, int port) {
 
-  krad_stream_t *stream;
+  kr_stream *stream;
   int ret;
   int flags;
   char port_string[6];
@@ -92,66 +91,66 @@ static krad_stream_t *kr_stream_connect (char *host, int port) {
   struct addrinfo hints;
   struct addrinfo *res;
 
-  res = NULL;  
+  res = NULL;
 
   if ((host == NULL) || ((port < 0) || (port > 65535))) {
     return NULL;
   }
 
-  stream = calloc (1, sizeof(krad_stream_t));
+  stream = calloc(1, sizeof(kr_stream));
 
-  memset (&hints, 0, sizeof(hints));
+  memset(&hints, 0, sizeof(hints));
   hints.ai_flags = AI_NUMERICSERV;
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
 
-  ret = inet_pton (AF_INET, host, &serveraddr);
+  ret = inet_pton(AF_INET, host, &serveraddr);
   if (ret == 1) {
     hints.ai_family = AF_INET;
     hints.ai_flags |= AI_NUMERICHOST;
   } else {
-    ret = inet_pton (AF_INET6, host, &serveraddr);
+    ret = inet_pton(AF_INET6, host, &serveraddr);
     if (ret == 1) {
       hints.ai_family = AF_INET6;
       hints.ai_flags |= AI_NUMERICHOST;
     }
   }
-  snprintf (port_string, 6, "%d", port);
-  ret = getaddrinfo (host, port_string, &hints, &res);
+  snprintf(port_string, 6, "%d", port);
+  ret = getaddrinfo(host, port_string, &hints, &res);
   if (ret != 0) {
-    kr_stream_destroy (&stream);
+    kr_stream_destroy(&stream);
     return NULL;
   }
 
-  stream->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
+  stream->sd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
   if (stream->sd < 0) {
-    kr_stream_destroy (&stream);
+    kr_stream_destroy(&stream);
   } else {
-    flags = fcntl (stream->sd, F_GETFL, 0);
+    flags = fcntl(stream->sd, F_GETFL, 0);
     if (flags == -1) {
-      failfast ("Krad System: error on syscall fcntl F_GETFL");
+      failfast("Krad System: error on syscall fcntl F_GETFL");
     } else {
       flags |= O_NONBLOCK;
-      ret = fcntl (stream->sd, F_SETFL, flags);
+      ret = fcntl(stream->sd, F_SETFL, flags);
       if (ret == -1) {
-        failfast ("Krad System: error on syscall fcntl F_SETFL");
+        failfast("Krad System: error on syscall fcntl F_SETFL");
       } else {
-        ret = connect (stream->sd, res->ai_addr, res->ai_addrlen);
+        ret = connect(stream->sd, res->ai_addr, res->ai_addrlen);
         if ((ret < 0) && (errno != EINPROGRESS)) {
-          kr_stream_destroy (&stream);
+          kr_stream_destroy(&stream);
         }
       }
     }
   }
 
   if (res != NULL) {
-    freeaddrinfo (res);
+    freeaddrinfo(res);
   }
 
   return stream;
 }
 
-static void kr_stream_read_http_headers (krad_stream_t *stream) {
+static void kr_stream_read_http_headers(kr_stream *stream) {
 
   ssize_t ret;
   int32_t i;
@@ -159,7 +158,7 @@ static void kr_stream_read_http_headers (krad_stream_t *stream) {
 
   while (1) {
     if (stream->drain > 0) {
-      ret = recv (stream->sd, buf, stream->drain, 0);
+      ret = recv(stream->sd, buf, stream->drain, 0);
       //printf ("drain %zd of %d\n", ret, stream->drain);
       if (ret < 1) {
         if ((ret == 0) || ((ret == -1) && (errno != EAGAIN))) {
@@ -179,7 +178,7 @@ static void kr_stream_read_http_headers (krad_stream_t *stream) {
         }
       }
     } else {
-      ret = recv (stream->sd, buf, sizeof(buf), MSG_PEEK);
+      ret = recv(stream->sd, buf, sizeof(buf), MSG_PEEK);
       if (ret < 1) {
         if ((ret == 0) || ((ret == -1) && (errno != EAGAIN))) {
           stream->position = 0;
@@ -220,7 +219,7 @@ static void kr_stream_read_http_headers (krad_stream_t *stream) {
   }
 }
 
-static void kr_stream_send_request_to_stream (krad_stream_t *stream) {
+static void kr_stream_send_request_to_stream(kr_stream *stream) {
 
   ssize_t ret;
   int len;
@@ -230,47 +229,47 @@ static void kr_stream_send_request_to_stream (krad_stream_t *stream) {
 
   len = 0;
 
-  snprintf (auth, sizeof(auth), "source:%s", stream->password);
-  kr_base64_encode (auth_base64, auth, sizeof(auth_base64));
+  snprintf(auth, sizeof(auth), "source:%s", stream->password);
+  kr_base64_encode(auth_base64, auth, sizeof(auth_base64));
 
-  len = snprintf (http_req, sizeof(http_req) - len,
-                  "SOURCE %s ICE/1.0\r\n",
-                  stream->mount);
+  len = snprintf(http_req, sizeof(http_req) - len,
+                 "SOURCE %s ICE/1.0\r\n",
+                 stream->mount);
 
-  len += snprintf (http_req + len, sizeof(http_req) - len,
-                   "content-type: %s\r\n",
-                   stream->content_type);
+  len += snprintf(http_req + len, sizeof(http_req) - len,
+                  "content-type: %s\r\n",
+                  stream->content_type);
 
-  len += snprintf (http_req + len, sizeof(http_req) - len,
-                   "Authorization: Basic %s\r\n\r\n",
-                   auth_base64);
+  len += snprintf(http_req + len, sizeof(http_req) - len,
+                  "Authorization: Basic %s\r\n\r\n",
+                  auth_base64);
 
-  ret = kr_stream_send (stream,
-                        http_req + stream->position,
-                        len - stream->position);
+  ret = kr_stream_send(stream,
+                       http_req + stream->position,
+                       len - stream->position);
   if (ret > 0) {
     //printf ("RTR!! %.*s--\n", stream->position, http_req);
     if (stream->position == len) {
       stream->position = 0;
       stream->ready = 1;
-      stream->connected = 1;      
+      stream->connected = 1;
     }
   }
 }
 
-static void kr_stream_send_request_for_stream (krad_stream_t *stream) {
+static void kr_stream_send_request_for_stream(kr_stream *stream) {
 
   ssize_t ret;
   int len;
   char http_req[512];
 
-  len = snprintf (http_req, sizeof(http_req),
-                  "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n",
-                  stream->mount, stream->host);
+  len = snprintf(http_req, sizeof(http_req),
+                 "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n",
+                 stream->mount, stream->host);
 
-  ret = kr_stream_send (stream,
-                        http_req + stream->position,
-                        len - stream->position);
+  ret = kr_stream_send(stream,
+                       http_req + stream->position,
+                       len - stream->position);
   if (ret > 0) {
     if (stream->position == len) {
       stream->position = 0;
@@ -279,10 +278,10 @@ static void kr_stream_send_request_for_stream (krad_stream_t *stream) {
   }
 }
 
-krad_stream_t *kr_stream_create (char *host, int port,
-                                 char *mount, char *content_type,
-                                 char *password) {
-  krad_stream_t *stream;
+kr_stream *kr_stream_create(char *host, int port,
+                                char *mount, char *content_type,
+                                char *password) {
+  kr_stream *stream;
 
   if ((host == NULL) || (mount == NULL) || (password == NULL) ||
       (content_type == NULL) || ((port < 0) || (port > 65535))) {
@@ -293,25 +292,25 @@ krad_stream_t *kr_stream_create (char *host, int port,
     return NULL;
   }
 
-  stream = kr_stream_connect (host, port);
+  stream = kr_stream_connect(host, port);
   if (stream == NULL) {
     return NULL;
   }
 
-  stream->host = strdup (host);
+  stream->host = strdup(host);
   stream->port = port;
-  stream->mount = strdup (mount);
-  stream->password = strdup (password);
-  stream->content_type = strdup (content_type);
+  stream->mount = strdup(mount);
+  stream->password = strdup(password);
+  stream->content_type = strdup(content_type);
 
   stream->direction = 1;
 
   return stream;
 }
 
-krad_stream_t *kr_stream_open (char *host, int port, char *mount) {
+kr_stream *kr_stream_open(char *host, int port, char *mount) {
 
-  krad_stream_t *stream;
+  kr_stream *stream;
 
   if ((host == NULL) || (mount == NULL) || ((port < 0) || (port > 65535))) {
     return NULL;
@@ -321,21 +320,21 @@ krad_stream_t *kr_stream_open (char *host, int port, char *mount) {
     return NULL;
   }
 
-  stream = kr_stream_connect (host, port);
+  stream = kr_stream_connect(host, port);
   if (stream == NULL) {
     return NULL;
   }
 
-  stream->host = strdup (host);
+  stream->host = strdup(host);
   stream->port = port;
-  stream->mount = strdup (mount);
+  stream->mount = strdup(mount);
 
   stream->direction = 0;
 
   return stream;
 }
 
-int32_t kr_stream_handle_headers (krad_stream_t *stream) {
+int32_t kr_stream_handle_headers(kr_stream *stream) {
   if (stream->ready == 0) {
     if (stream->direction == 1) {
       kr_stream_send_request_to_stream (stream);
@@ -351,39 +350,38 @@ int32_t kr_stream_handle_headers (krad_stream_t *stream) {
   return stream->ready;
 }
 
-void kr_stream_i_am_a_blocking_subscripter (krad_stream_t *stream) {
+void kr_stream_i_am_a_blocking_subscripter(kr_stream *stream) {
 
   int ret;
   struct pollfd sp[1];
-  
+
   if (stream->direction == 1) {
     sp[0].events = POLLOUT;
   } else {
     sp[0].events = POLLIN;
   }
   sp[0].fd = stream->sd;
-  
-  ret = poll (sp, 1, -1);
+
+  ret = poll(sp, 1, -1);
 
   if (sp[0].revents & POLLERR) {
-    fprintf (stderr, "Got poll err on %s\n", stream->mount);
+    fprintf(stderr, "Got poll err on %s\n", stream->mount);
   }
   if (sp[0].revents & POLLHUP) {
-    fprintf (stderr, "Got poll POLLHUP on %s\n", stream->mount);
+    fprintf(stderr, "Got poll POLLHUP on %s\n", stream->mount);
   }
-  
   if (stream->direction == 1) {
     if (!(sp[0].revents & POLLOUT)) {
-      fprintf (stderr, "Did NOT get POLLOUT on %s\n", stream->mount);
+      fprintf(stderr, "Did NOT get POLLOUT on %s\n", stream->mount);
     }
   } else {
     if (!(sp[0].revents & POLLIN)) {
-      fprintf (stderr, "Did NOT get POLLIN on %s\n", stream->mount);
+      fprintf(stderr, "Did NOT get POLLIN on %s\n", stream->mount);
     }
-  }  
+  }
 
   if (ret != 1) {
-    fprintf (stderr, "poll failure\n");
-    exit (1);
+    fprintf(stderr, "poll failure\n");
+    exit(1);
   }
 }

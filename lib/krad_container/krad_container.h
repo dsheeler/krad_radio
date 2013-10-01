@@ -15,22 +15,22 @@ struct krad_container_St {
   krad_ogg_t *ogg;
   kr_mkv_t *mkv;
   krad_udp_t *udp;
-  kr_file_t *raw;
+  kr_file *raw;
   kr_io2_t *rawio;
   krad_transmission_t *transmission;
 };
 
 /* Create / Destroy */
-void krad_container_destroy (krad_container_t **krad_container);
-krad_container_t *krad_container_create_stream (char *host, uint32_t port,
+void krad_container_destroy(krad_container_t **krad_container);
+krad_container_t *krad_container_create_stream(char *host, uint32_t port,
                                                 char *mount, char *password);
-krad_container_t *krad_container_open_file (char *filename,
+krad_container_t *krad_container_open_file(char *filename,
                                             krad_io_mode_t mode);
 krad_container_t *
 krad_container_open_transmission (krad_transmission_t *transmission);
 
 /* Input */
-int krad_container_track_count (krad_container_t *krad_container);
+int krad_container_track_count(krad_container_t *krad_container);
 krad_codec_t krad_container_track_codec (krad_container_t *container,
                                          uint32_t track);
 int krad_container_track_header_count (krad_container_t *container,
@@ -69,7 +69,7 @@ void krad_container_add_video (krad_container_t *container, int track,
                                uint8_t *buffer, int buffer_size,
                                int keyframe);
 void krad_container_add_audio (krad_container_t *container, int track,
-                               uint8_t *buffer, int buffer_size, 
+                               uint8_t *buffer, int buffer_size,
                                int frames);
 
 #endif

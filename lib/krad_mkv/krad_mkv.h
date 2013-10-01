@@ -35,7 +35,7 @@ struct kr_mkv_track_St {
   uint32_t fps_denominator;
   uint32_t width;
   uint32_t height;
-  
+
   uint32_t channels;
   uint32_t bit_depth;
   uint32_t sample_rate;
@@ -81,11 +81,11 @@ struct kr_mkv_St {
 
   kr_ebml2_t ebml;
   kr_ebml2_t *e;
-  
+
   int fd;
   kr_io2_t *io;
-  kr_file_t *file;
-  krad_stream_t *stream;
+  kr_file *file;
+  kr_stream *stream;
 
   uint8_t *stream_hdr;
   size_t stream_hdr_len;
@@ -95,12 +95,12 @@ struct kr_mkv_St {
   uint8_t *tracks_info_data;
   uint64_t segment_info_data_size;
   uint64_t tracks_info_data_size;
-  
+
   double duration;
   uint64_t timecode_scale;
-  
+
   int32_t audio_init_cluster;
-  
+
   /* krad mkv transmitter */
   krad_transmission_t *transmission;
 
@@ -109,9 +109,9 @@ struct kr_mkv_St {
   void *io_cb_ptr;
 };
 
-kr_mkv_t *kr_mkv_create_transmission (krad_transmitter_t *transmitter,
-                                      char *mount,
-                                      char *content_type);
+kr_mkv_t *kr_mkv_create_transmission(krad_transmitter_t *transmitter,
+                                     char *mount,
+                                     char *content_type);
 
 kr_mkv_t *kr_mkv_create_file (char *filename);
 kr_mkv_t *kr_mkv_create_stream (char *host, int port,

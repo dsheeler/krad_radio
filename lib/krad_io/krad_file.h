@@ -22,9 +22,9 @@
 #ifndef KRAD_FILE_H
 #define KRAD_FILE_H
 
-typedef struct kr_file_St kr_file_t;
+typedef struct kr_file kr_file;
 
-struct kr_file_St {
+struct kr_file {
   int32_t fd;
   off_t position;
   int32_t readable;
@@ -40,19 +40,19 @@ struct kr_file_St {
   struct statfs stfs;
 };
 
-int file_exists (char *path);
-int64_t file_size (char *path);
+int file_exists(char *path);
+int64_t file_size(char *path);
 
-kr_file_t *kr_file_open_stdin ();
-kr_file_t *kr_file_open_stdout ();
+kr_file *kr_file_open_stdin();
+kr_file *kr_file_open_stdout();
 
-kr_file_t *kr_file_open (char *path);
-kr_file_t *kr_file_create (char *path);
+kr_file *kr_file_open(char *path);
+kr_file *kr_file_create(char *path);
 
-ssize_t kr_file_read (kr_file_t *file, void *buffer, size_t len);
-ssize_t kr_file_write (kr_file_t *file, void *buffer, size_t len);
+ssize_t kr_file_read(kr_file *file, void *buffer, size_t len);
+ssize_t kr_file_write(kr_file *file, void *buffer, size_t len);
 
-int kr_file_close (kr_file_t **file);
+int kr_file_close(kr_file **file);
 
 
 //FIXME  add _adv version with BYOB and error string

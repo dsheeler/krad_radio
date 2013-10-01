@@ -20,25 +20,22 @@
 #define KRAD_OGG_MAX_TRACKS 10
 #endif
 
-typedef struct kr_ogg_St kr_ogg_t;
-typedef struct kr_ogg_track_St kr_ogg_track_t;
+typedef struct kr_ogg kr_ogg;
+typedef struct kr_ogg_track kr_ogg_track;
 
-struct kr_ogg_St {
-  kr_ogg_track_t *tracks;
+struct kr_ogg {
+  kr_ogg_track *tracks;
   size_t hdr_sz;
   uint8_t *hdr;
 };
 
 #include "krad_ogg2_io.h"
 
-kr_ogg_t *kr_ogg_create ();
-int kr_ogg_destroy (kr_ogg_t **ogg);
-
-int kr_ogg_add_track (kr_ogg_t *ogg, krad_codec_header_t *hdr);
-
-int kr_ogg_generate_header (kr_ogg_t *ogg);
-
-int kr_ogg_add_data (kr_ogg_t *ogg, int track, int64_t granule_position,
-                     uint8_t *data, size_t size, uint8_t *page);
+kr_ogg *kr_ogg_create();
+int kr_ogg_destroy(kr_ogg **ogg);
+int kr_ogg_add_track(kr_ogg *ogg, krad_codec_header_t *hdr);
+int kr_ogg_generate_header(kr_ogg *ogg);
+int kr_ogg_add_data(kr_ogg *ogg, int track, int64_t granule_position,
+ uint8_t *data, size_t size, uint8_t *page);
 
 #endif

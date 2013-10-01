@@ -12,7 +12,7 @@ static krad_container_type_t krad_container_select (char *string) {
     (strstr(string, ".Ogg")) ||
     (strstr(string, ".oga")) ||
     (strstr(string, ".ogv")) ||
-    (strstr(string, ".Oga")) ||    
+    (strstr(string, ".Oga")) ||
     (strstr(string, ".OGV")))
   {
     return OGG;
@@ -41,7 +41,7 @@ char *krad_container_select_mimetype (char *string) {
     (strstr(string, ".Ogg")) ||
     (strstr(string, ".oga")) ||
     (strstr(string, ".ogv")) ||
-    (strstr(string, ".Oga")) ||    
+    (strstr(string, ".Oga")) ||
     (strstr(string, ".OGV")))
   {
     return "application/ogg";
@@ -81,7 +81,7 @@ int krad_container_track_header_size (krad_container_t *container,
   if (container->type == OGG) {
     return krad_ogg_track_header_size ( container->ogg, track, header );
   } else {
-    return kr_mkv_track_header_size ( container->mkv, track, header );    
+    return kr_mkv_track_header_size ( container->mkv, track, header );
   }
 }
 
@@ -91,7 +91,7 @@ int krad_container_read_track_header (krad_container_t *container,
   if (container->type == OGG) {
     return krad_ogg_read_track_header ( container->ogg, buffer, track, header );
   } else {
-    return kr_mkv_read_track_header ( container->mkv, buffer, track, header );    
+    return kr_mkv_read_track_header ( container->mkv, buffer, track, header );
   }
 }
 
@@ -99,7 +99,7 @@ int krad_container_track_changed (krad_container_t *container, uint32_t track) {
   if (container->type == OGG) {
     return krad_ogg_track_changed ( container->ogg, track );
   } else {
-    return kr_mkv_track_changed ( container->mkv, track );    
+    return kr_mkv_track_changed ( container->mkv, track );
   }
 }
 
@@ -107,7 +107,7 @@ int krad_container_track_active (krad_container_t *container, uint32_t track) {
   if (container->type == OGG) {
     return krad_ogg_track_active ( container->ogg, track );
   } else {
-    return kr_mkv_track_active ( container->mkv, track );    
+    return kr_mkv_track_active ( container->mkv, track );
   }
 }
 
@@ -115,7 +115,7 @@ int krad_container_track_header_count (krad_container_t *ctr, uint32_t track) {
   if (ctr->type == OGG) {
     return krad_ogg_track_header_count ( ctr->ogg, track );
   } else {
-    return kr_mkv_track_header_count ( ctr->mkv, track );    
+    return kr_mkv_track_header_count ( ctr->mkv, track );
   }
 }
 
@@ -133,13 +133,13 @@ krad_container_t *krad_container_create_stream (char *host, uint32_t port,
 
   krad_container_t *container;
   krad_container_type_t type;
-  
+
   type = krad_container_select (mount);
 
   if ((type != OGG) && (type != MKV) && (type != KUDP)) {
     return NULL;
   }
-  
+
   container = calloc (1, sizeof(krad_container_t));
 
   container->type = type;
@@ -151,7 +151,7 @@ krad_container_t *krad_container_create_stream (char *host, uint32_t port,
       return NULL;
     }
   }
-  
+
   if (container->type == MKV) {
     container->mkv = kr_mkv_create_stream (host, port, mount, password);
     if (container->mkv == NULL) {
@@ -159,14 +159,14 @@ krad_container_t *krad_container_create_stream (char *host, uint32_t port,
       return NULL;
     }
   }
-  
+
   if (container->type == KUDP) {
     container->udp = kr_udp (host, port, mount, password);
     if (container->udp == NULL) {
       free (container);
       return NULL;
     }
-  }  
+  }
 
   return container;
 }
@@ -175,7 +175,7 @@ krad_container_t *krad_container_open_file (char *filename,
                                             krad_io_mode_t mode) {
 
   krad_container_t *container;
-  
+
   container = calloc (1, sizeof(krad_container_t));
 
   container->type = krad_container_select (filename);
@@ -197,7 +197,7 @@ krad_container_t *krad_container_open_file (char *filename,
       if (container->mkv == NULL) {
         free (container);
         return NULL;
-      }    
+      }
     } else {
       if ((container->type == NATIVEFLAC) || (container->type == Y4MFILE)) {
         if (mode == KRAD_IO_WRITEONLY) {
@@ -222,7 +222,7 @@ krad_container_t *krad_container_open_file (char *filename,
 krad_container_t *
 krad_container_open_transmission (krad_transmission_t *transmission) {
 
-  failfast ("temp disabled transission");  
+  failfast ("temp disabled transission");
   return NULL;
 /*
 
@@ -234,7 +234,7 @@ krad_container_open_transmission (krad_transmission_t *transmission) {
   if ((type != OGG) && (type != MKV)) {
     return NULL;
   }
-  
+
   container = calloc(1, sizeof(krad_container_t));
 
   container->type = type;
@@ -265,13 +265,13 @@ void krad_container_destroy (krad_container_t **container) {
     if (((*container)->type == NATIVEFLAC) || ((*container)->type == Y4MFILE)) {
       if ((*container)->raw) {
         kr_io2_destroy (&((*container)->rawio));
-        kr_file_close (&((*container)->raw));
+        kr_file_close(&((*container)->raw));
       }
     }
     free (*container);
     *container = NULL;
   }
-}  
+}
 
 int krad_container_raw_add_data (krad_container_t *container,
                                  uint8_t *buffer,
@@ -300,7 +300,7 @@ int krad_container_add_video_track_with_private_data (krad_container_t *containe
                                                        header->data[0],
                                                        header->sz[0],
                                                        header->count);
-  } 
+  }
 
   if (container->type == MKV) {
     return kr_mkv_add_video_track_with_private_data (container->mkv, krad_codec_header->codec,
@@ -313,14 +313,14 @@ int krad_container_add_video_track_with_private_data (krad_container_t *containe
 }
 
 int krad_container_add_video_track (krad_container_t *container,
-                                    krad_codec_t codec, 
+                                    krad_codec_t codec,
                                     int fps_numerator, int fps_denominator,
                                     int width, int height) {
-                  
+
   if (container->type == OGG) {
     return krad_ogg_add_video_track (container->ogg, codec, fps_numerator,
                                      fps_denominator, width, height);
-  } 
+  }
 
   if (container->type == MKV) {
     return kr_mkv_add_video_track (container->mkv, codec,
@@ -332,20 +332,20 @@ int krad_container_add_video_track (krad_container_t *container,
 
 int krad_container_add_audio_track (krad_container_t *container,
                                     krad_codec_t codec,
-                                    int sample_rate, int channels, 
+                                    int sample_rate, int channels,
                                     krad_codec_header_t *krad_codec_header) {
 /*
   if (container->type == OGG) {
     return krad_ogg_add_audio_track (container->ogg, codec,
-                                     sample_rate, channels, 
+                                     sample_rate, channels,
                                      krad_codec_header->header,
                                      krad_codec_header->header_size,
                                      krad_codec_header->header_count);
   }
-  
+
   if (container->type == MKV) {
     return kr_mkv_add_audio_track (container->mkv, codec,
-                                   sample_rate, channels, 
+                                   sample_rate, channels,
                                    krad_codec_header->header_combined,
                                    krad_codec_header->header_combined_size);
   }
