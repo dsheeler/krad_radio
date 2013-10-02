@@ -2,9 +2,9 @@
 #define KRAD_RADIO_COMMON_H
 
 #include "krad_radio_version.h"
-#include "krad_ebml2.h"
-#include "krad_ebml2w.h"
-#include "krad_io2.h"
+#include "krad_ebml.h"
+#include "krad_ebmlx.h"
+#include "krad_io.h"
 #include "krad_radio_ipc.h"
 
 typedef struct krad_radio_rep_St krad_radio_rep_t;

@@ -54,12 +54,12 @@ krmachinetestsources = """
 
 krmkvlibsources = """
 ../lib/krad_system/krad_system.c
-../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_io.c
 ../lib/krad_io/krad_file.c
 ../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c
-../lib/krad_ebml/krad_ebml2.c
-../lib/krad_ebml/krad_ebml2w.c
+../lib/krad_ebml/krad_ebml.c
+../lib/krad_ebml/krad_ebmlx.c
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_transmitter/krad_transmitter.c
 ../lib/krad_chronometer/krad_ticker.c
@@ -92,12 +92,12 @@ krdlcapsrces = """
 krdlcapmacsrces = """
 ../lib/krad_system/krad_system.c
 ../lib/krad_legacy/krad_mach.c
-../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_io.c
 ../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_file.c
 ../lib/krad_io/krad_stream.c
-../lib/krad_ebml/krad_ebml2.c
-../lib/krad_ebml/krad_ebml2w.c
+../lib/krad_ebml/krad_ebml.c
+../lib/krad_ebml/krad_ebmlx.c
 ../lib/krad_ring/krad_ring.c
 ../lib/krad_transmitter/krad_transmitter.c
 ../lib/krad_chronometer/krad_ticker.c

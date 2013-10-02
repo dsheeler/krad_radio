@@ -26,7 +26,7 @@
 #include "krad_radio_version.h"
 #include "krad_system.h"
 #include "krad_ring.h"
-#include "krad_io2.h"
+#include "krad_io.h"
 #include "krad_radio_ipc.h"
 
 #include "krad_radio_client.h"

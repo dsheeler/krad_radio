@@ -1,4 +1,4 @@
-#include "krad_io2.h"
+#include "krad_io.h"
 
 static ssize_t kr_io2_write(kr_io2_t *io);
 
@@ -6,14 +6,14 @@ kr_io2_t *kr_io2_create_size(size_t size) {
   kr_io2_t *io;
   io = malloc (sizeof(kr_io2_t));
   io->size = size;
-  io->buffer = malloc (io->size);  
+  io->buffer = malloc (io->size);
   io->fd = -1;
   kr_io2_restart (io);
-  return io; 
+  return io;
 }
 
 kr_io2_t *kr_io2_create() {
-  return kr_io2_create_size (KR_IO2_BUF_SZ); 
+  return kr_io2_create_size (KR_IO2_BUF_SZ);
 }
 
 int kr_io2_destroy(kr_io2_t **io) {
@@ -82,7 +82,7 @@ int kr_io2_restart(kr_io2_t *io) {
 int kr_io2_sync(kr_io2_t *io) {
   // FILES ONLY blocking or failing!
   ssize_t ret;
-  
+
   if (!kr_io2_want_out(io)) {
     return 0;
   }
@@ -117,7 +117,7 @@ int kr_io2_output(kr_io2_t *io) {
       	return ret;
 	  } else {
 	    io->len -= ret;
-	    io->wr_buf += ret;		
+	    io->wr_buf += ret;
 	  }
 	  return 0;
   }
@@ -128,7 +128,7 @@ int kr_io2_output(kr_io2_t *io) {
 void kr_io2_pulled(kr_io2_t *io, size_t bytes) {
   io->len -= bytes;
   io->rd_buf += bytes;
-  
+
   if (io->len == 0) {
     kr_io2_restart (io);
   }

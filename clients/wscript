@@ -88,9 +88,9 @@ kr_gnmc = """
 """.split()
 
 libsources = """
-../lib/krad_ebml/krad_ebml2.c
-../lib/krad_ebml/krad_ebml2w.c
-../lib/krad_io/krad_io2.c
+../lib/krad_ebml/krad_ebml.c
+../lib/krad_ebml/krad_ebmlx.c
+../lib/krad_io/krad_io.c
 ../lib/krad_system/krad_system.c
 ../lib/krad_app/krad_app_client.c
 ../lib/krad_radio/krad_radio_client.c
@@ -241,7 +241,7 @@ depsources11 = """
 ../lib/krad_mkv/krad_mkv_demux.c
 ../lib/krad_ebml/krad_ebml2.c
 ../lib/krad_ogg/krad_ogg.c
-../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_io.c
 ../lib/krad_io/krad_file.c
 ../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c
@@ -265,7 +265,7 @@ depsources12 = """
 
 depsources13 = """
 ../lib/krad_system/krad_system.c
-../lib/krad_io/krad_io2.c
+../lib/krad_io/krad_io.c
 ../lib/krad_io/krad_file.c
 ../lib/krad_calc/krad_base64.c
 ../lib/krad_io/krad_stream.c

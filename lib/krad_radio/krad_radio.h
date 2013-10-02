@@ -24,7 +24,7 @@ typedef struct kr_remote_control kr_remote_control;
 #include "krad_timer.h"
 #include "krad_ticker.h"
 #include "krad_tags.h"
-#include "krad_ebml2.h"
+#include "krad_ebml.h"
 #include "krad_app_server.h"
 #include "krad_radio_ipc.h"
 #include "krad_mixer.h"

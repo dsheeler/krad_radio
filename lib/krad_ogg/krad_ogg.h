@@ -38,7 +38,7 @@ typedef struct krad_ogg_track_St krad_ogg_track_t;
 
 #include "krad_file.h"
 #include "krad_stream.h"
-#include "krad_io2.h"
+#include "krad_io.h"
 #include "krad_system.h"
 #include "krad_codec_header.h"
 #include "krad_transmitter.h"
@@ -54,31 +54,31 @@ typedef struct krad_ogg_track_St krad_ogg_track_t;
 struct krad_ogg_track_St {
 
   krad_codec_t codec;
-  
+
   int channels;
   float sample_rate;
   int bit_depth;
   float frame_rate;
   int keyframe_shift;
-  
+
   int width;
   int height;
-  
+
   int fps_numerator;
   int fps_denominator;
-  
+
   int header_count;
   uint8_t *header[32];
   int header_len[32];
-  
+
   ogg_stream_state stream_state;
   int serial;
   int last_serial;
-  
+
   int ready;
-  
+
   uint64_t last_granulepos;
-  
+
   uint64_t packet_num;
 
   int max_packets_per_page;
@@ -86,7 +86,7 @@ struct krad_ogg_track_St {
 
   ogg_int64_t frames;
   ogg_int64_t frames_since_keyframe;
-  
+
   int seen_keyframe;
   int writing;
 };
@@ -134,11 +134,11 @@ int krad_ogg_add_video_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
 int krad_ogg_output_aux_headers (krad_ogg_t *krad_ogg);
 
 int krad_ogg_add_audio_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
-                              int sample_rate, int channels, 
+                              int sample_rate, int channels,
                               uint8_t *header[], uint32_t header_size[],
-                              uint32_t header_count);  
+                              uint32_t header_count);
 
-int krad_ogg_add_track (krad_ogg_t *krad_ogg, krad_codec_t codec, 
+int krad_ogg_add_track (krad_ogg_t *krad_ogg, krad_codec_t codec,
             uint8_t *header[], uint32_t header_size[], uint32_t header_count);
 
 

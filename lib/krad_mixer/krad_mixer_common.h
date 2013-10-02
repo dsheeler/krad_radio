@@ -20,7 +20,7 @@
 #define KR_MXR_RMS_WINDOW_MS 100
 
 #include "krad_sfx_common.h"
-#include "krad_ebml2.h"
+#include "krad_ebml.h"
 #include "krad_radio_ipc.h"
 
 typedef struct kr_mixer_info kr_mixer_info;

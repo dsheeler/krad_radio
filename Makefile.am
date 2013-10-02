@@ -158,9 +158,9 @@ lib_krad_radio_libkradclient_la_LDFLAGS = -shared -no-undefined \
  -version-info @KR_LT_CURRENT@:@KR_LT_REVISION@:@KR_LT_AGE@
 lib_krad_radio_libkradclient_la_LDFLAGS +=
 lib_krad_radio_libkradclient_la_SOURCES = \
-lib/krad_ebml/krad_ebml2.c \
-lib/krad_ebml/krad_ebml2w.c \
-lib/krad_io/krad_io2.c \
+lib/krad_ebml/krad_ebml.c \
+lib/krad_ebml/krad_ebmlx.c \
+lib/krad_io/krad_io.c \
 lib/krad_system/krad_system.c \
 lib/krad_app/krad_app_client.c \
 lib/krad_radio/krad_radio_client.c \
@@ -188,11 +188,11 @@ lib/krad_compositor/krad_compositor_client.h \
 lib/krad_compositor/krad_compositor_common.h \
 lib/krad_transponder/krad_transponder_client.h \
 lib/krad_transponder/krad_transponder_common.h \
-lib/krad_ebml/krad_ebml2.h \
-lib/krad_ebml/krad_ebml2_ids.h \
-lib/krad_ebml/krad_ebml2w.h \
+lib/krad_ebml/krad_ebml.h \
+lib/krad_ebml/krad_ebml_ids.h \
+lib/krad_ebml/krad_ebmlx.h \
 lib/krad_system/krad_system.h \
-lib/krad_io/krad_io2.h \
+lib/krad_io/krad_io.h \
 lib/krad_app/krad_app_client.h
 
 bin_PROGRAMS = kr krad_radio

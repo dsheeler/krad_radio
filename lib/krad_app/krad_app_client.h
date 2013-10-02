@@ -26,8 +26,8 @@
 #include "krad_radio_ipc.h"
 #include "krad_system.h"
 
-#include "krad_ebml2.h"
-#include "krad_io2.h"
+#include "krad_ebml.h"
+#include "krad_io.h"
 
 #ifndef KRAD_APP_CLIENT_H
 #define KRAD_APP_CLIENT_H
