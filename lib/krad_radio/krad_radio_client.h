@@ -137,7 +137,7 @@ typedef union {
   void *ptr;
   uint32_t zero;
   kr_mixer_subunit_t mixer_subunit;
-  kr_compositor_subunit_t compositor_subunit;
+  kr_compositor_subunit_type compositor_subunit;
   kr_transponder_subunit_type_t transponder_subunit;
   kr_station_subunit_t station_subunit;
 } kr_subunit_t;
@@ -146,7 +146,7 @@ typedef union {
   uint32_t unit_control;
   kr_mixer_control portgroup_control;
   kr_sfx_effect_control effect_control;
-  kr_compositor_control_t compositor_control;
+  kr_compositor_control compositor_control;
   kr_transponder_control_t transponder_control;
 } kr_unit_control_name_t;
 

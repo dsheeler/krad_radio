@@ -22,7 +22,7 @@ int kr_compositor_crate_to_string (kr_crate_t *crate, char **string);
 
 void kr_compositor_subunit_list (kr_client_t *client);
 int kr_compositor_subunit_create (kr_client_t *client,
-                                  kr_compositor_subunit_t type,
+                                  kr_compositor_subunit_type type,
                                   char *option,
                                   char *option2);
 void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address);

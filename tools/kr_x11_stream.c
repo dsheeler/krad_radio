@@ -35,7 +35,7 @@ struct kr_x11s_params_St {
 struct kr_x11s_St {
   kr_x11s_params_t *params;
   kr_x11 *x11;
-  krad_timer_t *timer;
+  kr_timer *timer;
   krad_ticker_t *ticker;
   krad_ringbuffer_t *frame_ring;
   krad_framepool_t *framepool;
@@ -158,7 +158,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   x11s->ticker = krad_ticker_create (x11s->params->fps_numerator,
                                      x11s->params->fps_denominator);
 
-  x11s->timer = krad_timer_create ();
+  x11s->timer = kr_timer_create();
 
   krad_ticker_start (x11s->ticker);
 
@@ -170,9 +170,9 @@ void kr_x11s_run (kr_x11s_t *x11s) {
       continue;
     }
 
-    vmedium->v.tc = krad_timer_current_ms (x11s->timer);
-    if (!krad_timer_started (x11s->timer)) {
-      krad_timer_start (x11s->timer);
+    vmedium->v.tc = kr_timer_current_ms(x11s->timer);
+    if (!kr_timer_started(x11s->timer)) {
+      kr_timer_start(x11s->timer);
     }
 
     frame = krad_framepool_getframe (x11s->framepool);
@@ -246,7 +246,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   }
 
   krad_ticker_destroy (x11s->ticker);
-  krad_timer_destroy (x11s->timer);
+  kr_timer_destroy(x11s->timer);
 }
 
 void kr_x11s (kr_x11s_params_t *params) {

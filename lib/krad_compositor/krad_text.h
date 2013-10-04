@@ -1,6 +1,3 @@
-#include "krad_compositor_subunit.h"
-#include "krad_radio.h"
-
 #ifndef KRAD_TEXT_H
 #define KRAD_TEXT_H
 
@@ -15,14 +12,17 @@
 
 typedef struct kr_text kr_text;
 
+#include "krad_compositor.h"
+
 struct kr_text {
+  kr_text_info info;
   char font[256];
   char text_actual[256];
   int prerendered;
   cairo_font_face_t *cr_face;
   FT_Face ft_face;
   FT_Library *ft_library;
-  krad_compositor_subunit_t subunit;
+  kr_compositor_control_easers easers;
 };
 
 void kr_text_destroy_arr(kr_text *text, int count);

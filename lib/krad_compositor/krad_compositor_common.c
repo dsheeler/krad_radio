@@ -12,7 +12,7 @@ void kr_aspect_upscale(int sw, int sh, int dw, int dh, int *w, int *h) {
   *h = sh * scale;
 }
 
-kr_compositor_control_t krad_string_to_compositor_control(char *string) {
+kr_compositor_control kr_string_to_compositor_control(char *string) {
   if (strncmp(string, "red", 2) == 0) {
     return KR_RED;
   }
@@ -49,10 +49,34 @@ kr_compositor_control_t krad_string_to_compositor_control(char *string) {
   if (strncmp(string, "tickrate", 1) == 0) {
     return KR_TICKRATE;
   }
+  if (strncmp(string, "view_topleft_x", 14) == 0) {
+    return KR_VIEW_TL_X;
+  }
+  if (strncmp(string, "view_topleft_y", 14) == 0) {
+    return KR_VIEW_TL_Y;
+  }
+  if (strncmp(string, "view_topright_x", 15) == 0) {
+    return KR_VIEW_TR_X;
+  }
+  if (strncmp(string, "view_topright_y", 15) == 0) {
+    return KR_VIEW_TR_Y;
+  }
+  if (strncmp(string, "view_bottomleft_x", 17) == 0) {
+    return KR_VIEW_BL_X;
+  }
+  if (strncmp(string, "view_bottomleft_y", 17) == 0) {
+    return KR_VIEW_BL_Y;
+  }
+  if (strncmp(string, "view_bottomright_x", 18) == 0) {
+    return KR_VIEW_BR_X;
+  }
+  if (strncmp(string, "view_bottomright_y", 18) == 0) {
+    return KR_VIEW_BR_Y;
+  }
   return 0;
 }
 
-krad_vector_type_t krad_string_to_vector_type(char *string) {
+kr_vector_type kr_string_to_vector_type(char *string) {
   if (strncmp(string, "hex", 3) == 0) {
     return HEX;
   }
@@ -89,7 +113,7 @@ krad_vector_type_t krad_string_to_vector_type(char *string) {
   return NOTHING;
 }
 
-char *kr_compositor_control_to_string(kr_compositor_control_t control) {
+char *kr_compositor_control_to_string(kr_compositor_control control) {
   switch (control) {
     case KR_NO:
       break;
@@ -117,12 +141,27 @@ char *kr_compositor_control_to_string(kr_compositor_control_t control) {
       return "alpha";
     case KR_TICKRATE:
       return "tickrate";
+    case KR_VIEW_TL_X:
+      return "view_topleft_x";
+    case KR_VIEW_TL_Y:
+      return "view_topleft_y";
+    case KR_VIEW_TR_X:
+      return "view_topright_x";
+    case KR_VIEW_TR_Y:
+      return "view_topright_y";
+    case KR_VIEW_BL_X:
+      return "view_bottomleft_x";
+    case KR_VIEW_BL_Y:
+      return "view_bottomleft_y";
+    case KR_VIEW_BR_X:
+      return "view_bottomright_x";
+    case KR_VIEW_BR_Y:
+      return "view_bottomright_y";
   }
-
   return "Unknown";
 }
 
-char *krad_vector_type_to_string(krad_vector_type_t type) {
+char *kr_vector_type_to_string(kr_vector_type type) {
   switch (type) {
     case HEX:
       return "hex";
@@ -153,7 +192,7 @@ char *krad_vector_type_to_string(krad_vector_type_t type) {
   return "Unknown";
 }
 
-char *kr_compositor_subunit_type_to_string(kr_compositor_subunit_t type) {
+char *kr_compositor_subunit_type_to_string(kr_compositor_subunit_type type) {
   switch (type) {
     case KR_SPRITE:
       return "sprite";
@@ -169,7 +208,7 @@ char *kr_compositor_subunit_type_to_string(kr_compositor_subunit_t type) {
   return "Unknown";
 }
 
-kr_compositor_subunit_t kr_string_to_comp_subunit_type(char *string) {
+kr_compositor_subunit_type kr_string_to_comp_subunit_type(char *string) {
   if (strncmp(string, "sprite", 6) == 0) {
     return KR_SPRITE;
   }

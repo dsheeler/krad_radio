@@ -251,7 +251,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
   int pos;
   char json[2048];
   kr_address_t *address;
-  kr_compositor_subunit_controls_t controls;
+  kr_compositor_controls controls;
 
   address = crate->addr;
   pos = 0;
@@ -295,7 +295,7 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
       controls = crate->inside.vector->controls;
       pos += snprintf(json + pos, sizeof(json) - pos,
        "\"type\":\"%s\",",
-       krad_vector_type_to_string(crate->inside.vector->type));
+       kr_vector_type_to_string(crate->inside.vector->type));
       break;
   }
 

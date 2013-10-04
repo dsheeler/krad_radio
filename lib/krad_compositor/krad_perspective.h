@@ -8,49 +8,36 @@
 #include <inttypes.h>
 
 #include "krad_timer.h"
-#include "krad_coder_common.h"
+#include "krad_av.h"
 
-typedef struct krad_perspective_St krad_perspective_t;
-typedef struct krad_perspective_St kr_perspective_t;
-typedef struct krad_perspective_view_St krad_perspective_view_t;
-typedef struct krad_perspective_view_St kr_perspective_view_t;
-typedef struct krad_perspective_priv_St kr_perspective_priv_t;
-typedef struct krad_pixel_position_St kr_px_pos_t;
+typedef struct kr_perspective kr_perspective;
+typedef struct kr_perspective_view kr_perspective_view;
+typedef struct kr_perspective_priv kr_perspective_priv;
+typedef struct kr_pos kr_pos;
 
-struct krad_pixel_position_St {
+struct kr_pos {
   uint32_t x;
   uint32_t y;
 };
 
-struct krad_perspective_view_St {
-  kr_px_pos_t top_left;
-  kr_px_pos_t top_right;
-  kr_px_pos_t bottom_left;
-  kr_px_pos_t bottom_right;
+struct kr_perspective_view {
+  kr_pos top_left;
+  kr_pos top_right;
+  kr_pos bottom_left;
+  kr_pos bottom_right;
 };
 
-struct krad_perspective_St {
-  kr_perspective_priv_t *priv;
+struct kr_perspective {
+  kr_perspective_priv *priv;
   uint32_t width;
   uint32_t height;
-  kr_perspective_view_t view;
+  kr_perspective_view view;
 };
 
-int32_t kr_perspective_argb (kr_perspective_t *perspective,
-                             uint8_t *out,
-                             uint8_t *in);
-
-int32_t kr_perspective (kr_perspective_t *perspective,
-                        kr_image_t *out,
-                        kr_image_t *in);
-
-int32_t kr_perspective_set (kr_perspective_t *perspective,
-                            kr_perspective_view_t *view);
-
-int32_t kr_perspective_destroy (kr_perspective_t **krad_perspective);
-kr_perspective_t *kr_perspective_create (uint32_t width, uint32_t height);
-
-
-void kr_perspective_random (kr_perspective_t *perspective);
+int32_t kr_perspective_argb(kr_perspective *p, uint8_t *out, uint8_t *in);
+int32_t kr_perspective_apply(kr_perspective *p, kr_image *out, kr_image *in);
+int32_t kr_perspective_set(kr_perspective *p, kr_perspective_view *view);
+int32_t kr_perspective_destroy(kr_perspective **perspective);
+kr_perspective *kr_perspective_create(uint32_t width, uint32_t height);
 
 #endif

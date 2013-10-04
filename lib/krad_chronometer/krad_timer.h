@@ -13,25 +13,25 @@
 #ifndef KRAD_TIMER_H
 #define KRAD_TIMER_H
 
-typedef struct krad_timer_St krad_timer_t;
+typedef struct kr_timer kr_timer;
 
-struct krad_timer_St {
+struct kr_timer {
 	struct timespec start;
-	struct timespec sample;	
+	struct timespec sample;
 	struct timespec finish;
 	const char *name;
 	int32_t started;
 };
 
-krad_timer_t *krad_timer_create ();
-krad_timer_t *krad_timer_create_with_name (const char *name);
-void krad_timer_status (krad_timer_t *krad_timer);
-void krad_timer_start (krad_timer_t *krad_timer);
-int32_t krad_timer_started (krad_timer_t *timer);
-uint64_t krad_timer_sample_duration_ms (krad_timer_t *krad_timer);
-uint64_t krad_timer_current_ms (krad_timer_t *krad_timer);
-void krad_timer_finish (krad_timer_t *krad_timer);
-uint64_t krad_timer_duration_ms (krad_timer_t *krad_timer);
-void krad_timer_destroy (krad_timer_t *krad_timer);
+kr_timer *kr_timer_create();
+kr_timer *kr_timer_create_with_name(const char *name);
+void kr_timer_status(kr_timer *timer);
+void kr_timer_start(kr_timer *timer);
+int32_t kr_timer_started(kr_timer *timer);
+uint64_t kr_timer_sample_duration_ms(kr_timer *timer);
+uint64_t kr_timer_current_ms(kr_timer *timer);
+void kr_timer_finish(kr_timer *timer);
+uint64_t kr_timer_duration_ms(kr_timer *timer);
+void kr_timer_destroy(kr_timer *timer);
 
 #endif

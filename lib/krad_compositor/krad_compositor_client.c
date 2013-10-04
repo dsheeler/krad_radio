@@ -239,7 +239,7 @@ int kr_compositor_crate_to_string_from_vector (kr_crate_t *crate, char **string)
   pos = 0;
 
   kr_ebml_to_vector_info (&crate->payload_ebml, &vector);
-  pos += sprintf (*string + pos, "Vector: %s\n", krad_vector_type_to_string (vector.type));
+  pos += sprintf (*string + pos, "Vector: %s\n", kr_vector_type_to_string (vector.type));
   pos += sprintf (*string + pos, "Width: %d\n", vector.controls.w);
   pos += sprintf (*string + pos, "Height: %d\n", vector.controls.h);
   pos += sprintf (*string + pos, "X: %d\n", vector.controls.x);
@@ -364,7 +364,7 @@ int kr_compositor_crate_to_string (kr_crate_t *crate, char **string) {
 }
 
 int kr_compositor_subunit_create (kr_client_t *client,
-                                  kr_compositor_subunit_t type,
+                                  kr_compositor_subunit_type type,
                                   char *option,
                                   char *option2) {
   unsigned char *command;

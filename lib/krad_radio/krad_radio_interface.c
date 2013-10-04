@@ -52,7 +52,7 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
     kr_mixer_get_path_info(subunit_in, &rep.portgroup);
     kr_mixer_path_info_to_ebml(&rep.portgroup, &ebml);
   }
-
+/*
   if (address->path.unit == KR_COMPOSITOR) {
     if (address->path.subunit.compositor_subunit == KR_SPRITE) {
       kr_sprite_to_ebml(&ebml, subunit_in);
@@ -64,7 +64,7 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
       kr_vector_to_ebml(&ebml, subunit_in);
     }
   }
-
+*/
   if ((address->path.unit == KR_STATION) && (address->path.subunit.station_subunit == KR_REMOTE)) {
     subunit.remote = subunit_in;
     krad_radio_remote_rep_to_ebml (subunit.remote, &ebml);

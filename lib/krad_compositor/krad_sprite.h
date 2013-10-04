@@ -12,8 +12,8 @@
 #endif
 
 typedef struct kr_sprite kr_sprite;
+#include "krad_compositor.h"
 
-#include "krad_compositor_subunit.h"
 #include "krad_file.h"
 
 #define KRAD_SPRITE_DEFAULT_TICKRATE 4

@@ -16,8 +16,6 @@
 #include <cairo.h>
 
 #include "krad_system.h"
-#include "krad_compositor_common.h"
-#include "krad_compositor_subunit.h"
 
 #define PRO_REEL_SIZE 26.67
 #define PRO_REEL_SPEED 38.1
@@ -42,10 +40,12 @@
 #define BGCOLOR_CLR 0.0, 0.0, 0.0, 1.0
 
 typedef struct kr_vector kr_vector;
+#include "krad_compositor.h"
 
 struct kr_vector {
-  krad_vector_type_t type;
-  krad_compositor_subunit_t subunit;
+  kr_vector_info info;
+  kr_compositor_control_easers easers;
+  kr_vector_type type;
 };
 
 kr_vector *kr_vectors_create(int count);

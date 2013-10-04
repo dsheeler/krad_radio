@@ -1,7 +1,6 @@
 static void path_tick(kr_compositor_path *path);
 
 static void path_tick(kr_compositor_path *path) {
-  krad_compositor_subunit_tick(&path->subunit);
   if (kr_easer_active(&path->crop_x_easer)) {
     path->info.crop_x = kr_easer_process(&path->crop_x_easer,
      path->info.crop_x, NULL);
@@ -29,26 +28,23 @@ void path_output(kr_compositor_path *path, krad_frame_t *frame) {
 
 int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   int ret;
-  int cached;
   kr_image image;
   kr_compositor_path_frame_cb_arg cb_arg;
   cairo_surface_t *src;
 
-
   static uint8_t scratch[1280*720*4];
 
-  cached = 0;
   cb_arg.user = path->user;
 
-  path->subunit.opacity = 1.0f;
+  path->info.controls.opacity = 1.0f;
   static int first = 0;
 
   if (first == 0) {
-    krad_compositor_subunit_set_rotation(&path->subunit, 720.0f, 720);
+//    krad_compositor_info.controls.set_rotation(&path->info.controls. 720.0f, 720);
     first = 1;
   }
   path_tick(path);
-  if (path->subunit.opacity == 0.0f) return 0;
+  if (path->info.controls.opacity == 0.0f) return 0;
 
   path->frame_cb(&cb_arg);
   /* After the frame_cb if the parameters (crop, size)
@@ -56,7 +52,7 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
    *  in which case we can use a cached version -- this function can be
    *   used perhaps beforehand so output can wait on new input
    */
-  if ((path->subunit.opacity == 1.0f) && (path->subunit.rotation == 0.0f)) {
+  if ((path->info.controls.opacity == 1.0f) && (path->info.controls.rotation == 0.0f)) {
   //  image = subimage(dst, params);
     image = *dst;
     ret = kr_image_convert(&path->converter, &image, &cb_arg.image);
@@ -77,21 +73,21 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
     printke("kr_image convert returned %d :/", ret);
     return -1;
   }
- 
+
   cairo_save(cr);
   src = cairo_image_surface_create_for_data(image.px, CAIRO_FORMAT_ARGB32,
    image.w, image.h, image.pps[0]);
-  if (path->subunit.rotation != 0.0f) {
+  if (path->info.controls.rotation != 0.0f) {
     cairo_translate(cr, (int)image.w * 0.5, (int)image.h * 0.5);
-    cairo_rotate(cr, path->subunit.rotation * (M_PI/180.0));
+    cairo_rotate(cr, path->info.controls.rotation * (M_PI/180.0));
     cairo_translate(cr, (int)-image.w * 0.5, (int)-image.h * 0.5);
   }
   cairo_set_source_surface(cr, src, 0, 0);
-  cairo_rectangle(cr, path->subunit.x, path->subunit.y, image.w, image.h);
-  if (path->subunit.opacity == 1.0f) {
+  cairo_rectangle(cr, path->info.controls.x, path->info.controls.y, image.w, image.h);
+  if (path->info.controls.opacity == 1.0f) {
     cairo_paint(cr);
   } else {
-   cairo_paint_with_alpha(cr, path->subunit.opacity);
+   cairo_paint_with_alpha(cr, path->info.controls.opacity);
   }
   cairo_restore(cr);
   cairo_surface_destroy(src);
@@ -123,7 +119,6 @@ static void path_create(kr_compositor_path *path,
   path->info = setup->info;
   path->user = setup->user;
   path->frame_cb = setup->frame_cb;
-  krad_compositor_subunit_reset(&path->subunit);
   kr_image_convert_init(&path->converter);
   if (path->info.type == KR_CMP_INPUT) {
     path->compositor->active_input_paths++;
@@ -178,7 +173,6 @@ void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path) {
 
 int kr_compositor_unlink(kr_compositor_path *path) {
   if (path == NULL) return -1;
-  if (path->subunit.active != 1) return -2;
-  path->subunit.active = 2;
+  /*FIXME*/
   return 0;
 }

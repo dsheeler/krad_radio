@@ -18,9 +18,6 @@ kr_text *kr_text_create_arr(FT_Library *ft_library, int count) {
   }
   for (s = 0; s < count; s++) {
     text[s].ft_library = ft_library;
-    text[s].subunit.address.path.unit = KR_COMPOSITOR;
-    text[s].subunit.address.path.subunit.compositor_subunit = KR_TEXT;
-    text[s].subunit.address.id.number = s;
     kr_text_reset(&text[s]);
   }
   return text;
@@ -32,7 +29,6 @@ void kr_text_reset(kr_text *text) {
     text->cr_face = NULL;
   }
   strcpy(text->font, KRAD_TEXT_DEFAULT_FONT);
-  krad_compositor_subunit_reset(&text->subunit);
 }
 
 void kr_text_set_text(kr_text *text, char *str, char *font) {
@@ -89,22 +85,22 @@ void kr_text_prerender(kr_text *krad_text, cairo_t *cr) {
                             CAIRO_FONT_SLANT_NORMAL,
                             CAIRO_FONT_WEIGHT_NORMAL);
   }
-  cairo_set_font_size(cr, krad_text->subunit.height);
+  cairo_set_font_size(cr, krad_text->info.controls.h);
   cairo_set_source_rgba (cr,
-                         krad_text->subunit.red,
-                         krad_text->subunit.green,
-                         krad_text->subunit.blue,
-                         krad_text->subunit.opacity);
+                         krad_text->info.red,
+                         krad_text->info.green,
+                         krad_text->info.blue,
+                         krad_text->info.controls.opacity);
   cairo_text_extents (cr, krad_text->text_actual, &extents);
-  krad_text->subunit.width = extents.width;
-  krad_text->subunit.height = extents.height;
-  cairo_translate (cr, krad_text->subunit.x, krad_text->subunit.y);
-  if (krad_text->subunit.rotation != 0.0f) {
-    cairo_translate (cr, krad_text->subunit.width / 2,
-                     krad_text->subunit.height / -2);
-    cairo_rotate (cr, krad_text->subunit.rotation * (M_PI/180.0));
-    cairo_translate (cr, krad_text->subunit.width / -2,
-                     krad_text->subunit.height / 2);
+  krad_text->info.controls.w = extents.width;
+  krad_text->info.controls.h = extents.height;
+  cairo_translate (cr, krad_text->info.controls.x, krad_text->info.controls.y);
+  if (krad_text->info.controls.rotation != 0.0f) {
+    cairo_translate (cr, krad_text->info.controls.w / 2,
+                     krad_text->info.controls.h / -2);
+    cairo_rotate (cr, krad_text->info.controls.rotation * (M_PI/180.0));
+    cairo_translate (cr, krad_text->info.controls.w / -2,
+                     krad_text->info.controls.h / 2);
   }
   krad_text->prerendered = 1;
 }
@@ -115,7 +111,6 @@ void kr_text_render(kr_text *text, cairo_t *cr) {
   cairo_stroke(cr);
   cairo_restore(cr);
   text->prerendered = 0;
-  krad_compositor_subunit_tick(&text->subunit);
 }
 
 int kr_text_to_info(kr_text *text, kr_text_info *text_rep) {
@@ -126,15 +121,15 @@ int kr_text_to_info(kr_text *text, kr_text_info *text_rep) {
 
   strncpy (text_rep->text, text->text_actual, sizeof(text_rep->text));
   strncpy (text_rep->font, text->font, sizeof(text_rep->font));
-  text_rep->red = text->subunit.red;
-  text_rep->green = text->subunit.green;
-  text_rep->blue = text->subunit.blue;
-  text_rep->controls.x = text->subunit.x;
-  text_rep->controls.y = text->subunit.y;
-  text_rep->controls.z = text->subunit.z;
-  text_rep->controls.w = text->subunit.width;
-  text_rep->controls.h = text->subunit.height;
-  text_rep->controls.rotation = text->subunit.rotation;
-  text_rep->controls.opacity = text->subunit.opacity;
+  text_rep->red = text->info.red;
+  text_rep->green = text->info.green;
+  text_rep->blue = text->info.blue;
+  text_rep->controls.x = text->info.controls.x;
+  text_rep->controls.y = text->info.controls.y;
+  text_rep->controls.z = text->info.controls.z;
+  text_rep->controls.w = text->info.controls.w;
+  text_rep->controls.h = text->info.controls.h;
+  text_rep->controls.rotation = text->info.controls.rotation;
+  text_rep->controls.opacity = text->info.controls.opacity;
   return 1;
 }

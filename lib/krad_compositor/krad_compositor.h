@@ -4,9 +4,21 @@
 typedef struct kr_compositor kr_compositor;
 typedef struct kr_compositor_setup kr_compositor_setup;
 typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
+typedef struct kr_compositor_control_easers kr_compositor_control_easers;
+
+#include "krad_easing.h"
+struct kr_compositor_control_easers {
+  kr_easer x;
+  kr_easer y;
+  kr_easer w;
+  kr_easer h;
+  kr_easer rotation;
+  kr_easer opacity;
+};
 
 #include "krad_pool.h"
-#include "krad_compositor_subunit.h"
+#include "krad_easing.h"
+#include "krad_compositor_common.h"
 #include "krad_compositor_path.h"
 #include "krad_text.h"
 #include "krad_sprite.h"
@@ -47,21 +59,12 @@ struct kr_compositor_setup {
 
 struct kr_compositor {
   cairo_t *cr;
-
   krad_frame_t *frame;
   krad_framepool_t *framepool;
-  int frame_byte_size;
 
-  int width;
-  int height;
-  int fps_numerator;
-  int fps_denominator;
-
-  uint64_t frames;
-  uint64_t timecode;
+  kr_compositor_info info;
 
   FT_Library ftlib;
-  kr_sprite *background;
 
   kr_sprite *sprite;
   int active_sprites;
@@ -76,28 +79,32 @@ struct kr_compositor {
   int active_paths;
   int active_output_paths;
   int active_input_paths;
-  krad_compositor_subunit_t *subunit[KC_MAX_SUBUNITS];
 };
 
-int krad_compositor_subunit_create(kr_compositor *compositor, kr_compositor_subunit_t type, char *option, char *option2);
-int krad_compositor_subunit_destroy(kr_compositor *compositor, kr_address_t *address);
-void krad_compositor_subunit_update(kr_compositor *compositor, kr_unit_control_t *uc);
-
-int kr_compositor_background(kr_compositor *compositor, char **filename);
-void kr_compositor_background_set(kr_compositor *compositor, char *filename);
-void kr_compositor_resolution_set(kr_compositor *comp, uint32_t w, uint32_t h);
-
-/* Below looks good, above replace */
-
-void kr_compositor_setup_init(kr_compositor_setup *setup);
-kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
 int kr_compositor_destroy(kr_compositor *compositor);
+kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
+void kr_compositor_setup_init(kr_compositor_setup *setup);
+int kr_compositor_get_info(kr_compositor *com, kr_compositor_info *info);
+
+/* Goes away sometime soon */
 int kr_compositor_process(kr_compositor *compositor);
+
+typedef struct {
+
+
+} kr_compositor_setting;
+
+typedef struct {
+
+
+} kr_compositor_path_setting;
+
+int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s);
+int kr_compositor_ctl(kr_compositor *com, kr_compositor_setting *setting);
 
 /*
  ***Compositor as a whole
  int kr_compositor_ctl(kr_compositor *compr, XXX);
- int kr_compositor_get_info(kr_compositor *compr, kr_compositor_info *info);
 */
 
 #endif

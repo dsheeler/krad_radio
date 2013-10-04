@@ -42,7 +42,7 @@ struct kr_remote_control {
 };
 
 struct kr_log {
-  krad_timer_t *startup_timer;
+  kr_timer *startup_timer;
   int verbose;
 	char filename[512];
 };

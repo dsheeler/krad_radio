@@ -1770,7 +1770,7 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
       }
       if ((subunit->compositor_subunit > 0) && (t == 3)) {
           addr->id.number = atoi (tokens[1]);
-          addr->control.compositor_control = krad_string_to_compositor_control (tokens[2]);
+          addr->control.compositor_control = kr_string_to_compositor_control(tokens[2]);
           return 1;
       }
       printf ("Invalid COMPOSITOR Control\n");

@@ -3,7 +3,6 @@
 
 #include "krad_av.h"
 #include "krad_convert.h"
-#include "krad_compositor_subunit.h"
 #include "krad_perspective.h"
 #include "krad_framepool.h"
 #include "krad_ring.h"
@@ -41,6 +40,7 @@ struct kr_compositor_path_setup {
 
 struct kr_compositor_path {
   kr_compositor_path_info info;
+  kr_compositor_control_easers easers;
   void *user;
   kr_compositor_path_frame_cb *frame_cb;
   kr_compositor *compositor;
@@ -50,9 +50,8 @@ struct kr_compositor_path {
   kr_easer crop_width_easer;
   kr_easer crop_height_easer;
   kr_convert converter;
-  krad_perspective_t *perspective;
-  kr_perspective_view_t view;
-  krad_compositor_subunit_t subunit;
+  kr_perspective *perspective;
+  kr_perspective_view view;
 };
 
 /*

@@ -37,7 +37,7 @@ struct kr_x11s_params_St {
 struct kr_x11s_St {
   kr_x11s_params_t *params;
   kr_x11 *x11;
-  krad_timer_t *timer;
+  kr_timer *timer;
   krad_ticker_t *ticker;
   krad_ringbuffer_t *frame_ring;
   krad_ringbuffer_t *frame_ring2;
@@ -46,7 +46,7 @@ struct kr_x11s_St {
   krad_vpx_encoder_t *vpx_enc;
   kr_codec_hdr_t header;
   kr_mkv_t *mkv;
-  kr_perspective_t *perspective;
+  kr_perspective *perspective;
   uint64_t frames;
 };
 
@@ -68,7 +68,7 @@ int kr_x11s_destroy (kr_x11s_t **x11s) {
     (*x11s)->x11 = NULL;
   }
 
-  kr_perspective_destroy (&(*x11s)->perspective);
+  kr_perspective_destroy(&(*x11s)->perspective);
   krad_vpx_encoder_destroy (&(*x11s)->vpx_enc);
   kr_mkv_destroy (&(*x11s)->mkv);
   krad_ringbuffer_free ((*x11s)->frame_ring);
@@ -98,8 +98,8 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
             x11s->x11->screen_width, x11s->x11->screen_height);
   }
 
-  x11s->perspective = kr_perspective_create (x11s->x11->screen_width,
-                                             x11s->x11->screen_height);
+  x11s->perspective = kr_perspective_create(x11s->x11->screen_width,
+                                            x11s->x11->screen_height);
 
 
   if (params->file != NULL) {
@@ -146,9 +146,9 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
   return x11s;
 }
 
-void random_perspective (kr_x11s_t *x11s) {
+void random_perspective(kr_x11s_t *x11s) {
 
-  kr_perspective_view_t view;
+  kr_perspective_view view;
   uint32_t hwidth;
   uint32_t hheight;
 
@@ -164,7 +164,7 @@ void random_perspective (kr_x11s_t *x11s) {
   view.bottom_right.x = (rand() % hwidth) + hwidth;
   view.bottom_right.y = (rand() % hheight) + hheight;
 
-  kr_perspective_set (x11s->perspective, &view);
+  kr_perspective_set(x11s->perspective, &view);
 }
 
 void kr_x11s_run (kr_x11s_t *x11s) {
@@ -193,7 +193,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   x11s->ticker = krad_ticker_create (x11s->params->fps_numerator,
                                      x11s->params->fps_denominator);
 
-  x11s->timer = krad_timer_create ();
+  x11s->timer = kr_timer_create();
 
   krad_ticker_start (x11s->ticker);
 
@@ -206,9 +206,9 @@ void kr_x11s_run (kr_x11s_t *x11s) {
       continue;
     }
 
-    vmedium->v.tc = krad_timer_current_ms (x11s->timer);
-    if (!krad_timer_started (x11s->timer)) {
-      krad_timer_start (x11s->timer);
+    vmedium->v.tc = kr_timer_current_ms(x11s->timer);
+    if (!kr_timer_started(x11s->timer)) {
+      kr_timer_start(x11s->timer);
     }
 
     frame = krad_framepool_getframe (x11s->framepool);
@@ -223,7 +223,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     }
 
     if (1) {
-      kr_perspective_argb (x11s->perspective, (uint8_t *)pframe->pixels, image);
+      kr_perspective_argb(x11s->perspective, (uint8_t *)pframe->pixels, image);
       frame->yuv_pixels[0] = (uint8_t *)pframe->pixels;
     } else {
       frame->yuv_pixels[0] = image;
@@ -284,7 +284,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     fflush (stdout);
 
     if (rand() % 100 > 98) {
-      random_perspective (x11s);
+      random_perspective(x11s);
     }
 
     krad_ticker_wait (x11s->ticker);
@@ -299,7 +299,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   }
 
   krad_ticker_destroy (x11s->ticker);
-  krad_timer_destroy (x11s->timer);
+  kr_timer_destroy(x11s->timer);
 }
 
 void kr_x11s (kr_x11s_params_t *params) {

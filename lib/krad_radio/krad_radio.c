@@ -9,44 +9,42 @@ static void radio_wait(kr_radio *radio);
 static void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage);
 
 static void radio_shutdown(kr_radio *radio) {
-
-  krad_timer_t *timer;
-
-  timer = krad_timer_create_with_name("shutdown");
-  krad_timer_start(timer);
+  kr_timer *timer;
+  timer = kr_timer_create_with_name("shutdown");
+  kr_timer_start(timer);
   krad_system_monitor_cpu_off();
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->system_broadcaster != NULL) {
     krad_app_server_broadcaster_unregister(&radio->system_broadcaster);
   }
   if (radio->app != NULL) {
     krad_app_server_disable(radio->app);
   }
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->remote.osc != NULL) {
     krad_osc_destroy(radio->remote.osc);
     radio->remote.osc = NULL;
   }
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->remote.interweb != NULL) {
     krad_interweb_server_destroy(&radio->remote.interweb);
   }
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->transponder != NULL) {
     kr_transponder_destroy(radio->transponder);
     radio->transponder = NULL;
   }
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->mixer != NULL) {
     kr_mixer_destroy(radio->mixer);
     radio->mixer = NULL;
   }
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->compositor != NULL) {
     kr_compositor_destroy(radio->compositor);
     radio->compositor = NULL;
   }
-  krad_timer_status(timer);
+  kr_timer_status(timer);
   if (radio->tags != NULL) {
     krad_tags_destroy(radio->tags);
     radio->tags = NULL;
@@ -56,14 +54,14 @@ static void radio_shutdown(kr_radio *radio) {
     radio->app = NULL;
   }
   if (radio->log.startup_timer != NULL) {
-    krad_timer_destroy(radio->log.startup_timer);
+    kr_timer_destroy(radio->log.startup_timer);
     radio->log.startup_timer = NULL;
   }
   if (timer != NULL) {
-    krad_timer_finish(timer);
+    kr_timer_finish(timer);
     printk("Krad Radio took %"PRIu64"ms to shutdown",
-           krad_timer_duration_ms(timer));
-    krad_timer_destroy(timer);
+           kr_timer_duration_ms(timer));
+    kr_timer_destroy(timer);
     timer = NULL;
   }
   free(radio);
@@ -108,8 +106,8 @@ static kr_radio *radio_create(char *sysname) {
 
   radio = calloc(1, sizeof(kr_radio));
 
-  radio->log.startup_timer = krad_timer_create_with_name("startup");
-  krad_timer_start(radio->log.startup_timer);
+  radio->log.startup_timer = kr_timer_create_with_name("startup");
+  kr_timer_start(radio->log.startup_timer);
   strncpy(radio->sysname, sysname, sizeof(radio->sysname));
   radio->tags = krad_tags_create("station");
   if (radio->tags == NULL) {
@@ -183,7 +181,7 @@ static void radio_start(kr_radio *radio) {
   //FIXMEkr_mixer_start_ticker_at(radio->mixer, start_sync);
   krad_app_server_run(radio->app);
   if (radio->log.startup_timer != NULL) {
-    krad_timer_finish(radio->log.startup_timer);
+    kr_timer_finish(radio->log.startup_timer);
   }
 }
 
@@ -275,7 +273,7 @@ void kr_radio_set_dir(kr_radio *radio, char *dir) {
   printk("Station: %s", radio->sysname);
   if (radio->log.startup_timer != NULL) {
     printk("Krad Radio took %"PRIu64"ms to startup",
-     krad_timer_duration_ms(radio->log.startup_timer));
+     kr_timer_duration_ms(radio->log.startup_timer));
   }
   printk("Current Unix Time: %"PRIu64"", krad_unixtime());
 }
