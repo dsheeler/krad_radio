@@ -1,5 +1,33 @@
 #include "krad_vector.h"
 
+#define PRO_REEL_SIZE 26.67
+#define PRO_REEL_SPEED 38.1
+#define NORMAL_REEL_SIZE 17.78
+#define NORMAL_REEL_SPEED 19.05
+#define SLOW_NORMAL_REEL_SPEED 9.53
+
+#define BLUE 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0
+#define BLUE_TRANS 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0, 0.255
+#define BLUE_TRANS2 0.0, 0.152 / 0.255 * 1.0, 0.212 / 0.255 * 1.0, 0.144 / 0.255 * 1.0
+#define BLUE_TRANS3 0.0, 0.122 / 0.255 * 1.0, 0.112 / 0.255 * 1.0, 0.144 / 0.255 * 1.0
+#define GREEN  0.001 / 0.255 * 1.0, 0.187 / 0.255 * 1.0, 0.0
+#define LGREEN  0.001 / 0.255 * 1.0, 0.187 / 0.255 * 1.0, 0.0, 0.044 / 0.255 * 1.0
+#define WHITE 0.222 / 0.255 * 1.0, 0.232 / 0.255 * 1.0, 0.233 / 0.255 * 1.0
+#define WHITE_TRANS 0.222 / 0.255 * 1.0, 0.232 / 0.255 * 1.0, 0.233 / 0.255 * 1.0, 0.555
+#define ORANGE  0.255 / 0.255 * 1.0, 0.080 / 0.255 * 1.0, 0.0
+#define GREY  0.197 / 0.255 * 1.0, 0.203 / 0.255 * 1.0, 0.203 / 0.255   * 1.0
+#define GREY2  0.037 / 0.255 * 1.0, 0.037 / 0.255 * 1.0, 0.038 / 0.255   * 1.0
+#define BGCOLOR  0.033 / 0.255 * 1.0, 0.033 / 0.255 * 1.0, 0.033 / 0.255   * 1.0
+#define GREY3  0.103 / 0.255 * 1.0, 0.103 / 0.255 * 1.0, 0.124 / 0.255   * 1.0
+#define BGCOLOR_TRANS  0.033 / 0.255 * 1.0, 0.033 / 0.255 * 1.0, 0.033 / 0.255 * 1.0, 0.144 / 0.255 * 1.0
+#define BGCOLOR_CLR 0.0, 0.0, 0.0, 1.0
+
+struct kr_vector {
+  kr_vector_info info;
+  kr_compositor_control_easers easers;
+  kr_vector_type type;
+};
+
 static void render_meter(cairo_t *cr, int x, int y, int size, float pos, float opacity);
 static void render_hex(cairo_t *cr, int x, int y, int w, float r, float g, float b, float opacity);
 static void render_grid(cairo_t *cr, int x, int y, int w, int h, int lines, float r, float g, float b, float opacity);
@@ -12,39 +40,22 @@ static void render_viper(cairo_t * cr, int x, int y, int size, float direction);
 static void render_clock(cairo_t *cr, int x, int y, int width, int height, float opacity);
 static void render_shadow(cairo_t *cr, int x, int y, int w, int h, float r, float g, float b, float a);
 
-void kr_vectors_free(kr_vector *vectors, int count) {
-  int i;
-  if ((vectors == NULL) || (count < 1)) return;
-  for (i = 0; i < count; i++) {
-    kr_vector_reset(&vectors[i]);
-  }
-  free(vectors);
+size_t kr_vector_size() {
+  return sizeof(kr_vector);
 }
 
-kr_vector *kr_vectors_create(int count) {
-
-  int i;
-  kr_vector *vector;
-
-  if (count < 1) return NULL;
-
-  vector = calloc(count, sizeof(kr_vector));
-  for (i = 0; i < count; i++) {
-    kr_vector_reset(&vector[i]);
-  }
-  return vector;
-}
-
-void kr_vector_reset(kr_vector *vector) {
+void kr_vector_clear(kr_vector *vector) {
   if (vector == NULL) return;
   vector->type = NOTHING;
 }
 
-void kr_vector_type_set(kr_vector *vector, char *type) {
-
-  if (vector == NULL) return;
-
+int kr_vector_init(kr_vector *vector, char *type) {
+  if ((vector == NULL) || (type == NULL)) return -1;
+  memset(vector, 0, sizeof(kr_vector));
+  vector->info.controls.opacity = 1.0f;
   vector->type = kr_string_to_vector_type(type);
+  vector->info.controls.w = 96;
+  vector->info.controls.h = 96;
   switch (vector->type) {
     case METER:
     case HEX:
@@ -57,27 +68,18 @@ void kr_vector_type_set(kr_vector *vector, char *type) {
     case ARROW:
     case CLOCK:
     case SHADOW:
-      vector->info.controls.w = 96;
-      vector->info.controls.h = 96;
+      return 0;
     case NOTHING:
       break;
   }
+  return -1;
 }
 
-int kr_vector_to_info(kr_vector *vector, kr_vector_info *vector_info) {
-
-  if ((vector == NULL) || (vector_info == NULL)) {
+int kr_vector_info_get(kr_vector *vector, kr_vector_info *info) {
+  if ((vector == NULL) || (info == NULL)) {
     return 0;
   }
-
-  vector_info->type = vector->type;
-  vector_info->controls.x = vector->info.controls.x;
-  vector_info->controls.y = vector->info.controls.y;
-  vector_info->controls.z = vector->info.controls.z;
-  vector_info->controls.w = vector->info.controls.w;
-  vector_info->controls.h = vector->info.controls.h;
-  vector_info->controls.rotation = vector->info.controls.rotation;
-  vector_info->controls.opacity = vector->info.controls.opacity;
+  *info = vector->info;
   return 1;
 }
 

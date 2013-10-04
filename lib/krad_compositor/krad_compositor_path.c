@@ -1,4 +1,28 @@
+struct kr_compositor_path {
+  kr_compositor_path_info info;
+  kr_compositor_control_easers easers;
+  void *user;
+  kr_compositor_path_frame_cb *frame_cb;
+  kr_compositor *compositor;
+  krad_frame_t *frame;
+  kr_easer crop_x_easer;
+  kr_easer crop_y_easer;
+  kr_easer crop_width_easer;
+  kr_easer crop_height_easer;
+  kr_convert converter;
+  kr_perspective *perspective;
+  kr_perspective_view view;
+};
+
 static void path_tick(kr_compositor_path *path);
+
+size_t kr_compositor_path_size() {
+  return sizeof(kr_compositor_path);
+}
+
+kr_compositor_path_type path_type_get(kr_compositor_path *path) {
+  return path->info.type;
+}
 
 static void path_tick(kr_compositor_path *path) {
   if (kr_easer_active(&path->crop_x_easer)) {
@@ -48,7 +72,7 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
 
   path->frame_cb(&cb_arg);
   /* After the frame_cb if the parameters (crop, size)
-   *  have not changed we should see if the image has also not changed 
+   *  have not changed we should see if the image has also not changed
    *  in which case we can use a cached version -- this function can be
    *   used perhaps beforehand so output can wait on new input
    */
@@ -121,12 +145,11 @@ static void path_create(kr_compositor_path *path,
   path->frame_cb = setup->frame_cb;
   kr_image_convert_init(&path->converter);
   if (path->info.type == KR_CMP_INPUT) {
-    path->compositor->active_input_paths++;
+    path->compositor->info.inputs++;
   }
   if (path->info.type == KR_CMP_OUTPUT) {
-    path->compositor->active_output_paths++;
+    path->compositor->info.outputs++;
   }
-  path->compositor->active_paths++;
 }
 
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
@@ -162,17 +185,23 @@ void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path) {
   }
   kr_image_convert_clear(&path->converter);
   if (path->info.type == KR_CMP_INPUT) {
-    compositor->active_input_paths--;
+    compositor->info.inputs--;
   }
   if (path->info.type == KR_CMP_OUTPUT) {
-    compositor->active_output_paths--;
+    compositor->info.outputs--;
   }
   kr_pool_recycle(path->compositor->path_pool, path);
-  compositor->active_paths--;
 }
 
 int kr_compositor_unlink(kr_compositor_path *path) {
   if (path == NULL) return -1;
   /*FIXME*/
   return 0;
+}
+
+int kr_compositor_path_info_get(kr_compositor_path *path,
+ kr_compositor_path_info *info) {
+ if ((path == NULL) || (info == NULL)) return -1;
+ *info = path->info;
+ return 0;
 }

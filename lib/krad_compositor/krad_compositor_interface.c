@@ -1,11 +1,20 @@
 #include "krad_compositor_interface.h"
 
+static void controls_to_ebml(kr_ebml *e, kr_compositor_controls *c);
+
+static void controls_to_ebml(kr_ebml *e, kr_compositor_controls *c) {
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->w);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->h);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, c->x);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->y);
+  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->z);
+  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, c->opacity);
+  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, c->rotation);
+}
+
 void path_info_to_ebml(kr_ebml *e, kr_compositor_path_info *info) {
   kr_ebml2_pack_string(e, EBML_ID_KRAD_COMPOSITOR_TEXT, info->name);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, info->type);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, info->controls.x);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.y);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.z);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->width);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->height);
   kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->crop_x);
@@ -20,52 +29,27 @@ void path_info_to_ebml(kr_ebml *e, kr_compositor_path_info *info) {
   kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_left.y);
   kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_right.x);
   kr_ebml2_pack_uint32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->view.bottom_right.y);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.w);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, info->controls.h);
-  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, info->controls.opacity);
-  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, info->controls.rotation);
+  controls_to_ebml(e, &info->controls);
 }
 
-void kr_text_info_to_ebml(kr_ebml *ebml, kr_text_info *text) {
-  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, text->text);
-  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_FONT, text->font);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_RED, text->red);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_GREEN, text->green);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_BLUE, text->blue);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, text->controls.x);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.y);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.z);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.w);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, text->controls.h);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, text->controls.opacity);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, text->controls.rotation);
+void kr_text_info_to_ebml(kr_ebml *ebml, kr_text_info *info) {
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_TEXT, info->string);
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_FONT, info->font);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_RED, info->red);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_GREEN, info->green);
+  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_BLUE, info->blue);
+  controls_to_ebml(ebml, &info->controls);
 }
 
-void kr_sprite_info_to_ebml(kr_ebml *ebml, kr_sprite_info *sprite) {
-  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, sprite->filename);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, sprite->controls.x);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.y);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.z);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.w);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_Y, sprite->controls.h);
-  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_TICKRATE, sprite->tickrate);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, sprite->controls.opacity);
-  kr_ebml2_pack_float(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, sprite->controls.rotation);
-}
-
-void kr_compositor_controls_to_ebml(kr_ebml *e, kr_compositor_controls *c) {
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->w);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->h);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_X, c->x);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->y);
-  kr_ebml2_pack_int32(e, EBML_ID_KRAD_COMPOSITOR_Y, c->z);
-  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_OPACITY, c->opacity);
-  kr_ebml2_pack_float(e, EBML_ID_KRAD_COMPOSITOR_SPRITE_ROTATION, c->rotation);
+void kr_sprite_info_to_ebml(kr_ebml *ebml, kr_sprite_info *info) {
+  kr_ebml2_pack_string(ebml, EBML_ID_KRAD_COMPOSITOR_FILENAME, info->filename);
+  kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_SPRITE_TICKRATE, info->rate);
+  controls_to_ebml(ebml, &info->controls);
 }
 
 void kr_vector_info_to_ebml(kr_ebml *ebml, kr_vector_info *info) {
   kr_ebml2_pack_int32(ebml, EBML_ID_KRAD_COMPOSITOR_X, info->type);
-  kr_compositor_controls_to_ebml(ebml, &info->controls);
+  controls_to_ebml(ebml, &info->controls);
 }
 
 void kr_compositor_info_to_ebml(kr_ebml *ebml, kr_compositor_info *info) {
@@ -96,38 +80,40 @@ void kr_compositor_info_to_ebml(kr_ebml *ebml, kr_compositor_info *info) {
 }
 
 void kr_sprite_to_ebml(kr_ebml *ebml, kr_sprite *sprite) {
-  kr_sprite_info sprite_rep;
-  kr_sprite_to_info(sprite, &sprite_rep);
-  kr_sprite_info_to_ebml(ebml, &sprite_rep);
+  kr_sprite_info info;
+  kr_sprite_info_get(sprite, &info);
+  kr_sprite_info_to_ebml(ebml, &info);
 }
 
 void kr_text_to_ebml(kr_ebml *ebml, kr_text *text) {
-  kr_text_info text_rep;
-  kr_text_to_info(text, &text_rep);
-  kr_text_info_to_ebml(ebml, &text_rep);
+  kr_text_info info;
+  kr_text_info_get(text, &info);
+  kr_text_info_to_ebml(ebml, &info);
 }
 
 void kr_vector_to_ebml(kr_ebml *ebml, kr_vector *vector) {
-  kr_vector_info vector_rep;
-  kr_vector_to_info(vector, &vector_rep);
-  kr_vector_info_to_ebml(ebml, &vector_rep);
+  kr_vector_info info;
+  kr_vector_info_get(vector, &info);
+  kr_vector_info_to_ebml(ebml, &info);
 }
 
 void kr_compositor_path_to_ebml(kr_ebml *ebml, kr_compositor_path *path) {
-  path_info_to_ebml(ebml, &path->info);
+  kr_compositor_path_info info;
+  kr_compositor_path_info_get(path, &info);
+  path_info_to_ebml(ebml, &info);
 }
 
 int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   kr_unit_control_t unit_control;
   kr_compositor_info info;
-  int s;
-  int i;
-  int type;
+//  int s;
+//  int i;
+//  int type;
   kr_radio *radio;
   kr_compositor *compositor;
   kr_address_t address;
-  kr_compositor_path *path;
+//  kr_compositor_path *path;
   unsigned char *response;
   unsigned char *payload;
   kr_ebml2_t ebml_in;
@@ -145,7 +131,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   radio = client->krad_radio;
   compositor = radio->compositor;
   app = radio->app;
-  s = 0;
+//  s = 0;
   string[0] = '\0';
   string2[0] = '\0';
 
@@ -214,7 +200,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT:
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &numbers[0]);
-      type = numbers[0];
+      //type = numbers[0];
       kr_ebml2_unpack_element_string(&ebml_in, &element, string, sizeof(string));
       kr_ebml2_unpack_element_string(&ebml_in, &element, string2, sizeof(string2));
       /*s = krad_compositor_subunit_create(compositor, type, string,
@@ -290,8 +276,8 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       address.path.subunit.compositor_subunit = numbers[0];
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &numbers[0]);
       address.id.number = numbers[0];
-      s = address.id.number;
 /*
+      s = address.id.number;
       switch (address.path.subunit.compositor_subunit) {
         case KR_VIDEOPORT:
           if(compositor->path[s].subunit.active == 1) {
@@ -343,7 +329,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
        EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
-      kr_compositor_get_info(compositor, &info);
+      kr_compositor_info_get(compositor, &info);
       kr_compositor_info_to_ebml(&ebml_out, &info);
       kr_ebml2_finish_element(&ebml_out, payload);
       kr_ebml2_finish_element(&ebml_out, response);

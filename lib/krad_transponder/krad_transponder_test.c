@@ -91,11 +91,11 @@ void test_v4l2_input_create(kr_xpdr *xpdr) {
 
   setup.info.input.type = KR_XPDR_ADAPTER;
   setup.info.input.info.adapter_path_info.api = KR_ADP_V4L2;
-  // setup.info.input.info.adapter_path_info.info.v4l2.dev = device_num;
-  setup.info.input.info.adapter_path_info.info.v4l2.num = num;
-  setup.info.input.info.adapter_path_info.info.v4l2.den = den;
-  setup.info.input.info.adapter_path_info.info.v4l2.width = width;
-  setup.info.input.info.adapter_path_info.info.v4l2.height = height;
+  setup.info.input.info.adapter_path_info.info.v4l2.dev = device_num;
+  setup.info.input.info.adapter_path_info.info.v4l2.mode.num = num;
+  setup.info.input.info.adapter_path_info.info.v4l2.mode.den = den;
+  setup.info.input.info.adapter_path_info.info.v4l2.mode.width = width;
+  setup.info.input.info.adapter_path_info.info.v4l2.mode.height = height;
 
   setup.info.output.type = KR_XPDR_COMPOSITOR;
   strcpy(setup.info.output.info.compositor_path_info.name, test_name);
@@ -148,8 +148,12 @@ void test_wayland_output_create(kr_xpdr *xpdr) {
 }
 
 void test_xpdr(kr_xpdr *xpdr) {
-/*  test_jack_output_create(xpdr);
-  test_jack_input_create(xpdr);*/
+/*
+  test_jack_output_create(xpdr);
+  test_jack_input_create(xpdr);
+*/
+/**/
   test_v4l2_input_create(xpdr);
   test_wayland_output_create(xpdr);
+/**/
 }

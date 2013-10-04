@@ -78,13 +78,13 @@ struct kr_compositor_controls {
 
 struct kr_sprite_info {
   char filename[256];
-  int32_t tickrate;
+  int32_t rate;
   kr_compositor_controls controls;
 };
 
 struct kr_text_info {
-  char text[1024];
-  char font[128];
+  char string[512];
+  char font[256];
   float red;
   float green;
   float blue;
@@ -125,7 +125,6 @@ struct kr_compositor_info {
   uint32_t outputs;
   uint64_t frames;
   uint64_t timecode;
-  char background_filename[256];
 };
 
 void kr_aspect_upscale(int srcw, int srch, int dstw, int dsth, int *w, int *h);

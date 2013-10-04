@@ -7,8 +7,6 @@ static void composite(kr_compositor *compositor);
 static void output(kr_compositor *compositor);
 static void cleanup(kr_compositor *compositor);
 
-static void paths_free(kr_compositor *compositor);
-static void paths_create(kr_compositor *compositor);
 static void subunits_free(kr_compositor *compositor);
 static void subunits_create(kr_compositor *compositor);
 static void subunits_state_update(kr_compositor *compositor);
@@ -57,46 +55,39 @@ static void setup(kr_compositor *compositor) {
   compositor->cr = cairo_create(compositor->frame->cst);
 }
 
-static void composite(kr_compositor *compositor) {
+static void composite(kr_compositor *com) {
   int i;
   kr_compositor_path *path;
+  void *overlay;
   i = 0;
-  kr_compositor_clear_frame(compositor);
-  if ((compositor->active_input_paths == 0)
-   && (compositor->active_sprites == 0)
-   && (compositor->active_texts == 0)
-   && (compositor->active_vectors == 0)) {
-    kr_compositor_render_no_input(compositor);
+  kr_compositor_clear_frame(com);
+  if ((com->info.inputs == 0)
+   && (com->info.sprites == 0)
+   && (com->info.texts == 0)
+   && (com->info.vectors == 0)) {
+    kr_compositor_render_no_input(com);
   }
-  while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
-    if (path->info.type == KR_CMP_INPUT) {
+  while ((path = kr_pool_iterate_active(com->path_pool, &i))) {
+    if (path_type_get(path) == KR_CMP_INPUT) {
       kr_image image;
       memset(&image, 0, sizeof(kr_image));
-      image.px = (uint8_t *)compositor->frame->pixels;
+      image.px = (uint8_t *)com->frame->pixels;
       image.ppx[0] = image.px;
-      image.w = compositor->frame->width;
-      image.h = compositor->frame->height;
-      image.pps[0] = compositor->frame->width * 4;
-      path_render(path, &image, compositor->cr);
+      image.w = com->frame->width;
+      image.h = com->frame->height;
+      image.pps[0] = com->frame->width * 4;
+      path_render(path, &image, com->cr);
     }
   }
-/*
-  for (i = 0; i < KC_MAX_SPRITES; i++) {
-    if (compositor->sprite[i].subunit.active == 1) {
-      kr_sprite_render(&compositor->sprite[i], compositor->cr);
-    }
+  while ((overlay = kr_pool_iterate_active(com->sprite_pool, &i))) {
+    kr_sprite_render(overlay, com->cr);
   }
-  for (i = 0; i < KC_MAX_VECTORS; i++) {
-    if (compositor->vector[i].subunit.active == 1) {
-      kr_vector_render(&compositor->vector[i], compositor->cr);
-    }
+  while ((overlay = kr_pool_iterate_active(com->text_pool, &i))) {
+    kr_text_render(overlay, com->cr);
   }
-  for (i = 0; i < KC_MAX_TEXTS; i++) {
-    if (compositor->text[i].subunit.active == 1) {
-      kr_text_render(&compositor->text[i], compositor->cr);
-    }
+  while ((overlay = kr_pool_iterate_active(com->vector_pool, &i))) {
+    kr_vector_render(overlay, com->cr);
   }
-*/
 }
 
 static void output(kr_compositor *compositor) {
@@ -141,7 +132,7 @@ static void subunits_state_update(kr_compositor *compositor) {
   }
   for (i = 0; i < KC_MAX_SPRITES; i++) {
     if (compositor->sprite[i].subunit.active == 2) {
-      kr_sprite_reset(&compositor->sprite[i]);
+      kr_sprite_clear(&compositor->sprite[i]);
       compositor->active_sprites--;
       compositor->sprite[i].subunit.active = 0;
     }
@@ -448,72 +439,111 @@ static void frame_rate_set(kr_compositor *cmpr, int num, int den) {
   cmpr->info.fps_denominator = den;
 }
 
-static void paths_free(kr_compositor *compositor) {
-  kr_pool_destroy(compositor->path_pool);
-}
+static void subunits_free(kr_compositor *com) {
+  int i;
+  i = 0;
+  void *overlay;
 
-static void paths_create(kr_compositor *compositor) {
-  kr_pool_setup setup;
-  setup.shared = 0;
-  setup.size = sizeof(kr_compositor_path);
-  setup.slices = KC_MAX_PORTS;
-  compositor->path_pool = kr_pool_create(&setup);
-}
+  while ((overlay = kr_pool_iterate_active(com->sprite_pool, &i))) {
+    kr_sprite_clear(overlay);
+    kr_pool_recycle(com->sprite_pool, overlay);
+  }
+  while ((overlay = kr_pool_iterate_active(com->text_pool, &i))) {
+  }
+  while ((overlay = kr_pool_iterate_active(com->vector_pool, &i))) {
+  }
 
-static void subunits_free(kr_compositor *compositor) {
-  paths_free(compositor);
-  kr_sprite_destroy_arr(compositor->sprite, KC_MAX_SPRITES);
-  kr_vectors_free(compositor->vector, KC_MAX_VECTORS);
-  kr_text_destroy_arr(compositor->text, KC_MAX_TEXTS);
-  FT_Done_FreeType(compositor->ftlib);
+  kr_pool_destroy(com->path_pool);
+  kr_pool_destroy(com->sprite_pool);
+  kr_pool_destroy(com->text_pool);
+  kr_pool_destroy(com->vector_pool);
 }
 
 static void subunits_create(kr_compositor *compositor) {
-  paths_create(compositor);
-  FT_Init_FreeType(&compositor->ftlib);
-  compositor->text = kr_text_create_arr(&compositor->ftlib, KC_MAX_TEXTS);
-  compositor->sprite = kr_sprite_create_arr(KC_MAX_SPRITES);
-  compositor->vector = kr_vectors_create(KC_MAX_VECTORS);
+  kr_pool_setup setup;
+  setup.shared = 0;
+
+  setup.size = kr_compositor_path_size();
+  setup.slices = KC_MAX_PORTS;
+  compositor->path_pool = kr_pool_create(&setup);
+
+  setup.size = kr_sprite_size();
+  setup.slices = KC_MAX_SPRITES;
+  compositor->sprite_pool = kr_pool_create(&setup);
+
+  setup.size = kr_text_size();
+  setup.slices = KC_MAX_TEXTS;
+  compositor->text_pool = kr_pool_create(&setup);
+
+  setup.size = kr_vector_size();
+  setup.slices = KC_MAX_VECTORS;
+  compositor->vector_pool = kr_pool_create(&setup);
+
+  /* TEMP
+  char *filename;
+  void *overlay;
+  int ret;
+  filename = "/home/oneman/images/krad_color_logo_trans2.png";
+  overlay = kr_pool_slice(compositor->sprite_pool);
+  if (overlay != NULL) {
+    ret = kr_sprite_open(overlay, filename);
+    if (ret) {
+      failfast("sprite open %s did not work", filename);
+    }
+  }
+
+  char *string;
+  char *font;
+  string = "Weee!";
+  font = "/home/oneman/.local/share/fonts/Inconsolata.otf";
+  //font = NULL;
+  overlay = kr_pool_slice(compositor->text_pool);
+  if (overlay != NULL) {
+    ret = kr_text_init(overlay, string, font, &compositor->ftlib);
+    if (ret) {
+      failfast("text init %s did not work", string);
+    }
+  }
+
+  char *vector_string;
+  vector_string = "viper";
+  overlay = kr_pool_slice(compositor->vector_pool);
+  if (overlay != NULL) {
+    ret = kr_vector_init(overlay, vector_string);
+    if (ret) {
+      failfast("text vector %s did not work", vector_string);
+    }
+  }
+  */
 }
 
-int kr_compositor_destroy(kr_compositor *compositor) {
-
-  if (compositor == NULL) return -1;
-
+int kr_compositor_destroy(kr_compositor *com) {
+  if (com == NULL) return -1;
   printk("Krad Compositor: Destroy Started");
-
-  subunits_free(compositor);
-  krad_framepool_destroy(&compositor->framepool);
-  free(compositor);
-
+  subunits_free(com);
+  FT_Done_FreeType(com->ftlib);
+  krad_framepool_destroy(&com->framepool);
+  free(com);
   printk("Krad Compositor: Destroy Complete");
-
   return 0;
 }
 
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup) {
-
   kr_compositor *com;
-
   if (setup == NULL) return NULL;
-
   com = calloc(1, sizeof(kr_compositor));
   resolution_set(com, setup->width, setup->height);
   frame_rate_set(com, setup->fps_num, setup->fps_den);
+  FT_Init_FreeType(&com->ftlib);
   subunits_create(com);
   com->framepool = krad_framepool_create(com->info.width, com->info.height,
    DEFAULT_COMPOSITOR_BUFFER_FRAMES);
   return com;
 }
 
-int kr_compositor_get_info(kr_compositor *com, kr_compositor_info *info) {
+int kr_compositor_info_get(kr_compositor *com, kr_compositor_info *info) {
   if ((com == NULL) || (info == NULL)) return -1;
   *info = com->info;
-  info->texts = com->active_texts;
-  info->vectors = com->active_vectors;
-  info->sprites = com->active_sprites;
-  info->inputs = com->active_input_paths;
-  info->outputs = com->active_output_paths;
   return 0;
 }
 

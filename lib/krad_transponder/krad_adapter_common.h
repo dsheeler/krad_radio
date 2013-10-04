@@ -45,7 +45,7 @@ struct kr_adapter_path_info {
   union {
     kr_jack_path_info jack;
     kr_wayland_path_info wayland;
-    kr_v4l2_mode v4l2;
+    kr_v4l2_open_info v4l2;
     /*
     kr_alsa_path_info alsa;
     kr_decklink_path_info decklink;

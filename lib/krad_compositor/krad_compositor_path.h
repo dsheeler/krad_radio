@@ -38,22 +38,6 @@ struct kr_compositor_path_setup {
   kr_compositor_path_frame_cb *frame_cb;
 };
 
-struct kr_compositor_path {
-  kr_compositor_path_info info;
-  kr_compositor_control_easers easers;
-  void *user;
-  kr_compositor_path_frame_cb *frame_cb;
-  kr_compositor *compositor;
-  krad_frame_t *frame;
-  kr_easer crop_x_easer;
-  kr_easer crop_y_easer;
-  kr_easer crop_width_easer;
-  kr_easer crop_height_easer;
-  kr_convert converter;
-  kr_perspective *perspective;
-  kr_perspective_view view;
-};
-
 /*
  kr_compositor_path *kr_compositor_find(kr_compositor *compositor, char *name);
  int kr_compositor_path_ctl(kr_compositor_path *p, XXX);
@@ -65,8 +49,12 @@ void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path);
 
 int path_render(kr_compositor_path *path, kr_image *image, cairo_t *cr);
 
+kr_compositor_path_type path_type_get(kr_compositor_path *path);
+size_t kr_compositor_path_size();
 int kr_compositor_unlink(kr_compositor_path *path);
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
  kr_compositor_path_setup *setup);
+int kr_compositor_path_info_get(kr_compositor_path *path,
+ kr_compositor_path_info *info);
 
 #endif

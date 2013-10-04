@@ -1,39 +1,44 @@
 #include "krad_text.h"
 
+struct kr_text {
+  kr_text_info info;
+  int prerendered;
+  cairo_font_face_t *cr_face;
+  cairo_scaled_font_t* scaled_font;
+  FT_Face ft_face;
+  FT_Library *ft_library;
+  kr_compositor_control_easers easers;
+};
+
 static void kr_text_set_font(kr_text *text, char *font);
+static void kr_text_prerender_cancel(kr_text *text, cairo_t *cr);
+static void kr_text_prerender(kr_text *text, cairo_t *cr);
 
-void kr_text_destroy_arr(kr_text *text, int count) {
-  int s;
-  for (s = 0; s < count; s++) {
-    kr_text_reset(&text[s]);
-  }
-  free(text);
+size_t kr_text_size() {
+  return sizeof(kr_text);
 }
 
-kr_text *kr_text_create_arr(FT_Library *ft_library, int count) {
-  int s;
-  kr_text *text;
-  if ((text = calloc(count, sizeof (kr_text))) == NULL) {
-    failfast("Krad Text mem alloc fail");
-  }
-  for (s = 0; s < count; s++) {
-    text[s].ft_library = ft_library;
-    kr_text_reset(&text[s]);
-  }
-  return text;
-}
-
-void kr_text_reset(kr_text *text) {
+void kr_text_clear(kr_text *text) {
   if (text->cr_face != NULL) {
     cairo_font_face_destroy(text->cr_face);
     text->cr_face = NULL;
   }
-  strcpy(text->font, KRAD_TEXT_DEFAULT_FONT);
 }
 
-void kr_text_set_text(kr_text *text, char *str, char *font) {
-  strcpy(text->text_actual, str);
+int kr_text_init(kr_text *text, char *str, char *font, FT_Library *ftlib) {
+  if ((text == NULL) || (str == NULL) || (ftlib == NULL)) return -1;
+  memset(text, 0, sizeof(kr_text));
+  text->ft_library = ftlib;
+  strncpy(text->info.string, str, (sizeof(text->info.string) - 1));
+  text->info.string[(sizeof(text->info.string) - 1)] = '\0';
   kr_text_set_font(text, font);
+  text->info.controls.opacity = 1.0f;
+  text->info.red = 1.0f;
+  text->info.green = 1.0f;
+  text->info.blue = 1.0f;
+  text->info.controls.h = 128;
+  text->info.controls.y = text->info.controls.h + 12;
+  return 0;
 }
 
 static void kr_text_set_font(kr_text *text, char *font) {
@@ -42,6 +47,7 @@ static void kr_text_set_font(kr_text *text, char *font) {
   int status;
 
   if ((font == NULL) || (strlen(font) <= 0)) {
+    strcpy(text->info.font, KRAD_TEXT_DEFAULT_FONT);
     return;
   }
 
@@ -56,7 +62,8 @@ static void kr_text_set_font(kr_text *text, char *font) {
        text->cr_face = NULL;
        FT_Done_Face(text->ft_face);
     } else {
-      strcpy(text->font, font);
+      strncpy(text->info.font, font, (sizeof(text->info.font) - 1));
+      text->info.font[(sizeof(text->info.font) - 1)] = '\0';
     }
   }
 }
@@ -79,9 +86,9 @@ void kr_text_prerender(kr_text *krad_text, cairo_t *cr) {
   cairo_save(cr);
 
   if (krad_text->cr_face != NULL) {
-    cairo_set_font_face (cr, krad_text->cr_face);
+    cairo_set_font_face(cr, krad_text->cr_face);
   } else {
-    cairo_select_font_face (cr, krad_text->font,
+    cairo_select_font_face (cr, krad_text->info.font,
                             CAIRO_FONT_SLANT_NORMAL,
                             CAIRO_FONT_WEIGHT_NORMAL);
   }
@@ -91,9 +98,9 @@ void kr_text_prerender(kr_text *krad_text, cairo_t *cr) {
                          krad_text->info.green,
                          krad_text->info.blue,
                          krad_text->info.controls.opacity);
-  cairo_text_extents (cr, krad_text->text_actual, &extents);
+  cairo_text_extents (cr, krad_text->info.string, &extents);
   krad_text->info.controls.w = extents.width;
-  krad_text->info.controls.h = extents.height;
+//  krad_text->info.controls.h = extents.height;
   cairo_translate (cr, krad_text->info.controls.x, krad_text->info.controls.y);
   if (krad_text->info.controls.rotation != 0.0f) {
     cairo_translate (cr, krad_text->info.controls.w / 2,
@@ -107,29 +114,23 @@ void kr_text_prerender(kr_text *krad_text, cairo_t *cr) {
 
 void kr_text_render(kr_text *text, cairo_t *cr) {
   kr_text_prerender(text, cr);
-  cairo_show_text(cr, text->text_actual);
+  cairo_show_text(cr, text->info.string);
   cairo_stroke(cr);
   cairo_restore(cr);
   text->prerendered = 0;
+  kr_compositor_controls *controls;
+  controls = &text->info.controls;
+  printk("rendered %s %s %f %f %f %f %f %d %d %d %d", text->info.string,
+   text->info.font, text->info.red, text->info.green, text->info.blue,
+   controls->opacity, controls->rotation, controls->x, controls->y,
+   controls->w, controls->h);
 }
 
-int kr_text_to_info(kr_text *text, kr_text_info *text_rep) {
+int kr_text_info_get(kr_text *text, kr_text_info *info) {
 
-  if ((text == NULL) || (text_rep == NULL)) {
-    return 0;
+  if ((text == NULL) || (info == NULL)) {
+    return -1;
   }
-
-  strncpy (text_rep->text, text->text_actual, sizeof(text_rep->text));
-  strncpy (text_rep->font, text->font, sizeof(text_rep->font));
-  text_rep->red = text->info.red;
-  text_rep->green = text->info.green;
-  text_rep->blue = text->info.blue;
-  text_rep->controls.x = text->info.controls.x;
-  text_rep->controls.y = text->info.controls.y;
-  text_rep->controls.z = text->info.controls.z;
-  text_rep->controls.w = text->info.controls.w;
-  text_rep->controls.h = text->info.controls.h;
-  text_rep->controls.rotation = text->info.controls.rotation;
-  text_rep->controls.opacity = text->info.controls.opacity;
-  return 1;
+  *info = text->info;
+  return 0;
 }

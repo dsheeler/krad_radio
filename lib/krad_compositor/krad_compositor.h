@@ -7,6 +7,7 @@ typedef struct kr_compositor_info_cb_arg kr_compositor_info_cb_arg;
 typedef struct kr_compositor_control_easers kr_compositor_control_easers;
 
 #include "krad_easing.h"
+
 struct kr_compositor_control_easers {
   kr_easer x;
   kr_easer y;
@@ -32,7 +33,7 @@ struct kr_compositor_control_easers {
 #define KR_COMPOSITOR_FPS_NUM_DEF KR_COMPOSITOR_FPS_DEF * 1000
 #define KR_COMPOSITOR_FPS_DEN_DEF 1 * 1000
 
-#define DEFAULT_COMPOSITOR_BUFFER_FRAMES 120
+#define DEFAULT_COMPOSITOR_BUFFER_FRAMES 20
 #define KC_MAX_PORTS 32
 #define KC_MAX_SPRITES 32
 #define KC_MAX_TEXTS 32
@@ -61,30 +62,18 @@ struct kr_compositor {
   cairo_t *cr;
   krad_frame_t *frame;
   krad_framepool_t *framepool;
-
   kr_compositor_info info;
-
-  FT_Library ftlib;
-
-  kr_sprite *sprite;
-  int active_sprites;
-
-  kr_text *text;
-  int active_texts;
-
-  kr_vector *vector;
-  int active_vectors;
-
+  kr_pool *sprite_pool;
+  kr_pool *text_pool;
+  kr_pool *vector_pool;
   kr_pool *path_pool;
-  int active_paths;
-  int active_output_paths;
-  int active_input_paths;
+  FT_Library ftlib;
 };
 
 int kr_compositor_destroy(kr_compositor *compositor);
 kr_compositor *kr_compositor_create(kr_compositor_setup *setup);
 void kr_compositor_setup_init(kr_compositor_setup *setup);
-int kr_compositor_get_info(kr_compositor *com, kr_compositor_info *info);
+int kr_compositor_info_get(kr_compositor *com, kr_compositor_info *info);
 
 /* Goes away sometime soon */
 int kr_compositor_process(kr_compositor *compositor);
@@ -101,10 +90,5 @@ typedef struct {
 
 int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s);
 int kr_compositor_ctl(kr_compositor *com, kr_compositor_setting *setting);
-
-/*
- ***Compositor as a whole
- int kr_compositor_ctl(kr_compositor *compr, XXX);
-*/
 
 #endif

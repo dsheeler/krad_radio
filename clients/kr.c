@@ -212,7 +212,7 @@ int main (int argc, char *argv[]) {
     kr_mixer_info_get(client);
     kr_delivery_accept_and_report(client);
     printf ("\n");
-    kr_compositor_info_get(client);
+    kr_compositor_info_request(client);
     kr_delivery_accept_and_report(client);
     printf ("\n");
     kr_transponder_info_get(client);
@@ -584,7 +584,7 @@ int main (int argc, char *argv[]) {
   if ((strncmp(argv[2], "comp", 4) == 0) ||
       ((strncmp(argv[2], "c", 1) == 0) && (strlen(argv[2]) == 1))) {
     if (argc == 3) {
-      kr_compositor_info_get(client);
+      kr_compositor_info_request(client);
       kr_delivery_accept_and_report(client);
     }
   }

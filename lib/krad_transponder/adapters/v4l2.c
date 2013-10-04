@@ -51,7 +51,7 @@ void v4l2_adapter_path_create(kr_adapter_path *path) {
   int ret;
   kr_v4l2_mode mode;
 
-  mode = path->info.info.v4l2;
+  mode = path->info.info.v4l2.mode;
   ret = kr_v4l2_mode_set(path->adapter->handle.v4l2, &mode);
   if (ret == 0) {
     adapter_path_process_thread_start(path);
@@ -68,8 +68,8 @@ void v4l2_adapter_create(kr_adapter *adapter) {
   kr_v4l2_setup setup;
 
   memset(&setup, 0, sizeof(kr_v4l2_setup));
-  setup.dev = 0;
-  setup.priority = 0;
+  setup.dev = adapter->info.api_info.v4l2.dev;
+  setup.priority = adapter->info.api_info.v4l2.priority;
   adapter->handle.v4l2 = kr_v4l2_create(&setup);
   adapter->path_process_function = v4l2_adapter_process;
 }

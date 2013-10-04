@@ -1,70 +1,42 @@
 #include "krad_sprite.h"
 
+struct kr_sprite {
+  kr_sprite_info info;
+  kr_compositor_control_easers easers;
+  int frames;
+  int tick;
+  int frame;
+  cairo_surface_t *sprite;
+  cairo_surface_t **sprite_frames;
+  int multisurface;
+  cairo_pattern_t *sprite_pattern;
+  int sheet_width;
+  int sheet_height;
+};
+
 static void sprite_tick(kr_sprite *sprite);
-
-void kr_sprite_destroy(kr_sprite *sprite) {
-  kr_sprite_reset(sprite);
-  free(sprite);
-}
-
-void kr_sprite_destroy_arr(kr_sprite *sprite, int count) {
-  int s;
-  for (s = 0; s < count; s++) {
-    kr_sprite_reset(&sprite[s]);
-  }
-  free(sprite);
-}
-
-kr_sprite *kr_sprite_create_arr(int count) {
-  int s;
-  kr_sprite *sprite;
-  if ((sprite = calloc(count, sizeof(kr_sprite))) == NULL) {
-    failfast("Krad Sprite mem alloc fail");
-  }
-  for (s = 0; s < count; s++) {
-    kr_sprite_reset(&sprite[s]);
-  }
-  return sprite;
-}
-
-kr_sprite *kr_sprite_create() {
-  return kr_sprite_create_arr(1);
-}
-
-
-kr_sprite *kr_sprite_create_from_file(char *filename) {
-
-  kr_sprite *sprite;
-
-  sprite = kr_sprite_create();
-  kr_sprite_open_file(sprite, filename);
-
-  return sprite;
-}
 
 #ifdef KRAD_GIF
 
 #if GIFLIB_MAJOR < 5
 typedef struct GraphicsControlBlock {
-    int DisposalMode;
+  int DisposalMode;
 #define DISPOSAL_UNSPECIFIED      0       /* No disposal specified. */
 #define DISPOSE_DO_NOT            1       /* Leave image in place */
 #define DISPOSE_BACKGROUND        2       /* Set area too background color */
 #define DISPOSE_PREVIOUS          3       /* Restore to previous content */
-    bool UserInputFlag;      /* User confirmation required before disposal */
-    int DelayTime;           /* pre-display delay in 0.01sec units */
-    int TransparentColor;    /* Palette index for transparency, -1 if none */
+  bool UserInputFlag;      /* User confirmation required before disposal */
+  int DelayTime;           /* pre-display delay in 0.01sec units */
+  int TransparentColor;    /* Palette index for transparency, -1 if none */
 #define NO_TRANSPARENT_COLOR  -1
 } GraphicsControlBlock;
 #define UNSIGNED_LITTLE_ENDIAN(lo, hi)  ((lo) | ((hi) << 8))
-int DGifExtensionToGCB (const size_t GifExtensionLength,
-                        const GifByteType *GifExtension,
-                        GraphicsControlBlock *GCB) {
+int DGifExtensionToGCB(const size_t GifExtensionLength,
+ const GifByteType *GifExtension, GraphicsControlBlock *GCB) {
 
   if (GifExtensionLength != 4) {
     return GIF_ERROR;
   }
-
   GCB->DisposalMode = (GifExtension[0] >> 2) & 0x07;
   GCB->UserInputFlag = (GifExtension[0] & 0x02) != 0;
   GCB->DelayTime = UNSIGNED_LITTLE_ENDIAN(GifExtension[1], GifExtension[2]);
@@ -75,7 +47,6 @@ int DGifExtensionToGCB (const size_t GifExtensionLength,
   }
   return GIF_OK;
 }
-
 #endif
 
 cairo_surface_t **gif2surface(char *filename, int *frames) {
@@ -107,7 +78,7 @@ cairo_surface_t **gif2surface(char *filename, int *frames) {
 
   surface = NULL;
   fail = 0;
-  memset (&gcb, 0, sizeof(gcb));
+  memset(&gcb, 0, sizeof(gcb));
   gcb.TransparentColor = -1;
 
   //typedef int (*InputFunc) (GifFileType *, GifByteType *, int);
@@ -126,7 +97,7 @@ cairo_surface_t **gif2surface(char *filename, int *frames) {
   ScreenBuffer = (GifRowType *)malloc(gif->SHeight * sizeof(GifRowType));
 
   for (i = 0; i < gif->SHeight; i++) {
-    ScreenBuffer[i] = (GifRowType) malloc(Size);
+    ScreenBuffer[i] = (GifRowType)malloc(Size);
   }
 
   for (i = 0; i < gif->SWidth; i++)  {
@@ -134,42 +105,40 @@ cairo_surface_t **gif2surface(char *filename, int *frames) {
   }
 
   for (i = 1; i < gif->SHeight; i++) {
-    memcpy (ScreenBuffer[i], ScreenBuffer[0], Size);
+    memcpy(ScreenBuffer[i], ScreenBuffer[0], Size);
   }
 
   frame_num = 0;
   *frames = 0;
 
   while (1) {
-
     if (DGifGetRecordType(gif, &RecordType) == GIF_ERROR) {
       printk ("Gif fail");
       fail = 1;
       break;
     }
-
     if (RecordType == IMAGE_DESC_RECORD_TYPE) {
       if (DGifGetImageDesc(gif) == GIF_ERROR) {
         printk ("Gif fail");
         fail = 1;
         break;
       }
-
       Row = gif->Image.Top;
       Col = gif->Image.Left;
       Width = gif->Image.Width;
       Height = gif->Image.Height;
-
-      printk ("Image %d at (%d, %d) [%dx%d]: \n", frame_num, Col, Row, Width, Height);
-
-      if (gif->Image.Left + gif->Image.Width > gif->SWidth ||
-         gif->Image.Top + gif->Image.Height > gif->SHeight) {
-          printk ("Image %d is not confined to screen dimension, aborted.", frame_num);
+      printk("Image %d at (%d, %d) [%dx%d]: \n", frame_num, Col, Row,
+       Width, Height);
+      if ((gif->Image.Left + gif->Image.Width > gif->SWidth)
+       || (gif->Image.Top + gif->Image.Height > gif->SHeight)) {
+          printk("Image %d is not confined to screen dimension, aborted.",
+           frame_num);
           fail = 1;
           break;
       }
 
-      surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, gif->SWidth, gif->SHeight);
+      surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, gif->SWidth,
+       gif->SHeight);
       surfaces[frame_num] = surface;
       cr = cairo_create (surface);
       if (frame_num == 0) {
@@ -180,13 +149,10 @@ cairo_surface_t **gif2surface(char *filename, int *frames) {
           //cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
           //cairo_paint (cr);
         //}
-
         //cairo_set_source_rgba (cr, GREY, 0.5);
         //cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
         //cairo_paint (cr);
-
       } else {
-
         if (gcb.DisposalMode == DISPOSE_BACKGROUND) {
           //cairo_set_source_rgba (cr, gif->SBackGroundColor, gif->SBackGroundColor, gif->SBackGroundColor, 1);
           //cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
@@ -206,7 +172,6 @@ cairo_surface_t **gif2surface(char *filename, int *frames) {
       image_stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, gif->SWidth);
       image_data = cairo_image_surface_get_data (surface);
       cairo_surface_flush (surface);
-
       if (gif->Image.Interlace) {
         //printf("Gif interlaced\n");
         /* Need to perform 4 passes on the images: */
@@ -322,37 +287,39 @@ cairo_surface_t **gif2surface(char *filename, int *frames) {
 }
 #endif
 
-int kr_sprite_open_file(kr_sprite *sprite, char *filename) {
+size_t kr_sprite_size() {
+  return sizeof(kr_sprite);
+}
+
+int kr_sprite_open(kr_sprite *sprite, char *filename) {
 
   int64_t size;
   kr_compositor_controls *ctrl;
 
+  if ((sprite == NULL) || (filename == NULL)) {
+    return -1;
+  }
+
   ctrl = &sprite->info.controls;
-
   if (sprite->sprite != NULL) {
-    kr_sprite_reset(sprite);
+    kr_sprite_clear(sprite);
   }
-
-  if (filename == NULL) {
-    return 0;
-  }
+  sprite->frames = 1;
+  sprite->info.rate = KRAD_SPRITE_DEFAULT_TICKRATE;
 
   size = file_size(filename);
-
   if (size < 0) {
     printke("Krad Sprite: File is not right: %s", filename);
-    return 0;
+    return -1;
   }
-
   if (size < 1) {
     printke("Krad Sprite: File is zero bytes: %s", filename);
-    return 0;
+    return -1;
   }
-
   if (size > 50000000) {
     printke("Krad Sprite: File is too frigging big IMO: %"PRIi64" for %s",
      size, filename);
-    return 0;
+    return -1;
   }
 
   if (strstr(filename, "_frames_") != NULL) {
@@ -386,14 +353,14 @@ int kr_sprite_open_file(kr_sprite *sprite, char *filename) {
 
     jpeg_buffer = malloc(size);
     if (jpeg_buffer == NULL) {
-      return 0;
+      return -1;
     }
 
     jpeg_fd = open(filename, O_RDONLY);
 
     if (jpeg_fd < 1) {
       free(jpeg_buffer);
-      return 0;
+      return -1;
     }
 
     jpeg_size = read(jpeg_fd, jpeg_buffer, size);
@@ -424,7 +391,7 @@ int kr_sprite_open_file(kr_sprite *sprite, char *filename) {
 
   if (cairo_surface_status(sprite->sprite) != CAIRO_STATUS_SUCCESS) {
     sprite->sprite = NULL;
-    return 0;
+    return -1;
   }
 
   sprite->sheet_width = cairo_image_surface_get_width(sprite->sprite);
@@ -447,10 +414,11 @@ int kr_sprite_open_file(kr_sprite *sprite, char *filename) {
   printk("Loaded Sprite: %s Sheet Width: %d Frames: %d Width: %d Height: %d",
    sprite->info.filename, sprite->sheet_width, sprite->frames, ctrl->w,
    ctrl->h);
-  return 1;
+  ctrl->opacity = 1.0f;
+  return 0;
 }
 
-void kr_sprite_reset(kr_sprite *sprite) {
+void kr_sprite_clear(kr_sprite *sprite) {
 
   int i;
 
@@ -469,22 +437,18 @@ void kr_sprite_reset(kr_sprite *sprite) {
       sprite->sprite = NULL;
     }
   }
-
-  sprite->multisurface = 0;
-  sprite->frame = 0;
-  sprite->frames = 1;
-  sprite->info.tickrate = KRAD_SPRITE_DEFAULT_TICKRATE;
-  sprite->tick = 0;
-  memset(&sprite->info.controls, 0, sizeof(kr_compositor_controls));
+  memset(sprite, 0, sizeof(kr_sprite));
 }
 
-void kr_sprite_set_tickrate(kr_sprite *sprite, int tickrate) {
-  sprite->info.tickrate = tickrate;
+int kr_sprite_rate_set(kr_sprite *sprite, int rate) {
+  if ((sprite == NULL) || (rate < 0)) return -1;
+  sprite->info.rate = rate;
+  return 0;
 }
 
 static void sprite_tick(kr_sprite *sprite) {
   sprite->tick++;
-  if (sprite->tick >= sprite->info.tickrate) {
+  if (sprite->tick >= sprite->info.rate) {
     sprite->tick = 0;
     sprite->frame++;
     if (sprite->frame == sprite->frames) {
@@ -529,8 +493,7 @@ void kr_sprite_render(kr_sprite *sprite, cairo_t *cr) {
   sprite_tick(sprite);
 }
 
-
-int kr_sprite_to_info(kr_sprite *sprite, kr_sprite_info *info) {
+int kr_sprite_info_get(kr_sprite *sprite, kr_sprite_info *info) {
   if ((sprite == NULL) || (info == NULL)) {
     return 0;
   }

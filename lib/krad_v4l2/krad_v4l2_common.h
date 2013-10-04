@@ -22,4 +22,10 @@ typedef struct {
   kr_v4l2_mode mode;
 } kr_v4l2_info;
 
+typedef struct {
+  int dev;
+  int priority;
+  kr_v4l2_mode mode;
+} kr_v4l2_open_info;
+
 #endif
