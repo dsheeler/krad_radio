@@ -118,3 +118,4 @@ tests/cairo_stride
 *.*.swp
 kr
 krad_radio
+tests/dir

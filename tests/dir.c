@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <dirent.h>
 
-#define MAX_SCAN 512
-#define MAX_RESULTS 512
+#define MAX_SCAN 51200
+#define MAX_RESULTS 51200
 
 void dirscan_print_results(char **results, int len) {
   while (len--) printf("%s\n", results[len]);
@@ -19,7 +19,7 @@ void dirscan_free_results(char **results, int len) {
 char **dirscan(char *path, char *match, int *matches) {
 
   DIR *dirp;
-  char *scan_dirs[MAX_SCAN];
+  char **scan_dirs;
   char upstr[4096];
   char pathstr[4096];
   char buf[1024];
@@ -29,6 +29,7 @@ char **dirscan(char *path, char *match, int *matches) {
   char **results;
   int scanned;
   int max;
+  int errors;
 
   if (matches == NULL) { 
     return NULL;
@@ -38,12 +39,13 @@ char **dirscan(char *path, char *match, int *matches) {
     return NULL;
   }
   *matches = 0;
+  errors = 0;
   scanned = 0;
   max = MAX_SCAN;
   upstr[4095] = '\0'; 
   pathstr[4095] = '\0';
   results = calloc(MAX_RESULTS, sizeof(char *));
-  memset(scan_dirs, 0, sizeof(scan_dirs));
+  scan_dirs = calloc(MAX_SCAN, sizeof(char *));
   scan_dirs[0] = realpath(path, NULL);
   for (;;) {
     for (i = 0; i < max; i++) {
@@ -59,6 +61,7 @@ char **dirscan(char *path, char *match, int *matches) {
     scan_dirs[i] = NULL;
     if (dirp == NULL) {
       printf("could not scan %s\n", upstr);
+      errors++;
       continue;
     }
     for (;;) { 
@@ -67,6 +70,7 @@ char **dirscan(char *path, char *match, int *matches) {
         errno = error;
         perror("readdir_r");
         printf("Could not readdir from %s\n", upstr);
+        errors++;
         break;
       }
       if (cur_dir == NULL) break;
@@ -90,12 +94,6 @@ char **dirscan(char *path, char *match, int *matches) {
           }
         }
         if (i == max) {
-          for (i = 0; i < max; i++) {
-            if (scan_dirs[i] != NULL) {
-              free(scan_dirs[i]);
-              scan_dirs[i] = NULL;
-            }
-          }
           printf("Limit of dirs to scan reached\n");
           break;
         }
@@ -108,7 +106,14 @@ char **dirscan(char *path, char *match, int *matches) {
       break;
     }
   }
-  printf("scanned %d dirs, %d matches\n", scanned, *matches);
+  for (i = 0; i < max; i++) {
+    if (scan_dirs[i] != NULL) {
+      free(scan_dirs[i]);
+      scan_dirs[i] = NULL;
+    }
+  }
+  free(scan_dirs);
+  printf("scanned %d dirs %d matches %d errors\n", scanned, *matches, errors);
   return results;
 }
 
