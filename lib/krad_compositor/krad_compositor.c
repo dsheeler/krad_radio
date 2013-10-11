@@ -209,7 +209,7 @@ static void subunits_create(kr_compositor *compositor) {
   setup.slices = KC_MAX_VECTORS;
   compositor->vector_pool = kr_pool_create(&setup);
 
-  /* TEMP
+  /* TEMP*/
   char *filename;
   void *overlay;
   int ret;
@@ -221,7 +221,7 @@ static void subunits_create(kr_compositor *compositor) {
       failfast("sprite open %s did not work", filename);
     }
   }
-
+/*
   char *string;
   char *font;
   string = "Weee!";

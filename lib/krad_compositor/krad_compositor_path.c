@@ -74,9 +74,17 @@ void path_output(kr_compositor_path *path, krad_frame_t *frame) {
   path->frame_cb(&cb_arg);
   memcpy(cb_arg.image.px, frame->pixels, frame->width * frame->height * 4);
 }
+float myround(float f)
+{
+    if (f >= 0x1.0p23) return f;
+      return (float) (unsigned int) (f + 0.49999997f);
+}
+
 
 int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   int ret;
+  float opacity;
+  float rotation;
   kr_image image;
   kr_compositor_path_frame_cb_arg cb_arg;
   cairo_surface_t *src;
@@ -85,19 +93,24 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
 
   cb_arg.user = path->user;
 
+  opacity = floorf(path->info.controls.opacity * 100 + 0.5) / 100;
+
   path->info.controls.opacity = 1.0f;
   static int first = 0;
   kr_compositor_path_setting setting;
   setting.control = KR_ROTATION;
   setting.real = 560.0f;
   setting.duration = 800;
-  setting.easing = 0;
+  setting.easing = EASEINOUTSINE;
   if (first == 0) {
     kr_compositor_path_ctl(path, &setting);
     first = 1;
   }
   path_tick(path);
+  rotation = floor(path->info.controls.rotation * 100.0f + 0.5f) / 100.0f;
+rotation = myround(rotation);
   if (path->info.controls.opacity == 0.0f) return 0;
+printk("1rotation %f", rotation);
 
   path->frame_cb(&cb_arg);
   /* After the frame_cb if the parameters (crop, size)
@@ -130,18 +143,39 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   cairo_save(cr);
   src = cairo_image_surface_create_for_data(image.px, CAIRO_FORMAT_ARGB32,
    image.w, image.h, image.pps[0]);
-  if (path->info.controls.rotation != 0.0f) {
-    cairo_translate(cr, (int)image.w * 0.5, (int)image.h * 0.5);
-    cairo_rotate(cr, path->info.controls.rotation * (M_PI/180.0));
-    cairo_translate(cr, (int)-image.w * 0.5, (int)-image.h * 0.5);
+
+
+
+  int w;
+  int h;
+
+  w = image.w;
+  h = image.h;
+
+printk("2rotation %f", rotation);
+
+  if (rotation != 0.0f) {
+    cairo_translate (cr, path->info.controls.x, path->info.controls.y);
+    cairo_translate(cr, w / 2.0, h / 2.0);
+
+printk("3rotation %f", rotation);
+
+    cairo_rotate(cr, rotation * (M_PI/180.0));
+    cairo_translate(cr, - w / 2.0, - h / 2.0);
+    cairo_translate (cr, -path->info.controls.x, -path->info.controls.y);
   }
+
+//cairo_scale(cr, 2.4,2.4);
+
   cairo_set_source_surface(cr, src, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
   cairo_rectangle(cr, path->info.controls.x, path->info.controls.y, image.w, image.h);
-  if (path->info.controls.opacity == 1.0f) {
+  cairo_clip(cr);
+  //  if (path->info.controls.opacity == 1.0f) {
     cairo_paint(cr);
-  } else {
-   cairo_paint_with_alpha(cr, path->info.controls.opacity);
-  }
+//  } else {
+//   cairo_paint_with_alpha(cr, path->info.controls.opacity);
+//  }
   cairo_restore(cr);
   cairo_surface_destroy(src);
   return 0;
@@ -179,41 +213,6 @@ static void path_create(kr_compositor_path *path,
   if (path->info.type == KR_CMP_OUTPUT) {
     path->compositor->info.outputs++;
   }
-}
-
-int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s) {
-  if ((p == NULL) || (s == NULL)) return -1;
-  switch (s->control) {
-    case KR_NO:
-      return -1;
-    case KR_X:
-      kr_easer_set(&p->easers.x, s->integer, s->duration, EASEINOUTSINE, NULL);
-      break;
-    case KR_Y:
-      kr_easer_set(&p->easers.y, s->integer, s->duration, EASEINOUTSINE, NULL);
-      break;
-    case KR_Z:
-     break;
-    case KR_WIDTH:
-      kr_easer_set(&p->easers.w, s->integer, s->duration, EASEINOUTSINE, NULL);
-      break;
-    case KR_HEIGHT:
-      kr_easer_set(&p->easers.h, s->integer, s->duration, EASEINOUTSINE, NULL);
-      break;
-    case KR_ROTATION:
-      kr_easer_set(&p->easers.rotation, s->real, s->duration, EASEINOUTSINE, NULL);
-      break;
-    case KR_OPACITY:
-      kr_easer_set(&p->easers.opacity, s->real, s->duration, EASEINOUTSINE, NULL);
-      break;
-    case KR_RED:
-    case KR_GREEN:
-    case KR_BLUE:
-    case KR_ALPHA:
-    default:
-      break;
-  }
-  return 0;
 }
 
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
@@ -268,4 +267,39 @@ int kr_compositor_path_info_get(kr_compositor_path *path,
  if ((path == NULL) || (info == NULL)) return -1;
  *info = path->info;
  return 0;
+}
+
+int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s) {
+  if ((p == NULL) || (s == NULL)) return -1;
+  switch (s->control) {
+    case KR_NO:
+      return -1;
+    case KR_X:
+      kr_easer_set(&p->easers.x, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_Y:
+      kr_easer_set(&p->easers.y, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_Z:
+     break;
+    case KR_WIDTH:
+      kr_easer_set(&p->easers.w, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_HEIGHT:
+      kr_easer_set(&p->easers.h, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_ROTATION:
+      kr_easer_set(&p->easers.rotation, s->real, s->duration, s->easing, NULL);
+      break;
+    case KR_OPACITY:
+      kr_easer_set(&p->easers.opacity, s->real, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_RED:
+    case KR_GREEN:
+    case KR_BLUE:
+    case KR_ALPHA:
+    default:
+      break;
+  }
+  return 0;
 }

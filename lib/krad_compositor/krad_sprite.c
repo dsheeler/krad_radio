@@ -415,6 +415,8 @@ int kr_sprite_open(kr_sprite *sprite, char *filename) {
    sprite->info.filename, sprite->sheet_width, sprite->frames, ctrl->w,
    ctrl->h);
   ctrl->opacity = 1.0f;
+
+kr_easer_set(&sprite->easers.rotation, 560.0f, 800, EASEINOUTSINE, NULL);
   return 0;
 }
 
@@ -446,6 +448,30 @@ int kr_sprite_rate_set(kr_sprite *sprite, int rate) {
   return 0;
 }
 
+void sprite_controls_tick(kr_compositor_controls *c, kr_compositor_control_easers *e) {
+  if (kr_easer_active(&e->x)) {
+    c->x = kr_easer_process(&e->x, c->x, NULL);
+  }
+  if (kr_easer_active(&e->y)) {
+    c->y = kr_easer_process(&e->y, c->y, NULL);
+  }
+/*  if (kr_easer_active(&e->z)) {
+    c->z = kr_easer_process(&e->z, c->z, NULL);
+  }*/
+  if (kr_easer_active(&e->w)) {
+    c->w = kr_easer_process(&e->w, c->w, NULL);
+  }
+  if (kr_easer_active(&e->h)) {
+    c->h = kr_easer_process(&e->h, c->h, NULL);
+  }
+  if (kr_easer_active(&e->opacity)) {
+    c->opacity = kr_easer_process(&e->opacity, c->opacity, NULL);
+  }
+  if (kr_easer_active(&e->rotation)) {
+    c->rotation = kr_easer_process(&e->rotation, c->rotation, NULL);
+  }
+}
+
 static void sprite_tick(kr_sprite *sprite) {
   sprite->tick++;
   if (sprite->tick >= sprite->info.rate) {
@@ -458,7 +484,7 @@ static void sprite_tick(kr_sprite *sprite) {
       sprite->sprite = sprite->sprite_frames[sprite->frame];
     }
   }
-  /*krad_compositor_subunit_tick(&sprite->subunit);*/
+  sprite_controls_tick(&sprite->info.controls, &sprite->easers);
 }
 
 void kr_sprite_render(kr_sprite *sprite, cairo_t *cr) {
