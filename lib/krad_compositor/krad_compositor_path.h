@@ -32,6 +32,15 @@ struct kr_compositor_path_frame_cb_arg {
   void *user;
 };
 
+typedef struct {
+  kr_compositor_control control;
+  int32_t integer;
+  float real;
+  int duration;
+  kr_easing easing;
+} kr_compositor_path_setting;
+
+int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s);
 struct kr_compositor_path_setup {
   kr_compositor_path_info info;
   void *user;
@@ -57,4 +66,5 @@ kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
 int kr_compositor_path_info_get(kr_compositor_path *path,
  kr_compositor_path_info *info);
 
+int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s);
 #endif

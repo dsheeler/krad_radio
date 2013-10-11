@@ -107,13 +107,12 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
   kr_unit_control_t unit_control;
   kr_compositor_info info;
-//  int s;
-//  int i;
+  int i;
 //  int type;
   kr_radio *radio;
   kr_compositor *compositor;
   kr_address_t address;
-//  kr_compositor_path *path;
+  kr_compositor_path *path;
   unsigned char *response;
   unsigned char *payload;
   kr_ebml2_t ebml_in;
@@ -131,7 +130,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   radio = client->krad_radio;
   compositor = radio->compositor;
   app = radio->app;
-//  s = 0;
+  i = 0;
   string[0] = '\0';
   string2[0] = '\0';
 
@@ -257,6 +256,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
           kr_ebml2_finish_element(&ebml_out, response);
         }
       }
+*/
       address.path.subunit.compositor_subunit = KR_VIDEOPORT;
       i = 0;
       while ((path = kr_pool_iterate_active(compositor->path_pool, &i))) {
@@ -268,7 +268,6 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         kr_ebml2_finish_element(&ebml_out, payload);
         kr_ebml2_finish_element(&ebml_out, response);
       }
-*/
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_SUBUNIT_INFO:
       address.path.unit = KR_COMPOSITOR;

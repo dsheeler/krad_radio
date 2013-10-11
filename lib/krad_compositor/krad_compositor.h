@@ -83,12 +83,6 @@ typedef struct {
 
 } kr_compositor_setting;
 
-typedef struct {
-
-
-} kr_compositor_path_setting;
-
-int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s);
 int kr_compositor_ctl(kr_compositor *com, kr_compositor_setting *setting);
 
 #endif

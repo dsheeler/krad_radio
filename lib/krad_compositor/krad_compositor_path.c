@@ -24,7 +24,32 @@ kr_compositor_path_type path_type_get(kr_compositor_path *path) {
   return path->info.type;
 }
 
+void controls_tick(kr_compositor_controls *c, kr_compositor_control_easers *e) {
+  if (kr_easer_active(&e->x)) {
+    c->x = kr_easer_process(&e->x, c->x, NULL);
+  }
+  if (kr_easer_active(&e->y)) {
+    c->y = kr_easer_process(&e->y, c->y, NULL);
+  }
+/*  if (kr_easer_active(&e->z)) {
+    c->z = kr_easer_process(&e->z, c->z, NULL);
+  }*/
+  if (kr_easer_active(&e->w)) {
+    c->w = kr_easer_process(&e->w, c->w, NULL);
+  }
+  if (kr_easer_active(&e->h)) {
+    c->h = kr_easer_process(&e->h, c->h, NULL);
+  }
+  if (kr_easer_active(&e->opacity)) {
+    c->opacity = kr_easer_process(&e->opacity, c->opacity, NULL);
+  }
+  if (kr_easer_active(&e->rotation)) {
+    c->rotation = kr_easer_process(&e->rotation, c->rotation, NULL);
+  }
+}
+
 static void path_tick(kr_compositor_path *path) {
+  controls_tick(&path->info.controls, &path->easers);
   if (kr_easer_active(&path->crop_x_easer)) {
     path->info.crop_x = kr_easer_process(&path->crop_x_easer,
      path->info.crop_x, NULL);
@@ -62,9 +87,13 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
 
   path->info.controls.opacity = 1.0f;
   static int first = 0;
-
+  kr_compositor_path_setting setting;
+  setting.control = KR_ROTATION;
+  setting.real = 560.0f;
+  setting.duration = 800;
+  setting.easing = 0;
   if (first == 0) {
-//    krad_compositor_info.controls.set_rotation(&path->info.controls. 720.0f, 720);
+    kr_compositor_path_ctl(path, &setting);
     first = 1;
   }
   path_tick(path);
@@ -150,6 +179,41 @@ static void path_create(kr_compositor_path *path,
   if (path->info.type == KR_CMP_OUTPUT) {
     path->compositor->info.outputs++;
   }
+}
+
+int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s) {
+  if ((p == NULL) || (s == NULL)) return -1;
+  switch (s->control) {
+    case KR_NO:
+      return -1;
+    case KR_X:
+      kr_easer_set(&p->easers.x, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_Y:
+      kr_easer_set(&p->easers.y, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_Z:
+     break;
+    case KR_WIDTH:
+      kr_easer_set(&p->easers.w, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_HEIGHT:
+      kr_easer_set(&p->easers.h, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_ROTATION:
+      kr_easer_set(&p->easers.rotation, s->real, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_OPACITY:
+      kr_easer_set(&p->easers.opacity, s->real, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_RED:
+    case KR_GREEN:
+    case KR_BLUE:
+    case KR_ALPHA:
+    default:
+      break;
+  }
+  return 0;
 }
 
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
