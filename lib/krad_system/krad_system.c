@@ -3,6 +3,23 @@
 static int krad_system_initialized;
 static krad_system_t krad_system;
 
+float kr_round(float f) {
+  if (f >= 0x1.0p23) return f;
+  return (float) (unsigned int) (f + 0.49999997f);
+}
+
+float kr_round2(float f) {
+  f = kr_round(f * 100.0);
+  f = f / 100.0;
+  return f;
+}
+
+float kr_round3(float f) {
+  f = kr_round(f * 1000.0);
+  f = f / 1000.0;
+  return f;
+}
+
 int krad_control_init (krad_control_t *krad_control) {
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, krad_control->sockets)) {
     printke ("Krad System: can't socketpair errno: %d", errno);

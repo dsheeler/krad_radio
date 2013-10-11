@@ -47,7 +47,7 @@ float kr_easer_process(kr_easer *easer, float current, void **ptr) {
   } else {
     value = kr_ease(easer->easing, easer->elapsed_time, easer->start_value,
      easer->change_amount, easer->duration);
-    value = floorf(value * 100.0f + 0.5f) / 100.0f;
+    /*value = floorf(value * 100.0f + 0.5f) / 100.0f;*/
     easer->elapsed_time++;
   }
   return value;

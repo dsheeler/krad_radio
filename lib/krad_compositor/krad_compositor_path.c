@@ -74,12 +74,6 @@ void path_output(kr_compositor_path *path, krad_frame_t *frame) {
   path->frame_cb(&cb_arg);
   memcpy(cb_arg.image.px, frame->pixels, frame->width * frame->height * 4);
 }
-float myround(float f)
-{
-    if (f >= 0x1.0p23) return f;
-      return (float) (unsigned int) (f + 0.49999997f);
-}
-
 
 int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   int ret;
@@ -107,10 +101,7 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
     first = 1;
   }
   path_tick(path);
-  rotation = floor(path->info.controls.rotation * 100.0f + 0.5f) / 100.0f;
-rotation = myround(rotation);
   if (path->info.controls.opacity == 0.0f) return 0;
-printk("1rotation %f", rotation);
 
   path->frame_cb(&cb_arg);
   /* After the frame_cb if the parameters (crop, size)
@@ -144,38 +135,41 @@ printk("1rotation %f", rotation);
   src = cairo_image_surface_create_for_data(image.px, CAIRO_FORMAT_ARGB32,
    image.w, image.h, image.pps[0]);
 
-
-
   int w;
   int h;
-
+  float rads;
   w = image.w;
   h = image.h;
 
-printk("2rotation %f", rotation);
-
-  if (rotation != 0.0f) {
+  if (path->info.controls.rotation != 0.0f) {
     cairo_translate (cr, path->info.controls.x, path->info.controls.y);
     cairo_translate(cr, w / 2.0, h / 2.0);
-
-printk("3rotation %f", rotation);
-
-    cairo_rotate(cr, rotation * (M_PI/180.0));
+    /*
+    rotation = path->info.controls.rotation;
+    printk("rotation: pre %f", rotation);
+    rotation = kr_round2(rotation);
+    printk("rotation: post: %f", rotation);
+    rotation_rads = path->info.controls.rotation * (M_PI/180.0);
+    printk("rotation: rads pre: %f", rotation_rads);
+    rotation_rads = kr_round2(rotation_rads);
+    printk("rotation: rads post: %f", rotation_rads);
+    */
+    rads = kr_round3(path->info.controls.rotation * (M_PI/180.0));
+    printk("rads: %f", rads);
+    cairo_rotate(cr, rads);
     cairo_translate(cr, - w / 2.0, - h / 2.0);
     cairo_translate (cr, -path->info.controls.x, -path->info.controls.y);
   }
 
-//cairo_scale(cr, 2.4,2.4);
-
   cairo_set_source_surface(cr, src, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-  cairo_rectangle(cr, path->info.controls.x, path->info.controls.y, image.w, image.h);
-  cairo_clip(cr);
-  //  if (path->info.controls.opacity == 1.0f) {
+//  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+/*  cairo_rectangle(cr, path->info.controls.x, path->info.controls.y, image.w, image.h);
+  cairo_clip(cr);*/
+  if (path->info.controls.opacity == 1.0f) {
     cairo_paint(cr);
-//  } else {
-//   cairo_paint_with_alpha(cr, path->info.controls.opacity);
-//  }
+  } else {
+   cairo_paint_with_alpha(cr, path->info.controls.opacity);
+  }
   cairo_restore(cr);
   cairo_surface_destroy(src);
   return 0;

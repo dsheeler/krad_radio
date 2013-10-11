@@ -121,6 +121,10 @@ struct krad_system_St {
   sigset_t signal_mask;
 };
 
+float kr_round(float f);
+float kr_round2(float f);
+float kr_round3(float f);
+
 int krad_controller_get_controller_fd (krad_control_t *krad_control);
 int krad_control_init (krad_control_t *krad_control);
 int krad_controller_get_client_fd (krad_control_t *krad_control);

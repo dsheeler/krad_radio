@@ -105,7 +105,7 @@ static kr_radio *radio_create(char *sysname) {
   kr_transponder_setup transponder_setup;
 
   radio = calloc(1, sizeof(kr_radio));
-
+  kr_radio_set_dir(radio, "/home/oneman/log");
   radio->log.startup_timer = kr_timer_create_with_name("startup");
   kr_timer_start(radio->log.startup_timer);
   strncpy(radio->sysname, sysname, sizeof(radio->sysname));
