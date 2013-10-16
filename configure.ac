@@ -6,6 +6,8 @@ AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
 AM_MAINTAINER_MODE([enable])
 LT_INIT
 
+AM_SILENT_RULES([yes])
+
 KR_LT_CURRENT=$PACKAGE_VERSION
 KR_LT_REVISION=1
 KR_LT_AGE=0
@@ -76,7 +78,7 @@ LT_LIB_M
 AC_PROG_CC
 AC_PROG_CXX
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile daemon/Makefile clients/Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT([
