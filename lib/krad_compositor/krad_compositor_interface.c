@@ -178,25 +178,26 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         //bah
       }
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &unit_control.duration);
+      setting.duration = unit_control.duration;
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &numbers[1]);
 
       path = kr_compositor_find(compositor, "");
       if (path != NULL) {
-        setting.duration = 800;
         setting.easing = EASEINOUTSINE;
         kr_compositor_path_ctl(path, &setting);
       }    
-      //FIXME   test to see if subunit exists before broadcasting update to
-      //        a phantom subunit
-      /*krad_compositor_subunit_update(compositor, &unit_control);
+      /*
       if (unit_control.data_type == KR_FLOAT) {
-        krad_radio_broadcast_subunit_update(app->app_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
-                                              unit_control.data_type, (void *)&unit_control.value.real, app->current_client );
+        krad_radio_broadcast_subunit_update(app->app_broadcaster,
+         &unit_control.address, unit_control.address.control.compositor_control,
+         unit_control.data_type, (void *)&unit_control.value.real, app->current_client);
       }
       if (unit_control.data_type == KR_INT32) {
-        krad_radio_broadcast_subunit_update(app->app_broadcaster, &unit_control.address, unit_control.address.control.compositor_control,
-                                            unit_control.data_type, (void *)&unit_control.value.integer, app->current_client );
-      }*/
+        krad_radio_broadcast_subunit_update(app->app_broadcaster,
+         &unit_control.address, unit_control.address.control.compositor_control,
+         unit_control.data_type, (void *)&unit_control.value.integer, app->current_client);
+      }
+      */
       break;
     case EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT:
       address.path.unit = KR_COMPOSITOR;
