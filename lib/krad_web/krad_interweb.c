@@ -1,9 +1,5 @@
 #include "krad_interweb.h"
-
-#include "krad_radio.html.h"
-#include "kr_api.js.h"
-#include "kr_dev_interface.js.h"
-#include "kr_interface.js.h"
+#include "embed.h"
 
 uint32_t interweb_ws_pack_frame_header(uint8_t *out, uint32_t size);
 int32_t interweb_client_get_stream(kr_iws_client_t *client);

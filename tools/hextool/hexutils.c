@@ -13,6 +13,7 @@ static int file_size (const char *filename) {
 void hexdump (char *filename, uint8_t *buffer, int len) {
   int i;
   char *fname;
+  int strl;
   char *p;
   FILE *fp;
 
@@ -21,8 +22,14 @@ void hexdump (char *filename, uint8_t *buffer, int len) {
   if (!fname)
     return;
 
-  char hname[strlen(fname)+2];
-  sprintf(hname,"%s.h",fname);
+  p = rindex(fname,'.');
+  strl = strlen(fname);
+
+  if (p)
+    p[0] = '\0';
+
+  char hname[strl+6];
+  sprintf(hname,"kr_%s_%s.h",fname,&p[1]);
   fp = fopen(hname,"a+");
 
   printf("Generating %s...\n",hname);
@@ -33,12 +40,7 @@ void hexdump (char *filename, uint8_t *buffer, int len) {
     exit(EXIT_FAILURE);
   }
   
-  p = rindex(fname,'.');
-
-  if (p)
-    p[0] = '\0';
-  
-  fprintf(fp,"const unsigned char %s[] = {",fname);
+  fprintf(fp,"const unsigned char kr_%s_%s[] = {",fname,&p[1]);
 
   for (i = 0; i < len; i++) {
     if (!(i%10)) {
@@ -54,10 +56,7 @@ void hexdump (char *filename, uint8_t *buffer, int len) {
 
   fprintf(fp,"\n};\n\n");
 
-  fprintf(fp,"const unsigned int %s_len = %d;\n",fname,len);
-
-  if (p)
-    p[0] = '.';
+  fprintf(fp,"const unsigned int kr_%s_%s_len = %d;\n",fname,&p[1],len);
 
   fclose(fp);
 

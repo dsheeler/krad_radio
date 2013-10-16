@@ -51,7 +51,7 @@ char *kr_interweb_server_load_file_or_string(char *input) {
   }
 }
 
-void kr_interweb_server_setup_html (kr_interweb_t *server) {
+void kr_interweb_server_setup_html(kr_interweb_t *server) {
 
   char string[64];
   char *html_template;
@@ -66,19 +66,19 @@ void kr_interweb_server_setup_html (kr_interweb_t *server) {
   len = 0;
   total_len = 0;
 
-  server->api_js = (char *)lib_krad_web_res_kr_api_js;
-  server->api_js_len = lib_krad_web_res_kr_api_js_len;
-  server->iface_js  = (char *)lib_krad_web_res_kr_interface_js;
-  server->iface_js_len = lib_krad_web_res_kr_interface_js_len;
-  server->deviface_js  = (char *)lib_krad_web_res_kr_dev_interface_js;
-  server->deviface_js_len = lib_krad_web_res_kr_dev_interface_js_len;
+  server->api_js = (char *)kr_api_js;
+  server->api_js_len = kr_api_js_len;
+  server->iface_js  = (char *)kr_interface_js;
+  server->iface_js_len = kr_interface_js_len;
+  server->deviface_js  = (char *)kr_dev_interface_js;
+  server->deviface_js_len = kr_dev_interface_js_len;
 
   memset (string, 0, sizeof(string));
   snprintf (string, 7, "%d", server->uberport);
   total_len += strlen(string);
 
-  html_template = (char *)lib_krad_web_res_krad_radio_html;
-  html_template_len = lib_krad_web_res_krad_radio_html_len - 1;
+  html_template = (char *)kr_index_html;
+  html_template_len = kr_index_html_len - 1;
   total_len += html_template_len - 4;
 
   server->headcode =
