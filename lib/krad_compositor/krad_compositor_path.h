@@ -47,19 +47,13 @@ struct kr_compositor_path_setup {
   kr_compositor_path_frame_cb *frame_cb;
 };
 
-/*
- kr_compositor_path *kr_compositor_find(kr_compositor *compositor, char *name);
- int kr_compositor_path_ctl(kr_compositor_path *p, XXX);
- int kr_compositor_path_get_info(kr_compositor_path *path,
-  kr_compositor_path_info *info);
-*/
+size_t kr_compositor_path_size();
 
 void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path);
-
 int path_render(kr_compositor_path *path, kr_image *image, cairo_t *cr);
 
+/*kr_compositor_path *kr_compositor_find(kr_compositor *c, char *name);*/
 kr_compositor_path_type path_type_get(kr_compositor_path *path);
-size_t kr_compositor_path_size();
 int kr_compositor_unlink(kr_compositor_path *path);
 kr_compositor_path *kr_compositor_mkpath(kr_compositor *compositor,
  kr_compositor_path_setup *setup);
