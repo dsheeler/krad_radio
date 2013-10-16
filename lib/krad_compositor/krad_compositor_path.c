@@ -263,6 +263,19 @@ int kr_compositor_path_info_get(kr_compositor_path *path,
  return 0;
 }
 
+kr_compositor_path *kr_compositor_find(kr_compositor *c, char *name) {
+  int i;
+  kr_compositor_path *path;
+  if (c == NULL) return NULL;
+  i = 0;
+  while ((path = kr_pool_iterate_active(c->path_pool, &i))) {
+    if (path->info.type == KR_CMP_INPUT) {
+      return path;
+    }
+  }
+  return NULL;
+}
+
 int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s) {
   if ((p == NULL) || (s == NULL)) return -1;
   switch (s->control) {

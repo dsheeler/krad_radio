@@ -114,3 +114,4 @@ tests/cairo_stride
 kr
 krad_radio
 tests/dir
+tools/hextool/hextool

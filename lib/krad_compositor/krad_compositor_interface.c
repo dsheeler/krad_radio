@@ -109,6 +109,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   kr_compositor_info info;
   int i;
 //  int type;
+  kr_compositor_path_setting setting;
   kr_radio *radio;
   kr_compositor *compositor;
   kr_address_t address;
@@ -163,18 +164,28 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       unit_control.address.id.number = numbers[0];
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &numbers[0]);
       unit_control.address.control.compositor_control = numbers[0];
+      setting.control = unit_control.address.control.compositor_control;
       kr_unit_control_data_type_from_address(&unit_control.address, &unit_control.data_type);
       if (unit_control.data_type == KR_FLOAT) {
         kr_ebml2_unpack_element_float(&ebml_in, &element, &unit_control.value.real);
+        setting.real = unit_control.value.real;
       }
       if (unit_control.data_type == KR_INT32) {
         kr_ebml2_unpack_element_int32(&ebml_in, &element, &unit_control.value.integer);
+        setting.integer = unit_control.value.integer;
       }
       if (unit_control.data_type == KR_STRING) {
         //bah
       }
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &unit_control.duration);
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &numbers[1]);
+
+      path = kr_compositor_find(compositor, "");
+      if (path != NULL) {
+        setting.duration = 800;
+        setting.easing = EASEINOUTSINE;
+        kr_compositor_path_ctl(path, &setting);
+      }    
       //FIXME   test to see if subunit exists before broadcasting update to
       //        a phantom subunit
       /*krad_compositor_subunit_update(compositor, &unit_control);
