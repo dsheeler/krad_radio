@@ -2,7 +2,8 @@ AC_INIT([kradradio], m4_esyscmd([scripts/kr_version.sh]), [kradradio@gmail.com])
 AC_CONFIG_SRCDIR([tests/krad_webm_dash_vod_test.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign no-define subdir-objects])
-
+AC_CONFIG_MACRO_DIR([m4])
+AC_USE_SYSTEM_EXTENSIONS
 AM_MAINTAINER_MODE([enable])
 LT_INIT
 

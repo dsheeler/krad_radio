@@ -1,4 +1,5 @@
 build/
+m4/
 release/
 version.h
 .DS_Store

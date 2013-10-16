@@ -1,3 +1,4 @@
+ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = \
 -I../lib/krad_muxponder \
 -I../lib/krad_compositor \
