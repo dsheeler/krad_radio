@@ -45,7 +45,7 @@ AM_CPPFLAGS = \
 -Ikrad_wayland \
 -Ikrad_wayland/ext \
 -Ikrad_web \
--Ikrad_web/res \
+-Ikrad_web/core \
 -Ikrad_xmms2 \
 -Ikrad_rc \
 -Ikrad_fc \
