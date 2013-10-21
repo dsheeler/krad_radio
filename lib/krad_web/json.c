@@ -1,14 +1,59 @@
+#define KR_MAX_RTC_CLIENTS 2
+
+static int num_clients = 0;
+static kr_iws_client_t *clients[KR_MAX_RTC_CLIENTS];
+
+void krad_websocket_rtc_create_or_join(kr_iws_client_t *client, char *room) {
+  char json[256];
+  if (num_clients == 0) {
+    clients[num_clients++] = client;
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\","
+     "\"room\":\"%s\"}]", room);
+    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\","
+    "\"room\":\"%s\"}]", room);
+    interweb_ws_pack(clients[0], (uint8_t *)json, strlen(json));
+   } else if (num_clients == 1) {
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"join\","
+     "\"room\":\"%s\"}]", room);
+    interweb_ws_pack(clients[0], (uint8_t *)json, strlen(json)); 
+    clients[num_clients++] = client;
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\","
+    "\"room\":\"%s\"}]", room);
+    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+  } else {
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"full\","
+     "\"room\":\"%s\"}]", room);
+    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+  }
+}
+
+void krad_websocket_rtc_message(kr_iws_client_t *client, char *message) {
+  char json[4096];
+  char mod_message[4096];
+  if (message[0] == '{') {
+    strncpy(mod_message,message,4096);
+  } else {
+    snprintf(mod_message, 4096, "\"%s\"", message);
+  } 
+  snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"message\","
+   "\"message\":%s}]", mod_message);
+  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+}
+
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
   static const int shortest_json_len = 14;
-  static const int longest_json_len = 220;
+  static const int longest_json_len = 4096;
   static const char *json_pre = "{\"ctrl\":\"";
+  static const char *json_pre_rtc = "{\"rtc\":\""; 
   kr_unit_control_t uc;
   int cmplen;
   size_t addr_len;
   size_t dur_len;
   char *addr_str;
+  int i;
 
   dur_len = 0;
   addr_len = 0;
@@ -30,54 +75,87 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     return -1;
   }
   cmplen = strlen(json_pre);
-  if (strncmp(json, json_pre, cmplen) != 0) {
-    printk("JSON IN is[%zu]: %s", len, json);
-    printke("JSON json seems to be in a bad way");
-    return -1;
-  }
-  memset (&uc, 0, sizeof (uc));
-  pos = cmplen;
-  addr_len = strcspn(json + pos, " ");
-  if (addr_len == 0) {
-    printk("JSON IN is[%zu]: %s", len, json);
-    printke("JSON json addr err");
-    return -1;
-  }
-  json[pos + addr_len] = '\0';
-  addr_str = json + pos;
-  //printk("address string is: %s", addr_str);
-  if (!(kr_string_to_address(addr_str, &uc.address))) {
-    printke("Could not parse address");
-    return -1;
-  }
-  pos += addr_len + 1;
-  printk("rest is: %s", json + pos);
-  if ((pos + 3) > len) {
-    printke("could not find value part");
-    return -1;
-  }
-  if (kr_unit_control_data_type_from_address(&uc.address, &uc.data_type) != 1) {
-    printke("could not determine data type of control");
-    return -1;
-  }
-  if (uc.data_type == KR_FLOAT) {
-    uc.value.real = atof(json + pos);
-  }
-  if (uc.data_type == KR_INT32) {
-    uc.value.integer = atoi(json + pos);
-  }
-  if (uc.data_type == KR_CHAR) {
-    uc.value.byte = json[pos];
-  }
-  dur_len = strcspn(json + pos + 1, " ");
-  if (dur_len != 0) {
-    //printk("duration found: %s", json + pos + dur_len + 1);
-    uc.duration = atoi(json + pos + dur_len + 1);
-    //printk("duration: %d", uc.duration);
-  }
-  if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
-    printke("could not set control");
-    return -1;
+  if (strncmp(json, json_pre, cmplen) == 0) {
+    memset (&uc, 0, sizeof (uc));
+    pos = cmplen;
+    addr_len = strcspn(json + pos, " ");
+    if (addr_len == 0) {
+      printk("JSON IN is[%zu]: %s", len, json);
+      printke("JSON json addr err");
+      return -1;
+    }
+    json[pos + addr_len] = '\0';
+    addr_str = json + pos;
+    //printk("address string is: %s", addr_str);
+    if (!(kr_string_to_address(addr_str, &uc.address))) {
+      printke("Could not parse address");
+      return -1;
+    }
+    pos += addr_len + 1;
+    printk("rest is: %s", json + pos);
+    if ((pos + 3) > len) {
+      printke("could not find value part");
+      return -1;
+    }
+    if (kr_unit_control_data_type_from_address(&uc.address, &uc.data_type) != 1) {
+      printke("could not determine data type of control");
+      return -1;
+    }
+    if (uc.data_type == KR_FLOAT) {
+      uc.value.real = atof(json + pos);
+    }
+    if (uc.data_type == KR_INT32) {
+      uc.value.integer = atoi(json + pos);
+    }
+    if (uc.data_type == KR_CHAR) {
+      uc.value.byte = json[pos];
+    }
+    dur_len = strcspn(json + pos + 1, " ");
+    if (dur_len != 0) {
+      //printk("duration found: %s", json + pos + dur_len + 1);
+      uc.duration = atoi(json + pos + dur_len + 1);
+      //printk("duration: %d", uc.duration);
+    }
+    if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
+      printke("could not set control");
+      return -1;
+    }
+  } else {
+    cmplen = strlen(json_pre_rtc);
+    if (strncmp(json, json_pre_rtc, cmplen) == 0) {
+      pos = cmplen;
+      if (strncmp(json + pos, "create_or_join", 14) == 0) {
+        printk("got create_or_join");
+        if (strncmp(json + pos + 14 + 3, "room\"", 5) == 0) {
+          printk("got room");
+          char room[256];
+          addr_len = strcspn(json + pos + 14 + 3 + 7, "\"");
+          strncpy(room, json + pos + 14 + 3 + 7, addr_len); 
+          room[addr_len] = '\0';
+          krad_websocket_rtc_create_or_join(client, room);
+        }
+      } else if (strncmp(json + pos, "message", 7) == 0) {
+        pos += 10;
+        if (strncmp(json + pos, "message", 7) == 0) {
+          pos += 10;
+          char message[4096];
+          addr_len = 4096;
+          strncpy(message, json + pos, addr_len); 
+          message[addr_len -1] = '\0';
+          cmplen = strlen(message);
+          message[cmplen - 2] = '\0';
+          for (i = 0; i < num_clients; i++) {
+            if (client != clients[i]) {
+              krad_websocket_rtc_message(clients[i], message);
+            }
+          }
+        }
+      } else {
+        printk("JSON IN is[%zu]: %s", len, json);
+        printke("JSON json seems to be in a bad way");
+        return -1;
+      }
+    }
   }
   return 0;
 }
@@ -432,3 +510,4 @@ static int krad_delivery_handler(kr_iws_client_t *client) {
 
   return 0;
 }
+

@@ -127,7 +127,7 @@ int32_t interweb_ws_parse_frame_data(kr_iws_client_t *client) {
   int32_t ret;
   int32_t pos;
   int32_t max;
-  uint8_t output[1024];
+  uint8_t output[4096];
 
   ws = &client->ws;
   ws->input_len = client->in->len;

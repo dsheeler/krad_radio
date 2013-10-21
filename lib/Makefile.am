@@ -135,7 +135,7 @@ AM_CPPFLAGS += -DKRAD_USE_X11
 endif
 
 if HAVE_TURBOJPEG
-krad_radio_libkradradio_la_LIBADD += -lturbojpeg
+krad_radio_libkradradio_la_LIBADD += /usr/lib/x86_64-linux-gnu/libturbojpeg.so.0
 endif
 
 if HAVE_GIF
