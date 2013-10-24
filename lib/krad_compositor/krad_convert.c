@@ -19,12 +19,18 @@ int kr_image_convert(kr_convert *conv, kr_image *dst, kr_image *src) {
   int ret;
   int src_w;
   int src_h;
+  int src_bpp;
   uint8_t *src_ppx[4];
   int32_t src_strides[4];
 
   if (conv == NULL) return -2;
   if (src == NULL) return -3;
   if (dst == NULL) return -4;
+
+  src->fmt = PIX_FMT_YUYV422;
+  dst->fmt = PIX_FMT_RGB32;
+
+  src_bpp = 2;
 
   src_w = src->w;
   src_h = src->h;
@@ -33,12 +39,10 @@ int kr_image_convert(kr_convert *conv, kr_image *dst, kr_image *src) {
   src_ppx[2] = src->ppx[2];
   src_ppx[3] = src->ppx[3];
   src_strides[0] = src->pps[0];
+  src_strides[0] = src_bpp * src_w;
   src_strides[1] = src->pps[1];
   src_strides[2] = src->pps[2];
   src_strides[3] = src->pps[3];
-
-  src->fmt = PIX_FMT_YUYV422;
-  dst->fmt = PIX_FMT_RGB32;
 
   conv->sws = sws_getCachedContext(conv->sws, src_w, src_h, src->fmt, dst->w,
    dst->h, dst->fmt, conv->quality, NULL, NULL, NULL);

@@ -94,8 +94,8 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
    */
   if ((path->info.controls.x == 0)
    && (path->info.controls.y == 0)
-   /*&& (path->info.controls.width == 1.0f) width speced == output width
-   && (path->info.controls.height == 1.0f)  height speced == output height*/
+   && (path->info.controls.w == 0)
+   && (path->info.controls.h == 0)
    && (path->info.controls.opacity == 1.0f)
    && (path->info.controls.rotation == 0.0f)) {
   /*image = subimage(dst, params);*/
@@ -112,12 +112,16 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   image = *dst;
   image.px = scratch;
   image.ppx[0] = image.px;
-  /*
+  if (path->info.controls.w != 0) {
+    image.w = path->info.controls.w;
+  }
+  if (path->info.controls.h != 0) {
+    image.h = path->info.controls.h;
+  }
   path->converter.crop.x = path->info.crop_x;
   path->converter.crop.y = path->info.crop_y;
   path->converter.crop.w = path->info.crop_width;
   path->converter.crop.h = path->info.crop_height;
-  */
   ret = kr_image_convert(&path->converter, &image, &cb_arg.image);
   if (ret != 0) {
     printke("kr_image convert returned %d :/", ret);
