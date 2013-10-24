@@ -115,5 +115,5 @@ tests/cairo_stride
 kr
 krad_radio
 tests/dir
-tools/hextool/hextool
+tools/code/hextool/hextool
 lib/krad_web/embed.h
