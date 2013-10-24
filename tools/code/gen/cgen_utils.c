@@ -29,7 +29,7 @@ int32_t *clean_string (char *input, char *output) {
   return 0;
 }
 
-char *find_info_struct(char *input, char *name) {
+static char *find_info_struct(char *input, char *name) {
 
   char begsub[] = "struct ";
   char sub2[] = "{";
@@ -72,13 +72,13 @@ char *find_info_struct(char *input, char *name) {
   return begp+strlen(begsub);
 }
 
-uint32_t is_dir(const char *path) {
+static uint32_t is_dir(const char *path) {
   struct stat buf;
   stat(path, &buf);
   return S_ISDIR(buf.st_mode);
 }
 
-int32_t dir_select(const struct direct *entry) {
+static int32_t dir_select(const struct direct *entry) {
   if ((strcmp(entry->d_name, ".") == 0) || 
     (strcmp(entry->d_name, "..") == 0) || !is_dir(entry->d_name)) {
     return 0;
@@ -114,7 +114,7 @@ uint32_t is_array(char *fname) {
   }
 }
 
-int32_t header_files_select(const struct direct *entry) {
+static int32_t header_files_select(const struct direct *entry) {
   if (is_dir(entry->d_name) || strncmp(&entry->d_name[strlen(entry->d_name)-2],".h",2)) {
     return 0;
   }
@@ -181,6 +181,21 @@ static void *set_substructs(dynamic_struct *dystructs, uint32_t n) {
   return 0;
 }
 
+static uint32_t check_strings (char *type, char *fname) {
+
+  // some garbage checks 
+
+  if (strchr(type,'{') || strchr(type,'}') || strchr(type,'*') || strchr(type,'/') || strchr(type,'\\')) {
+    return 0;
+  }
+
+  if (strchr(fname,'{') || strchr(fname,'}') || strchr(fname,'*') || strchr(fname,'/') || strchr(fname,'\\')) {
+    return 0;
+  }
+
+  return 1;
+}
+
 static void dynamic_members_init(char *line, dynamic_struct *dystruct) {
 
   char type[32];
@@ -193,6 +208,10 @@ static void dynamic_members_init(char *line, dynamic_struct *dystruct) {
 
   clean_string(line,type);
   clean_string(strstr(line,type)+strlen(type),fname);
+
+  if (!check_strings(type,fname)) {
+    return;
+  }
 
   if (num = is_array(fname)) {
     printf("Type: %s array ",type);
@@ -216,7 +235,8 @@ static void dynamic_members_init(char *line, dynamic_struct *dystruct) {
     strcpy(dystruct->dynamic_members[nmemb].struct_name,type);
   } else if (dystruct->dynamic_members[nmemb].type == KR_DY_ENUM) {
     printf("This must be an enum\n");
-  }
+  } 
+  
   printf("Type: %s ",type);
   printf("Name: %s \n",fname);
 

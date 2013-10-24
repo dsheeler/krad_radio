@@ -22,7 +22,7 @@ void hexdump (char *filename, uint8_t *buffer, int len) {
   if (!fname)
     return;
 
-  p = rindex(fname,'.');
+  p = strrchr(fname,'.');
   strl = strlen(fname);
 
   if (p)

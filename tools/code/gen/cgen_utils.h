@@ -62,11 +62,7 @@ struct code_gen_options {
 };
 
 int32_t *clean_string (char *input, char *output);
-char *find_info_struct(char *input, char *name);
-uint32_t is_dir(const char *path);
-int32_t dir_select(const struct direct *entry);
 uint32_t is_array(char *fname);
-int32_t header_files_select(const struct direct *entry);
 int32_t parse_and_init(char *basepath,dynamic_struct *dystructs);
 dynamic_struct *get_struct_by_name(char *name, 
   dynamic_struct *dystructs, uint32_t n);

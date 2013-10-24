@@ -33,7 +33,7 @@ static void capitalize(char *str1, char *str2) {
 }
 
 static int32_t meta_structs_codegen(code_gen_opts *opts, 
-  dynamic_member *dymemb, uint32_t idx, uint8_t last) {
+  dynamic_member *dymemb, uint32_t idx, uint32_t struct_idx, uint8_t last) {
 
   char str[256];
   char cap[256];
@@ -46,14 +46,14 @@ static int32_t meta_structs_codegen(code_gen_opts *opts,
       capitalize(dymemb->struct_name,cap);
       opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  .members[%d].name = \"%s\",\n  .members[%d].type = %s,\n  .members[%d].struct_type = %s,\n",idx,dymemb->name,idx,str,idx,cap);
     } else {
-      opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  .members[%d].name = \"%s\",\n  .members[%d].type = %s,\n",idx,dymemb->name,idx,str);
+      opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  .members[%d].name = \"%s\",\n  .members[%d].type = %s,\n  .members[%d].value_ptr = .info->%s.%s,\n",idx,dymemb->name,idx,str,idx,opts->dystructs[struct_idx].name,dymemb->name);
     }
   } else {
     if (dymemb->type == KR_DY_STRUCT) {
       capitalize(dymemb->struct_name,cap);
       opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  .members[%d].name = \"%s\",\n  .members[%d].type = %s,\n  .members[%d].struct_type = %s\n",idx,dymemb->name,idx,str,idx,cap);
     } else {
-      opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  .members[%d].name = \"%s\",\n  .members[%d].type = %s\n",idx,dymemb->name,idx,str);
+      opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  .members[%d].name = \"%s\",\n  .members[%d].type = %s,\n  .members[%d].value_ptr = .info->%s.%s\n",idx,dymemb->name,idx,str,idx,opts->dystructs[struct_idx].name,dymemb->name);
     }
   }
 
@@ -116,16 +116,15 @@ static int32_t codegen(code_gen_opts *opts) {
 
   opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"  } info;\n};\n\n");
 
-  opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"typedef enum {\n  KR_META_INT32,\n  KR_META_UINT32,\n  KR_META_UINT64,\n  KR_META_FLOAT,\n  KR_META_CHAR,\n  KR_META_STRING,\n  KR_META_STRUCT,\n  KR_META_ENUM \n} kr_member_type;\n\nstruct kr_meta_info_member {\n  char name[KR_META_MEMB_NAME_MAX]; \n  kr_member_type type;\n  kr_info_type struct_type;\n  char struct_name[KR_META_STRUCT_NAME_MAX];\n  uint8_t array;\n  uint32_t array_len;\n };\n\nstruct kr_meta_info {\n  char name[KR_META_STRUCT_NAME_MAX]; \n  uint32_t members_count; \n  kr_info_type type;\n  kr_info info;\n  uint8_t sub; \n  kr_meta_info_member members[KR_META_INFO_MEMBERS_MAX];\n };\n\n");
-
+  opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"typedef enum {\n  KR_META_INT32,\n  KR_META_UINT32,\n  KR_META_UINT64,\n  KR_META_FLOAT,\n  KR_META_CHAR,\n  KR_META_STRING,\n  KR_META_STRUCT,\n  KR_META_ENUM \n} kr_member_type;\n\nstruct kr_meta_info_member {\n  char name[KR_META_MEMB_NAME_MAX]; \n  kr_member_type type;\n  kr_info_type struct_type;\n  char struct_name[KR_META_STRUCT_NAME_MAX];\n  union {\n    int *integer;\n    uint32_t *uint32;\n    int64_t *integer64;\n    float *real;\n    char *ch;\n    char *string[64];\n  } value_ptr; \n  uint8_t array;\n  uint32_t array_len;\n };\n\nstruct kr_meta_info {\n  char name[KR_META_STRUCT_NAME_MAX]; \n  uint32_t members_count; \n  kr_info_type type;\n  kr_info *info;\n  uint8_t sub; \n  kr_meta_info_member members[KR_META_INFO_MEMBERS_MAX];\n };\n\n");
   for (i=0;i<n;i++) {
       capitalize(dystructs[i].name,str_upper);
       opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"static const kr_meta_info %s_meta = {\n  .name = \"%s\", \n  .type = %s, \n  .members_count = %d,\n",dystructs[i].name,dystructs[i].name,str_upper,dystructs[i].members);
       for (j=0;j<dystructs[i].members;j++) {
         if (j < dystructs[i].members - 1) {
-          meta_structs_codegen(opts,&(dystructs[i].dynamic_members[j]),j,0);
+          meta_structs_codegen(opts,&(dystructs[i].dynamic_members[j]),j,i,0);
         } else {
-          meta_structs_codegen(opts,&(dystructs[i].dynamic_members[j]),j,1);
+          meta_structs_codegen(opts,&(dystructs[i].dynamic_members[j]),j,i,1);
         }
       }
       opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"};\n\n");

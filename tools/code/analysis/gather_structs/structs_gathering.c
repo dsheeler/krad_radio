@@ -29,6 +29,49 @@ static int32_t *clean_string (char *input, char *output) {
   return 0;
 }
 
+static void *get_memb_name_and_type(char *line, 
+  struct struct_memb_def *memb) {
+
+  char *p;
+  char *type;
+  type = NULL;
+
+
+  char clean[strlen(line)];
+  clean_string(line,clean);
+  asprintf(&(memb->type),"%s",clean);
+
+  p = strchr(line,';');
+  p[0] = '\0';
+
+
+  if (p = strrchr(line,'*')) {
+    /* it's a pointer */
+    memb->ispointer = 1;
+    char clean[strlen(&p[1])];
+    clean_string(&p[1],clean);
+    asprintf(&(memb->name),"%s",clean);
+  } else {
+    p = strstr(line,memb->type);
+    if (p) {
+      char clean[strlen(&p[strlen(memb->type)])];
+      clean_string(&p[strlen(memb->type)],clean);
+
+      if (p = strchr(clean,'[')) {
+        memb->isarray = 1;
+        p[0] = '\0';
+      } 
+
+      asprintf(&(memb->name),"%s",clean);
+    }
+
+
+  }
+
+  return;
+}
+
+
 static uint32_t is_dir(const char *path) {
   struct stat buf;
   char *rpath;
@@ -108,6 +151,8 @@ static int defs_from_header(struct struct_def *defs,
 
   FILE *fp;
   char *line = NULL;
+  char *mtype;
+  char *mname;
   size_t len = 0;
   int read;
   int linen;
@@ -143,6 +188,7 @@ static int defs_from_header(struct struct_def *defs,
           end[0] = '\0';
           clean_string(&p3[1],sname);
           defs[index].name = strdup(sname);
+          defs[index].istypedef = 1;
         }
         index++;
         inside_struct = 0;
@@ -152,6 +198,7 @@ static int defs_from_header(struct struct_def *defs,
           if ((lenacc+strlen(line)) < MAX_DEF_LENGTH) {
             strcpy(&(defs[index].definition[lenacc]),line);
             lenacc += strlen(line);
+            get_memb_name_and_type(line,&defs[index].members_info[defs[index].members]);
             defs[index].members++;
           } else {
             fprintf(stderr,"MAX_DEF_LENGTH exceeded\n");
@@ -209,14 +256,14 @@ int gather_struct_definitions(struct struct_def *defs, char *match, char *text) 
   return num;
 }
 
-static int is_prefix (const char *str, const char *prefix) {
+int is_prefix (const char *str, const char *prefix) {
   if (!prefix[0]) {
     return 1;
   }
   return !strncmp(str,prefix,strlen(prefix));
 }
 
-static int is_suffix (const char *str, const char *suffix) {
+int is_suffix (const char *str, const char *suffix) {
   int len1;
   int len2;
 
@@ -238,6 +285,7 @@ int print_structs_defs(struct struct_def *defs,
   int ndefs, char *prefix, char *suffix, char *format) {
 
   int i;
+  int j;
 
   if (!strncmp(format,"names",5)) {
     for (i=0;i<ndefs;i++) {
@@ -260,12 +308,31 @@ int print_structs_defs(struct struct_def *defs,
 
   if (!strncmp(format,"info",4)) {
     for (i=0;i<ndefs;i++) {
-      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix))
-        printf("\nName: %s\n",defs[i].name);
+      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
+        printf("Name: %s\n",defs[i].name);
         printf("Path: %s\n",defs[i].fullpath);
         printf("Line: %d\n",defs[i].line);
         printf("Members No: %d\n\n",defs[i].members);
+      }
+    }
+    return 0;
+  }
 
+  if (!strncmp(format,"members",7)) {
+    for (i=0;i<ndefs;i++) {
+      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
+        printf("Struct Name: %s\n",defs[i].name);
+        for (j=0;j<defs[i].members;j++) {
+          printf("  Member Name: %s\n",defs[i].members_info[j].name);
+          printf("  Member Type: %s\n",defs[i].members_info[j].type);
+          if (defs[i].members_info[j].isarray) {
+            printf("  It's an array.\n");
+          }
+          if (defs[i].members_info[j].ispointer) {
+            printf("  It's a pointer.\n");
+          }
+        }
+      }
     }
     return 0;
   }

@@ -6,6 +6,7 @@ void print_usage(char *cmd) {
   printf("names --> prints structure names only.\n");
   printf("info --> prints info about the structs matched.\n");
   printf("header --> prints the body of the structs matched.\n");
+  printf("members --> prints info about the members of the structs matched.\n");
 }
 
 int main(int argc, char *argv[]) {

@@ -27,7 +27,7 @@ static void dystruct_var_list_dump_recursive(dynamic_struct *dystruct, char *var
       substruct = get_struct_by_name(dystruct->dynamic_members[j].struct_name,dystructs,n);
       strcat(tmp,dystruct->dynamic_members[j].name);
       strcat(tmp,".");
-      dystruct_var_list_dump_recursive(substruct,var_list,dystructs,n,tmp);
+      //dystruct_var_list_dump_recursive(substruct,var_list,dystructs,n,tmp);
     } else {
       strcat(var_list,",");
       strcat(var_list,"infostruct->");
@@ -75,6 +75,9 @@ static int32_t json_serializer_codegen(code_gen_opts *opts, dynamic_member *dyme
   if (dymemb->struct_name[0]) {
     opts->buff_pos += snprintf(opts->output_buffer+opts->buff_pos,opts->buff_size-opts->buff_pos,"\\\"%s\\\": {",dymemb->name);
     substruct = get_struct_by_name(dymemb->struct_name,opts->dystructs,opts->nstructs);
+    if (substruct == NULL) {
+      return -1;
+    }
     for (i=0;i<substruct->members;i++) {
       if (i<substruct->members-1) {
         json_serializer_codegen(opts,&substruct->dynamic_members[i],0);
@@ -121,6 +124,7 @@ static int32_t codegen(code_gen_opts *opts) {
           json_serializer_codegen(opts,&(dystructs[i].dynamic_members[j]),1);
         }
       }
+      
       codegen_post_fun(&dystructs[i],opts);
   }
 
@@ -146,6 +150,9 @@ int32_t main(int32_t argc, char *argv[]) {
     basepath = argv[1];
     ofile = argv[2];
   }
+
+  memset(dystructs,0,sizeof(dynamic_struct)*MAX_DYNAMIC_STRUCTS);
+  memset(&cgen_opts,0,sizeof(code_gen_opts));
 
   nstructs = parse_and_init(basepath,dystructs);
 
