@@ -31,7 +31,7 @@ void controls_tick(kr_compositor_controls *c, kr_compositor_control_easers *e) {
   if (kr_easer_active(&e->y)) {
     c->y = kr_easer_process(&e->y, c->y, NULL);
   }
-/*  if (kr_easer_active(&e->z)) {
+/*if (kr_easer_active(&e->z)) {
     c->z = kr_easer_process(&e->z, c->z, NULL);
   }*/
   if (kr_easer_active(&e->w)) {
@@ -76,41 +76,29 @@ void path_output(kr_compositor_path *path, krad_frame_t *frame) {
 }
 
 int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
+
   int ret;
-  float opacity;
-  float rotation;
   kr_image image;
   kr_compositor_path_frame_cb_arg cb_arg;
   cairo_surface_t *src;
-
-  static uint8_t scratch[1280*720*4];
+  static uint8_t scratch[1280*720*4]; /*FIXME*/
 
   cb_arg.user = path->user;
-
-  opacity = floorf(path->info.controls.opacity * 100 + 0.5) / 100;
-
-  path->info.controls.opacity = 1.0f;
-  static int first = 0;
-  kr_compositor_path_setting setting;
-  setting.control = KR_ROTATION;
-  setting.real = 560.0f;
-  setting.duration = 800;
-  setting.easing = EASEINOUTSINE;
-  if (first == 0) {
-    kr_compositor_path_ctl(path, &setting);
-    first = 1;
-  }
   path_tick(path);
-  if (path->info.controls.opacity == 0.0f) return 0;
-
+  /*if (path->info.controls.opacity == 0.0f) return 0; Hrmzor */
   path->frame_cb(&cb_arg);
   /* After the frame_cb if the parameters (crop, size)
    *  have not changed we should see if the image has also not changed
    *  in which case we can use a cached version -- this function can be
    *   used perhaps beforehand so output can wait on new input
    */
-  if ((path->info.controls.opacity == 1.0f) && (path->info.controls.rotation == 0.0f)) {
-  //  image = subimage(dst, params);
+  if ((path->info.controls.x == 0)
+   && (path->info.controls.y == 0)
+   /*&& (path->info.controls.width == 1.0f) width speced == output width
+   && (path->info.controls.height == 1.0f)  height speced == output height*/
+   && (path->info.controls.opacity == 1.0f)
+   && (path->info.controls.rotation == 0.0f)) {
+  /*image = subimage(dst, params);*/
     image = *dst;
     ret = kr_image_convert(&path->converter, &image, &cb_arg.image);
     if (ret != 0) {
@@ -120,11 +108,16 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
     return 0;
   }
 
-//  image = subimage(path_scratch_image, params);
+/*image = subimage(path_scratch_image, params);*/
   image = *dst;
   image.px = scratch;
   image.ppx[0] = image.px;
-
+  /*
+  path->converter.crop.x = path->info.crop_x;
+  path->converter.crop.y = path->info.crop_y;
+  path->converter.crop.w = path->info.crop_width;
+  path->converter.crop.h = path->info.crop_height;
+  */
   ret = kr_image_convert(&path->converter, &image, &cb_arg.image);
   if (ret != 0) {
     printke("kr_image convert returned %d :/", ret);
@@ -135,41 +128,16 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   src = cairo_image_surface_create_for_data(image.px, CAIRO_FORMAT_ARGB32,
    image.w, image.h, image.pps[0]);
 
-  int w;
-  int h;
-  float rads;
-  w = image.w;
-  h = image.h;
-
   if (path->info.controls.rotation != 0.0f) {
     cairo_translate (cr, path->info.controls.x, path->info.controls.y);
-    cairo_translate(cr, w / 2.0, h / 2.0);
-    /*
-    rotation = path->info.controls.rotation;
-    printk("rotation: pre %f", rotation);
-    rotation = kr_round2(rotation);
-    printk("rotation: post: %f", rotation);
-    rotation_rads = path->info.controls.rotation * (M_PI/180.0);
-    printk("rotation: rads pre: %f", rotation_rads);
-    rotation_rads = kr_round2(rotation_rads);
-    printk("rotation: rads post: %f", rotation_rads);
-    */
-    rads = kr_round3(path->info.controls.rotation * (M_PI/180.0));
-    printk("rads: %f", rads);
-    cairo_rotate(cr, rads);
-    cairo_translate(cr, - w / 2.0, - h / 2.0);
+    cairo_translate(cr, (int)(image.w) / 2.0, (int)(image.h) / 2.0);
+    cairo_rotate(cr, kr_round3(path->info.controls.rotation * (M_PI/180.0)));
+    cairo_translate(cr, - (int)(image.w) / 2.0, - (int)(image.h) / 2.0);
     cairo_translate (cr, -path->info.controls.x, -path->info.controls.y);
   }
-
-  cairo_set_source_surface(cr, src, 0, 0);
-//  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-/*  cairo_rectangle(cr, path->info.controls.x, path->info.controls.y, image.w, image.h);
-  cairo_clip(cr);*/
-  if (path->info.controls.opacity == 1.0f) {
-    cairo_paint(cr);
-  } else {
-   cairo_paint_with_alpha(cr, path->info.controls.opacity);
-  }
+  cairo_set_source_surface(cr, src, path->info.controls.x, path->info.controls.y);
+  cairo_rectangle(cr, path->info.controls.x, path->info.controls.y, image.w, image.h);
+  cairo_paint_with_alpha(cr, kr_round3(path->info.controls.opacity));
   cairo_restore(cr);
   cairo_surface_destroy(src);
   return 0;
@@ -198,6 +166,10 @@ static void path_create(kr_compositor_path *path,
  kr_compositor_path_setup *setup) {
 
   path->info = setup->info;
+  /* FIXME a silly default? */
+  path->info.controls.opacity = 0.0f;
+  kr_easer_set(&path->easers.opacity, 1.0f, 60, EASEINOUTSINE, NULL);
+  /* End silly thing */
   path->user = setup->user;
   path->frame_cb = setup->frame_cb;
   kr_image_convert_init(&path->converter);

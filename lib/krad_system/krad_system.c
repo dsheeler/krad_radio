@@ -3,19 +3,14 @@
 static int krad_system_initialized;
 static krad_system_t krad_system;
 
-float kr_round(float f) {
-  if (f >= 0x1.0p23) return f;
-  return (float) (unsigned int) (f + 0.49999997f);
-}
-
 float kr_round2(float f) {
-  f = kr_round(f * 100.0);
+  f = rintf(f * 100.0);
   f = f / 100.0;
   return f;
 }
 
 float kr_round3(float f) {
-  f = kr_round(f * 1000.0);
+  f = rintf(f * 1000.0);
   f = f / 1000.0;
   return f;
 }

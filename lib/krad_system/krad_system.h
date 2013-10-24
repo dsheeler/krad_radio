@@ -121,7 +121,6 @@ struct krad_system_St {
   sigset_t signal_mask;
 };
 
-float kr_round(float f);
 float kr_round2(float f);
 float kr_round3(float f);
 

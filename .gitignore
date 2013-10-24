@@ -112,6 +112,7 @@ tests/cairo_sandbox
 tests/kr_strtest
 tests/cairo_stride
 *.*.swp
+*.swp
 kr
 krad_radio
 tests/dir
