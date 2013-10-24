@@ -5,22 +5,32 @@ static kr_iws_client_t *clients[KR_MAX_RTC_CLIENTS];
 
 void krad_websocket_rtc_create_or_join(kr_iws_client_t *client, char *room) {
   char json[256];
-  if (num_clients == 0) {
-    clients[num_clients++] = client;
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\","
-     "\"room\":\"%s\"}]", room);
-    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\","
-    "\"room\":\"%s\"}]", room);
-    interweb_ws_pack(clients[0], (uint8_t *)json, strlen(json));
-   } else if (num_clients == 1) {
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"join\","
-     "\"room\":\"%s\"}]", room);
-    interweb_ws_pack(clients[0], (uint8_t *)json, strlen(json)); 
-    clients[num_clients++] = client;
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\","
-    "\"room\":\"%s\"}]", room);
-    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+  static int first = 1;
+  int i;
+
+  if (first) {
+    first = 0;
+    for (i = 0; i < 2; i++) {
+      clients[i] = NULL;
+    }
+  }
+
+  if (num_clients < 2) {
+    for (i = 0; i < 2; i++) {
+      if (clients[i] == NULL) {
+        clients[i] = client;
+        num_clients++;
+        if (num_clients == 1) {
+          snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\","
+           "\"room\":\"%s\"}]", room);
+          interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+        }
+        snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\","
+        "\"room\":\"%s\"}]", room);
+        interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+        break;
+      }
+    }
   } else {
     snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"full\","
      "\"room\":\"%s\"}]", room);
@@ -39,6 +49,20 @@ void krad_websocket_rtc_message(kr_iws_client_t *client, char *message) {
   snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"message\","
    "\"message\":%s}]", mod_message);
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+}
+
+void krad_websocket_rtc_disconnect_client(kr_iws_client_t *client) {
+  int i;
+  for (i = 0; i < 2; i++) {
+    if (client == clients[i]) {
+      clients[i] = NULL;
+      num_clients--;
+    } else {
+      if (clients[i] != NULL) {
+   //     krad_websocket_rtc_message(clients[i], "bye");
+      }
+    }
+  }
 }
 
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
@@ -144,10 +168,13 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
           message[addr_len -1] = '\0';
           cmplen = strlen(message);
           message[cmplen - 2] = '\0';
-          for (i = 0; i < num_clients; i++) {
-            if (client != clients[i]) {
+          for (i = 0; i < 2; i++) {
+            if (client != clients[i] && clients[i] != NULL) {
               krad_websocket_rtc_message(clients[i], message);
             }
+          }
+          printk("message: %s", message);
+          if (strncmp(message, "bye", 3) == 0) {
           }
         }
       } else {
