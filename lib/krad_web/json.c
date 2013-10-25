@@ -1,68 +1,3 @@
-#define KR_MAX_RTC_CLIENTS 2
-
-static int num_clients = 0;
-static kr_iws_client_t *clients[KR_MAX_RTC_CLIENTS];
-
-void krad_websocket_rtc_create_or_join(kr_iws_client_t *client) {
-  char json[256];
-  static int first = 1;
-  int i;
-
-  if (first) {
-    first = 0;
-    for (i = 0; i < 2; i++) {
-      clients[i] = NULL;
-    }
-  }
-
-  if (num_clients < 2) {
-    for (i = 0; i < 2; i++) {
-      if (clients[i] == NULL) {
-        clients[i] = client;
-        num_clients++;
-        if (num_clients == 1) {
-          snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\""
-           "}]");
-          interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-        }
-        snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\"}]");
-        interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-        break;
-      }
-    }
-  } else {
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"full\"}]");
-    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-  }
-}
-
-void krad_websocket_rtc_message(kr_iws_client_t *client, char *message) {
-  char json[4096];
-  char mod_message[4096];
-  if (message[0] == '{') {
-    strncpy(mod_message,message,4096);
-  } else {
-    snprintf(mod_message, 4096, "\"%s\"", message);
-  } 
-  snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"message\","
-   "\"message\":%s}]", mod_message);
-  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-}
-
-void krad_websocket_rtc_disconnect_client(kr_iws_client_t *client) {
-  int i;
-  for (i = 0; i < 2; i++) {
-    if (client == clients[i]) {
-      clients[i] = NULL;
-      num_clients--;
-    } else {
-      if (clients[i] != NULL) {
-   //     krad_websocket_rtc_message(clients[i], "bye");
-      }
-    }
-  }
-}
-
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
@@ -148,7 +83,7 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
       pos = cmplen;
       if (strncmp(json + pos, "create_or_join", 14) == 0) {
         printk("got create_or_join");
-        krad_websocket_rtc_create_or_join(client);
+        kr_webrtc_create_or_join(client);
       } else if (strncmp(json + pos, "message", 7) == 0) {
         pos += 10;
         if (strncmp(json + pos, "message", 7) == 0) {
@@ -160,9 +95,9 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
           cmplen = strlen(message);
           message[cmplen - 2] = '\0';
           for (i = 0; i < 2; i++) {
-            if (client != clients[i] && clients[i] != NULL) {
-              krad_websocket_rtc_message(clients[i], message);
-            }
+            /*if (client != clients[i] && clients[i] != NULL) {
+              kr_webrtc_message(clients[i], message);
+            }*/
           }
           printk("message: %s", message);
           if (strncmp(message, "bye", 3) == 0) {

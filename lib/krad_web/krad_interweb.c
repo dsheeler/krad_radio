@@ -128,7 +128,7 @@ static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
  kr_iws_client_t *client) {
 
   if (client->webrtc) {
-    krad_websocket_rtc_disconnect_client(client);
+    kr_webrtc_disconnect_client(client);
   }
 
   close(client->sd);

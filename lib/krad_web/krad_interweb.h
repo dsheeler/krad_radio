@@ -149,6 +149,21 @@ struct krad_interweb_server_client_St {
   interwebs_t ws;
 };
 
+typedef struct kr_webrtc_St kr_webrtc_t;
+typedef struct kr_webrtc_client_St kr_webrtck_t;
+
+struct kr_webrtc_St {
+  int32_t num_webrtc_clients;
+};
+
+struct kr_webrtc_client_St {
+  int active;
+} webrtc_client_t;
+
+void kr_webrtc_create_or_join(kr_iws_client_t *client);
+void kr_webrtc_message(kr_iws_client_t *client, char *message);
+void kr_webrtc_disconnect_client(kr_iws_client_t *client);
+
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,
  char *interface, int32_t port);
 int32_t krad_interweb_server_listen_on (kr_interweb_server_t *server,
