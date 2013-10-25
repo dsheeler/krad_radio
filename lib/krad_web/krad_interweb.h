@@ -137,6 +137,7 @@ struct krad_interweb_server_client_St {
   krad_interweb_t *server;
   kr_io2_t *in;
   kr_io2_t *out;
+  int32_t webrtc;
   int32_t drop_after_sync;
   int32_t type;
   uint32_t hdr_le;

@@ -127,13 +127,17 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
 static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
  kr_iws_client_t *client) {
 
-  krad_websocket_rtc_disconnect_client(client);
+  if (client->webrtc) {
+    krad_websocket_rtc_disconnect_client(client);
+  }
+
   close(client->sd);
   client->sd = 0;
   if (client->ws.krclient != NULL) {
     kr_client_destroy (&client->ws.krclient);
   }
   client->type = 0;
+  client->webrtc = 0;
   client->drop_after_sync = 0;
   client->hdr_le = 0;
   client->hdr_pos = 0;

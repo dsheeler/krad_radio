@@ -3,7 +3,7 @@
 static int num_clients = 0;
 static kr_iws_client_t *clients[KR_MAX_RTC_CLIENTS];
 
-void krad_websocket_rtc_create_or_join(kr_iws_client_t *client, char *room) {
+void krad_websocket_rtc_create_or_join(kr_iws_client_t *client) {
   char json[256];
   static int first = 1;
   int i;
@@ -21,19 +21,17 @@ void krad_websocket_rtc_create_or_join(kr_iws_client_t *client, char *room) {
         clients[i] = client;
         num_clients++;
         if (num_clients == 1) {
-          snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\","
-           "\"room\":\"%s\"}]", room);
+          snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\""
+           "}]");
           interweb_ws_pack(client, (uint8_t *)json, strlen(json));
         }
-        snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\","
-        "\"room\":\"%s\"}]", room);
+        snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\"}]");
         interweb_ws_pack(client, (uint8_t *)json, strlen(json));
         break;
       }
     }
   } else {
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"full\","
-     "\"room\":\"%s\"}]", room);
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"full\"}]");
     interweb_ws_pack(client, (uint8_t *)json, strlen(json));
   }
 }
@@ -150,14 +148,7 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
       pos = cmplen;
       if (strncmp(json + pos, "create_or_join", 14) == 0) {
         printk("got create_or_join");
-        if (strncmp(json + pos + 14 + 3, "room\"", 5) == 0) {
-          printk("got room");
-          char room[256];
-          addr_len = strcspn(json + pos + 14 + 3 + 7, "\"");
-          strncpy(room, json + pos + 14 + 3 + 7, addr_len); 
-          room[addr_len] = '\0';
-          krad_websocket_rtc_create_or_join(client, room);
-        }
+        krad_websocket_rtc_create_or_join(client);
       } else if (strncmp(json + pos, "message", 7) == 0) {
         pos += 10;
         if (strncmp(json + pos, "message", 7) == 0) {
