@@ -98,10 +98,10 @@ int32_t kr_perspective_set(kr_perspective *p, kr_perspective_view *view) {
   if ((p == NULL) || (view == NULL)) {
     return -1;
   }
-  printk("%u-%u\n", view->top_left.x, view->top_left.y);
+/*printk("%u-%u\n", view->top_left.x, view->top_left.y);
   printk("%u-%u\n", view->top_right.x, view->top_right.y);
   printk("%u-%u\n", view->bottom_left.x, view->bottom_left.y);
-  printk("%u-%u\n", view->bottom_right.x, view->bottom_right.y);
+  printk("%u-%u\n", view->bottom_right.x, view->bottom_right.y);*/
   if (view->top_left.x >= p->width) {
     return -2;
   }
@@ -158,10 +158,10 @@ int32_t kr_perspective_set(kr_perspective *p, kr_perspective_view *view) {
   p->priv->bl.y = view->bottom_left.y/(double)(p->height - 1);
   p->priv->br.x = view->bottom_right.x/(double)(p->width - 1);
   p->priv->br.y = view->bottom_right.y/(double)(p->height - 1);
-  printk("%f-%f\n", p->priv->tl.x, p->priv->tl.y);
+/*printk("%f-%f\n", p->priv->tl.x, p->priv->tl.y);
   printk("%f-%f\n", p->priv->tr.x, p->priv->tr.y);
   printk("%f-%f\n", p->priv->bl.x, p->priv->bl.y);
-  printk("%f-%f\n", p->priv->br.x, p->priv->br.y);
+  printk("%f-%f\n", p->priv->br.x, p->priv->br.y);*/
   perspective_map(p);
   return 0;
 }
