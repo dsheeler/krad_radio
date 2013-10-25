@@ -20,7 +20,7 @@ AC_SUBST(KR_LT_AGE)
 AC_SUBST(KR_GIT_VERSION, m4_esyscmd([git describe --tags]))
 
 CFLAGS="-g -Wall $CFLAGS"
-CXXFLAGS="-g -Wall $CXXFLAGS"
+CXXFLAGS="-g -Wall -Wno-write-strings $CXXFLAGS"
 
 AC_ARG_ENABLE([optimize],
   AS_HELP_STRING([--enable-optimize], [Enable -O3]),,
