@@ -35,6 +35,7 @@ int strmatch(char *string1, char *string2) {
   return 0;
 }
 
+#include "webrtc.c"
 #include "socket.c"
 #include "websocket.c"
 #include "json.c"
@@ -127,9 +128,7 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
 static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
  kr_iws_client_t *client) {
 
-  if (client->webrtc) {
-    kr_webrtc_disconnect_client(client);
-  }
+  kr_webrtc_disconnect_client(client);
 
   close(client->sd);
   client->sd = 0;
@@ -137,7 +136,6 @@ static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
     kr_client_destroy (&client->ws.krclient);
   }
   client->type = 0;
-  client->webrtc = 0;
   client->drop_after_sync = 0;
   client->hdr_le = 0;
   client->hdr_pos = 0;

@@ -4,23 +4,15 @@ void kr_webrtc_create_or_join(kr_iws_client_t *client) {
   char json[256];
   int i;
 
-  if (num_clients < 2) {
-    for (i = 0; i < 2; i++) {
-      if (clients[i] == NULL) {
-        clients[i] = client;
-        num_clients++;
-        if (num_clients == 1) {
-          snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\""
-           "}]");
-          interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-        }
-        snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\"}]");
-        interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-        break;
-      }
-    }
+  if (client->webrtc_client.active == 0) {
+    client->server->webrtc_server.num_clients++;
+    client->webrtc_client.active = 1;
+  }
+  if (client->server->webrtc_server.num_clients == 1) {
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\", \"ctrl\":\"created\"}]");
+    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
   } else {
-    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"full\"}]");
+    snprintf(json, sizeof(json), "[{\"com\":\"rtc\",\"ctrl\":\"joined\"}]");
     interweb_ws_pack(client, (uint8_t *)json, strlen(json));
   }
 }
@@ -40,7 +32,7 @@ void kr_webrtc_message(kr_iws_client_t *client, char *message) {
 
 void kr_webrtc_disconnect_client(kr_iws_client_t *client) {
   int i;
-  for (i = 0; i < 2; i++) {
+  /*for (i = 0; i < 2; i++) {
     if (client == clients[i]) {
       clients[i] = NULL;
       num_clients--;
@@ -49,7 +41,7 @@ void kr_webrtc_disconnect_client(kr_iws_client_t *client) {
    //     krad_websocket_rtc_message(clients[i], "bye");
       }
     }
-  }
+  }*/
 }
 
 

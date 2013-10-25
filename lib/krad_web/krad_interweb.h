@@ -56,6 +56,17 @@ enum krad_interweb_shutdown {
   KRAD_INTERWEB_SHUTINGDOWN,
 };
 
+typedef struct kr_webrtc kr_webrtc;
+typedef struct kr_webrtc_client kr_webrtc_client;
+
+struct kr_webrtc {
+  int32_t num_clients;
+};
+
+struct kr_webrtc_client {
+  int active;
+};
+
 typedef struct krad_interweb_server_St kr_interweb_server_t;
 typedef struct krad_interweb_server_St krad_interweb_t;
 typedef struct krad_interweb_server_St kr_interweb_t;
@@ -73,6 +84,7 @@ struct krad_interweb_server_St {
   int32_t socket_count;
   krad_control_t krad_control;
   krad_interweb_server_client_t *clients;
+  kr_webrtc webrtc_server;
   pthread_t server_thread;
   struct pollfd sockets[KR_MAX_SDS];
   int32_t socket_type[KR_MAX_SDS];
@@ -137,7 +149,7 @@ struct krad_interweb_server_client_St {
   krad_interweb_t *server;
   kr_io2_t *in;
   kr_io2_t *out;
-  int32_t webrtc;
+  kr_webrtc_client webrtc_client;
   int32_t drop_after_sync;
   int32_t type;
   uint32_t hdr_le;
@@ -148,17 +160,6 @@ struct krad_interweb_server_client_St {
   char mount[128];
   interwebs_t ws;
 };
-
-typedef struct kr_webrtc_St kr_webrtc_t;
-typedef struct kr_webrtc_client_St kr_webrtck_t;
-
-struct kr_webrtc_St {
-  int32_t num_webrtc_clients;
-};
-
-struct kr_webrtc_client_St {
-  int active;
-} webrtc_client_t;
 
 void kr_webrtc_create_or_join(kr_iws_client_t *client);
 void kr_webrtc_message(kr_iws_client_t *client, char *message);
