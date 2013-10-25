@@ -11,7 +11,6 @@ struct kr_compositor_path {
   kr_easer crop_height_easer;
   kr_convert converter;
   kr_perspective *perspective;
-  kr_perspective_view view;
 };
 
 static void path_tick(kr_compositor_path *path);
@@ -294,13 +293,29 @@ int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s)
       kr_easer_set(&p->crop_height_easer, s->integer, s->duration, EASEINOUTSINE, NULL);
       break;
     case KR_VIEW_TL_X:
+      p->info.view.top_left.x = s->real;
+      break;
     case KR_VIEW_TL_Y:
+      p->info.view.top_left.y = s->real;
+      break;
     case KR_VIEW_TR_X:
+      p->info.view.top_right.x = s->real;
+      break;
     case KR_VIEW_TR_Y:
+      p->info.view.top_right.y = s->real;
+      break;
     case KR_VIEW_BL_X:
+      p->info.view.bottom_left.x = s->real;
+      break;
     case KR_VIEW_BL_Y:
+      p->info.view.bottom_left.y = s->real;
+      break;
     case KR_VIEW_BR_X:
+      p->info.view.bottom_right.x = s->real;
+      break;
     case KR_VIEW_BR_Y:
+      p->info.view.bottom_right.y = s->real;
+      break;
     default:
       break;
   }
