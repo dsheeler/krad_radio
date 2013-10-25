@@ -281,6 +281,26 @@ int kr_compositor_path_ctl(kr_compositor_path *p, kr_compositor_path_setting *s)
     case KR_GREEN:
     case KR_BLUE:
     case KR_ALPHA:
+    case KR_CROP_X:
+      kr_easer_set(&p->crop_x_easer, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_CROP_Y:
+      kr_easer_set(&p->crop_y_easer, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_CROP_W:
+      kr_easer_set(&p->crop_width_easer, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_CROP_H:
+      kr_easer_set(&p->crop_height_easer, s->integer, s->duration, EASEINOUTSINE, NULL);
+      break;
+    case KR_VIEW_TL_X:
+    case KR_VIEW_TL_Y:
+    case KR_VIEW_TR_X:
+    case KR_VIEW_TR_Y:
+    case KR_VIEW_BL_X:
+    case KR_VIEW_BL_Y:
+    case KR_VIEW_BR_X:
+    case KR_VIEW_BR_Y:
     default:
       break;
   }

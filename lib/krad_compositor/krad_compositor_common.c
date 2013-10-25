@@ -46,6 +46,18 @@ kr_compositor_control kr_string_to_compositor_control(char *string) {
   if (strncmp(string, "alpha", 1) == 0) {
     return KR_ALPHA;
   }
+  if (strncmp(string, "crop_x", 6) == 0) {
+    return KR_CROP_X;
+  }
+  if (strncmp(string, "crop_y", 6) == 0) {
+    return KR_CROP_Y;
+  }
+  if (strncmp(string, "crop_w", 6) == 0) {
+    return KR_CROP_W;
+  }
+  if (strncmp(string, "crop_h", 6) == 0) {
+    return KR_CROP_H;
+  }
   if (strncmp(string, "tickrate", 1) == 0) {
     return KR_TICKRATE;
   }
@@ -141,6 +153,14 @@ char *kr_compositor_control_to_string(kr_compositor_control control) {
       return "alpha";
     case KR_TICKRATE:
       return "tickrate";
+    case KR_CROP_X:
+      return "crop_x";
+    case KR_CROP_Y:
+      return "crop_y";
+    case KR_CROP_W:
+      return "crop_w";
+    case KR_CROP_H:
+      return "crop_h";
     case KR_VIEW_TL_X:
       return "view_topleft_x";
     case KR_VIEW_TL_Y:

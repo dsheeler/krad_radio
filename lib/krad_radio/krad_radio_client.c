@@ -1838,6 +1838,10 @@ int kr_unit_control_data_type_from_address(kr_address_t *address,
           (address->control.compositor_control == KR_Z) ||
           (address->control.compositor_control == KR_WIDTH) ||
           (address->control.compositor_control == KR_HEIGHT) ||
+          (address->control.compositor_control == KR_CROP_X) ||
+          (address->control.compositor_control == KR_CROP_Y) ||
+          (address->control.compositor_control == KR_CROP_W) ||
+          (address->control.compositor_control == KR_CROP_H) ||
           (address->control.compositor_control == KR_TICKRATE)) {
           *data_type = KR_INT32;
       } else {
