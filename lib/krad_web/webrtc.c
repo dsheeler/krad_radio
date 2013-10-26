@@ -35,15 +35,11 @@ void kr_webrtc_disconnect_client(kr_iws_client_t *client) {
   if (client->webrtc_client.active == 1) {
     client->server->webrtc_server.num_clients--;
     client->webrtc_client.active = 0;
-    /*for (i = 0; i < 2; i++) {
-    if (client == clients[i]) {
-      clients[i] = NULL;
-      num_clients--;
-    } else {
-      if (clients[i] != NULL) {
-   //     krad_websocket_rtc_message(clients[i], "bye");
+    for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+      if (client->server->clients[i].webrtc_client.active == 1) {
+        kr_webrtc_message(&client->server->clients[i], "bye");
       }
-    }*/
+    }
   }
 }
 

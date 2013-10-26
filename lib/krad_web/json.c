@@ -1,6 +1,8 @@
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
+  int got_join;
+  int got_message;
   static const int shortest_json_len = 14;
   static const int longest_json_len = 4096;
   static const char *json_pre = "{\"ctrl\":\"";
@@ -10,6 +12,7 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   size_t addr_len;
   size_t dur_len;
   char *addr_str;
+  char message[4096];
   int i;
 
   dur_len = 0;
@@ -78,36 +81,42 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
       return -1;
     }
   } else {
+    got_join = 0;
+    got_message = 0;
     cmplen = strlen(json_pre_rtc);
     if (strncmp(json, json_pre_rtc, cmplen) == 0) {
       pos = cmplen;
       if (strncmp(json + pos, "create_or_join", 14) == 0) {
+        got_join = 1;
         printk("got create_or_join");
-        kr_webrtc_create_or_join(client);
       } else if (strncmp(json + pos, "message", 7) == 0) {
         pos += 10;
+        got_message = 1;
         if (strncmp(json + pos, "message", 7) == 0) {
           pos += 10;
-          char message[4096];
-          addr_len = 4096;
+         addr_len = 4096;
           strncpy(message, json + pos, addr_len); 
           message[addr_len -1] = '\0';
           cmplen = strlen(message);
           message[cmplen - 2] = '\0';
-          for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
-            if (client->server->clients[i].webrtc_client.active == 1 
-             && &(client->server->clients[i]) != client) {
-              kr_webrtc_message(&(client->server->clients[i]), message);
-            }
-          }
           printk("message: %s", message);
           if (strncmp(message, "bye", 3) == 0) {
           }
         }
-      } else {
-        printk("JSON IN is[%zu]: %s", len, json);
-        printke("JSON json seems to be in a bad way");
-        return -1;
+      } 
+    } else {
+      printk("JSON IN is[%zu]: %s", len, json);
+      printke("JSON json seems to be in a bad way");
+      return -1;
+    }
+  }
+  if (got_join == 1) {
+    kr_webrtc_create_or_join(client);
+  } else if (got_message == 1) {
+    for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+      if (client->server->clients[i].webrtc_client.active == 1 
+       && &(client->server->clients[i]) != client) {
+        kr_webrtc_message(&(client->server->clients[i]), message);
       }
     }
   }
