@@ -94,10 +94,11 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
           message[addr_len -1] = '\0';
           cmplen = strlen(message);
           message[cmplen - 2] = '\0';
-          for (i = 0; i < 2; i++) {
-            /*if (client != clients[i] && clients[i] != NULL) {
-              kr_webrtc_message(clients[i], message);
-            }*/
+          for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+            if (client->server->clients[i].webrtc_client.active == 1 
+             && &(client->server->clients[i]) != client) {
+              kr_webrtc_message(&(client->server->clients[i]), message);
+            }
           }
           printk("message: %s", message);
           if (strncmp(message, "bye", 3) == 0) {
