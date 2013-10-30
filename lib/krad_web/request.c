@@ -24,12 +24,22 @@ int32_t krad_interweb_client_find_end_of_headers(kr_iws_client_t *client) {
   return 0;
 }
 
+void debug_print_headers(kr_iws_client_t *client) {
+
+  char *headers;
+
+  headers = (char *)client->in->rd_buf;
+
+  printk("Headers length: %d", client->hdr_pos);
+  printk("%s", headers);
+}
+
 int32_t interweb_header(char *buf, char *out, uint32_t max, char *header) {
 
   char *pos;
   int32_t len;
   int32_t hdr_len;
-  
+
   hdr_len = strlen(header);
   pos = strstr(buf, header) + hdr_len;
   if (pos == NULL) {
@@ -105,7 +115,7 @@ int32_t krad_interweb_client_parse_get_request(kr_iws_client_t *client) {
     if ((strstr(buf, "GET ") != NULL) && (strstr(buf, " HTTP/1") != NULL)) {
       ret = interweb_header(buf, client->get, sizeof(client->get), "GET ");
       if (ret < 0) return -1;
-      printk("GET IS %s", client->get);
+      /*printk("GET IS %s", client->get);*/
       if (!interweb_client_get_stream(client)) {
         client->type = KR_IWS_FILE;
       }
@@ -143,8 +153,12 @@ int32_t krad_interweb_client_parse_put_request(kr_iws_client_t *client) {
   client->mount[mount_len] = '\0';
   memcpy(client->mount, mount_start, mount_len);
   client->type = KR_IWS_STREAM_IN;
-  printk("Source/Put client mount is: %s", client->mount);  
+  printk("Source/Put client mount is: %s", client->mount);
 
+  return 0;
+}
+
+int32_t parse_post_request(kr_iws_client_t *client) {
   return 0;
 }
 
@@ -156,12 +170,15 @@ int32_t krad_interweb_client_handle_request(kr_iws_client_t *client) {
     if (krad_interweb_client_find_end_of_headers(client)) {
       ret = krad_interweb_client_parse_verb(client);
       if (ret < 0) return -1;
+      debug_print_headers(client);
       switch (client->verb) {
         case KR_IWS_GET:
           ret = krad_interweb_client_parse_get_request(client);
           return ret;
-        case KR_IWS_SOURCE:
-          /* Falling Thru */
+        case KR_IWS_POST:
+          ret = parse_post_request(client);
+          return ret;
+        case KR_IWS_SOURCE: /* Fallin thru */
         case KR_IWS_PUT:
           ret = krad_interweb_client_parse_put_request(client);
           return ret;

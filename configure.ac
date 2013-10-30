@@ -79,7 +79,8 @@ LT_LIB_M
 AC_PROG_CC
 AC_PROG_CXX
 
-AC_CONFIG_FILES([Makefile lib/Makefile daemon/Makefile clients/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile daemon/Makefile clients/Makefile
+                 tests/Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT([

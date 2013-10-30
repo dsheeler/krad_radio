@@ -40,7 +40,7 @@
 void kr_print_ebml (unsigned char *buffer, int len) {
 
   int i;
-  
+
   i = 0;
 
   printf ("Raw EBML: \n");
@@ -53,16 +53,16 @@ void kr_print_ebml (unsigned char *buffer, int len) {
 void test_kr_ebml2 (kr_ebml2_t *ebml) {
 
   unsigned char *my_element;
-  
-  
+
+
   kr_ebml2_pack_header (ebml, "testy", 2, 2);
-  
+
   kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER);
   kr_ebml2_pack_element (ebml, EBML_ID_TRACK_UID);
   kr_ebml2_pack_element (ebml, EBML_ID_TRACK);
-  
+
   kr_ebml2_start_element (ebml, EBML_ID_TAGS, &my_element);
-  
+
   kr_ebml2_pack_element (ebml, EBML_ID_CODECDATA);
   kr_ebml2_pack_element (ebml, EBML_ID_CLUSTER_TIMECODE);
   kr_ebml2_pack_element (ebml, EBML_ID_SEGMENT_INFO);
@@ -82,7 +82,7 @@ void test_kr_ebml2 (kr_ebml2_t *ebml) {
 int main (int argc, char *argv[]) {
 
   int count;
-  
+
   count = 0;
 
   kr_ebml2_t *ebml;
@@ -93,7 +93,7 @@ int main (int argc, char *argv[]) {
     count++;
     ebml->pos = 0;
   }
-  
+
   kr_ebml2_destroy (&ebml);
 
   return 0;
@@ -111,7 +111,7 @@ int main (int argc, char *argv[]) {
 void kr_print_ebml (unsigned char *buffer, int len) {
 
   int i;
-  
+
   i = 0;
 
   printf ("Raw EBML: \n");
@@ -137,20 +137,20 @@ int test_kr_ebml2 (char *filename) {
 
   fd = open ( filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
   if (fd < 0) {
-    fprintf (stderr, "Cant open %s!\n", filename);  
+    fprintf (stderr, "Cant open %s!\n", filename);
     return 1;
   }
-  
+
   ebml = kr_ebml2_create ();
-  
+
   kr_ebml2_pack_header (ebml, "testy", 2, 2);
   /*
   kr_ebml2_pack_element (ebml, EID_CLUSTER);
   kr_ebml2_pack_element (ebml, EID_TRACK_UID);
   kr_ebml2_pack_element (ebml, EID_TRACK);
-  
+
   kr_ebml2_start_element (ebml, EID_TAGS, &my_element);
-  
+
   kr_ebml2_pack_element (ebml, EID_CODECDATA);
   kr_ebml2_pack_element (ebml, EID_CLUSTER_TIMECODE);
   kr_ebml2_pack_element (ebml, EID_SEGMENT_INFO);
@@ -173,7 +173,7 @@ int test_kr_ebml2 (char *filename) {
     fprintf (stderr, "Write failed!\n");
     return 1;
   }
-  
+
   return 0;
 }
 
@@ -183,7 +183,7 @@ int test_kr_ebml2 (char *filename) {
   int ret;
   int err;
   int clusters;
-  kr_io2_t *io;  
+  kr_io2_t *io;
   kr_ebml2_t *ebml;
 
   uint32_t element;
@@ -204,11 +204,11 @@ int test_kr_ebml2 (char *filename) {
   if (fd < 0) {
     return 1;
   }
-  
+
   ebml = kr_ebml2_create ();
   io = kr_io2_create ();
   kr_ebml2_set_buffer ( ebml, io->buf, io->space );
-  
+
   ret = read (fd, ebml->buf, KRAD_EBML2_BUF_SZ);
   if (ret < 0) {
     close (fd);
@@ -217,24 +217,24 @@ int test_kr_ebml2 (char *filename) {
   }
 
   printf ("read %d bytes\n", ret);
-  
+
   char doctype[32];
   uint32_t version;
   uint32_t read_version;
-  
+
   err = kr_ebml2_unpack_header (ebml, doctype, sizeof (doctype), &version, &read_version);
-  
+
   if (err < 0) {
     fprintf (stderr, "error reading ebml header\n");
   } else {
     printf ("Got ebml doctype: %s\n", doctype);
   }
-  
+
 /*
   err = kr_ebml2_unpack_id (ebml, &element, &data_size);
   if (!err) {
     while (ebml->pos < ret) {
-    
+
       err = kr_ebml2_unpack_id (ebml, &element, &data_size);
       if (err == -1) {
         printf ("parsing error!\n");
@@ -248,7 +248,7 @@ int test_kr_ebml2 (char *filename) {
       }
     }
   }
-  
+
   if (clusters > 0) {
     printf ("Found %d clusters!\n", clusters);
   }

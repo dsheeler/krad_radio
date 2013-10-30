@@ -118,3 +118,4 @@ krad_radio
 tests/dir
 tools/code/hextool/hextool
 lib/krad_web/embed.h
+tests/kr_cbor_test

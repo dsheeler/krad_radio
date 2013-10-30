@@ -1,5 +1,7 @@
-ACLOCAL_AMFLAGS = -I m4
+bin_PROGRAMS = kr_cbor_test
+
 AM_CPPFLAGS = \
+-I../lib/krad_cbor \
 -I../lib/krad_muxponder \
 -I../lib/krad_compositor \
 -I../lib/krad_osc \
@@ -50,4 +52,9 @@ AM_CPPFLAGS = \
 -I../lib/krad_fc \
 -I../lib/krad_mem
 
-SUBDIRS = lib daemon clients tests
+kr_cbor_test_SOURCES = kr_cbor_test.c
+kr_cbor_test_SOURCES += ../lib/krad_cbor/krad_cbor.c
+kr_cbor_test_CFLAGS =
+kr_cbor_test_LDFLAGS =
+
+.PHONY: all
