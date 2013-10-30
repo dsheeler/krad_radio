@@ -21,20 +21,17 @@ int kr_cbor_buffer_reset(kr_cbor *cbor);
 size_t kr_cbor_position(kr_cbor *cbor);
 size_t kr_cbor_space(kr_cbor *cbor);
 
-int kr_cbor_pack(kr_cbor *cbor);
+int kr_cbor_pack_binary(kr_cbor *cbor, void *data, uint64_t len);
+int kr_cbor_pack_string(kr_cbor *cbor, char *string, size_t len);
+int kr_cbor_pack_float(kr_cbor *cbor, float number);
+int kr_cbor_pack_double(kr_cbor *cbor, double number);
+int kr_cbor_pack_int8(kr_cbor *cbor, int8_t number);
+int kr_cbor_pack_uint8(kr_cbor *cbor, uint8_t number);
+int kr_cbor_pack_int16(kr_cbor *cbor, int16_t number);
+int kr_cbor_pack_uint16(kr_cbor *cbor, uint16_t number);
+int kr_cbor_pack_int32(kr_cbor *cbor, int32_t number);
+int kr_cbor_pack_uint32(kr_cbor *cbor, uint32_t number);
+int kr_cbor_pack_int64(kr_cbor *cbor, int64_t number);
+int kr_cbor_pack_uint64(kr_cbor *cbor, uint64_t number);
 
-/*
-int kr_cbor_pack_data(kr_cbor *cbor, uint32_t element, int *data, uint64_t length);
-int kr_cbor_pack_string(kr_cbor *cbor, uint32_t element, char *string);
-int kr_cbor_pack_float(kr_cbor *cbor, uint32_t element, float number);
-int kr_cbor_pack_double(kr_cbor *cbor, uint32_t element, double number);
-int kr_cbor_pack_int8(kr_cbor *cbor, uint32_t element, int8_t number);
-int kr_cbor_pack_uint8(kr_cbor *cbor, uint32_t element, uint8_t number);
-int kr_cbor_pack_int16(kr_cbor *cbor, uint32_t element, int16_t number);
-int kr_cbor_pack_uint16(kr_cbor *cbor, uint32_t element, uint16_t number);
-int kr_cbor_pack_int32(kr_cbor *cbor, uint32_t element, int32_t number);
-int kr_cbor_pack_uint32(kr_cbor *cbor, uint32_t element, uint32_t number);
-int kr_cbor_pack_int64(kr_cbor *cbor, uint32_t element, int64_t number);
-int kr_cbor_pack_uint64(kr_cbor *cbor, uint32_t element, uint64_t number);
-*/
 #endif

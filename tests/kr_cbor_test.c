@@ -38,6 +38,40 @@ void cbor_state_print(kr_cbor *cbor) {
   cbor_buffer_print(cbor);
 }
 
+void cbor_pack_test(kr_cbor *cbor) {
+
+  int ret;
+
+  ret = kr_cbor_pack_uint32(cbor, 1000000);
+  printf("kr_cbor_pack_uint32 ret: %d\n", ret);
+  cbor_state_print(cbor);
+
+  ret = kr_cbor_pack_uint8(cbor, 100);
+  printf("kr_cbor_pack_uint8 ret: %d\n", ret);
+  cbor_state_print(cbor);
+
+  ret = kr_cbor_pack_uint16(cbor, 1000);
+  printf("kr_cbor_pack_uint16 ret: %d\n", ret);
+  cbor_state_print(cbor);
+
+  ret = kr_cbor_pack_uint32(cbor, 1000000);
+  printf("kr_cbor_pack_uint32 ret: %d\n", ret);
+  cbor_state_print(cbor);
+
+  ret = kr_cbor_pack_uint64(cbor, 1000000000000);
+  printf("kr_cbor_pack_uint64 ret: %d\n", ret);
+  cbor_state_print(cbor);
+}
+
+void cbor_pack_test2(kr_cbor *cbor) {
+
+  int ret;
+
+  ret = kr_cbor_pack_int64(cbor, -1000);
+  printf("kr_cbor_pack_int64 ret: %d\n", ret);
+  cbor_state_print(cbor);
+}
+
 int test_kr_cbor() {
 
   int ret;
@@ -56,13 +90,13 @@ int test_kr_cbor() {
   printf("kr_cbor_buffer_set ret: %d\n", ret);
   cbor_state_print(cbor);
 
-  ret = kr_cbor_pack(cbor);
-  printf("kr_cbor_pack ret: %d\n", ret);
-  cbor_state_print(cbor);
+  cbor_pack_test(cbor);
 
   ret = kr_cbor_buffer_reset(cbor);
   printf("kr_cbor_buffer_reset ret: %d\n", ret);
   cbor_state_print(cbor);
+
+  cbor_pack_test2(cbor);
 
   ret = kr_cbor_free(cbor);
   printf("kr_cbor_free ret: %d\n", ret);
