@@ -1,55 +1,6 @@
-lib_LTLIBRARIES = krad_radio/libkradclient.la krad_radio/libkradradio.la
+include $(top_srcdir)/common.mk
 
-AM_CPPFLAGS = \
--Ikrad_muxponder \
--Ikrad_compositor \
--Ikrad_osc \
--Ikrad_v4l2 \
--Ikrad_flac \
--Ikrad_jack \
--Ikrad_opus \
--Ikrad_chronometer \
--Ikrad_ebml \
--Ikrad_system \
--Ikrad_y4m \
--Ikrad_ogg \
--Ikrad_audio \
--Ikrad_ring \
--Ikrad_vpx \
--Ikrad_alsa \
--Ikrad_theora \
--Ikrad_transmitter \
--Ikrad_udp \
--Ikrad_io \
--Ikrad_tags \
--Ikrad_list \
--Ikrad_legacy \
--Ikrad_calc \
--Ikrad_radio \
--Ikrad_player \
--Ikrad_vhs \
--Ikrad_vhs/ext \
--Ikrad_vhs/ext/imagezero \
--Ikrad_x11 \
--Ikrad_vorbis \
--Ikrad_framepool \
--Ikrad_transponder \
--Ikrad_mixer \
--Ikrad_app \
--Ikrad_coder \
--Ikrad_container \
--Ikrad_decklink \
--Ikrad_decklink/vendor \
--Ikrad_mkv \
--Ikrad_sfx \
--Ikrad_wayland \
--Ikrad_wayland/ext \
--Ikrad_web \
--Ikrad_web/core \
--Ikrad_xmms2 \
--Ikrad_rc \
--Ikrad_fc \
--Ikrad_mem
+lib_LTLIBRARIES = krad_radio/libkradclient.la krad_radio/libkradradio.la
 
 krad_radio_libkradradio_la_CXXFLAGS =
 krad_radio_libkradradio_la_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(XMMS2_CFLAGS) $(OPUS_CFLAGS)
