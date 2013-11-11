@@ -2,17 +2,19 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
   int got_join;
-  int got_message;
+  int got_call;
+  int got_answer;
   static const int shortest_json_len = 14;
   static const int longest_json_len = 4096;
   static const char *json_pre = "{\"ctrl\":\"";
-  static const char *json_pre_rtc = "{\"rtc\":\""; 
+  static const char *json_pre_rtc = "{\"rtc\":\"";
   kr_unit_control_t uc;
   int cmplen;
   size_t addr_len;
   size_t dur_len;
   char *addr_str;
   char message[4096];
+  char name[KR_WEBRTC_NAME_MAX];
   int i;
 
   dur_len = 0;
@@ -82,41 +84,88 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     }
   } else {
     got_join = 0;
-    got_message = 0;
+    got_call = 0;
+    got_answer = 0;
+    int name_len;
+
     cmplen = strlen(json_pre_rtc);
     if (strncmp(json, json_pre_rtc, cmplen) == 0) {
       pos = cmplen;
-      if (strncmp(json + pos, "create_or_join", 14) == 0) {
-        got_join = 1;
-        printk("got create_or_join");
-      } else if (strncmp(json + pos, "message", 7) == 0) {
-        pos += 10;
-        got_message = 1;
-        if (strncmp(json + pos, "message", 7) == 0) {
-          pos += 10;
-         addr_len = 4096;
-          strncpy(message, json + pos, addr_len); 
-          message[addr_len -1] = '\0';
-          cmplen = strlen(message);
-          message[cmplen - 2] = '\0';
-          printk("message: %s", message);
-          if (strncmp(message, "bye", 3) == 0) {
+      if (strncmp(json + pos, "register", 8) == 0) {
+        pos += 11;
+        if (strncmp(json + pos, "name", 4) == 0) {
+          pos += 7;
+          got_join = 1;
+          strncpy(name, json + pos, KR_WEBRTC_NAME_MAX);
+          cmplen = strnlen(name, KR_WEBRTC_NAME_MAX);
+          name[cmplen - 2] = '\0';
+          printk("got join");
+        }
+      } else if (strncmp(json + pos, "call", 4) == 0) {
+        pos += 7;
+        printk("parsed call");
+        if (strncmp(json + pos, "name", 4) == 0) {
+          pos += 7;
+          name_len = strcspn(json + pos, "\"");
+          strncpy(name, json + pos, name_len);
+          name[name_len] = '\0';
+          pos += name_len + 3;
+          printk("parsed name: <%s>", name);
+          if (strncmp(json + pos, "sdp", 3) == 0) {
+            pos += 6;
+            got_call = 1;
+            addr_len = 4096;
+            strncpy(message, json + pos, addr_len);
+            cmplen = strnlen(message, addr_len);
+            message[cmplen - 2] = '\0';
+            printk("parsed spd: <%s>", message);
           }
         }
-      } 
+
+      } else if (strncmp(json + pos, "answer", 6) == 0) {
+        pos += 9;
+        printk("parsed answer");
+        if (strncmp(json + pos, "name", 4) == 0) {
+          pos += 7;
+          name_len = strcspn(json + pos, "\"");
+          strncpy(name, json + pos, name_len);
+          name[name_len] = '\0';
+          pos += name_len + 3;
+          printk("parsed name: <%s>", name);
+          if (strncmp(json + pos, "sdp", 3) == 0) {
+            pos += 6;
+            got_answer = 1;
+            addr_len = 4096;
+            strncpy(message, json + pos, addr_len);
+            cmplen = strnlen(message, addr_len);
+            message[cmplen - 2] = '\0';
+            printk("parsed spd: <%s>", message);
+          }
+        }
+      }
     } else {
       printk("JSON IN is[%zu]: %s", len, json);
       printke("JSON json seems to be in a bad way");
       return -1;
     }
   }
+
   if (got_join == 1) {
-    kr_webrtc_create_or_join(client);
-  } else if (got_message == 1) {
+    kr_webrtc_register(client, name);
+  } else if (got_call == 1) {
     for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
-      if (client->server->clients[i].webrtc_client.active == 1 
-       && &(client->server->clients[i]) != client) {
-        kr_webrtc_message(&(client->server->clients[i]), message);
+      printk("got call");
+      if (strncmp(client->server->clients[i].webrtc_user.name, name,
+       KR_WEBRTC_NAME_MAX) == 0) {
+        kr_webrtc_call(&(client->server->clients[i]), name, client->webrtc_user.name, message);
+      }
+    }
+  } else if (got_answer == 1) {
+    for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+      printk("got answer");
+      if (strncmp(client->server->clients[i].webrtc_user.name, name,
+       KR_WEBRTC_NAME_MAX) == 0) {
+        kr_webrtc_answer(&(client->server->clients[i]), name, client->webrtc_user.name, message);
       }
     }
   }
