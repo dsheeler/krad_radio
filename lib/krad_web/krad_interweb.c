@@ -128,7 +128,7 @@ static kr_iws_client_t *kr_iws_accept_client(kr_iws_t *server, int sd) {
 static void krad_interweb_disconnect_client(kr_interweb_server_t *server,
  kr_iws_client_t *client) {
 
-  kr_webrtc_disconnect_client(client);
+  kr_webrtc_unregister(client);
 
   close(client->sd);
   client->sd = 0;

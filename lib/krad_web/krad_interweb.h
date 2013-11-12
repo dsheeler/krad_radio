@@ -171,9 +171,13 @@ struct krad_interweb_server_client_St {
   interwebs_t ws;
 };
 
-void kr_webrtc_create_or_join(kr_iws_client_t *client);
-void kr_webrtc_message(kr_iws_client_t *client, char *message);
-void kr_webrtc_disconnect_client(kr_iws_client_t *client);
+void kr_webrtc_register(kr_iws_client_t *client, char *name);
+void kr_webrtc_unregister(kr_iws_client_t *client);
+void kr_webrtc_list_users(kr_iws_client_t *client);
+void kr_webrtc_call(kr_iws_client_t *client, char *to, char *from, char *sdp);
+void kr_webrtc_answer(kr_iws_client_t *client, char *to, char *from, char *sdp);
+void kr_webrtc_candidate(kr_iws_client_t *client, char *to, char *from, 
+ char *candidate);
 
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,
  char *interface, int32_t port);
