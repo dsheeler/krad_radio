@@ -1,7 +1,8 @@
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
-  int got_join;
+  int got_register;
+  int got_unregister;
   int got_call;
   int got_answer;
   int got_candidate;
@@ -19,7 +20,8 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   int i;
   int name_len;
 
-  got_join = 0;
+  got_register = 0;
+  got_unregister = 0;
   got_call = 0;
   got_answer = 0;
   got_candidate = 0;
@@ -96,12 +98,16 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
         pos += 11;
         if (strncmp(json + pos, "name", 4) == 0) {
           pos += 7;
-          got_join = 1;
+          got_register = 1;
           strncpy(name, json + pos, KR_WEBRTC_NAME_MAX);
           cmplen = strnlen(name, KR_WEBRTC_NAME_MAX);
           name[cmplen - 2] = '\0';
-          printk("got join");
+          printk("got register");
         }
+      } else if (strncmp(json + pos, "unregister", 10) == 0) {
+        pos += 13;
+        got_unregister = 1;
+        printk("got unregister");
       } else if (strncmp(json + pos, "call", 4) == 0) {
         pos += 7;
         printk("parsed call");
@@ -171,8 +177,10 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     }
   }
 
-  if (got_join == 1) {
+  if (got_register == 1) {
     kr_webrtc_register(client, name);
+  } else if (got_unregister == 1) {
+    kr_webrtc_unregister(client);
   } else if (got_call == 1) {
     for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
       printk("got call");
