@@ -157,17 +157,14 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
           name_len = strcspn(json + pos, "\"");
           strncpy(name, json + pos, name_len);
           name[name_len] = '\0';
-          pos += name_len + 3;
+          pos += name_len + 2;
           printk("parsed name: <%s>", name);
-          if (strncmp(json + pos, "candidate", 9) == 0) {
-            pos += 12;
-            got_candidate = 1;
-            addr_len = 4096;
-            strncpy(message, json + pos, addr_len);
-            cmplen = strnlen(message, addr_len);
-            message[cmplen - 2] = '\0';
-            printk("parsed candidate: <%s>", message);
-          }
+          got_candidate = 1;
+          addr_len = 4096;
+          strncpy(message, json + pos, addr_len);
+          cmplen = strnlen(message, addr_len);
+          message[cmplen - 1] = '\0';
+          printk("parsed candidate: <%s>", message);
         }
       }
     } else {
