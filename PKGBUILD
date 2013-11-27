@@ -6,7 +6,9 @@ pkgdesc="Krad Radio Audio Video System"
 url="http://kradradio.com"
 arch=('x86_64' 'i686')
 license=('MPL2')
-depends=('wayland' 'cairo' 'libxkbcommon')
+depends=('wayland' 'cairo' 'libxkbcommon' 'alsa-lib' 'jack2'
+         'flac' 'opus' 'libogg' 'libsamplerate' 'libvorbis'
+         'libtheora' 'libvpx' 'ffmpeg' 'xcb-util-image' 'xmms2')
 source=('http://europa.kradradio.com:8040/krad_radio-23.tar.gz')
 md5sums=('6e6770db6b93282dcc28d010b2117767')
 
