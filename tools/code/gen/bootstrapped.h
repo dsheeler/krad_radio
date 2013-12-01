@@ -26,7 +26,7 @@ typedef enum {
 } cgen_enum;
 
 enum {
-  CODEGEN_ENUM_LAST = 284
+  CODEGEN_ENUM_LAST = 282
 };
 cgen_enum codegen_string_to_enum(char *string);
 char *codegen_enum_to_string(cgen_enum val);
