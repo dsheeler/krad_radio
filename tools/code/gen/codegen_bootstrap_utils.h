@@ -9,4 +9,5 @@ int codegen_bootstrap(struct struct_def *defs, int ndefs, char *prefix,
  char *suffix, FILE *out);
  int codegen_enum_utils(struct struct_def *defs, int ndefs, char *prefix,
  char *suffix, FILE *out);
- void capitalize(char *str1, char *str2);
+ void uppercase(char *str1, char *str2);
+ void lowercase(char *str1, char *str2);

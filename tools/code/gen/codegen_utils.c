@@ -63,8 +63,13 @@ static void codegen_prototype(struct struct_def *def, const char *type,
 static void codegen_function(struct struct_def *def, char *type, 
   gen_format gformat, FILE *out) {
 
-  fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
-    def->name,type,type);
+  if (gformat == EBML) {
+    fprintf(out,"int %s_to_%s(char *%s, void *st) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
+      def->name,type,type);
+  } else {
+    fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
+      def->name,type,type);
+  }
 
   if (def->istypedef) {
     fprintf(out,"  %s *actual;\n\n",def->name);
@@ -72,7 +77,11 @@ static void codegen_function(struct struct_def *def, char *type,
     fprintf(out,"  struct %s *actual;\n\n",def->name);
   }
 
-  fprintf(out,"  if ((%s == NULL) || (st == NULL) || (max < 1)) {\n    return -1;\n  }\n\n",type);
+  if (gformat == EBML) {
+    fprintf(out,"  if ((%s == NULL) || (st == NULL)) {\n    return -1;\n  }\n\n",type);
+  } else {
+    fprintf(out,"  if ((%s == NULL) || (st == NULL) || (max < 1)) {\n    return -1;\n  }\n\n",type);
+  }
 
   if (def->istypedef) {
     fprintf(out,"  actual = (%s*)st;\n\n",def->name);
@@ -83,7 +92,7 @@ static void codegen_function(struct struct_def *def, char *type,
   switch (gformat) {
     case TEXT: codegen_text(def,type,out); break;
     case JSON: codegen_json(def,type,out); break;
-    case EBML: break;
+    case EBML: codegen_ebml(def,type,out); break;
     case CBOR: break;
   }
   

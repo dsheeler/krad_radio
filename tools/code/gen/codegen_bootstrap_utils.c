@@ -1,6 +1,7 @@
 #include "codegen_bootstrap_utils.h"
 
-void capitalize(char *str1, char *str2) {
+void uppercase(char *str1, char *str2) {
+
   uint32_t len;
   uint32_t i;
 
@@ -15,10 +16,25 @@ void capitalize(char *str1, char *str2) {
   return;
 }
 
+void lowercase(char *str1, char *str2) {
+  uint32_t len;
+  uint32_t i;
+
+  len = strlen(str1);
+
+  for(i=0;i<len;i++) {
+    str2[i] = tolower(str1[i]);
+  }
+
+  str2[len] = '\0';
+
+  return;
+}
+
 static void codegen_enum_value(struct struct_def *def, FILE *out) {
-  char capitalized[strlen(def->name)+1];
-  capitalize(def->name,capitalized);
-  fprintf(out,"CGEN_%s",capitalized);
+  char uppercased[strlen(def->name)+1];
+  uppercase(def->name,uppercased);
+  fprintf(out,"CGEN_%s",uppercased);
 }
 
 int codegen_enum(struct struct_def *defs, int ndefs, char *prefix,
@@ -85,14 +101,14 @@ void codegen_includes(struct struct_def *defs, int ndefs, char *prefix,
 
 static void codegen_enum_to_string(struct struct_def *def, FILE *out) {
   char cap[strlen(def->name)+1];
-  capitalize(def->name,cap);
+  uppercase(def->name,cap);
   fprintf(out,"    case CGEN_%s:\n      return \"%s\";\n",cap,def->name);
   return;
 }
 
 static void codegen_string_to_enum(struct struct_def *def, FILE *out) {
   char cap[strlen(def->name)+1];
-  capitalize(def->name,cap);
+  uppercase(def->name,cap);
   fprintf(out,"  if (!strcmp(string,\"%s\")) {\n    return CGEN_%s;\n  }\n",def->name,cap);
   return;
 }

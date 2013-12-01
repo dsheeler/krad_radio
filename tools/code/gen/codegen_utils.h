@@ -13,6 +13,7 @@ void codegen_union_content_from_type(struct struct_def *def,
   char *name, char *format, FILE *out);
 void codegen_json(struct struct_def *def, char *type, FILE *out);
 void codegen_text(struct struct_def *def, char *type, FILE *out);
+void codegen_ebml(struct struct_def *def, char *type, FILE *out);
 int codegen(struct struct_def *defs, int ndefs, char *prefix,
  char *suffix,char *format, FILE *out);
 int codegen_helper_functions(struct struct_def *defs, int ndefs, char *prefix,

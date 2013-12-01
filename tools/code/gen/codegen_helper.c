@@ -6,13 +6,19 @@ static void codegen_helper_init_func(struct struct_def *def, FILE *out) {
   struct memb_data_info *dinfo;
 
   if (def->istypedef) {
-    fprintf(out,"int %s_init_def(%s *st) {\n",def->name,def->name);
+    fprintf(out,"int %s_init(%s *st) {\n",def->name,def->name);
   } else {
-    fprintf(out,"int %s_init_def(struct %s *st) {\n",def->name,def->name);
+    fprintf(out,"int %s_init(struct %s *st) {\n",def->name,def->name);
   }
 
   fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
 
+  if (def->istypedef) {
+    fprintf(out," memset(st, 0, sizeof(%s));",def->name);
+  } else {
+    fprintf(out," memset(st, 0, sizeof(struct %s));",def->name);
+  }
+  
   for (i = 0; i < def->members; i++) {
     dinfo = &(def->members_info[i].data_info);
     switch (dinfo->type) {
@@ -30,7 +36,7 @@ static void codegen_helper_init_func(struct struct_def *def, FILE *out) {
       default: break;
     }
     if (codegen_string_to_enum(def->members_info[i].type)) {
-      fprintf(out,"  %s_init_def(&st->%s);\n",
+      fprintf(out,"  %s_init(&st->%s);\n",
         def->members_info[i].type,def->members_info[i].name);
     }
   }
@@ -50,6 +56,14 @@ static void codegen_helper_random_func(struct struct_def *def, FILE *out) {
     fprintf(out,"int %s_random(%s *st) {\n",def->name,def->name);
   } else {
     fprintf(out,"int %s_random(struct %s *st) {\n",def->name,def->name);
+  }
+
+  fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
+
+  if (def->istypedef) {
+    fprintf(out," memset(st, 0, sizeof(%s));",def->name);
+  } else {
+    fprintf(out," memset(st, 0, sizeof(struct %s));",def->name);
   }
 
   fprintf(out,"  struct timeval tv;\n  double scale;\n\n  if (st == NULL) {\n");
@@ -132,7 +146,8 @@ static void codegen_helper_valid_func(struct struct_def *def, FILE *out) {
 
 }
 
-static void codegen_enum_to_index_proto(struct struct_def *defs, int ndefs, 
+static void codegen_enum_protos(struct struct_def *defs, int ndefs, 
+
   char *prefix, char *suffix, FILE *out) {
   int i;
   int j;
@@ -157,6 +172,8 @@ static void codegen_enum_to_index_proto(struct struct_def *defs, int ndefs,
 
   for (i=0;i<n;i++) {
     fprintf(out,"int %s_to_index(int val);\n",filtered_defs[i]->name);
+    fprintf(out,"int kr_strto_%s(char *string);\n",filtered_defs[i]->name);
+    fprintf(out,"char *kr_strfr_%s(int val);\n",filtered_defs[i]->name);
   }
 
   return;
@@ -178,14 +195,14 @@ void codegen_helpers_prototype(struct struct_def *defs, int ndefs, char *prefix,
 
   for (i = 0; i < n; i++) {
     if (filtered_defs[i]->istypedef) {
-      fprintf(out,"int %s_init_def(%s *st);\n",
+      fprintf(out,"int %s_init(%s *st);\n",
         filtered_defs[i]->name,filtered_defs[i]->name);
       fprintf(out,"int %s_valid(%s *st);\n",
         filtered_defs[i]->name,filtered_defs[i]->name);
       fprintf(out,"int %s_random(%s *st);\n",
         filtered_defs[i]->name,filtered_defs[i]->name);
     } else {
-      fprintf(out,"int %s_init_def(struct %s *st);\n",
+      fprintf(out,"int %s_init(struct %s *st);\n",
         filtered_defs[i]->name,filtered_defs[i]->name);
       fprintf(out,"int %s_valid(struct %s *st);\n",
         filtered_defs[i]->name,filtered_defs[i]->name);
@@ -194,7 +211,7 @@ void codegen_helpers_prototype(struct struct_def *defs, int ndefs, char *prefix,
     }
   }
 
-  codegen_enum_to_index_proto(defs,ndefs,prefix,suffix,out);
+  codegen_enum_protos(defs,ndefs,prefix,suffix,out);
 
   return;
 }
@@ -204,6 +221,30 @@ static void codegen_enum_to_index(struct struct_def *def, FILE *out) {
 
   for (i = 0; i < def->members; i++) {
     fprintf(out,"    case %s:\n      return %d;\n",def->members_info[i].name,i);
+  }
+
+  return;
+}
+
+static void codegen_strfr_enum(struct struct_def *def, FILE *out) {
+  int i;
+
+  for (i = 0; i < def->members; i++) {
+    char lowercased[strlen(def->members_info[i].name)+1];
+    lowercase(def->members_info[i].name,lowercased);
+    fprintf(out,"    case %s:\n      return %s;\n",def->members_info[i].name,lowercased);
+  }
+
+  return;
+}
+
+static void codegen_strto_enum(struct struct_def *def, FILE *out) {
+  int i;
+
+  for (i = 0; i < def->members; i++) {
+    char lowercased[strlen(def->members_info[i].name)+1];
+    lowercase(def->members_info[i].name,lowercased);
+    fprintf(out,"  if (!strcmp(string,\"%s\")) {\n    return %s;\n  }\n",lowercased,def->members_info[i].name);
   }
 
   return;
@@ -237,6 +278,15 @@ int codegen_enum_util_functions(struct struct_def *defs, int ndefs,
     fprintf(out,"int %s_to_index(int val) {\n  switch (val) {\n",filtered_defs[i]->name);
     codegen_enum_to_index(filtered_defs[i],out);
     fprintf(out,"  }\n  return -1;\n}\n\n");
+
+    fprintf(out,"char *kr_strto_%s(int val) {\n  switch (val) {\n",filtered_defs[i]->name);
+    codegen_strfr_enum(filtered_defs[i],out);
+    fprintf(out,"  }\n  }\n\n");
+
+    fprintf(out,"int kr_strfr_%s(char *string) {\n",filtered_defs[i]->name);
+    codegen_strto_enum(filtered_defs[i],out);
+    fprintf(out,"  }\n\n");
+
   }
 
   return 0;
@@ -247,13 +297,13 @@ void codegen_union_content_from_type(struct struct_def *def,
   int i;
 
   for (i = 0; i < def->members; i++) {
-    char capitalized[strlen(def->members_info[i].type)+1];
-    capitalize(def->members_info[i].type,capitalized);
+    char uppercased[strlen(def->members_info[i].type)+1];
+    uppercase(def->members_info[i].type,uppercased);
     fprintf(out,"    case %d: {\n",i);
     fprintf(out,"      res += snprintf(&%s[res],max,\"\\\"%s\\\": \");\n",
           format,name);
     fprintf(out,"      uber.actual = &(actual->%s.%s);\n      uber.type = CGEN_%s;\n",
-      name,def->members_info[i].name,capitalized);
+      name,def->members_info[i].name,uppercased);
     fprintf(out,"      res += info_pack_to_json(&%s[res],&uber,max-res);\n",
           format);
     fprintf(out,"    }\n");

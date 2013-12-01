@@ -69,13 +69,12 @@ void codegen_json(struct struct_def *def, char *type, FILE *out) {
       fprintf(out,"  }\n\n");
     } else if (codegen_string_to_enum(members[i]->type)) {
       if (!members[i]->array) {
-        char capitalized[strlen(members[i]->type)+1];
-        capitalize(members[i]->type,capitalized);
-
+        char uppercased[strlen(members[i]->type)+1];
+        uppercase(members[i]->type,uppercased);
         fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\": \");\n",
           type,members[i]->name);
         fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = CGEN_%s;\n",
-          members[i]->name,capitalized);
+          members[i]->name,uppercased);
         fprintf(out,"  res += info_pack_to_json(&%s[res],&uber,max-res);\n",
           type);
 
@@ -86,11 +85,11 @@ void codegen_json(struct struct_def *def, char *type, FILE *out) {
         fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\" : [\");\n",
           type,members[i]->name);
         for (j = 0; j < members[i]->array; j++) {
-          char capitalized[strlen(members[i]->type)+1];
-          capitalize(members[i]->type,capitalized);
+          char uppercased[strlen(members[i]->type)+1];
+          uppercase(members[i]->type,uppercased);
 
           fprintf(out,"  uber.actual = &(actual->%s[%d]);\n  uber.type = CGEN_%s;\n",
-            members[i]->name,j,capitalized);
+            members[i]->name,j,uppercased);
           fprintf(out,"  res += info_pack_to_json(&%s[res],&uber,max-res);\n",type);
 
           if (j != (members[i]->array - 1))
