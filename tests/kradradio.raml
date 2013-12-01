@@ -1,0 +1,98 @@
+#%RAML 0.8
+---
+title: Krad Radio API
+version: 24
+traits:
+  - broadcasted:
+      queryParameters:
+        subscribe:
+          description: Subscribe to state change broadcasts
+          type: boolean
+/mixer:
+  displayName: Mixer
+  is: [broadcasted]
+  get:
+    description: Compositor state
+    queryParameters:
+      complete:
+        description: Return state rather than list
+        type: boolean
+      only:
+        description: Inputs, Outputs or Buses
+        enum: [Inputs, Outputs, Buses]
+  /{name}:
+    displayName: Path
+    get:
+      description: Get path state
+    patch:
+      description: Update path state
+    put:
+      description: Create a mixer bus
+      body:
+        application/json:
+          #schema: !include mixer_path.schema.json
+    delete:
+      description: Delete a bus
+/compositor:
+  displayName: Compositor
+  is: [broadcasted]
+  get:
+    description: Compositor state
+    queryParameters:
+      complete:
+        description: Return state rather than list
+        type: boolean
+      only:
+        description: Inputs, Outputs or Buses
+        enum: [Inputs, Outputs, Buses]
+  /{name}:
+    displayName: Path
+    get:
+      description: Get path state
+    patch:
+      description: Update path state
+    put:
+      description: Create a compositor bus
+      body:
+        application/json:
+          #schema: !include compositor_path.schema.json
+    delete:
+      description: Delete a bus
+/transponder:
+  displayName: Transponder
+  is: [broadcasted]
+  get:
+    description: Transponder state
+    queryParameters:
+      complete:
+        description: Return state rather than list
+        type: boolean
+      only:
+        description: Inputs, Outputs
+        enum: [Inputs, Outputs]
+  /{name}:
+    displayName: Transponder Path
+    get:
+      description: Get path state
+    patch:
+      description: Update path state
+    put:
+      description: Create a path
+      body:
+        application/json:
+          #schema: !include transponder_path.schema.json
+    delete:
+      description: Delete a path
+/station:
+  displayName: Station
+  description: Station information
+  /system:
+    displayName: System
+    description: System Information
+    /adapters:
+      displayName: Adapters
+      description: Information about availible adapters (API's, Encoders, Devices etc)
+/muxponder:
+  description: Control of muxing
+/streams:
+  description: Control and information about streams
