@@ -31,7 +31,6 @@ struct kr_transponder {
 
 #include "krad_transponder_event.c"
 #include "krad_transponder_processor.c"
-#include "krad_transponder_test.c"
 
 static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps);
 static kr_adapter *adapter_create(kr_xpdr *xpdr, kr_adapter_path_setup *ps);
@@ -255,8 +254,6 @@ static void path_destroy(kr_xpdr_path *path) {
 int kr_transponder_get_info(kr_transponder *xpdr, kr_xpdr_info *info) {
   if ((xpdr == NULL) || (info == NULL)) return -1;
   memcpy(info, &xpdr->info, sizeof(kr_transponder_info));
-  /* FIXME temp test */
-  test_xpdr(xpdr);
   return 0;
 }
 
