@@ -1,7 +1,7 @@
 #%RAML 0.8
 ---
 title: Krad Radio API
-version: 24
+version: 25
 traits:
   - broadcasted:
       queryParameters:
@@ -12,7 +12,6 @@ traits:
   displayName: Mixer
   is: [broadcasted]
   get:
-    description: Compositor state
     queryParameters:
       complete:
         description: Return state rather than list
@@ -71,28 +70,49 @@ traits:
         description: Inputs, Outputs
         enum: [Inputs, Outputs]
   /{name}:
-    displayName: Transponder Path
+    displayName: Transponder coupling
     get:
-      description: Get path state
+      description: Get coupling state
     patch:
-      description: Update path state
+      description: Update coupling state
     put:
-      description: Create a path
+      description: Create a coupling
       body:
         application/json:
-          #schema: !include transponder_path.schema.json
+          #schema: !include transponder.schema.json
     delete:
       description: Delete a path
+  /adapters:
+    displayName: Adapters
+    description: Information and control of active adapters
+    is: [broadcasted]
+    get:
+      description: Transponder state
+      queryParameters:
+       complete:
+        description: Return state rather than list
+        type: boolean
+    /{name}:
+      displayName: Transponder Path
+      get:
+        description: Get path state
+      patch:
+        description: Update path state
+      put:
+        description: Create a path
+        body:
+          application/json:
+            #schema: !include adapter.schema.json
+/muxponder:
+  description: Control of muxing
 /station:
   displayName: Station
   description: Station information
+  /clients:
+    description: Info about connected clients
   /system:
     displayName: System
     description: System Information
     /adapters:
       displayName: Adapters
       description: Information about availible adapters (API's, Encoders, Devices etc)
-/muxponder:
-  description: Control of muxing
-/streams:
-  description: Control and information about streams

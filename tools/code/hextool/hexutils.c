@@ -10,7 +10,7 @@ static int file_size (const char *filename) {
   return sb.st_size;
 }
 
-void hexdump (char *filename, uint8_t *buffer, int len) {
+static void hexdump (char *filename, uint8_t *buffer, int len) {
   int i;
   char *fname;
   int strl;
@@ -34,7 +34,7 @@ void hexdump (char *filename, uint8_t *buffer, int len) {
 
   printf("Generating %s...\n",hname);
 
-  if (fp < 0) {
+  if (!fp) {
     fprintf(stderr, "'fopen' failed for '%s': %s.\n",
      hname, strerror(errno));
     exit(EXIT_FAILURE);
@@ -72,7 +72,7 @@ int hexgen(char *filenames[], int n) {
   for (i = 0; i < n; i++) {
     nmemb = file_size(filenames[i]);
     fp = fopen(filenames[i], "r");
-    if (fp < 0) {
+    if (!fp) {
       return -1;
     }
     uint8_t buffer[nmemb];
@@ -82,7 +82,9 @@ int hexgen(char *filenames[], int n) {
     }
   }
 
-  fclose(fp);
-
+  if (n >0) {
+    fclose(fp);
+  }
+  
   return 0;
 }

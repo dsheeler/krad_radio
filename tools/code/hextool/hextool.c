@@ -21,4 +21,5 @@ int main(int argc, char *argv[]) {
 
   printf("All done!\n");
 
+  return 0;
 }

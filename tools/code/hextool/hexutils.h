@@ -11,3 +11,6 @@
 #include <sys/param.h>
 #include <ctype.h>
 #include <errno.h>
+
+int hexgen(char *filenames[], int n);
+

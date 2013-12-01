@@ -14,6 +14,7 @@ typedef enum {
 } kr_adapter_path_direction;
 
 typedef enum {
+  KR_ADP_NULL,        /* V + A  BS for testing               */
   KR_ADP_JACK,        /*     A  I/O ePush/ePull              */
   KR_ADP_WAYLAND,     /* V      Output iPush, ePull pos      */
   KR_ADP_V4L2,        /* V      Input ePush                  */
