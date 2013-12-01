@@ -69,7 +69,11 @@ int codegen_enum(struct struct_def *defs, int ndefs, char *prefix,
 }
 
 void codegen_typedef(char *type, FILE *out) {
-  fprintf(out,"typedef int (*info_pack_to_%s_func)(char *%s, void *st, int max);\n",type,type);
+  if (!strncmp(type,"ebml",4)) {
+    fprintf(out,"typedef int (*info_pack_to_%s_func)(kr_ebml *%s, void *st, int max);\n",type,type);
+  } else {
+    fprintf(out,"typedef int (*info_pack_to_%s_func)(char *%s, void *st, int max);\n",type,type);
+  }
 }
 
 void codegen_includes(struct struct_def *defs, int ndefs, char *prefix,

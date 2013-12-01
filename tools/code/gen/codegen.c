@@ -59,7 +59,6 @@ int main(int argc, char *argv[]) {
     fprintf(out,"\ntypedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
     codegen(defs,ndefs,argv[2],argv[3],"enum",out);
     fprintf(out,"\n\n");
-    sprintf(format,"json/proto");
     codegen(defs,ndefs,argv[2],argv[3],format,out);
     fprintf(out,"\n");
     codegen(defs,ndefs,argv[2],argv[3],"helper_proto",out);

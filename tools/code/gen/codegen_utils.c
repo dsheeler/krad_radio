@@ -54,9 +54,14 @@ int memb_to_print_format(struct struct_memb_def *memb, char *code) {
 }
 
 static void codegen_prototype(struct struct_def *def, const char *type, 
-  FILE *out) {
-  fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max);\n",
-    def->name,type,type);
+  gen_format gformat, FILE *out) {
+  if (gformat == EBML) {
+    fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st, int32_t max);\n",
+      def->name,type,type);
+  } else {
+    fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max);\n",
+      def->name,type,type);
+  }
   return;
 }
 
@@ -64,7 +69,7 @@ static void codegen_function(struct struct_def *def, char *type,
   gen_format gformat, FILE *out) {
 
   if (gformat == EBML) {
-    fprintf(out,"int %s_to_%s(char *%s, void *st) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
+    fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
       def->name,type,type);
   } else {
     fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
@@ -102,12 +107,18 @@ static void codegen_function(struct struct_def *def, char *type,
 }
 
 static int codegen_array_func(struct struct_def **fdefs, int n, 
-  const char *type, FILE *out) {
+  const char *type, gen_format gformat, FILE *out) {
 
   int i;
 
-  fprintf(out,"int info_pack_to_%s(char *%s, uber_St *uber, int max) {\n",
-    type,type);
+  if (gformat == EBML) {
+    fprintf(out,"int info_pack_to_%s(kr_ebml *%s, uber_St *uber, int max) {\n",
+      type,type);
+  } else {
+    fprintf(out,"int info_pack_to_%s(char *%s, uber_St *uber, int max) {\n",
+      type,type);
+  }
+
   fprintf(out,"  const info_pack_to_%s_func to_%s_functions[%d] = {",
     type,type,n);
 
@@ -155,17 +166,23 @@ static int codegen_internal(struct struct_def *defs, int ndefs, char *prefix,
 
   if (!strncmp(&format[4],"/proto",6)) {
     for (i = 0; i < n; i++) {
-      codegen_prototype(filtered_defs[i],formatc,out);
+      codegen_prototype(filtered_defs[i],formatc,gformat,out);
     }
   } else if (!strncmp(&format[4],"/func",5)) {
     for (i = 0; i < n; i++) {
       codegen_function(filtered_defs[i],formatc,gformat,out);
     }
   } else if (!strncmp(&format[4],"/array_func",11)) {
-    codegen_array_func(filtered_defs,n,formatc,out);
+    codegen_array_func(filtered_defs,n,formatc,gformat,out);
   } else if (!strncmp(&format[4],"/typedef",9)) {
-    fprintf(out,"int info_pack_to_%s(char *%s, uber_St *uber, int max);\n",
-      formatc,formatc);
+    if (gformat == EBML) {
+      fprintf(out,"int info_pack_to_%s(kr_ebml *%s, uber_St *uber, int max);\n",
+        formatc,formatc);
+    } else {
+      fprintf(out,"int info_pack_to_%s(char *%s, uber_St *uber, int max);\n",
+        formatc,formatc);
+    }
+
     codegen_typedef(formatc,out);
   } 
 
