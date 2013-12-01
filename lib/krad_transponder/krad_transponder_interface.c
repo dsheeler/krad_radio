@@ -1,7 +1,7 @@
 #include "krad_transponder_interface.h"
 
 static void kr_transponder_info_to_ebml(kr_ebml *ebml, kr_xpdr_info *info) {
-  kr_ebml2_pack_uint16(ebml, EBML_ID_KRAD_RADIO_TCP_PORT, info->active_paths);
+  kr_ebml_pack_uint16(ebml, EBML_ID_KRAD_RADIO_TCP_PORT, info->active_paths);
 }
 
 static void transponder_info_ebml(kr_ebml *ebml, kr_transponder *xpdr) {
@@ -93,7 +93,7 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       address.path.unit = KR_TRANSPONDER;
       address.path.subunit.transponder_subunit = KR_UNIT;
       krad_radio_address_to_ebml2(&ebml_out, &response, &address);
-      kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+      kr_ebml_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
        EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
       transponder_info_ebml(&ebml_out, transponder);
@@ -109,7 +109,7 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         }
         krad_transponder_subunit_address ( &transponder_subunit_rep, i, &address );
         krad_radio_address_to_ebml2 (&ebml_out, &response, &address);
-        kr_ebml2_pack_uint32 ( &ebml_out,
+        kr_ebml_pack_uint32 ( &ebml_out,
                                EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                                EBML_ID_KRAD_SUBUNIT_INFO);
         kr_ebml2_start_element (&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
@@ -265,11 +265,11 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         if (krad_v4l2_get_device_filename(i, string) > 0) {
           address.id.number = i;
           krad_radio_address_to_ebml2(&ebml_out, &response, &address);
-          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+          kr_ebml_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
            EBML_ID_KRAD_SUBUNIT_INFO);
           kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD,
            &payload);
-          kr_ebml2_pack_string(&ebml_out,
+          kr_ebml_pack_string(&ebml_out,
            EBML_ID_KRAD_TRANSPONDER_V4L2_DEVICE_FILENAME, string);
           kr_ebml2_finish_element(&ebml_out, payload);
           kr_ebml2_finish_element(&ebml_out, response);
@@ -281,11 +281,11 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         if (krad_decklink_get_device_name(i, string) > 0) {
           address.id.number = i;
           krad_radio_address_to_ebml2(&ebml_out, &response, &address);
-          kr_ebml2_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+          kr_ebml_pack_uint32(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
            EBML_ID_KRAD_SUBUNIT_INFO);
           kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD,
            &payload);
-          kr_ebml2_pack_string(&ebml_out,
+          kr_ebml_pack_string(&ebml_out,
            EBML_ID_KRAD_TRANSPONDER_DECKLINK_DEVICE_NAME, string);
           kr_ebml2_finish_element(&ebml_out, payload);
           kr_ebml2_finish_element(&ebml_out, response);

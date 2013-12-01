@@ -158,7 +158,7 @@ static void kr_mkv_cluster (kr_mkv_t *mkv, int64_t timecode) {
   mkv->cluster_timecode = timecode;
 
   kr_ebml2_start_element (mkv->e, MKV_CLUSTER, &mkv->cluster);
-  kr_ebml2_pack_int64 (mkv->e, MKV_CLUSTER_TIMECODE, mkv->cluster_timecode);
+  kr_ebml_pack_int64 (mkv->e, MKV_CLUSTER_TIMECODE, mkv->cluster_timecode);
 }
 
 static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
@@ -176,15 +176,15 @@ static void kr_mkv_start_segment (kr_mkv_t *mkv, char *title) {
 
   //FIXME
   // temp place for this
-  kr_ebml2_pack_header ( mkv->e, "webm", 2, 2);
+  kr_ebml_pack_header ( mkv->e, "webm", 2, 2);
 
   kr_ebml2_start_element (mkv->e, MKV_SEGMENT, &mkv->segment);
 
   kr_ebml2_start_element (mkv->e, MKV_SEGMENT_INFO, &segment_info);
-  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_TITLE, title);
-  kr_ebml2_pack_uint64 (mkv->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
-  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
-  kr_ebml2_pack_string (mkv->e, MKV_SEGMENT_WRITINGAPP, KR_VERSION_STR);
+  kr_ebml_pack_string (mkv->e, MKV_SEGMENT_TITLE, title);
+  kr_ebml_pack_uint64 (mkv->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
+  kr_ebml_pack_string (mkv->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
+  kr_ebml_pack_string (mkv->e, MKV_SEGMENT_WRITINGAPP, KR_VERSION_STR);
   kr_ebml2_finish_element (mkv->e, segment_info);
 
   mkv->current_track = 1;
@@ -215,18 +215,18 @@ int kr_mkv_add_video_track_with_private_data (kr_mkv_t *mkv,
   mkv->tracks[t].height = height;
 
   kr_ebml2_start_element (mkv->e, MKV_TRACK, &track_info);
-  kr_ebml2_pack_int8 (mkv->e, MKV_TRACKNUMBER, t);
-  kr_ebml2_pack_int64 (mkv->e, MKV_TRACK_UID, kr_mkv_generate_track_uid (t));
-  kr_ebml2_pack_string (mkv->e, MKV_CODECID, kr_codec_to_mkv_codec (codec));
-  kr_ebml2_pack_int8 (mkv->e, MKV_TRACKTYPE, 1);
+  kr_ebml_pack_int8 (mkv->e, MKV_TRACKNUMBER, t);
+  kr_ebml_pack_int64 (mkv->e, MKV_TRACK_UID, kr_mkv_generate_track_uid (t));
+  kr_ebml_pack_string (mkv->e, MKV_CODECID, kr_codec_to_mkv_codec (codec));
+  kr_ebml_pack_int8 (mkv->e, MKV_TRACKTYPE, 1);
 
   if (priv_data_size > 0) {
-    kr_ebml2_pack_data (mkv->e, MKV_CODECDATA, priv_data, priv_data_size);
+    kr_ebml_pack_data (mkv->e, MKV_CODECDATA, priv_data, priv_data_size);
   }
 
   kr_ebml2_start_element (mkv->e, MKV_VIDEO, &video_info);
-  kr_ebml2_pack_int16 (mkv->e, MKV_WIDTH, mkv->tracks[t].width);
-  kr_ebml2_pack_int16 (mkv->e, MKV_HEIGHT, mkv->tracks[t].height);
+  kr_ebml_pack_int16 (mkv->e, MKV_WIDTH, mkv->tracks[t].width);
+  kr_ebml_pack_int16 (mkv->e, MKV_HEIGHT, mkv->tracks[t].height);
   kr_ebml2_finish_element (mkv->e, video_info);
   kr_ebml2_finish_element (mkv->e, track_info);
 
@@ -261,19 +261,19 @@ int kr_mkv_add_audio_track (kr_mkv_t *mkv, krad_codec_t codec,
   mkv->tracks[t].codec = codec;
 
   kr_ebml2_start_element (mkv->e, MKV_TRACK, &track_info);
-  kr_ebml2_pack_int8 (mkv->e, MKV_TRACKNUMBER, t);
-  kr_ebml2_pack_int64 (mkv->e, MKV_TRACK_UID, kr_mkv_generate_track_uid (t));
-  kr_ebml2_pack_string (mkv->e, MKV_CODECID, kr_codec_to_mkv_codec (codec));
-  kr_ebml2_pack_int8 (mkv->e, MKV_TRACKTYPE, 2);
+  kr_ebml_pack_int8 (mkv->e, MKV_TRACKNUMBER, t);
+  kr_ebml_pack_int64 (mkv->e, MKV_TRACK_UID, kr_mkv_generate_track_uid (t));
+  kr_ebml_pack_string (mkv->e, MKV_CODECID, kr_codec_to_mkv_codec (codec));
+  kr_ebml_pack_int8 (mkv->e, MKV_TRACKTYPE, 2);
 
   kr_ebml2_start_element (mkv->e, MKV_AUDIO, &audio_info);
-  kr_ebml2_pack_uint8 (mkv->e, MKV_CHANNELS, channels);
-  kr_ebml2_pack_float (mkv->e, MKV_SAMPLERATE, sample_rate);
-  kr_ebml2_pack_uint8 (mkv->e, MKV_BITDEPTH, 16);
+  kr_ebml_pack_uint8 (mkv->e, MKV_CHANNELS, channels);
+  kr_ebml_pack_float (mkv->e, MKV_SAMPLERATE, sample_rate);
+  kr_ebml_pack_uint8 (mkv->e, MKV_BITDEPTH, 16);
   kr_ebml2_finish_element (mkv->e, audio_info);
 
   if (priv_data_size > 0) {
-    kr_ebml2_pack_data (mkv->e, MKV_CODECDATA, priv_data, priv_data_size);
+    kr_ebml_pack_data (mkv->e, MKV_CODECDATA, priv_data, priv_data_size);
   }
 
   kr_ebml2_finish_element (mkv->e, track_info);
@@ -289,10 +289,10 @@ int kr_mkv_add_subtitle_track (kr_mkv_t *mkv, char *codec_id) {
   t = kr_mkv_new_tracknumber (mkv);
 
   kr_ebml2_start_element (mkv->e, MKV_TRACK, &track_info);
-  kr_ebml2_pack_int8 (mkv->e, MKV_TRACKNUMBER, t);
-  kr_ebml2_pack_int64 (mkv->e, MKV_TRACK_UID, kr_mkv_generate_track_uid (t));
-  kr_ebml2_pack_string (mkv->e, MKV_CODECID, codec_id);
-  kr_ebml2_pack_int8 (mkv->e, MKV_TRACKTYPE, 0x11);
+  kr_ebml_pack_int8 (mkv->e, MKV_TRACKNUMBER, t);
+  kr_ebml_pack_int64 (mkv->e, MKV_TRACK_UID, kr_mkv_generate_track_uid (t));
+  kr_ebml_pack_string (mkv->e, MKV_CODECID, codec_id);
+  kr_ebml_pack_int8 (mkv->e, MKV_TRACKTYPE, 0x11);
   kr_ebml2_finish_element (mkv->e, track_info);
 
   return t;
@@ -357,12 +357,12 @@ void kr_mkv_add_video_tc (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
     mkv->segment_duration = mkv->segment_timecode;
   }
 
-  kr_ebml2_pack_element (mkv->e, MKV_SIMPLEBLOCK);
+  kr_ebml_pack_element (mkv->e, MKV_SIMPLEBLOCK);
   kr_ebml2_revpack4 (mkv->e, &block_length);
-  kr_ebml2_pack (mkv->e, &track_number, 1);
+  kr_ebml_pack (mkv->e, &track_number, 1);
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
-  kr_ebml2_pack (mkv->e, &flags, 1);
-  kr_ebml2_pack (mkv->e, buffer, len);
+  kr_ebml_pack (mkv->e, &flags, 1);
+  kr_ebml_pack (mkv->e, buffer, len);
 
   kr_mkv_sync (mkv, 0);
 }
@@ -422,12 +422,12 @@ void kr_mkv_add_audio (kr_mkv_t *mkv, int track_num, uint8_t *buffer,
     mkv->segment_duration = mkv->segment_timecode;
   }
 
-  kr_ebml2_pack_element (mkv->e, MKV_SIMPLEBLOCK);
+  kr_ebml_pack_element (mkv->e, MKV_SIMPLEBLOCK);
   kr_ebml2_revpack4 (mkv->e, &block_length);
-  kr_ebml2_pack (mkv->e, &track_number, 1);
+  kr_ebml_pack (mkv->e, &track_number, 1);
   kr_ebml2_revpack2 (mkv->e, &block_timecode);
-  kr_ebml2_pack (mkv->e, &flags, 1);
-  kr_ebml2_pack (mkv->e, buffer, buffer_len);
+  kr_ebml_pack (mkv->e, &flags, 1);
+  kr_ebml_pack (mkv->e, buffer, buffer_len);
 
   kr_mkv_sync (mkv, 0);
 }

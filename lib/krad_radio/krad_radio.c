@@ -203,11 +203,11 @@ static void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage) {
 
   kr_ebml2_set_buffer(&ebml, buffer, 128);
   krad_radio_address_to_ebml2(&ebml, &message_loc, &address);
-  kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
+  kr_ebml_pack_int32(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
    EBML_ID_KRAD_SUBUNIT_INFO);
   kr_ebml2_start_element(&ebml, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD,
    &payload_loc);
-  kr_ebml2_pack_int32(&ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, usage);
+  kr_ebml_pack_int32(&ebml, EBML_ID_KRAD_RADIO_SYSTEM_CPU_USAGE, usage);
   kr_ebml2_finish_element(&ebml, payload_loc);
   kr_ebml2_finish_element(&ebml, message_loc);
 

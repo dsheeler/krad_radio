@@ -36,12 +36,12 @@ int kr_mixer_get_path_info(kr_mixer_path *unit, kr_mixer_path_info *info) {
 }
 
 void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
-  kr_ebml2_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->period_size);
-  kr_ebml2_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->sample_rate);
-  kr_ebml2_pack_uint32(e, KR_EID_MIXER_INPUTS, info->inputs);
-  kr_ebml2_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->outputs);
-  kr_ebml2_pack_uint32(e, KR_EID_MIXER_BUSES, info->buses);
-  kr_ebml2_pack_string(e, KR_EID_MIXER_CLOCK, info->clock);
+  kr_ebml_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->period_size);
+  kr_ebml_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->sample_rate);
+  kr_ebml_pack_uint32(e, KR_EID_MIXER_INPUTS, info->inputs);
+  kr_ebml_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->outputs);
+  kr_ebml_pack_uint32(e, KR_EID_MIXER_BUSES, info->buses);
+  kr_ebml_pack_string(e, KR_EID_MIXER_CLOCK, info->clock);
 }
 
 void kr_mixer_to_ebml(kr_ebml *e, kr_mixer *mixer) {
@@ -157,7 +157,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       while ((path = kr_mixer_path_iter(mixer, &i))) {
         strcpy(address.id.name, path->name);
         krad_radio_address_to_ebml2(&ebml_out, &response, &address);
-        kr_ebml2_pack_uint32(&ebml_out,
+        kr_ebml_pack_uint32(&ebml_out,
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_SUBUNIT_INFO);
         kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
@@ -226,7 +226,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         address.path.subunit.mixer_subunit = KR_PORTGROUP;
         strcpy(address.id.name, unit->name);
         krad_radio_address_to_ebml2(&ebml_out, &response, &address);
-        kr_ebml2_pack_uint32(&ebml_out,
+        kr_ebml_pack_uint32(&ebml_out,
                              EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                              EBML_ID_KRAD_SUBUNIT_INFO);
         kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
@@ -283,7 +283,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       address.path.unit = KR_MIXER;
       address.path.subunit.mixer_subunit = KR_UNIT;
       krad_radio_address_to_ebml2(&ebml_out, &response, &address);
-      kr_ebml2_pack_uint32(&ebml_out,
+      kr_ebml_pack_uint32(&ebml_out,
                            EBML_ID_KRAD_RADIO_MESSAGE_TYPE,
                            EBML_ID_KRAD_UNIT_INFO);
       kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);

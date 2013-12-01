@@ -24,7 +24,7 @@ int kr_transponder_receiver_enable(kr_client *client, int port) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_ENABLE, &enable_linker);
 
-  kr_ebml2_pack_uint16 (client->ebml2, EBML_ID_KRAD_RADIO_TCP_PORT, port_actual);
+  kr_ebml_pack_uint16 (client->ebml2, EBML_ID_KRAD_RADIO_TCP_PORT, port_actual);
 
   kr_ebml2_finish_element (client->ebml2, enable_linker);
   kr_ebml2_finish_element (client->ebml2, linker_command);
@@ -62,7 +62,7 @@ int kr_transponder_transmitter_enable(kr_client *client, int port) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_ENABLE, &enable_transmitter);
 
-  kr_ebml2_pack_uint16 (client->ebml2, EBML_ID_KRAD_RADIO_TCP_PORT, port_actual);
+  kr_ebml_pack_uint16 (client->ebml2, EBML_ID_KRAD_RADIO_TCP_PORT, port_actual);
 
   kr_ebml2_finish_element (client->ebml2, enable_transmitter);
   kr_ebml2_finish_element (client->ebml2, linker_command);
@@ -133,7 +133,7 @@ void kr_transponder_subunit_destroy(kr_client *client, uint32_t number) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY, &destroy_link);
 
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
+  kr_ebml_pack_uint32 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
 
   kr_ebml2_finish_element (client->ebml2, destroy_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
@@ -149,8 +149,8 @@ void kr_transponder_subunit_update(kr_client *client, uint32_t number, uint32_t 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE, &update_link);
 /*
-  kr_ebml2_pack_int8 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
-  kr_ebml2_pack_int32 (client->ebml2, ebml_id, newval);
+  kr_ebml_pack_int8 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
+  kr_ebml_pack_int32 (client->ebml2, ebml_id, newval);
 */
   kr_ebml2_finish_element (client->ebml2, update_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
@@ -166,8 +166,8 @@ void kr_transponder_subunit_update_str(kr_client *client, uint32_t number, uint3
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE, &update_link);
 /*
-  kr_ebml2_pack_int8 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
-  kr_ebml2_pack_string (client->ebml2, ebml_id, newval);
+  kr_ebml_pack_int8 (client->ebml2, EBML_ID_KRAD_TRANSPONDER_LINK_NUMBER, number);
+  kr_ebml_pack_string (client->ebml2, ebml_id, newval);
 */
   kr_ebml2_finish_element (client->ebml2, update_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);
@@ -183,8 +183,8 @@ void kr_transponder_subunit_create(kr_client *client, char *mode, char *option) 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &linker_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE, &create_link);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_OPERATION_MODE, mode);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_FILENAME, option);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_OPERATION_MODE, mode);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_LINK_LINK_FILENAME, option);
 
   kr_ebml2_finish_element (client->ebml2, create_link);
   kr_ebml2_finish_element (client->ebml2, linker_command);

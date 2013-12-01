@@ -84,7 +84,7 @@ int kr_ebml2_advance(kr_ebml *ebml, size_t bytes) {
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack(kr_ebml *ebml, void *buffer, size_t len) {
+int kr_ebml_pack(kr_ebml *ebml, void *buffer, size_t len) {
   memcpy(ebml->buf, buffer, len);
   kr_ebml2_advance(ebml, len);
   return 0; /* FIXME: err checkme */
@@ -132,7 +132,7 @@ static void kr_ebml2_revpack8(kr_ebml *ebml, void *buffer) {
   kr_ebml2_advance(ebml, 8);
 }
 
-int kr_ebml2_pack_element(kr_ebml *ebml, uint32_t element) {
+int kr_ebml_pack_element(kr_ebml *ebml, uint32_t element) {
   if (element < 0x00000100) {
     kr_ebml2_revpack1(ebml, (uint8_t *)&element);
   } else {
@@ -149,14 +149,14 @@ int kr_ebml2_pack_element(kr_ebml *ebml, uint32_t element) {
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_data_size_unknown(kr_ebml *ebml) {
+int kr_ebml_pack_data_size_unknown(kr_ebml *ebml) {
   uint64_t data_size;
   data_size = EBML_DATA_SIZE_UNKNOWN;
   kr_ebml2_revpack8(ebml, &data_size);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_big_data_size(kr_ebml *ebml, uint64_t data_size) {
+int kr_ebml_pack_big_data_size(kr_ebml *ebml, uint64_t data_size) {
 
   uint32_t data_size_length;
   uint64_t data_size_length_mask;
@@ -210,7 +210,7 @@ int kr_ebml2_pack_big_data_size(kr_ebml *ebml, uint64_t data_size) {
                   data_size |= (0x000000000000080LLU << ((data_size_length - 1) * 7));
                   kr_ebml2_revpack8(ebml, (void *)&data_size);
                 } else {
-                  kr_ebml2_pack_data_size_unknown(ebml);
+                  kr_ebml_pack_data_size_unknown(ebml);
                 }
               }
             }
@@ -222,7 +222,7 @@ int kr_ebml2_pack_big_data_size(kr_ebml *ebml, uint64_t data_size) {
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_data_size(kr_ebml *ebml, uint64_t data_size) {
+int kr_ebml_pack_data_size(kr_ebml *ebml, uint64_t data_size) {
 
   uint32_t data_size_length;
   uint64_t data_size_length_mask;
@@ -246,23 +246,23 @@ int kr_ebml2_pack_data_size(kr_ebml *ebml, uint64_t data_size) {
         data_size |= (0x000000000000080LLU << ((data_size_length - 1) * 7));
         kr_ebml2_revpack3(ebml, (void *)&data_size);
       } else {
-        kr_ebml2_pack_big_data_size(ebml, data_size);
+        kr_ebml_pack_big_data_size(ebml, data_size);
       }
     }
   }
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_data_size_update(kr_ebml *ebml, uint8_t *element_position, uint64_t data_size) {
+int kr_ebml_pack_data_size_update(kr_ebml *ebml, uint8_t *element_position, uint64_t data_size) {
   data_size |= (0x000000000000080LLU << ((EBML_DATA_SIZE_UNKNOWN_LENGTH - 1) * 7));
   rmemcpy8(element_position, (uint8_t *)&data_size);
   return 0; /* FIXME: err checkme */
 }
 
 int kr_ebml2_start_element(kr_ebml *ebml, uint32_t element, uint8_t **position) {
-  kr_ebml2_pack_element(ebml, element);
+  kr_ebml_pack_element(ebml, element);
   *position = ebml->buf;
-  kr_ebml2_pack_data_size_unknown(ebml);
+  kr_ebml_pack_data_size_unknown(ebml);
   return 0; /* FIXME: err checkme */
 }
 
@@ -271,111 +271,111 @@ int kr_ebml2_finish_element(kr_ebml *ebml, uint8_t *element_position) {
   uint64_t element_data_size;
 
   element_data_size = ebml->buf - element_position - EBML_DATA_SIZE_UNKNOWN_LENGTH;
-  kr_ebml2_pack_data_size_update(ebml, element_position, element_data_size);
+  kr_ebml_pack_data_size_update(ebml, element_position, element_data_size);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_data(kr_ebml *ebml, uint32_t element, void *data, uint64_t length) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, length);
-  kr_ebml2_pack(ebml, data, length);
+int kr_ebml_pack_data(kr_ebml *ebml, uint32_t element, void *data, uint64_t length) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, length);
+  kr_ebml_pack(ebml, data, length);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_string(kr_ebml *ebml, uint32_t element, char *string) {
+int kr_ebml_pack_string(kr_ebml *ebml, uint32_t element, char *string) {
 
   uint64_t size;
 
   size = strlen(string);
 
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, size);
-  kr_ebml2_pack(ebml, string, size);
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, size);
+  kr_ebml_pack(ebml, string, size);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_int8(kr_ebml *ebml, uint32_t element, int8_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 1);
+int kr_ebml_pack_int8(kr_ebml *ebml, uint32_t element, int8_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 1);
   kr_ebml2_revpack1(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_uint8(kr_ebml *ebml, uint32_t element, uint8_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 1);
+int kr_ebml_pack_uint8(kr_ebml *ebml, uint32_t element, uint8_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 1);
   kr_ebml2_revpack1(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_int16(kr_ebml *ebml, uint32_t element, int16_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 2);
+int kr_ebml_pack_int16(kr_ebml *ebml, uint32_t element, int16_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 2);
   kr_ebml2_revpack2(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_uint16(kr_ebml *ebml, uint32_t element, uint16_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 2);
+int kr_ebml_pack_uint16(kr_ebml *ebml, uint32_t element, uint16_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 2);
   kr_ebml2_revpack2(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_int32(kr_ebml *ebml, uint32_t element, int32_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 4);
+int kr_ebml_pack_int32(kr_ebml *ebml, uint32_t element, int32_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 4);
   kr_ebml2_revpack4(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_uint32(kr_ebml *ebml, uint32_t element, uint32_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 4);
+int kr_ebml_pack_uint32(kr_ebml *ebml, uint32_t element, uint32_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 4);
   kr_ebml2_revpack4(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_int64(kr_ebml *ebml, uint32_t element, int64_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 8);
+int kr_ebml_pack_int64(kr_ebml *ebml, uint32_t element, int64_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 8);
   kr_ebml2_revpack8(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_uint64(kr_ebml *ebml, uint32_t element, uint64_t number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 8);
+int kr_ebml_pack_uint64(kr_ebml *ebml, uint32_t element, uint64_t number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 8);
   kr_ebml2_revpack8(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_float(kr_ebml *ebml, uint32_t element, float number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 4);
+int kr_ebml_pack_float(kr_ebml *ebml, uint32_t element, float number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 4);
   kr_ebml2_revpack4(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_double(kr_ebml *ebml, uint32_t element, double number) {
-  kr_ebml2_pack_element(ebml, element);
-  kr_ebml2_pack_data_size(ebml, 8);
+int kr_ebml_pack_double(kr_ebml *ebml, uint32_t element, double number) {
+  kr_ebml_pack_element(ebml, element);
+  kr_ebml_pack_data_size(ebml, 8);
   kr_ebml2_revpack8(ebml, &number);
   return 0; /* FIXME: err checkme */
 }
 
-int kr_ebml2_pack_header(kr_ebml *ebml, char *doctype, uint32_t version, uint32_t read_version) {
+int kr_ebml_pack_header(kr_ebml *ebml, char *doctype, uint32_t version, uint32_t read_version) {
 
   uint8_t *header;
 
   kr_ebml2_start_element(ebml, EID_HEADER, &header);
-  kr_ebml2_pack_uint8(ebml, EID_VERSION, 1);
-  kr_ebml2_pack_uint8(ebml, EID_READVERSION, 1);
-  kr_ebml2_pack_uint8(ebml, EID_MAXIDLENGTH, 4);
-  kr_ebml2_pack_uint8(ebml, EID_MAXSIZELENGTH, 8);
-  kr_ebml2_pack_string(ebml, EID_DOCTYPE, doctype);
-  kr_ebml2_pack_uint8(ebml, EID_DOCTYPEVERSION, version);
-  kr_ebml2_pack_uint8(ebml, EID_DOCTYPEREADVERSION, read_version);
+  kr_ebml_pack_uint8(ebml, EID_VERSION, 1);
+  kr_ebml_pack_uint8(ebml, EID_READVERSION, 1);
+  kr_ebml_pack_uint8(ebml, EID_MAXIDLENGTH, 4);
+  kr_ebml_pack_uint8(ebml, EID_MAXSIZELENGTH, 8);
+  kr_ebml_pack_string(ebml, EID_DOCTYPE, doctype);
+  kr_ebml_pack_uint8(ebml, EID_DOCTYPEVERSION, version);
+  kr_ebml_pack_uint8(ebml, EID_DOCTYPEREADVERSION, read_version);
   kr_ebml2_finish_element(ebml, header);
   return 0; /* FIXME: err checkme */
 }

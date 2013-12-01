@@ -30,8 +30,8 @@ void kr_compositor_set_frame_rate(kr_client_t *client, int numerator, int denomi
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_FRAME_RATE, &set_frame_rate);
 
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR, numerator);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR, denominator);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FPS_NUMERATOR, numerator);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_FPS_DENOMINATOR, denominator);
 
   kr_ebml2_finish_element (client->ebml2, set_frame_rate);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
@@ -51,8 +51,8 @@ int kr_compositor_set_resolution (kr_client_t *client, uint32_t width, uint32_t 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &compositor_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SET_RESOLUTION, &set_resolution);
 
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_WIDTH, width);
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_HEIGHT, height);
+  kr_ebml_pack_uint32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_WIDTH, width);
+  kr_ebml_pack_uint32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_HEIGHT, height);
 
   kr_ebml2_finish_element (client->ebml2, set_resolution);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
@@ -368,9 +368,9 @@ int kr_compositor_subunit_create (kr_client_t *client,
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_ADD_SUBUNIT, &subunit);
 
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, type);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, option);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, option2);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, type);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, option);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, option2);
 
   kr_ebml2_finish_element (client->ebml2, subunit);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -400,8 +400,8 @@ void kr_compositor_subunit_info (kr_client_t *client, kr_address_t *address) {
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_SUBUNIT_INFO, &getinfo);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
   kr_ebml2_finish_element (client->ebml2, getinfo);
   kr_ebml2_finish_element (client->ebml2, command);
 
@@ -415,8 +415,8 @@ void kr_compositor_subunit_destroy (kr_client_t *client, kr_address_t *address) 
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_COMPOSITOR_CMD_REMOVE_SUBUNIT, &destroy);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->path.subunit.compositor_subunit);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_RADIO_SUBUNIT, address->id.number);
   kr_ebml2_finish_element (client->ebml2, destroy);
   kr_ebml2_finish_element (client->ebml2, command);
 
@@ -447,7 +447,7 @@ void kr_videoport_create_cmd (kr_client_t *client, int32_t type) {
   kr_ebml2_start_element (client->ebml2,
                           EBML_ID_KRAD_COMPOSITOR_CMD_LOCAL_VIDEOPORT_CREATE,
                           &create_videoport);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_PORT_DIRECTION, type);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_COMPOSITOR_PORT_DIRECTION, type);
   kr_ebml2_finish_element (client->ebml2, create_videoport);
   kr_ebml2_finish_element (client->ebml2, compositor_command);
 

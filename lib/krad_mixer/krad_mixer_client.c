@@ -238,8 +238,8 @@ void kr_mixer_portgroup_xmms2_cmd (kr_client_t *client, char *portgroupname, cha
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PORTGROUP_XMMS2_CMD, &bind);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_XMMS2_CMD, xmms2_cmd);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_XMMS2_CMD, xmms2_cmd);
   kr_ebml2_finish_element (client->ebml2, bind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
 
@@ -253,8 +253,8 @@ void kr_mixer_bind_portgroup_xmms2 (kr_client_t *client, char *portgroupname, ch
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_BIND_PORTGROUP_XMMS2, &bind);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_XMMS2_IPC_PATH, ipc_path);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_XMMS2_IPC_PATH, ipc_path);
   kr_ebml2_finish_element (client->ebml2, bind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
 
@@ -268,7 +268,7 @@ void kr_mixer_unbind_portgroup_xmms2 (kr_client_t *client, char *portgroupname) 
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_UNBIND_PORTGROUP_XMMS2, &unbind);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
   kr_ebml2_finish_element (client->ebml2, unbind);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
 
@@ -283,7 +283,7 @@ void kr_mixer_set_sample_rate (kr_client_t *client, int sample_rate) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_SET_SAMPLE_RATE, &set_sample_rate);
 
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_SAMPLE_RATE, sample_rate);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_SAMPLE_RATE, sample_rate);
 
   kr_ebml2_finish_element (client->ebml2, set_sample_rate);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
@@ -346,8 +346,8 @@ void kr_mixer_plug_portgroup (kr_client_t *client, char *name, char *remote_name
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PLUG_PORTGROUP, &plug);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
   kr_ebml2_finish_element (client->ebml2, plug);
   kr_ebml2_finish_element (client->ebml2, command);
 
@@ -362,8 +362,8 @@ void kr_mixer_unplug_portgroup (kr_client_t *client, char *name, char *remote_na
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_UNPLUG_PORTGROUP, &unplug);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, remote_name);
   kr_ebml2_finish_element (client->ebml2, unplug);
   kr_ebml2_finish_element (client->ebml2, command);
 
@@ -379,10 +379,10 @@ void kr_mixer_create_portgroup(kr_client_t *client, char *name, char *type,
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_CREATE_PORTGROUP, &create);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, type);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, direction);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, channels);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, type);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_DIRECTION, direction);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNELS, channels);
   kr_ebml2_finish_element (client->ebml2, create);
   kr_ebml2_finish_element (client->ebml2, command);
 
@@ -398,7 +398,7 @@ void kr_mixer_push_tone (kr_client_t *client, int8_t tone) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PUSH_TONE, &push);
 
-  kr_ebml2_pack_int8(client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
+  kr_ebml_pack_int8(client->ebml2, EBML_ID_KRAD_MIXER_TONE_NAME, tone);
 
   kr_ebml2_finish_element (client->ebml2, push);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -415,12 +415,12 @@ void kr_mixer_update_portgroup_map_channel (kr_client_t *client, char *portgroup
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_UPDATE_PORTGROUP, &update);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_MAP_CHANNEL, &map);
   kr_ebml2_finish_element (client->ebml2, map);
 
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, in_channel);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, out_channel);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, in_channel);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, out_channel);
 
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -437,12 +437,12 @@ void kr_mixer_update_portgroup_mixmap_channel (kr_client_t *client, char *portgr
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_UPDATE_PORTGROUP, &update);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_MIXMAP_CHANNEL, &map);
   kr_ebml2_finish_element (client->ebml2, map);
 
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, in_channel);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, out_channel);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, in_channel);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CHANNEL, out_channel);
 
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -459,8 +459,8 @@ void kr_mixer_set_portgroup_crossfade_group (kr_client_t *client, char *portgrou
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_UPDATE_PORTGROUP, &update);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, crossfade_group);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_CROSSFADE_NAME, crossfade_group);
 
   kr_ebml2_finish_element (client->ebml2, update);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -476,7 +476,7 @@ void kr_mixer_portgroup_info (kr_client_t *client, char *portgroupname) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_PORTGROUP_INFO, &info);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroupname);
 
   kr_ebml2_finish_element (client->ebml2, info);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -492,7 +492,7 @@ void kr_mixer_remove_portgroup (kr_client_t *client, char *name) {
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_DESTROY_PORTGROUP, &destroy);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, name);
 
   kr_ebml2_finish_element (client->ebml2, destroy);
   kr_ebml2_finish_element (client->ebml2, command);
@@ -509,13 +509,13 @@ void kr_mixer_set_effect_control(kr_client_t *client, char *portgroup_name, int 
 
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_SET_EFFECT_CONTROL, &set_control);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_EFFECT_NUM, effect_num);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_SUBUNIT, control_id);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_NAME, control_name);
-  kr_ebml2_pack_float (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_VALUE, control_value);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, duration);
-  kr_ebml2_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, easing);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_EFFECT_NUM, effect_num);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_SUBUNIT, control_id);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_NAME, control_name);
+  kr_ebml_pack_float (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_VALUE, control_value);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, duration);
+  kr_ebml_pack_int32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, easing);
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);
 
@@ -530,10 +530,10 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD, &mixer_command);
   kr_ebml2_start_element (client->ebml2, EBML_ID_KRAD_MIXER_CMD_SET_CONTROL, &set_control);
 
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
-  kr_ebml2_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_NAME, control_name);
-  kr_ebml2_pack_float (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_VALUE, control_value);
-  kr_ebml2_pack_uint32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, duration);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_PORTGROUP_NAME, portgroup_name);
+  kr_ebml_pack_string (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_NAME, control_name);
+  kr_ebml_pack_float (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_VALUE, control_value);
+  kr_ebml_pack_uint32 (client->ebml2, EBML_ID_KRAD_MIXER_CONTROL_DURATION, duration);
 
   kr_ebml2_finish_element (client->ebml2, set_control);
   kr_ebml2_finish_element (client->ebml2, mixer_command);

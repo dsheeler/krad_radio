@@ -427,19 +427,19 @@ static void kr_mkv_rebuild_header_for_streaming(kr_mkv_t *mkv) {
   shdr = kr_mkv_create_bufsize (len);
   kr_ebml2_set_buffer (shdr->e, shdr->io->buf, shdr->io->space);
 
-  kr_ebml2_pack_header (shdr->e, "webm", 2, 2);
+  kr_ebml_pack_header (shdr->e, "webm", 2, 2);
   kr_ebml2_start_element (shdr->e, MKV_SEGMENT, &segment);
 
   title = "A Krad Restream";
 
   kr_ebml2_start_element (shdr->e, MKV_SEGMENT_INFO, &segment_info);
-  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_TITLE, title);
-  kr_ebml2_pack_int32 (shdr->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
-  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
-  kr_ebml2_pack_string (shdr->e, MKV_SEGMENT_WRITINGAPP, KR_VERSION_STR);
+  kr_ebml_pack_string (shdr->e, MKV_SEGMENT_TITLE, title);
+  kr_ebml_pack_int32 (shdr->e, MKV_SEGMENT_TIMECODESCALE, mkv->timecode_scale);
+  kr_ebml_pack_string (shdr->e, MKV_SEGMENT_MUXINGAPP, KRAD_MKV_VERSION);
+  kr_ebml_pack_string (shdr->e, MKV_SEGMENT_WRITINGAPP, KR_VERSION_STR);
   kr_ebml2_finish_element (shdr->e, segment_info);
 
-  kr_ebml2_pack_data (shdr->e, MKV_TRACKS,
+  kr_ebml_pack_data (shdr->e, MKV_TRACKS,
                       mkv->tracks_info_data, mkv->tracks_info_data_size);
 
   mkv->stream_hdr_len = shdr->e->pos;
