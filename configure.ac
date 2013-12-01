@@ -80,7 +80,9 @@ AC_PROG_CC
 AC_PROG_CXX
 
 AC_CONFIG_FILES([Makefile lib/Makefile daemon/Makefile clients/Makefile
-                 tests/Makefile])
+                 tests/Makefile tools/code/hextool/Makefile
+                 tools/code/analysis/gather_structs/Makefile
+                 tools/code/gen/Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT([
