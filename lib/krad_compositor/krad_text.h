@@ -3,9 +3,6 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <freetype/ftadvanc.h>
-#include <freetype/ftsnames.h>
-#include <freetype/tttables.h>
 #include <cairo-ft.h>
 
 #define KRAD_TEXT_DEFAULT_FONT "sans"
