@@ -122,3 +122,4 @@ tests/kr_cbor_test
 tools/code/analysis/gather_structs/gather_tool
 tools/code/gen/codegen
 tools/code/gen/codegen_bootstrap
+tests/kr_wayland_test
