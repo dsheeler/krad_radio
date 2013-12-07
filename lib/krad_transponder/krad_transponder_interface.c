@@ -6,44 +6,13 @@ static void kr_transponder_info_to_ebml(kr_ebml *ebml, kr_xpdr_info *info) {
 
 static void transponder_info_ebml(kr_ebml *ebml, kr_transponder *xpdr) {
   kr_transponder_info info;
-  //memset(&info, 0, sizeof (kr_transponder_info));
+  memset(&info, 0, sizeof(kr_transponder_info));
   kr_transponder_get_info(xpdr, &info);
   kr_transponder_info_to_ebml(ebml, &info);
 }
 
-/*
-void kr_opus_encoder_to_rep (krad_opus_t *encoder, kr_opus_encoder_t *rep) {
-  rep->bitrate = krad_opus_get_bitrate (encoder);
-  rep->complexity = krad_opus_get_complexity (encoder);
-  rep->frame_size = krad_opus_get_frame_size (encoder);
-  rep->signal = krad_opus_get_signal (encoder);
-  rep->bandwidth = krad_opus_get_bandwidth (encoder);
-}
-
-void kr_vorbis_encoder_to_rep (krad_vorbis_t *encoder, kr_vorbis_encoder_t *rep) {
-  rep->quality = encoder->quality;
-}
-
-void kr_flac_encoder_to_rep (krad_flac_t *encoder, kr_flac_encoder_t *rep) {
-  rep->bit_depth = encoder->bit_depth;
-}
-
-void kr_theora_encoder_to_rep (krad_theora_encoder_t *encoder, kr_theora_encoder_t *rep) {
-  rep->kf_distance = encoder->keyframe_distance;
-  rep->speed = encoder->speed;
-  rep->quality = encoder->quality;
-}
-
-void kr_vpx_encoder_to_rep (krad_vpx_encoder_t *encoder, kr_vpx_encoder_t *rep) {
-  rep->bitrate = encoder->bitrate;
-  rep->deadline = encoder->deadline;
-}
-*/
-
 int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
 
-//  int i;
-//  int devices;
   kr_radio *radio;
   kr_transponder *transponder;
   kr_address address;
@@ -57,12 +26,6 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   uint64_t size;
   int ret;
   uint16_t port;
-/*  char string[512];
-  char string2[512];
-
-  string[0] = '\0';
-  string2[0] = '\0';
-*/
   port = 0;
   radio = client->krad_radio;
   transponder = radio->transponder;
@@ -119,142 +82,11 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       }
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY:
-      kr_ebml2_unpack_element_uint32 (&ebml_in, &element, &num);
-      if (krad_transponder->krad_link[num] != NULL) {
-        krad_link_destroy (krad_transponder->krad_link[num]);
-        krad_transponder->krad_link[num] = NULL;
-        break;
-      }
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE:
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE:
-
-      kr_ebml2_unpack_element_string (&ebml_in, &element, string, sizeof(string));
-      kr_ebml2_unpack_element_string (&ebml_in, &element, string2, sizeof(string2));
-
-      if (kr_txpdr_string_to_subunit_type(string) == FAILURE) {
-        break;
-      }
-
-      for (i = 0; i < KRAD_TRANSPONDER_MAX_SUBUNITS; i++) {
-        if (krad_transponder->krad_link[i] == NULL) {
-          krad_transponder->krad_link[i] = krad_link_prepare (i);
-          link = krad_transponder->krad_link[i];
-          link->link_num = i;
-          link->krad_radio = krad_transponder->krad_radio;
-          link->krad_transponder = krad_transponder;
-          link->type = kr_txpdr_string_to_subunit_type (string);
-          break;
-        }
-      }
-
-      if (link == NULL) {
-        break;
-      }
-
-      if (link->type == DEMUX) {
-        printk ("demuxx!");
-        link->transport_mode = FILESYSTEM;
-        sprintf (link->input, "%s", string2);
-      }
-
-      if (link->type == DECODE) {
-        printk ("decode!!");
-        //link->av_mode = VIDEO_ONLY;
-        link->av_mode = AUDIO_ONLY;
-        sprintf (link->input, "%s", string2);
-      }
-
-      if (link->type == MUX) {
-
-        sprintf (link->input, "%s", string2);
-
-        if (strstr(string2, ".udp") != NULL) {
-          if (strstr(string2, ".udpre") != NULL) {
-              link->port = 44000;
-              strcpy (link->host, "50.17.250.78");
-           } else {
-            link->port = 3400;
-            strcpy (link->host, "127.0.0.1");
-           }
-            strcpy (link->mount, "/krad.udp");
-            strcpy (link->password, "firefox");
-        } else {
-          if (strstr(string2, "stream") != NULL) {
-          //if (1) {
-            strcpy (link->host, "europa.kradradio.com");
-            link->port = 8008;
-            if (strstr(string2, "mkv") != NULL) {
-              snprintf (link->mount, sizeof(link->mount),
-                        "/krad_radio_%s.mkv",
-                        link->krad_radio->sysname);
-            } else {
-              if (strstr(string2, "webm") != NULL) {
-                snprintf (link->mount, sizeof(link->mount),
-                          "/krad_radio_%s.webm",
-                          link->krad_radio->sysname);
-              } else {
-                snprintf (link->mount, sizeof(link->mount),
-                          "/krad_radio_%s.ogg",
-                          link->krad_radio->sysname);
-              }
-            }
-            strcpy (link->password, "firefox");
-          } else {
-            if (strstr(string2, "ogg") != NULL) {
-              sprintf (link->output,
-                       "%s/kr_test_%"PRIu64".ogg", getenv ("HOME"), krad_unixtime ());
-            } else {
-              sprintf (link->output,
-                       "%s/kr_test_%"PRIu64".webm", getenv ("HOME"), krad_unixtime ());
-            }
-          }
-        }
-      }
-
-      if (link->type == ENCODE) {
-        if (string2[0] == 'v') {
-          link->av_mode = VIDEO_ONLY;
-          link->codec = THEORA;
-          if (string2[1] == 'v') {
-            link->codec = KVHS;
-          } else {
-            if (string2[1] == 't') {
-             link->codec = THEORA;
-            } else {
-             link->codec = VP8;
-            }
-          }
-        } else {
-          link->av_mode = AUDIO_ONLY;
-          if (string2[1] == 'o') {
-            link->codec = OPUS;
-          } else {
-            if (string2[1] == 'f') {
-             link->codec = FLAC;
-            } else {
-             link->codec = VORBIS;
-            }
-          }
-        }
-      }
-      if (link->type == RAWOUT) {
-        link->av_mode = VIDEO_ONLY;
-      }
-
-      if (link->type == RAWIN) {
-        link->av_mode = VIDEO_ONLY;
-        link->video_source = krad_link_string_to_video_source (string2);
-        if (link->video_source == NOVIDEO) {
-          free (link);
-          krad_transponder->krad_link[i] = NULL;
-          break;
-        }
-      }
-      krad_link_start (link);
-      break;
-  */
+*/
     case EBML_ID_KRAD_TRANSPONDER_CMD_LIST_ADAPTERS:
       address.path.unit = KR_TRANSPONDER;
       address.path.subunit.transponder_subunit = KR_ADAPTER;
@@ -292,20 +124,6 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         }
       }
       */
-      break;
-    case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_ENABLE:
-      kr_ebml2_unpack_element_uint16(&ebml_in, &element, &port);
-      //krad_receiver_listen_on (krad_transponder->krad_receiver, port);
-      break;
-    case EBML_ID_KRAD_TRANSPONDER_CMD_LISTEN_DISABLE:
-      //krad_receiver_stop_listening (krad_transponder->krad_receiver);
-      break;
-    case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_ENABLE:
-      kr_ebml2_unpack_element_uint16(&ebml_in, &element, &port);
-      //krad_transmitter_listen_on(krad_transponder->krad_transmitter, port);
-      break;
-    case EBML_ID_KRAD_TRANSPONDER_CMD_TRANSMITTER_DISABLE:
-      //krad_transmitter_stop_listening(krad_transponder->krad_transmitter);
       break;
     default:
       return -1;

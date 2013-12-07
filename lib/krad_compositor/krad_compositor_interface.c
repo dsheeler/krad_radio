@@ -185,7 +185,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       if (path != NULL) {
         setting.easing = EASEINOUTSINE;
         kr_compositor_path_ctl(path, &setting);
-      }    
+      }
       /*
       if (unit_control.data_type == KR_FLOAT) {
         krad_radio_broadcast_subunit_update(app->app_broadcaster,
