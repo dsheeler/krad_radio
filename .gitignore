@@ -9,7 +9,7 @@ krad_opus_ebml
 *.krado*
 *~
 krad_gui_test
-krad_v4l2_test
+kr_v4l2_test
 krad_vpx_test
 krad_v4l2_vpx_test
 
