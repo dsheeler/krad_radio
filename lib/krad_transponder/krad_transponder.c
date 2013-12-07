@@ -51,6 +51,9 @@ static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
 
   adapter = NULL;
 
+  /* V4L2 is single adapter path per adapter */
+  if (ps->info.api == KR_ADP_V4L2) return NULL;
+
   //find adapter instance
   for (i = 0; i < KR_XPDR_PATHS_MAX * 2; i++) {
     if (xpdr->adapter[i] != NULL) {
@@ -80,6 +83,11 @@ static kr_adapter *adapter_create(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
 
   memset(&adapter_setup, 0, sizeof(kr_adapter_setup));
   adapter_setup.info.api = ps->info.api;
+
+  /* Needed: adapter info from adapter path info */
+  if (ps->info.api == KR_ADP_V4L2) {
+    adapter_setup.info.api_info.v4l2.dev = ps->info.info.v4l2.dev;
+  }
 
   for (i = 0; i < KR_XPDR_PATHS_MAX; i++) {
     if (xpdr->adapter[i] == NULL) {

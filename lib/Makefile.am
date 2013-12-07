@@ -122,7 +122,8 @@ krad_radio/krad_radio_common.c \
 krad_mixer/krad_mixer_common.c \
 krad_compositor/krad_compositor_common.c \
 krad_transponder/krad_transponder_common.c \
-krad_sfx/krad_sfx_common.c
+krad_sfx/krad_sfx_common.c \
+krad_v4l2/gen/krad_v4l2_to_text.c
 
 kradradioincludedir = $(includedir)/krad
 kradradioinclude_HEADERS = krad_radio/kr_client.h \
