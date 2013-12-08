@@ -64,6 +64,7 @@ typedef struct {
   kr_wayland_info info;
 } kr_wayland_setup;
 
+/* TODO: Respond to window fullscreen requests */
 kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
  kr_wayland_path_setup *setup);
 int kr_wayland_unlink(kr_wayland_path **path);
