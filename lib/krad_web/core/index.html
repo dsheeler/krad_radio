@@ -4,11 +4,10 @@
   <title>Krad Radio</title>
   <meta charset="utf-8">
   <!--<link rel="shortcut icon" href="/favicon.png"> -->
-
+  <link rel="stylesheet"
+  href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-  <!--  <script type="text/javascript"
-   src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-  /ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js-->
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
   <script src="//europa.kradradio.com:8040/mootools-core-1.4.5-full-nocompat.js"></script>
   <script src="//europa.kradradio.com:8040/mootools-more-1.4.0.1.js"></script>
   <script type="text/javascript" src="krad.js"></script>
@@ -22,6 +21,11 @@
 @font-face {
   font-family: "TradeGothicLTComBoldCondensed";
   src: url("http://europa.kradradio.com:8040/tradegothicltcom-bdcn20-webfont.woff");
+}
+
+@font-face {
+  font-family: "Digital7Mono";
+  src: url("http://europa.kradradio.com:8040/digital-7_mono-webfont.woff");
 }
 
 @font-face {
@@ -61,17 +65,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .clock {
-  font-family: DS-DIGI,HelveticaNeueW0195Black,Helvetica,sans;
+  font-family: Digital7Mono,HelveticaNeueW0195Black,Helvetica,sans;
   background-color: black;
   color: red;
   text-align: center;
-  border-width: 0.125em;
-  border-color: white;
-  text-shadow: red 0 0 0.125em;
+  text-shadow: red 0 0 0.025em;
 }
 
 .logo {
   background-color: black;
+}
+
+.page {
+  cursor: default;
+  height: 100%;
 }
 
 .volume_control h6 {
@@ -94,6 +101,89 @@ h1, h2, h3, h4, h5, h6 {
   top: 60%;
   width: 200px;
   height: 200px;
+}
+
+video {
+}
+
+.local_stream_div, .call_container {
+  border: solid;
+  border-radius: 2px;
+  border-color: #3960DB;
+  border-width: 2px;
+  position: relative;
+}
+
+.local_stream_div {
+  float: left;
+}
+
+.local_stream_spectrum_canvas {
+  z-index: 1;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events:none;
+}
+
+.local_stream_video {
+  position: absolute;
+}
+
+.call_container {
+  width: 800px
+}
+
+.remote_video {
+  width: 100%;
+  position: absolute;
+}
+
+.remote_video_label {
+  width: 100%;
+  top: 0%;
+  left: 0%;
+  font-size: 4em;
+  text-shadow: 0px 0px 20px #4970EB;
+  text-align: center;
+  position: absolute;
+  color: #4970EB;
+  z-index: 1;
+  pointer-events:none;
+}
+
+.local_stream_label, .local_video_label {
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  position: absolute;
+  color: #4970EB;
+  z-index: 1;
+  text-align: center;
+  text-shadow: 0px 0px 20px #4970EB;
+  pointer-events:none;
+}
+
+.local_video_canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  pointer-events:none;
+}
+
+.local_video {
+  width: 100%;
+  position:absolute;
+  box-shadow: 0px 0px 20px #4970EB;
+}
+
+.local_video_div {
+  float: left;
+  left: 70%;
+  top: 6%;
+  width: 25%;
+  position: absolute;
+  z-index: 10;
 }
 
 .eq_area, .effect_area {
@@ -235,14 +325,34 @@ button::-moz-focus-outer, ::-moz-focus-inner {
   border: 0.0625em solid transparent !important;
 }
 
-.kradcompositor_subunit_list {
+input {
+  margin-left: 0.625em;
+  margin-right: 0.625em;
+  margin-top: 0.5625em;
+  margin-bottom: 0.5625em;
+}
+
+
+ul {
+  margin-left: 0.625em;
+  margin-right: 0.625em;
+  margin-top: 0.5625em;
+  margin-bottom: 0.5625em;
   float: left;
-  font-size: 0.875em;
+  padding-left: 2.5em;
+  font-size: 1.5em;
   background-color: rgb(10, 106,89)
 }
 
+#user_list {
+  font-size: 1.0em;
+}
+
+#user_list li {
+  padding: 1.0em;
+}
+
 li {
-  float: left;
   border-radius: 0.375em;
   background-color: rgb(2, 137, 114);
   padding: 0.3125em;

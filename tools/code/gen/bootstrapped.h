@@ -272,6 +272,9 @@ typedef enum {
   CGEN_KR_WAYLAND_INFO,
   CGEN_KR_WAYLAND_PATH_INFO,
   CGEN_KRAD_INTERWEB_SHUTDOWN,
+  CGEN_KR_WEBRTC_USER,
+  CGEN_KR_WEBRTC_SIGNAL_TYPE,
+  CGEN_KR_WEBRTC_SIGNAL,
   CGEN_KRAD_INTERWEB_SERVER_ST,
   CGEN_INTERWEB_CLIENT_TYPE,
   CGEN_INTERWEB_VERB,
@@ -284,7 +287,7 @@ typedef enum {
 } cgen_enum;
 
 enum {
-  CODEGEN_ENUM_LAST = 282
+  CODEGEN_ENUM_LAST = 285
 };
 cgen_enum codegen_string_to_enum(char *string);
 char *codegen_enum_to_string(cgen_enum val);

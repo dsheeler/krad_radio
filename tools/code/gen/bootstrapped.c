@@ -549,6 +549,12 @@ char *codegen_enum_to_string(cgen_enum val) {
       return "kr_wayland_path_info";
     case CGEN_KRAD_INTERWEB_SHUTDOWN:
       return "krad_interweb_shutdown";
+    case CGEN_KR_WEBRTC_USER:
+      return "kr_webrtc_user";
+    case CGEN_KR_WEBRTC_SIGNAL_TYPE:
+      return "kr_webrtc_signal_type";
+    case CGEN_KR_WEBRTC_SIGNAL:
+      return "kr_webrtc_signal";
     case CGEN_KRAD_INTERWEB_SERVER_ST:
       return "krad_interweb_server_St";
     case CGEN_INTERWEB_CLIENT_TYPE:
@@ -1390,6 +1396,15 @@ cgen_enum codegen_string_to_enum(char *string) {
   }
   if (!strcmp(string,"krad_interweb_shutdown")) {
     return CGEN_KRAD_INTERWEB_SHUTDOWN;
+  }
+  if (!strcmp(string,"kr_webrtc_user")) {
+    return CGEN_KR_WEBRTC_USER;
+  }
+  if (!strcmp(string,"kr_webrtc_signal_type")) {
+    return CGEN_KR_WEBRTC_SIGNAL_TYPE;
+  }
+  if (!strcmp(string,"kr_webrtc_signal")) {
+    return CGEN_KR_WEBRTC_SIGNAL;
   }
   if (!strcmp(string,"krad_interweb_server_St")) {
     return CGEN_KRAD_INTERWEB_SERVER_ST;

@@ -39,6 +39,7 @@
 #define KR_IWS_MAX_CLIENTS 64
 #define KR_IWS_MAX_KRCLIENTS 64
 #define KR_MAX_SDS KR_IWS_MAX_CLIENTS + KR_IWS_MAX_KRCLIENTS + MAX_REMOTES + 1
+#define KR_WEBRTC_NAME_MAX 64
 
 #define WS_MASK_BIT 0x80  // 10000000
 #define WS_FIN_FRM 0x80   // 10000000
@@ -54,6 +55,27 @@ enum krad_interweb_shutdown {
   KRAD_INTERWEB_RUNNING,
   KRAD_INTERWEB_DO_SHUTDOWN,
   KRAD_INTERWEB_SHUTINGDOWN,
+};
+
+typedef struct kr_webrtc_user kr_webrtc_user;
+typedef struct kr_webrtc_signal kr_webrtc_signal;
+
+struct kr_webrtc_user {
+  int active;
+  char name[KR_WEBRTC_NAME_MAX];
+};
+
+enum kr_webrtc_signal_type {
+  CALL = 1,
+  ANSWER,
+  HANGUP
+};
+
+struct kr_webrtc_signal {
+  char from[KR_WEBRTC_NAME_MAX];
+  char to[KR_WEBRTC_NAME_MAX];
+  int32_t signal_type;
+  char sdp[4096];
 };
 
 typedef struct krad_interweb_server_St kr_interweb_server_t;
@@ -137,6 +159,7 @@ struct krad_interweb_server_client_St {
   krad_interweb_t *server;
   kr_io2_t *in;
   kr_io2_t *out;
+  kr_webrtc_user webrtc_user;
   int32_t drop_after_sync;
   int32_t type;
   uint32_t hdr_le;
@@ -147,6 +170,14 @@ struct krad_interweb_server_client_St {
   char mount[128];
   interwebs_t ws;
 };
+
+void kr_webrtc_register(kr_iws_client_t *client, char *name);
+void kr_webrtc_unregister(kr_iws_client_t *client);
+void kr_webrtc_list_users(kr_iws_client_t *client);
+void kr_webrtc_call(kr_iws_client_t *client, char *to, char *from, char *sdp);
+void kr_webrtc_answer(kr_iws_client_t *client, char *to, char *from, char *sdp);
+void kr_webrtc_candidate(kr_iws_client_t *client, char *to, char *from, 
+ char *candidate);
 
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,
  char *interface, int32_t port);

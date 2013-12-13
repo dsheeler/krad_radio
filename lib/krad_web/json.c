@@ -1,15 +1,30 @@
 static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
 
   int pos;
+  int got_register;
+  int got_unregister;
+  int got_call;
+  int got_answer;
+  int got_candidate;
   static const int shortest_json_len = 14;
-  static const int longest_json_len = 220;
+  static const int longest_json_len = 4096;
   static const char *json_pre = "{\"ctrl\":\"";
+  static const char *json_pre_rtc = "{\"rtc\":\"";
   kr_unit_control_t uc;
   int cmplen;
   size_t addr_len;
   size_t dur_len;
   char *addr_str;
+  char message[4096];
+  char name[KR_WEBRTC_NAME_MAX];
+  int i;
+  int name_len;
 
+  got_register = 0;
+  got_unregister = 0;
+  got_call = 0;
+  got_answer = 0;
+  got_candidate = 0;
   dur_len = 0;
   addr_len = 0;
   pos = 0;
@@ -30,54 +45,163 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
     return -1;
   }
   cmplen = strlen(json_pre);
-  if (strncmp(json, json_pre, cmplen) != 0) {
-    printk("JSON IN is[%zu]: %s", len, json);
-    printke("JSON json seems to be in a bad way");
-    return -1;
+  if (strncmp(json, json_pre, cmplen) == 0) {
+    memset (&uc, 0, sizeof (uc));
+    pos = cmplen;
+    addr_len = strcspn(json + pos, " ");
+    if (addr_len == 0) {
+      printk("JSON IN is[%zu]: %s", len, json);
+      printke("JSON json addr err");
+      return -1;
+    }
+    json[pos + addr_len] = '\0';
+    addr_str = json + pos;
+    //printk("address string is: %s", addr_str);
+    if (!(kr_string_to_address(addr_str, &uc.address))) {
+      printke("Could not parse address");
+      return -1;
+    }
+    pos += addr_len + 1;
+    printk("rest is: %s", json + pos);
+    if ((pos + 3) > len) {
+      printke("could not find value part");
+      return -1;
+    }
+    if (kr_unit_control_data_type_from_address(&uc.address, &uc.data_type) != 1) {
+      printke("could not determine data type of control");
+      return -1;
+    }
+    if (uc.data_type == KR_FLOAT) {
+      uc.value.real = atof(json + pos);
+    }
+    if (uc.data_type == KR_INT32) {
+      uc.value.integer = atoi(json + pos);
+    }
+    if (uc.data_type == KR_CHAR) {
+      uc.value.byte = json[pos];
+    }
+    dur_len = strcspn(json + pos + 1, " ");
+    if (dur_len != 0) {
+      //printk("duration found: %s", json + pos + dur_len + 1);
+      uc.duration = atoi(json + pos + dur_len + 1);
+      //printk("duration: %d", uc.duration);
+    }
+    if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
+      printke("could not set control");
+      return -1;
+    }
+  } else {
+    cmplen = strlen(json_pre_rtc);
+    if (strncmp(json, json_pre_rtc, cmplen) == 0) {
+      pos = cmplen;
+      if (strncmp(json + pos, "register", 8) == 0) {
+        pos += 11;
+        if (strncmp(json + pos, "name", 4) == 0) {
+          pos += 7;
+          got_register = 1;
+          strncpy(name, json + pos, KR_WEBRTC_NAME_MAX);
+          cmplen = strnlen(name, KR_WEBRTC_NAME_MAX);
+          name[cmplen - 2] = '\0';
+          printk("got register");
+        }
+      } else if (strncmp(json + pos, "unregister", 10) == 0) {
+        pos += 13;
+        got_unregister = 1;
+        printk("got unregister");
+      } else if (strncmp(json + pos, "call", 4) == 0) {
+        pos += 7;
+        printk("parsed call");
+        if (strncmp(json + pos, "name", 4) == 0) {
+          pos += 7;
+          name_len = strcspn(json + pos, "\"");
+          strncpy(name, json + pos, name_len);
+          name[name_len] = '\0';
+          pos += name_len + 3;
+          printk("parsed name: <%s>", name);
+          if (strncmp(json + pos, "sdp", 3) == 0) {
+            pos += 6;
+            got_call = 1;
+            addr_len = 4096;
+            strncpy(message, json + pos, addr_len);
+            cmplen = strnlen(message, addr_len);
+            message[cmplen - 2] = '\0';
+            printk("parsed spd: <%s>", message);
+          }
+        }
+
+      } else if (strncmp(json + pos, "answer", 6) == 0) {
+        pos += 9;
+        printk("parsed answer");
+        if (strncmp(json + pos, "name", 4) == 0) {
+          pos += 7;
+          name_len = strcspn(json + pos, "\"");
+          strncpy(name, json + pos, name_len);
+          name[name_len] = '\0';
+          pos += name_len + 3;
+          printk("parsed name: <%s>", name);
+          if (strncmp(json + pos, "sdp", 3) == 0) {
+            pos += 6;
+            got_answer = 1;
+            addr_len = 4096;
+            strncpy(message, json + pos, addr_len);
+            cmplen = strnlen(message, addr_len);
+            message[cmplen - 2] = '\0';
+            printk("parsed spd: <%s>", message);
+          }
+        }
+      } else if (strncmp(json + pos, "candidate", 9) == 0) {
+        pos += 12;
+        printk("parsed candidate");
+        if (strncmp(json + pos, "user", 4) == 0) {
+          pos += 7;
+          name_len = strcspn(json + pos, "\"");
+          strncpy(name, json + pos, name_len);
+          name[name_len] = '\0';
+          pos += name_len + 2;
+          printk("parsed name: <%s>", name);
+          got_candidate = 1;
+          addr_len = 4096;
+          strncpy(message, json + pos, addr_len);
+          cmplen = strnlen(message, addr_len);
+          message[cmplen - 1] = '\0';
+          printk("parsed candidate: <%s>", message);
+        }
+      }
+    } else {
+      printk("JSON IN is[%zu]: %s", len, json);
+      printke("JSON json seems to be in a bad way");
+      return -1;
+    }
   }
-  memset (&uc, 0, sizeof (uc));
-  pos = cmplen;
-  addr_len = strcspn(json + pos, " ");
-  if (addr_len == 0) {
-    printk("JSON IN is[%zu]: %s", len, json);
-    printke("JSON json addr err");
-    return -1;
-  }
-  json[pos + addr_len] = '\0';
-  addr_str = json + pos;
-  //printk("address string is: %s", addr_str);
-  if (!(kr_string_to_address(addr_str, &uc.address))) {
-    printke("Could not parse address");
-    return -1;
-  }
-  pos += addr_len + 1;
-  printk("rest is: %s", json + pos);
-  if ((pos + 3) > len) {
-    printke("could not find value part");
-    return -1;
-  }
-  if (kr_unit_control_data_type_from_address(&uc.address, &uc.data_type) != 1) {
-    printke("could not determine data type of control");
-    return -1;
-  }
-  if (uc.data_type == KR_FLOAT) {
-    uc.value.real = atof(json + pos);
-  }
-  if (uc.data_type == KR_INT32) {
-    uc.value.integer = atoi(json + pos);
-  }
-  if (uc.data_type == KR_CHAR) {
-    uc.value.byte = json[pos];
-  }
-  dur_len = strcspn(json + pos + 1, " ");
-  if (dur_len != 0) {
-    //printk("duration found: %s", json + pos + dur_len + 1);
-    uc.duration = atoi(json + pos + dur_len + 1);
-    //printk("duration: %d", uc.duration);
-  }
-  if (kr_unit_control_set(client->ws.krclient, &uc) != 0) {
-    printke("could not set control");
-    return -1;
+
+  if (got_register == 1) {
+    kr_webrtc_register(client, name);
+  } else if (got_unregister == 1) {
+    kr_webrtc_unregister(client);
+  } else if (got_call == 1) {
+    for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+      printk("got call");
+      if (strncmp(client->server->clients[i].webrtc_user.name, name,
+       KR_WEBRTC_NAME_MAX) == 0) {
+        kr_webrtc_call(&(client->server->clients[i]), name, client->webrtc_user.name, message);
+      }
+    }
+  } else if (got_answer == 1) {
+    for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+      printk("got answer");
+      if (strncmp(client->server->clients[i].webrtc_user.name, name,
+       KR_WEBRTC_NAME_MAX) == 0) {
+        kr_webrtc_answer(&(client->server->clients[i]), name, client->webrtc_user.name, message);
+      }
+    }
+  } else if (got_candidate == 1) {
+    for (i = 0; i < KR_IWS_MAX_CLIENTS; i++) {
+      printk("got candidate");
+      if (strncmp(client->server->clients[i].webrtc_user.name, name,
+       KR_WEBRTC_NAME_MAX) == 0) {
+        kr_webrtc_candidate(&(client->server->clients[i]), name, client->webrtc_user.name, message);
+      }
+    }
   }
   return 0;
 }
@@ -432,3 +556,4 @@ static int krad_delivery_handler(kr_iws_client_t *client) {
 
   return 0;
 }
+
