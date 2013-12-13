@@ -55,9 +55,14 @@ int memb_to_print_format(struct struct_memb_def *memb, char *code) {
 
 static void codegen_prototype(struct struct_def *def, const char *type, 
   gen_format gformat, FILE *out) {
-  if (gformat == EBML) {
-    fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st, int32_t max);\n",
-      def->name,type,type);
+  if (gformat == EBML || gformat == DEBML) {
+    if (gformat == EBML) {
+      fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st);\n",
+        def->name,type,type);
+    } else {
+      fprintf(out,"int %s_fr_%s(kr_ebml *%s, void *st);\n",
+        def->name,&type[1],&type[1]);
+    }
   } else {
     fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max);\n",
       def->name,type,type);
@@ -68,11 +73,16 @@ static void codegen_prototype(struct struct_def *def, const char *type,
 static void codegen_function(struct struct_def *def, char *type, 
   gen_format gformat, FILE *out) {
 
-  if (gformat == EBML) {
-    fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
-      def->name,type,type);
+  if (gformat == EBML || gformat == DEBML) {
+    if (gformat == EBML) {
+      fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st) {\n  int i;\n  int res;\n  res = 0;\n  uber_St uber;\n",
+        def->name,type,type);
+    } else {
+      fprintf(out,"int %s_fr_%s(kr_ebml *%s, void *st) {\n  int i;\n  int res;\n  res = 0;\n  uber_St uber;\n",
+        def->name,&type[1],&type[1]);
+    }
   } else {
-    fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n  int res;\n\n  res = 0;\n  uber_St uber;\n",
+    fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n  int i;\n  int res;\n  res = 0;\n  uber_St uber;\n",
       def->name,type,type);
   }
 
@@ -82,8 +92,12 @@ static void codegen_function(struct struct_def *def, char *type,
     fprintf(out,"  struct %s *actual;\n\n",def->name);
   }
 
-  if (gformat == EBML) {
-    fprintf(out,"  if ((%s == NULL) || (st == NULL)) {\n    return -1;\n  }\n\n",type);
+  if (gformat == EBML || gformat == DEBML) {
+    if (gformat == EBML) {
+      fprintf(out,"  if ((%s == NULL) || (st == NULL)) {\n    return -1;\n  }\n\n",type);
+    } else {
+      fprintf(out,"  if ((%s == NULL) || (st == NULL)) {\n    return -1;\n  }\n\n",&type[1]);
+    }
   } else {
     fprintf(out,"  if ((%s == NULL) || (st == NULL) || (max < 1)) {\n    return -1;\n  }\n\n",type);
   }
@@ -97,7 +111,8 @@ static void codegen_function(struct struct_def *def, char *type,
   switch (gformat) {
     case TEXT: codegen_text(def,type,out); break;
     case JSON: codegen_json(def,type,out); break;
-    case EBML: codegen_ebml(def,type,out); break;
+    case EBML: codegen_ebml(def,type,EBML_PACK,out); break;
+    case DEBML: codegen_ebml(def,type,EBML_UNPACK,out); break;
     case CBOR: break;
   }
   
@@ -106,27 +121,74 @@ static void codegen_function(struct struct_def *def, char *type,
   return;
 }
 
-static int codegen_array_func(struct struct_def **fdefs, int n, 
-  const char *type, gen_format gformat, FILE *out) {
+int codegen_array_func(struct header_defs *hdefs, int ndefs, 
+  char *prefix, char *suffix, const char *type, gen_format gformat, FILE *out) {
 
   int i;
+  int j;
+  int n;
+  int k;
 
-  if (gformat == EBML) {
-    fprintf(out,"int info_pack_to_%s(kr_ebml *%s, uber_St *uber, int max) {\n",
-      type,type);
+  n = 0;
+  k = 0;
+
+  for (i = 0; i < ndefs; i++) {
+    if (hdefs[i].targets.ntargets) {
+      n += hdefs[i].ndefs;
+    }
+  }
+
+  if (!n) {
+    return 0;
+  }
+
+  struct struct_def *fdefs[n];
+
+  for (i = 0; i < ndefs; i++) {
+    for (j = 0; j < hdefs[i].ndefs; j++) {
+      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+        if (hdefs[i].targets.ntargets) {
+          fdefs[k] = &hdefs[i].defs[j];
+          k++;
+        }
+      }
+    }
+  }
+
+  if (gformat == EBML || gformat == DEBML) {
+    if (gformat == EBML) {
+      fprintf(out,"int info_pack_to_%s(kr_ebml *%s, uber_St *uber) {\n",
+        type,type);
+    } else {
+      fprintf(out,"int info_unpack_fr_%s(kr_ebml *%s, uber_St *uber) {\n",
+        &type[1],&type[1]);
+    }
   } else {
     fprintf(out,"int info_pack_to_%s(char *%s, uber_St *uber, int max) {\n",
       type,type);
   }
 
-  fprintf(out,"  const info_pack_to_%s_func to_%s_functions[%d] = {",
+  if (gformat == DEBML) {
+    fprintf(out,"  const info_unpack_fr_%s_func fr_%s_functions[%d] = {",
+    &type[1],&type[1],n);
+  } else {
+    fprintf(out,"  const info_pack_to_%s_func to_%s_functions[%d] = {",
     type,type,n);
+  }
 
-  for (i = 0; i< n; i++) {
+  for (i = 0; i < n; i++) {
     if (i != (n-1)) {
-      fprintf(out," %s_to_%s,",fdefs[i]->name,type);
+      if (gformat == DEBML) {
+        fprintf(out," %s_fr_%s,",fdefs[i]->name,&type[1]);
+      } else {
+        fprintf(out," %s_to_%s,",fdefs[i]->name,type);
+      }
     } else {
-      fprintf(out," %s_to_%s",fdefs[i]->name,type);
+     if (gformat == DEBML) {
+        fprintf(out," %s_fr_%s",fdefs[i]->name,&type[1]);
+      } else {
+        fprintf(out," %s_to_%s",fdefs[i]->name,type);
+      }
     }
 
     if (!(i%2)) {
@@ -134,8 +196,18 @@ static int codegen_array_func(struct struct_def **fdefs, int n,
     }
   }
 
-  fprintf(out,"};\n  return to_%s_functions[uber->type-1](%s , uber->actual, max);\n}\n",
-    type,type);
+  if (gformat == EBML || gformat == DEBML) {
+    if (gformat == EBML) {
+      fprintf(out,"};\n  return to_%s_functions[uber->type-1](%s , uber->actual);\n}\n",
+        type,type);
+    } else {
+      fprintf(out,"};\n  return fr_%s_functions[uber->type-1](%s , uber->actual);\n}\n",
+        &type[1],&type[1]);
+    }
+  } else {
+    fprintf(out,"};\n  return to_%s_functions[uber->type-1](%s , uber->actual, max);\n}\n",
+      type,type);
+  }
 
   return 0;
 }
@@ -164,20 +236,25 @@ static int codegen_internal(struct struct_def *defs, int ndefs, char *prefix,
     }
   }
 
-  if (!strncmp(&format[4],"/proto",6)) {
+  if (!strncmp(&p[1],"proto",5)) {
     for (i = 0; i < n; i++) {
       codegen_prototype(filtered_defs[i],formatc,gformat,out);
     }
-  } else if (!strncmp(&format[4],"/func",5)) {
+  } else if (!strncmp(&p[1],"func",4)) {
     for (i = 0; i < n; i++) {
       codegen_function(filtered_defs[i],formatc,gformat,out);
     }
-  } else if (!strncmp(&format[4],"/array_func",11)) {
-    codegen_array_func(filtered_defs,n,formatc,gformat,out);
-  } else if (!strncmp(&format[4],"/typedef",9)) {
-    if (gformat == EBML) {
-      fprintf(out,"int info_pack_to_%s(kr_ebml *%s, uber_St *uber, int max);\n",
-        formatc,formatc);
+  } else if (!strncmp(&p[1],"array_func",10)) {
+    //codegen_array_func(filtered_defs,n,formatc,gformat,out);
+  } else if (!strncmp(&p[1],"typedef",8)) {
+    if (gformat == EBML || gformat == DEBML) {
+      if (gformat == EBML) {
+        fprintf(out,"int info_pack_to_%s(kr_ebml *%s, uber_St *uber);\n",
+          formatc,formatc);
+      } else {
+        fprintf(out,"int info_unpack_fr_%s(kr_ebml *%s, uber_St *uber);\n",
+          &formatc[1],&formatc[1]);
+      }
     } else {
       fprintf(out,"int info_pack_to_%s(char *%s, uber_St *uber, int max);\n",
         formatc,formatc);
@@ -202,6 +279,8 @@ int codegen(struct struct_def *defs, int ndefs, char *prefix,
 
   if (!strncmp(format,"ebml",4)) {
     gformat = EBML;
+  } else if (!strncmp(format,"debml",5)) {
+    gformat = DEBML;
   } else if (!strncmp(format,"json",4)) {
     gformat = JSON;
   } else if (!strncmp(format,"text",4)) {
@@ -230,7 +309,7 @@ int codegen(struct struct_def *defs, int ndefs, char *prefix,
   }
 
   if (!strncmp(format,"enum",4)) {
-    codegen_enum(defs,ndefs,prefix,suffix,out);
+    //codegen_enum(defs,ndefs,prefix,suffix,out);
     return 0;
   }
 
@@ -244,7 +323,7 @@ int codegen(struct struct_def *defs, int ndefs, char *prefix,
     return 0;
   }
 
-  if (!strncmp(format,"helper",6)) {
+  if (!strcmp(format,"helper")) {
     codegen_helper_functions(defs,ndefs,prefix,suffix,out);
     return 0;
   }

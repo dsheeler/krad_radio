@@ -1,6 +1,21 @@
 #include "codegen_utils.h"
 
-static void codegen_helper_init_func(struct struct_def *def, FILE *out) {
+static int is_enum(char *name, struct struct_def *defs, int ndefs) {
+  int i;
+
+  for (i = 0; i < ndefs; i++) {
+    if (defs[i].isenum) {
+      if (!strcmp(name,defs[i].name)) {
+        return 1;
+      }
+    }
+  }
+
+  return 0;
+}
+
+static void codegen_helper_init_func(struct struct_def *def, FILE *out,
+ struct struct_def *defs, int ndefs) {
 
   int i;
   struct memb_data_info *dinfo;
@@ -14,9 +29,9 @@ static void codegen_helper_init_func(struct struct_def *def, FILE *out) {
   fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
 
   if (def->istypedef) {
-    fprintf(out," memset(st, 0, sizeof(%s));",def->name);
+    fprintf(out,"  memset(st, 0, sizeof(%s));\n",def->name);
   } else {
-    fprintf(out," memset(st, 0, sizeof(struct %s));",def->name);
+    fprintf(out,"  memset(st, 0, sizeof(struct %s));\n",def->name);
   }
   
   for (i = 0; i < def->members; i++) {
@@ -36,8 +51,10 @@ static void codegen_helper_init_func(struct struct_def *def, FILE *out) {
       default: break;
     }
     if (codegen_string_to_enum(def->members_info[i].type)) {
-      fprintf(out,"  %s_init(&st->%s);\n",
-        def->members_info[i].type,def->members_info[i].name);
+      if (!is_enum(def->members_info[i].type,defs,ndefs)) {
+        fprintf(out,"  %s_init(&st->%s);\n",
+          def->members_info[i].type,def->members_info[i].name);
+      }
     }
   }
 
@@ -47,7 +64,8 @@ static void codegen_helper_init_func(struct struct_def *def, FILE *out) {
 
 }
 
-static void codegen_helper_random_func(struct struct_def *def, FILE *out) {
+static void codegen_helper_random_func(struct struct_def *def, FILE *out,
+ struct struct_def *defs, int ndefs) {
 
   int i;
   struct memb_data_info *dinfo;
@@ -61,9 +79,9 @@ static void codegen_helper_random_func(struct struct_def *def, FILE *out) {
   fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
 
   if (def->istypedef) {
-    fprintf(out," memset(st, 0, sizeof(%s));",def->name);
+    fprintf(out,"  memset(st, 0, sizeof(%s));\n",def->name);
   } else {
-    fprintf(out," memset(st, 0, sizeof(struct %s));",def->name);
+    fprintf(out,"  memset(st, 0, sizeof(struct %s));\n",def->name);
   }
 
   fprintf(out,"  struct timeval tv;\n  double scale;\n\n  if (st == NULL) {\n");
@@ -92,8 +110,10 @@ static void codegen_helper_random_func(struct struct_def *def, FILE *out) {
       default: break;
     }
     if (codegen_string_to_enum(def->members_info[i].type)) {
-      fprintf(out,"  %s_random(&st->%s);\n",def->members_info[i].type,
-        def->members_info[i].name);
+      if (!is_enum(def->members_info[i].type,defs,ndefs)) {
+        fprintf(out,"  %s_random(&st->%s);\n",def->members_info[i].type,
+          def->members_info[i].name);
+      }
     }
   }
 
@@ -103,7 +123,8 @@ static void codegen_helper_random_func(struct struct_def *def, FILE *out) {
 
 }
 
-static void codegen_helper_valid_func(struct struct_def *def, FILE *out) {
+static void codegen_helper_valid_func(struct struct_def *def, FILE *out,
+ struct struct_def *defs, int ndefs) {
 
   int i;
   struct memb_data_info *dinfo;
@@ -135,8 +156,10 @@ static void codegen_helper_valid_func(struct struct_def *def, FILE *out) {
       default: break;
     }
     if (codegen_string_to_enum(def->members_info[i].type)) {
-      fprintf(out,"  %s_valid(&st->%s);\n",
-        def->members_info[i].type,def->members_info[i].name);
+      if (!is_enum(def->members_info[i].type,defs,ndefs)) {
+        fprintf(out,"  %s_valid(&st->%s);\n",
+          def->members_info[i].type,def->members_info[i].name);
+      }
     }
   }
 
@@ -147,7 +170,6 @@ static void codegen_helper_valid_func(struct struct_def *def, FILE *out) {
 }
 
 static void codegen_enum_protos(struct struct_def *defs, int ndefs, 
-
   char *prefix, char *suffix, FILE *out) {
   int i;
   int j;
@@ -187,7 +209,7 @@ void codegen_helpers_prototype(struct struct_def *defs, int ndefs, char *prefix,
   struct struct_def *filtered_defs[ndefs];
 
   for (i = n = 0; i < ndefs; i++) {
-    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
+    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix) && !defs[i].isenum) {
       filtered_defs[n] = &defs[i];
       n++;
     }
@@ -320,16 +342,16 @@ int codegen_helper_functions(struct struct_def *defs, int ndefs, char *prefix,
   struct struct_def *filtered_defs[ndefs];
 
   for (i = n = 0; i < ndefs; i++) {
-    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
+    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix) && !defs[i].isenum) {
       filtered_defs[n] = &defs[i];
       n++;
     }
   }
 
   for (i = 0; i < n; i++) {
-    codegen_helper_init_func(filtered_defs[i],out);
-    codegen_helper_valid_func(filtered_defs[i],out);
-    codegen_helper_random_func(filtered_defs[i],out);
+    codegen_helper_init_func(filtered_defs[i],out,defs,ndefs);
+    codegen_helper_valid_func(filtered_defs[i],out,defs,ndefs);
+    codegen_helper_random_func(filtered_defs[i],out,defs,ndefs);
   }
 
   return 0;

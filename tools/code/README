@@ -1,0 +1,24 @@
+Code generation in Krad Radio
+ 
+Krad Radio being a C program, most everything that it does is explicitly and verbosely coded manually.
+Some portions of this are better generated, the advantages are generally in the area where the same types of code is needed over and over and in order to do this things that are specified 
+in one place need to be specified in another and those specifications must match. Doing this by hand is tedious and error prone, but generating code can put one on a path strait to hell. 
+In order to avoid this some guidelines should be understood.
+ 
+* Code is generated based on C structs and enums
+* Generated code is marked as such by placing it into a subdirectory seperate from hand writen code
+* Generated code should be checked into version control, and generating code should not be a requirement of building the unmodified source code.
+ 
+Types of code being generated:
+ 
+Serialization and Deserialization
+String / ENUM conversion
+ 
+In addition to this we have gone down one dangerous but limited path that appears to be sane. Alongside the structure definitions, in comments after each member, we allow for the 
+specification of addition constraints that the member needs to have beyond its C type, and a default value.
+ 
+This allows us to generate the following code from this data:
+ 
+Structure Initialization
+Structure Validation
+Structure Initialization with random but valid data. 

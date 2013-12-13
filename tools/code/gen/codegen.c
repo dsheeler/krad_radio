@@ -3,12 +3,12 @@
 void print_usage(char *cmd) {
   printf("syntax:\n%s path prefix suffix type output\n",cmd);
   printf("Available types:\n");
-  printf("ebml , json , text, cbor , sizeof, helper , common, type_common\n");
+  printf("ebml , debml, json , text, cbor , sizeof, helper , common, type_common\n");
 }
 
 int main(int argc, char *argv[]) {
 
-  struct struct_def defs[MAX_DEFS];
+  struct header_defs *hdefs;
   int ndefs;
   FILE *out;
   FILE *header;
@@ -16,12 +16,11 @@ int main(int argc, char *argv[]) {
 
   if (argc < 6) {
     print_usage(argv[0]);
-    return 0;
+    return 1;
   }
 
-  memset(&defs,0,sizeof(defs));
-
-  ndefs = gather_struct_definitions(defs,"krad",argv[1]);
+  hdefs = calloc(MAX_HEADERS,sizeof(struct header_defs));
+  ndefs = gather_struct_definitions(hdefs,"krad",argv[1]);
 
   char hname[strlen(argv[5]+1)];
   strcpy(hname,argv[5]);
@@ -54,18 +53,29 @@ int main(int argc, char *argv[]) {
 
   } else if (!strncmp(argv[4],"common",6)) {
 
-    codegen(defs,ndefs,argv[2],argv[3],"includes",out);
-    fprintf(out,"\n");
-    fprintf(out,"\ntypedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
+    //codegen(defs,ndefs,argv[2],argv[3],"includes",out);
+    //fprintf(out,"\n");
+    fprintf(out,"#ifndef COMMON_GEN_H\n#define COMMON_GEN_H\n\n");
+    fprintf(out,"typedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
     codegen(defs,ndefs,argv[2],argv[3],"enum",out);
-    fprintf(out,"\n\n");
-    codegen(defs,ndefs,argv[2],argv[3],format,out);
     fprintf(out,"\n");
-    codegen(defs,ndefs,argv[2],argv[3],"helper_proto",out);
-    fprintf(out,"\n");
+    fprintf(out,"#endif\n\n");
+    //codegen(defs,ndefs,argv[2],argv[3],format,out);
+    //fprintf(out,"\n");
+    //codegen(defs,ndefs,argv[2],argv[3],"helper_proto",out);
+    //fprintf(out,"\n");
 
   } else if (!strncmp(argv[4],"type_common",11)) {
 
+    if (argc != 8) {
+      print_usage(argv[0]);
+      return 1;
+    }
+
+    fprintf(out,"#include \"%s\"\n",argv[7]);
+    if (!strncmp(argv[6],"ebml",4) || !strncmp(argv[6],"debml",5)) {
+      fprintf(out,"#include \"krad_ebml/krad_ebml.h\"\n");
+    }
     sprintf(format,"%s/typedef",argv[6]);
     codegen(defs,ndefs,argv[2],argv[3],format,out);
     fprintf(out,"\n");
@@ -105,7 +115,11 @@ int main(int argc, char *argv[]) {
     fclose(header);
   }
 
-  fclose(out);
+  if (out) {
+    fclose(out);
+  }
+
+  free(hdefs);
 
   return 0;
 }

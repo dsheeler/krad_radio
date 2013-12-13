@@ -37,41 +37,47 @@ static void codegen_enum_value(struct struct_def *def, FILE *out) {
   fprintf(out,"CGEN_%s",uppercased);
 }
 
-int codegen_enum(struct struct_def *defs, int ndefs, char *prefix,
+int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
  char *suffix, FILE *out) {
 
   int i;
+  int j;
+  int total;
 
+  total = 0;
   fprintf(out,"typedef enum {\n");
 
   for (i=0;i<ndefs;i++) {
-    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
-      fprintf(out,"  ");
-      codegen_enum_value(&defs[i],out);
-
-      if (i == 0) {
-        fprintf(out," = 1");
-      }
-
-      if (i == (ndefs-1)) {
-        fprintf(out,"\n");
-      } else {
-        fprintf(out,",\n");
+    for (j=0;j<hdefs[i].ndefs;j++) {
+      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+        fprintf(out,"  ");
+        codegen_enum_value(&hdefs[i].defs[j],out);
+        if (i == 0 && j == 0) {
+          fprintf(out," = 1");
+        }
+        if (j == (hdefs[i].ndefs-1) && i == (ndefs - 1)) {
+          fprintf(out,"\n");
+        } else {
+          fprintf(out,",\n");
+        }
+        total++;
       }
     }
   }
 
   fprintf(out,"} cgen_enum;\n\n");
-
-  fprintf(out,"enum {\n  CODEGEN_ENUM_LAST = %d\n};\n",ndefs);
+  fprintf(out,"enum {\n  CODEGEN_ENUM_LAST = %d\n};\n",total);
 
   return 0;
 }
 
 void codegen_typedef(char *type, FILE *out) {
   if (!strncmp(type,"ebml",4)) {
-    fprintf(out,"typedef int (*info_pack_to_%s_func)(kr_ebml *%s, void *st, int max);\n",type,type);
-  } else {
+    fprintf(out,"typedef int (*info_pack_to_%s_func)(kr_ebml *%s, void *st);\n",type,type);
+  } else if (!strncmp(type,"debml",5)) {
+    fprintf(out,"typedef int (*info_unpack_fr_%s_func)(kr_ebml *%s, void *st);\n",&type[1],&type[1]);
+  }
+  else {
     fprintf(out,"typedef int (*info_pack_to_%s_func)(char *%s, void *st, int max);\n",type,type);
   }
 }
@@ -122,17 +128,20 @@ static void codegen_enum_func_proto(FILE *out) {
   fprintf(out,"char *codegen_enum_to_string(cgen_enum val);\n\n");
 }
 
-int codegen_enum_utils(struct struct_def *defs, int ndefs, char *prefix,
+int codegen_enum_utils(struct header_defs *hdefs, int ndefs, char *prefix,
  char *suffix, FILE *out) {
 
   int i;
+  int j;
   int n = 0;
-  struct struct_def *filtered_defs[ndefs];
+  struct struct_def *filtered_defs[ndefs*MAX_HEADER_DEFS];
 
   for (i=0;i<ndefs;i++) {
-    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
-      filtered_defs[n] = &defs[i];
-      n++;
+    for (j=0;j<hdefs[i].ndefs;j++) {
+      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+        filtered_defs[n] = &hdefs[i].defs[j];
+        n++;
+      }
     }
   }
 
@@ -154,10 +163,10 @@ int codegen_enum_utils(struct struct_def *defs, int ndefs, char *prefix,
   return 0;
 }
 
-int codegen_bootstrap(struct struct_def *defs, int ndefs, char *prefix,
+int codegen_bootstrap(struct header_defs *hdefs, int ndefs, char *prefix,
  char *suffix, FILE *out) {
   //codegen_typedef(format,out);
-  codegen_enum(defs,ndefs,prefix,suffix,out);
+  codegen_enum(hdefs,ndefs,prefix,suffix,out);
   codegen_enum_func_proto(out);
   return 0;
 }

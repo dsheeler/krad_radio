@@ -1,10 +1,9 @@
 #!/bin/sh
 
-#if [ ! -f "tools/hextool/hextool" ]; then
-  cd tools/code/hextool
-  gcc hexutils.c hextool.c -g -o hextool
-  cd ../../../
-#fi
+if [ ! -f "tools/code/hextool/hextool" ]; then
+  echo "hextool binary ain't existing mate"
+  exit
+fi
 
 rm -f lib/krad_web/embed.h
 cd lib/krad_web/core

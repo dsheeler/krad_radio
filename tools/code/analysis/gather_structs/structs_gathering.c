@@ -115,11 +115,18 @@ static void get_memb_name_and_type(char *line,
   } else {
     p = strstr(line,memb->type);
     if (p) {
+
       char clean[strlen(&p[strlen(memb->type)])];
       clean_string(&p[strlen(memb->type)],clean);
 
       if ( (p = strchr(clean,'[')) ) {
         memb->array = strtod(&p[1],NULL);
+        if (!memb->array) {
+          char *p2;
+          p2 = strchr(p,']');
+          p2[0] = '\0';
+          asprintf(&(memb->array_str_val),"%s",&p[1]);;
+        }
         p[0] = '\0';
       } 
 
@@ -226,12 +233,62 @@ static int scandir_recursive(char *path, int *num, char **headers) {
 
 }
 
+static int check_for_cgen_target(char *line, struct cgen_target *def_target) {
+
+  char *p;
+  char *p2;
+  char *fname;
+  char *target_str;
+  char *rpath;
+
+  if (def_target->ntargets >= MAX_TARGETS) {
+    fprintf(stderr,"MAX_TARGETS exceeded!\n");
+    return 0;
+  }
+
+  p = strstr(line,"#include \"");
+  if (p) {
+    p = strstr(p,"gen/");
+  }
+
+  if (p) {
+    p2 = strrchr(p,'"');
+    if (p2) {
+      p2[0] = '\0';
+      fname = strchr(line,'"');
+      if (fname) {
+        fname++;
+        if ( (target_str = strstr(fname,"to_ebml")) ) {
+          def_target->types[def_target->ntargets] = TO_EBML;
+        } else if ( (target_str = strstr(fname,"to_json")) ) {
+          def_target->types[def_target->ntargets] = TO_JSON;
+        } else if ( (target_str = strstr(fname,"to_text")) ) {
+          def_target->types[def_target->ntargets] = TO_TEXT;
+        } else if ( (target_str = strstr(fname,"from_ebml")) ) {
+          def_target->types[def_target->ntargets] = FR_EBML;
+        } else if ( (target_str = strstr(fname,"helpers")) ) {
+          def_target->types[def_target->ntargets] = HELPERS;
+        } 
+
+        rpath = realpath(".",NULL);
+        asprintf(&def_target->targets[def_target->ntargets],"%s/%s",rpath,fname);
+        free(rpath);
+        def_target->ntargets++;
+      }
+    }
+    return 1;
+  }
+
+  return 0;
+}
+
 static int defs_from_header(struct struct_def *defs, 
-  char *header_path, int index) {
+  char *header_path, struct cgen_target *targets) {
 
   FILE *fp;
   char *line = NULL;
   size_t len = 0;
+  int index = 0;
   int read;
   int linen;
   int lenacc;
@@ -255,8 +312,13 @@ static int defs_from_header(struct struct_def *defs,
 
   while ((read = getline(&line,&len,fp)) != -1) {
 
-    if (index >= MAX_DEFS) {
-      fprintf(stderr,"MAX_DEFS exceeded\n");
+    /* Checking for targets */
+    if (check_for_cgen_target(line,targets)) {
+      continue;
+    }
+
+    if (index >= MAX_HEADER_DEFS) {
+      fprintf(stderr,"MAX_HEADER_DEFS exceeded\n");
       exit(1);
     }
 
@@ -393,15 +455,15 @@ static int defs_from_header(struct struct_def *defs,
   return newdefs;
 }
 
-int gather_struct_definitions(struct struct_def *defs, char *fprefix, char *path) {
+int gather_struct_definitions(struct header_defs *hdefs, char *fprefix, char *path) {
   int i;
   int num;
-  int ndefs;
+  int nhdrs;
   char *headers[MAX_HEADERS];
   char *p;
 
   num = 0;
-  ndefs = 0;
+  nhdrs = 0;
   
   scandir_recursive(path,&num,headers);
 
@@ -410,7 +472,9 @@ int gather_struct_definitions(struct struct_def *defs, char *fprefix, char *path
       p = strrchr(headers[i],'/');
       if (p) {
         if (!strncmp(fprefix,&p[1],strlen(fprefix))) {
-          ndefs += defs_from_header(defs,headers[i],ndefs);
+          hdefs[nhdrs].name = strdup(headers[i]);
+          hdefs[nhdrs].ndefs = defs_from_header(hdefs[nhdrs].defs,headers[i],&hdefs[nhdrs].targets);
+          nhdrs++;
         }
       }
     }
@@ -420,7 +484,7 @@ int gather_struct_definitions(struct struct_def *defs, char *fprefix, char *path
     free(headers[i]);
   }
 
-  return ndefs;
+  return nhdrs;
 }
 
 int is_prefix (const char *str, const char *prefix) {
@@ -477,30 +541,31 @@ static void print_memb_data_info(struct struct_memb_def *memb) {
   return;
 }
 
-int print_structs_defs(struct struct_def *defs, 
-  int ndefs, char *prefix, char *suffix, char *format) {
+int print_structs_defs(struct header_defs *hdef, char *prefix,
+ char *suffix, char *format) {
 
   int i;
   int j;
+  const char *type;
 
   if (!strncmp(format,"names",5)) {
-    for (i=0;i<ndefs;i++) {
-      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix))
-        printf("%s\n",defs[i].name);
+    for (i=0;i<hdef->ndefs;i++) {
+      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix))
+        printf("%s\n",hdef->defs[i].name);
     }
     return 0;
   }
 
   if (!strncmp(format,"header",5)) {
-    for (i=0;i<ndefs;i++) {
-      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
-        if (!defs[i].isunion) {
-          printf("struct %s {\n",defs[i].name);
-          printf("%s",defs[i].definition);
+    for (i=0;i<hdef->ndefs;i++) {
+      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix)) {
+        if (!hdef->defs[i].isunion) {
+          printf("struct %s {\n",hdef->defs[i].name);
+          printf("%s",hdef->defs[i].definition);
           printf("};\n");
         } else {
-          printf("union %s {\n",defs[i].name);
-          printf("%s",defs[i].definition);
+          printf("union %s {\n",hdef->defs[i].name);
+          printf("%s",hdef->defs[i].definition);
           printf("};\n");
         }
       }
@@ -509,49 +574,88 @@ int print_structs_defs(struct struct_def *defs,
   }
 
   if (!strncmp(format,"info",4)) {
-    for (i=0;i<ndefs;i++) {
-      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
-        printf("Name: %s\n",defs[i].name);
-        printf("Path: %s\n",defs[i].fullpath);
-        printf("Line: %d\n",defs[i].line);
-        printf("Members No: %d\n\n",defs[i].members);
+    for (i=0;i<hdef->ndefs;i++) {
+      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix)) {
+        printf("Name: %s\n",hdef->defs[i].name);
+        printf("Path: %s\n",hdef->defs[i].fullpath);
+        printf("Line: %d\n",hdef->defs[i].line);
+        printf("Members No: %d\n\n",hdef->defs[i].members);
+      }
+    }
+    return 0;
+  }
+
+  if (!strncmp(format,"targets",7)) {
+
+    if (hdef->targets.ntargets) {
+      printf("%s has following targets:\n",hdef->name);
+    }
+
+    for (j = 0; j < hdef->targets.ntargets; j++) {
+      if (hdef->targets.types[j]) {
+
+        switch (hdef->targets.types[j]) {
+          case TO_EBML:
+          type = "TO_EBML";
+          break;
+          case TO_TEXT: 
+          type = "TO_TEXT";
+          break;
+          case TO_JSON: 
+          type = "TO_JSON";
+          break;
+          case FR_EBML: 
+          type = "FR_EBML";
+          break;
+          case HELPERS: 
+          type = "HELPERS";
+          break;
+          default: 
+          type = "NONE"; 
+          break;
+        }
+
+        printf("    %s of type %s\n",hdef->targets.targets[j],type);
       }
     }
     return 0;
   }
 
   if (!strncmp(format,"members",7)) {
-    for (i=0;i<ndefs;i++) {
-      if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
+    for (i=0;i<hdef->ndefs;i++) {
+      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix)) {
 
-        if (defs[i].isunion)
-          printf("Union Name: %s\n",defs[i].name);
-        else if (defs[i].isenum)
-          printf("Enum Name: %s\n",defs[i].name);
+        if (hdef->defs[i].isunion)
+          printf("Union Name: %s\n",hdef->defs[i].name);
+        else if (hdef->defs[i].isenum)
+          printf("Enum Name: %s\n",hdef->defs[i].name);
         else 
-          printf("Struct Name: %s\n",defs[i].name);
+          printf("Struct Name: %s\n",hdef->defs[i].name);
         
-        for (j=0;j<defs[i].members;j++) {
-          printf("  Member Name: %s\n",defs[i].members_info[j].name);
-          printf("  Member Type: %s\n",defs[i].members_info[j].type);
-          if (defs[i].members_info[j].array) {
-            printf("  Array of %d.\n",defs[i].members_info[j].array);
+        for (j=0;j<hdef->defs[i].members;j++) {
+          printf("  Member Name: %s\n",hdef->defs[i].members_info[j].name);
+          printf("  Member Type: %s\n",hdef->defs[i].members_info[j].type);
+          if (hdef->defs[i].members_info[j].array || hdef->defs[i].members_info[j].array_str_val) {
+            if (hdef->defs[i].members_info[j].array)
+              printf("  Array of %d.\n",hdef->defs[i].members_info[j].array);
+            else
+              printf("  Array of %s.\n",hdef->defs[i].members_info[j].array_str_val);
           }
-          if (defs[i].members_info[j].pointer) {
-            printf("  It's a pointer of level %d.\n",defs[i].members_info[j].pointer);
+          if (hdef->defs[i].members_info[j].pointer) {
+            printf("  It's a pointer of level %d.\n",hdef->defs[i].members_info[j].pointer);
           }
-          if (defs[i].members_info[j].sub) {
+          if (hdef->defs[i].members_info[j].sub) {
             printf("  It's a sub");
-            if (defs[i].members_info[j].sub->isunion) {
+            if (hdef->defs[i].members_info[j].sub->isunion) {
               printf("union\n");
-            } else if (defs[i].members_info[j].sub->isenum) {
+            } else if (hdef->defs[i].members_info[j].sub->isenum) {
               printf("enum\n");
             } else {
               printf("struct\n");
             }
           }
           if (!strncmp(&format[7],"_data_info",10)) {
-            print_memb_data_info(&(defs[i].members_info[j]));
+            print_memb_data_info(&(hdef->defs[i].members_info[j]));
           }
         }
       }

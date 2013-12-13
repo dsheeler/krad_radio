@@ -6,7 +6,7 @@ void print_usage(char *cmd) {
 
 int main(int argc, char *argv[]) {
 
-  struct struct_def defs[MAX_DEFS];
+  struct header_defs *hdefs;
   int ndefs;
   FILE *header;
   FILE *bstrap_file;
@@ -16,9 +16,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  memset(&defs,0,sizeof(defs));
-
-  ndefs = gather_struct_definitions(defs,"krad",argv[1]);
+  hdefs = calloc(MAX_HEADERS,sizeof(struct header_defs));
+  ndefs = gather_struct_definitions(hdefs,"krad",argv[1]);
 
   header = fopen("bootstrapped.h","w+");
   bstrap_file = fopen("bootstrapped.c","w+");
@@ -28,14 +27,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  codegen_bootstrap(defs,ndefs,argv[2],argv[3],header);
-
+  codegen_bootstrap(hdefs,ndefs,argv[2],argv[3],header);
   fprintf(header,"\ntypedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
-
-  codegen_enum_utils(defs,ndefs,argv[2],argv[3],bstrap_file);
+  codegen_enum_utils(hdefs,ndefs,argv[2],argv[3],bstrap_file);
   
   fclose(header);
   fclose(bstrap_file);
+  free(hdefs);
 
   return 0;
 }

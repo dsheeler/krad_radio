@@ -13,10 +13,13 @@
 #include <math.h>
 #include <errno.h>
 
-#define MAX_HEADERS 256
+#define MAX_HEADERS 512
 #define MAX_DEFS 1024
-#define MAX_DEF_LENGTH 4096
+#define MAX_DEF_LENGTH 2048
 #define MAX_MEMB 64
+#define MAX_TARGETS 32
+#define MAX_HEADER_DEFS 64
+#define MAX_TARGET_TYPES 5
 
 typedef enum {
   MEMB_TYPE_UNKNOWN = 0,
@@ -25,6 +28,20 @@ typedef enum {
   MEMB_TYPE_FLOAT,
   MEMB_TYPE_STRING
 } memb_type;
+
+typedef enum {
+  TO_TEXT = 1,
+  TO_JSON,
+  TO_EBML,
+  FR_EBML,
+  HELPERS
+} cgen_target_type;
+
+struct cgen_target {
+  cgen_target_type types[MAX_TARGETS];
+  char *targets[MAX_TARGETS];
+  int ntargets;
+};
 
 struct memb_data_info {
   memb_type type;
@@ -38,6 +55,7 @@ struct struct_memb_def {
   char *name;
   char *type;
   int array;
+  char *array_str_val;
   int pointer;
   struct struct_def *sub;
   struct memb_data_info data_info;
@@ -56,8 +74,16 @@ struct struct_def {
   int issub;
 };
 
+struct header_defs {
+  char *name;
+  struct cgen_target targets;
+  struct struct_def defs[MAX_HEADER_DEFS];
+  int ndefs;
+};
+
 int is_prefix (const char *str, const char *prefix);
 int is_suffix (const char *str, const char *suffix);
-int gather_struct_definitions(struct struct_def *defs, char *fprefix, char *path);
-int print_structs_defs(struct struct_def *defs, 
-  int ndefs, char *prefix, char *suffix, char *format);
+int gather_struct_definitions(struct header_defs *hdefs, 
+  char *fprefix, char *path);
+int print_structs_defs(struct header_defs *hdef, 
+  char *prefix, char *suffix, char *format);

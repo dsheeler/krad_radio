@@ -38,6 +38,11 @@ case $host in
   CXXFLAGS="-DKR_LINUX $CXXFLAGS"
 esac
 
+AC_ARG_ENABLE([dev], AS_HELP_STRING([--enable-dev], [Enable developer tools]),
+ [dev=yes], [dev=no])
+AS_IF([test "$dev" = "yes"],
+ [AC_DEFINE([KR_IZ_US], [1], [Enable developer tools])])
+AM_CONDITIONAL([KR_IZ_US], [test "$dev" = "yes"])
 
 AC_CHECK_LIB([m], [dl], [z], [pthread], [rt])
 
@@ -83,12 +88,14 @@ AC_CONFIG_FILES([Makefile lib/Makefile daemon/Makefile clients/Makefile
                  tests/Makefile tools/code/hextool/Makefile
                  tools/code/analysis/gather_structs/Makefile
                  tools/code/gen/Makefile])
+
 AC_OUTPUT
 
 AC_MSG_RESULT([
 ------------------------------------------------------------------------
   $PACKAGE_NAME $PACKAGE_VERSION: Configuration Valid.
   CFLAGS: $CFLAGS
+  Developer: $dev
 ------------------------------------------------------------------------
 ])
 

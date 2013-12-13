@@ -8,28 +8,31 @@ void print_usage(char *cmd) {
   printf("header --> prints the body of the structs matched.\n");
   printf("members --> prints info about the members of the structs matched.\n");
   printf("members_data_info --> prints info about the members possible data values.\n");
+  printf("targets --> prints names and codegen targets if they exist\n");
 }
 
 int main(int argc, char *argv[]) {
 
-  struct struct_def defs[MAX_DEFS];
+  struct header_defs *hdefs;
   int ndefs;
+  int i;
 
   if (argc != 5) {
     print_usage(argv[0]);
     return 0;
   }
 
-  memset(&defs,0,sizeof(defs));
+  hdefs = calloc(MAX_HEADERS,sizeof(struct header_defs));
+  ndefs = gather_struct_definitions(hdefs,"krad",argv[1]);
 
-  ndefs = gather_struct_definitions(defs,"krad",argv[1]);
-
-  if (print_structs_defs(defs,ndefs,argv[2],argv[3],argv[4])) {
-    fprintf(stderr,"Invalid print format!\n");
-    print_usage(argv[0]);
-    return 0;
+  for (i = 0; i < ndefs; i++) {
+    if (print_structs_defs(&hdefs[i],argv[2],argv[3],argv[4])) {
+      fprintf(stderr,"Invalid print format!\n");
+      print_usage(argv[0]);
+      return 0;
+    }
   }
 
+  free(hdefs);
   return 0;
-
 }
