@@ -1,8 +1,6 @@
 #ifndef KRAD_V4L2_COMMON_H
 #define KRAD_V4L2_COMMON_H
 
-#include "krad_v4l2_to_text.h"
-
 typedef enum {
   KR_V4L2_VOID,
   KR_V4L2_OPEN,
