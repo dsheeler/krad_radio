@@ -9,6 +9,7 @@ struct kr_wayland_path {
   int pointer_in;
   int pointer_out;
   int active;
+  int fullscreen;
   struct wl_surface *surface;
   struct wl_shell_surface *shell_surface;
   struct wl_buffer *buffer;
@@ -216,7 +217,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
   kr_wayland *wayland;
   kr_wayland_event wayland_event;
-  //struct window *window = input->keyboard_focus;
+  kr_wayland_path *window;
   uint32_t code, num_syms;
   enum wl_keyboard_key_state state = state_w;
   const xkb_keysym_t *syms;
@@ -230,6 +231,8 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
   if (wayland->key_window == NULL) {
     return;
+  } else {
+    window = wayland->key_window;
   }
 
   code = key + 8;
@@ -243,6 +246,16 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     sym = syms[0];
   }
 
+  if (((sym == XKB_KEY_F11) || (sym == XKB_KEY_f))
+    && (state == WL_KEYBOARD_KEY_STATE_PRESSED)) {
+    if (window->fullscreen == 1) {
+      window->fullscreen = 0;
+      wl_shell_surface_set_toplevel(window->shell_surface);
+    } else {
+      window->fullscreen = 1;
+      wl_shell_surface_set_fullscreen(window->shell_surface, 1, 0, NULL);
+    }
+  }
 /*
   if (sym == XKB_KEY_F5 && input->modifiers == MOD_ALT_MASK) {
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
@@ -648,6 +661,7 @@ kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
   window->user = setup->user;
   window->width = setup->info.width;
   window->height = setup->info.height;
+  window->fullscreen = setup->info.fullscreen;
 
   ret = kr_wayland_path_create_shm_buffer(window, window->width,
    window->height, KR_WL_BUFFER_COUNT, WL_SHM_FORMAT_XRGB8888,
@@ -679,15 +693,14 @@ kr_wayland_path *kr_wayland_mkpath(kr_wayland *wayland,
    wl_shell_surface_add_listener(window->shell_surface,
     &window->surface_listener, window);
 
-  if ((window->width == 1920) && (window->height == 1080)) {
-    wl_shell_surface_set_fullscreen(window->shell_surface,
-     0, 0, NULL);
-  } else {
-    wl_shell_surface_set_toplevel(window->shell_surface);
-  }
+  wl_shell_surface_set_toplevel(window->shell_surface);
 
   kr_wayland_frame_listener(window, NULL, 0);
   wl_display_roundtrip(wayland->display);
+
+  if (window->fullscreen == 1) {
+    wl_shell_surface_set_fullscreen(window->shell_surface, 1, 0, NULL);
+  }
 
   wayland->window[i].active = 1;
 

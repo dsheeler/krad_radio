@@ -11,6 +11,7 @@ typedef struct {
   int state;
   int width;
   int height;
+  int fullscreen;
 } kr_wayland_path_info;
 
 #endif
