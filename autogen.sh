@@ -1,13 +1,24 @@
 #!/bin/sh
-# Run this to set up the build system: configure, makefiles, etc.
 set -e
 
 srcdir=`dirname $0`
 test -n "$srcdir" && cd "$srcdir"
 
-sh autodel.sh
+if [ "$1" = "--clean" ]; then
+  if [ -e "Makefile" ]; then
+    make clean
+  fi
+  rm -f -rf autom4te.cache
+  rm -f depcomp config.guess config.sub libtool ltmain.sh\
+   config.status Makefile stamp-h1 config.h.in~ config.h\
+   config.log missing INSTALL Makefile.in NEWS aclocal.m4\
+   compile config.h.in config.log configure missing install-sh\
+   kr krad_radio
+  echo "Cleaned up autojunk"
+  exit
+fi
 
-echo "Updating build configuration files for krad radio, please wait...."
+echo "Updating build configuration files for krad radio..."
 
 ACLOCAL_FLAGS="-I m4"
 autoreconf -if
