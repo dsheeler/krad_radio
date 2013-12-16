@@ -202,77 +202,65 @@ int krad_vpx_encoder_write (krad_vpx_encoder_t *vpx,
 
 int32_t kr_vpx_encode (krad_vpx_encoder_t *vpx,
                        kr_codeme_t *codeme,
-                       kr_medium_t *medium) {
+                       kr_image *image) {
 
   int ret;
   int64_t pts;
-  vpx_image_t image;
-  memset (&image, 0, sizeof(vpx_image_t));
+  vpx_image_t vpx_image;
+  memset(&vpx_image, 0, sizeof(vpx_image_t));
   vpx_codec_iter_t iter;  
   //vpx_codec_err_t err;
   //vpx_codec_cx_pkt_t *pkt;
-
   ret = 0;
-
   if ((vpx == NULL) || (codeme == NULL)) {
     return -1;
   }
-
   if (vpx->update_config == 1) {
     krad_vpx_encoder_config_set (vpx, &vpx->cfg);
     vpx->update_config = 0;
     krad_vpx_encoder_print_config (vpx);
   }
-
-  if (medium->v.tc != 0) {
-    pts = medium->v.tc;
-    codeme->tc = medium->v.tc;
+  if (image->tc != 0) {
+    pts = image->tc;
+    codeme->tc = image->tc;
   } else {
     pts = vpx->frames;
     codeme->tc = (vpx->frames / vpx->fps_numerator) * vpx->fps_denominator;
   }
 
-  if (medium == NULL) {
-    ret = vpx_codec_encode (&vpx->encoder, NULL, pts,
-                            1, vpx->flags, vpx->deadline);
+  if (image == NULL) {
+    ret = vpx_codec_encode(&vpx->encoder, NULL, pts, 1, vpx->flags,
+     vpx->deadline);
   } else {
-
-    vpx_img_wrap (&image, VPX_IMG_FMT_I420,
-                  vpx->width, vpx->height, 1,
-                  medium->data);
+    vpx_img_wrap(&vpx_image, VPX_IMG_FMT_I420, vpx->width, vpx->height, 1, 
+     image->px);
 
     //image.w = vpx->width;
     //image.h = vpx->height;
-
     //image.d_w = vpx->width;
     //image.d_h = vpx->height;
-
     //image.planes[0] = medium->v.ppx[0];
     //image.planes[1] = medium->v.ppx[1];
     //image.planes[2] = medium->v.ppx[2];
     
-    image.stride[0] = medium->v.pps[0];
-    image.stride[1] = medium->v.pps[1];
-    image.stride[2] = medium->v.pps[2];
-    
-    ret = vpx_codec_encode (&vpx->encoder, &image, pts,
-                            1, vpx->flags, vpx->deadline);
+    vpx_image.stride[0] = image->pps[0];
+    vpx_image.stride[1] = image->pps[1];
+    vpx_image.stride[2] = image->pps[2];
+   
+    ret = vpx_codec_encode(&vpx->encoder, &vpx_image, pts, 1, vpx->flags,
+     vpx->deadline);
   }
-
   if (ret != 0) {
-    printke ("oh shit pts %"PRIu64"", pts);
+    printke("oh shit pts %"PRIu64"", pts);
   }
-
   vpx->frames++;
   vpx->flags = 0;
-  
   iter = NULL;
-  vpx->pkt = vpx_codec_get_cx_data (&vpx->encoder, &iter);
-  
+  vpx->pkt = vpx_codec_get_cx_data(&vpx->encoder, &iter);
   if (vpx->pkt != NULL) {
     if (vpx->pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
       codeme->sz = vpx->pkt->data.frame.sz;
-      memcpy (codeme->data, vpx->pkt->data.frame.buf, codeme->sz);
+      memcpy(codeme->data, vpx->pkt->data.frame.buf, codeme->sz);
       codeme->key = vpx->pkt->data.frame.flags & VPX_FRAME_IS_KEY;
       if (codeme->key == 0) {
         vpx->frames_since_keyframe++;

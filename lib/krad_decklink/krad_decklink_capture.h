@@ -5,6 +5,7 @@ typedef struct krad_decklink_capture_St krad_decklink_capture_t;
 
 #ifdef __cplusplus
 extern "C" {
+#include "krad_av.h"
 #include "krad_system.h"
 }
 #endif
@@ -61,7 +62,7 @@ struct krad_decklink_capture_St {
   uint64_t video_frames;
   uint64_t audio_frames;
 
-  int (*video_frame_callback)(void *, void *, int);
+  int (*video_frame_callback)(void *, kr_image *);
   int (*audio_frames_callback)(void *, void *, int);
   void *callback_pointer;
 
@@ -79,7 +80,6 @@ extern "C" {
 
 void krad_decklink_capture_set_video_input(krad_decklink_capture_t *krad_decklink_capture, char *video_input);
 void krad_decklink_capture_set_audio_input(krad_decklink_capture_t *krad_decklink_capture, char *audio_input);
-
 void krad_decklink_capture_set_video_mode(krad_decklink_capture_t *krad_decklink_capture, int width, int height,
                       int fps_numerator, int fps_denominator);
 
@@ -89,7 +89,7 @@ void krad_decklink_capture_stop(krad_decklink_capture_t *krad_decklink_capture);
 void krad_decklink_capture_info ();
 
 void krad_decklink_capture_set_verbose(krad_decklink_capture_t *krad_decklink_capture, int verbose);
-void krad_decklink_capture_set_video_callback(krad_decklink_capture_t *krad_decklink_capture, int video_frame_callback(void *, void *, int));
+void krad_decklink_capture_set_video_callback(krad_decklink_capture_t *krad_decklink_capture, int video_frame_callback(void *, kr_image *));
 void krad_decklink_capture_set_audio_callback(krad_decklink_capture_t *krad_decklink_capture, int audio_frames_callback(void *, void *, int));
 void krad_decklink_capture_set_callback_pointer(krad_decklink_capture_t *krad_decklink_capture, void *callback_pointer);
 

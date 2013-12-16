@@ -11,6 +11,8 @@
 #include <krad_decklink_capture.h>
 #include <krad_ring.h>
 #include <krad_framepool.h>
+#include "krad_av.h"
+#include "krad_convert.h"
 
 #include <libswscale/swscale.h>
 
@@ -25,35 +27,31 @@ struct kr_dlstream_params {
   uint32_t input_height;
   uint32_t input_fps_numerator;
   uint32_t input_fps_denominator;
-  char *input_device;
-  char *video_input_connector;
-  char *audio_input_connector;
+  char input_device[64];
+  char video_input_connector[64];
+  char audio_input_connector[64];
   uint32_t encoding_width;
   uint32_t encoding_height;
   uint32_t encoding_fps_numerator;
   uint32_t encoding_fps_denominator;
   uint32_t video_bitrate;
   float audio_quality;
-  char *host;
+  char host[256];
   int32_t port;
-  char *mount;
-  char *password;
+  char mount[256];
+  char password[256];
 };
 
 struct kr_dlstream {
   kr_dlstream_params *params;
   uint32_t channels;
-  krad_decklink_t *decklink;
+  kr_decklink *decklink;
   krad_ringbuffer_t *audio_ring[2];
-  krad_ringbuffer_t *frame_ring;
-  krad_framepool_t *framepool;
   krad_vpx_encoder_t *vpx_enc;
   krad_vorbis_t *vorbis_enc;
   kr_codec_hdr_t header;
   kr_mkv_t *mkv;
-  struct SwsContext *converter;
-  int sws_algo;
-  int new_sws_algo;
+  kr_convert converter;
   uint64_t frames;
   uint64_t samples;
   uint64_t droppedframes;
@@ -69,20 +67,15 @@ static void term_handler(int sig) {
   destruct = 1;
 }
 
-int dlstream_video_callback(void *arg, void *buffer, int length) {
-
+int dlstream_video_callback(void *user, kr_image *image) {
+/*
   kr_dlstream *dlstream = (kr_dlstream *)arg;
-  uint32_t stride;
-  uint32_t lumasize;
-  uint32_t chromasize;
   krad_frame_t *frame;
   krad_frame_t dlframe;
 
-  memset (&dlframe, 0, sizeof(krad_frame_t));
+  memset(&dlframe, 0, sizeof(krad_frame_t));
 
-  stride = dlstream->params->input_width + ((dlstream->params->input_width/2) * 2);
-
-  frame = krad_framepool_getframe (dlstream->framepool);
+  frame = krad_framepool_getframe(dlstream->framepool);
 
   if (frame != NULL) {
 
@@ -97,12 +90,7 @@ int dlstream_video_callback(void *arg, void *buffer, int length) {
     dlframe.yuv_strides[2] = 0;
     dlframe.yuv_strides[3] = 0;
 
-	lumasize = dlstream->params->encoding_width * dlstream->params->encoding_height;
-	lumasize += lumasize % 16;
-	chromasize = ((dlstream->params->encoding_width * dlstream->params->encoding_height) / 4);
-	chromasize += chromasize % 16;
-
-	frame->format = PIX_FMT_YUV420P;
+    frame->format = PIX_FMT_YUV420P;
     frame->yuv_strides[0] = dlstream->params->encoding_width;
     frame->yuv_strides[1] = dlstream->params->encoding_width/2;
     frame->yuv_strides[2] = dlstream->params->encoding_width/2;
@@ -110,9 +98,9 @@ int dlstream_video_callback(void *arg, void *buffer, int length) {
     frame->yuv_pixels[1] = frame->pixels + lumasize;
     frame->yuv_pixels[2] = frame->pixels + (lumasize + chromasize);
 
-	dlstream->sws_algo = dlstream->new_sws_algo;
+    dlstream->sws_algo = dlstream->new_sws_algo;
 
-	dlstream->converter = sws_getCachedContext ( dlstream->converter,
+	  dlstream->converter = sws_getCachedContext(dlstream->converter,
 	                                             dlstream->params->input_width,
 	                                             dlstream->params->input_height,
 	                                             dlframe.format,
@@ -145,6 +133,7 @@ int dlstream_video_callback(void *arg, void *buffer, int length) {
 	dlstream->skipsamples += 2;
     printke("Krad Decklink underflow");
   }
+  */
   return 0;
 }
 
@@ -181,21 +170,16 @@ int kr_dlstream_destroy(kr_dlstream **dlstream) {
     return -1;
   }
   if ((*dlstream)->decklink != NULL) {
-    krad_decklink_destroy ((*dlstream)->decklink);
+    kr_decklink_destroy((*dlstream)->decklink);
     (*dlstream)->decklink = NULL;
   }
   krad_vpx_encoder_destroy(&(*dlstream)->vpx_enc);
   krad_vorbis_encoder_destroy(&(*dlstream)->vorbis_enc);
-  kr_mkv_destroy (&(*dlstream)->mkv);
+  kr_mkv_destroy(&(*dlstream)->mkv);
   for (c = 0; c < (*dlstream)->channels; c++) {
     krad_ringbuffer_free((*dlstream)->audio_ring[c]);
   }
-  krad_ringbuffer_free((*dlstream)->frame_ring);
-  krad_framepool_destroy(&(*dlstream)->framepool);
-  if ((*dlstream)->converter != NULL) {
-    sws_freeContext ((*dlstream)->converter);
-    (*dlstream)->converter = NULL;
-  }
+  kr_image_convert_clear(&(*dlstream)->converter);
   free(*dlstream);
   *dlstream = NULL;
   return 0;
@@ -209,9 +193,7 @@ kr_dlstream *kr_dlstream_create(kr_dlstream_params *params) {
   dlstream->params = params;
   dlstream->channels = 2;
   dlstream->skipsamples = 0;
-  dlstream->converter = NULL;
-  dlstream->sws_algo = SWS_BILINEAR;
-  dlstream->new_sws_algo = dlstream->sws_algo;
+  kr_image_convert_init(&dlstream->converter);
   snprintf(file, sizeof(file), "%s/%s_%"PRIu64".webm", getenv ("HOME"),
    "dlstream", krad_unixtime());
   /* dlstream->mkv = kr_mkv_create_file(file); */
@@ -238,53 +220,45 @@ kr_dlstream *kr_dlstream_create(kr_dlstream_params *params) {
    dlstream->vorbis_enc->hdrdata, 3 + dlstream->vorbis_enc->header.sz[0]
    + dlstream->vorbis_enc->header.sz[1]
    + dlstream->vorbis_enc->header.sz[2]);
-  dlstream->frame_ring = krad_ringbuffer_create(120 * sizeof(krad_frame_t *));
-  dlstream->framepool = krad_framepool_create(dlstream->params->encoding_width,
-   dlstream->params->encoding_height, 120);
   for (c = 0; c < 2; c++) {
     dlstream->audio_ring[c] = krad_ringbuffer_create(2200000);
   }
-  dlstream->decklink = krad_decklink_create(dlstream->params->input_device);
-  krad_decklink_set_video_mode(dlstream->decklink,
+  dlstream->decklink = kr_decklink_create(dlstream->params->input_device);
+  kr_decklink_set_video_mode(dlstream->decklink,
    dlstream->params->input_width, dlstream->params->input_height,
    dlstream->params->input_fps_numerator,
    dlstream->params->input_fps_denominator);
-  krad_decklink_set_audio_input(dlstream->decklink,
+  kr_decklink_set_audio_input(dlstream->decklink,
    dlstream->params->audio_input_connector);
-  krad_decklink_set_video_input(dlstream->decklink,
+  kr_decklink_set_video_input(dlstream->decklink,
    dlstream->params->video_input_connector);
-  dlstream->decklink->callback_pointer = dlstream;
-  dlstream->decklink->audio_frames_callback = dlstream_audio_callback;
-  dlstream->decklink->video_frame_callback = dlstream_video_callback;
+  dlstream->decklink->user = dlstream;
+  dlstream->decklink->audio_cb = dlstream_audio_callback;
+  dlstream->decklink->image_cb = dlstream_video_callback;
   return dlstream;
 }
 
 void kr_dlstream_run(kr_dlstream *dlstream) {
-  krad_frame_t *frame;
   int32_t frames;
   kr_medium_t *amedium;
   kr_codeme_t *acodeme;
-  kr_medium_t *vmedium;
+  kr_image *image;
   kr_codeme_t *vcodeme;
   uint32_t c;
   int32_t ret;
   int32_t muxdelay;
   muxdelay = 1;
   frames = 0;
-  signal(SIGWINCH, sig_winch_handler);
-  signal(SIGINT, term_handler);
-  signal(SIGTERM, term_handler);
   amedium = kr_medium_kludge_create();
   acodeme = kr_codeme_kludge_create();
-  vmedium = calloc (1, sizeof(kr_medium_t));
   vcodeme = kr_codeme_kludge_create();
-  krad_decklink_start(dlstream->decklink);
+  kr_decklink_start(dlstream->decklink);
   while (!destruct) {
-    printf("\rKrad Decklink Stream Frame# %12"PRIu64" Samples: %12"PRIu64""
+    printf("\rKrad Decklink Stream Frame# %12"PRIu64" Samples: %12"PRIu64" "
      "Logjam: %8d Dropped: %6"PRIu64"", dlstream->frames, dlstream->samples,
      frames, dlstream->droppedframes);
     fflush(stdout);
-    while(krad_ringbuffer_read_space (dlstream->audio_ring[1]) >= 1024 * 4) {
+    while(krad_ringbuffer_read_space(dlstream->audio_ring[1]) >= 1024 * 4) {
       for (c = 0; c < dlstream->channels; c++) {
         krad_ringbuffer_read (dlstream->audio_ring[c],
         (char *)amedium->a.samples[c], 1024 * 4);
@@ -297,7 +271,7 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
          acodeme->count);
         muxdelay = 0;
         while (1) {
-          ret = kr_vorbis_encode (dlstream->vorbis_enc, acodeme, NULL);
+          ret = kr_vorbis_encode(dlstream->vorbis_enc, acodeme, NULL);
           if (ret == 1) {
             kr_mkv_add_audio(dlstream->mkv, 2, acodeme->data, acodeme->sz,
              acodeme->count);
@@ -310,10 +284,9 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
     if (muxdelay > 0) {
       continue;
     }
-    frames = krad_ringbuffer_read_space(dlstream->frame_ring) / sizeof(void *);
+//  frames = krad_ringbuffer_read_space(dlstream->frame_ring) / sizeof(void *);
     if (frames == 0) {
       krad_vpx_encoder_deadline_set(dlstream->vpx_enc, 50000);
-      dlstream->new_sws_algo = SWS_BILINEAR;
       usleep(1000);
     }
     if (frames > 1) {
@@ -321,17 +294,12 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
     }
     if (frames > 15) {
       krad_vpx_encoder_deadline_set(dlstream->vpx_enc, 1);
-      dlstream->new_sws_algo = SWS_POINT;
     }
     if (frames > 0) {
-      krad_ringbuffer_read(dlstream->frame_ring, (char *)&frame,
-       sizeof(krad_frame_t *));
-      vmedium->v.pps[0] = frame->yuv_strides[0];
-      vmedium->v.pps[1] = frame->yuv_strides[1];
-      vmedium->v.pps[2] = frame->yuv_strides[2];
-      vmedium->data = frame->pixels;
-      ret = kr_vpx_encode(dlstream->vpx_enc, vcodeme, vmedium);
-      krad_framepool_unref_frame(frame);
+//    krad_ringbuffer_read(dlstream->frame_ring, (char *)&frame,
+//     sizeof(krad_frame_t *));
+      ret = kr_vpx_encode(dlstream->vpx_enc, vcodeme, image);
+      //krad_framepool_unref_frame(frame);
       if (ret == 1) {
         kr_mkv_add_video(dlstream->mkv, 1, vcodeme->data, vcodeme->sz,
          vcodeme->key);
@@ -340,36 +308,30 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
   }
   kr_medium_kludge_destroy(&amedium);
   kr_codeme_kludge_destroy(&acodeme);
-  free(vmedium);
   kr_codeme_kludge_destroy(&vcodeme);
 }
 
 void kr_dlstream_check() {
   int count;
-  count = krad_decklink_detect_devices();
+  count = kr_decklink_detect_devices();
   if (count < 1) {
-    printf ("No Decklink devices detected.\n");
-    exit (0);
+    printf("No Decklink devices detected.\n");
+    exit(0);
   } else {
     if (count > 1) {
-      printf ("%d Decklink devices detected.\n", count);
+      printf("%d Decklink devices detected.\n", count);
     } else {
-      printf ("%d Decklink device detected.\n", count);
+      printf("%d Decklink device detected.\n", count);
     }
   }
 }
 
-int kr_dlstream_device_count(int device_num, char *device_name) {
-  return krad_decklink_detect_devices();
-}
-
-int kr_dlstream_device_name(int device_num, char *device_name) {
-  return krad_decklink_get_device_name(device_num, device_name);
-}
-
-void config_handler(cfg_t *config, kr_dlstream_params *params) {
+int read_config(kr_dlstream_params *params, char *configfile) {
+  cfg_t *config;
+  config = cfgread(configfile);
+  if (config == NULL) return -1;
   if (config->get_val(config,"input_device")) {
-    params->input_device = strdup(config->value);
+    snprintf(params->input_device, sizeof(params->input_device), "%s", config->value);
   }
   if (config->get_val(config,"input_width")) {
     params->input_width = atoi(config->value);
@@ -396,10 +358,10 @@ void config_handler(cfg_t *config, kr_dlstream_params *params) {
     params->encoding_fps_denominator = atoi(config->value);
   }
   if (config->get_val(config,"video_input_connector")) {
-    params->video_input_connector = strdup(config->value);
+    snprintf(params->video_input_connector, sizeof(params->video_input_connector), "%s", config->value);
   }
   if (config->get_val(config,"audio_input_connector")) {
-    params->audio_input_connector = strdup(config->value);
+    snprintf(params->audio_input_connector, sizeof(params->audio_input_connector), "%s", config->value);
   }
   if (config->get_val(config,"video_bitrate")) {
     params->video_bitrate = atoi(config->value);
@@ -408,56 +370,35 @@ void config_handler(cfg_t *config, kr_dlstream_params *params) {
     params->audio_quality = atof(config->value);
   }
   if (config->get_val(config,"host")) {
-    params->host = strdup(config->value);
+    snprintf(params->host, sizeof(params->host), "%s", config->value);
   }
   if (config->get_val(config,"port")) {
     params->port = atoi(config->value);
   }
   if (config->get_val(config,"mount")) {
-    params->mount = strdup(config->value);
+    snprintf(params->mount, sizeof(params->mount), "%s", config->value);
   }
   if (config->get_val(config,"password")) {
-    params->password = strdup(config->value);
+    snprintf(params->password, sizeof(params->password), "%s", config->value);
   }
+  config->free(config);
+  return 0;
 }
 
 int main (int argc, char *argv[]) {
 
   kr_dlstream *dlstream;
   kr_dlstream_params params;
-  cfg_t *config;
-  char mount[256];
+  int ret;
 
   krad_debug_init("dl_stream");
   kr_dlstream_check();
-
   memset(&params, 0, sizeof(kr_dlstream_params));
-  snprintf(mount, sizeof(mount), "/kradtoday.webm");
-  params.input_device = "0";
-  params.input_width = 1920;
-  params.input_height = 1080;
-  params.encoding_width = 1280;
-  params.encoding_height = 720;
-  params.input_fps_numerator = 30000;
-  params.input_fps_denominator = 1000;
-  params.encoding_fps_numerator = 30000;
-  params.encoding_fps_denominator = 1000;
-  params.video_input_connector = "hdmi";
-  params.audio_input_connector = "hdmi";
-  params.video_bitrate = 1000;
-  params.audio_quality = 0.3;
-  params.host = "europa.kradradio.com";
-  params.port = 8008;
-  params.mount = mount;
-  params.password = "firefox";
 
-  if (argc == 2) {
-    config = cfgread(argv[1]);
-    if (config != NULL) {
-      printf("Config file %s loaded \n", argv[1]);
-      config_handler(config, &params);
-      config->free(config);
-    }
+  ret = read_config(&params, argv[1]);
+  if (ret != 0) {
+    printf("Config file %s error.\n", argv[1]);
+    exit(1);
   }
 
   printf("Streaming with: %s at %ux%u %u fps (max)\n",
@@ -471,9 +412,13 @@ int main (int argc, char *argv[]) {
    params.video_bitrate, params.audio_quality);
 
   dlstream = kr_dlstream_create(&params);
-  kr_dlstream_run(dlstream);
-  kr_dlstream_destroy(&dlstream);
-
+  if (dlstream != NULL) {
+    signal(SIGWINCH, sig_winch_handler);
+    signal(SIGINT, term_handler);
+    signal(SIGTERM, term_handler);
+    kr_dlstream_run(dlstream);
+    kr_dlstream_destroy(&dlstream);
+  }
   krad_debug_shutdown();
 
   return 0;

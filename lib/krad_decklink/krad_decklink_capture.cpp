@@ -99,7 +99,7 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived (IDeckLinkVideoInputFram
     }
     video_frame->GetBytes(&frame_data);
     if (krad_decklink_capture->video_frame_callback != NULL) {
-      krad_decklink_capture->video_frame_callback (krad_decklink_capture->callback_pointer, frame_data, frame_data_size);
+    //  krad_decklink_capture->video_frame_callback (krad_decklink_capture->callback_pointer, frame_data, frame_data_size);
     }
     krad_decklink_capture->video_frames++;
   }
@@ -307,8 +307,8 @@ void krad_decklink_capture_set_video_mode (krad_decklink_capture_t *krad_decklin
   }
 }
 
-void krad_decklink_capture_set_video_callback (krad_decklink_capture_t *krad_decklink_capture, int video_frame_callback(void *, void *, int)) {
-  krad_decklink_capture->video_frame_callback = video_frame_callback;
+void krad_decklink_capture_set_video_callback (krad_decklink_capture_t *krad_decklink_capture, int image_cb(void *, kr_image *)) {
+  krad_decklink_capture->video_frame_callback = image_cb;
 }
 
 void krad_decklink_capture_set_audio_callback (krad_decklink_capture_t *krad_decklink_capture, int audio_frames_callback(void *, void *, int)) {
