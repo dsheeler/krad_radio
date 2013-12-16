@@ -421,6 +421,9 @@ void krad_websocket_add_comp_subunit(kr_iws_client_t *client,
        "\"type\":\"%s\",",
        kr_vector_type_to_string(crate->inside.vector->type));
       break;
+    default:
+      memset(&controls, 0, sizeof(kr_compositor_controls));
+      break;
   }
 
   pos += snprintf(json + pos, sizeof(json) - pos,

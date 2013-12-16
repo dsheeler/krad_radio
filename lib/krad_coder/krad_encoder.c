@@ -111,7 +111,7 @@ int kr_encoder_encode_direct (kr_encoder2_t *encoder,
     case KVHS:
       break;
     case VP8:
-      kr_vpx_encode (encoder->enc.vpx, codeme, medium);
+      //kr_vpx_encode (encoder->enc.vpx, codeme, medium);
       break;
     case THEORA:
       //kr_theora_encode (encoder->enc.theora, codeme, medium);

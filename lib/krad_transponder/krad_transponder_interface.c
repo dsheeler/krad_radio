@@ -22,11 +22,8 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   kr_ebml2_t ebml_in;
   kr_ebml2_t ebml_out;
   uint32_t command;
-  uint32_t element;
   uint64_t size;
   int ret;
-  uint16_t port;
-  port = 0;
   radio = client->krad_radio;
   transponder = radio->transponder;
   app = radio->app;

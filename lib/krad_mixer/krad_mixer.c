@@ -498,6 +498,7 @@ void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *path1,
   kr_mixer_crossfader *crossfader;
 
   i = 0;
+  crossfader = NULL;
 
   if ((path1 == NULL) || ((path1->state != 1) && (path1->state != 2)) ||
       (path2 == NULL) || ((path2->state != 1) && (path2->state != 2))) {
@@ -524,6 +525,8 @@ void kr_mixer_xf_couple(kr_mixer *mixer, kr_mixer_path *path1,
       break;
     }
   }
+
+  if (crossfader == NULL) return;
 
   crossfader->path[0] = path1;
   crossfader->path[1] = path2;
