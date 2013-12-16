@@ -5,6 +5,7 @@ typedef struct krad_decklink_capture_St krad_decklink_capture_t;
 
 #ifdef __cplusplus
 extern "C" {
+#include "krad_convert.h"
 #include "krad_av.h"
 #include "krad_system.h"
 }

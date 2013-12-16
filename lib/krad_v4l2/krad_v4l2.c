@@ -86,7 +86,7 @@ int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image) {
   image->pps[3] = 0;
   image->w = v4l2->info.mode.width;
   image->h = v4l2->info.mode.height;
-  //image->fmt = ;
+  image->fmt = PIX_FMT_YUYV422;
   image->release_cb = kr_v4l2_buf_release;
   image->owner = &v4l2->bufs[buf.index];
   return 1;

@@ -18,6 +18,7 @@
 #include <linux/uvcvideo.h>
 
 #include "krad_system.h"
+#include "krad_convert.h"
 #include "krad_av.h"
 #include "krad_v4l2_common.h"
 

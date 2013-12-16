@@ -76,6 +76,7 @@ static void composite(kr_compositor *com) {
       image.w = com->frame->width;
       image.h = com->frame->height;
       image.pps[0] = com->frame->width * 4;
+      image.fmt = PIX_FMT_RGB32;
       path_render(path, &image, com->cr);
     }
   }

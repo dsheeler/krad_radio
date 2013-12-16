@@ -27,9 +27,6 @@ int kr_image_convert(kr_convert *conv, kr_image *dst, kr_image *src) {
   if (src == NULL) return -3;
   if (dst == NULL) return -4;
 
-  src->fmt = PIX_FMT_YUYV422;
-  dst->fmt = PIX_FMT_RGB32;
-
   src_bpp = 2;
 
   src_w = src->w;
@@ -46,23 +43,18 @@ int kr_image_convert(kr_convert *conv, kr_image *dst, kr_image *src) {
 
   conv->sws = sws_getCachedContext(conv->sws, src_w, src_h, src->fmt, dst->w,
    dst->h, dst->fmt, conv->quality, NULL, NULL, NULL);
-
   if (conv->sws == NULL) {
     printke("Krad Converter: could not sws_getCachedContext");
     printke("source: %dx%d--%d dest:  %dx%d--%d", src_w, src_h,
      src_strides[0], dst->w, dst->h, dst->pps[0]);
     return -5;
   }
-
   /*printk("source: %dx%d--%d-%d dest:  %dx%d--%d-%d", src_w, src_h,
    src_strides[0], src_strides[1], dst->w, dst->h, dst->pps[0], dst->pps[1]);*/
-
   ret = sws_scale(conv->sws, (const uint8_t * const*)src_ppx, src_strides, 0,
    src_h, dst->ppx, dst->pps);
-
   if (ret == dst->h) {
     return 0;
   }
-
   return ret;
 }
