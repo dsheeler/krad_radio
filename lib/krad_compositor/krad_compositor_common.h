@@ -70,6 +70,8 @@ typedef struct kr_compositor_path_info kr_compositor_path_info;
 typedef struct kr_compositor_controls kr_compositor_controls;
 typedef struct kr_compositor_info kr_compositor_info;
 
+#include "gen/krad_compositor_to_json.h"
+
 struct kr_compositor_controls {
   int32_t x;
   int32_t y;

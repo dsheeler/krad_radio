@@ -78,15 +78,17 @@ static void codegen_function(struct struct_def *def, char *type,
   int res;
 
   memset(decl,0,256);
+  res = 0;
 
-  for (res = i = 0; i < def->members; i++) {
-    if (codegen_string_to_enum(def->members_info[i].type)) {
+  for (i = 0; i < def->members; i++) {
+    if ((codegen_string_to_enum(def->members_info[i].type))
+     || (def->members_info[i].pointer))  {
       res += sprintf(&decl[res],"  uber_St uber;\n");
       break;
     }
   }
 
-  for (res = i = 0; i < def->members; i++) {
+  for (i = 0; i < def->members; i++) {
     if (def->members_info[i].array) {
       res += sprintf(&decl[res],"  int i;\n");
       break;

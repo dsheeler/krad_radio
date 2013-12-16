@@ -3,9 +3,16 @@ int info_pack_to_json(char *json, uber_St *uber, int max);
 typedef int (*info_pack_to_json_func)(char *json, void *st, int max);
 
 int info_pack_to_json(char *json, uber_St *uber, int max) {
-  const info_pack_to_json_func to_json_functions[4] = { kr_v4l2_state_to_json,
-   kr_v4l2_mode_to_json, kr_v4l2_info_to_json,
-   kr_v4l2_open_info_to_json};
+  const info_pack_to_json_func to_json_functions[17] = { kr_compositor_path_type_to_json,
+   kr_compositor_subunit_type_to_json, kr_vector_type_to_json,
+   kr_compositor_control_to_json, kr_compositor_controls_to_json,
+   kr_sprite_info_to_json, kr_text_info_to_json,
+   kr_vector_info_to_json, kr_compositor_path_info_to_json,
+   kr_compositor_info_to_json, kr_pos_to_json,
+   kr_perspective_view_to_json, kr_perspective_to_json,
+   kr_v4l2_state_to_json, kr_v4l2_mode_to_json,
+   kr_v4l2_info_to_json, kr_v4l2_open_info_to_json
+  };
   return to_json_functions[uber->type-1](json , uber->actual, max);
 }
 

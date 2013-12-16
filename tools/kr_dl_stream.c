@@ -300,7 +300,7 @@ int main (int argc, char *argv[]) {
   kr_dlstream_check();
   memset(&params, 0, sizeof(kr_dlstream_params));
 
-  ret = read_config(&params, argv[1]);
+  ret = handle_config(&params, argv[1]);
   if (ret != 0) {
     printf("Config file %s error.\n", argv[1]);
     exit(1);

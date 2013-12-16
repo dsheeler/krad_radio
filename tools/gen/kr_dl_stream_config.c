@@ -1,7 +1,7 @@
 #include "kr_dl_stream_config.h"
 #include "../kr_config/kr_config.c"
 
-int read_config(struct kr_dlstream_params *params, char *configname) {
+int handle_config(struct kr_dlstream_params *params, char *configname) {
   kr_cfg *config;
   config = kr_config_open(configname);
 

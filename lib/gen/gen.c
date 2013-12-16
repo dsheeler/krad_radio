@@ -1,3 +1,5 @@
+#include "../krad_compositor/gen/krad_compositor_to_json.c"
+#include "../krad_compositor/gen/krad_perspective_to_json.c"
 #include "../krad_v4l2/gen/krad_v4l2_to_text.c"
 #include "../krad_v4l2/gen/krad_v4l2_to_json.c"
 #include "../krad_v4l2/gen/krad_v4l2_to_ebml.c"

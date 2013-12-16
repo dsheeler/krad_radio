@@ -147,11 +147,11 @@ void codegen_cfg(struct header_defs *hdefs, int ndefs) {
       if (is_suffix(fhdefs[i]->defs[j].name,"_params")) {
         if (!fhdefs[i]->defs[j].isenum && !fhdefs[i]->defs[j].isunion) {
           if (fhdefs[i]->defs[j].istypedef) {
-            fprintf(header,"int read_config(%s *params, char *configname);\n",fhdefs[i]->defs[j].name);
-            fprintf(out,"int read_config(%s *params, char *configname) {\n",fhdefs[i]->defs[j].name);
+            fprintf(header,"int handle_config(%s *params, char *configname);\n",fhdefs[i]->defs[j].name);
+            fprintf(out,"int handle_config(%s *params, char *configname) {\n",fhdefs[i]->defs[j].name);
           } else {
-            fprintf(header,"int read_config(struct %s *params, char *configname);\n",fhdefs[i]->defs[j].name);
-            fprintf(out,"int read_config(struct %s *params, char *configname) {\n",fhdefs[i]->defs[j].name);
+            fprintf(header,"int handle_config(struct %s *params, char *configname);\n",fhdefs[i]->defs[j].name);
+            fprintf(out,"int handle_config(struct %s *params, char *configname) {\n",fhdefs[i]->defs[j].name);
           }
           fprintf(out,"  kr_cfg *config;\n");
           fprintf(out,"  config = kr_config_open(configname);\n\n");

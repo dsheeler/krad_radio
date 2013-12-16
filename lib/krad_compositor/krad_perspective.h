@@ -27,6 +27,8 @@ struct kr_perspective_view {
   kr_pos bottom_right;
 };
 
+#include "gen/krad_perspective_to_json.h"
+
 struct kr_perspective {
   kr_perspective_priv *priv;
   uint32_t width;

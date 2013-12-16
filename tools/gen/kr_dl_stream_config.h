@@ -3,6 +3,6 @@
 #include <stdint.h>
 #include "kr_dl_stream.h"
 
-int read_config(struct kr_dlstream_params *params, char *configname);
+int handle_config(struct kr_dlstream_params *params, char *configname);
 #endif
 
