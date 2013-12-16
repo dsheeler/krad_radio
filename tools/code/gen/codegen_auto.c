@@ -233,6 +233,7 @@ void files_gen(struct header_defs *hdefs,
             sprintf(format,"helper");
             sprintf(format2,"helper_proto");
             break;
+            default: break;
           }
 
           codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,format,out);
@@ -290,6 +291,7 @@ int main(int argc, char *argv[]) {
   fprintf(genc,"#include \"debml_common.c\"\n");
   fprintf(genc,"#include \"json_common.c\"\n\n");
 
+  free(hdefs);
   fclose(genc);
 
   return 0;

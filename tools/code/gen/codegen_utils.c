@@ -73,17 +73,37 @@ static void codegen_prototype(struct struct_def *def, const char *type,
 static void codegen_function(struct struct_def *def, char *type, 
   gen_format gformat, FILE *out) {
 
+  int i;
+  char decl[256];
+  int res;
+
+  memset(decl,0,256);
+
+  for (res = i = 0; i < def->members; i++) {
+    if (codegen_string_to_enum(def->members_info[i].type)) {
+      res += sprintf(&decl[res],"  uber_St uber;\n");
+      break;
+    }
+  }
+
+  for (res = i = 0; i < def->members; i++) {
+    if (def->members_info[i].array) {
+      res += sprintf(&decl[res],"  int i;\n");
+      break;
+    }
+  }
+  
   if (gformat == EBML || gformat == DEBML) {
     if (gformat == EBML) {
-      fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st) {\n  int i;\n  int res;\n  res = 0;\n  uber_St uber;\n",
-        def->name,type,type);
+      fprintf(out,"int %s_to_%s(kr_ebml *%s, void *st) {\n%s  int res;\n  res = 0;\n",
+        def->name,type,type,decl);
     } else {
-      fprintf(out,"int %s_fr_%s(kr_ebml *%s, void *st) {\n  int i;\n  int res;\n  res = 0;\n  uber_St uber;\n",
-        def->name,&type[1],&type[1]);
+      fprintf(out,"int %s_fr_%s(kr_ebml *%s, void *st) {\n%s  int res;\n  res = 0;\n",
+        def->name,&type[1],&type[1],decl);
     }
   } else {
-    fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n  int i;\n  int res;\n  res = 0;\n  uber_St uber;\n",
-      def->name,type,type);
+    fprintf(out,"int %s_to_%s(char *%s, void *st, int32_t max) {\n%s  int res;\n  res = 0;\n",
+      def->name,type,type,decl);
   }
 
   if (def->istypedef) {

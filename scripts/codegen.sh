@@ -2,6 +2,7 @@
 
 LIBPATH='lib/'
 GEN_COMMON='lib/gen/'
+TOOLS_PATH='tools/'
 
 function run_codegen_precheck {
   if [ ! -f "tools/code/gen/codegen_auto" ]; then
@@ -14,12 +15,15 @@ function run_codegen_precheck {
 function run_codegen {
   echo ./tools/code/gen/codegen_auto $1 $2 $3 $4
   eval tools/code/gen/codegen_auto $1 $2 $3 $4
+  echo ./tools/code/gen/codegen_cfg $tools
+  eval tools/code/gen/codegen_cfg $tools
 }
 
 path=$(realpath $LIBPATH)
 pre="''"
 suff="''"
 gencommon=$(realpath $GEN_COMMON)
+tools=$(realpath $TOOLS_PATH)
 cgen_script_path="$(pwd)/scripts/codegen.sh"
 
 if [ ! -f $cgen_script_path ]; then

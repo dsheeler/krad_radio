@@ -1,10 +1,8 @@
 #include "krad_v4l2_to_json.h"
 
 int kr_v4l2_state_to_json(char *json, void *st, int32_t max) {
-  int i;
   int res;
   res = 0;
-  uber_St uber;
   kr_v4l2_state *actual;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
@@ -19,10 +17,8 @@ int kr_v4l2_state_to_json(char *json, void *st, int32_t max) {
 }
 
 int kr_v4l2_mode_to_json(char *json, void *st, int32_t max) {
-  int i;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_mode *actual;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
@@ -43,10 +39,9 @@ int kr_v4l2_mode_to_json(char *json, void *st, int32_t max) {
 }
 
 int kr_v4l2_info_to_json(char *json, void *st, int32_t max) {
-  int i;
+  uber_St uber;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_info *actual;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
@@ -73,10 +68,9 @@ int kr_v4l2_info_to_json(char *json, void *st, int32_t max) {
 }
 
 int kr_v4l2_open_info_to_json(char *json, void *st, int32_t max) {
-  int i;
+  uber_St uber;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_open_info *actual;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {

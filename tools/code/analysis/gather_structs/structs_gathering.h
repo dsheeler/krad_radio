@@ -34,7 +34,8 @@ typedef enum {
   TO_JSON,
   TO_EBML,
   FR_EBML,
-  HELPERS
+  HELPERS,
+  CONFIG
 } cgen_target_type;
 
 struct cgen_target {

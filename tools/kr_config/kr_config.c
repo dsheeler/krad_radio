@@ -1,4 +1,4 @@
-#include "cfgread.h"
+#include "kr_config.h"
 
 /* 
 Simple config file reader for Krad , sample syntax:
@@ -15,7 +15,7 @@ At this time only the first occurrence of an option is read.
 Comments are allowed, # is the comment char. Works only if placed at the start of the line.
 */
 
-static char* clean_string (char *str) {
+static char *clean_string (char *str) {
 
   char *cleaned;
   int i = 0;
@@ -43,13 +43,13 @@ static char* clean_string (char *str) {
   return cleaned;
 }
 
-static void cfg_free (cfg_t* cfg) {
+void kr_config_close(kr_cfg *cfg) {
   fclose (cfg->cfg_file);
   free (cfg);
   return;
 }
 
-static int cfg_get_val (cfg_t* cfg, const char *optname) {
+static int cfg_get_val(kr_cfg *cfg, const char *optname) {
 
   char *line;
   size_t maxsize = MAX_LINE_SIZE-1;
@@ -102,22 +102,25 @@ static int cfg_get_val (cfg_t* cfg, const char *optname) {
   return 0;
 }
 
-cfg_t* cfgread (const char *path) {
+kr_cfg *kr_config_open(const char *path) {
 
   FILE *fd;
-  cfg_t *config;
+  kr_cfg *config;
 
-  fd = fopen (path,"r");
-
-  if (fd < 0) {
+  if (path == NULL) {
     return NULL;
   }
 
-  config = calloc (1,sizeof (cfg_t));
+  fd = fopen (path,"r");
+
+  if (!fd) {
+    return NULL;
+  }
+
+  config = calloc (1,sizeof (kr_cfg));
 
   config->cfg_file = fd;
   config->get_val = cfg_get_val;
-  config->free = cfg_free;
 
   return config;
 

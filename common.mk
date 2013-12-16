@@ -49,4 +49,6 @@ AM_CPPFLAGS = \
 -I../lib/krad_rc \
 -I../lib/krad_fc \
 -I../lib/krad_mem \
--I../lib/gen
+-I../lib/gen \
+-I../tools \
+-I../tools/kr_config

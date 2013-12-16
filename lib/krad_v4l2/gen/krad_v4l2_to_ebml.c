@@ -1,10 +1,8 @@
 #include "krad_v4l2_to_ebml.h"
 
 int kr_v4l2_state_to_ebml(kr_ebml *ebml, void *st) {
-  int i;
   int res;
   res = 0;
-  uber_St uber;
   kr_v4l2_state *actual;
 
   if ((ebml == NULL) || (st == NULL)) {
@@ -19,10 +17,8 @@ int kr_v4l2_state_to_ebml(kr_ebml *ebml, void *st) {
 }
 
 int kr_v4l2_mode_to_ebml(kr_ebml *ebml, void *st) {
-  int i;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_mode *actual;
 
   if ((ebml == NULL) || (st == NULL)) {
@@ -41,10 +37,9 @@ int kr_v4l2_mode_to_ebml(kr_ebml *ebml, void *st) {
 }
 
 int kr_v4l2_info_to_ebml(kr_ebml *ebml, void *st) {
-  int i;
+  uber_St uber;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_info *actual;
 
   if ((ebml == NULL) || (st == NULL)) {
@@ -66,10 +61,9 @@ int kr_v4l2_info_to_ebml(kr_ebml *ebml, void *st) {
 }
 
 int kr_v4l2_open_info_to_ebml(kr_ebml *ebml, void *st) {
-  int i;
+  uber_St uber;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_open_info *actual;
 
   if ((ebml == NULL) || (st == NULL)) {

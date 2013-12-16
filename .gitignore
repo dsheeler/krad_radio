@@ -124,7 +124,7 @@ tools/code/gen/out.c
 tools/code/gen/out.h
 tools/code/gen/bootstrapped.h
 tools/code/gen/bootstrapped.c
-tools/code/gen/codegen
+tools/code/gen/codegen_cfg
 tools/code/gen/main_test
 tools/code/gen/gen
 tests/kr_cbor_test

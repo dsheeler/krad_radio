@@ -4,6 +4,11 @@ void codegen_text(struct struct_def *def, char *type, FILE *out) {
   int i;
   char format[16];
 
+  if (def->isenum) {
+    fprintf(out,"  res += snprintf(&%s[res],max,\"%s : %%u \\n\",*actual);\n",type,def->name);
+    return;
+  }
+
   for (i = 0; i < def->members; i++) {
     if (memb_to_print_format(&def->members_info[i],format)) {
       fprintf(out,"  res += snprintf(&%s[res],max,\"%s : %s \\n\",actual->%s);\n",

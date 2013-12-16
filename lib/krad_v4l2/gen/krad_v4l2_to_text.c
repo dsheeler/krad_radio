@@ -1,10 +1,8 @@
 #include "krad_v4l2_to_text.h"
 
 int kr_v4l2_state_to_text(char *text, void *st, int32_t max) {
-  int i;
   int res;
   res = 0;
-  uber_St uber;
   kr_v4l2_state *actual;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
@@ -13,15 +11,14 @@ int kr_v4l2_state_to_text(char *text, void *st, int32_t max) {
 
   actual = (kr_v4l2_state*)st;
 
+  res += snprintf(&text[res],max,"kr_v4l2_state : %u \n",*actual);
 
   return res;
 }
 
 int kr_v4l2_mode_to_text(char *text, void *st, int32_t max) {
-  int i;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_mode *actual;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
@@ -40,10 +37,9 @@ int kr_v4l2_mode_to_text(char *text, void *st, int32_t max) {
 }
 
 int kr_v4l2_info_to_text(char *text, void *st, int32_t max) {
-  int i;
+  uber_St uber;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_info *actual;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
@@ -65,10 +61,9 @@ int kr_v4l2_info_to_text(char *text, void *st, int32_t max) {
 }
 
 int kr_v4l2_open_info_to_text(char *text, void *st, int32_t max) {
-  int i;
+  uber_St uber;
   int res;
   res = 0;
-  uber_St uber;
   struct kr_v4l2_open_info *actual;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {

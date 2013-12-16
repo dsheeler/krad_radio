@@ -290,7 +290,9 @@ static int check_for_cgen_target(char *line, struct cgen_target *def_target) {
           def_target->types[def_target->ntargets] = FR_EBML;
         } else if ( (target_str = strstr(fname,"helpers")) ) {
           def_target->types[def_target->ntargets] = HELPERS;
-        } 
+        } else if ( (target_str = strstr(fname,"config")) ) {
+          def_target->types[def_target->ntargets] = CONFIG;
+        }
 
         rpath = realpath(".",NULL);
         asprintf(&def_target->targets[def_target->ntargets],"%s/%s",rpath,fname);
@@ -388,7 +390,7 @@ static int defs_from_header(struct struct_def *defs,
             strcpy(&(defs[index].definition[lenacc]),line);
             lenacc += strlen(line);
             if (defs[index].members >= MAX_MEMB) {
-              fprintf(stderr,"MAX_MEMB exceeded in %s\n",defs[index].name);
+              fprintf(stderr,"MAX_MEMB exceeded in %s\n",defs[index].fullpath);
               exit(1);
             }
             get_memb_name_and_type(line,&defs[index].members_info[defs[index].members]);
@@ -400,7 +402,7 @@ static int defs_from_header(struct struct_def *defs,
         } else if (in_enum) {
 
           if (defs[index].members >= MAX_MEMB) {
-            fprintf(stderr,"MAX_MEMB exceeded in %s\n",defs[index].name);
+            fprintf(stderr,"MAX_MEMB exceeded in %s\n",defs[index].fullpath);
             exit(1);
           }
           // enum case
@@ -490,14 +492,18 @@ int gather_struct_definitions(struct header_defs *hdefs, char *fprefix, char *pa
   scandir_recursive(path,&num,headers);
 
   for (i=0;i<num;i++) {
-    if (fprefix) {
-      p = strrchr(headers[i],'/');
-      if (p) {
+    p = strrchr(headers[i],'/');
+    if (p) {
+      if (fprefix) {
         if (!strncmp(fprefix,&p[1],strlen(fprefix))) {
           hdefs[nhdrs].name = strdup(headers[i]);
           hdefs[nhdrs].ndefs = defs_from_header(hdefs[nhdrs].defs,headers[i],&hdefs[nhdrs].targets);
           nhdrs++;
         }
+      } else {
+        hdefs[nhdrs].name = strdup(headers[i]);
+        hdefs[nhdrs].ndefs = defs_from_header(hdefs[nhdrs].defs,headers[i],&hdefs[nhdrs].targets);
+        nhdrs++;
       }
     }
   } 
@@ -631,6 +637,9 @@ int print_structs_defs(struct header_defs *hdef, char *prefix,
           break;
           case HELPERS: 
           type = "HELPERS";
+          break;
+          case CONFIG:
+          type = "CONFIG";
           break;
           default: 
           type = "NONE"; 
