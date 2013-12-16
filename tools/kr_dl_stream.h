@@ -17,9 +17,11 @@
 #include <krad_av.h>
 #include <krad_convert.h>
 
+typedef struct kr_dlstream_params kr_dlstream_params;
+
 #include "gen/kr_dl_stream_config.h"
 
-typedef struct kr_dlstream_params {
+struct kr_dlstream_params {
   uint32_t input_width;
   uint32_t input_height;
   uint32_t input_fps_numerator;
@@ -37,6 +39,6 @@ typedef struct kr_dlstream_params {
   int32_t port;
   char mount[256];
   char password[256];
-} kr_dlstream_params;
+};
 
 #endif
