@@ -1,5 +1,4 @@
 #include "gen.h"
-#include "krad_v4l2_to_text.h"
 int info_pack_to_text(char *text, uber_St *uber, int max);
 typedef int (*info_pack_to_text_func)(char *text, void *st, int max);
 

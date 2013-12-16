@@ -1,7 +1,4 @@
 #include "structs_gathering.h"
-
-int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
- char *suffix, FILE *out);
 void codegen_includes(struct struct_def *defs, int ndefs, char *prefix,
  char *suffix, FILE *out);
 void codegen_typedef(char *type, FILE *out);

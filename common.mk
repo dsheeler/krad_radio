@@ -3,7 +3,6 @@ AM_CPPFLAGS = \
 -I../lib/krad_compositor \
 -I../lib/krad_cbor \
 -I../lib/krad_osc \
--I../lib/krad_v4l2/gen \
 -I../lib/krad_v4l2 \
 -I../lib/krad_flac \
 -I../lib/krad_jack \

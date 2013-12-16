@@ -20,6 +20,12 @@ path=$(realpath $LIBPATH)
 pre="''"
 suff="''"
 gencommon=$(realpath $GEN_COMMON)
+cgen_script_path="$(pwd)/scripts/codegen.sh"
+
+if [ ! -f $cgen_script_path ]; then
+  echo 'You are not running codegen.sh from KR root dir. Please do so.'
+  exit
+fi
 
 run_codegen_precheck
 
@@ -35,10 +41,6 @@ done
 
 rm -rf $gencommon/*
 mkdir -p $gencommon
-
-for fname in $(ls -1 lib/*/*gen/*.c); do
-  echo -e '#include "${fname}"' >> lib/gen/gen.c
-done
 
 run_codegen $path $pre $suff $gencommon
 

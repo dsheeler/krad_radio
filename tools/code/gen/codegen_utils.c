@@ -121,11 +121,81 @@ static void codegen_function(struct struct_def *def, char *type,
   return;
 }
 
+static void codegen_enum_value(struct struct_def *def, FILE *out, char *format) {
+  char uppercased[strlen(def->name)+1];
+  uppercase(def->name,uppercased);
+  fprintf(out,"%s_%s",format,uppercased);
+}
+
+int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
+ char *suffix, FILE *out, cgen_target_type type) {
+
+  int i;
+  int j;
+  int l;
+  int total;
+  int n;
+  char *format;
+  struct header_defs *fhdefs[ndefs];
+
+  total = 0;
+  n = 0;
+  fprintf(out,"typedef enum {\n");
+
+  switch (type) {
+    case TO_TEXT: format = "text"; break;
+    case TO_EBML: format = "ebml"; break;
+    case TO_JSON: format = "json"; break;
+    case FR_EBML: format = "debml"; break;
+    case HELPERS: format = "helpers"; break;
+    default: format = ""; break;
+  }
+
+  char format_upp[strlen(format)];
+  uppercase(format,format_upp);
+
+  for (i=0;i<ndefs;i++) {
+    if (hdefs[i].targets.ntargets) {
+      for (l = 0; l < hdefs[i].targets.ntargets; l++) {
+        if (hdefs[i].targets.types[l] == type) {
+          fhdefs[total] = &hdefs[i];
+          total++;
+          break;
+        }
+      }
+    }
+  }
+
+  for (i = 0; i < total; i++) {
+    for (j=0;j<fhdefs[i]->ndefs;j++) {
+      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+        fprintf(out,"  ");
+        codegen_enum_value(&fhdefs[i]->defs[j],out,format_upp);
+        if (i == 0 && j == 0) {
+          fprintf(out," = 1");
+        }
+        if (j == (fhdefs[i]->ndefs-1) && i == (total - 1)) {
+          fprintf(out,"\n");
+        } else {
+          fprintf(out,",\n");
+        }
+        n++;
+      }
+    }
+  }
+
+  fprintf(out,"} %s_enum;\n\n",format);
+  fprintf(out,"enum {\n  %s_ENUM_LAST = %d\n};\n\n",format_upp,n);
+
+  return 0;
+}
+
 int codegen_array_func(struct header_defs *hdefs, int ndefs, 
   char *prefix, char *suffix, const char *type, gen_format gformat, FILE *out) {
 
   int i;
   int j;
+  int l;
   int n;
   int k;
 
@@ -134,7 +204,11 @@ int codegen_array_func(struct header_defs *hdefs, int ndefs,
 
   for (i = 0; i < ndefs; i++) {
     if (hdefs[i].targets.ntargets) {
-      n += hdefs[i].ndefs;
+      for (l = 0; l < hdefs[i].targets.ntargets; l++) {
+        if ((gen_format)hdefs[i].targets.types[l] == gformat) {
+          n += hdefs[i].ndefs;
+        }
+      }
     }
   }
 
@@ -148,8 +222,13 @@ int codegen_array_func(struct header_defs *hdefs, int ndefs,
     for (j = 0; j < hdefs[i].ndefs; j++) {
       if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
         if (hdefs[i].targets.ntargets) {
-          fdefs[k] = &hdefs[i].defs[j];
-          k++;
+          for (l = 0; l < hdefs[i].targets.ntargets; l++) {
+            if ((gen_format)hdefs[i].targets.types[l] == gformat) {
+              fdefs[k] = &hdefs[i].defs[j];
+              k++;
+              break;
+            }
+          }
         }
       }
     }

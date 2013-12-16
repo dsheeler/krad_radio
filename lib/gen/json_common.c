@@ -1,5 +1,4 @@
 #include "gen.h"
-#include "krad_v4l2_to_json.h"
 int info_pack_to_json(char *json, uber_St *uber, int max);
 typedef int (*info_pack_to_json_func)(char *json, void *st, int max);
 

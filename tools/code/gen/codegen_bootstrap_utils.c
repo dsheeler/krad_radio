@@ -37,7 +37,7 @@ static void codegen_enum_value(struct struct_def *def, FILE *out) {
   fprintf(out,"CGEN_%s",uppercased);
 }
 
-int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
+static int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
  char *suffix, FILE *out) {
 
   int i;

@@ -22,6 +22,7 @@ void common_gen(struct header_defs *hdefs,
   int ndefs, char *prefix, char *suffix, char *outpath, FILE *genc) {
   FILE *common;
   char outfilen[256];
+  int i;
 
   sprintf(outfilen,"%s/gen.h",outpath);
   common = fopen(outfilen,"w+");
@@ -33,15 +34,14 @@ void common_gen(struct header_defs *hdefs,
 
   fprintf(common,"#ifndef COMMON_GEN_H\n#define COMMON_GEN_H\n\n");
   fprintf(common,"typedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
-  codegen_enum(hdefs,ndefs,prefix,suffix,common);
+
+  for (i = 0; i < MAX_TARGET_TYPES; i++) {
+    codegen_enum(hdefs,ndefs,prefix,suffix,common,i+1);
+  }
+
   fprintf(common,"\n");
   fprintf(common,"#endif\n\n");
   fclose(common);
-
-  fprintf(genc,"#include \"ebml_common.c\"\n");
-  fprintf(genc,"#include \"text_common.c\"\n");
-  fprintf(genc,"#include \"debml_common.c\"\n");
-  fprintf(genc,"#include \"json_common.c\"\n\n");
 
   return;
 }
@@ -50,16 +50,11 @@ void type_common_gen(struct header_defs *hdefs,
   int ndefs, char *prefix, char *suffix, char *outpath) {
 
   int i;
-  int j;
   FILE *tcommons[MAX_TARGET_TYPES-1];
   char *format;
   gen_format gf;
   char gformat[256];
-  char *targets[256];
   char outfilen[256];
-  int ntargets;
-
-  ntargets = 0;
 
   for (i = 1; i < MAX_TARGET_TYPES; i++) {
     switch (i) {
@@ -83,19 +78,6 @@ void type_common_gen(struct header_defs *hdefs,
       fprintf(tcommons[i-1],"#include \"krad_ebmlx.h\"\n");
     }
 
-  }
-
-  for (i = 0; i < ndefs; i++) {
-    for (j = 0; j < hdefs[i].targets.ntargets; j++) {
-      if (hdefs[i].targets.types[j] && hdefs[i].targets.types[j] != HELPERS) {
-        if (is_target_new(hdefs[i].targets.targets[j],targets,ntargets)) {
-          fprintf(tcommons[hdefs[i].targets.types[j] - 1],
-            "#include \"%s\"\n",basename(hdefs[i].targets.targets[j]));
-          targets[ntargets] = hdefs[i].targets.targets[j];
-          ntargets++;
-        }
-      }
-    }
   }
 
   for (i = 1; i < MAX_TARGET_TYPES; i++) {
@@ -302,6 +284,11 @@ int main(int argc, char *argv[]) {
   type_common_gen(hdefs,ndefs,argv[2],argv[3],rpath);
 
   files_gen(hdefs,ndefs,argv[2],argv[3],genc);
+
+  fprintf(genc,"#include \"ebml_common.c\"\n");
+  fprintf(genc,"#include \"text_common.c\"\n");
+  fprintf(genc,"#include \"debml_common.c\"\n");
+  fprintf(genc,"#include \"json_common.c\"\n\n");
 
   fclose(genc);
 

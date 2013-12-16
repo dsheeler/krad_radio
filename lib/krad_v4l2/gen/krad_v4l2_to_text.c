@@ -55,10 +55,10 @@ int kr_v4l2_info_to_text(char *text, void *st, int32_t max) {
   res += snprintf(&text[res],max,"dev : %d \n",actual->dev);
   res += snprintf(&text[res],max,"priority : %d \n",actual->priority);
   uber.actual = &(actual->state);
-  uber.type = CGEN_KR_V4L2_STATE;
+  uber.type = TEXT_KR_V4L2_STATE;
   res += info_pack_to_text(&text[res],&uber,max-res);
   uber.actual = &(actual->mode);
-  uber.type = CGEN_KR_V4L2_MODE;
+  uber.type = TEXT_KR_V4L2_MODE;
   res += info_pack_to_text(&text[res],&uber,max-res);
 
   return res;
@@ -80,7 +80,7 @@ int kr_v4l2_open_info_to_text(char *text, void *st, int32_t max) {
   res += snprintf(&text[res],max,"dev : %d \n",actual->dev);
   res += snprintf(&text[res],max,"priority : %d \n",actual->priority);
   uber.actual = &(actual->mode);
-  uber.type = CGEN_KR_V4L2_MODE;
+  uber.type = TEXT_KR_V4L2_MODE;
   res += info_pack_to_text(&text[res],&uber,max-res);
 
   return res;

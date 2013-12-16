@@ -324,7 +324,7 @@ void codegen_union_content_from_type(struct struct_def *def,
     fprintf(out,"    case %d: {\n",i);
     fprintf(out,"      res += snprintf(&%s[res],max,\"\\\"%s\\\": \");\n",
           format,name);
-    fprintf(out,"      uber.actual = &(actual->%s.%s);\n      uber.type = CGEN_%s;\n",
+    fprintf(out,"      uber.actual = &(actual->%s.%s);\n      uber.type = HELPERS_%s;\n",
       name,def->members_info[i].name,uppercased);
     fprintf(out,"      res += info_pack_to_json(&%s[res],&uber,max-res);\n",
           format);

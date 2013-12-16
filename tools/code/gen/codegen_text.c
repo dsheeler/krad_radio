@@ -19,7 +19,7 @@ void codegen_text(struct struct_def *def, char *type, FILE *out) {
     } else if (codegen_string_to_enum(def->members_info[i].type)) {
       char uppercased[strlen(def->members_info[i].type)+1];
       uppercase(def->members_info[i].type,uppercased);
-      fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = CGEN_%s;\n",
+      fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = TEXT_%s;\n",
         def->members_info[i].name,uppercased);
       fprintf(out,"  res += info_pack_to_text(&%s[res],&uber,max-res);\n",type);
     } 

@@ -76,11 +76,33 @@ static void get_memb_data_info (char *line,
         break;
       }
 
+      if (i == 3) {
+        break;
+      }
+
       i++;
 
       p[0] = &p[1][1];
       p[1] = NULL;
     } while (1);
+
+
+    if (i == 2) {
+      if (!strncmp(memb->type,"float",5)) {
+        float tmp;
+        tmp = memb->data_info.info.float_info[1];
+        memb->data_info.info.float_info[1] = memb->data_info.info.float_info[0];
+        memb->data_info.info.float_info[0] = 0.00f;
+        memb->data_info.info.float_info[2] = tmp;
+        memb->data_info.type = MEMB_TYPE_FLOAT;
+      } else {
+        int tmp;
+        tmp = memb->data_info.info.int_info[1];
+        memb->data_info.info.int_info[1] = memb->data_info.info.int_info[0];
+        memb->data_info.info.int_info[0] = 0.00f;
+        memb->data_info.info.int_info[2] = tmp;
+      }
+    }
 
     end[0] = '*';
   }

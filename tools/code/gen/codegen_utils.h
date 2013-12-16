@@ -34,4 +34,5 @@ int codegen_sizeof(struct struct_def *defs, int ndefs,
   char *prefix, char *suffix, FILE *out);
 int codegen_jschema(struct struct_def *defs, int ndefs, 
   char *prefix, char *suffix, FILE *out);
-
+int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
+ char *suffix, FILE *out, cgen_target_type type);

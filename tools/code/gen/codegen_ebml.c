@@ -102,10 +102,10 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
       } else {
 
         if (ebml_fun_type) {
-          fprintf(out,"    res += %s%s(ebml, 0x%x, actual->%s);\n",
+          fprintf(out,"  res += %s%s(ebml, 0x%x, actual->%s);\n",
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,0xE1,members[i]->name);
         } else {
-          fprintf(out,"    res += %s%s(ebml, &actual->%s, sizeof(%s));\n",
+          fprintf(out,"  res += %s%s(ebml, &actual->%s, sizeof(%s));\n",
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name,members[i]->type);
         }
 
@@ -121,22 +121,25 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
         else {
           fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->array_str_val);
         }
-
-        fprintf(out,"    uber.actual = &(actual->%s[i]);\n    uber.type = CGEN_%s;\n",
-          members[i]->name,uppercased);
         if (ebml_fun_type) {
+          fprintf(out,"    uber.actual = &(actual->%s[i]);\n    uber.type = EBML_%s;\n",
+            members[i]->name,uppercased);
           fprintf(out,"    res += info_pack_to_%s(&%s[res],&uber);\n",type,type);
         } else {
+          fprintf(out,"    uber.actual = &(actual->%s[i]);\n    uber.type = DEBML_%s;\n",
+            members[i]->name,uppercased);
           fprintf(out,"    res += info_unpack_fr_%s(&%s[res],&uber);\n",&type[1],&type[1]);
         }
         fprintf(out,"  }\n");
 
       } else {
-        fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = CGEN_%s;\n",
-          members[i]->name,uppercased);
         if (ebml_fun_type) {
+          fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = EBML_%s;\n",
+            members[i]->name,uppercased);
           fprintf(out,"  res += info_pack_to_%s(&%s[res],&uber);\n",type,type);
         } else {
+          fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = DEBML_%s;\n",
+            members[i]->name,uppercased);
           fprintf(out,"  res += info_unpack_fr_%s(&%s[res],&uber);\n",&type[1],&type[1]);
         }
       }
