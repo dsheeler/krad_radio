@@ -39,6 +39,7 @@ krad_compositor/krad_sprite.c \
 krad_compositor/krad_text.c \
 krad_chronometer/krad_easing.c \
 krad_compositor/krad_perspective.c \
+krad_compositor/krad_image_pool.c \
 krad_compositor/krad_compositor.c \
 krad_framepool/krad_framepool.c \
 krad_osc/krad_osc.c \

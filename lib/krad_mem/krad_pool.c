@@ -17,6 +17,10 @@ struct kr_pool {
   uint8_t state[KR_POOL_MAX];*/
   int type[KR_POOL_MAX];
   int state[KR_POOL_MAX];
+  int ref[KR_POOL_MAX];
+  size_t overlay_sz;
+  size_t overlay_actual_sz;
+  uint8_t *overlay;
   void *data;
   void *map;
 };
@@ -71,6 +75,12 @@ void *kr_pool_iterate_type_state(kr_pool *pool, int *count) {
   return NULL;
 }
 */
+int kr_pool_get_overlay(kr_pool *pool, void *overlay) {
+  if ((pool == NULL) || (overlay == NULL)) return -2;
+  memcpy(overlay, pool->overlay, pool->overlay_sz);
+  return pool->overlay_sz;
+}
+
 int kr_pool_recycle(kr_pool *pool, void *slice) {
 
   int i;
@@ -85,6 +95,25 @@ int kr_pool_recycle(kr_pool *pool, void *slice) {
       pool->use = pool->use ^ mask;
       pool->active--;
       return 0;
+    }
+    mask = mask << 1;
+  }
+  return -1;
+}
+
+int kr_pool_slice_ref(kr_pool *pool, void *slice) {
+
+  int i;
+  uint64_t mask;
+
+  if ((pool == NULL) || (slice == NULL)) return -2;
+
+  mask = 1;
+  for (i = 0; i < pool->slices; i++) {
+    if (((pool->use & mask) != 0)
+        && (slice == (pool->data + (pool->slice_size * i)))) {
+      pool->ref[i]++;
+      return pool->ref[i];
     }
     mask = mask << 1;
   }
@@ -139,11 +168,18 @@ kr_pool *kr_pool_create(kr_pool_setup *setup) {
   if (setup->slices > KR_POOL_MAX) return NULL;
   if (setup->size == 0) return NULL;
   memset(&pool, 0, sizeof(kr_pool));
+  pool.overlay_sz = setup->overlay_sz;
   pool.info_size = sizeof(kr_pool);
   pool.info_size = pool.info_size + (KR_CACHELINE % pool.info_size);
+  if (pool.overlay_sz > 0) {
+    pool.overlay_actual_sz = pool.overlay_sz + (KR_CACHELINE % pool.overlay_sz);
+  } else {
+    pool.overlay_actual_sz = 0;
+  }
   pool.slices = setup->slices;
   pool.slice_size = setup->size + (KR_CACHELINE % setup->size);
   pool.total_size = (pool.slices * pool.slice_size) + pool.info_size;
+  pool.total_size = pool.total_size + pool.overlay_actual_sz;
   pool.total_size = pool.total_size + (KR_PAGESIZE % pool.total_size);
   if (setup->shared != 0) {
     pool.shared = 1;
@@ -170,7 +206,9 @@ kr_pool *kr_pool_create(kr_pool_setup *setup) {
     return NULL;
   }
   close(fd);
-  pool.data = pool.map + pool.info_size;
+  pool.data = pool.map + pool.info_size + pool.overlay_actual_sz;
   memcpy(pool.map, &pool, sizeof(kr_pool));
+  pool.overlay = pool.map + pool.info_size;
+  memcpy(pool.overlay, setup->overlay, pool.overlay_sz);
   return (kr_pool *)pool.map;
 }

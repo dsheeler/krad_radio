@@ -193,6 +193,7 @@ static void subunits_free(kr_compositor *com) {
 static void subunits_create(kr_compositor *compositor) {
   kr_pool_setup setup;
   setup.shared = 0;
+  setup.overlay_sz = 0;
 
   setup.size = kr_compositor_path_size();
   setup.slices = KC_MAX_PORTS;

@@ -926,6 +926,7 @@ kr_mixer *kr_mixer_create(kr_mixer_setup *setup) {
   mixer->crossfader = calloc(mixer->path_count / 2,
    sizeof(kr_mixer_crossfader));
   pool_setup.shared = 0;
+  pool_setup.overlay_sz = 0;
   pool_setup.size = sizeof(kr_mixer_path);
   pool_setup.slices = setup->path_count;
   mixer->path_pool = kr_pool_create(&pool_setup);

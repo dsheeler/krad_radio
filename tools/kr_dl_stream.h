@@ -15,6 +15,7 @@
 #include <krad_ring.h>
 #include <krad_framepool.h>
 #include <krad_av.h>
+#include <krad_image_pool.h>
 #include <krad_convert.h>
 
 typedef struct kr_dlstream_params kr_dlstream_params;
