@@ -70,7 +70,7 @@ kr_v4l2s *kr_v4l2s_create(kr_v4l2s_params *params) {
   return v4l2s;
 }
 
-void kr_v4l2s_run (kr_v4l2s *v4l2s) {
+void kr_v4l2s_run(kr_v4l2s *v4l2s) {
   kr_image cam_image;
   kr_image scaled_image;
   uint8_t *pixels;
@@ -87,7 +87,8 @@ void kr_v4l2s_run (kr_v4l2s *v4l2s) {
   scaled_image.ppx[1] = pixels
    + (v4l2s->params->width * v4l2s->params->height);
   scaled_image.ppx[2] = pixels
-   + ((v4l2s->params->width * v4l2s->params->height) * 2);
+   + (v4l2s->params->width * v4l2s->params->height)
+   + ((v4l2s->params->width / 2) * (v4l2s->params->height / 2));
   scaled_image.ppx[3] = 0;
   scaled_image.pps[0] = v4l2s->params->width;
   scaled_image.pps[1] = v4l2s->params->width / 2;
@@ -96,6 +97,7 @@ void kr_v4l2s_run (kr_v4l2s *v4l2s) {
   scaled_image.fmt = PIX_FMT_YUV420P;
   kr_v4l2_capture(v4l2s->v4l2, 1);
   v4l2s->timer = kr_timer_create();
+  krad_vpx_encoder_deadline_set(v4l2s->vpx_enc, 1);
   while (!destruct) {
     ret = kr_v4l2_poll(v4l2s->v4l2, 15);
     if (ret < 1) {
