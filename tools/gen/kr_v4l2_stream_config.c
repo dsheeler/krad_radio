@@ -16,29 +16,29 @@ int handle_config(struct kr_v4l2s_params *params, char *configname) {
   if (config->get_val(config, "height")) {
     params->height = atoi(config->value);
   }
-  if (config->get_val(config, "fps_numerator")) {
-    params->fps_numerator = atoi(config->value);
+  if (config->get_val(config, "fps_num")) {
+    params->fps_num = atoi(config->value);
   }
-  if (config->get_val(config, "fps_denominator")) {
-    params->fps_denominator = atoi(config->value);
+  if (config->get_val(config, "fps_den")) {
+    params->fps_den = atoi(config->value);
   }
-  if (config->get_val(config, "video_bitrate")) {
-    params->video_bitrate = atoi(config->value);
+  if (config->get_val(config, "bitrate")) {
+    params->bitrate = atoi(config->value);
   }
   if (config->get_val(config, "host")) {
-    params->host = strdup(config->value);
+    snprintf(params->host, sizeof(params->host), "%s", config->value);
   }
   if (config->get_val(config, "port")) {
     params->port = atoi(config->value);
   }
   if (config->get_val(config, "mount")) {
-    params->mount = strdup(config->value);
+    snprintf(params->mount, sizeof(params->mount), "%s", config->value);
   }
   if (config->get_val(config, "password")) {
-    params->password = strdup(config->value);
+    snprintf(params->password, sizeof(params->password), "%s", config->value);
   }
   if (config->get_val(config, "device")) {
-    params->device = strdup(config->value);
+    params->device = atoi(config->value);
   }
 
   kr_config_close(config);

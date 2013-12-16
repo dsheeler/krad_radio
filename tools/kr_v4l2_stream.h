@@ -24,14 +24,14 @@ typedef struct kr_v4l2s_params kr_v4l2s_params;
 struct kr_v4l2s_params {
   uint32_t width;
   uint32_t height;
-  uint32_t fps_numerator;
-  uint32_t fps_denominator;
-  uint32_t video_bitrate;
-  char *host;
+  uint32_t fps_num;
+  uint32_t fps_den;
+  uint32_t bitrate;
+  char host[256];
   int32_t port;
-  char *mount;
-  char *password;
-  char *device;
+  char mount[256];
+  char password[128];
+  int device;
 };
 
 #endif

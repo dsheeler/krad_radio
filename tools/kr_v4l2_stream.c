@@ -1,18 +1,15 @@
 #include "kr_v4l2_stream.h"
-
 #include "krad_debug.c"
 #include "gen/kr_v4l2_stream_config.c"
 
-typedef struct kr_v4l2s kr_v4l2s;
-
-struct kr_v4l2s {
+typedef struct {
   kr_v4l2s_params *params;
   kr_v4l2 *v4l2;
   kr_timer *timer;
   krad_vpx_encoder_t *vpx_enc;
   kr_mkv_t *mkv;
   uint64_t frames;
-};
+} kr_v4l2s;
 
 static int destruct = 0;
 
@@ -40,12 +37,8 @@ kr_v4l2s *kr_v4l2s_create(kr_v4l2s_params *params) {
   kr_v4l2s *v4l2s;
   kr_v4l2_setup setup;
   kr_v4l2_mode mode;
-  v4l2s = calloc (1, sizeof(kr_v4l2s));
+  v4l2s = calloc(1, sizeof(kr_v4l2s));
   v4l2s->params = params;
-  char file[512];
-  snprintf(file, sizeof(file), "%s/%s_%"PRIu64".webm", getenv("HOME"), "v4l2s",
-   krad_unixtime());
-  /*v4l2s->mkv = kr_mkv_create_file (file);*/
   v4l2s->mkv = kr_mkv_create_stream(v4l2s->params->host, v4l2s->params->port,
    v4l2s->params->mount, v4l2s->params->password);
   if (v4l2s->mkv == NULL) {
@@ -53,17 +46,15 @@ kr_v4l2s *kr_v4l2s_create(kr_v4l2s_params *params) {
     exit(1);
   }
   v4l2s->vpx_enc = krad_vpx_encoder_create(v4l2s->params->width,
-   v4l2s->params->height, 1000, 1, v4l2s->params->video_bitrate);
-  kr_mkv_add_video_track(v4l2s->mkv, VP8, v4l2s->params->fps_numerator,
-   v4l2s->params->fps_denominator, v4l2s->params->width, v4l2s->params->height);
-  /*v4l2_setup.dev = v4l2s->params->device;*/
-  /*FIXME this is a lie */
-  setup.dev = 0;
+   v4l2s->params->height, 1000, 1, v4l2s->params->bitrate);
+  kr_mkv_add_video_track(v4l2s->mkv, VP8, v4l2s->params->fps_num,
+   v4l2s->params->fps_den, v4l2s->params->width, v4l2s->params->height);
+  setup.dev = v4l2s->params->device;
   setup.priority = 0;
   mode.width = v4l2s->params->width;
   mode.height = v4l2s->params->height;
-  mode.num = v4l2s->params->fps_numerator;
-  mode.den = v4l2s->params->fps_denominator;
+  mode.num = v4l2s->params->fps_num;
+  mode.den = v4l2s->params->fps_den;
   mode.format = 0;
   v4l2s->v4l2 = kr_v4l2_create(&setup);
   kr_v4l2_mode_set(v4l2s->v4l2, &mode);
@@ -137,9 +128,9 @@ int main (int argc, char *argv[]) {
   }
   printf("Streaming with: %s at %ux%u %u fps (max)\n",
          params.device, params.width, params.height,
-         params.fps_numerator/params.fps_denominator);
+         params.fps_num/params.fps_den);
   printf("To: %s:%u%s\n", params.host, params.port, params.mount);
-  printf("VP8 Bitrate: %uk\n", params.video_bitrate);
+  printf("VP8 Bitrate: %uk\n", params.bitrate);
   v4l2s = kr_v4l2s_create(&params);
   if (v4l2s != NULL) {
     signal(SIGINT, term_handler);
