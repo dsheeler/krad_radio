@@ -5,9 +5,9 @@ typedef union {
   kr_jack *jack;
   kr_v4l2 *v4l2;
   kr_wayland *wayland;
+  kr_decklink *decklink;
 /*
   kr_alsa *alsa;
-  kr_decklink *decklink;
   kr_fc2 *flycap;
   kr_jack *x11;
   kr_encoder *encoder;
@@ -74,6 +74,7 @@ void adapter_path_process_thread_start(kr_adapter_path *path) {
 #include "adapters/jack.c"
 #include "adapters/wayland.c"
 #include "adapters/v4l2.c"
+#include "adapters/decklink.c"
 
 static int path_setup_check(kr_adapter_path_setup *setup);
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup);
