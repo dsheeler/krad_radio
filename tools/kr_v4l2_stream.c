@@ -126,9 +126,9 @@ int main (int argc, char *argv[]) {
     printf("Config file %s error.\n", argv[1]);
     exit(1);
   }
-  printf("Streaming with: %s at %ux%u %u fps (max)\n",
+  printf("Streaming with: %s at %ux%u %u/%u fps (max)\n",
          params.device, params.width, params.height,
-         params.fps_num/params.fps_den);
+         params.fps_num, params.fps_den);
   printf("To: %s:%u%s\n", params.host, params.port, params.mount);
   printf("VP8 Bitrate: %uk\n", params.bitrate);
   v4l2s = kr_v4l2s_create(&params);
