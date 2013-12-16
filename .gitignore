@@ -134,3 +134,4 @@ tools/code/gen/codegen_auto
 tools/code/gen/codegen_bootstrap
 tools/code/gen/test
 tests/kr_wayland_test
+tools/kr_dl_stream

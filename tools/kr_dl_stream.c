@@ -1,23 +1,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#ifdef FRAK_MACOSX
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreFoundation/CFstring.h>
-#include <CoreFoundation/CFbundle.h>
-#include "krad_mach.h"
-#endif
-
 #ifdef KR_LINUX
 #include <krad_muxponder.h>
 #include <krad_transmitter.h>
 #include <krad_ticker.h>
 #include <krad_mkv_demux.h>
-#endif
-
-#ifdef FRAK_MACOSX
-#include <krad_ticker.h>
-#include <krad_mkv.h>
 #endif
 
 #include <krad_vpx.h>
@@ -26,7 +14,7 @@
 #include <krad_decklink_capture.h>
 
 #include <krad_ring.h>
-#include <krad_framepool_nc.h>
+#include <krad_framepool.h>
 
 #include <libswscale/swscale.h>
 
@@ -97,7 +85,7 @@ int dlstream_video_callback (void *arg, void *buffer, int length) {
   memset (&dlframe, 0, sizeof(krad_frame_t));
 
   stride = dlstream->params->input_width + ((dlstream->params->input_width/2) * 2);
-  
+
   frame = krad_framepool_getframe (dlstream->framepool);
 
   if (frame != NULL) {
@@ -120,10 +108,10 @@ int dlstream_video_callback (void *arg, void *buffer, int length) {
 
 	frame->format = PIX_FMT_YUV420P;
     frame->yuv_strides[0] = dlstream->params->encoding_width;
-    frame->yuv_strides[1] = dlstream->params->encoding_width/2;  
+    frame->yuv_strides[1] = dlstream->params->encoding_width/2;
     frame->yuv_strides[2] = dlstream->params->encoding_width/2;
     frame->yuv_pixels[0] = frame->pixels;
-    frame->yuv_pixels[1] = frame->pixels + lumasize;  
+    frame->yuv_pixels[1] = frame->pixels + lumasize;
     frame->yuv_pixels[2] = frame->pixels + (lumasize + chromasize);
 
 	dlstream->sws_algo = dlstream->new_sws_algo;
@@ -196,9 +184,9 @@ int dlstream_audio_callback (void *arg, void *buffer, int frames) {
                            (char *)dlstream->decklink->samples[c],
                            frames * 4);
   }
-  
+
   dlstream->samples += frames;
-  
+
   return 0;
 }
 
@@ -222,7 +210,7 @@ int kr_dlstream_destroy (kr_dlstream_t **dlstream) {
   for (c = 0; c < (*dlstream)->channels; c++) {
     krad_ringbuffer_free ((*dlstream)->audio_ring[c]);
   }
-  
+
   krad_ringbuffer_free ((*dlstream)->frame_ring);
 
   krad_framepool_destroy (&(*dlstream)->framepool);
@@ -242,7 +230,7 @@ kr_dlstream_t *kr_dlstream_create (kr_dlstream_params_t *params) {
   dlstream = calloc (1, sizeof(kr_dlstream_t));
 
   int c;
-  
+
   dlstream->params = params;
 
   dlstream->channels = 2;
@@ -252,11 +240,11 @@ kr_dlstream_t *kr_dlstream_create (kr_dlstream_params_t *params) {
   dlstream->new_sws_algo = dlstream->sws_algo;
 
   char file[512];
-  
+
   snprintf (file, sizeof(file),
             "%s/%s_%"PRIu64".webm",
             getenv ("HOME"), "dlstream", krad_unixtime ());
-  
+
   //dlstream->mkv = kr_mkv_create_file (file);
 
   dlstream->mkv = kr_mkv_create_stream (dlstream->params->host,
@@ -301,7 +289,7 @@ kr_dlstream_t *kr_dlstream_create (kr_dlstream_params_t *params) {
                                                 120);
 
   for (c = 0; c < 2; c++) {
-    dlstream->audio_ring[c] = krad_ringbuffer_create (2200000);    
+    dlstream->audio_ring[c] = krad_ringbuffer_create (2200000);
   }
 
   dlstream->decklink = krad_decklink_create (dlstream->params->input_device);
@@ -319,7 +307,7 @@ kr_dlstream_t *kr_dlstream_create (kr_dlstream_params_t *params) {
   dlstream->decklink->callback_pointer = dlstream;
   dlstream->decklink->audio_frames_callback = dlstream_audio_callback;
   dlstream->decklink->video_frame_callback = dlstream_video_callback;
-  
+
   return dlstream;
 }
 
@@ -340,7 +328,7 @@ void kr_dlstream_run (kr_dlstream_t *dlstream) {
 
   signal (SIGWINCH, sig_winch_handler);
   signal (SIGINT, term_handler);
-  signal (SIGTERM, term_handler);    
+  signal (SIGTERM, term_handler);
 
   amedium = kr_medium_kludge_create ();
   acodeme = kr_codeme_kludge_create ();
@@ -350,7 +338,7 @@ void kr_dlstream_run (kr_dlstream_t *dlstream) {
   krad_decklink_start (dlstream->decklink);
 
   while (!destruct) {
-        
+
     printf ("\rKrad Decklink Stream Frame# %12"PRIu64" Samples: %12"PRIu64" Logjam: %8d Dropped: %6"PRIu64"",
           dlstream->frames, dlstream->samples, frames, dlstream->droppedframes);
 
@@ -365,7 +353,7 @@ void kr_dlstream_run (kr_dlstream_t *dlstream) {
 
       amedium->a.count = 1024;
       amedium->a.channels = 2;
-      
+
       ret = kr_vorbis_encode (dlstream->vorbis_enc, acodeme, amedium);
       if (ret == 1) {
         kr_mkv_add_audio (dlstream->mkv, 2,
@@ -390,31 +378,35 @@ void kr_dlstream_run (kr_dlstream_t *dlstream) {
     if (muxdelay > 0) {
       continue;
     }
-   
+
 	frames = krad_ringbuffer_read_space (dlstream->frame_ring) / sizeof(void *);
-	
-    if (frames > 1) {
-      krad_vpx_encoder_deadline_set (dlstream->vpx_enc, 1);
-	  dlstream->new_sws_algo = SWS_POINT;
-    }
-	
+
     if (frames == 0) {
-      krad_vpx_encoder_deadline_set (dlstream->vpx_enc, 10000);
-	  dlstream->new_sws_algo = SWS_BILINEAR;
-      usleep (2000);
+      krad_vpx_encoder_deadline_set (dlstream->vpx_enc, 50000);
+	    dlstream->new_sws_algo = SWS_BILINEAR;
+      usleep (1000);
     }
-	
+
+    if (frames > 1) {
+      krad_vpx_encoder_deadline_set (dlstream->vpx_enc, 30000);
+    }
+
+    if (frames > 15) {
+      krad_vpx_encoder_deadline_set (dlstream->vpx_enc, 1);
+	    dlstream->new_sws_algo = SWS_POINT;
+    }
+
 	if (frames > 0) {
       krad_ringbuffer_read (dlstream->frame_ring,
                             (char *)&frame,
                             sizeof(krad_frame_t *));
 
       vmedium->v.pps[0] = frame->yuv_strides[0];
-      vmedium->v.pps[1] = frame->yuv_strides[1];  
+      vmedium->v.pps[1] = frame->yuv_strides[1];
       vmedium->v.pps[2] = frame->yuv_strides[2];
       /*
       vmedium->v.ppx[0] = frame->yuv_pixels[0];
-      vmedium->v.ppx[1] = frame->yuv_pixels[1];  
+      vmedium->v.ppx[1] = frame->yuv_pixels[1];
       vmedium->v.ppx[2] = frame->yuv_pixels[2];
       */
 
@@ -424,7 +416,7 @@ void kr_dlstream_run (kr_dlstream_t *dlstream) {
       krad_framepool_unref_frame (frame);
       if (ret == 1) {
         kr_mkv_add_video (dlstream->mkv, 1,
-                          vcodeme->data, vcodeme->sz, vcodeme->key);      
+                          vcodeme->data, vcodeme->sz, vcodeme->key);
       }
     }
   }
@@ -456,7 +448,7 @@ void kr_dlstream_check () {
 void kr_dlstream (kr_dlstream_params_t *params) {
 
   kr_dlstream_t *dlstream;
-  
+
   kr_dlstream_check ();
 
   dlstream = kr_dlstream_create (params);
@@ -469,14 +461,14 @@ void kr_dlstream (kr_dlstream_params_t *params) {
 static pthread_t dl_stream_thread_var;
 
 void *kr_dlstream_thread (void *arg) {
-	
+
 	kr_dlstream_params_t *params;
 	kr_dlstream_params_t myparams;
 
 	params = (kr_dlstream_params_t *)arg;
 
 	memcpy (&myparams, params, sizeof(kr_dlstream_params_t));
-	
+
 	kr_dlstream (&myparams);
 	return NULL;
 }
@@ -509,23 +501,23 @@ int main (int argc, char *argv[]) {
   char mount[256];
 
   memset (&params, 0, sizeof(kr_dlstream_params_t));
-  snprintf (mount, sizeof(mount),
-            "/kr_dl_%"PRIu64".webm",
-            krad_unixtime ());
+  snprintf (mount, sizeof(mount), "/kradtoday.webm");
 
   params.input_device = "0";
-  params.input_width = 1280;
-  params.input_height = 720;
+  params.input_width = 1920;
+  params.input_height = 1080;
   params.encoding_width = 1280;
   params.encoding_height = 720;
-  params.input_fps_numerator = 60000;
+  params.encoding_width = 1920;
+  params.encoding_height = 1080;
+  params.input_fps_numerator = 30000;
   params.input_fps_denominator = 1000;
   params.encoding_fps_numerator = 30000;
   params.encoding_fps_denominator = 1000;
-  params.video_input_connector = "hdmi";
-  params.audio_input_connector = "hdmi";
-  params.video_bitrate = 800;
-  params.audio_quality = 0.4;
+  params.video_input_connector = "sdi";
+  params.audio_input_connector = "sdi";
+  params.video_bitrate = 2000;
+  params.audio_quality = 0.3;
 
   params.host = "europa.kradradio.com";
   params.port = 8008;
