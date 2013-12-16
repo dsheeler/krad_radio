@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#ifdef KR_LINUX
 #include <krad_muxponder.h>
 #include <krad_transmitter.h>
 #include <krad_ticker.h>
 #include <krad_mkv_demux.h>
-#endif
 
 #include <krad_vpx.h>
 #include <krad_vorbis.h>
@@ -19,6 +17,8 @@
 #include <libswscale/swscale.h>
 
 #include "krad_debug.c"
+
+#include "cfgread/cfgread.h"
 
 typedef struct kr_dlstream_St kr_dlstream_t;
 typedef struct kr_dlstream_params_St kr_dlstream_params_t;
@@ -491,54 +491,111 @@ int kr_dlstream_device_name (int device_num, char *device_name) {
   return krad_decklink_get_device_name (device_num, device_name);
 }
 
+void config_handler(cfg_t *config, kr_dlstream_params_t *params) {
+  if (config->get_val(config,"input_device")) {
+    params->input_device = strdup(config->value);
+  }
+  if (config->get_val(config,"input_width")) {
+    params->input_width = atoi(config->value);
+  }
+  if (config->get_val(config,"input_height")) {
+    params->input_height = atoi(config->value);
+  }
+  if (config->get_val(config,"encoding_width")) {
+    params->encoding_width = atoi(config->value);
+  }
+  if (config->get_val(config,"encoding_height")) {
+    params->encoding_height = atoi(config->value);
+  }
+  if (config->get_val(config,"input_fps_numerator")) {
+    params->input_fps_numerator = atoi(config->value);
+  }
+  if (config->get_val(config,"input_fps_denominator")) {
+    params->input_fps_denominator = atoi(config->value);
+  }
+  if (config->get_val(config,"encoding_fps_numerator")) {
+    params->encoding_fps_numerator = atoi(config->value);
+  }
+  if (config->get_val(config,"encoding_fps_denominator")) {
+    params->encoding_fps_denominator = atoi(config->value);
+  }
+  if (config->get_val(config,"video_input_connector")) {
+    params->video_input_connector = strdup(config->value);
+  }
+  if (config->get_val(config,"audio_input_connector")) {
+    params->audio_input_connector = strdup(config->value);
+  }
+  if (config->get_val(config,"video_bitrate")) {
+    params->video_bitrate = atoi(config->value);
+  }
+  if (config->get_val(config,"audio_quality")) {
+    params->audio_quality = atof(config->value);
+  }
+  if (config->get_val(config,"host")) {
+    params->host = strdup(config->value);
+  }
+  if (config->get_val(config,"port")) {
+    params->port = atoi(config->value);
+  }
+  if (config->get_val(config,"mount")) {
+    params->mount = strdup(config->value);
+  }
+  if (config->get_val(config,"password")) {
+    params->password = strdup(config->value);
+  }
+}
 
-#ifdef KR_LINUX
 int main (int argc, char *argv[]) {
 
-  krad_debug_init ("dl_stream");
+  krad_debug_init("dl_stream");
 
   kr_dlstream_params_t params;
+  cfg_t *config;
   char mount[256];
 
-  memset (&params, 0, sizeof(kr_dlstream_params_t));
-  snprintf (mount, sizeof(mount), "/kradtoday.webm");
+  memset(&params, 0, sizeof(kr_dlstream_params_t));
+  snprintf(mount, sizeof(mount), "/kradtoday.webm");
 
   params.input_device = "0";
   params.input_width = 1920;
   params.input_height = 1080;
   params.encoding_width = 1280;
   params.encoding_height = 720;
-  params.encoding_width = 1920;
-  params.encoding_height = 1080;
   params.input_fps_numerator = 30000;
   params.input_fps_denominator = 1000;
   params.encoding_fps_numerator = 30000;
   params.encoding_fps_denominator = 1000;
-  params.video_input_connector = "sdi";
-  params.audio_input_connector = "sdi";
-  params.video_bitrate = 2000;
+  params.video_input_connector = "hdmi";
+  params.audio_input_connector = "hdmi";
+  params.video_bitrate = 1000;
   params.audio_quality = 0.3;
-
   params.host = "europa.kradradio.com";
   params.port = 8008;
   params.mount = mount;
   params.password = "firefox";
 
-  printf ("Streaming with: %s at %ux%u %u fps (max)\n",
-          params.input_device, params.input_width, params.input_height,
-          params.input_fps_numerator/params.input_fps_denominator);
-  printf ("To: %s:%u%s\n", params.host, params.port, params.mount);
-  printf ("Encoding Resolution: %dx%d FPS: %d/%d\n",
-          params.encoding_width, params.encoding_height,
-          params.encoding_fps_numerator, params.encoding_fps_denominator);
-  printf ("VP8 Bitrate: %uk Vorbis Quality: %.2f\n",
-		  params.video_bitrate, params.audio_quality);
+  if (argc == 2) {
+    config = cfgread(argv[1]);
+    if (config != NULL) {
+      printf("Config file %s loaded \n", argv[1]);
+      config_handler(config, &params);
+      config->free(config);
+    }
+  }
 
+  printf("Streaming with: %s at %ux%u %u fps (max)\n",
+   params.input_device, params.input_width, params.input_height,
+   params.input_fps_numerator/params.input_fps_denominator);
+  printf("To: %s:%u%s\n", params.host, params.port, params.mount);
+  printf("Encoding Resolution: %dx%d FPS: %d/%d\n",
+   params.encoding_width, params.encoding_height,
+   params.encoding_fps_numerator, params.encoding_fps_denominator);
+  printf("VP8 Bitrate: %uk Vorbis Quality: %.2f\n",
+   params.video_bitrate, params.audio_quality);
 
-  kr_dlstream (&params);
+  kr_dlstream(&params);
 
-  krad_debug_shutdown ();
+  krad_debug_shutdown();
 
   return 0;
 }
-#endif
