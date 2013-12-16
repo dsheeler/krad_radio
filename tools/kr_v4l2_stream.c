@@ -95,7 +95,7 @@ void kr_v4l2s_run(kr_v4l2s *v4l2s) {
       continue;
     }
     ret = kr_v4l2_read(v4l2s->v4l2, &cam_image);
-    cam_image.tc = kr_timer_current_ms(v4l2s->timer);
+    scaled_image.tc = kr_timer_current_ms(v4l2s->timer);
     if (!kr_timer_started(v4l2s->timer)) {
       kr_timer_start(v4l2s->timer);
     }
