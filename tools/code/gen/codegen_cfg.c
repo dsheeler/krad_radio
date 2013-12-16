@@ -16,48 +16,57 @@ void uppercase(char *str1, char *str2) {
   return;
 }
 
-const char *memb_type_to_fun(struct struct_memb_def *memb) {
+char *memb_type_to_fun(struct struct_memb_def *memb, char *str) {
 
   if (!strcmp(memb->type,"int") || !strncmp(memb->type,"int32_t",7)) {
     if (!memb->pointer)
-      return "atoi";
+      sprintf(str,"params->%s = atoi(config->value);",memb->name);
+      return str;
   }
 
   if (!strcmp(memb->type,"uint") || !strncmp(memb->type,"uint32_t",8)) {
     if (!memb->pointer)
-      return "atoi";
+      sprintf(str,"params->%s = atoi(config->value);",memb->name);
+      return str;
   }
 
   if (!strncmp(memb->type,"int64_t",7)) {
     if (!memb->pointer)
-      return "atoi";
+      sprintf(str,"params->%s = atoi(config->value);",memb->name);
+      return str;
   }
 
   if (!strncmp(memb->type,"uint64_t",8)) {
     if (!memb->pointer)
-      return "atoi";
+      sprintf(str,"params->%s = atoi(config->value);",memb->name);
+      return str;
   }
 
   if (!strncmp(memb->type,"float",5)) {
     if (!memb->pointer)
-      return "atof";
+      sprintf(str,"params->%s = atof(config->value);",memb->name);
+      return str;
   }
 
   if (!strncmp(memb->type,"char",4)) {
     if (memb->array) {
-      return "strdup";
+      sprintf(str,"snprintf(params->%s, sizeof(params->%s), \"%%s\", config->value);",memb->name,memb->name);
+      return str;
     } else  if (memb->pointer) {
         if (memb->pointer == 1) {
-          return "strdup";
+          sprintf(str,"params->%s = strdup(config->value);",memb->name);
+          return str;
         } else {
           return NULL;
         }
     } else {
-      return "atoi";
+      sprintf(str,"params->%s = atoi(config->value);",memb->name);
+      return str;
     }
   }
 
-  return "";
+  str[0] = '\0';
+  return str;
 }
 
 void print_usage(char *cmd) {
@@ -77,6 +86,7 @@ void codegen_cfg(struct header_defs *hdefs, int ndefs) {
   char *p;
   char *pp;
   char fname[256];
+  char str[256];
   char *bname;
 
   for (total = i = 0; i < ndefs; i++) {
@@ -128,8 +138,9 @@ void codegen_cfg(struct header_defs *hdefs, int ndefs) {
     upp[strlen(upp)-2] = '\0';
     fprintf(header,"#ifndef %s_CFG_H\n",upp);
     fprintf(header,"#define %s_CFG_H\n",upp);
-    fprintf(header,"#include \"kr_config.h\"\n#include <stdint.h>\n");
-    fprintf(out,"#include \"%s\"\n\n",bname);
+    fprintf(header,"#include <stdint.h>\n");
+    fprintf(out,"#include \"%s\"\n",bname);
+    fprintf(out,"#include \"../kr_config/kr_config.c\"\n\n");
     fprintf(header,"#include \"%s\"\n\n",basename(fhdefs[i]->name));
 
     for (j = 0; j < fhdefs[i]->ndefs; j++) {
@@ -148,12 +159,11 @@ void codegen_cfg(struct header_defs *hdefs, int ndefs) {
           fprintf(out,"    fprintf(stderr,\"Error reading config!\\n\");\n    return -1;\n  }\n\n");
           for (l = 0; l < fhdefs[i]->defs[j].members; l++) {
             fprintf(out,"  if (config->get_val(config, \"%s\")) {\n",fhdefs[i]->defs[j].members_info[l].name);
-            fprintf(out,"    params->%s = %s(config->value);\n",
-              fhdefs[i]->defs[j].members_info[l].name,memb_type_to_fun(&fhdefs[i]->defs[j].members_info[l]));
+            fprintf(out,"    %s\n",memb_type_to_fun(&fhdefs[i]->defs[j].members_info[l],str));
             fprintf(out,"  }\n");
           }
           fprintf(out,"\n  kr_config_close(config);\n");
-          fprintf(out,"\n  return;\n");
+          fprintf(out,"\n  return 0;\n");
           fprintf(out,"}\n\n");
         }
       }

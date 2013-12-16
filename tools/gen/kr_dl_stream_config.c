@@ -1,4 +1,5 @@
 #include "kr_dl_stream_config.h"
+#include "../kr_config/kr_config.c"
 
 int read_config(struct kr_dlstream_params *params, char *configname) {
   kr_cfg *config;
@@ -22,13 +23,13 @@ int read_config(struct kr_dlstream_params *params, char *configname) {
     params->input_fps_denominator = atoi(config->value);
   }
   if (config->get_val(config, "input_device")) {
-    params->input_device = strdup(config->value);
+    snprintf(params->input_device, sizeof(params->input_device), "%s", config->value);
   }
   if (config->get_val(config, "video_input_connector")) {
-    params->video_input_connector = strdup(config->value);
+    snprintf(params->video_input_connector, sizeof(params->video_input_connector), "%s", config->value);
   }
   if (config->get_val(config, "audio_input_connector")) {
-    params->audio_input_connector = strdup(config->value);
+    snprintf(params->audio_input_connector, sizeof(params->audio_input_connector), "%s", config->value);
   }
   if (config->get_val(config, "encoding_width")) {
     params->encoding_width = atoi(config->value);
@@ -49,20 +50,20 @@ int read_config(struct kr_dlstream_params *params, char *configname) {
     params->audio_quality = atof(config->value);
   }
   if (config->get_val(config, "host")) {
-    params->host = strdup(config->value);
+    snprintf(params->host, sizeof(params->host), "%s", config->value);
   }
   if (config->get_val(config, "port")) {
     params->port = atoi(config->value);
   }
   if (config->get_val(config, "mount")) {
-    params->mount = strdup(config->value);
+    snprintf(params->mount, sizeof(params->mount), "%s", config->value);
   }
   if (config->get_val(config, "password")) {
-    params->password = strdup(config->value);
+    snprintf(params->password, sizeof(params->password), "%s", config->value);
   }
 
   kr_config_close(config);
 
-  return;
+  return 0;
 }
 
