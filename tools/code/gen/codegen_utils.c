@@ -28,7 +28,7 @@ int memb_to_print_format(struct struct_memb_def *memb, char *code) {
 
   if (!strncmp(memb->type,"float",5)) {
     strncpy(code,"%0.2f",5);
-    code[6] = '\0';
+    code[5] = '\0';
     return 1;
   }
 
