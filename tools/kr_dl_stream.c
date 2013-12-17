@@ -1,5 +1,5 @@
 #include "kr_dl_stream.h"
-#define IMAGE_BUFFER_COUNT 10
+#define IMAGE_BUFFER_COUNT 64
 #include "gen/kr_dl_stream_config.c"
 
 #include "krad_debug.c"
@@ -36,18 +36,18 @@ static void term_handler(int sig) {
 int dlstream_video_callback(void *user, kr_image *image) {
   kr_dlstream *dlstream;
   int ret;
-  kr_image *converted_image;
+  kr_image converted_image;
   dlstream = (kr_dlstream *)user;
   memset(&converted_image, 0, sizeof(kr_image));
-  ret = kr_image_pool_getimage(dlstream->image_pool, converted_image);
+  ret = kr_image_pool_getimage(dlstream->image_pool, &converted_image);
   if (ret == 1) {
-    kr_image_convert(&dlstream->converter, converted_image, image);
+    kr_image_convert(&dlstream->converter, &converted_image, image);
     krad_ringbuffer_write (dlstream->image_ring, (char *)&converted_image,
-     sizeof(kr_image *));
+     sizeof(kr_image));
     dlstream->frames++;
   } else {
 	  dlstream->droppedframes++;
-	  dlstream->skipsamples += 2;
+    dlstream->skipsamples += 2;
     printke("Krad Decklink underflow");
   }
   return 0;
@@ -137,14 +137,15 @@ kr_dlstream *kr_dlstream_create(kr_dlstream_params *params) {
 
   image.w = dlstream->params->encoding_width;
   image.h = dlstream->params->encoding_height;
-  image.fmt = PIX_FMT_UYVY422;
+  image.fmt = PIX_FMT_YUV420P;
   image.pps[0] = dlstream->params->encoding_width;
   image.pps[1] = dlstream->params->encoding_width/2;
   image.pps[2] = dlstream->params->encoding_width/2;
   image.pps[3] = 0;
 
   dlstream->image_pool = kr_image_pool_create(&image, IMAGE_BUFFER_COUNT);
-  dlstream->image_ring = krad_ringbuffer_create(10 * sizeof(kr_image *));
+  kr_pool_debug(dlstream->image_pool);
+  dlstream->image_ring = krad_ringbuffer_create(IMAGE_BUFFER_COUNT * sizeof(kr_image));
   for (c = 0; c < 2; c++) {
     dlstream->audio_ring[c] = krad_ringbuffer_create(2200000);
   }
@@ -167,7 +168,7 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
   int32_t frames;
   kr_medium_t *amedium;
   kr_codeme_t *acodeme;
-  kr_image *image;
+  kr_image image;
   kr_codeme_t *vcodeme;
   uint32_t c;
   int32_t ret;
@@ -209,7 +210,7 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
     if (muxdelay > 0) {
       continue;
     }
-//  frames = krad_ringbuffer_read_space(dlstream->frame_ring) / sizeof(void *);
+    frames = krad_ringbuffer_read_space(dlstream->image_ring) / sizeof(kr_image);
     if (frames == 0) {
       krad_vpx_encoder_deadline_set(dlstream->vpx_enc, 50000);
       usleep(1000);
@@ -221,10 +222,10 @@ void kr_dlstream_run(kr_dlstream *dlstream) {
       krad_vpx_encoder_deadline_set(dlstream->vpx_enc, 1);
     }
     if (frames > 0) {
-//    krad_ringbuffer_read(dlstream->frame_ring, (char *)&frame,
-//     sizeof(krad_frame_t *));
-      ret = kr_vpx_encode(dlstream->vpx_enc, vcodeme, image);
-      //krad_framepool_unref_frame(frame);
+    krad_ringbuffer_read(dlstream->image_ring, (char *)&image,
+     sizeof(kr_image));
+      ret = kr_vpx_encode(dlstream->vpx_enc, vcodeme, &image);
+      kr_pool_recycle(dlstream->image_pool, image.px);
       if (ret == 1) {
         kr_mkv_add_video(dlstream->mkv, 1, vcodeme->data, vcodeme->sz,
          vcodeme->key);

@@ -20,7 +20,7 @@ struct kr_pool {
   int ref[KR_POOL_MAX];
   size_t overlay_sz;
   size_t overlay_actual_sz;
-  uint8_t *overlay;
+  void *overlay;
   void *data;
   void *map;
 };
@@ -141,13 +141,16 @@ void *kr_pool_slice(kr_pool *pool) {
 
 void kr_pool_debug(kr_pool *pool) {
   if (pool == NULL) return;
-  printf("pool slices: %d\n", kr_pool_slices(pool));
-  printf("pool active: %d\n", kr_pool_active(pool));
-  printf("pool avail: %d\n", kr_pool_avail(pool));
-  printf("pool use: %"PRIu64"\n", pool->use);
-  printf("pool info size: %zu\n", pool->info_size);
-  printf("pool slice size: %zu\n", pool->slice_size);
-  printf("pool total size: %zu\n\n", pool->total_size);
+  printk("pool slices: %d\n", kr_pool_slices(pool));
+  printk("pool active: %d\n", kr_pool_active(pool));
+  printk("pool avail: %d\n", kr_pool_avail(pool));
+  printk("pool use: %"PRIu64"\n", pool->use);
+  printk("pool info size: %zu\n", sizeof(kr_pool));
+  printk("pool info act size: %zu\n", pool->info_size);
+  printk("pool overlay size: %zu\n", pool->overlay_sz);
+  printk("pool overlay act size: %zu\n", pool->overlay_actual_sz);
+  printk("pool slice size: %zu\n", pool->slice_size);
+  printk("pool total size: %zu\n\n", pool->total_size);
 }
 
 void kr_pool_destroy(kr_pool *pool) {
@@ -169,12 +172,13 @@ kr_pool *kr_pool_create(kr_pool_setup *setup) {
   if (setup->size == 0) return NULL;
   memset(&pool, 0, sizeof(kr_pool));
   pool.overlay_sz = setup->overlay_sz;
+  pool.overlay_actual_sz = pool.overlay_sz;
   pool.info_size = sizeof(kr_pool);
-  pool.info_size = pool.info_size + (KR_CACHELINE % pool.info_size);
-  if (pool.overlay_sz > 0) {
-    pool.overlay_actual_sz = pool.overlay_sz + (KR_CACHELINE % pool.overlay_sz);
-  } else {
-    pool.overlay_actual_sz = 0;
+  if (pool.info_size % KR_CACHELINE) {
+    pool.info_size += KR_CACHELINE - (pool.info_size % KR_CACHELINE);
+  }
+  if (pool.overlay_sz % KR_CACHELINE) {
+    pool.overlay_actual_sz += KR_CACHELINE - (pool.overlay_sz % KR_CACHELINE);
   }
   pool.slices = setup->slices;
   pool.slice_size = setup->size + (KR_CACHELINE % setup->size);
@@ -206,9 +210,9 @@ kr_pool *kr_pool_create(kr_pool_setup *setup) {
     return NULL;
   }
   close(fd);
-  pool.data = pool.map + pool.info_size + pool.overlay_actual_sz;
-  memcpy(pool.map, &pool, sizeof(kr_pool));
+  pool.data = pool.map + (pool.info_size + pool.overlay_actual_sz);
   pool.overlay = pool.map + pool.info_size;
   memcpy(pool.overlay, setup->overlay, pool.overlay_sz);
+  memcpy(pool.map, &pool, sizeof(kr_pool));
   return (kr_pool *)pool.map;
 }
