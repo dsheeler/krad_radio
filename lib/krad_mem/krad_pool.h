@@ -35,6 +35,7 @@ int kr_pool_slice_ref(kr_pool *pool, void *slice);
 int kr_pool_recycle(kr_pool *pool, void *slice);
 void *kr_pool_slice(kr_pool *pool);
 
+void *kr_pool_slice_num(kr_pool *pool, int num);
 void kr_pool_debug(kr_pool *pool);
 int kr_pool_avail(kr_pool *pool);
 int kr_pool_active(kr_pool *pool);

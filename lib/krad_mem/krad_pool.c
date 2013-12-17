@@ -60,6 +60,22 @@ void *kr_pool_iterate_active(kr_pool *pool, int *count) {
   (*count) = 0;
   return NULL;
 }
+
+void *kr_pool_slice_num(kr_pool *pool, int num) {
+
+  uint64_t mask;
+
+  if (pool == NULL) return NULL;
+  if ((num < 0) || (num >= pool->slices)) return NULL;
+
+  mask = 1;
+  mask = mask << (num);
+  if ((pool->use & mask) != 0) {
+    return pool->data + (pool->slice_size * num);
+  }
+  return NULL;
+}
+
 /*
 void *kr_pool_iterate_state(kr_pool *pool, int *count) {
 

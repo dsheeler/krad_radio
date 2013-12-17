@@ -181,7 +181,7 @@ int kr_compositor_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       setting.duration = unit_control.duration;
       kr_ebml2_unpack_element_uint32(&ebml_in, &element, &numbers[1]);
 
-      path = kr_compositor_find(compositor, "");
+      path = kr_compositor_find_num(compositor, unit_control.address.id.number);
       if (path != NULL) {
         setting.easing = EASEINOUTSINE;
         kr_compositor_path_ctl(path, &setting);

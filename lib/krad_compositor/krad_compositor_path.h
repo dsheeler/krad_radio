@@ -52,6 +52,7 @@ size_t kr_compositor_path_size();
 void cmper_path_release(kr_compositor *compositor, kr_compositor_path *path);
 int path_render(kr_compositor_path *path, kr_image *image, cairo_t *cr);
 /* TODO: Fix path resolution */
+kr_compositor_path *kr_compositor_find_num(kr_compositor *c, int num);
 kr_compositor_path *kr_compositor_find(kr_compositor *c, char *name);
 kr_compositor_path_type path_type_get(kr_compositor_path *path);
 int kr_compositor_unlink(kr_compositor_path *path);
