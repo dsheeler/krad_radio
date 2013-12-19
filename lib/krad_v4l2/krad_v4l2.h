@@ -28,6 +28,9 @@ typedef struct {
   int priority;
 } kr_v4l2_setup;
 
+/* TODO: ReAdd support for MJPEG          */
+/* TODO: ReAdd support for 'That Codec'   */
+
 int kr_v4l2_read(kr_v4l2 *v4l2, kr_image *image);
 int kr_v4l2_poll(kr_v4l2 *v4l2, int ms);
 int kr_v4l2_capture(kr_v4l2 *v4l2, int on);

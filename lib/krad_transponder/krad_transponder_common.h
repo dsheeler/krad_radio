@@ -327,13 +327,15 @@ struct kr_transponder_info {
   uint32_t active_paths;
 };
 
+typedef union {
+  kr_mixer_path_info mixer_path_info;
+  kr_compositor_path_info compositor_path_info;
+  kr_adapter_path_info adapter_path_info;
+} kr_transponder_path_io_path_info;
+
 struct kr_transponder_path_io_info {
   kr_xpdr_path_io_type type;
-  union {
-    kr_mixer_path_info mixer_path_info;
-    kr_compositor_path_info compositor_path_info;
-    kr_adapter_path_info adapter_path_info;
-  } info;
+  kr_transponder_path_io_path_info info;
 };
 
 struct kr_transponder_path_info {

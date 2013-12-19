@@ -26,32 +26,38 @@ typedef enum {
 /*  KR_ADP_X11,       *//* V      MP  Input iPull                  */
 /*  KR_ADP_FLYCAP     *//* V      SP  Input ePush only             */
 
+typedef union {
+  kr_jack_info jack;
+  kr_wayland_info wayland;
+  kr_v4l2_info v4l2;
+} kr_adapter_api_info;
+
+/*
+  kr_alsa_info alsa;
+  kr_decklink_info decklink;
+*/
+
+typedef union {
+  kr_jack_path_info jack;
+  kr_wayland_path_info wayland;
+  kr_v4l2_open_info v4l2;
+} kr_adapter_api_path_info;
+
+/*
+  kr_alsa_path_info alsa;
+  kr_decklink_path_info decklink;
+*/
+
 struct kr_adapter_info {
   kr_adapter_api api;
-  union {
-    kr_jack_info jack;
-    kr_wayland_info wayland;
-    kr_v4l2_info v4l2;
-    /*
-    kr_alsa_info alsa;
-    kr_decklink_info decklink;
-    */
-  } api_info;
+  kr_adapter_api_info api_info;
 };
 
 struct kr_adapter_path_info {
-  kr_adapter_api api;
   char name[64];
   kr_adapter_path_direction dir;
-  union {
-    kr_jack_path_info jack;
-    kr_wayland_path_info wayland;
-    kr_v4l2_open_info v4l2;
-    /*
-    kr_alsa_path_info alsa;
-    kr_decklink_path_info decklink;
-    */
-  } info;
+  kr_adapter_api api;
+  kr_adapter_api_path_info info;
 };
 
 #endif
