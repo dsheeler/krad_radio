@@ -24,7 +24,7 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
   int i;
   int ret;
   uint32_t track;
-  int bytes_read;  
+  int bytes_read;
   uint32_t out_track;
   uint64_t start_tc;
   uint64_t timecode;
@@ -34,7 +34,7 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
   int keyframe;
   uint8_t flags;
   int packets;
-  
+
   start_tc = 0;
   last_tc = 0;
   packets = 0;
@@ -44,18 +44,18 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
 
   buffer = malloc (10000000);
 
-  
+
   for (i = 0; i < 2; i++) {
-  
+
     if (i == 0) {
       in[i] = kr_mkv_open_file (filename1);
     } else {
       in[i] = kr_mkv_open_file (filename2);
     }
 
-    
+
     printf ("File %d: FPS %d/%d RES %dx%d\n",
-            i, 
+            i,
             in[i]->tracks[VIDEO_TRACK].fps_numerator,
             in[i]->tracks[VIDEO_TRACK].fps_denominator,
             in[i]->tracks[VIDEO_TRACK].width,
@@ -70,8 +70,8 @@ void krad_transmitter_mkv_test2 (int port, char *filename1, char *filename2) {
       exit (1);
     }
   }
- 
- 
+
+
   if ((in[0]->tracks[VIDEO_TRACK].width != in[0]->tracks[VIDEO_TRACK].width) ||
       (in[1]->tracks[VIDEO_TRACK].height != in[1]->tracks[VIDEO_TRACK].height)) {
 
@@ -161,8 +161,6 @@ int main (int argc, char *argv[]) {
   } else {
     printf ("Need port\n");
   }
-
-  krad_debug_shutdown ();
 
   return 0;
 }

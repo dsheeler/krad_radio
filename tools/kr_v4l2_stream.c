@@ -137,6 +137,5 @@ int main (int argc, char *argv[]) {
     kr_v4l2s_run(v4l2s);
     kr_v4l2s_destroy(&v4l2s);
   }
-  krad_debug_shutdown();
   return 0;
 }

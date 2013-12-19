@@ -11,7 +11,7 @@ void mkv_frames_print (kr_mkv_t *mkv) {
   uint32_t track;
   uint64_t timecode;
   uint8_t *buffer;
-  
+
   buffer = malloc (10000000);
 
   do {
@@ -43,7 +43,7 @@ void mkv_info_print (kr_mkv_t *mkv) {
     for (h = 0; h < headers; h++) {
       header_size = kr_mkv_track_header_size (mkv, t, h);
       printf ("Track %d header %d is %d bytes\n",
-              t, h, header_size);  
+              t, h, header_size);
     }
   }
 }
@@ -54,16 +54,16 @@ int main (int argc, char *argv[]) {
   kr_mkv_t *mkv;
 
   krad_debug_init ("mkvinfo");
- 
+
   mkv = kr_mkv_open_file (argv[1]);
- 
+
   if (mkv == NULL) {
     printf ("Error opening %s\n", argv[1]);
     return 1;
   }
-  
+
   mkv_info_print (mkv);
-  
+
   if (argc > 2) {
     mkv_frames_print (mkv);
   }
@@ -74,8 +74,5 @@ int main (int argc, char *argv[]) {
       printf ("Error closing %s\n", argv[1]);
     }
   }
-  
-  krad_debug_shutdown ();
-
   return 0;
 }

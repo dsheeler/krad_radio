@@ -29,7 +29,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   int ret;
   int first_file_output;
   uint32_t track;
-  int bytes_read;  
+  int bytes_read;
   uint32_t out_track;
   uint64_t start_tc;
   uint64_t timecode;
@@ -42,7 +42,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   char stream_name[256];
   char file_name[256];
   char *content_type;
-  
+
   start_tc = 0;
   last_tc = 0;
   packets = 0;
@@ -59,7 +59,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   buffer = malloc (10000000);
 
   for (i = 0; i < 2; i++) {
-  
+
     if (i == 0) {
       in[i] = kr_mkv_open_file (filename1);
     } else {
@@ -67,7 +67,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
     }
 
     printf ("File %d: FPS %d/%d RES %dx%d\n",
-            i, 
+            i,
             in[i]->tracks[VIDEO_TRACK].fps_numerator,
             in[i]->tracks[VIDEO_TRACK].fps_denominator,
             in[i]->tracks[VIDEO_TRACK].width,
@@ -112,14 +112,14 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
 
   char *host = "europa.kradradio.com";
   int stream_port = 80;
-  char *password = "firefox";    
+  char *password = "firefox";
 
   output_params.container = MKV;
   output_params.transport = STREAM;
   output_params.transport_params.stream_output_params.host = host;
   output_params.transport_params.stream_output_params.port = stream_port;
   output_params.transport_params.stream_output_params.mount = stream_name;
-  output_params.transport_params.stream_output_params.password = password;  
+  output_params.transport_params.stream_output_params.password = password;
 
   kr_muxponder_create_output (muxponder, &output_params);
 
@@ -137,9 +137,9 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   first_file_output = kr_muxponder_create_output (muxponder, &output_params);
 
   for (i = 0; i < 2; i++) {
-  
+
     if (i == 1) {
-    
+
       snprintf (file_name, sizeof(file_name), "%s/file_%"PRIu64".webm",
                 getenv ("HOME"), krad_unixtime());
       output_params.container = MKV;
@@ -147,9 +147,9 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
       output_params.transport_params.file_output_params.filename = file_name;
 
       kr_muxponder_create_output (muxponder, &output_params);
-    
+
       kr_muxponder_destroy_output (muxponder, first_file_output);
-    
+
     }
 
     while ((bytes_read = kr_mkv_read_packet (in[i], &track, &timecode, &flags, buffer)) > 0) {
@@ -186,7 +186,7 @@ void krad_muxponder_test (int port, char *filename1, char *filename2) {
   krad_ticker_destroy (ticker);
   kr_mkv_destroy (&in[0]);
   kr_mkv_destroy (&in[1]);
-  kr_muxponder_destroy (&muxponder);  
+  kr_muxponder_destroy (&muxponder);
   krad_transmitter_destroy (transmitter);
   free (buffer);
 }
@@ -208,8 +208,5 @@ int main (int argc, char *argv[]) {
   } else {
     printf ("Need port\n");
   }
-
-  krad_debug_shutdown ();
-
   return 0;
 }

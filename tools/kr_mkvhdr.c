@@ -179,7 +179,5 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  krad_debug_shutdown ();
-
   return 0;
 }

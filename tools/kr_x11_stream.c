@@ -295,7 +295,5 @@ int main (int argc, char *argv[]) {
 
   kr_x11s (&params);
 
-  krad_debug_shutdown ();
-
   return 0;
 }

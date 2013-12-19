@@ -71,8 +71,5 @@ int main (int argc, char *argv[]) {
   }
 
   free (test_machine);
-
- // krad_debug_shutdown ();
-
   return 0;
 }

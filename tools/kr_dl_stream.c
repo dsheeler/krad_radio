@@ -286,7 +286,5 @@ int main (int argc, char *argv[]) {
     kr_dlstream_run(dlstream);
     kr_dlstream_destroy(&dlstream);
   }
-  krad_debug_shutdown();
-
   return 0;
 }

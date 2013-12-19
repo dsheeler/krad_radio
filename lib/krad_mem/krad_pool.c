@@ -93,6 +93,7 @@ void *kr_pool_iterate_type_state(kr_pool *pool, int *count) {
 */
 int kr_pool_get_overlay(kr_pool *pool, void *overlay) {
   if ((pool == NULL) || (overlay == NULL)) return -2;
+  if (pool->overlay == NULL) return -3;
   memcpy(overlay, pool->overlay, pool->overlay_sz);
   return pool->overlay_sz;
 }
@@ -157,16 +158,17 @@ void *kr_pool_slice(kr_pool *pool) {
 
 void kr_pool_debug(kr_pool *pool) {
   if (pool == NULL) return;
-  printk("pool slices: %d\n", kr_pool_slices(pool));
-  printk("pool active: %d\n", kr_pool_active(pool));
-  printk("pool avail: %d\n", kr_pool_avail(pool));
-  printk("pool use: %"PRIu64"\n", pool->use);
-  printk("pool info size: %zu\n", sizeof(kr_pool));
-  printk("pool info act size: %zu\n", pool->info_size);
-  printk("pool overlay size: %zu\n", pool->overlay_sz);
-  printk("pool overlay act size: %zu\n", pool->overlay_actual_sz);
-  printk("pool slice size: %zu\n", pool->slice_size);
-  printk("pool total size: %zu\n\n", pool->total_size);
+  printk("\npool info");
+  printk("pool slices: %d", kr_pool_slices(pool));
+  printk("pool active: %d", kr_pool_active(pool));
+  printk("pool avail: %d", kr_pool_avail(pool));
+  printk("pool use: %"PRIu64"", pool->use);
+  printk("pool info size: %zu", sizeof(kr_pool));
+  printk("pool info act size: %zu", pool->info_size);
+  printk("pool overlay size: %zu", pool->overlay_sz);
+  printk("pool overlay act size: %zu", pool->overlay_actual_sz);
+  printk("pool slice size: %zu", pool->slice_size);
+  printk("pool total size: %zu\n", pool->total_size);
 }
 
 void kr_pool_destroy(kr_pool *pool) {
@@ -183,7 +185,6 @@ kr_pool *kr_pool_create(kr_pool_setup *setup) {
 
   if (setup == NULL) return NULL;
   if (setup->slices == 0) return NULL;
-  // temp fixed size bitmap
   if (setup->slices > KR_POOL_MAX) return NULL;
   if (setup->size == 0) return NULL;
   memset(&pool, 0, sizeof(kr_pool));
@@ -227,8 +228,10 @@ kr_pool *kr_pool_create(kr_pool_setup *setup) {
   }
   close(fd);
   pool.data = pool.map + (pool.info_size + pool.overlay_actual_sz);
-  pool.overlay = pool.map + pool.info_size;
-  memcpy(pool.overlay, setup->overlay, pool.overlay_sz);
+  if (pool.overlay != NULL) {
+    pool.overlay = pool.map + pool.info_size;
+    memcpy(pool.overlay, setup->overlay, pool.overlay_sz);
+  }
   memcpy(pool.map, &pool, sizeof(kr_pool));
   return (kr_pool *)pool.map;
 }
