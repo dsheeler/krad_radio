@@ -41,6 +41,8 @@ int kr_image_convert(kr_convert *conv, kr_image *dst, kr_image *src) {
   src_strides[2] = src->pps[2];
   src_strides[3] = src->pps[3];
 
+  if ((src_w < 1) || (src_h < 1)) return -1;
+
   conv->sws = sws_getCachedContext(conv->sws, src_w, src_h, src->fmt, dst->w,
    dst->h, dst->fmt, conv->quality, NULL, NULL, NULL);
   if (conv->sws == NULL) {
