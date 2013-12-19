@@ -57,7 +57,8 @@ char *memb_type_to_fun(struct struct_memb_def *memb, char *str) {
           sprintf(str,"params->%s = strdup(config->value);",memb->name);
           return str;
         } else {
-          return NULL;
+          str[0] = '\0';
+          return str;
         }
     } else {
       sprintf(str,"params->%s = atoi(config->value);",memb->name);

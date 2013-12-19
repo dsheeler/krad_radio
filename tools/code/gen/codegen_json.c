@@ -2,7 +2,6 @@
 
 void codegen_json(struct struct_def *def, char *type, FILE *out) {
   int i;
-  int j;
   int last;
   char format[16];
   struct struct_memb_def *members[def->members];
@@ -21,52 +20,60 @@ void codegen_json(struct struct_def *def, char *type, FILE *out) {
 
 
   if (def->isenum) {
-    fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%%u\\\"",
+    fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%%u\\\"",
       type);
     fprintf(out,"\",*actual);\n");
     return;
   }
 
-  fprintf(out,"  res += snprintf(&%s[res],max,\"{\");\n",type);
+  fprintf(out,"  res += snprintf(&%s[res],max-res,\"{\");\n",type);
 
   for (i = 0; i < last; i++) {
     if (memb_to_print_format(members[i],format)) {
-      if (!members[i]->array) {
-        fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\" : %s"
-          ,type,members[i]->name,format);
+      if ((!members[i]->array && !members[i]->array_str_val) || strchr(format,'s')) {
+
+        if (strchr(format,'s')) {
+          fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%s\\\" : \\\"%s\\\""
+            ,type,members[i]->name,format);
+        } else {
+          fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%s\\\" : %s"
+            ,type,members[i]->name,format);
+        }
 
         if (i != (last - 1))
           fprintf(out,",");
       
         fprintf(out,"\",actual->%s);\n",members[i]->name);
       } else {
-        if (strchr(format,'s')) {
-          fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\" : \\\"%s\\\""
-            ,type,members[i]->name,format);
 
-          if (i != (last - 1))
-            fprintf(out,",");
-        
-          fprintf(out,"\",actual->%s);\n",members[i]->name);
-        } else {
-          fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\" : [\");\n",
+        fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%s\\\" : [\");\n",
             type,members[i]->name);
-          for (j = 0; j < members[i]->array; j++) {
-            fprintf(out,"  res += snprintf(&%s[res],max,\"%s",type,format);
 
-            if (j != (members[i]->array - 1))
-              fprintf(out,",");
-          
-            fprintf(out,"\",actual->%s[%d]);\n",members[i]->name,j);
-          }
-          fprintf(out,"  res += snprintf(&%s[res],max,\"]",type);
-
-          if (i != (last - 1))
-            fprintf(out,",");
-  
-          fprintf(out,"\");\n");
+        if (members[i]->array) {
+          fprintf(out,"  for (i = 0; i < %d; i++) {\n",members[i]->array);
         }
+        else {
+          fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->array_str_val);
+        }
+
         
+        fprintf(out,"    res += snprintf(&%s[res],max-res,\"%s",type,format);
+        fprintf(out,"\",actual->%s[i]);\n",members[i]->name);
+
+        if (members[i]->array) {
+          fprintf(out,"    if (i != (%d - 1)) {\n",members[i]->array);
+        } else {
+          fprintf(out,"    if (i != (%s - 1)) {\n",members[i]->array_str_val);
+        }
+
+        fprintf(out,"      res += snprintf(&%s[res],max-res,\",\");",type);
+        fprintf(out,"\n    }\n");
+        fprintf(out,"  }\n");
+
+        fprintf(out,"  res += snprintf(&%s[res],max-res,\"]\");\n",type);
+
+        if (i != (last - 1))
+            fprintf(out,"  res += snprintf(&%s[res],max-res,\",\");\n",type);
       }
     } else if (members[i]->sub && members[i]->sub->isunion && (i > 0)) {
       fprintf(out,"  int index;\n");
@@ -76,10 +83,11 @@ void codegen_json(struct struct_def *def, char *type, FILE *out) {
       codegen_union_content_from_type(members[i]->sub,members[i]->name,type,out);
       fprintf(out,"  }\n\n");
     } else if (codegen_string_to_enum(members[i]->type)) {
-      if (!members[i]->array) {
-        char uppercased[strlen(members[i]->type)+1];
-        uppercase(members[i]->type,uppercased);
-        fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\": \");\n",
+      char uppercased[strlen(members[i]->type)+1];
+      uppercase(members[i]->type,uppercased);
+      
+      if ((!members[i]->array && !members[i]->array_str_val) || !strncmp(members[i]->type,"char",4)) {
+        fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%s\\\": \");\n",
           type,members[i]->name);
         fprintf(out,"  uber.actual = &(actual->%s);\n  uber.type = JSON_%s;\n",
           members[i]->name,uppercased);
@@ -87,34 +95,43 @@ void codegen_json(struct struct_def *def, char *type, FILE *out) {
           type);
 
         if (i != (last - 1))
-          fprintf(out,"  res += snprintf(&%s[res],max,\",\");\n",type);
+          fprintf(out,"  res += snprintf(&%s[res],max-res,\",\");\n",type);
 
       } else {
-        fprintf(out,"  res += snprintf(&%s[res],max,\"\\\"%s\\\" : [\");\n",
-          type,members[i]->name);
-        for (j = 0; j < members[i]->array; j++) {
-          char uppercased[strlen(members[i]->type)+1];
-          uppercase(members[i]->type,uppercased);
+        
+        fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%s\\\" : [\");\n",
+            type,members[i]->name);
 
-          fprintf(out,"  uber.actual = &(actual->%s[%d]);\n  uber.type = JSON_%s;\n",
-            members[i]->name,j,uppercased);
-          fprintf(out,"  res += info_pack_to_json(&%s[res],&uber,max-res);\n",type);
-
-          if (j != (members[i]->array - 1))
-            fprintf(out,"  res += snprintf(&%s[res],max,\",\");\n",type);
-
+        if (members[i]->array) {
+          fprintf(out,"  for (i = 0; i < %d; i++) {\n",members[i]->array);
         }
-        fprintf(out,"  res += snprintf(&%s[res],max,\"]",type);
+        else {
+          fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->array_str_val);
+        }
+
+        fprintf(out,"    uber.actual = &(actual->%s[i]);\n    uber.type = JSON_%s;\n",
+            members[i]->name,uppercased);
+        fprintf(out,"    res += info_pack_to_json(&%s[res],&uber,max-res);\n",type);
+
+        if (members[i]->array) {
+          fprintf(out,"    if (i != (%d - 1)) {\n",members[i]->array);
+        } else {
+          fprintf(out,"    if (i != (%s - 1)) {\n",members[i]->array_str_val);
+        }
+
+        fprintf(out,"      res += snprintf(&%s[res],max-res,\",\");",type);
+        fprintf(out,"\n    }\n");
+        fprintf(out,"  }\n");
+
+        fprintf(out,"  res += snprintf(&%s[res],max-res,\"]\");\n",type);
 
         if (i != (last - 1))
-          fprintf(out,",");
-
-        fprintf(out,"\");\n");
+            fprintf(out,"  res += snprintf(&%s[res],max-res,\",\");\n",type);
       }
     } 
   }
 
-  fprintf(out,"  res += snprintf(&%s[res],max,\"}\");\n",type);
+  fprintf(out,"  res += snprintf(&%s[res],max-res,\"}\");\n",type);
 
   return;
 }

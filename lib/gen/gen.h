@@ -1,20 +1,44 @@
 #ifndef COMMON_GEN_H
 #define COMMON_GEN_H
+#include "krad_ebmlx.h"
 
 typedef struct {
   int type;
   void *actual;
 } uber_St;
 
+int info_pack_to_text(char *text, uber_St *uber, int max);
+typedef int (*info_pack_to_text_func)(char *text, void *st, int max);
+int info_pack_to_json(char *json, uber_St *uber, int max);
+typedef int (*info_pack_to_json_func)(char *json, void *st, int max);
+int info_pack_to_ebml(kr_ebml *ebml, uber_St *uber);
+typedef int (*info_pack_to_ebml_func)(kr_ebml *ebml, void *st);
+int info_unpack_fr_ebml(kr_ebml *ebml, uber_St *uber);
+typedef int (*info_unpack_fr_ebml_func)(kr_ebml *ebml, void *st);
+
 typedef enum {
-  TEXT_KR_V4L2_STATE = 1,
+  TEXT_KR_MIXER_CHANNELS = 1,
+  TEXT_KR_MIXER_CONTROL,
+  TEXT_KR_MIXER_PATH_TYPE,
+  TEXT_KR_MIXER_ADV_CTL,
+  TEXT_KR_MIXER_INFO,
+  TEXT_KR_MIXER_PATH_INFO,
+  TEXT_KR_SFX_CONTROL,
+  TEXT_KR_SFX_EFFECT_TYPE,
+  TEXT_KR_SFX_EFFECT_CONTROL,
+  TEXT_KR_EQ_BAND_INFO,
+  TEXT_KR_EQ_INFO,
+  TEXT_KR_LOWPASS_INFO,
+  TEXT_KR_HIGHPASS_INFO,
+  TEXT_KR_ANALOG_INFO,
+  TEXT_KR_V4L2_STATE,
   TEXT_KR_V4L2_MODE,
   TEXT_KR_V4L2_INFO,
   TEXT_KR_V4L2_OPEN_INFO
 } text_enum;
 
 enum {
-  TEXT_ENUM_LAST = 4
+  TEXT_ENUM_LAST = 18
 };
 
 typedef enum {
@@ -31,6 +55,20 @@ typedef enum {
   JSON_KR_POS,
   JSON_KR_PERSPECTIVE_VIEW,
   JSON_KR_PERSPECTIVE,
+  JSON_KR_MIXER_CHANNELS,
+  JSON_KR_MIXER_CONTROL,
+  JSON_KR_MIXER_PATH_TYPE,
+  JSON_KR_MIXER_ADV_CTL,
+  JSON_KR_MIXER_INFO,
+  JSON_KR_MIXER_PATH_INFO,
+  JSON_KR_SFX_CONTROL,
+  JSON_KR_SFX_EFFECT_TYPE,
+  JSON_KR_SFX_EFFECT_CONTROL,
+  JSON_KR_EQ_BAND_INFO,
+  JSON_KR_EQ_INFO,
+  JSON_KR_LOWPASS_INFO,
+  JSON_KR_HIGHPASS_INFO,
+  JSON_KR_ANALOG_INFO,
   JSON_KR_V4L2_STATE,
   JSON_KR_V4L2_MODE,
   JSON_KR_V4L2_INFO,
@@ -38,29 +76,57 @@ typedef enum {
 } json_enum;
 
 enum {
-  JSON_ENUM_LAST = 17
+  JSON_ENUM_LAST = 31
 };
 
 typedef enum {
-  EBML_KR_V4L2_STATE = 1,
+  EBML_KR_MIXER_CHANNELS = 1,
+  EBML_KR_MIXER_CONTROL,
+  EBML_KR_MIXER_PATH_TYPE,
+  EBML_KR_MIXER_ADV_CTL,
+  EBML_KR_MIXER_INFO,
+  EBML_KR_MIXER_PATH_INFO,
+  EBML_KR_SFX_CONTROL,
+  EBML_KR_SFX_EFFECT_TYPE,
+  EBML_KR_SFX_EFFECT_CONTROL,
+  EBML_KR_EQ_BAND_INFO,
+  EBML_KR_EQ_INFO,
+  EBML_KR_LOWPASS_INFO,
+  EBML_KR_HIGHPASS_INFO,
+  EBML_KR_ANALOG_INFO,
+  EBML_KR_V4L2_STATE,
   EBML_KR_V4L2_MODE,
   EBML_KR_V4L2_INFO,
   EBML_KR_V4L2_OPEN_INFO
 } ebml_enum;
 
 enum {
-  EBML_ENUM_LAST = 4
+  EBML_ENUM_LAST = 18
 };
 
 typedef enum {
-  DEBML_KR_V4L2_STATE = 1,
+  DEBML_KR_MIXER_CHANNELS = 1,
+  DEBML_KR_MIXER_CONTROL,
+  DEBML_KR_MIXER_PATH_TYPE,
+  DEBML_KR_MIXER_ADV_CTL,
+  DEBML_KR_MIXER_INFO,
+  DEBML_KR_MIXER_PATH_INFO,
+  DEBML_KR_SFX_CONTROL,
+  DEBML_KR_SFX_EFFECT_TYPE,
+  DEBML_KR_SFX_EFFECT_CONTROL,
+  DEBML_KR_EQ_BAND_INFO,
+  DEBML_KR_EQ_INFO,
+  DEBML_KR_LOWPASS_INFO,
+  DEBML_KR_HIGHPASS_INFO,
+  DEBML_KR_ANALOG_INFO,
+  DEBML_KR_V4L2_STATE,
   DEBML_KR_V4L2_MODE,
   DEBML_KR_V4L2_INFO,
   DEBML_KR_V4L2_OPEN_INFO
 } debml_enum;
 
 enum {
-  DEBML_ENUM_LAST = 4
+  DEBML_ENUM_LAST = 18
 };
 
 typedef enum {

@@ -6,9 +6,9 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
 static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char **string);
 static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string);
 
-static void kr_ebml_to_mixer_rep(kr_ebml2_t *ebml, kr_mixer_info *mixer_rep);
-static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml,
- kr_mixer_path_info *portgroup_rep);
+//static void kr_ebml_to_mixer_rep(kr_ebml2_t *ebml, kr_mixer_info *mixer_rep);
+/* static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml,
+ kr_mixer_path_info *portgroup_rep); */
 
 
 typedef struct kr_audioport_St kr_audioport_t;
@@ -541,7 +541,7 @@ void kr_mixer_set_control (kr_client_t *client, char *portgroup_name, char *cont
   kr_client_push (client);
 }
 
-static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *portgroup_rep) {
+/*static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *portgroup_rep) {
 
   int i;
 
@@ -569,9 +569,9 @@ static int kr_ebml_to_mixer_portgroup_rep(kr_ebml2_t *ebml, kr_mixer_path_info *
   kr_ebml2_unpack_element_float (ebml, NULL, &portgroup_rep->analog.blend);
 
   return 1;
-}
+}*/
 
-static void kr_ebml_to_mixer_rep(kr_ebml *ebml, kr_mixer_info *mixer) {
+/*static void kr_ebml_to_mixer_rep(kr_ebml *ebml, kr_mixer_info *mixer) {
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->period_size);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->sample_rate);
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->inputs);
@@ -579,7 +579,7 @@ static void kr_ebml_to_mixer_rep(kr_ebml *ebml, kr_mixer_info *mixer) {
   kr_ebml2_unpack_element_uint32(ebml, NULL, &mixer->buses);
   kr_ebml2_unpack_element_string(ebml, NULL, mixer->clock,
    sizeof(mixer->clock));
-}
+}*/
 
 static int kr_mixer_response_get_string_from_subunit_control (kr_crate_t *crate, char **string) {
 
@@ -615,13 +615,16 @@ static int kr_mixer_response_get_string_from_mixer (kr_crate_t *crate, char **st
 
   pos = 0;
 
-  kr_ebml_to_mixer_rep (&crate->payload_ebml, &mixer);
-  pos += sprintf(*string + pos, "Mixer Status:\n");
+  //kr_ebml_to_mixer_rep (&crate->payload_ebml, &mixer);
+  kr_mixer_info_fr_ebml(&crate->payload_ebml, &mixer);
+  pos += kr_mixer_info_to_text(*string,(void *)&mixer,4096);
+
+/*  pos += sprintf(*string + pos, "Mixer Status:\n");
   pos += sprintf(*string + pos, "Sample Rate: %u\n", mixer.sample_rate);
   pos += sprintf(*string + pos, "Inputs: %u\n", mixer.inputs);
   pos += sprintf(*string + pos, "Outputs: %u\n", mixer.outputs);
   pos += sprintf(*string + pos, "Buses: %u\n", mixer.buses);
-  pos += sprintf(*string + pos, "Time Source: %s", mixer.clock);
+  pos += sprintf(*string + pos, "Time Source: %s", mixer.clock);*/
 
   return pos;
 }
@@ -635,7 +638,11 @@ static int kr_mixer_response_get_string_from_portgroup (kr_crate_t *crate, char 
 
   pos = 0;
 
-  kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &portgroup_rep);
+  //kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &portgroup_rep);
+  memset(&portgroup_rep,0,sizeof(kr_mixer_path_info));
+  kr_mixer_path_info_fr_ebml(&crate->payload_ebml, (void *)&portgroup_rep);
+  //pos += kr_mixer_path_info_to_text(*string,(void *)&portgroup_rep,4096);
+
   //FIXME
 //  if ((portgroup_rep.direction == OUTPUT) && (portgroup_rep.output_type == DIRECT)) {
 //    pos += sprintf (*string + pos, "%d Channel ", portgroup_rep.channels);
@@ -751,7 +758,8 @@ int kr_mixer_crate_to_rep (kr_crate_t *crate) {
   if ((crate->address.path.subunit.mixer_subunit != KR_PORTGROUP) &&
       (crate->notice == EBML_ID_KRAD_UNIT_INFO)) {
     crate->contains = KR_MIXER;
-    kr_ebml_to_mixer_rep (&crate->payload_ebml, &crate->rep.mixer);
+    //kr_ebml_to_mixer_rep (&crate->payload_ebml, &crate->rep.mixer);
+    kr_mixer_info_fr_ebml(&crate->payload_ebml, &crate->rep.mixer);
 
     crate->client->sample_rate = crate->rep.mixer.sample_rate;
     crate->client->period_size = crate->rep.mixer.period_size;
@@ -765,7 +773,8 @@ int kr_mixer_crate_to_rep (kr_crate_t *crate) {
     case KR_PORTGROUP:
       if ((crate->notice == EBML_ID_KRAD_SUBUNIT_CREATED) || (crate->notice == EBML_ID_KRAD_SUBUNIT_INFO)) {
         crate->contains = KR_PORTGROUP;
-        kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &crate->rep.portgroup);
+        //kr_ebml_to_mixer_portgroup_rep (&crate->payload_ebml, &crate->rep.portgroup);
+        kr_mixer_path_info_fr_ebml(&crate->payload_ebml, (void *)&crate->rep.portgroup);
         return 1;
       }
       break;

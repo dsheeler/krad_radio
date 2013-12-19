@@ -35,19 +35,20 @@ int kr_mixer_get_path_info(kr_mixer_path *unit, kr_mixer_path_info *info) {
   return 0;
 }
 
-void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
+/*void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
   kr_ebml_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->period_size);
   kr_ebml_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->sample_rate);
   kr_ebml_pack_uint32(e, KR_EID_MIXER_INPUTS, info->inputs);
   kr_ebml_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->outputs);
   kr_ebml_pack_uint32(e, KR_EID_MIXER_BUSES, info->buses);
   kr_ebml_pack_string(e, KR_EID_MIXER_CLOCK, info->clock);
-}
+}*/
 
 void kr_mixer_to_ebml(kr_ebml *e, kr_mixer *mixer) {
   kr_mixer_info info;
   kr_mixer_get_info(mixer, &info);
-  kr_mixer_info_to_ebml(e, &info);
+  //kr_mixer_info_to_ebml(e, &info);
+  kr_mixer_info_to_ebml(e, (void *)&info);
 }
 
 int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
@@ -231,7 +232,8 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
                              EBML_ID_KRAD_SUBUNIT_INFO);
         kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
         kr_mixer_get_path_info(unit, &info);
-        kr_mixer_path_info_to_ebml(&info, &ebml_out);
+        //kr_mixer_path_info_to_ebml(&info, &ebml_out); /* old call */
+        kr_mixer_path_info_to_ebml(&ebml_out, (void *)&info); /* new generated call */
         kr_ebml2_finish_element(&ebml_out, payload);
         kr_ebml2_finish_element(&ebml_out, response);
       }

@@ -4,7 +4,7 @@ char *ebml_pack_or_unpack(uint8_t type) {
   if (type) {
     return "kr_ebml_pack";
   } else {
-    return "kr_ebml2_unpack";
+    return "kr_ebml2_unpack_element";
   }
 }
 
@@ -61,9 +61,9 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
 
   if (def->isenum) {
     if (ebml_fun_type) {
-      fprintf(out,"  res += %s(ebml, 0x%x, *actual);\n","kr_ebml_pack_int8",0xE1);
+      fprintf(out,"  res += %s(ebml, 0x%x, *actual);\n","kr_ebml_pack_int32",0xE1);
     } else {
-      fprintf(out,"  res += %s(ebml, actual, sizeof(int8_t));\n","kr_ebml2_unpack_int8");
+      fprintf(out,"  res += %s(ebml, NULL, actual);\n","kr_ebml2_unpack_element_int32");
     }
     return;
   }
@@ -94,21 +94,28 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
           fprintf(out,"    res += %s%s(ebml, 0x%x, actual->%s[i]);\n",
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,0xE1,members[i]->name);
         } else {
-          fprintf(out,"    res += %s%s(ebml, &actual->%s[i], sizeof(%s));\n",
-            ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name,members[i]->type);
+          fprintf(out,"    res += %s%s(ebml, NULL, &actual->%s[i]);\n",
+            ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name);
         }
 
         fprintf(out,"  }\n");
-      } else {
-
+      } else if (!strncmp(members[i]->type,"char",4)) {
         if (ebml_fun_type) {
           fprintf(out,"  res += %s%s(ebml, 0x%x, actual->%s);\n",
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,0xE1,members[i]->name);
         } else {
-          fprintf(out,"  res += %s%s(ebml, &actual->%s, sizeof(%s));\n",
-            ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name,members[i]->type);
+          fprintf(out,"  res += %s%s(ebml, NULL, actual->%s , sizeof(actual->%s));\n",
+            ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name,members[i]->name);
         }
-
+      }
+      else {
+        if (ebml_fun_type) {
+          fprintf(out,"  res += %s%s(ebml, 0x%x, actual->%s);\n",
+            ebml_pack_or_unpack(ebml_fun_type),ebml_fname,0xE1,members[i]->name);
+        } else {
+          fprintf(out,"  res += %s%s(ebml, NULL, &actual->%s);\n",
+            ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name);
+        }
       }
     } else if (codegen_string_to_enum(members[i]->type)) {
       char uppercased[strlen(members[i]->type)+1];

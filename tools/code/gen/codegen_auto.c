@@ -22,6 +22,8 @@ void common_gen(struct header_defs *hdefs,
   int ndefs, char *prefix, char *suffix, char *outpath, FILE *genc) {
   FILE *common;
   char outfilen[256];
+  char gformat[256];
+  char *format;
   int i;
 
   sprintf(outfilen,"%s/gen.h",outpath);
@@ -32,8 +34,26 @@ void common_gen(struct header_defs *hdefs,
     exit(1);
   }
 
-  fprintf(common,"#ifndef COMMON_GEN_H\n#define COMMON_GEN_H\n\n");
+  fprintf(common,"#ifndef COMMON_GEN_H\n#define COMMON_GEN_H\n");
+  fprintf(common,"#include \"krad_ebmlx.h\"\n\n");
   fprintf(common,"typedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
+
+  for (i = 0; i < MAX_TARGET_TYPES; i++) {
+    
+    switch (i) {
+      case TO_TEXT: format = "text"; break;
+      case TO_EBML: format = "ebml"; break;
+      case TO_JSON: format = "json"; break;
+      case FR_EBML: format = "debml"; break;
+      default: format = ""; break;
+    }
+
+    sprintf(gformat,"%s/typedef",format);
+    codegen(hdefs[0].defs,hdefs[0].ndefs,prefix,suffix,gformat,common);
+
+  }
+
+  fprintf(common,"\n");
 
   for (i = 0; i < MAX_TARGET_TYPES; i++) {
     codegen_enum(hdefs,ndefs,prefix,suffix,common,i+1);

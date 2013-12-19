@@ -1,6 +1,6 @@
 #include "krad_mixer_common.h"
 
-void kr_mixer_path_info_to_ebml(kr_mixer_path_info *unit, kr_ebml *ebml) {
+/*void kr_mixer_path_info_to_ebml(kr_mixer_path_info *unit, kr_ebml *ebml) {
 
   int i;
 
@@ -26,7 +26,7 @@ void kr_mixer_path_info_to_ebml(kr_mixer_path_info *unit, kr_ebml *ebml) {
   kr_ebml_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->highpass.bw);
   kr_ebml_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->analog.drive);
   kr_ebml_pack_float(ebml, EBML_ID_KRAD_EFFECT_CONTROL, unit->analog.blend);
-}
+}*/
 
 char *kr_mixer_channeltostr(int channel) {
   switch (channel) {

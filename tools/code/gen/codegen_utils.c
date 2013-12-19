@@ -89,7 +89,8 @@ static void codegen_function(struct struct_def *def, char *type,
   }
 
   for (i = 0; i < def->members; i++) {
-    if (def->members_info[i].array) {
+    if ( (def->members_info[i].array || def->members_info[i].array_str_val)
+     && strncmp(def->members_info[i].type,"char",4)) {
       res += sprintf(&decl[res],"  int i;\n");
       break;
     }

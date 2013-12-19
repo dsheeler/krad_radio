@@ -23,6 +23,11 @@
 #include "krad_ebml.h"
 #include "krad_radio_ipc.h"
 
+#include "gen/krad_mixer_to_json.h"
+#include "gen/krad_mixer_to_ebml.h"
+#include "gen/krad_mixer_from_ebml.h"
+#include "gen/krad_mixer_to_text.h"
+
 typedef struct kr_mixer_info kr_mixer_info;
 typedef struct kr_mixer_path_info kr_mixer_path_info;
 typedef struct kr_mixer_path_info kr_mixer_input_info;
@@ -93,5 +98,5 @@ struct kr_mixer_path_info {
 char *kr_mixer_channeltostr(int channel);
 char *kr_mixer_ctltostr(kr_mixer_control control);
 char *kr_mixer_pathtypetostr(kr_mixer_path_type type);
-void kr_mixer_path_info_to_ebml(kr_mixer_path_info *pi, kr_ebml *ebml);
+//void kr_mixer_path_info_to_ebml(kr_mixer_path_info *pi, kr_ebml *ebml);
 #endif

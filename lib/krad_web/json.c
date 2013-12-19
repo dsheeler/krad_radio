@@ -206,49 +206,6 @@ static int handle_json(kr_iws_client_t *client, char *json, size_t len) {
   return 0;
 }
 
-void krad_websocket_add_portgroup(kr_iws_client_t *client,
- kr_mixer_path_info *portgroup) {
-
-  int i;
-  int pos;
-  char json[2048];
-
-  pos = 0;
-
-  pos += snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
-   "\"ctrl\":\"add_portgroup\",\"portgroup_name\":\"%s\","
-   "\"volume\":%g,", portgroup->name, portgroup->volume[0]);
-  if (portgroup->crossfade_group[0] != '\0') {
-    pos += snprintf(json + pos, sizeof(json) - pos,
-     "\"crossfade_name\":\"%s\",\"crossfade\":%g,",
-     portgroup->crossfade_group, portgroup->fade);
-  } else {
-    pos += snprintf(json + pos, sizeof(json) - pos,
-     "\"crossfade_name\":\"\",\"crossfade\":0,");
-  }
-  pos += snprintf(json + pos, sizeof(json) - pos, "\"type\":%d,",
-   portgroup->type);
-  pos += snprintf(json + pos, sizeof(json) - pos, "\"eq\":{\"bands\":[");
-  for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
-    pos += snprintf(json + pos, sizeof(json) - pos,
-     "{\"hz\":%g,\"db\":%g,\"bw\":%g},",
-      portgroup->eq.band[i].hz, portgroup->eq.band[i].db,
-      portgroup->eq.band[i].bw);
-  }
-  pos--;
-  pos += snprintf(json + pos, sizeof(json) - pos, "]},");
-  pos += snprintf(json + pos, sizeof(json) - pos,
-   "\"lowpass_hz\":%g,\"lowpass_bw\":%g,",
-   portgroup->lowpass.hz, portgroup->lowpass.bw);
-  pos += snprintf(json + pos, sizeof(json) - pos,
-   "\"highpass_hz\":%g,\"highpass_bw\":%g,",
-   portgroup->highpass.hz, portgroup->highpass.bw);
-  pos += snprintf(json + pos, sizeof(json) - pos,
-   "\"analog_drive\":%g,\"analog_blend\":%g",
-   portgroup->analog.drive, portgroup->analog.blend);
-  pos += snprintf(json + pos, sizeof(json) - pos, "}]");
-  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-}
 
 void krad_websocket_remove_portgroup (kr_iws_client_t *client,
  kr_address_t *address) {
@@ -330,17 +287,6 @@ void krad_websocket_update_portgroup ( kr_iws_client_t *client,
    address->id.name,
    kr_mixer_ctltostr(address->control.portgroup_control),
    value);
-
-  interweb_ws_pack(client, (uint8_t *)json, strlen(json));
-}
-
-void krad_websocket_set_mixer(kr_iws_client_t *client, kr_mixer_info *mixer) {
-
-  char json[96];
-
-  snprintf(json, sizeof(json), "[{\"com\":\"kradmixer\","
-   "\"ctrl\":\"set_mixer_params\",\"sample_rate\":\"%d\"}]",
-   mixer->sample_rate);
 
   interweb_ws_pack(client, (uint8_t *)json, strlen(json));
 }
@@ -472,22 +418,61 @@ void krad_websocket_update_subunit(kr_iws_client_t *client,
 }
 
 static int crate_to_json(kr_iws_client_t *client, kr_crate_t *crate) {
+
+  uber_St uber;
+  char json[2048];
+  char final_json[4096];
+  char *ctrl;
+  char *com;
+  int res = 0;
+
+  ctrl = "";
+  com = "";
+
   switch (crate->contains) {
     case 0:
       return 0;
     case KR_MIXER:
-      krad_websocket_set_mixer(client, crate->inside.mixer);
-      return 1;
+      uber.actual = crate->inside.mixer;
+      uber.type = JSON_KR_MIXER_INFO;
+      com = "kradmixer";
+      ctrl = "set_mixer_params";
+      break;
     case KR_PORTGROUP:
-      krad_websocket_add_portgroup(client, crate->inside.portgroup);
-      return 1;
+      uber.actual = crate->inside.mixer;
+      uber.type = JSON_KR_MIXER_PATH_INFO;
+      com = "kradmixer";
+      ctrl = "add_portgroup";
+      break;
     case KR_SPRITE:
+      uber.actual = crate->inside.sprite;
+      uber.type = JSON_KR_SPRITE_INFO;
+      break;
     case KR_VECTOR:
+      uber.actual = crate->inside.vector;
+      uber.type = JSON_KR_VECTOR_INFO;
+      break;
     case KR_TEXT:
+      uber.actual = crate->inside.text;
+      uber.type = JSON_KR_TEXT_INFO;
+      break;
     case KR_VIDEOPORT:
-      krad_websocket_add_comp_subunit(client, crate);
-      return 1;
+      uber.actual = crate->inside.text;
+      uber.type = JSON_KR_COMPOSITOR_PATH_INFO;
+      break;
   }
+
+  res += info_pack_to_json(&json[res],&uber,sizeof(json));
+
+  if (res) {
+    snprintf(final_json, sizeof(final_json), "[{\"com\":\"%s\","
+      "\"ctrl\":\"%s\",\"content\": %s }]",com,ctrl,json);
+    interweb_ws_pack(client, (uint8_t *)final_json, strlen(final_json));
+    sprintf(json,"{\"debug\" : \"Ok\", \"res\" : %d}",res);
+    interweb_ws_pack(client, (uint8_t *)json, strlen(json));
+    return 1;
+  }
+
   return 0;
 }
 
