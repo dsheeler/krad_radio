@@ -138,3 +138,4 @@ tools/kr_v4l2_stream
 tests/kr_wayland_test
 clients/kr_example_client
 clients/kr_test_client
+tests/kr_pool_test

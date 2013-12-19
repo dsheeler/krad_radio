@@ -31,18 +31,18 @@ char **dirscan(char *path, char *match, int *matches) {
   int max;
   int errors;
 
-  if (matches == NULL) { 
+  if (matches == NULL) {
     return NULL;
   }
-  if (path == NULL) { 
-    *matches = -1; 
+  if (path == NULL) {
+    *matches = -1;
     return NULL;
   }
   *matches = 0;
   errors = 0;
   scanned = 0;
   max = MAX_SCAN;
-  upstr[4095] = '\0'; 
+  upstr[4095] = '\0';
   pathstr[4095] = '\0';
   results = calloc(MAX_RESULTS, sizeof(char *));
   scan_dirs = calloc(MAX_SCAN, sizeof(char *));
@@ -64,7 +64,7 @@ char **dirscan(char *path, char *match, int *matches) {
       errors++;
       continue;
     }
-    for (;;) { 
+    for (;;) {
       error = readdir_r(dirp, (struct dirent *)buf, &cur_dir);
       if (error) {
         errno = error;
@@ -102,7 +102,7 @@ char **dirscan(char *path, char *match, int *matches) {
     closedir(dirp);
     scanned++;
     if (*matches + 1 == MAX_RESULTS) {
-      printf("result limit reached\n"); 
+      printf("result limit reached\n");
       break;
     }
   }
