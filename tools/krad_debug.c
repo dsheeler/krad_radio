@@ -12,7 +12,7 @@ void show_log() {
   }
 }
 
-static void *krad_debug_shutdown() {
+static void krad_debug_shutdown() {
   krad_system_log_off();
   printf("\nDebug log: %s\n\n", logfile);
   show_log();
