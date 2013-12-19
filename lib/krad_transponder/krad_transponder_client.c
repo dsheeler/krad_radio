@@ -9,6 +9,20 @@ static int kr_transponder_get_string_from_encoder (kr_encoder_t *encoder, char *
 
 static int kr_transponder_crate_get_string_from_adapter (kr_crate_t *crate, char **string, int maxlen);
 
+
+int kr_xpdr_mkpath(kr_client *client, kr_transponder_path_info *info) {
+
+  if (client == NULL) return -1;
+  if (info == NULL) return -1;
+
+  /* check that info is valid */
+  /* serialize info */
+  /* send info
+   * (perhaps send and serialize is part of one magical crate send?) */
+
+  return 0;
+}
+
 int kr_transponder_receiver_enable(kr_client *client, int port) {
 
   unsigned char *linker_command;

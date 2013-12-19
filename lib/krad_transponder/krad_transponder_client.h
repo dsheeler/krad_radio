@@ -1,20 +1,3 @@
-/**
- * @file krad_transponder_client.h
- * @brief Krad Radio Transponder Controller API
- */
-
-/**
- * @mainpage Krad Radio Transponder Controller
- *
- * Krad Radio Transponder Controller (Kripton this is where you might want to hold back beacause it will change a bit)
- *
- */
-
-
-/** @defgroup krad_transponder_client Krad Radio Transponder Control
-  @{
-  */
-
 #ifndef KRAD_TRANSPONDER_CLIENT_H
 #define KRAD_TRANSPONDER_CLIENT_H
 
@@ -25,8 +8,6 @@ int kr_transponder_crate_to_string(kr_crate_t *crate, char **string);
 
 void kr_transponder_info_get(kr_client_t *client);
 void kr_transponder_adapters(kr_client_t *client);
-
-/** Transponder **/
 
 int kr_transponder_transmitter_enable(kr_client *client, int port);
 void kr_transponder_transmitter_disable(kr_client *client);
@@ -40,7 +21,6 @@ void kr_transponder_subunit_update_str(kr_client *client, uint32_t number, uint3
 
 void kr_transponder_subunit_create(kr_client *client, char *mode, char *option);
 
-
-/**@}*/
+int kr_xpdr_mkpath(kr_client *client, kr_transponder_path_info *info);
 
 #endif
