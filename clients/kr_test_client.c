@@ -1,5 +1,12 @@
 #include "kr_client.h"
 
+void run_tests() {
+
+  /*
+   * kr_xpdr_mkpath(client, setup_info_struct);
+   */
+}
+
 int main (int argc, char *argv[]) {
   kr_client *client;
   char *sysname;
@@ -30,6 +37,8 @@ int main (int argc, char *argv[]) {
     return 1;
   }
   printf("Connected to %s!\n", sysname);
+  printf("Connected to %s!\n", sysname);
+  run_tests(client);
   printf("Disconnecting from %s..\n", sysname);
   kr_disconnect(client);
   printf("Disconnected from %s.\n", sysname);
