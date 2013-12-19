@@ -172,7 +172,7 @@ int main (int argc, char *argv[]) {
     return 1;
   }
   printf("Connected to %s!\n", sysname);
-  printf("Connected to %s!\n", sysname);
+  printf("Running Tests\n");
   ret = run_tests(client);
   printf("Disconnecting from %s..\n", sysname);
   kr_disconnect(client);
