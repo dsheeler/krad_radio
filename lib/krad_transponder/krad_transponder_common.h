@@ -65,9 +65,9 @@ struct kr_stat_St {
 };
 
 typedef enum {
-	AUDIO_ONLY = 150,
-	VIDEO_ONLY,
-	AUDIO_AND_VIDEO,
+  AUDIO_ONLY = 150,
+  VIDEO_ONLY,
+  AUDIO_AND_VIDEO,
 } krad_link_av_mode_t;
 
 typedef enum {
@@ -75,23 +75,23 @@ typedef enum {
   DECODE,
   MUX,
   ENCODE,
-	RAWIN,
-	RAWOUT,
-	FAILURE,
+  RAWIN,
+  RAWOUT,
+  FAILURE,
 } kr_txpdr_su_type_t;
 
 typedef enum {
-	TCP = 250,
-	UDP,
-	FILESYSTEM,
-	FAIL,
+  TCP = 250,
+  UDP,
+  FILESYSTEM,
+  FAIL,
 } krad_link_transport_mode_t;
 
 typedef enum {
-	V4L2 = 500,
-	DECKLINK,
-	X11,
-	NOVIDEO,
+  V4L2 = 500,
+  DECKLINK,
+  X11,
+  NOVIDEO,
 #ifdef KRAD_USE_FLYCAP
   FLYCAP
 #endif
@@ -146,28 +146,28 @@ struct kr_daala_encoder_St {
 };
 
 struct kr_vorbis_encoder_St {
-	float quality;
+  float quality;
 };
 
 struct kr_opus_encoder_St {
-	int bandwidth;
-	int signal;
-	int bitrate;
-	int complexity;
-	int frame_size;
+  int bandwidth;
+  int signal;
+  int bitrate;
+  int complexity;
+  int frame_size;
 };
 
 typedef union {
-	kr_vorbis_encoder_t vorbis;
-	kr_opus_encoder_t opus;
-	kr_flac_encoder_t flac;
+  kr_vorbis_encoder_t vorbis;
+  kr_opus_encoder_t opus;
+  kr_flac_encoder_t flac;
 } kr_audio_codec_t;
 
 typedef union {
-//	kr_vhs_encoder_t kvhs;
-	kr_vpx_encoder_t vpx;
-	kr_theora_encoder_t theora;
-	kr_daala_encoder_t daala;
+  /*kr_vhs_encoder_t kvhs;*/
+  kr_vpx_encoder_t vpx;
+  kr_theora_encoder_t theora;
+  kr_daala_encoder_t daala;
 } kr_video_codec_t;
 
 struct kr_audio_encoder_St {
@@ -207,25 +207,27 @@ struct kr_video_encoder_St {
 };
 
 typedef union {
-	kr_audio_encoder_t audio;
-	kr_video_encoder_t video;
+  kr_audio_encoder_t audio;
+  kr_video_encoder_t video;
 } kr_av_encoder_t;
 
 struct kr_encoder_St {
-	krad_codec_t codec;
-	kr_av_encoder_t av;
+  krad_codec_t codec;
+  kr_av_encoder_t av;
 };
 
 typedef union {
-	kr_audio_decoder_t audio;
-	kr_video_decoder_t video;
+  kr_audio_decoder_t audio;
+  kr_video_decoder_t video;
 } kr_av_decoder_t;
+
 /*
 struct kr_decoder_St {
-	krad_codec_t codec;
-	kr_av_decoder_t decoder;
+  krad_codec_t codec;
+  kr_av_decoder_t decoder;
 };
 */
+
 struct kr_udp_muxer_St {
   int ok;
 };
@@ -259,28 +261,28 @@ struct kr_transogg_demuxer_St {
 };
 
 typedef union {
-	kr_ogg_muxer_t ogg;
-	kr_mkv_muxer_t mkv;
-	kr_transogg_muxer_t togg;
-	kr_udp_muxer_t udp;
+  kr_ogg_muxer_t ogg;
+  kr_mkv_muxer_t mkv;
+  kr_transogg_muxer_t togg;
+  kr_udp_muxer_t udp;
 } kr_muxer_actual_t;
 
 struct kr_muxer_St {
-	kr_container_type_t type;
-	kr_muxer_actual_t container;
+  kr_container_type_t type;
+  kr_muxer_actual_t container;
 };
 
 typedef union {
-	kr_udp_demuxer_t udp;
-	kr_ogg_demuxer_t ogg;
-	kr_mkv_demuxer_t mkv;
-	kr_transogg_demuxer_t togg;
+  kr_udp_demuxer_t udp;
+  kr_ogg_demuxer_t ogg;
+  kr_mkv_demuxer_t mkv;
+  kr_transogg_demuxer_t togg;
 } kr_demuxer_actual_t;
 
 /*
 struct kr_demuxer_St {
-	kr_container_type_t type;
-	kr_demuxer_actual_t container;
+  kr_container_type_t type;
+  kr_demuxer_actual_t container;
 };
 */
 
