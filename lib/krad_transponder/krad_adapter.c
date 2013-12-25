@@ -260,7 +260,7 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
       return adapter;
     case KR_ADP_DECKLINK:
       decklink_adapter_create(adapter);
-      break;
+      return adapter;
     case KR_ADP_V4L2:
       v4l2_adapter_create(adapter);
       return adapter;
