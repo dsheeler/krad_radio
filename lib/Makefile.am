@@ -54,7 +54,6 @@ krad_tags/krad_tags.c \
 krad_mixer/krad_mixer_interface.c \
 krad_mixer/krad_mixer.c \
 krad_sfx/krad_tone.c \
-krad_jack/krad_jack.c \
 krad_ring/krad_resample_ring.c \
 krad_vpx/krad_vpx.c \
 krad_theora/krad_theora.c \
@@ -69,9 +68,12 @@ krad_web/krad_interweb.c \
 krad_transmitter/krad_transmitter.c \
 krad_ogg/krad_ogg.c \
 krad_ogg/krad_ogg2.c \
-krad_udp/krad_udp.c \
-krad_decklink/krad_decklink.c \
-krad_decklink/krad_decklink_capture.cpp
+krad_udp/krad_udp.c
+
+if HAVE_JACK
+krad_radio_libkradradio_la_SOURCES += krad_jack/krad_jack.c
+AM_CPPFLAGS += -DKR_JACK
+endif
 
 if HAVE_XMMS2
 krad_radio_libkradradio_la_SOURCES += krad_xmms2/krad_xmms2.c
@@ -98,12 +100,25 @@ krad_radio_libkradradio_la_LIBADD += -lgif
 AM_CPPFLAGS += -DKR_GIF
 endif
 
-if KR_LINUX
+if KR_DECKLINK
 krad_radio_libkradradio_la_SOURCES += krad_decklink/vendor/linux/DeckLinkAPIDispatch.cpp \
-																					krad_v4l2/krad_v4l2.c krad_alsa/krad_alsa.c
+ krad_decklink/krad_decklink.c krad_decklink/krad_decklink_capture.cpp
+AM_CPPFLAGS += -DKR_DECKLINK
+if KR_LINUX
 AM_CPPFLAGS += -Ikrad_decklink/vendor/linux
 else
 AM_CPPFLAGS += -Ikrad_decklink/vendor/osx
+endif
+endif
+
+if KR_ALSA
+krad_radio_libkradradio_la_SOURCES += krad_alsa/krad_alsa.c
+AM_CPPFLAGS += -DKR_ALSA
+endif
+
+if KR_V4L2
+krad_radio_libkradradio_la_SOURCES += krad_v4l2/krad_v4l2.c
+AM_CPPFLAGS += -DKR_V4L2
 endif
 
 krad_radio_libkradclient_la_CFLAGS = $(OPUS_CFLAGS)

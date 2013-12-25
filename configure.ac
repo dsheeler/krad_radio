@@ -25,26 +25,28 @@ CXXFLAGS="-g -Wall -Wno-write-strings $CXXFLAGS"
 case $host in
   *-linux*)
   AM_CONDITIONAL(KR_LINUX, true)
+  AM_CONDITIONAL(KR_ALSA, true)
+  AM_CONDITIONAL(KR_V4L2, true)
 esac
 
-AC_ARG_ENABLE([optimize], AS_HELP_STRING([--enable-optimize], [Enable Optimize]),
- [optimize=yes], [optimize=no])
-AS_IF([test "$optimize" = "yes"], [
-  CFLAGS="$CFLAGS -O3 -mtune=native"
-  CXXFLAGS="$CXXFLAGS -O3 -mtune=native"
-])
+AC_ARG_ENABLE([optimize], AS_HELP_STRING([--enable-optimize],[Enable Optimize]),
+ [optimize=yes],[optimize=no])
+AS_IF([test "$optimize" = "yes"],[CFLAGS="$CFLAGS -O3 -mtune=native"])
 
-AC_ARG_ENABLE([dev], AS_HELP_STRING([--enable-dev], [Enable developer tools]),
- [dev=yes], [dev=no])
-AS_IF([test "$dev" = "yes"],
- [AC_DEFINE([KR_IZ_US], [1], [Enable developer tools])])
-AM_CONDITIONAL([KR_IZ_US], [test "$dev" = "yes"])
+AC_ARG_ENABLE([dev], AS_HELP_STRING([--enable-dev],[Enable developer tools]),
+ [dev=yes],[dev=no])
+AS_IF([test "$dev" = "yes"],[AC_DEFINE([KR_IZ_US],[1],[Enable dev tools])])
+AM_CONDITIONAL([KR_IZ_US],[test "$dev" = "yes"])
 
-AC_ARG_ENABLE([tools], AS_HELP_STRING([--enable-tools], [Enable tools]),
- [tools=yes], [tools=no])
-AS_IF([test "$tools" = "yes"],
- [AC_DEFINE([KR_ENABLE_TOOLS], [1], [Enable tools])])
-AM_CONDITIONAL([KR_ENABLE_TOOLS], [test "$tools" = "yes"])
+AC_ARG_ENABLE([tools], AS_HELP_STRING([--enable-tools],[Enable tools]),
+ [tools=yes],[tools=no])
+AS_IF([test "$tools" = "yes"],[AC_DEFINE([KR_ENABLE_TOOLS],[1],[Enable tools])])
+AM_CONDITIONAL([KR_ENABLE_TOOLS],[test "$tools" = "yes"])
+
+AC_ARG_ENABLE([decklink], AS_HELP_STRING([--disable-decklink],[Disable Decklink]),
+ [decklink=no],[decklink=yes])
+AS_IF([test "$decklink" = "yes"],[AC_DEFINE([KR_DECKLINK],[1],[Disable Decklink])])
+AM_CONDITIONAL([KR_DECKLINK],[test "$decklink" = "yes"])
 
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(m, pow)
@@ -129,6 +131,7 @@ AC_MSG_RESULT([
 
            ALSA: $alsa
           Daala: $daala $nnv
+       Decklink: $decklink
             gif: $gif
            JACK: $jack
         ncurses: $ncurses
