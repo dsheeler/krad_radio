@@ -143,7 +143,7 @@ static int path_prepare(kr_adapter_path *path) {
   switch (path->info.api) {
     case KR_ADP_JACK:
       kr_jack_path_prepare(path->api_path.jack);
-      break;
+      return 1;
     default:
       break;
   }
@@ -159,8 +159,7 @@ int kr_adapter_prepare(kr_adapter *adapter) {
 
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] != NULL) {
-      path_prepare(adapter->path[i]);
-      processed++;
+      processed += path_prepare(adapter->path[i]);
     }
   }
   return processed;

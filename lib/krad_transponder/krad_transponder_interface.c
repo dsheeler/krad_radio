@@ -1,14 +1,40 @@
 #include "krad_transponder_interface.h"
 
-static void kr_transponder_info_to_ebml(kr_ebml *ebml, kr_xpdr_info *info) {
+/*static void kr_transponder_info_to_ebml(kr_ebml *ebml, kr_xpdr_info *info) {
   kr_ebml_pack_uint16(ebml, EBML_ID_KRAD_RADIO_TCP_PORT, info->active_paths);
-}
+}*/
 
 static void transponder_info_ebml(kr_ebml *ebml, kr_transponder *xpdr) {
   kr_transponder_info info;
   memset(&info, 0, sizeof(kr_transponder_info));
   kr_transponder_get_info(xpdr, &info);
   kr_transponder_info_to_ebml(ebml, &info);
+}
+
+void test_cb_fun() {
+  printk("this is test cb fun");
+}
+
+void test_function(kr_transponder *xpdr, kr_transponder_path_info *info) {
+
+  kr_xpdr_path_setup setup;
+  char text[2048];
+
+  char *user = "this is my user pointer content";
+
+  printk("the test function was called!");
+
+  printk("path name %s",info->name);
+
+  if (kr_transponder_path_info_to_text(text,info,2048) > 0) {
+    printk("\n%s\n",text);
+  }
+
+  memcpy(&setup.info,info,sizeof(kr_transponder_path_info));
+  setup.ev_cb = test_cb_fun;
+  setup.user = xpdr;
+  kr_transponder_mkpath(xpdr,&setup);
+
 }
 
 int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
@@ -27,6 +53,7 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   radio = client->krad_radio;
   transponder = radio->transponder;
   app = radio->app;
+  kr_transponder_path_info path_info;
 
   if (!(kr_io2_has_in(in))) {
     return 0;
@@ -60,7 +87,17 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       kr_ebml2_finish_element(&ebml_out, payload);
       kr_ebml2_finish_element(&ebml_out, response);
       break;
-/*
+    case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST: {
+      break;
+    }
+    case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE: {
+      kr_transponder_path_info_fr_ebml(&ebml_in,&path_info);
+      test_function(transponder,&path_info);
+      break;
+    }
+
+
+  /*
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST:
       num = kr_xpdr_count (krad_transponder->xpdr);
       for (i = 0; i < KRAD_TRANSPONDER_MAX_SUBUNITS; i++) {

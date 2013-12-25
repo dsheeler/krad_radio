@@ -22,10 +22,8 @@ static void xpdr_adapter_event_cb(kr_adapter_event_cb_arg *arg) {
 
   xpdr = (kr_xpdr *)arg->user;
 
-  kr_adapter_prepare(arg->adapter);
-
   /* if we are the audio or video clock do a process .. */
-  if (1) {
+  if (kr_adapter_prepare(arg->adapter)) {
     /* FIXME FIXME FIXME need to reconcile period size */
     ret = kr_mixer_process(xpdr->mixer);
     if (ret > 0) {
