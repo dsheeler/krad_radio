@@ -134,6 +134,7 @@ tools/code/gen/codegen_auto
 tools/code/gen/codegen_bootstrap
 tools/code/gen/test
 tools/kr_dl_stream
+tools/kr_x11_stream
 tools/kr_v4l2_stream
 tests/kr_wayland_test
 clients/kr_example_client
