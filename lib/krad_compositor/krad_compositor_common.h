@@ -71,6 +71,10 @@ typedef struct kr_compositor_controls kr_compositor_controls;
 typedef struct kr_compositor_info kr_compositor_info;
 
 #include "gen/krad_compositor_to_json.h"
+#include "gen/krad_compositor_to_ebml.h"
+#include "gen/krad_compositor_from_ebml.h"
+#include "gen/krad_compositor_to_text.h"
+#include "gen/krad_compositor_helpers.h"
 
 struct kr_compositor_controls {
   int32_t x;

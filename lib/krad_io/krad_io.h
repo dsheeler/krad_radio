@@ -66,4 +66,6 @@ int kr_io2_sync(kr_io2_t *io); // temp file only kludge
 void kr_io2_pulled(kr_io2_t *io, size_t bytes); // advance the users read pointer by N
 size_t kr_io2_read(kr_io2_t *io); // actually read into buffer
 
+#include "gen/krad_io_to_ebml.h"
+
 #endif

@@ -14,4 +14,9 @@ typedef struct {
   int fullscreen;
 } kr_wayland_path_info;
 
+#include "gen/krad_wayland_to_ebml.h"
+#include "gen/krad_wayland_from_ebml.h"
+#include "gen/krad_wayland_to_text.h"
+#include "gen/krad_wayland_helpers.h"
+
 #endif
