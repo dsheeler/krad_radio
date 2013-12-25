@@ -6,9 +6,7 @@ static int kr_transponder_get_string_from_muxer (kr_muxer_t *muxer, char *string
 //static int kr_transponder_get_string_from_demuxer (kr_demuxer_t *demuxer, char *string, int maxlen);
 static int kr_transponder_get_string_from_encoder (kr_encoder_t *encoder, char *string, int maxlen);
 //static int kr_transponder_get_string_from_decoder (kr_decoder_t *decoder, char *string, int maxlen);
-
 static int kr_transponder_crate_get_string_from_adapter (kr_crate_t *crate, char **string, int maxlen);
-
 
 int kr_xpdr_mkpath(kr_client *client, kr_transponder_path_info *info) {
 
@@ -20,6 +18,21 @@ int kr_xpdr_mkpath(kr_client *client, kr_transponder_path_info *info) {
   /* send info
    * (perhaps send and serialize is part of one magical crate send?) */
 
+  if (kr_transponder_path_info_valid(info) < 0) {
+   return -1;
+  }
+  unsigned char *command;
+  unsigned char *test_command;
+  unsigned char *payload;
+
+  kr_ebml2_start_element(client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD, &command);
+  kr_ebml2_start_element(client->ebml2, EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_CREATE, &test_command);
+
+  kr_transponder_path_info_to_ebml(client->ebml2,info);
+  kr_ebml2_finish_element(client->ebml2, test_command);
+  kr_ebml2_finish_element(client->ebml2, command);
+
+  kr_client_push(client);
   return 0;
 }
 
