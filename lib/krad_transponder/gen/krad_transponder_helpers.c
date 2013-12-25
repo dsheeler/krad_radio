@@ -37,13 +37,13 @@ int kr_adapter_api_to_index(int val) {
       return 0;
     case KR_ADP_WAYLAND:
       return 1;
-    case KR_ADP_DECKLINK:
-      return 2;
-    case KR_ADP_KRAPI:
-      return 3;
-    case KR_ADP_ALSA:
-      return 4;
     case KR_ADP_V4L2:
+      return 2;
+    case KR_ADP_DECKLINK:
+      return 3;
+    case KR_ADP_KRAPI:
+      return 4;
+    case KR_ADP_ALSA:
       return 5;
     case KR_ADP_ENCODER:
       return 6;
@@ -57,14 +57,14 @@ char *kr_strfr_kr_adapter_api(int val) {
       return "kr_adp_jack";
     case KR_ADP_WAYLAND:
       return "kr_adp_wayland";
+    case KR_ADP_V4L2:
+      return "kr_adp_v4l2";
     case KR_ADP_DECKLINK:
       return "kr_adp_decklink";
     case KR_ADP_KRAPI:
       return "kr_adp_krapi";
     case KR_ADP_ALSA:
       return "kr_adp_alsa";
-    case KR_ADP_V4L2:
-      return "kr_adp_v4l2";
     case KR_ADP_ENCODER:
       return "kr_adp_encoder";
   }
@@ -78,6 +78,9 @@ int kr_strto_kr_adapter_api(char *string) {
   if (!strcmp(string,"kr_adp_wayland")) {
     return KR_ADP_WAYLAND;
   }
+  if (!strcmp(string,"kr_adp_v4l2")) {
+    return KR_ADP_V4L2;
+  }
   if (!strcmp(string,"kr_adp_decklink")) {
     return KR_ADP_DECKLINK;
   }
@@ -86,9 +89,6 @@ int kr_strto_kr_adapter_api(char *string) {
   }
   if (!strcmp(string,"kr_adp_alsa")) {
     return KR_ADP_ALSA;
-  }
-  if (!strcmp(string,"kr_adp_v4l2")) {
-    return KR_ADP_V4L2;
   }
   if (!strcmp(string,"kr_adp_encoder")) {
     return KR_ADP_ENCODER;

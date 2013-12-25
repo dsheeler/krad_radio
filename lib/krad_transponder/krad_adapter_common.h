@@ -16,10 +16,10 @@ typedef enum {
 typedef enum {
   KR_ADP_JACK,        /*     A  MP  I/O ePush/ePull              */
   KR_ADP_WAYLAND,     /* V      MP  Output iPush, ePull pos      */
+  KR_ADP_V4L2,        /* V      SP  Input ePush                  */
   KR_ADP_DECKLINK,    /* V + A  MP  Input ePush                  */
   KR_ADP_KRAPI,       /* V + A  MP  I/O ANY ePush/ePull          */
   KR_ADP_ALSA,        /*     A  MP  I/O ePush/ePull              */
-  KR_ADP_V4L2,        /* V      SP  Input ePush                  */
   KR_ADP_ENCODER,     /* V + A  SP  Output iPush only            */
 } kr_adapter_api;
 
