@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-bin_PROGRAMS = kr
+bin_PROGRAMS = kr kr_snapshot
 
 if KR_IZ_US
 noinst_PROGRAMS = kr_example_client kr_test_client
@@ -10,6 +10,11 @@ kr_SOURCES = kr.c
 kr_CFLAGS = $(OPUS_CFLAGS)
 kr_CFLAGS += -DKR_GIT_VERSION=\"$(KR_GIT_VERSION)\"
 kr_LDFLAGS = ../lib/krad_radio/libkradclient.la
+
+kr_snapshot_SOURCES = kr_snapshot.c
+kr_snapshot_CFLAGS = $(OPUS_CFLAGS) $(CAIRO_CFLAGS)
+kr_snapshot_CFLAGS += -DKR_GIT_VERSION=\"$(KR_GIT_VERSION)\"
+kr_snapshot_LDFLAGS = ../lib/krad_radio/libkradclient.la $(CAIRO_LIBS)
 
 kr_example_client_SOURCES = kr_example_client.c
 kr_example_client_CFLAGS = $(OPUS_CFLAGS)
