@@ -267,6 +267,9 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
     case KR_ADP_JACK:
       jack_adapter_create(adapter);
       return adapter;
+    case KR_ADP_X11:
+      x11_adapter_create(adapter);
+      return adapter;
     default:
       break;
   }
