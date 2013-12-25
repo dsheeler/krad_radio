@@ -80,7 +80,7 @@ int path_render(kr_compositor_path *path, kr_image *dst, cairo_t *cr) {
   kr_image image;
   kr_compositor_path_frame_cb_arg cb_arg;
   cairo_surface_t *src;
-  static uint8_t scratch[1280*720*4]; /*FIXME*/
+  static uint8_t scratch[1920*1080*4]; /*FIXME*/
 
   cb_arg.user = path->user;
   path_tick(path);

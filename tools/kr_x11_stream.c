@@ -136,17 +136,18 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
 void kr_x11s_run (kr_x11s_t *x11s) {
 
   krad_frame_t *frame;
+  kr_image image;
   kr_medium_t *vmedium;
   kr_codeme_t *vcodeme;
   struct SwsContext *converter;
   int sws_algo;
-  uint8_t *image;
+  uint8_t *screen_image;
   int32_t ret;
 
   signal (SIGINT, term_handler);
   signal (SIGTERM, term_handler);
 
-  image = NULL;
+  screen_image = NULL;
   converter = NULL;
   sws_algo = SWS_BILINEAR;
 
@@ -166,7 +167,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
 
     frame = NULL;
 
-    if (!kr_x11_capture_getptr (x11s->x11, &image)) {
+    if (!kr_x11_capture_getptr (x11s->x11, &screen_image)) {
       continue;
     }
 
@@ -181,7 +182,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     }
 
     frame->format = PIX_FMT_RGB32;
-    frame->yuv_pixels[0] = image;
+    frame->yuv_pixels[0] = screen_image;
     frame->yuv_pixels[1] = NULL;
     frame->yuv_pixels[2] = NULL;
     frame->yuv_strides[0] = x11s->x11->stride;
@@ -223,7 +224,20 @@ void kr_x11s_run (kr_x11s_t *x11s) {
 
     krad_framepool_unref_frame (frame);
 
-    ret = kr_vpx_encode (x11s->vpx_enc, vcodeme, vmedium);
+    image.w = x11s->params->width;
+    image.h = x11s->params->height;
+    image.pps[0] = vmedium->v.pps[0];
+    image.pps[1] = vmedium->v.pps[1];
+    image.pps[2] = vmedium->v.pps[2];
+    image.pps[3] = vmedium->v.pps[3];
+    image.px = vmedium->v.ppx[0];
+    image.ppx[0] = vmedium->v.ppx[0];
+    image.ppx[1] = vmedium->v.ppx[1];
+    image.ppx[2] = vmedium->v.ppx[2];
+    image.ppx[3] = vmedium->v.ppx[3];
+    image.fmt = PIX_FMT_YUV420P;
+
+    ret = kr_vpx_encode(x11s->vpx_enc, vcodeme, &image);
     if (ret == 1) {
       kr_mkv_add_video_tc (x11s->mkv, 1,
                            vcodeme->data, vcodeme->sz,

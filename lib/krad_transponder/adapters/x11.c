@@ -6,18 +6,24 @@ int x11_adapter_process(kr_adapter_path *path) {
   kr_adapter_path_av_cb_arg cb_arg;
   kr_image image;
   kr_ticker *ticker;
-  int ret;
   int num;
   int den;
+  int ret;
   ticker = NULL;
   num = 30;
   den = 1;
   krad_system_set_thread_name("kr_x11");
+  memset(&image, 0, sizeof(kr_image));
   ticker = krad_ticker_create(num, den);
   krad_ticker_start(ticker);
   for(;;) {
-    kr_x11_capture(path->adapter->handle.x11, image.px);
-    if (ret == 1) {
+    ret = kr_x11_capture_getptr(path->adapter->handle.x11, &image.px);
+    if (ret > 0) {
+      image.w = path->adapter->handle.x11->screen_width;
+      image.h = path->adapter->handle.x11->screen_height;
+      image.ppx[0] = image.px;
+      image.pps[0] = image.w * 4;
+      image.fmt = PIX_FMT_RGB32;
       cb_arg.path = path;
       cb_arg.user = cb_arg.path->user;
       cb_arg.image = image;
