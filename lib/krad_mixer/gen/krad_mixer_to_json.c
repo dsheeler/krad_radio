@@ -2,14 +2,15 @@
 
 int kr_mixer_channels_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_mixer_channels *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_mixer_channels*)st;
+  actual = (kr_mixer_channels *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -18,14 +19,15 @@ int kr_mixer_channels_to_json(char *json, void *st, int32_t max) {
 
 int kr_mixer_control_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_mixer_control *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_mixer_control*)st;
+  actual = (kr_mixer_control *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -34,14 +36,15 @@ int kr_mixer_control_to_json(char *json, void *st, int32_t max) {
 
 int kr_mixer_path_type_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_mixer_path_type *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_mixer_path_type*)st;
+  actual = (kr_mixer_path_type *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -50,14 +53,15 @@ int kr_mixer_path_type_to_json(char *json, void *st, int32_t max) {
 
 int kr_mixer_adv_ctl_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_mixer_adv_ctl *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_mixer_adv_ctl*)st;
+  actual = (kr_mixer_adv_ctl *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -66,14 +70,15 @@ int kr_mixer_adv_ctl_to_json(char *json, void *st, int32_t max) {
 
 int kr_mixer_info_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   struct kr_mixer_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_mixer_info*)st;
+  actual = (struct kr_mixer_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"period_size\" : %u,",actual->period_size);
@@ -93,14 +98,15 @@ int kr_mixer_path_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int i;
   int res;
-  res = 0;
   struct kr_mixer_path_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_mixer_path_info*)st;
+  actual = (struct kr_mixer_path_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"name\" : \"%s\",",actual->name);

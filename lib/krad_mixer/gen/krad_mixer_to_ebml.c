@@ -2,14 +2,15 @@
 
 int kr_mixer_channels_to_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   kr_mixer_channels *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (kr_mixer_channels*)st;
+  actual = (kr_mixer_channels *)st;
 
   res += kr_ebml_pack_int32(ebml, 0xe1, *actual);
 
@@ -18,14 +19,15 @@ int kr_mixer_channels_to_ebml(kr_ebml *ebml, void *st) {
 
 int kr_mixer_control_to_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   kr_mixer_control *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (kr_mixer_control*)st;
+  actual = (kr_mixer_control *)st;
 
   res += kr_ebml_pack_int32(ebml, 0xe1, *actual);
 
@@ -34,14 +36,15 @@ int kr_mixer_control_to_ebml(kr_ebml *ebml, void *st) {
 
 int kr_mixer_path_type_to_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   kr_mixer_path_type *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (kr_mixer_path_type*)st;
+  actual = (kr_mixer_path_type *)st;
 
   res += kr_ebml_pack_int32(ebml, 0xe1, *actual);
 
@@ -50,14 +53,15 @@ int kr_mixer_path_type_to_ebml(kr_ebml *ebml, void *st) {
 
 int kr_mixer_adv_ctl_to_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   kr_mixer_adv_ctl *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (kr_mixer_adv_ctl*)st;
+  actual = (kr_mixer_adv_ctl *)st;
 
   res += kr_ebml_pack_int32(ebml, 0xe1, *actual);
 
@@ -66,14 +70,15 @@ int kr_mixer_adv_ctl_to_ebml(kr_ebml *ebml, void *st) {
 
 int kr_mixer_info_to_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   struct kr_mixer_info *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (struct kr_mixer_info*)st;
+  actual = (struct kr_mixer_info *)st;
 
   res += kr_ebml_pack_uint32(ebml, 0xe1, actual->period_size);
   res += kr_ebml_pack_uint32(ebml, 0xe1, actual->sample_rate);
@@ -91,14 +96,15 @@ int kr_mixer_path_info_to_ebml(kr_ebml *ebml, void *st) {
   uber_St uber;
   int i;
   int res;
-  res = 0;
   struct kr_mixer_path_info *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (struct kr_mixer_path_info*)st;
+  actual = (struct kr_mixer_path_info *)st;
 
   res += kr_ebml_pack_string(ebml, 0xe1, actual->name);
   res += kr_ebml_pack_string(ebml, 0xe1, actual->bus);

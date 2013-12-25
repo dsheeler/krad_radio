@@ -10,6 +10,7 @@
 #include "../krad_sfx/gen/krad_sfx_to_text.c"
 #include "../krad_v4l2/gen/krad_v4l2_to_text.c"
 #include "../krad_v4l2/gen/krad_v4l2_to_json.c"
+#include "../krad_v4l2/gen/krad_v4l2_from_json.c"
 #include "../krad_v4l2/gen/krad_v4l2_to_ebml.c"
 #include "../krad_v4l2/gen/krad_v4l2_from_ebml.c"
 #include "../krad_v4l2/gen/krad_v4l2_helpers.c"
@@ -17,4 +18,6 @@
 #include "text_common.c"
 #include "debml_common.c"
 #include "json_common.c"
+#include "jsmn/jsmn.c"
+#include "dejson_common.c"
 

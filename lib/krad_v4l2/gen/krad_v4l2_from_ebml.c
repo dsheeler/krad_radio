@@ -2,14 +2,15 @@
 
 int kr_v4l2_state_fr_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   kr_v4l2_state *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (kr_v4l2_state*)st;
+  actual = (kr_v4l2_state *)st;
 
   res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
 
@@ -18,14 +19,15 @@ int kr_v4l2_state_fr_ebml(kr_ebml *ebml, void *st) {
 
 int kr_v4l2_mode_fr_ebml(kr_ebml *ebml, void *st) {
   int res;
-  res = 0;
   struct kr_v4l2_mode *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_mode*)st;
+  actual = (struct kr_v4l2_mode *)st;
 
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->width);
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->height);
@@ -39,14 +41,15 @@ int kr_v4l2_mode_fr_ebml(kr_ebml *ebml, void *st) {
 int kr_v4l2_info_fr_ebml(kr_ebml *ebml, void *st) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_v4l2_info *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_info*)st;
+  actual = (struct kr_v4l2_info *)st;
 
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->dev);
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->priority);
@@ -63,14 +66,15 @@ int kr_v4l2_info_fr_ebml(kr_ebml *ebml, void *st) {
 int kr_v4l2_open_info_fr_ebml(kr_ebml *ebml, void *st) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_v4l2_open_info *actual;
+
+  res = 0;
 
   if ((ebml == NULL) || (st == NULL)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_open_info*)st;
+  actual = (struct kr_v4l2_open_info *)st;
 
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->dev);
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->priority);

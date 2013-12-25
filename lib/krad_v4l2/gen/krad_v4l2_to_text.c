@@ -2,14 +2,15 @@
 
 int kr_v4l2_state_to_text(char *text, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_v4l2_state *actual;
+
+  res = 0;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_v4l2_state*)st;
+  actual = (kr_v4l2_state *)st;
 
   res += snprintf(&text[res],max-res,"kr_v4l2_state : %u \n",*actual);
 
@@ -18,14 +19,15 @@ int kr_v4l2_state_to_text(char *text, void *st, int32_t max) {
 
 int kr_v4l2_mode_to_text(char *text, void *st, int32_t max) {
   int res;
-  res = 0;
   struct kr_v4l2_mode *actual;
+
+  res = 0;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_mode*)st;
+  actual = (struct kr_v4l2_mode *)st;
 
   res += snprintf(&text[res],max-res,"width : %d \n",actual->width);
   res += snprintf(&text[res],max-res,"height : %d \n",actual->height);
@@ -39,14 +41,15 @@ int kr_v4l2_mode_to_text(char *text, void *st, int32_t max) {
 int kr_v4l2_info_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_v4l2_info *actual;
+
+  res = 0;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_info*)st;
+  actual = (struct kr_v4l2_info *)st;
 
   res += snprintf(&text[res],max-res,"dev : %d \n",actual->dev);
   res += snprintf(&text[res],max-res,"priority : %d \n",actual->priority);
@@ -63,14 +66,15 @@ int kr_v4l2_info_to_text(char *text, void *st, int32_t max) {
 int kr_v4l2_open_info_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_v4l2_open_info *actual;
+
+  res = 0;
 
   if ((text == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_open_info*)st;
+  actual = (struct kr_v4l2_open_info *)st;
 
   res += snprintf(&text[res],max-res,"dev : %d \n",actual->dev);
   res += snprintf(&text[res],max-res,"priority : %d \n",actual->priority);

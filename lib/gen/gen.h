@@ -7,10 +7,12 @@ typedef struct {
   void *actual;
 } uber_St;
 
-int info_pack_to_text(char *text, uber_St *uber, int max);
+int info_pack_to_text(char *text, uber_St *uber, int32_t max);
 typedef int (*info_pack_to_text_func)(char *text, void *st, int max);
-int info_pack_to_json(char *json, uber_St *uber, int max);
+int info_pack_to_json(char *json, uber_St *uber, int32_t max);
 typedef int (*info_pack_to_json_func)(char *json, void *st, int max);
+int info_unpack_fr_json(char *json, uber_St *uber);
+typedef int (*info_unpack_fr_json_func)(char *json, void *st);
 int info_pack_to_ebml(kr_ebml *ebml, uber_St *uber);
 typedef int (*info_pack_to_ebml_func)(kr_ebml *ebml, void *st);
 int info_unpack_fr_ebml(kr_ebml *ebml, uber_St *uber);
@@ -77,6 +79,17 @@ typedef enum {
 
 enum {
   JSON_ENUM_LAST = 31
+};
+
+typedef enum {
+  DEJSON_KR_V4L2_STATE = 1,
+  DEJSON_KR_V4L2_MODE,
+  DEJSON_KR_V4L2_INFO,
+  DEJSON_KR_V4L2_OPEN_INFO
+} dejson_enum;
+
+enum {
+  DEJSON_ENUM_LAST = 4
 };
 
 typedef enum {

@@ -2,14 +2,15 @@
 
 int kr_v4l2_state_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_v4l2_state *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_v4l2_state*)st;
+  actual = (kr_v4l2_state *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -18,14 +19,15 @@ int kr_v4l2_state_to_json(char *json, void *st, int32_t max) {
 
 int kr_v4l2_mode_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   struct kr_v4l2_mode *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_mode*)st;
+  actual = (struct kr_v4l2_mode *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"width\" : %d,",actual->width);
@@ -41,14 +43,15 @@ int kr_v4l2_mode_to_json(char *json, void *st, int32_t max) {
 int kr_v4l2_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_v4l2_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_info*)st;
+  actual = (struct kr_v4l2_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"dev\" : %d,",actual->dev);
@@ -70,14 +73,15 @@ int kr_v4l2_info_to_json(char *json, void *st, int32_t max) {
 int kr_v4l2_open_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_v4l2_open_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_open_info*)st;
+  actual = (struct kr_v4l2_open_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"dev\" : %d,",actual->dev);

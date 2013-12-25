@@ -2,14 +2,15 @@
 
 int kr_compositor_path_type_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_compositor_path_type *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_compositor_path_type*)st;
+  actual = (kr_compositor_path_type *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -18,14 +19,15 @@ int kr_compositor_path_type_to_json(char *json, void *st, int32_t max) {
 
 int kr_compositor_subunit_type_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_compositor_subunit_type *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_compositor_subunit_type*)st;
+  actual = (kr_compositor_subunit_type *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -34,14 +36,15 @@ int kr_compositor_subunit_type_to_json(char *json, void *st, int32_t max) {
 
 int kr_vector_type_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_vector_type *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_vector_type*)st;
+  actual = (kr_vector_type *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -50,14 +53,15 @@ int kr_vector_type_to_json(char *json, void *st, int32_t max) {
 
 int kr_compositor_control_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   kr_compositor_control *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (kr_compositor_control*)st;
+  actual = (kr_compositor_control *)st;
 
   res += snprintf(&json[res],max-res,"\"%u\"",*actual);
 
@@ -66,14 +70,15 @@ int kr_compositor_control_to_json(char *json, void *st, int32_t max) {
 
 int kr_compositor_controls_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   struct kr_compositor_controls *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_compositor_controls*)st;
+  actual = (struct kr_compositor_controls *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"x\" : %d,",actual->x);
@@ -91,14 +96,15 @@ int kr_compositor_controls_to_json(char *json, void *st, int32_t max) {
 int kr_sprite_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_sprite_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_sprite_info*)st;
+  actual = (struct kr_sprite_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"filename\" : \"%s\",",actual->filename);
@@ -115,14 +121,15 @@ int kr_sprite_info_to_json(char *json, void *st, int32_t max) {
 int kr_text_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_text_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_text_info*)st;
+  actual = (struct kr_text_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"string\" : \"%s\",",actual->string);
@@ -142,14 +149,15 @@ int kr_text_info_to_json(char *json, void *st, int32_t max) {
 int kr_vector_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_vector_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_vector_info*)st;
+  actual = (struct kr_vector_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"type\": ");
@@ -172,14 +180,15 @@ int kr_vector_info_to_json(char *json, void *st, int32_t max) {
 int kr_compositor_path_info_to_json(char *json, void *st, int32_t max) {
   uber_St uber;
   int res;
-  res = 0;
   struct kr_compositor_path_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_compositor_path_info*)st;
+  actual = (struct kr_compositor_path_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"name\" : \"%s\",",actual->name);
@@ -210,14 +219,15 @@ int kr_compositor_path_info_to_json(char *json, void *st, int32_t max) {
 
 int kr_compositor_info_to_json(char *json, void *st, int32_t max) {
   int res;
-  res = 0;
   struct kr_compositor_info *actual;
+
+  res = 0;
 
   if ((json == NULL) || (st == NULL) || (max < 1)) {
     return -1;
   }
 
-  actual = (struct kr_compositor_info*)st;
+  actual = (struct kr_compositor_info *)st;
 
   res += snprintf(&json[res],max-res,"{");
   res += snprintf(&json[res],max-res,"\"width\" : %u,",actual->width);
