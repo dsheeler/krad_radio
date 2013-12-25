@@ -64,7 +64,7 @@ krad_flac/krad_flac.c \
 krad_opus/krad_opus.c \
 krad_opus/opus_header.c \
 krad_ring/krad_ring.c \
-krad_transponder/krad_transponder_interface.c \
+krad_transponder/krad_transponder_server.c \
 krad_transponder/krad_transponder.c \
 krad_web/krad_interweb.c \
 krad_transmitter/krad_transmitter.c \

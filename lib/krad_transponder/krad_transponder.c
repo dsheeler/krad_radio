@@ -29,7 +29,6 @@ struct kr_transponder {
   kr_transponder_event_cb *ev_cb;
 };
 
-#include "krad_transponder_event.c"
 #include "krad_transponder_processor.c"
 
 static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps);
@@ -42,6 +41,28 @@ static void path_io_create(kr_xpdr_path *path, kr_xpdr_path_io_info *info);
 static int path_create(kr_xpdr_path *path, kr_xpdr_path_setup *setup);
 static void path_io_destroy(kr_xpdr_path_io *io, kr_xpdr_path_io_type type);
 static void path_destroy(kr_xpdr_path *path);
+
+static void xpdr_adapter_path_event_cb(kr_adapter_path_event_cb_arg *arg) {
+  printk("yay adapter path event!");
+}
+
+static void xpdr_adapter_event_cb(kr_adapter_event_cb_arg *arg) {
+
+  kr_xpdr *xpdr;
+  uint32_t ret;
+
+  xpdr = (kr_xpdr *)arg->user;
+
+  /* if we are the audio or video clock do a process .. */
+  if (kr_adapter_prepare(arg->adapter)) {
+    /* FIXME FIXME FIXME need to reconcile period size */
+//    ret = kr_mixer_process(xpdr->mixer);
+    if (ret > 0) {
+      /* printk("mixed %u frames", ret); */
+      /* number of frames mixed, so time can be dealt with */
+    }
+  }
+}
 
 static kr_adapter *adapter_find(kr_xpdr *xpdr, kr_adapter_path_setup *ps) {
 

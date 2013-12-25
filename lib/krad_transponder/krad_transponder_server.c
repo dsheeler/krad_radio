@@ -1,8 +1,14 @@
-#include "krad_transponder_interface.h"
+#include "krad_transponder_server.h"
 
-/*static void kr_transponder_info_to_ebml(kr_ebml *ebml, kr_xpdr_info *info) {
-  kr_ebml_pack_uint16(ebml, EBML_ID_KRAD_RADIO_TCP_PORT, info->active_paths);
-}*/
+static void xpdr_event_cb(kr_xpdr_event_cb_arg *arg) {
+  kr_xpdr *xpdr;
+  xpdr = (kr_xpdr *)arg->user;
+  printk("yay xpdr event!");
+}
+
+static void path_event(kr_xpdr_path_event_cb_arg *arg) {
+  printk("yay xpdr path event!");
+}
 
 static void transponder_info_ebml(kr_ebml *ebml, kr_transponder *xpdr) {
   kr_transponder_info info;
@@ -11,34 +17,20 @@ static void transponder_info_ebml(kr_ebml *ebml, kr_transponder *xpdr) {
   kr_transponder_info_to_ebml(ebml, &info);
 }
 
-void test_cb_fun() {
-  printk("this is test cb fun");
-}
-
 void test_function(kr_transponder *xpdr, kr_transponder_path_info *info) {
-
   kr_xpdr_path_setup setup;
   char text[2048];
-
-  char *user = "this is my user pointer content";
-
-  printk("the test function was called!");
-
   printk("path name %s",info->name);
-
   if (kr_transponder_path_info_to_text(text,info,2048) > 0) {
     printk("\n%s\n",text);
   }
-
   memcpy(&setup.info,info,sizeof(kr_transponder_path_info));
-  setup.ev_cb = test_cb_fun;
+  setup.ev_cb = path_event;
   setup.user = xpdr;
   kr_transponder_mkpath(xpdr,&setup);
-
 }
 
 int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
-
   kr_radio *radio;
   kr_transponder *transponder;
   kr_address address;
@@ -50,6 +42,7 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   uint32_t command;
   uint64_t size;
   int ret;
+  int num;
   radio = client->krad_radio;
   transponder = radio->transponder;
   app = radio->app;
@@ -95,7 +88,12 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
       test_function(transponder,&path_info);
       break;
     }
-
+    case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY:
+      ret = kr_ebml2_unpack_element_int32(&ebml_in, NULL, &num);
+      if (ret == 0) {
+        printk("wanted to destroy %d", num);
+      }
+      break;
 
   /*
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_LIST:
@@ -114,8 +112,6 @@ int kr_transponder_cmd(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
         kr_ebml2_finish_element (&ebml_out, payload);
         kr_ebml2_finish_element (&ebml_out, response);
       }
-      break;
-    case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_DESTROY:
       break;
     case EBML_ID_KRAD_TRANSPONDER_CMD_SUBUNIT_UPDATE:
       break;

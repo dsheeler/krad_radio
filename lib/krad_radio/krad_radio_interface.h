@@ -1,7 +1,7 @@
 #include "krad_radio.h"
 #include "krad_radio_client.h"
 #include "krad_mixer_interface.h"
-#include "krad_transponder_interface.h"
+#include "krad_transponder_server.h"
 
 #ifndef KRAD_RADIO_INTERFACE_H
 #define KRAD_RADIO_INTERFACE_H

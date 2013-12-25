@@ -5,7 +5,7 @@
 static void radio_shutdown(kr_radio *radio);
 static kr_radio *radio_create(char *sysname);
 static void radio_start(kr_radio *radio);
-static void radio_wait(kr_radio *radio);
+static void radio_exist(kr_radio *radio);
 static void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage);
 
 static void radio_shutdown(kr_radio *radio) {
@@ -105,7 +105,6 @@ static kr_radio *radio_create(char *sysname) {
   kr_transponder_setup transponder_setup;
 
   radio = calloc(1, sizeof(kr_radio));
-  kr_radio_set_dir(radio, "/home/oneman/log");
   radio->log.startup_timer = kr_timer_create_with_name("startup");
   kr_timer_start(radio->log.startup_timer);
   strncpy(radio->sysname, sysname, sizeof(radio->sysname));
@@ -169,23 +168,16 @@ static kr_radio *radio_create(char *sysname) {
 }
 
 static void radio_start(kr_radio *radio) {
-
-  struct timespec start_sync;
-
   krad_system_monitor_cpu_on();
   krad_system_set_monitor_cpu_callback((void *)radio,
    (void (*)(void *, uint32_t))radio_cpu_monitor_callback);
-  clock_gettime(CLOCK_MONOTONIC, &start_sync);
-  start_sync = timespec_add_ms(start_sync, 100);
-  //krad_compositor_start_ticker_at(radio->compositor, start_sync);
-  //FIXMEkr_mixer_start_ticker_at(radio->mixer, start_sync);
   krad_app_server_run(radio->app);
   if (radio->log.startup_timer != NULL) {
     kr_timer_finish(radio->log.startup_timer);
   }
 }
 
-static void radio_wait(kr_radio *radio) {
+static void radio_exist(kr_radio *radio) {
   krad_system_daemon_wait();
 }
 
@@ -226,15 +218,12 @@ int kr_radio_daemon(char *sysname) {
   if (!krad_valid_sysname(sysname)) {
     return -1;
   }
-
   pid = fork();
-
   if (pid < 0) {
     return -1;
   } else if (pid > 0) {
     return 0;
   }
-
   krad_system_daemonize();
   krad_system_init();
   radio = radio_create(sysname);
@@ -242,9 +231,8 @@ int kr_radio_daemon(char *sysname) {
     return -1;
   }
   radio_start(radio);
-  radio_wait(radio);
+  radio_exist(radio);
   radio_shutdown(radio);
-
   return 0;
 }
 

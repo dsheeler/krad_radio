@@ -35,6 +35,11 @@
 #ifndef KRAD_INTERWEB_SERVER_H
 #define KRAD_INTERWEB_SERVER_H
 
+/*
+ * Here we are dealing with the interweb wild and free
+ * as it may be, its various protocols and endless surprises
+ */
+
 #define MAX_REMOTES 16
 #define KR_IWS_MAX_CLIENTS 64
 #define KR_IWS_MAX_KRCLIENTS 64
@@ -176,7 +181,7 @@ void kr_webrtc_unregister(kr_iws_client_t *client);
 void kr_webrtc_list_users(kr_iws_client_t *client);
 void kr_webrtc_call(kr_iws_client_t *client, char *to, char *from, char *sdp);
 void kr_webrtc_answer(kr_iws_client_t *client, char *to, char *from, char *sdp);
-void kr_webrtc_candidate(kr_iws_client_t *client, char *to, char *from, 
+void kr_webrtc_candidate(kr_iws_client_t *client, char *to, char *from,
  char *candidate);
 
 int32_t krad_interweb_server_listen_off (kr_interweb_server_t *server,
