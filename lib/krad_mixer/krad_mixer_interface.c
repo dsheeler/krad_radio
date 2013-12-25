@@ -163,7 +163,7 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
                              EBML_ID_KRAD_SUBUNIT_INFO);
         kr_ebml2_start_element(&ebml_out, EBML_ID_KRAD_RADIO_MESSAGE_PAYLOAD, &payload);
         kr_mixer_get_path_info(path, &info);
-        kr_mixer_path_info_to_ebml(&info, &ebml_out);
+        kr_mixer_path_info_to_ebml(&ebml_out, (void *)&info);
         kr_ebml2_finish_element(&ebml_out, payload);
         kr_ebml2_finish_element(&ebml_out, response);
       }
