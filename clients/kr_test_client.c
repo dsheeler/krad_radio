@@ -175,7 +175,7 @@ int run_tests(kr_client *client, int test_kode) {
   if (ret != 0) return ret;
   ret = test_wayland_output_create(client);
   if (ret != 0) return ret;
-  if (test_kode < 2) {
+  if (test_kode < 3) {
     ret = test_v4l2_input_create(client, 0);
     if (ret != 0) return ret;
   } else {
