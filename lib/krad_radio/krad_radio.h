@@ -49,7 +49,7 @@ struct kr_remote_control {
 struct kr_log {
   kr_timer *startup_timer;
   int verbose;
-	char filename[512];
+  char filename[512];
 };
 
 struct kr_radio {

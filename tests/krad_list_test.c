@@ -3,14 +3,14 @@
 
 int main (int argc, char *argv[]) {
 
-	int count;
-	
-	count = 1000;
+  int count;
+  
+  count = 1000;
 
-	test_krad_list(count);
+  test_krad_list(count);
 
-	printf("It worked!\n");
+  printf("It worked!\n");
 
-	return 0;
+  return 0;
 
 }

@@ -9,8 +9,8 @@
 #include "krad_rc_pololu_maestro.h"
 
 typedef enum {
-	UNKNOWN = 7000,
-	POLOLUMAESTRO,
+  UNKNOWN = 7000,
+  POLOLUMAESTRO,
 } krad_rc_type_t;
 
 
@@ -18,9 +18,9 @@ typedef struct krad_rc_St krad_rc_t;
 
 struct krad_rc_St {
 
-	krad_rc_type_t type;
-	char device[512];
-	void *actual;
+  krad_rc_type_t type;
+  char device[512];
+  void *actual;
 
 };
 

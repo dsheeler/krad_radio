@@ -42,15 +42,15 @@ typedef struct kr_app_client krad_app_client_t;
 typedef struct kr_app_client kr_app_client;
 
 struct kr_app_client {
-	char sysname[64];
-	int sd;
-	int tcp_port;
-	char host[256];
-	char api_path[256];
-	int api_path_pos;
-	int on_linux;
-	struct stat info;
-	struct utsname unixname;
+  char sysname[64];
+  int sd;
+  int tcp_port;
+  char host[256];
+  char api_path[256];
+  int api_path_pos;
+  int on_linux;
+  struct stat info;
+  struct utsname unixname;
 };
 
 krad_app_client_t *krad_app_connect(char *sysname, int timeout_ms);

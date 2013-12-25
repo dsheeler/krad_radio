@@ -23,9 +23,9 @@ typedef struct kr_muxer_stream_output_params_St kr_muxer_stream_output_params_t;
 typedef struct kr_muxer_transmission_output_params_St kr_muxer_transmission_output_params_t;
 
 typedef enum {
-	LOCAL_FILE,
-	STREAM,
-	TRANSMISSION
+  LOCAL_FILE,
+  STREAM,
+  TRANSMISSION
 } kr_muxer_transport_type;
 
 struct kr_muxer_file_output_params_St {

@@ -26,14 +26,14 @@ main(void)
 
     if(fd < 0)
         die("error: open");
-	while (1) {
-	    if(read(fd, &ev, sizeof(struct input_event)) < 0)
-    	    die("error: write");
+  while (1) {
+      if(read(fd, &ev, sizeof(struct input_event)) < 0)
+          die("error: write");
 
-		printf(" %d\n", ev.code);
+    printf(" %d\n", ev.code);
 
-	}
-	
+  }
+  
 
 
     close(fd);

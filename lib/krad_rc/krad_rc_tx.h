@@ -25,10 +25,10 @@ typedef struct krad_rc_tx_St krad_rc_tx_t;
 
 struct krad_rc_tx_St {
 
-	int sd;
-	unsigned char *data;
-	int port;
-	char *ip;
+  int sd;
+  unsigned char *data;
+  int port;
+  char *ip;
 
 };
 

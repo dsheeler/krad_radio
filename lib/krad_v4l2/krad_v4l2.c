@@ -141,7 +141,7 @@ static void kr_v4l2_unmap(kr_v4l2 *v4l2) {
   if (v4l2->nbufs > 0) {
     kr_v4l2_capture(v4l2, 0);
     for (i = 0; i < v4l2->nbufs; i++) {
-  	  if (-1 == munmap(v4l2->bufs[i].start, v4l2->bufs[i].buf.length)) {
+      if (-1 == munmap(v4l2->bufs[i].start, v4l2->bufs[i].buf.length)) {
         printke("Krad V4L2: munmap %d", i);
       }
     }
@@ -173,38 +173,38 @@ static void kr_v4l2_map(kr_v4l2 *v4l2) {
     return;
   }
   v4l2->nbufs = req.count;
-	printk("Krad V4L2: %d buffers", v4l2->nbufs);
-	for (i = 0; i < v4l2->nbufs; i++) {
+  printk("Krad V4L2: %d buffers", v4l2->nbufs);
+  for (i = 0; i < v4l2->nbufs; i++) {
     memset(&buf, 0, sizeof(buf));
-		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		buf.memory = V4L2_MEMORY_MMAP;
-		buf.index = i;
-		if (-1 == xioctl(v4l2->fd, VIDIOC_QUERYBUF, &buf)) {
-			printke("Krad V4L2: VIDIOC_QUERYBUF");
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+    buf.index = i;
+    if (-1 == xioctl(v4l2->fd, VIDIOC_QUERYBUF, &buf)) {
+      printke("Krad V4L2: VIDIOC_QUERYBUF");
       v4l2->nbufs = 0;
       return;
     }
     v4l2->bufs[i].v4l2 = v4l2;
     v4l2->bufs[i].buf = buf;
-		v4l2->bufs[i].start = mmap(NULL, buf.length,
+    v4l2->bufs[i].start = mmap(NULL, buf.length,
      PROT_READ | PROT_WRITE, MAP_SHARED, v4l2->fd, buf.m.offset);
     if (MAP_FAILED == v4l2->bufs[i].start) {
-			printke("Krad V4L2: mmap");
+      printke("Krad V4L2: mmap");
       v4l2->nbufs = 0;
       return;
-		}
-	}
+    }
+  }
 }
 
 int kr_v4l2_mode_set(kr_v4l2 *v4l2, kr_v4l2_mode *mode) {
 
-	struct v4l2_format fmt;
-	struct v4l2_streamparm stream_parameters;
+  struct v4l2_format fmt;
+  struct v4l2_streamparm stream_parameters;
   if ((v4l2 == NULL) || (mode == NULL)) return -1;
   kr_v4l2_unmap(v4l2);
   v4l2->info.mode = *mode;
   memset(&stream_parameters, 0, sizeof(stream_parameters));
-	memset(&fmt, 0, sizeof(fmt));
+  memset(&fmt, 0, sizeof(fmt));
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   stream_parameters.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   fmt.fmt.pix.width = v4l2->info.mode.width;
@@ -250,39 +250,39 @@ static void kr_v4l2_close(kr_v4l2 *v4l2) {
 
 static void kr_v4l2_open(kr_v4l2 *v4l2) {
 
-	struct stat st;
+  struct stat st;
   char device[128];
-	struct v4l2_capability cap;
+  struct v4l2_capability cap;
 
   snprintf(device, sizeof(device), "/dev/video%d", v4l2->info.dev);
-	if (-1 == stat(device, &st)) {
-		printke("Krad V4L2: Cannot identify '%s': %d, %s", device, errno,
+  if (-1 == stat(device, &st)) {
+    printke("Krad V4L2: Cannot identify '%s': %d, %s", device, errno,
      strerror(errno));
     return;
   }
-	if (!S_ISCHR(st.st_mode)) {
-		printke("Krad V4L2: %s is no device", device);
+  if (!S_ISCHR(st.st_mode)) {
+    printke("Krad V4L2: %s is no device", device);
     return;
-	}
-	v4l2->fd = open(device, O_RDWR | O_NONBLOCK, 0);
-	if (-1 == v4l2->fd) {
+  }
+  v4l2->fd = open(device, O_RDWR | O_NONBLOCK, 0);
+  if (-1 == v4l2->fd) {
     printke("Krad V4L2: Cannot open '%s': %d, %s", device, errno,
      strerror(errno));
     return;
-	}
+  }
 
   if (-1 == xioctl(v4l2->fd, VIDIOC_QUERYCAP, &cap)) {
     printke("Krad V4L2: VIDIOC_QUERYCAP");
     kr_v4l2_close(v4l2);
     return;
   } else {
-  	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
+    if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
       printke("Krad V4L2: %s is no video capture device", device);
       kr_v4l2_close(v4l2);
       return;
-  	}
-  	if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-	  	printke("Krad V4L2: %s does not support streaming i/o", device);
+    }
+    if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
+      printke("Krad V4L2: %s does not support streaming i/o", device);
       kr_v4l2_close(v4l2);
       return;
     }
@@ -299,38 +299,38 @@ int kr_v4l2_destroy(kr_v4l2 *v4l2) {
 
 kr_v4l2 *kr_v4l2_create(kr_v4l2_setup *setup) {
 
-	kr_v4l2 *v4l2;
+  kr_v4l2 *v4l2;
 
   if (setup == NULL) return NULL;
 
-	v4l2 = calloc(1, sizeof(kr_v4l2));
+  v4l2 = calloc(1, sizeof(kr_v4l2));
   v4l2->info.dev = setup->dev;
   v4l2->info.priority = setup->priority;
   kr_v4l2_open(v4l2);
 
-	return v4l2;
+  return v4l2;
 }
 
 int kr_v4l2_dev_count() {
 
-	DIR *dp;
-	struct dirent *ep;
-	int count;
+  DIR *dp;
+  struct dirent *ep;
+  int count;
 
-	count = 0;
-	dp = opendir("/dev");
+  count = 0;
+  dp = opendir("/dev");
 
-	if (dp == NULL) {
-		printke("Couldn't open the /dev directory");
-		return 0;
-	}
+  if (dp == NULL) {
+    printke("Couldn't open the /dev directory");
+    return 0;
+  }
 
-	while ((ep = readdir(dp))) {
-		if (memcmp(ep->d_name, "video", 5) == 0) {
-			printk("Found V4L2 Device: /dev/%s", ep->d_name);
-			count++;
-		}
-	}
-	closedir(dp);
-	return count;
+  while ((ep = readdir(dp))) {
+    if (memcmp(ep->d_name, "video", 5) == 0) {
+      printk("Found V4L2 Device: /dev/%s", ep->d_name);
+      count++;
+    }
+  }
+  closedir(dp);
+  return count;
 }

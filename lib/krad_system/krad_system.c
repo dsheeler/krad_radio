@@ -396,7 +396,7 @@ void printk (char* format, ...) {
 }
 
 int krad_checkroot () {
-	return (getuid () == 0 || geteuid () == 0);
+  return (getuid () == 0 || geteuid () == 0);
 }
 
 void krad_system_init () {

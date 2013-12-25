@@ -62,7 +62,7 @@ struct kr_player {
 
   struct SwsContext *scaler;
   krad_vhs *kvhs;
-	krad_vpx_decoder *vpx;
+  krad_vpx_decoder *vpx;
   kradheora_decoder *theora;
   krad_flac *flac;
   krad_opus *opus;
@@ -479,7 +479,7 @@ static void kr_player_station_connect(kr_player *player) {
                                    &player->width, &player->height,
                                    &player->fps_num, &player->fps_den) != 1) {
     fprintf (stderr, "Krad Player: Could not get compositor info!\n");
-	  kr_client_destroy (&player->client);
+    kr_client_destroy (&player->client);
     exit (1);
   }
 

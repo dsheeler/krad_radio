@@ -1,7 +1,7 @@
 #include "krad_encoder.h"
 
 typedef union {
-	krad_vpx_encoder_t *vpx;
+  krad_vpx_encoder_t *vpx;
   krad_theora_encoder_t *theora;
   krad_flac_t *flac;
   krad_opus_t *opus;

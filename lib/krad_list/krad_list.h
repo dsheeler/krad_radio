@@ -18,58 +18,58 @@
 #define ITUNES_EXPLICIT "yes"
 
 typedef enum {
-	UNKNOWN,
-	XSPF,
-	PODCAST,
+  UNKNOWN,
+  XSPF,
+  PODCAST,
 } krad_list_format_t;
 
 typedef enum {
-	NONE,
-	DESCRIPTION,
-	IMAGE,
-	TITLE,
-	LOCATION,
-	IMAGETITLE,
-	IMAGEURL,
-	IGNOREIMAGEEXTRATAGS,
+  NONE,
+  DESCRIPTION,
+  IMAGE,
+  TITLE,
+  LOCATION,
+  IMAGETITLE,
+  IMAGEURL,
+  IGNOREIMAGEEXTRATAGS,
 } krad_list_parse_state_t;
 
 typedef struct {
 
 
-	int ret;
-	char buffer[4096];
-	xmlParserCtxtPtr ctxt;
-	int fd;
-	va_list ap;
-	xmlSAXHandler handler;
-	int parsing_in_list;
-	krad_list_format_t format;
-	krad_list_parse_state_t parse_state;
-	char error_message[2048];
-	int char_pos;
+  int ret;
+  char buffer[4096];
+  xmlParserCtxtPtr ctxt;
+  int fd;
+  va_list ap;
+  xmlSAXHandler handler;
+  int parsing_in_list;
+  krad_list_format_t format;
+  krad_list_parse_state_t parse_state;
+  char error_message[2048];
+  int char_pos;
 
-	char title[1024];
-	char image[1024];
-	char imagetitle[1024];
-	char imageurl[1024];
-	int ignore_image;
-	char description[2048];
+  char title[1024];
+  char image[1024];
+  char imagetitle[1024];
+  char imageurl[1024];
+  int ignore_image;
+  char description[2048];
 
-	char url[2048];
+  char url[2048];
 
-	
-	xmlDocPtr doc;
-	xmlNodePtr root_node;
-	xmlNodePtr node;
-	xmlNodePtr list_node;
-	xmlNodePtr stream_node;
-	xmlNodePtr file_node;
-	xmlAttrPtr prop;
+  
+  xmlDocPtr doc;
+  xmlNodePtr root_node;
+  xmlNodePtr node;
+  xmlNodePtr list_node;
+  xmlNodePtr stream_node;
+  xmlNodePtr file_node;
+  xmlAttrPtr prop;
 
-	char *image_url;
-	char *stream_node_name;
-	
+  char *image_url;
+  char *stream_node_name;
+  
 } krad_list_t;
 
 krad_list_t *krad_list_open_file(char *filename);

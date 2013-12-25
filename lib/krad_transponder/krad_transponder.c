@@ -4,7 +4,7 @@
 typedef union {
   void *exists;
   kr_mixer_path *mixer_path;
-	kr_compositor_path *compositor_path;
+  kr_compositor_path *compositor_path;
   kr_adapter_path *adapter_path;
 } kr_xpdr_path_io;
 

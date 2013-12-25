@@ -150,151 +150,151 @@
 
 typedef enum _uvcx_control_selector_t
 {
-	UVCX_VIDEO_CONFIG_PROBE			= 0x01,
-	UVCX_VIDEO_CONFIG_COMMIT		= 0x02,
-	UVCX_RATE_CONTROL_MODE			= 0x03,
-	UVCX_TEMPORAL_SCALE_MODE		= 0x04,
-	UVCX_SPATIAL_SCALE_MODE			= 0x05,
-	UVCX_SNR_SCALE_MODE				= 0x06,
-	UVCX_LTR_BUFFER_SIZE_CONTROL	= 0x07,
-	UVCX_LTR_PICTURE_CONTROL		= 0x08,
-	UVCX_PICTURE_TYPE_CONTROL		= 0x09,
-	UVCX_VERSION					= 0x0A,
-	UVCX_ENCODER_RESET				= 0x0B,
-	UVCX_FRAMERATE_CONFIG			= 0x0C,
-	UVCX_VIDEO_ADVANCE_CONFIG		= 0x0D,
-	UVCX_BITRATE_LAYERS				= 0x0E,
-	UVCX_QP_STEPS_LAYERS			= 0x0F,
+  UVCX_VIDEO_CONFIG_PROBE      = 0x01,
+  UVCX_VIDEO_CONFIG_COMMIT    = 0x02,
+  UVCX_RATE_CONTROL_MODE      = 0x03,
+  UVCX_TEMPORAL_SCALE_MODE    = 0x04,
+  UVCX_SPATIAL_SCALE_MODE      = 0x05,
+  UVCX_SNR_SCALE_MODE        = 0x06,
+  UVCX_LTR_BUFFER_SIZE_CONTROL  = 0x07,
+  UVCX_LTR_PICTURE_CONTROL    = 0x08,
+  UVCX_PICTURE_TYPE_CONTROL    = 0x09,
+  UVCX_VERSION          = 0x0A,
+  UVCX_ENCODER_RESET        = 0x0B,
+  UVCX_FRAMERATE_CONFIG      = 0x0C,
+  UVCX_VIDEO_ADVANCE_CONFIG    = 0x0D,
+  UVCX_BITRATE_LAYERS        = 0x0E,
+  UVCX_QP_STEPS_LAYERS      = 0x0F,
 } uvcx_control_selector_t;
 
 
 typedef struct _uvcx_video_config_probe_commit_t
 {
-	DWORD	dwFrameInterval;
-	DWORD	dwBitRate;
-	WORD	bmHints;
-	WORD	wConfigurationIndex;
-	WORD	wWidth;
-	WORD	wHeight;
-	WORD	wSliceUnits;
-	WORD	wSliceMode;
-	WORD	wProfile;
-	WORD	wIFramePeriod;
-	WORD	wEstimatedVideoDelay;
-	WORD	wEstimatedMaxConfigDelay;
-	BYTE	bUsageType;
-	BYTE	bRateControlMode;
-	BYTE	bTemporalScaleMode;
-	BYTE	bSpatialScaleMode;
-	BYTE	bSNRScaleMode;
-	BYTE	bStreamMuxOption;
-	BYTE	bStreamFormat;
-	BYTE	bEntropyCABAC;
-	BYTE	bTimestamp;
-	BYTE	bNumOfReorderFrames;
-	BYTE	bPreviewFlipped;
-	BYTE	bView;
-	BYTE	bReserved1;
-	BYTE	bReserved2;
-	BYTE	bStreamID;
-	BYTE	bSpatialLayerRatio;
-	WORD	wLeakyBucketSize;
+  DWORD  dwFrameInterval;
+  DWORD  dwBitRate;
+  WORD  bmHints;
+  WORD  wConfigurationIndex;
+  WORD  wWidth;
+  WORD  wHeight;
+  WORD  wSliceUnits;
+  WORD  wSliceMode;
+  WORD  wProfile;
+  WORD  wIFramePeriod;
+  WORD  wEstimatedVideoDelay;
+  WORD  wEstimatedMaxConfigDelay;
+  BYTE  bUsageType;
+  BYTE  bRateControlMode;
+  BYTE  bTemporalScaleMode;
+  BYTE  bSpatialScaleMode;
+  BYTE  bSNRScaleMode;
+  BYTE  bStreamMuxOption;
+  BYTE  bStreamFormat;
+  BYTE  bEntropyCABAC;
+  BYTE  bTimestamp;
+  BYTE  bNumOfReorderFrames;
+  BYTE  bPreviewFlipped;
+  BYTE  bView;
+  BYTE  bReserved1;
+  BYTE  bReserved2;
+  BYTE  bStreamID;
+  BYTE  bSpatialLayerRatio;
+  WORD  wLeakyBucketSize;
 } uvcx_video_config_probe_commit_t;
 
 
 typedef struct _uvcx_rate_control_mode_t
 {
-	WORD	wLayerID;
-	BYTE	bRateControlMode;
+  WORD  wLayerID;
+  BYTE  bRateControlMode;
 } uvcx_rate_control_mode_t;
 
 
 typedef struct _uvcx_temporal_scale_mode_t
 {
-	WORD	wLayerID;
-	BYTE	bTemporalScaleMode;
+  WORD  wLayerID;
+  BYTE  bTemporalScaleMode;
 } uvcx_temporal_scale_mode_t;
 
 
 typedef struct _uvcx_spatial_scale_mode_t
 {
-	WORD	wLayerID;
-	BYTE	bSpatialScaleMode;
+  WORD  wLayerID;
+  BYTE  bSpatialScaleMode;
 } uvcx_spatial_scale_mode_t;
 
 
 typedef struct _uvcx_snr_scale_mode_t
 {
-	WORD	wLayerID;
-	BYTE	bSNRScaleMode;
-	BYTE	bMGSSublayerMode;
+  WORD  wLayerID;
+  BYTE  bSNRScaleMode;
+  BYTE  bMGSSublayerMode;
 } uvcx_snr_scale_mode_t;
 
 
 typedef struct _uvcx_ltr_buffer_size_control_t
 {
-	WORD	wLayerID;
-	BYTE	bLTRBufferSize;
-	BYTE	bLTREncoderControl;
+  WORD  wLayerID;
+  BYTE  bLTRBufferSize;
+  BYTE  bLTREncoderControl;
 } uvcx_ltr_buffer_size_control_t;
 
 typedef struct _uvcx_ltr_picture_control
 {
-	WORD	wLayerID;
-	BYTE	bPutAtPositionInLTRBuffer;
-	BYTE	bEncodeUsingLTR;
+  WORD  wLayerID;
+  BYTE  bPutAtPositionInLTRBuffer;
+  BYTE  bEncodeUsingLTR;
 } uvcx_ltr_picture_control;
 
 
 typedef struct _uvcx_picture_type_control_t
 {
-	WORD	wLayerID;
-	WORD	wPicType;
+  WORD  wLayerID;
+  WORD  wPicType;
 } uvcx_picture_type_control_t;
 
 
 typedef struct _uvcx_version_t
 {
-	WORD	wVersion;
+  WORD  wVersion;
 } uvcx_version_t;
 
 
 typedef struct _uvcx_encoder_reset
 {
-	WORD	wLayerID;
+  WORD  wLayerID;
 } uvcx_encoder_reset;
 
 
 typedef struct _uvcx_framerate_config_t
 {
-	WORD	wLayerID;
-	DWORD	dwFrameInterval;
+  WORD  wLayerID;
+  DWORD  dwFrameInterval;
 } uvcx_framerate_config_t;
 
 
 typedef struct _uvcx_video_advance_config_t
 {
-	WORD	wLayerID;
-	DWORD	dwMb_max;
-	BYTE	blevel_idc;
-	BYTE	bReserved;
+  WORD  wLayerID;
+  DWORD  dwMb_max;
+  BYTE  blevel_idc;
+  BYTE  bReserved;
 } uvcx_video_advance_config_t;
 
 
 typedef struct _uvcx_bitrate_layers_t
 {
-	WORD	wLayerID;
-	DWORD	dwPeakBitrate;
-	DWORD	dwAverageBitrate;
+  WORD  wLayerID;
+  DWORD  dwPeakBitrate;
+  DWORD  dwAverageBitrate;
 } uvcx_bitrate_layers_t;
 
 
 typedef struct _uvcx_qp_steps_layers_t
 {
-	WORD	wLayerID;
-	BYTE	bFrameType;
-	BYTE	bMinQp;
-	BYTE	bMaxQp;
+  WORD  wLayerID;
+  BYTE  bFrameType;
+  BYTE  bMinQp;
+  BYTE  bMaxQp;
 } uvcx_qp_steps_layers_t;
 
 

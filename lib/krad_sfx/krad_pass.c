@@ -33,7 +33,7 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
   int recompute;
   void *ptr;
 
-	ptr = NULL;
+  ptr = NULL;
   recompute = 0;
 
   if (pass->new_sample_rate != pass->sample_rate) {

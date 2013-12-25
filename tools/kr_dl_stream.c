@@ -46,7 +46,7 @@ int dlstream_video_callback(void *user, kr_image *image) {
      sizeof(kr_image));
     dlstream->frames++;
   } else {
-	  dlstream->droppedframes++;
+    dlstream->droppedframes++;
     dlstream->skipsamples += 2;
     printke("Krad Decklink underflow");
   }

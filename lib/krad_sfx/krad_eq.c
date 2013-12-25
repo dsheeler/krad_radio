@@ -31,7 +31,7 @@ void kr_eq_process2(kr_eq *eq, float *input, float *output, int num_samples,
   int recompute_default;
   void *ptr;
 
-	ptr = NULL;
+  ptr = NULL;
 
   if (eq->new_sample_rate != eq->sample_rate) {
     eq->sample_rate = eq->new_sample_rate;

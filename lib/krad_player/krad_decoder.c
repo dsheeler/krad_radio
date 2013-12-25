@@ -19,7 +19,7 @@ struct kr_decoder_msg_St {
 
 typedef union {
   krad_vhs_t *kvhs;
-	krad_vpx_decoder_t *vpx;
+  krad_vpx_decoder_t *vpx;
   krad_theora_decoder_t *theora;
   krad_flac_t *flac;
   krad_opus_t *opus;

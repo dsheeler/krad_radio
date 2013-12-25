@@ -30,13 +30,13 @@ typedef struct krad_osc_St krad_osc_t;
 struct krad_osc_St {
   char sysname[64];
   kr_client_t *client;
-	//unsigned char *buffer;
-	int port;
-	int sd;
-	struct sockaddr_in local_address;
-	int listening;
-	int stop_listening;
-	pthread_t listening_thread;
+  //unsigned char *buffer;
+  int port;
+  int sd;
+  struct sockaddr_in local_address;
+  int listening;
+  int stop_listening;
+  pthread_t listening_thread;
 };
 
 void krad_osc_stop_listening(krad_osc_t *krad_osc);

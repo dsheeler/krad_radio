@@ -35,31 +35,31 @@ typedef struct krad_rebuilder_track_St krad_rebuilder_track_t;
 #define KRAD_UDP_HEADER_SIZE 19
 
 typedef enum {
-	K_VP8 = 1,
-	K_OPUS,
-	K_AUX,
+  K_VP8 = 1,
+  K_OPUS,
+  K_AUX,
 } krad_slice_track_type_t;
 
 struct krad_subslice_St {
-	uint8_t *data;
-	int size;
-	int fill;
-	int track;
-	int keyframe;
-	uint32_t seq;
+  uint8_t *data;
+  int size;
+  int fill;
+  int track;
+  int keyframe;
+  uint32_t seq;
 };
 
 struct krad_slicer_St {
-	int sd;
-	uint8_t *data;
-	int track_seq[3];
+  int sd;
+  uint8_t *data;
+  int track_seq[3];
 };
 
 struct krad_rebuilder_track_St {
-	krad_subslice_t *slices;
-	int slice_count;
-	int slice_position;
-	int slice_read_position;
+  krad_subslice_t *slices;
+  int slice_count;
+  int slice_position;
+  int slice_read_position;
 };
 
 struct krad_rebuilder_St {

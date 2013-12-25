@@ -28,16 +28,16 @@ typedef struct krad_rc_rx_St krad_rc_rx_t;
 
 struct krad_rc_rx_St {
 
-	int sd;
-	char *data;
-	int port;
-	struct sockaddr_in local_address;
-	struct sockaddr_in remote_address;
-	
-	int run;
-	
-	krad_rc_t *krad_rc;
-	
+  int sd;
+  char *data;
+  int port;
+  struct sockaddr_in local_address;
+  struct sockaddr_in remote_address;
+  
+  int run;
+  
+  krad_rc_t *krad_rc;
+  
 };
 
 void krad_rc_rx_run (krad_rc_rx_t *krad_rc_rx);

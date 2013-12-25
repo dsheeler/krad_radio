@@ -133,6 +133,6 @@ int main (int argc, char *argv[]) {
   dash_vod_create (vodfile, videooutfilename, audiooutfilename);
 
 
-	return 0;
+  return 0;
 
 }

@@ -35,19 +35,19 @@ char *kr_strsfxeftctl(kr_sfx_effect_control control) {
 }
 
 kr_sfx_effect_type kr_sfxeftstr(char *string) {
-	if (((strlen(string) == 2) && (strncmp(string, "lp", 2) == 0)) ||
-	    ((strlen(string) == 7) && (strncmp(string, "lowpass", 7) == 0))) {
-		return KR_SFX_LOWPASS;
-	}
-	if (((strlen(string) == 2) && (strncmp(string, "hp", 2) == 0)) ||
-	    ((strlen(string) == 8) && (strncmp(string, "highpass", 8) == 0))) {
-		return KR_SFX_HIGHPASS;
-	}
-	if ((strlen(string) == 2) && (strncmp(string, "eq", 2) == 0)) {
-		return KR_SFX_EQ;
-	}
-	if ((strlen(string) == 6) && (strncmp(string, "analog", 6) == 0)) {
-		return KR_SFX_ANALOG;
-	}
-	return KR_SFX_NONE;
+  if (((strlen(string) == 2) && (strncmp(string, "lp", 2) == 0)) ||
+      ((strlen(string) == 7) && (strncmp(string, "lowpass", 7) == 0))) {
+    return KR_SFX_LOWPASS;
+  }
+  if (((strlen(string) == 2) && (strncmp(string, "hp", 2) == 0)) ||
+      ((strlen(string) == 8) && (strncmp(string, "highpass", 8) == 0))) {
+    return KR_SFX_HIGHPASS;
+  }
+  if ((strlen(string) == 2) && (strncmp(string, "eq", 2) == 0)) {
+    return KR_SFX_EQ;
+  }
+  if ((strlen(string) == 6) && (strncmp(string, "analog", 6) == 0)) {
+    return KR_SFX_ANALOG;
+  }
+  return KR_SFX_NONE;
 }

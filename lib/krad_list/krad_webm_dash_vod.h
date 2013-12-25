@@ -11,15 +11,15 @@ typedef struct {
 
   xmlDocPtr doc;
   xmlNodePtr root_node;
-	xmlNodePtr period_node;
+  xmlNodePtr period_node;
 
-	xmlNodePtr video_adaptation_set_node;
-	xmlNodePtr audio_adaptation_set_node;
-	xmlNodePtr audio_node;	
-		
+  xmlNodePtr video_adaptation_set_node;
+  xmlNodePtr audio_adaptation_set_node;
+  xmlNodePtr audio_node;  
+    
   int video_id;
-	xmlAttrPtr audio_id_prop;  
-		
+  xmlAttrPtr audio_id_prop;  
+    
   int width;
   int height;
   int sample_rate;

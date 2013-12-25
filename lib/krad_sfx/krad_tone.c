@@ -243,9 +243,9 @@ void krad_tone_run (krad_tone_t *krad_tone, float *buffer, int numsamples) {
       for (s = 0; s < numsamples; s++) {
         sample = krad_tone->volume_actual * sin(krad_tone->tones[t].angle);
         if (sample > 0.0f) {
-	        sign = 1;
+          sign = 1;
         } else {
-	        sign = -1;
+          sign = -1;
         }
         if ((krad_tone->tones[t].last_sign != 0) && (krad_tone->tones[t].last_sign != sign)) {
           krad_tone_remove (krad_tone, krad_tone->tones[t].frequency);

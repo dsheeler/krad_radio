@@ -70,30 +70,30 @@ float kr_ease(kr_easing easing, float time_now, float start_pos,
 
   float s, p, a;
 
-	switch (easing) {
-		case LINEAR:
-			return change_amt*time_now/duration + start_pos;
-		case EASEINSINE:
-			return -change_amt * cos(time_now/duration * (M_PI/2.0f)) + change_amt + start_pos;
-		case EASEOUTSINE:
-			return change_amt * sin(time_now/duration * (M_PI/2.0f)) + start_pos;
-		case EASEINOUTSINE:
-			return -change_amt/2.0f * (cos(M_PI*time_now/duration) - 1.0f) + start_pos;
-		case EASEINCUBIC:
-			time_now /= duration;
-			return change_amt*(time_now)*time_now*time_now + start_pos;
-		case EASEOUTCUBIC:
-			time_now /= duration;
-			time_now -= 1.0f;
-			return change_amt*((time_now)*time_now*time_now + 1.0f) + start_pos;
-		case EASEINOUTCUBIC:
-			time_now /= duration/2.0f;
-			if ((time_now) < 1.0f) {
-				return change_amt/2.0f*time_now*time_now*time_now + start_pos;
-			} else {
-				time_now -= 2.0f;
-				return change_amt/2.0f*((time_now)*time_now*time_now + 2.0f) + start_pos;
-			}
+  switch (easing) {
+    case LINEAR:
+      return change_amt*time_now/duration + start_pos;
+    case EASEINSINE:
+      return -change_amt * cos(time_now/duration * (M_PI/2.0f)) + change_amt + start_pos;
+    case EASEOUTSINE:
+      return change_amt * sin(time_now/duration * (M_PI/2.0f)) + start_pos;
+    case EASEINOUTSINE:
+      return -change_amt/2.0f * (cos(M_PI*time_now/duration) - 1.0f) + start_pos;
+    case EASEINCUBIC:
+      time_now /= duration;
+      return change_amt*(time_now)*time_now*time_now + start_pos;
+    case EASEOUTCUBIC:
+      time_now /= duration;
+      time_now -= 1.0f;
+      return change_amt*((time_now)*time_now*time_now + 1.0f) + start_pos;
+    case EASEINOUTCUBIC:
+      time_now /= duration/2.0f;
+      if ((time_now) < 1.0f) {
+        return change_amt/2.0f*time_now*time_now*time_now + start_pos;
+      } else {
+        time_now -= 2.0f;
+        return change_amt/2.0f*((time_now)*time_now*time_now + 2.0f) + start_pos;
+      }
     case EASEINOUTELASTIC:
       s = 1.70158;
       p = 0;
@@ -118,16 +118,16 @@ float kr_ease(kr_easing easing, float time_now, float start_pos,
       time_now -= 1.0f;
       return a*pow(2,-10*time_now) * sin( (time_now*duration-s)*(2.0f*M_PI)/p )*.5f + change_amt + start_pos;
     default:
-	    return change_amt*time_now/duration + start_pos;
+      return change_amt*time_now/duration + start_pos;
   }
 }
 
 kr_easing kr_easing_random() {
-	return rand () % (LASTEASING - FIRSTEASING) + FIRSTEASING;
+  return rand () % (LASTEASING - FIRSTEASING) + FIRSTEASING;
 }
 
 void kr_easer_destroy(kr_easer *easer) {
-	free(easer);
+  free(easer);
 }
 
 kr_easer *kr_easer_create() {

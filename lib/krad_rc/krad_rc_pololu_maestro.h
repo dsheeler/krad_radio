@@ -14,11 +14,11 @@ typedef struct krad_rc_pololu_maestro_St krad_rc_pololu_maestro_t;
 
 struct krad_rc_pololu_maestro_St {
 
-	char device[512];
+  char device[512];
 
-	int fd;
-	struct termios term_options;
-	uint32_t last_cmd_time;
+  int fd;
+  struct termios term_options;
+  uint32_t last_cmd_time;
 
 };
 

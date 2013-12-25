@@ -16,11 +16,11 @@
 typedef struct kr_timer kr_timer;
 
 struct kr_timer {
-	struct timespec start;
-	struct timespec sample;
-	struct timespec finish;
-	const char *name;
-	int32_t started;
+  struct timespec start;
+  struct timespec sample;
+  struct timespec finish;
+  const char *name;
+  int32_t started;
 };
 
 kr_timer *kr_timer_create();

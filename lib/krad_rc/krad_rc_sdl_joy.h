@@ -29,17 +29,17 @@ typedef struct krad_rc_sdl_joy_St krad_rc_sdl_joy_t;
 
 struct krad_rc_sdl_joy_St {
 
-	int joynum;
+  int joynum;
 
-	SDL_Event evt;
-	SDL_Joystick *joystick;
-	int num_axes, num_buttons, num_balls, num_hats;
+  SDL_Event evt;
+  SDL_Joystick *joystick;
+  int num_axes, num_buttons, num_balls, num_hats;
 
-	pthread_t joy_thread;
-	
-	int axis[64];
-	
-	int run;
+  pthread_t joy_thread;
+  
+  int axis[64];
+  
+  int run;
 
 };
 

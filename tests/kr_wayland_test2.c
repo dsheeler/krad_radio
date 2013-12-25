@@ -288,7 +288,7 @@ kr_wayland_test *wayland_test_create(int width, int height) {
     exit(1);
   }
 
-	signal (SIGINT, signal_recv);
+  signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);
 
   for (i = 0; i < TEST_WINDOWS; i++) {

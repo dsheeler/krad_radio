@@ -3,7 +3,7 @@
 
 krad_webm_dash_vod_t *krad_webm_dash_vod_create (int width, int height, int sample_rate, float duration, char *lang) {
 
-	krad_webm_dash_vod_t *krad_webm_dash_vod = calloc(1, sizeof(krad_webm_dash_vod_t));
+  krad_webm_dash_vod_t *krad_webm_dash_vod = calloc(1, sizeof(krad_webm_dash_vod_t));
   char string[16];
 
   memset (string, 0, sizeof(string));
@@ -16,7 +16,7 @@ krad_webm_dash_vod_t *krad_webm_dash_vod_create (int width, int height, int samp
   krad_webm_dash_vod->height = height;
   krad_webm_dash_vod->sample_rate = sample_rate;
 
-	krad_webm_dash_vod->doc = xmlNewDoc (BAD_CAST "1.0");
+  krad_webm_dash_vod->doc = xmlNewDoc (BAD_CAST "1.0");
 
   krad_webm_dash_vod->root_node = xmlNewNode (NULL, BAD_CAST "MPD");
   xmlDocSetRootElement (krad_webm_dash_vod->doc, krad_webm_dash_vod->root_node);
@@ -58,7 +58,7 @@ krad_webm_dash_vod_t *krad_webm_dash_vod_create (int width, int height, int samp
   xmlNewProp (krad_webm_dash_vod->audio_adaptation_set_node, BAD_CAST "audioSamplingRate", BAD_CAST string);    
   xmlNewProp (krad_webm_dash_vod->audio_adaptation_set_node, BAD_CAST "subsegmentStartsWithSAP", BAD_CAST "1");  
 
-	return krad_webm_dash_vod;
+  return krad_webm_dash_vod;
 
 }
 
@@ -80,14 +80,14 @@ void krad_webm_dash_vod_add_video (krad_webm_dash_vod_t *krad_webm_dash_vod, cha
                                    uint64_t init_range_start, uint64_t init_range_end,
                                    uint64_t index_range_start, uint64_t index_range_end) {
 
-	xmlNodePtr video_node;
-	xmlNodePtr video_segment_node;
-	xmlNodePtr video_segment_init_range_node;
+  xmlNodePtr video_node;
+  xmlNodePtr video_segment_node;
+  xmlNodePtr video_segment_init_range_node;
   char string[128];
 
-	krad_webm_dash_vod->video_id++;
+  krad_webm_dash_vod->video_id++;
   krad_webm_dash_vod_handle_audio_id (krad_webm_dash_vod);
-	
+  
   video_node = xmlNewTextChild (krad_webm_dash_vod->video_adaptation_set_node, NULL, BAD_CAST "Representation", NULL);
   
   sprintf (string, "%d", krad_webm_dash_vod->video_id);
@@ -113,8 +113,8 @@ void krad_webm_dash_vod_add_audio (krad_webm_dash_vod_t *krad_webm_dash_vod, cha
                                    uint64_t init_range_start, uint64_t init_range_end,
                                    uint64_t index_range_start, uint64_t index_range_end) {
 
-	xmlNodePtr audio_segment_node;
-	xmlNodePtr audio_segment_init_range_node;
+  xmlNodePtr audio_segment_node;
+  xmlNodePtr audio_segment_init_range_node;
   char string[128];
 
   krad_webm_dash_vod->audio_node = xmlNewTextChild (krad_webm_dash_vod->audio_adaptation_set_node, NULL, BAD_CAST "Representation", NULL);
@@ -144,7 +144,7 @@ void krad_webm_dash_vod_save_file (krad_webm_dash_vod_t *krad_webm_dash_vod, cha
 
 
 void krad_webm_dash_vod_destroy (krad_webm_dash_vod_t *krad_webm_dash_vod) {
-	xmlFreeDoc (krad_webm_dash_vod->doc);
-	free (krad_webm_dash_vod);
+  xmlFreeDoc (krad_webm_dash_vod->doc);
+  free (krad_webm_dash_vod);
 }
 

@@ -25,28 +25,28 @@ int main(int argc, char *argv[]) {
 //                printf("hs=%d,vs=%d,lb=%d rm=%d mb=%d xo=%d yo=%d xd=%5d yd=%5d\r",hs,vs,lb,rb,mb,xo,yo,xd,yd);
 
 
-		if (xd > 0) {
-			printf("X+%d", xd);
-		} else {
-			printf("X%d", xd);
-		}
-		if (yd > 0) {
-			printf("Y+%d", yd);
-		} else {
-			printf("Y%d", yd);
-		}
-	
-		if (lb > 0) {
-			printf("CCC");
-		}
-	
-	
+    if (xd > 0) {
+      printf("X+%d", xd);
+    } else {
+      printf("X%d", xd);
+    }
+    if (yd > 0) {
+      printf("Y+%d", yd);
+    } else {
+      printf("Y%d", yd);
+    }
+  
+    if (lb > 0) {
+      printf("CCC");
+    }
+  
+  
 
 
-		fflush(stdout);
+    fflush(stdout);
         }
         close(mfd);
 
-	return 0;
+  return 0;
 
 }

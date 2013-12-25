@@ -257,37 +257,37 @@ int kr_sfx_effect_info(kr_sfx *sfx, int num, void *effect_info) {
 
 int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string) {
   if (type == KR_SFX_EQ) {
-	  if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
-		  return KR_EQ_DB;
-	  }
-	  if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
-		  return KR_EQ_HZ;
-	  }
-	  if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
-		  return KR_EQ_BW;
-	  }
-	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-		  return KR_EQ_BW;
-	  }
+    if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
+      return KR_EQ_DB;
+    }
+    if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
+      return KR_EQ_HZ;
+    }
+    if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
+      return KR_EQ_BW;
+    }
+    if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
+      return KR_EQ_BW;
+    }
   }
   if (((type == KR_SFX_LOWPASS) || (type == KR_SFX_HIGHPASS))) {
-	  if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
-		  return KR_PASS_HZ;
-	  }
-	  if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
-		  return KR_PASS_BW;
-	  }
-	  if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-		  return KR_PASS_BW;
-	  }
+    if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
+      return KR_PASS_HZ;
+    }
+    if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
+      return KR_PASS_BW;
+    }
+    if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
+      return KR_PASS_BW;
+    }
   }
   if (type == KR_SFX_ANALOG) {
-	  if ((strlen(string) == 5) && (strncmp(string, "blend", 5) == 0)) {
-		  return KR_ANALOG_BLEND;
-	  }
-	  if ((strlen(string) == 5) && (strncmp(string, "drive", 5) == 0)) {
-		  return KR_ANALOG_DRIVE;
-	  }
+    if ((strlen(string) == 5) && (strncmp(string, "blend", 5) == 0)) {
+      return KR_ANALOG_BLEND;
+    }
+    if ((strlen(string) == 5) && (strncmp(string, "drive", 5) == 0)) {
+      return KR_ANALOG_DRIVE;
+    }
   }
-	return 0;
+  return 0;
 }
