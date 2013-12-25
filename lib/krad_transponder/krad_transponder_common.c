@@ -354,11 +354,6 @@ krad_link_video_source_t krad_link_string_to_video_source (char *string) {
 	if (strcmp(string, "decklink") == 0) {
 		return DECKLINK;
 	}
-#ifdef KRAD_USE_FLYCAP
-	if ((strcmp(string, "fc") == 0) || (strcmp(string, "fc2") == 0) || (strcmp(string, "flycap") == 0)) {
-		return FLYCAP;
-	}
-#endif
 	if ((strcmp(string, "V4L2") == 0) || (strcmp(string, "v4l2") == 0) || (strcmp(string, "v4l") == 0)) {
 		return V4L2;
 	}
@@ -376,10 +371,6 @@ char *krad_link_video_source_to_string (krad_link_video_source_t video_source) {
 			return "decklink";
 		case X11:
 			return "X11";
-#ifdef KRAD_USE_FLYCAP
-		case FLYCAP:
-			return "FLYCAP";
-#endif
 		case NOVIDEO:
 			return "novideo";
 		default:

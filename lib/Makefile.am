@@ -27,7 +27,6 @@ krad_chronometer/krad_ticker.c \
 krad_coder/krad_coder_common.c \
 krad_coder/krad_encoder.c \
 krad_y4m/krad_y4m.c \
-krad_xmms2/krad_xmms2.c \
 krad_mkv/krad_mkv.c \
 krad_mkv/krad_mkv_demux.c \
 krad_io/krad_stream.c \
@@ -74,25 +73,29 @@ krad_udp/krad_udp.c \
 krad_decklink/krad_decklink.c \
 krad_decklink/krad_decklink_capture.cpp
 
+if HAVE_XMMS2
+krad_radio_libkradradio_la_SOURCES += krad_xmms2/krad_xmms2.c
+AM_CPPFLAGS += -DKR_XMMS2
+endif
+
 if HAVE_WAYLAND
 krad_radio_libkradradio_la_SOURCES += krad_wayland/krad_wayland.c
-
-AM_CPPFLAGS += -DKRAD_USE_WAYLAND
+AM_CPPFLAGS += -DKR_WAYLAND
 endif
 
 if HAVE_X11
 krad_radio_libkradradio_la_SOURCES += krad_x11/krad_x11.c
-
-AM_CPPFLAGS += -DKRAD_USE_X11
+AM_CPPFLAGS += -DKR_X11
 endif
 
 if HAVE_TURBOJPEG
 krad_radio_libkradradio_la_LIBADD += -lturbojpeg
+AM_CPPFLAGS += -DKR_TURBOJPEG
 endif
 
 if HAVE_GIF
 krad_radio_libkradradio_la_LIBADD += -lgif
-AM_CPPFLAGS += -DKRAD_GIF
+AM_CPPFLAGS += -DKR_GIF
 endif
 
 if KR_LINUX

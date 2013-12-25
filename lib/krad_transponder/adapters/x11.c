@@ -1,5 +1,4 @@
-#ifdef KR_LINUX
-#ifdef KRAD_USE_X11
+#ifdef KR_X11
 void x11_capture_unit_create (void *arg) {
 
   krad_link_t *krad_link = (krad_link_t *)arg;
@@ -62,6 +61,4 @@ void x11_capture_unit_destroy (void *arg) {
 
   printk ("X11 capture thread exited");
 }
-
-#endif
 #endif
