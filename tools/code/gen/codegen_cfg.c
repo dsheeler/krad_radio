@@ -16,7 +16,7 @@ void uppercase(char *str1, char *str2) {
   return;
 }
 
-char *memb_type_to_fun(struct struct_memb_def *memb, char *str) {
+static char *memb_type_to_fun(struct struct_memb_def *memb, char *str) {
 
   if (!strcmp(memb->type,"int") || !strncmp(memb->type,"int32_t",7)) {
     if (!memb->pointer)

@@ -76,12 +76,12 @@ void codegen_json(struct struct_def *def, char *type, FILE *out) {
             fprintf(out,"  res += snprintf(&%s[res],max-res,\",\");\n",type);
       }
     } else if (members[i]->sub && members[i]->sub->isunion && (i > 0)) {
-      fprintf(out,"  int index;\n");
+/*      fprintf(out,"  int index;\n");
       fprintf(out,"  index = %s_to_index(actual->%s);\n\n",
         members[i-1]->type,members[i-1]->name);
       fprintf(out,"  switch (index) {\n");
       codegen_union_content_from_type(members[i]->sub,members[i]->name,type,out);
-      fprintf(out,"  }\n\n");
+      fprintf(out,"  }\n\n");*/
     } else if (codegen_string_to_enum(members[i]->type)) {
       char uppercased[strlen(members[i]->type)+1];
       uppercase(members[i]->type,uppercased);

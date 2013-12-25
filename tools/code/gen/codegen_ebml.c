@@ -52,6 +52,35 @@ char *memb_type_to_str(struct struct_memb_def *memb) {
   return NULL;
 }
 
+static void codegen_ebml_union_content_from_type(struct struct_def *def, 
+  char *name, int type, FILE *out) {
+  int i;
+
+  for (i = 0; i < def->members; i++) {
+    if (codegen_string_to_enum(def->members_info[i].type)) {
+      char uppercased[strlen(def->members_info[i].type)+1];
+      uppercase(def->members_info[i].type,uppercased);
+      fprintf(out,"    case %d: {\n",i);
+
+      fprintf(out,"      uber.actual = &(actual->%s);\n      ",
+        def->members_info[i].name);
+
+      if (type) {
+        fprintf(out,"uber.type = EBML_%s;\n",uppercased);
+        fprintf(out,"      res += info_pack_to_ebml(&ebml[res],&uber);\n");
+      } else {
+        fprintf(out,"uber.type = DEBML_%s;\n",uppercased);
+        fprintf(out,"      res += info_unpack_fr_ebml(&ebml[res],&uber);\n");
+      }
+
+      fprintf(out,"      break;\n    }\n");
+    }
+    /* TODO: handle unions of primitives (ints,floats,strings...) */
+  }
+        
+  return;
+}
+
 void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, FILE *out) {
 
   int i;
@@ -65,6 +94,13 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
     } else {
       fprintf(out,"  res += %s(ebml, NULL, actual);\n","kr_ebml2_unpack_element_int32");
     }
+    return;
+  }
+
+  if (def->isunion) {
+    fprintf(out,"  switch (uber_actual->type) {\n");
+    codegen_ebml_union_content_from_type(def,def->name,ebml_fun_type,out);
+    fprintf(out,"  }\n\n");
     return;
   }
 
@@ -117,6 +153,28 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name);
         }
       }
+    } else if (codegen_is_union(members[i]->type) && (i > 0) && codegen_string_to_enum (members[i-1]->type)) {
+
+      char uppercased[strlen(members[i]->type)+1];
+      uppercase(members[i]->type,uppercased);
+
+      fprintf(out,"  index = %s_to_index(actual->%s);\n",
+          members[i-1]->type,members[i-1]->name);
+ 
+      fprintf(out,"  uber_sub.type = index;\n");
+      fprintf(out,"  uber_sub.actual = &(actual->%s);\n",members[i]->name);
+
+      if (ebml_fun_type) {
+        fprintf(out,"  uber.actual = &(uber_sub);\n  uber.type = EBML_%s;\n",
+         uppercased);
+        fprintf(out,"  res += info_pack_to_%s(&%s[res],&uber);\n",type,type);
+      } else {
+        fprintf(out,"  uber.actual = &(uber_sub);\n  uber.type = DEBML_%s;\n",
+          uppercased);
+        fprintf(out,"  res += info_unpack_fr_%s(&%s[res],&uber);\n",&type[1],&type[1]);
+      }
+
+
     } else if (codegen_string_to_enum(members[i]->type)) {
       char uppercased[strlen(members[i]->type)+1];
       uppercase(members[i]->type,uppercased);

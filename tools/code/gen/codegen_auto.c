@@ -44,6 +44,7 @@ void common_gen(struct header_defs *hdefs,
       case TO_TEXT: format = "text"; break;
       case TO_EBML: format = "ebml"; break;
       case TO_JSON: format = "json"; break;
+      case FR_JSON: format = "dejson"; break;
       case FR_EBML: format = "debml"; break;
       default: format = ""; break;
     }
@@ -81,6 +82,7 @@ void type_common_gen(struct header_defs *hdefs,
       case TO_TEXT: format = "text"; break;
       case TO_EBML: format = "ebml"; break;
       case TO_JSON: format = "json"; break;
+      case FR_JSON: format = "dejson"; break;
       case FR_EBML: format = "debml"; break;
     }
 
@@ -105,6 +107,7 @@ void type_common_gen(struct header_defs *hdefs,
       case TO_TEXT: format = "text"; gf = TEXT; break;
       case TO_EBML: format = "ebml"; gf = EBML; break;
       case TO_JSON: format = "json"; gf = JSON; break;
+      case FR_JSON: format = "dejson"; gf = DEJSON; break;
       case FR_EBML: format = "debml"; gf = DEBML; break;
     }
 
@@ -172,6 +175,9 @@ void files_gen(struct header_defs *hdefs,
           fprintf(header,"#include \"krad_ebmlx.h\"\n");
         }
 
+        if (hdefs[i].targets.types[l] == FR_JSON) {
+          fprintf(header,"#include \"jsmn.h\"\n");
+        }
         codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,"includes",header);
         fclose(header);
       }
@@ -245,13 +251,19 @@ void files_gen(struct header_defs *hdefs,
             sprintf(format,"json/func");
             sprintf(format2,"json/proto");
             break;
+            case FR_JSON: 
+
+            sprintf(format,"dejson/func");
+            sprintf(format2,"dejson/proto");
+            break;
             case FR_EBML: 
             sprintf(format,"debml/func");
             sprintf(format2,"debml/proto");
             break;
             case HELPERS: 
             sprintf(format,"helper");
-            sprintf(format2,"helper_proto");
+            sprintf(format2," ");
+            codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,"enum_utils",out);
             break;
             default: break;
           }
@@ -309,7 +321,9 @@ int main(int argc, char *argv[]) {
   fprintf(genc,"#include \"ebml_common.c\"\n");
   fprintf(genc,"#include \"text_common.c\"\n");
   fprintf(genc,"#include \"debml_common.c\"\n");
-  fprintf(genc,"#include \"json_common.c\"\n\n");
+  fprintf(genc,"#include \"json_common.c\"\n");
+  fprintf(genc,"#include \"jsmn/jsmn.c\"\n");
+  fprintf(genc,"#include \"dejson_common.c\"\n\n");
 
   free(hdefs);
   fclose(genc);

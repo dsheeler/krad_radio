@@ -49,7 +49,7 @@ static int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
 
   for (i=0;i<ndefs;i++) {
     for (j=0;j<hdefs[i].ndefs;j++) {
-      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix) && !hdefs[i].defs[j].issub) {
         fprintf(out,"  ");
         codegen_enum_value(&hdefs[i].defs[j],out);
         if (i == 0 && j == 0) {
@@ -76,8 +76,9 @@ void codegen_typedef(char *type, FILE *out) {
     fprintf(out,"typedef int (*info_pack_to_%s_func)(kr_ebml *%s, void *st);\n",type,type);
   } else if (!strncmp(type,"debml",5)) {
     fprintf(out,"typedef int (*info_unpack_fr_%s_func)(kr_ebml *%s, void *st);\n",&type[1],&type[1]);
-  }
-  else {
+  } else if (!strncmp(type,"dejson",6)) {
+    fprintf(out,"typedef int (*info_unpack_fr_%s_func)(char *%s, void *st);\n",&type[2],&type[2]);
+  } else {
     fprintf(out,"typedef int (*info_pack_to_%s_func)(char *%s, void *st, int max);\n",type,type);
   }
 }
@@ -123,7 +124,23 @@ static void codegen_string_to_enum(struct struct_def *def, FILE *out) {
   return;
 }
 
+static void codegen_is_union(struct struct_def *def, FILE *out) {
+  if (def->isunion) {
+    fprintf(out,"  if (!strcmp(type,\"%s\")) {\n    return 1;\n  }\n",def->name);
+  }
+  return;
+}
+
+static void codegen_is_enum(struct struct_def *def, FILE *out) {
+  if (def->isenum) {
+    fprintf(out,"  if (!strcmp(type,\"%s\")) {\n    return 1;\n  }\n",def->name);
+  }
+  return;
+}
+
 static void codegen_enum_func_proto(FILE *out) {
+  fprintf(out,"int codegen_is_union(char *type);\n");
+  fprintf(out,"int codegen_is_enum(char *type);\n");
   fprintf(out,"cgen_enum codegen_string_to_enum(char *string);\n");
   fprintf(out,"char *codegen_enum_to_string(cgen_enum val);\n\n");
 }
@@ -138,7 +155,7 @@ int codegen_enum_utils(struct header_defs *hdefs, int ndefs, char *prefix,
 
   for (i=0;i<ndefs;i++) {
     for (j=0;j<hdefs[i].ndefs;j++) {
-      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix) && !hdefs[i].defs[j].issub) {
         filtered_defs[n] = &hdefs[i].defs[j];
         n++;
       }
@@ -156,6 +173,23 @@ int codegen_enum_utils(struct header_defs *hdefs, int ndefs, char *prefix,
 
   for (i=0;i<n;i++) {
     codegen_string_to_enum(filtered_defs[i],out);
+  }
+
+  fprintf(out,"  return 0;\n}\n\n");
+
+
+  fprintf(out,"int codegen_is_union(char *type) {\n");
+
+  for (i=0;i<n;i++) {
+    codegen_is_union(filtered_defs[i],out);
+  }
+
+  fprintf(out,"  return 0;\n}\n\n");
+
+  fprintf(out,"int codegen_is_enum(char *type) {\n");
+
+  for (i=0;i<n;i++) {
+    codegen_is_enum(filtered_defs[i],out);
   }
 
   fprintf(out,"  return 0;\n}\n\n");

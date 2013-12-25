@@ -284,6 +284,8 @@ static int check_for_cgen_target(char *line, struct cgen_target *def_target) {
           def_target->types[def_target->ntargets] = TO_EBML;
         } else if ( (target_str = strstr(fname,"to_json")) ) {
           def_target->types[def_target->ntargets] = TO_JSON;
+        } else if ( (target_str = strstr(fname,"from_json")) ) {
+          def_target->types[def_target->ntargets] = FR_JSON;
         } else if ( (target_str = strstr(fname,"to_text")) ) {
           def_target->types[def_target->ntargets] = TO_TEXT;
         } else if ( (target_str = strstr(fname,"from_ebml")) ) {
@@ -631,6 +633,9 @@ int print_structs_defs(struct header_defs *hdef, char *prefix,
           break;
           case TO_JSON: 
           type = "TO_JSON";
+          break;
+          case FR_JSON: 
+          type = "FR_JSON";
           break;
           case FR_EBML: 
           type = "FR_EBML";

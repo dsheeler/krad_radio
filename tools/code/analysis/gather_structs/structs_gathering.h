@@ -19,7 +19,7 @@
 #define MAX_MEMB 64
 #define MAX_TARGETS 32
 #define MAX_HEADER_DEFS 64
-#define MAX_TARGET_TYPES 5
+#define MAX_TARGET_TYPES 6
 
 typedef enum {
   MEMB_TYPE_UNKNOWN = 0,
@@ -32,6 +32,7 @@ typedef enum {
 typedef enum {
   TO_TEXT = 1,
   TO_JSON,
+  FR_JSON,
   TO_EBML,
   FR_EBML,
   HELPERS,

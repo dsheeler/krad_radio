@@ -40,10 +40,12 @@ for dir in $(ls -d $path/krad_*/); do
 
   mkdir -p $gendir
 
-  rm -rf $gendir/*
+  rm -rf $gendir/*.c
+  rm -rf $gendir/*.h
 done
 
-rm -rf $gencommon/*
+rm -rf $gencommon/*.c
+rm -rf $gencommon/*.h
 mkdir -p $gencommon
 
 run_codegen $path $pre $suff $gencommon
