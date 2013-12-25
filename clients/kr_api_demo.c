@@ -15,47 +15,47 @@ void my_portgroup_print(kr_mixer_path_info *portgroup) {
 void my_compositor_print(kr_compositor_t *compositor) {
 
   printf("Compositor Resolution: %d x %d Frame Rate: %d / %d - %f\n",
-					 compositor->width, compositor->height,
-					 compositor->fps_numerator, compositor->fps_denominator,
-					((float)compositor->fps_numerator /(float)compositor->fps_denominator));
+           compositor->width, compositor->height,
+           compositor->fps_numerator, compositor->fps_denominator,
+          ((float)compositor->fps_numerator /(float)compositor->fps_denominator));
 }
 
 void my_sprite_print(kr_sprite_t *sprite) {
 
   printf("Sprite stuf: %s %d %f\n",
            sprite->filename,
-					 sprite->controls.width, sprite->controls.rotation);
+           sprite->controls.width, sprite->controls.rotation);
 }
 
 void my_text_print(kr_text_t *text) {
 
   printf("text stuf: %s %d %f\n",
-					 text->text,
-					 text->controls.width, text->controls.rotation);
+           text->text,
+           text->controls.width, text->controls.rotation);
 }
 
 void my_vector_print(kr_vector_t *vector) {
 
   printf("vector stuf: %d %f\n",
-					 vector->controls.width, vector->controls.rotation);
+           vector->controls.width, vector->controls.rotation);
 }
 
 void my_videoport_print(kr_port_t *videoport) {
 
   printf("videoport stuf: %d %f\n",
-					 videoport->controls.width, videoport->controls.rotation);
+           videoport->controls.width, videoport->controls.rotation);
 }
 
 void my_mixer_print(kr_mixer_info *mixer) {
 
   printf("Mixer Sample Rate: %d\n",
-					 mixer->sample_rate);
+           mixer->sample_rate);
 }
 
 void my_remote_print(kr_remote_t *remote) {
 
   printf("Remote Listening on interface: %s Port: %d\n",
-					 remote->interface, remote->port);
+           remote->interface, remote->port);
 }
 
 void my_print(kr_crate_t *crate) {

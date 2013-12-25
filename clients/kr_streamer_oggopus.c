@@ -26,9 +26,9 @@ struct kr_streamer_params_St {
 
 struct kr_streamer_St {
   kr_streamer_params_t *params;
-	kr_audioport_t *audioport;
+  kr_audioport_t *audioport;
   krad_ringbuffer_t *audio_ring[4];
-	kr_client_t *client;
+  kr_client_t *client;
   krad_opus_t *opus;
   kr_codec_hdr_t header;
   kr_ogg_io_t *ogg_io;
@@ -44,19 +44,19 @@ void signal_recv (int sig) {
 int audioport_process (uint32_t nframes, void *arg) {
 
   int c;
-	float *buffer;
-	kr_streamer_t *streamer;
+  float *buffer;
+  kr_streamer_t *streamer;
 
-	streamer = (kr_streamer_t *)arg;
+  streamer = (kr_streamer_t *)arg;
 
   for (c = 0; c < streamer->params->channels; c++) {
-	  buffer = kr_audioport_get_buffer (streamer->audioport, c);
+    buffer = kr_audioport_get_buffer (streamer->audioport, c);
     krad_ringbuffer_write (streamer->audio_ring[c],
                            (char *)buffer,
                            nframes * 4);
   }
 
-	return 0;
+  return 0;
 }
 
 int kr_streamer_destroy (kr_streamer_t **streamer) {
@@ -67,9 +67,9 @@ int kr_streamer_destroy (kr_streamer_t **streamer) {
     return -1;
   }
 
- 	kr_audioport_disconnect((*streamer)->audioport);
-	kr_audioport_destroy ((*streamer)->audioport);
-	kr_client_destroy (&(*streamer)->client);
+   kr_audioport_disconnect((*streamer)->audioport);
+  kr_audioport_destroy ((*streamer)->audioport);
+  kr_client_destroy (&(*streamer)->client);
   kr_ogg_io_destroy (&(*streamer)->ogg_io);
   krad_opus_encoder_destroy ((*streamer)->opus);
   for (c = 0; c < (*streamer)->params->channels; c++) {
@@ -92,20 +92,20 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
   streamer->params->channels = 2;
   streamer->params->sample_rate = 48000;
 
-	streamer->client = kr_client_create ("krad streamer client");
+  streamer->client = kr_client_create ("krad streamer client");
 
-	if (streamer->client == NULL) {
-		fprintf (stderr, "Could not create KR client.\n");
-	  exit (1);
-	}
+  if (streamer->client == NULL) {
+    fprintf (stderr, "Could not create KR client.\n");
+    exit (1);
+  }
 
   kr_connect (streamer->client, streamer->params->station);
 
   if (!kr_connected (streamer->client)) {
-		fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
+    fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
              streamer->params->station);
-	  kr_client_destroy (&streamer->client);
-	  exit (1);
+    kr_client_destroy (&streamer->client);
+    exit (1);
   }
 
   for (c = 0; c < streamer->params->channels; c++) {
@@ -114,8 +114,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 
   if (kr_mixer_get_info_wait (streamer->client, &streamer->params->sample_rate, NULL) != 1) {
     fprintf (stderr, "Could not get mixer info!\n");
-	  kr_client_destroy (&streamer->client);
-	  exit (1);
+    kr_client_destroy (&streamer->client);
+    exit (1);
   }
 
   streamer->opus = krad_opus_encoder_create (streamer->params->channels,
@@ -142,8 +142,8 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 
   kr_ogg_add_track (streamer->ogg_io->ogg, &streamer->opus->krad_codec_header);
   //FIXME
-	streamer->audioport = kr_audioport_create (streamer->client, "opusstreamer", 0);
-	kr_audioport_set_callback (streamer->audioport, audioport_process, streamer);
+  streamer->audioport = kr_audioport_create (streamer->client, "opusstreamer", 0);
+  kr_audioport_set_callback (streamer->audioport, audioport_process, streamer);
 
   return streamer;
 }
@@ -169,7 +169,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
     printf("\r\nFailed to push ogg header!\n");
     destroy = 1;
   } else {
-	  kr_audioport_connect(streamer->audioport);
+    kr_audioport_connect(streamer->audioport);
   }
 
   while (!destroy) {

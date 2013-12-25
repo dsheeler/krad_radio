@@ -41,8 +41,8 @@ struct kr_streamer_St {
   uint32_t fps_numerator;
   uint32_t fps_denominator;
   uint32_t frame_size;
-	kr_videoport_t *videoport;
-	kr_client_t *client;
+  kr_videoport_t *videoport;
+  kr_client_t *client;
   krad_ringbuffer_t *frame_ring;
   krad_framepool_t *framepool;
   krad_timer_t *timer;
@@ -82,7 +82,7 @@ int new_frame (void *buffer, void *user) {
 
   streamer->frames++;
 
-	return 0;
+  return 0;
 }
 
 int kr_streamer_destroy (kr_streamer_t **streamer) {
@@ -94,9 +94,9 @@ int kr_streamer_destroy (kr_streamer_t **streamer) {
   //krad_vpx_encoder_destroy (&(*streamer)->vpx_enc);
   //kr_mkv_destroy (&(*streamer)->mkv);
   kr_file_close(&(*streamer)->y4m_file);
-	kr_videoport_deactivate ((*streamer)->videoport);
-	kr_videoport_destroy ((*streamer)->videoport);
-	kr_client_destroy (&(*streamer)->client);
+  kr_videoport_deactivate ((*streamer)->videoport);
+  kr_videoport_destroy ((*streamer)->videoport);
+  kr_client_destroy (&(*streamer)->client);
   krad_ringbuffer_free ((*streamer)->frame_ring);
   krad_framepool_destroy (&(*streamer)->framepool);
   free (*streamer);
@@ -116,41 +116,41 @@ kr_streamer_t *kr_streamer_create (kr_streamer_params_t *params) {
 
   streamer->params = params;
 
-	streamer->client = kr_client_create ("krad streamer client");
+  streamer->client = kr_client_create ("krad streamer client");
 
-	if (streamer->client == NULL) {
-		fprintf (stderr, "Could not create KR client.\n");
-	  exit (1);
-	}
+  if (streamer->client == NULL) {
+    fprintf (stderr, "Could not create KR client.\n");
+    exit (1);
+  }
 
   kr_connect (streamer->client, streamer->params->station);
 
   if (!kr_connected (streamer->client)) {
-		fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
+    fprintf (stderr, "Could not connect to %s krad radio daemon.\n",
              streamer->params->station);
-	  kr_client_destroy (&streamer->client);
-	  exit (1);
+    kr_client_destroy (&streamer->client);
+    exit (1);
   }
 
   if (kr_compositor_get_info_wait (streamer->client,
                                    &streamer->width, &streamer->height,
                                    &streamer->fps_numerator, &streamer->fps_denominator) != 1) {
     fprintf (stderr, "Could not get compositor info!\n");
-	  kr_client_destroy (&streamer->client);
-	  exit (1);
+    kr_client_destroy (&streamer->client);
+    exit (1);
   }
 
   streamer->frame_size = streamer->width * streamer->height * 4;
   //FIXME
-	streamer->videoport = kr_videoport_create (streamer->client, 0);
+  streamer->videoport = kr_videoport_create (streamer->client, 0);
 
-	if (streamer->videoport == NULL) {
-		fprintf (stderr, "Could not make videoport.\n");
-	  kr_client_destroy (&streamer->client);
-	  exit (1);
-	} else {
-		printf ("Working!\n");
-	}
+  if (streamer->videoport == NULL) {
+    fprintf (stderr, "Could not make videoport.\n");
+    kr_client_destroy (&streamer->client);
+    exit (1);
+  } else {
+    printf ("Working!\n");
+  }
 
   kr_videoport_set_callback (streamer->videoport, new_frame, streamer);
 
@@ -254,10 +254,10 @@ void kr_streamer_run (kr_streamer_t *streamer) {
 
     frame = NULL;
     frames = krad_ringbuffer_read_space (streamer->frame_ring) / sizeof(void *);
-	/*
+  /*
     if (frames > 1) {
       krad_vpx_encoder_deadline_set (streamer->vpx_enc, 1);
-	    sws_algo = SWS_POINT;
+      sws_algo = SWS_POINT;
     }
 
     if (frames == 0) {
@@ -266,7 +266,7 @@ void kr_streamer_run (kr_streamer_t *streamer) {
       usleep (2000);
       continue;
     }
-	*/
+  */
     if (frames > 0) {
       krad_ringbuffer_read (streamer->frame_ring,
                             (char *)&frame,

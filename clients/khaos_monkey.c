@@ -11,7 +11,7 @@ struct khaos_monkey_St {
   kr_client_t *client;
   int lifetime;
   uint32_t number;
-	pthread_t on_the_lamb_thread;
+  pthread_t on_the_lamb_thread;
 };
 
 void my_remote_print (kr_remote_t *remote) {
@@ -35,39 +35,39 @@ void my_portgroup_print (kr_mixer_path_info *portgroup) {
 void my_compositor_print (kr_compositor_t *compositor) {
 
   printf ("Compositor Resolution: %d x %d Frame Rate: %d / %d - %f\n",
-					 compositor->width, compositor->height,
-					 compositor->fps_numerator, compositor->fps_denominator,
-					 ((float)compositor->fps_numerator / (float)compositor->fps_denominator));
+           compositor->width, compositor->height,
+           compositor->fps_numerator, compositor->fps_denominator,
+           ((float)compositor->fps_numerator / (float)compositor->fps_denominator));
 }
 
 void my_sprite_print (kr_sprite_t *sprite) {
 
   printf ("Sprite stuf: %d %f\n",
-					 sprite->controls.width, sprite->controls.rotation);
+           sprite->controls.width, sprite->controls.rotation);
 }
 
 void my_text_print (kr_text_t *text) {
 
   printf ("text stuf: %d %f\n",
-					 text->controls.width, text->controls.rotation);
+           text->controls.width, text->controls.rotation);
 }
 
 void my_vector_print (kr_vector_t *vector) {
 
   printf ("vector stuf: %d %f\n",
-					 vector->controls.width, vector->controls.rotation);
+           vector->controls.width, vector->controls.rotation);
 }
 
 void my_videoport_print (kr_port_t *videoport) {
 
   printf ("videoport stuf: %d %f\n",
-					 videoport->controls.width, videoport->controls.rotation);
+           videoport->controls.width, videoport->controls.rotation);
 }
 
 void my_mixer_print (kr_mixer_info *mixer) {
 
   printf ("Mixer Sample Rate: %d\n",
-					 mixer->sample_rate);
+           mixer->sample_rate);
 }
 
 void my_print (kr_crate_t *crate) {
@@ -313,9 +313,9 @@ khaos_monkey_t *monkey_on_the_lamb (char *sysname) {
   monkey = calloc (1, sizeof(khaos_monkey_t));
   monkey->number = monkey_number++;
   strncpy ( monkey->station_sysname, sysname, sizeof (monkey->station_sysname));
-	pthread_create (&monkey->on_the_lamb_thread, NULL, on_the_lamb, (void *)monkey);
+  pthread_create (&monkey->on_the_lamb_thread, NULL, on_the_lamb, (void *)monkey);
 
-	return monkey;
+  return monkey;
 }
 
 void catch_monkey (khaos_monkey_t *monkey) {

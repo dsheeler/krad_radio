@@ -124,7 +124,7 @@ void krad_player_close (krad_player_t *player) {
   if (player->audioport) {
     kr_audioport_disconnect(player->audioport);
   }
-  if (player->avc.aframe != NULL) {  
+  if (player->avc.aframe != NULL) {
     av_frame_free (&player->avc.aframe);
   }
   if (player->avc.vframe != NULL) {
@@ -154,10 +154,10 @@ int decode_video(krad_player_t *player, AVPacket *packet) {
 
   int got_frame;
   int err;
-  
+
   err = 0;
   got_frame = 0;
-  
+
   player->avc.video_packets++;
   if (player->seek) avcodec_flush_buffers(player->avc.vdec);
   err = avcodec_decode_video2 (player->avc.vdec,
@@ -171,27 +171,27 @@ int decode_video(krad_player_t *player, AVPacket *packet) {
     player->avc.video_err = "Error decoding video";
     return -2;
   }
-  
+
   if (!got_frame) {
     player->avc.video_err = "Got No frame from video decoder";
     return -1;
   }
-  
-  player->avc.video_frames++;  
+
+  player->avc.video_frames++;
 
   int rgb_stride_arr[3] = {4*player->width, 0, 0};
   uint8_t *dst[4];
-  
+
   player->avc.scaler = sws_getCachedContext ( player->avc.scaler,
                                               player->avc.vframe->width,
                                               player->avc.vframe->height,
                                               player->avc.vframe->format,
                                               player->width,
                                               player->height,
-                                              PIX_FMT_RGB32, 
+                                              PIX_FMT_RGB32,
                                               SWS_BICUBIC,
                                               NULL, NULL, NULL);
-  //av_frame_unref (player->avc.vframe);  
+  //av_frame_unref (player->avc.vframe);
 
   while (player->frames_dec - player->consumed == player->framebufsize) {
     usleep (100000);
@@ -199,10 +199,10 @@ int decode_video(krad_player_t *player, AVPacket *packet) {
       return -3;
     }
   }
-  
+
   if (destroy == 1) {
     return 0;
-  }  
+  }
 
   int pos = (player->frames_dec % player->framebufsize) * player->frame_size;
   dst[0] = (unsigned char *)player->rgba + pos;
@@ -213,10 +213,10 @@ int decode_video(krad_player_t *player, AVPacket *packet) {
              0, player->avc.vframe->height,
              dst, rgb_stride_arr);
 
-  player->frame_time[player->frames_dec % player->framebufsize] = 
+  player->frame_time[player->frames_dec % player->framebufsize] =
     av_q2d (player->avc.ctx->streams[player->avc.vid]->time_base) *
             (player->avc.vframe->pkt_pts - player->avc.ctx->streams[player->avc.vid]->start_time) * 1000;
-  
+
   player->frames_dec++;
 
   return 1;
@@ -261,12 +261,12 @@ int decode_audio(krad_player_t *player, AVPacket *packet) {
   }
   av_free_packet (packet);
 
-  while ((avresample_available(player->avc.avr) >= player->sample_rate * 4) && 
+  while ((avresample_available(player->avc.avr) >= player->sample_rate * 4) &&
         (!destroy)) {
     usleep (5000);
     if (krad_player_check_av_ports (player)) {
       return -3;
-    }    
+    }
   }
 
   if (destroy == 1) {
@@ -287,12 +287,12 @@ int videoport_process(void *buffer, void *arg) {
   int pos;
   int npos;
   player = (krad_player_t *)arg;
-  
+
   if (player->avc.aid == -1) {
     player->samples_consumed += 1600;
     player->ms = player->samples_consumed / 48;
   }
-  
+
   if (player->frames_dec > player->consumed) {
     pos = (player->consumed % player->framebufsize);
     if (player->ms >= player->frame_time[pos]) {
@@ -330,7 +330,7 @@ int audioport_process(uint32_t nframes, void *arg) {
   outputs[0] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 0);
   outputs[1] = (uint8_t *)kr_audioport_get_buffer (player->audioport, 1);
 
-  if ((player->avc.avr != NULL) && 
+  if ((player->avc.avr != NULL) &&
       (avresample_available(player->avc.avr) >= nframes)) {
     avresample_read (player->avc.avr, outputs, nframes);
     player->samples_consumed += nframes;
@@ -352,17 +352,17 @@ int krad_player_open(krad_player_t *player, char *input) {
   int last_ms;
   int32_t ret;
   AVPacket packet;
-  
+
   pc = 0;
   err = 0;
   last_ms = -1000;
-  
+
   player->avc.ctx = avformat_alloc_context ();
-  
+
   if (input[0] == '-') {
     input = "pipe:0";
   }
-  
+
   err = avformat_open_input (&player->avc.ctx, input, NULL, NULL);
   if (err < 0) {
     fprintf (stderr, "Krad Player: Could not open input: %s\n", input);
@@ -378,26 +378,26 @@ int krad_player_open(krad_player_t *player, char *input) {
   player->avc.aid = -1;
 
   for (i = 0; i < player->avc.ctx->nb_streams; i++) {
-    if ((player->avc.vid == -1) && 
+    if ((player->avc.vid == -1) &&
        (player->avc.ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)) {
       player->avc.vid = i;
       player->avc.vframe = av_frame_alloc();
       printf ("Got a Video Track\n");
     }
-    if ((player->avc.aid == -1) && 
+    if ((player->avc.aid == -1) &&
        (player->avc.ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)) {
       player->avc.aid = i;
       player->avc.aframe = av_frame_alloc();
       printf ("Got an Audio Track\n");
     }
   }
- 
+
   if ((player->avc.aid == -1) && (player->avc.vid == -1)) {
     fprintf (stderr, "Krad Player: Couldnt get info on input: %s\n", input);
     return -3;
   }
 
-  handle_metadata (player); 
+  handle_metadata (player);
 
   if (player->avc.aid != -1) {
 
@@ -407,16 +407,16 @@ int krad_player_open(krad_player_t *player, char *input) {
     if (!avcodec_open2 (player->avc.adec, player->avc.acodec, NULL) < 0) {
       fprintf (stderr, "Krad Player: Could not find open the needed codec\n");
     }
-    
+
     player->audioport = kr_audioport_create (player->client, "kplayer", INPUT);
 
     if (player->audioport == NULL) {
       fprintf (stderr, "Krad Player: could not setup audioport\n");
       return -4;
-    }  
-    
+    }
+
     kr_audioport_set_callback(player->audioport, audioport_process, player);
-    
+
     kr_audioport_connect(player->audioport);
   }
 
@@ -428,9 +428,9 @@ int krad_player_open(krad_player_t *player, char *input) {
     if (!avcodec_open2 (player->avc.vdec, player->avc.vcodec, NULL) < 0) {
       fprintf (stderr, "Krad Player: Could not find open the needed codec\n");
     }
-    
+
     player->videoport = kr_videoport_create (player->client, INPUT);
-    
+
     if (player->videoport == NULL) {
       fprintf (stderr, "could not setup videoport\n");
       return -5;
@@ -439,16 +439,16 @@ int krad_player_open(krad_player_t *player, char *input) {
     krad_player_alloc_framebuf (player);
 
     kr_videoport_set_callback (player->videoport, videoport_process, player);
-    
+
     kr_videoport_activate (player->videoport);
   }
   printf ("\n");
 
   if (krad_player_check_av_ports (player)) {
     printf ("Error: av ports error\n");
-    return -6;    
-  }  
-  
+    return -6;
+  }
+
   while (!destroy) {
     if (player->seek) {
       int64_t timestamp = rand() % 10000000;
@@ -467,7 +467,7 @@ int krad_player_open(krad_player_t *player, char *input) {
       printf ("\nGot to EOF\n");
       break;
     }
-    if ((packet.stream_index != player->avc.aid) && 
+    if ((packet.stream_index != player->avc.aid) &&
         (packet.stream_index != player->avc.vid)) {
       av_free_packet (&packet);
       continue;
@@ -490,7 +490,7 @@ int krad_player_open(krad_player_t *player, char *input) {
     if (krad_player_check_av_ports (player)) {
         printf ("\r\nError: %s\n", "Avports error");
       return -7;
-    }     
+    }
     if (last_ms < (player->ms - 80)) {
       pc = printf ("\rVPOS: %"PRIi64" LFT: %"PRIi64" RPT: %d SKP: %d "
                    "VFRMS %d VPKTS %d :: APOS: %3.2fs APKTS %d",
@@ -504,7 +504,7 @@ int krad_player_open(krad_player_t *player, char *input) {
     }
   }
   printf ("\n");
-  
+
   // Handling draining / fadeout here
   return 0;
 }
@@ -533,7 +533,7 @@ void krad_player_destroy (krad_player_t **destroy_player) {
   }
 
   printf ("Krad Player: Self Destructing\n");
-  
+
   if (player->videoport != NULL) {
     kr_videoport_deactivate (player->videoport);
     kr_videoport_destroy (player->videoport);
@@ -577,25 +577,25 @@ krad_player_t *krad_player_create (char *station) {
     return NULL;
   }
   printf ("Krad Player Connected to %s!\n", player->station);
-  
+
   if (kr_mixer_get_info_wait (player->client,
                               &player->sample_rate, NULL) != 1) {
     fprintf (stderr, "Krad Player: Could not get mixer info!\n");
-	  kr_client_destroy (&player->client);
-	  return NULL;
+    kr_client_destroy (&player->client);
+    return NULL;
   }
-  
+
   if (kr_compositor_get_info_wait (player->client,
                                    &player->width, &player->height,
                                    &player->fps_num, &player->fps_den) != 1) {
     fprintf (stderr, "Krad Player: Could not get compositor info!\n");
-	  kr_client_destroy (&player->client);
-	  return NULL;
+    kr_client_destroy (&player->client);
+    return NULL;
   }
-    
+
   signal (SIGINT, signal_recv);
-  signal (SIGTERM, signal_recv);  
-  
+  signal (SIGTERM, signal_recv);
+
   return player;
 }
 

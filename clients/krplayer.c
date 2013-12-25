@@ -9,7 +9,7 @@
 typedef struct kr_player_cli_St kr_player_cli_t;
 
 struct kr_player_cli_St {
-	/* krad_wayland_t *wayland; */
+  /* krad_wayland_t *wayland; */
   kr_player_t *player;
   struct termios ttystate;
 };
@@ -27,10 +27,10 @@ kr_player_cli_t *kr_player_cli_create (char *station, char *input) {
   kcp = calloc (1, sizeof (kr_player_cli_t));
 
   krad_system_init ();
-	
+
   //char logfile[265];
   //sprintf (logfile, "%s/kr_player_%"PRIu64".log",
-  //         getenv ("HOME"), krad_unixtime ());	
+  //         getenv ("HOME"), krad_unixtime ());
   //krad_system_log_on (logfile);
 
   kcp->player = kr_player_create (station, input);
@@ -40,7 +40,7 @@ kr_player_cli_t *kr_player_cli_create (char *station, char *input) {
     return NULL;
   }
 
-	signal (SIGINT, signal_recv);
+  signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);
 
   tcgetattr (STDIN_FILENO, &kcp->ttystate);
@@ -62,13 +62,13 @@ void kr_player_cli_handle_input (kr_player_cli_t *kcp) {
 
   int ret;
   char buf[1];
-  
+
   ret = read (STDIN_FILENO, buf, 1);
 
   if (ret != 1) {
     printf ("\nError read: %d\n", ret);
   }
-  
+
   if (buf[0] == 'p') {
     kr_player_play (kcp->player);
   }
@@ -77,7 +77,7 @@ void kr_player_cli_handle_input (kr_player_cli_t *kcp) {
   }
   if (buf[0] == 'r') {
     kr_player_direction_set (kcp->player, REVERSE);
-  }   
+  }
   if (buf[0] == 'f') {
     kr_player_direction_set (kcp->player, FORWARD);
   }
@@ -89,7 +89,7 @@ void kr_player_cli_handle_input (kr_player_cli_t *kcp) {
   }
   if (buf[0] == 'd') {
     kr_player_speed_set (kcp->player, kr_player_speed_get (kcp->player) + 0.1f);
-  }  
+  }
   if (buf[0] == 'b') {
     kr_player_pause (kcp->player);
   }
@@ -110,7 +110,7 @@ void kr_player_cli_check_input (kr_player_cli_t *kcp) {
 
   if (n > 0) {
     kr_player_cli_handle_input (kcp);
-    kr_player_cli_check_input (kcp);    
+    kr_player_cli_check_input (kcp);
   }
 }
 
@@ -127,7 +127,7 @@ void kr_player_cli_run (kr_player_cli_t *kcp) {
   while (!destroy) {
     usleep (100000);
     kr_player_cli_status (kcp);
-    kr_player_cli_check_input (kcp);    
+    kr_player_cli_check_input (kcp);
   }
   printf ("\n");
 }
@@ -149,7 +149,7 @@ int main (int argc, char **argv) {
   }
 
   kr_player_cli_run (kcp);
-  
+
   kr_player_cli_destroy (kcp);
 
   printf ("kr_player test completed.\n");

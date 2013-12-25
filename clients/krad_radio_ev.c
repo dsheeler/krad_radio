@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
   float val;
   char cmd[128];
   struct input_event ev;
-	kr_client_t *client;
+  kr_client_t *client;
   int total_cmds;
 
   total_cmds = 0;
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   //kr_alsa_test ();
 
   client = kr_connect (argv[1]);
-	if (client == NULL) {
+  if (client == NULL) {
     printf ("Could not connect to krad radio :(\n");
     return 1;
   }
@@ -116,13 +116,13 @@ int main(int argc, char **argv) {
       val = scramp_value(ev.value, 24.0, -12.0);
 
       if (ev.code == 41) {
-  			krad_ipc_set_effect_control (client, "Music", 0, "db", 0, val);
+        krad_ipc_set_effect_control (client, "Music", 0, "db", 0, val);
       }
       if (ev.code == 42) {
-				krad_ipc_set_effect_control (client, "Music", 0, "db", 1, val);
+        krad_ipc_set_effect_control (client, "Music", 0, "db", 1, val);
       }
       if (ev.code == 43) {
-				krad_ipc_set_effect_control (client, "Music", 0, "db", 2, val);
+        krad_ipc_set_effect_control (client, "Music", 0, "db", 2, val);
       }
 
       total_cmds++;
@@ -134,13 +134,13 @@ int main(int argc, char **argv) {
       val = scramp_value(ev.value, 24.0, -12.0);
 
       if (ev.code == 37) {
-  			krad_ipc_set_effect_control (client, "Music2", 0, "db", 0, val);
+        krad_ipc_set_effect_control (client, "Music2", 0, "db", 0, val);
       }
       if (ev.code == 38) {
-				krad_ipc_set_effect_control (client, "Music2", 0, "db", 1, val);
+        krad_ipc_set_effect_control (client, "Music2", 0, "db", 1, val);
       }
       if (ev.code == 39) {
-				krad_ipc_set_effect_control (client, "Music2", 0, "db", 2, val);
+        krad_ipc_set_effect_control (client, "Music2", 0, "db", 2, val);
       }
 
       total_cmds++;

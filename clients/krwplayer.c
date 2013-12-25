@@ -46,7 +46,7 @@ int display_cb(void *user, kr_wayland_event *event) {
   ret = krad_player_get_frame(kwp->player, event->frame_event.buffer);
 
 
-	return ret;
+  return ret;
 }
 
 int window_cb(void *user, kr_wayland_event *event) {
@@ -69,13 +69,13 @@ kr_player_wl_t *kr_player_wl_create (char *input) {
   kwp = calloc (1, sizeof (kr_player_wl_t));
 
   krad_system_init ();
-	
+  
   //char logfile[265];
   //sprintf (logfile, "%s/kr_player_%"PRIu64".log",
-  //         getenv ("HOME"), krad_unixtime ());	
+  //         getenv ("HOME"), krad_unixtime ());  
   //krad_system_log_on (logfile);
 
-	kwp->wayland = kr_wayland_create();
+  kwp->wayland = kr_wayland_create();
 
 
   kwp->player = kr_player_create_custom_cb(input);
@@ -92,7 +92,7 @@ kr_player_wl_t *kr_player_wl_create (char *input) {
 
   kwp->output_window = kr_wayland_window_create(kwp->wayland, &window_params);
 
-	signal (SIGINT, signal_recv);
+  signal (SIGINT, signal_recv);
   signal (SIGTERM, signal_recv);
 
   tcgetattr (STDIN_FILENO, &kwp->ttystate);
@@ -105,7 +105,7 @@ kr_player_wl_t *kr_player_wl_create (char *input) {
 
 void kr_player_wl_destroy (kr_player_wl_t *kwp) {
   kr_wayland_window_destroy(&kwp->output_window);
-	kr_wayland_destroy(&kwp->wayland);
+  kr_wayland_destroy(&kwp->wayland);
   kwp->ttystate.c_lflag |= ICANON | ECHO;
   tcsetattr (STDIN_FILENO, TCSANOW, &kwp->ttystate);
   kr_player_destroy (&kwp->player);
