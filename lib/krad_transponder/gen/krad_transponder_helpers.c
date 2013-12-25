@@ -41,12 +41,14 @@ int kr_adapter_api_to_index(int val) {
       return 2;
     case KR_ADP_DECKLINK:
       return 3;
-    case KR_ADP_KRAPI:
+    case KR_ADP_X11:
       return 4;
-    case KR_ADP_ALSA:
+    case KR_ADP_KRAPI:
       return 5;
-    case KR_ADP_ENCODER:
+    case KR_ADP_ALSA:
       return 6;
+    case KR_ADP_ENCODER:
+      return 7;
   }
   return -1;
 }
@@ -61,6 +63,8 @@ char *kr_strfr_kr_adapter_api(int val) {
       return "kr_adp_v4l2";
     case KR_ADP_DECKLINK:
       return "kr_adp_decklink";
+    case KR_ADP_X11:
+      return "kr_adp_x11";
     case KR_ADP_KRAPI:
       return "kr_adp_krapi";
     case KR_ADP_ALSA:
@@ -83,6 +87,9 @@ int kr_strto_kr_adapter_api(char *string) {
   }
   if (!strcmp(string,"kr_adp_decklink")) {
     return KR_ADP_DECKLINK;
+  }
+  if (!strcmp(string,"kr_adp_x11")) {
+    return KR_ADP_X11;
   }
   if (!strcmp(string,"kr_adp_krapi")) {
     return KR_ADP_KRAPI;
@@ -119,6 +126,10 @@ int kr_adapter_api_info_init(kr_adapter_api_info *st, int idx) {
       kr_decklink_info_init(&st->decklink);
       break;
     }
+    case 4: {
+      kr_x11_info_init(&st->x11);
+      break;
+    }
   }
 
 
@@ -145,6 +156,10 @@ int kr_adapter_api_info_valid(kr_adapter_api_info *st, int idx) {
     }
     case 3: {
       kr_decklink_info_valid(&st->decklink);
+      break;
+    }
+    case 4: {
+      kr_x11_info_valid(&st->x11);
       break;
     }
   }
@@ -175,6 +190,10 @@ int kr_adapter_api_info_random(kr_adapter_api_info *st, int idx) {
       kr_decklink_info_random(&st->decklink);
       break;
     }
+    case 4: {
+      kr_x11_info_random(&st->x11);
+      break;
+    }
   }
 
 
@@ -201,6 +220,10 @@ int kr_adapter_api_path_info_init(kr_adapter_api_path_info *st, int idx) {
     }
     case 3: {
       kr_decklink_path_info_init(&st->decklink);
+      break;
+    }
+    case 4: {
+      kr_x11_path_info_init(&st->x11);
       break;
     }
   }
@@ -231,6 +254,10 @@ int kr_adapter_api_path_info_valid(kr_adapter_api_path_info *st, int idx) {
       kr_decklink_path_info_valid(&st->decklink);
       break;
     }
+    case 4: {
+      kr_x11_path_info_valid(&st->x11);
+      break;
+    }
   }
 
 
@@ -257,6 +284,10 @@ int kr_adapter_api_path_info_random(kr_adapter_api_path_info *st, int idx) {
     }
     case 3: {
       kr_decklink_path_info_random(&st->decklink);
+      break;
+    }
+    case 4: {
+      kr_x11_path_info_random(&st->x11);
       break;
     }
   }

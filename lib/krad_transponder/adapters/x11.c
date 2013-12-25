@@ -1,64 +1,56 @@
 #ifdef KR_X11
-void x11_capture_unit_create (void *arg) {
 
-  krad_link_t *krad_link = (krad_link_t *)arg;
+#include "krad_ticker.h"
 
-  krad_system_set_thread_name ("kr_x11_cap");
-
-  printk ("X11 capture thread begins");
-
-  krad_link->krad_x11 = krad_x11_create();
-
-  if (krad_link->video_source == X11) {
-    krad_link->krad_framepool = krad_framepool_create ( krad_link->krad_x11->screen_width,
-                              krad_link->krad_x11->screen_height,
-                              DEFAULT_CAPTURE_BUFFER_FRAMES);
+int x11_adapter_process(kr_adapter_path *path) {
+  kr_adapter_path_av_cb_arg cb_arg;
+  kr_image image;
+  kr_ticker *ticker;
+  int ret;
+  int num;
+  int den;
+  ticker = NULL;
+  num = 30;
+  den = 1;
+  krad_system_set_thread_name("kr_x11");
+  ticker = krad_ticker_create(num, den);
+  krad_ticker_start(ticker);
+  for(;;) {
+    kr_x11_capture(path->adapter->handle.x11, image.px);
+    if (ret == 1) {
+      cb_arg.path = path;
+      cb_arg.user = cb_arg.path->user;
+      cb_arg.image = image;
+      cb_arg.path->av_cb(&cb_arg);
+    }
+    krad_ticker_wait(ticker);
   }
-
-  krad_x11_enable_capture (krad_link->krad_x11, 0);
-
-  krad_link->krad_compositor_port = krad_compositor_port_create (krad_link->krad_radio->compositor,
-                                   "X11In",
-                                   KR_VIN,
-                                   krad_link->krad_x11->screen_width, krad_link->krad_x11->screen_height);
-}
-
-int x11_capture_unit_process (void *arg) {
-
-  krad_link_t *krad_link = (krad_link_t *)arg;
-
-  krad_frame_t *krad_frame;
-
-  if (krad_link->krad_ticker == NULL) {
-    krad_link->krad_ticker = krad_ticker_create (krad_link->krad_radio->compositor->fps_numerator,
-                      krad_link->krad_radio->compositor->fps_denominator);
-    krad_ticker_start (krad_link->krad_ticker);
-  } else {
-    krad_ticker_wait (krad_link->krad_ticker);
-  }
-
-  krad_frame = krad_framepool_getframe (krad_link->krad_framepool);
-
-  krad_x11_capture (krad_link->krad_x11, (unsigned char *)krad_frame->pixels);
-
-  krad_compositor_port_push_rgba_frame (krad_link->krad_compositor_port, krad_frame);
-
-  krad_framepool_unref_frame (krad_frame);
-
+  krad_ticker_destroy(ticker);
   return 0;
 }
 
-void x11_capture_unit_destroy (void *arg) {
+void x11_adapter_path_destroy(kr_adapter_path *path) {
+  //stop the thread
+}
 
-  krad_link_t *krad_link = (krad_link_t *)arg;
+void x11_adapter_path_create(kr_adapter_path *path) {
+  //path->adapter->handle.x11->screen_width
+  //path->adapter->handle.x11->screen_width
+  kr_x11_enable_capture(path->adapter->handle.x11, 0);
+  adapter_path_process_thread_start(path);
+}
 
-  krad_compositor_port_destroy (krad_link->krad_radio->compositor, krad_link->krad_compositor_port);
+void x11_adapter_destroy(kr_adapter *adapter) {
+  kr_x11_destroy(adapter->handle.x11);
+  adapter->handle.x11 = NULL;
+}
 
-  krad_ticker_destroy (krad_link->krad_ticker);
-  krad_link->krad_ticker = NULL;
-
-  krad_x11_destroy (krad_link->krad_x11);
-
-  printk ("X11 capture thread exited");
+void x11_adapter_create(kr_adapter *adapter) {
+  /*kr_x11_setup setup;
+  memset(&setup, 0, sizeof(kr_x11_setup));
+  setup.dev = adapter->info.api_info.x11.dev;
+  setup.priority = adapter->info.api_info.x11.priority;*/
+  adapter->handle.x11 = kr_x11_create();
+  adapter->path_process_function = x11_adapter_process;
 }
 #endif

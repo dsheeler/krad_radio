@@ -80,6 +80,12 @@ int kr_adapter_api_info_fr_ebml(kr_ebml *ebml, void *st) {
       res += info_unpack_fr_ebml(&ebml[res],&uber);
       break;
     }
+    case 4: {
+      uber.actual = &(actual->x11);
+      uber.type = DEBML_KR_X11_INFO;
+      res += info_unpack_fr_ebml(&ebml[res],&uber);
+      break;
+    }
   }
 
 
@@ -129,6 +135,12 @@ int kr_adapter_api_path_info_fr_ebml(kr_ebml *ebml, void *st) {
     case 3: {
       uber.actual = &(actual->decklink);
       uber.type = DEBML_KR_DECKLINK_PATH_INFO;
+      res += info_unpack_fr_ebml(&ebml[res],&uber);
+      break;
+    }
+    case 4: {
+      uber.actual = &(actual->x11);
+      uber.type = DEBML_KR_X11_PATH_INFO;
       res += info_unpack_fr_ebml(&ebml[res],&uber);
       break;
     }

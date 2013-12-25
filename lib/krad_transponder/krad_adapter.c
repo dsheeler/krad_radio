@@ -6,10 +6,10 @@ typedef union {
   kr_v4l2 *v4l2;
   kr_wayland *wayland;
   kr_decklink *decklink;
+  kr_x11 *x11;
 /*
   kr_alsa *alsa;
   kr_fc2 *flycap;
-  kr_jack *x11;
   kr_encoder *encoder;
   kr_shmapi krad;
 */
@@ -20,10 +20,10 @@ typedef union {
   kr_v4l2 *v4l2;
   kr_wayland_path *wayland;
   kr_decklink *decklink;
+  kr_x11_path *x11;
 /*
   kr_alsa_path *alsa;
   kr_fc2_path *flycap;
-  kr_x11_path *x11;
   kr_encoder_path *encoder;
   kr_shmapi_path krad;
 */
@@ -75,6 +75,7 @@ void adapter_path_process_thread_start(kr_adapter_path *path) {
 #include "adapters/wayland.c"
 #include "adapters/v4l2.c"
 #include "adapters/decklink.c"
+#include "adapters/x11.c"
 
 static int path_setup_check(kr_adapter_path_setup *setup);
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup);
@@ -88,14 +89,11 @@ static int path_setup_check(kr_adapter_path_setup *setup) {
 }
 
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
-
   path->user = setup->user;
   path->ev_cb = setup->ev_cb;
   path->av_cb = setup->av_cb;
   memcpy(&path->info, &setup->info, sizeof(kr_adapter_path_info));
-
   printk("ok we are going to create an adapter path");
-
   switch (path->adapter->info.api) {
     case KR_ADP_WAYLAND:
       wayland_adapter_path_create(path);
@@ -108,6 +106,9 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
       break;
     case KR_ADP_JACK:
       jack_adapter_path_create(path);
+      break;
+    case KR_ADP_X11:
+      x11_adapter_path_create(path);
       break;
     default:
       break;
@@ -127,6 +128,9 @@ static void path_destroy(kr_adapter_path *path) {
       break;
     case KR_ADP_JACK:
       jack_adapter_path_destroy(path);
+      break;
+    case KR_ADP_X11:
+      x11_adapter_path_destroy(path);
       break;
     default:
       break;
@@ -160,12 +164,9 @@ static int path_prepare(kr_adapter_path *path) {
 }
 
 int kr_adapter_prepare(kr_adapter *adapter) {
-
   int i;
   int processed;
-
   processed = 0;
-
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] != NULL) {
       processed += path_prepare(adapter->path[i]);
@@ -175,13 +176,10 @@ int kr_adapter_prepare(kr_adapter *adapter) {
 }
 
 int kr_adapter_unlink(kr_adapter_path *path) {
-
   int i;
   kr_adapter *adapter;
-
   if (path == NULL) return -1;
   adapter = path->adapter;
-
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] == NULL) continue;
     if (adapter->path[i] == path) {
@@ -196,11 +194,8 @@ int kr_adapter_unlink(kr_adapter_path *path) {
 
 kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
  kr_adapter_path_setup *setup) {
-
   kr_adapter_path *path;
-
   path = NULL;
-
   if (adapter == NULL) return NULL;
   if (setup == NULL) return NULL;
   if (adapter->handle.exists == NULL) return NULL;
@@ -209,7 +204,6 @@ kr_adapter_path *kr_adapter_mkpath(kr_adapter *adapter,
   path = path_alloc(adapter);
   if (path == NULL) return NULL;
   path_create(path, setup);
-
   return path;
 }
 
@@ -221,19 +215,14 @@ int kr_adapter_get_info(kr_adapter *adapter, kr_adapter_info *info) {
 }
 
 int kr_adapter_destroy(kr_adapter *adapter) {
-
   int i;
-
   if (adapter == NULL) return -1;
-
   printk("Adapter destroy started");
-
   for (i = 0; i < KR_ADAPTER_PATHS_MAX; i++) {
     if (adapter->path[i] != NULL) {
       kr_adapter_unlink(adapter->path[i]);
     }
   }
-
   switch (adapter->info.api) {
     case KR_ADP_WAYLAND:
       wayland_adapter_destroy(adapter);
@@ -247,28 +236,24 @@ int kr_adapter_destroy(kr_adapter *adapter) {
     case KR_ADP_JACK:
       jack_adapter_destroy(adapter);
       break;
+    case KR_ADP_X11:
+      x11_adapter_destroy(adapter);
+      break;
     default:
       break;
   }
-
   free(adapter);
-
   printk("Adapter destroy completed");
-
   return 0;
 }
 
 kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
-
   kr_adapter *adapter;
-
   if (setup == NULL) return NULL;
-
   adapter = calloc(1, sizeof(kr_adapter));
   adapter->user = setup->user;
   adapter->ev_cb = setup->ev_cb;
   memcpy(&adapter->info, &setup->info, sizeof(kr_adapter_info));
-
   switch (adapter->info.api) {
     case KR_ADP_WAYLAND:
       wayland_adapter_create(adapter);

@@ -19,7 +19,7 @@ AC_SUBST(KR_LT_AGE)
 
 AC_SUBST(KR_GIT_VERSION, m4_esyscmd([git describe --tags]))
 
-CFLAGS="-Wall -Wextra $CFLAGS"
+CFLAGS="-Wall $CFLAGS"
 CXXFLAGS="-g -Wall -Wno-write-strings $CXXFLAGS"
 
 case $host in
