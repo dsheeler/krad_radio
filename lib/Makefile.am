@@ -95,7 +95,7 @@ krad_radio_libkradradio_la_LIBADD += -lgif
 AM_CPPFLAGS += -DKRAD_GIF
 endif
 
-if LINUX
+if KR_LINUX
 krad_radio_libkradradio_la_SOURCES += krad_decklink/vendor/linux/DeckLinkAPIDispatch.cpp \
 																					krad_v4l2/krad_v4l2.c krad_alsa/krad_alsa.c
 AM_CPPFLAGS += -Ikrad_decklink/vendor/linux

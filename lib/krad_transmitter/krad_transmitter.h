@@ -15,7 +15,7 @@
 #ifndef KRAD_TRANSMITTER_H
 #define KRAD_TRANSMITTER_H
 
-#ifdef KR_LINUX
+#ifdef __linux__
 #include <sys/epoll.h>
 #endif
 

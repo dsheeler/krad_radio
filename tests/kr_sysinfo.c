@@ -2,22 +2,22 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <stddef.h>
-#ifdef KR_LINUX
+#ifdef __linux__
 #include <sys/sysinfo.h>
 #endif
 
-/* gcc -Wall -DKR_LINUX kr_sysinfo.c -o kr_sysinfo */
+/* gcc -Wall kr_sysinfo.c -o kr_sysinfo */
 
 int main (int argc, char **argv) {
 
   struct utsname unix_info;
-#ifdef KR_LINUX
+#ifdef __linux__
   int days, hours, mins;
   struct sysinfo sys_info;
 #endif
 
   uname (&unix_info);
-  
+
   printf("Host: %s\n", unix_info.nodename);
   printf("Machine: %s\n", unix_info.machine);
   printf("Sysname: %s\n", unix_info.sysname);
@@ -36,7 +36,7 @@ int main (int argc, char **argv) {
   printf("sizeof wchar_t %zu\n", sizeof(wchar_t));
   printf("sizeof time_t %zu\n", sizeof(time_t));
 
-#ifdef KR_LINUX
+#ifdef __linux__
   if (sysinfo(&sys_info) != 0) {
     fprintf(stderr, "Could not run sysinfo() command\n");
     return -1;

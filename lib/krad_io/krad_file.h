@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#include "krad_system.h"
+
 #ifdef KR_LINUX
 #include <sys/statfs.h>
 #else
@@ -16,8 +18,6 @@
 #include <sys/mount.h>
 #endif
 #endif
-
-//#include "krad_system.h"
 
 #ifndef KRAD_FILE_H
 #define KRAD_FILE_H

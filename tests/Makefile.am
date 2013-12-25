@@ -6,7 +6,7 @@ if HAVE_WAYLAND
   bin_PROGRAMS += kr_wayland_test
 endif
 
-if LINUX
+if KR_LINUX
   bin_PROGRAMS += kr_v4l2_test
 endif
 

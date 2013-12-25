@@ -19,10 +19,6 @@
 #include <poll.h>
 #include <pthread.h>
 
-#ifdef KR_LINUX
-#include <ifaddrs.h>
-#endif
-
 #include "krad_radio_version.h"
 #include "krad_system.h"
 #include "krad_ring.h"
@@ -30,6 +26,10 @@
 #include "krad_radio_ipc.h"
 
 #include "krad_radio_client.h"
+
+#ifdef KR_LINUX
+#include <ifaddrs.h>
+#endif
 
 #ifndef KRAD_APP_SERVER_H
 #define KRAD_APP_SERVER_H

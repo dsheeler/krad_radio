@@ -26,6 +26,11 @@
 #include <signal.h>
 #include <pthread.h>
 
+#ifdef __linux__
+#define LINUX 1
+#define KR_LINUX
+#endif
+
 #ifdef KR_LINUX
 #include <sys/prctl.h>
 #include <malloc.h>
