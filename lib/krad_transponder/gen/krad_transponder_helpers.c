@@ -115,6 +115,10 @@ int kr_adapter_api_info_init(kr_adapter_api_info *st, int idx) {
       kr_v4l2_info_init(&st->v4l2);
       break;
     }
+    case 3: {
+      kr_decklink_info_init(&st->decklink);
+      break;
+    }
   }
 
 
@@ -137,6 +141,10 @@ int kr_adapter_api_info_valid(kr_adapter_api_info *st, int idx) {
     }
     case 2: {
       kr_v4l2_info_valid(&st->v4l2);
+      break;
+    }
+    case 3: {
+      kr_decklink_info_valid(&st->decklink);
       break;
     }
   }
@@ -163,6 +171,10 @@ int kr_adapter_api_info_random(kr_adapter_api_info *st, int idx) {
       kr_v4l2_info_random(&st->v4l2);
       break;
     }
+    case 3: {
+      kr_decklink_info_random(&st->decklink);
+      break;
+    }
   }
 
 
@@ -185,6 +197,10 @@ int kr_adapter_api_path_info_init(kr_adapter_api_path_info *st, int idx) {
     }
     case 2: {
       kr_v4l2_open_info_init(&st->v4l2);
+      break;
+    }
+    case 3: {
+      kr_decklink_path_info_init(&st->decklink);
       break;
     }
   }
@@ -211,6 +227,10 @@ int kr_adapter_api_path_info_valid(kr_adapter_api_path_info *st, int idx) {
       kr_v4l2_open_info_valid(&st->v4l2);
       break;
     }
+    case 3: {
+      kr_decklink_path_info_valid(&st->decklink);
+      break;
+    }
   }
 
 
@@ -233,6 +253,10 @@ int kr_adapter_api_path_info_random(kr_adapter_api_path_info *st, int idx) {
     }
     case 2: {
       kr_v4l2_open_info_random(&st->v4l2);
+      break;
+    }
+    case 3: {
+      kr_decklink_path_info_random(&st->decklink);
       break;
     }
   }

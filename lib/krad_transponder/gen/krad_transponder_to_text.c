@@ -74,6 +74,12 @@ int kr_adapter_api_info_to_text(char *text, void *st, int32_t max) {
       res += info_pack_to_text(&text[res],&uber,max-res);
       break;
     }
+    case 3: {
+      uber.actual = &(actual->decklink);
+      uber.type = TEXT_KR_DECKLINK_INFO;
+      res += info_pack_to_text(&text[res],&uber,max-res);
+      break;
+    }
   }
 
 
@@ -117,6 +123,12 @@ int kr_adapter_api_path_info_to_text(char *text, void *st, int32_t max) {
     case 2: {
       uber.actual = &(actual->v4l2);
       uber.type = TEXT_KR_V4L2_OPEN_INFO;
+      res += info_pack_to_text(&text[res],&uber,max-res);
+      break;
+    }
+    case 3: {
+      uber.actual = &(actual->decklink);
+      uber.type = TEXT_KR_DECKLINK_PATH_INFO;
       res += info_pack_to_text(&text[res],&uber,max-res);
       break;
     }

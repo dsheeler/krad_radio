@@ -4,7 +4,7 @@ int info_unpack_fr_ebml(kr_ebml *ebml, uber_St *uber);
 typedef int (*info_unpack_fr_ebml_func)(kr_ebml *ebml, void *st);
 
 int info_unpack_fr_ebml(kr_ebml *ebml, uber_St *uber) {
-  const info_unpack_fr_ebml_func fr_ebml_functions[94] = {kr_compositor_path_type_fr_ebml,
+  const info_unpack_fr_ebml_func fr_ebml_functions[96] = {kr_compositor_path_type_fr_ebml,
   kr_compositor_subunit_type_fr_ebml,kr_vector_type_fr_ebml,
   kr_compositor_control_fr_ebml,kr_compositor_controls_fr_ebml,
   kr_sprite_info_fr_ebml,kr_text_info_fr_ebml,
@@ -12,7 +12,8 @@ int info_unpack_fr_ebml(kr_ebml *ebml, uber_St *uber) {
   kr_compositor_info_fr_ebml,kr_pos_fr_ebml,
   kr_perspective_view_fr_ebml,kr_perspective_fr_ebml,
   krad_codec_t_fr_ebml,krad_container_type_t_fr_ebml,
-  krad_codec_header_St_fr_ebml,kr_jack_direction_fr_ebml,
+  krad_codec_header_St_fr_ebml,kr_decklink_info_fr_ebml,
+  kr_decklink_path_info_fr_ebml,kr_jack_direction_fr_ebml,
   kr_jack_state_fr_ebml,kr_jack_setup_info_fr_ebml,
   kr_jack_info_fr_ebml,kr_jack_path_info_fr_ebml,
   kr_mixer_channels_fr_ebml,kr_mixer_control_fr_ebml,

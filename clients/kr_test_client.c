@@ -2,6 +2,7 @@
 
 static int test_jack_input_create(kr_client *client);
 static int test_jack_output_create(kr_client *client);
+static int test_decklink_input_create(kr_client *client, int dev);
 static int test_v4l2_input_create(kr_client *client, int dev);
 static int test_wayland_output_create(kr_client *client);
 
@@ -92,6 +93,47 @@ static int test_v4l2_input_create(kr_client *client, int dev) {
   return ret;
 }
 
+static int test_decklink_input_create(kr_client *client, int dev) {
+  int ret;
+  kr_xpdr_path_info info;
+  char *test_name;
+  char *video_connector;
+  char *audio_connector;
+  int width;
+  int height;
+  int num;
+  int den;
+  test_name = "Decklink Test";
+  video_connector = "hdmi";
+  audio_connector = "hdmi";
+  width = 1280;
+  height = 720;
+  num = 60000;
+  den = 1001;
+  /* init func? */
+  memset(&info, 0, sizeof(kr_xpdr_path_info));
+  strcpy(info.name, test_name);
+  info.input.type = KR_XPDR_ADAPTER;
+  info.input.info.adapter_path_info.api = KR_ADP_DECKLINK;
+  snprintf(info.input.info.adapter_path_info.info.decklink.device,
+   sizeof(info.input.info.adapter_path_info.info.decklink.device), "%d", dev);
+  strcpy(info.input.info.adapter_path_info.info.decklink.video_connector,
+   video_connector);
+  strcpy(info.input.info.adapter_path_info.info.decklink.audio_connector,
+   audio_connector);
+  info.input.info.adapter_path_info.info.decklink.num = num;
+  info.input.info.adapter_path_info.info.decklink.den = den;
+  info.input.info.adapter_path_info.info.decklink.width = width;
+  info.input.info.adapter_path_info.info.decklink.height = height;
+  info.output.type = KR_XPDR_COMPOSITOR;
+  strcpy(info.output.info.compositor_path_info.name, test_name);
+  info.output.info.compositor_path_info.width = width;
+  info.output.info.compositor_path_info.height = height;
+  info.output.info.compositor_path_info.type = KR_CMP_INPUT;
+  ret = kr_xpdr_mkpath(client, &info);
+  return ret;
+}
+
 static int test_wayland_output_create(kr_client *client) {
   int ret;
   kr_xpdr_path_info info;
@@ -125,7 +167,7 @@ static int test_wayland_output_create(kr_client *client) {
 }
 
 
-int run_tests(kr_client *client) {
+int run_tests(kr_client *client, int test_kode) {
   int ret;
   ret = test_jack_input_create(client);
   if (ret != 0) return ret;
@@ -133,8 +175,13 @@ int run_tests(kr_client *client) {
   if (ret != 0) return ret;
   ret = test_wayland_output_create(client);
   if (ret != 0) return ret;
-  ret = test_v4l2_input_create(client, 0);
-  if (ret != 0) return ret;
+  if (test_kode < 2) {
+    ret = test_v4l2_input_create(client, 0);
+    if (ret != 0) return ret;
+  } else {
+    ret = test_decklink_input_create(client, 0);
+    if (ret != 0) return ret;
+  }
   return 0;
 }
 
@@ -171,7 +218,7 @@ int main (int argc, char *argv[]) {
   }
   printf("Connected to %s!\n", sysname);
   printf("Running Tests\n");
-  ret = run_tests(client);
+  ret = run_tests(client, argc);
   printf("Disconnecting from %s..\n", sysname);
   kr_disconnect(client);
   printf("Disconnected from %s.\n", sysname);

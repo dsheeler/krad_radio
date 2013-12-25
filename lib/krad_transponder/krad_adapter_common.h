@@ -7,6 +7,7 @@ typedef struct kr_adapter_path_info kr_adapter_path_info;
 #include "krad_jack_common.h"
 #include "krad_wayland_common.h"
 #include "krad_v4l2_common.h"
+#include "krad_decklink_common.h"
 
 typedef enum {
   KR_ADP_PATH_INPUT = 1,
@@ -30,6 +31,7 @@ typedef union {
   kr_jack_info jack;
   kr_wayland_info wayland;
   kr_v4l2_info v4l2;
+  kr_decklink_info decklink;
 } kr_adapter_api_info;
 
 /*
@@ -41,6 +43,7 @@ typedef union {
   kr_jack_path_info jack;
   kr_wayland_path_info wayland;
   kr_v4l2_open_info v4l2;
+  kr_decklink_path_info decklink;
 } kr_adapter_api_path_info;
 
 /*

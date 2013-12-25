@@ -3,7 +3,7 @@ int info_pack_to_text(char *text, uber_St *uber, int32_t max);
 typedef int (*info_pack_to_text_func)(char *text, void *st, int max);
 
 int info_pack_to_text(char *text, uber_St *uber, int32_t max) {
-  const info_pack_to_text_func to_text_functions[94] = {kr_compositor_path_type_to_text,
+  const info_pack_to_text_func to_text_functions[96] = {kr_compositor_path_type_to_text,
   kr_compositor_subunit_type_to_text,kr_vector_type_to_text,
   kr_compositor_control_to_text,kr_compositor_controls_to_text,
   kr_sprite_info_to_text,kr_text_info_to_text,
@@ -11,7 +11,8 @@ int info_pack_to_text(char *text, uber_St *uber, int32_t max) {
   kr_compositor_info_to_text,kr_pos_to_text,
   kr_perspective_view_to_text,kr_perspective_to_text,
   krad_codec_t_to_text,krad_container_type_t_to_text,
-  krad_codec_header_St_to_text,kr_jack_direction_to_text,
+  krad_codec_header_St_to_text,kr_decklink_info_to_text,
+  kr_decklink_path_info_to_text,kr_jack_direction_to_text,
   kr_jack_state_to_text,kr_jack_setup_info_to_text,
   kr_jack_info_to_text,kr_jack_path_info_to_text,
   kr_mixer_channels_to_text,kr_mixer_control_to_text,

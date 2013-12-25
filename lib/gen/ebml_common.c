@@ -4,7 +4,7 @@ int info_pack_to_ebml(kr_ebml *ebml, uber_St *uber);
 typedef int (*info_pack_to_ebml_func)(kr_ebml *ebml, void *st);
 
 int info_pack_to_ebml(kr_ebml *ebml, uber_St *uber) {
-  const info_pack_to_ebml_func to_ebml_functions[96] = {kr_compositor_path_type_to_ebml,
+  const info_pack_to_ebml_func to_ebml_functions[98] = {kr_compositor_path_type_to_ebml,
   kr_compositor_subunit_type_to_ebml,kr_vector_type_to_ebml,
   kr_compositor_control_to_ebml,kr_compositor_controls_to_ebml,
   kr_sprite_info_to_ebml,kr_text_info_to_ebml,
@@ -12,7 +12,8 @@ int info_pack_to_ebml(kr_ebml *ebml, uber_St *uber) {
   kr_compositor_info_to_ebml,kr_pos_to_ebml,
   kr_perspective_view_to_ebml,kr_perspective_to_ebml,
   krad_codec_t_to_ebml,krad_container_type_t_to_ebml,
-  krad_codec_header_St_to_ebml,krad_io_mode_t_to_ebml,
+  krad_codec_header_St_to_ebml,kr_decklink_info_to_ebml,
+  kr_decklink_path_info_to_ebml,krad_io_mode_t_to_ebml,
   kr_io2_St_to_ebml,kr_jack_direction_to_ebml,
   kr_jack_state_to_ebml,kr_jack_setup_info_to_ebml,
   kr_jack_info_to_ebml,kr_jack_path_info_to_ebml,
