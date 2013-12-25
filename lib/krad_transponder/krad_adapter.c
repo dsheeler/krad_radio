@@ -19,9 +19,9 @@ typedef union {
   kr_jack_path *jack;
   kr_v4l2 *v4l2;
   kr_wayland_path *wayland;
+  kr_decklink *decklink;
 /*
   kr_alsa_path *alsa;
-  kr_decklink_path *decklink;
   kr_fc2_path *flycap;
   kr_x11_path *x11;
   kr_encoder_path *encoder;
@@ -100,6 +100,9 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
     case KR_ADP_WAYLAND:
       wayland_adapter_path_create(path);
       break;
+    case KR_ADP_DECKLINK:
+      decklink_adapter_path_create(path);
+      break;
     case KR_ADP_V4L2:
       v4l2_adapter_path_create(path);
       break;
@@ -115,6 +118,12 @@ static void path_destroy(kr_adapter_path *path) {
   switch (path->info.api) {
     case KR_ADP_WAYLAND:
       wayland_adapter_path_destroy(path);
+      break;
+    case KR_ADP_DECKLINK:
+      decklink_adapter_path_destroy(path);
+      break;
+    case KR_ADP_V4L2:
+      v4l2_adapter_path_destroy(path);
       break;
     case KR_ADP_JACK:
       jack_adapter_path_destroy(path);
@@ -229,6 +238,9 @@ int kr_adapter_destroy(kr_adapter *adapter) {
     case KR_ADP_WAYLAND:
       wayland_adapter_destroy(adapter);
       break;
+    case KR_ADP_DECKLINK:
+      decklink_adapter_destroy(adapter);
+      break;
     case KR_ADP_V4L2:
       v4l2_adapter_destroy(adapter);
       break;
@@ -261,6 +273,9 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
     case KR_ADP_WAYLAND:
       wayland_adapter_create(adapter);
       return adapter;
+    case KR_ADP_DECKLINK:
+      decklink_adapter_create(adapter);
+      break;
     case KR_ADP_V4L2:
       v4l2_adapter_create(adapter);
       return adapter;

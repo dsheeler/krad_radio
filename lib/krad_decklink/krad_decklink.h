@@ -11,6 +11,7 @@
 
 #define KRAD_DECKLINK_H
 #include "krad_decklink_capture.h"
+#include "krad_decklink_common.h"
 
 #define DEFAULT_DECKLINK_DEVICE "0"
 
