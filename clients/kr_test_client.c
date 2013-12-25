@@ -93,6 +93,41 @@ static int test_v4l2_input_create(kr_client *client, int dev) {
   return ret;
 }
 
+static int test_x11_input_create(kr_client *client, int dev) {
+  int ret;
+  kr_xpdr_path_info info;
+  int device_num;
+  char *test_name;
+  int width;
+  int height;
+  int num;
+  int den;
+  test_name = "X11 Test";
+  device_num = 0;
+  device_num = dev;
+  width = 640;
+  height = 360;
+  num = 30;
+  den = 1;
+  /* init func? */
+  memset(&info, 0, sizeof(kr_xpdr_path_info));
+  strcpy(info.name, test_name);
+  info.input.type = KR_XPDR_ADAPTER;
+  info.input.info.adapter_path_info.api = KR_ADP_X11;
+  strcat(info.input.info.adapter_path_info.info.x11.display, "");
+  info.input.info.adapter_path_info.info.x11.num = num;
+  info.input.info.adapter_path_info.info.x11.den = den;
+  info.input.info.adapter_path_info.info.x11.width = width;
+  info.input.info.adapter_path_info.info.x11.height = height;
+  info.output.type = KR_XPDR_COMPOSITOR;
+  strcpy(info.output.info.compositor_path_info.name, test_name);
+  info.output.info.compositor_path_info.width = width;
+  info.output.info.compositor_path_info.height = height;
+  info.output.info.compositor_path_info.type = KR_CMP_INPUT;
+  ret = kr_xpdr_mkpath(client, &info);
+  return ret;
+}
+
 static int test_decklink_input_create(kr_client *client, int dev) {
   int ret;
   kr_xpdr_path_info info;
@@ -175,12 +210,17 @@ int run_tests(kr_client *client, int test_kode) {
   if (ret != 0) return ret;
   ret = test_wayland_output_create(client);
   if (ret != 0) return ret;
-  if (test_kode < 3) {
-    ret = test_v4l2_input_create(client, 0);
-    if (ret != 0) return ret;
+  if (test_kode == 4) {
+    ret = test_x11_input_create(client, 0);
+     if (ret != 0) return ret;
   } else {
-    ret = test_decklink_input_create(client, 0);
-    if (ret != 0) return ret;
+    if (test_kode < 3) {
+      ret = test_v4l2_input_create(client, 0);
+      if (ret != 0) return ret;
+    } else {
+      ret = test_decklink_input_create(client, 0);
+      if (ret != 0) return ret;
+    }
   }
   return 0;
 }
