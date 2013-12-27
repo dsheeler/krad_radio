@@ -43,9 +43,9 @@ int kr_adapter_api_to_index(int val) {
       return 3;
     case KR_ADP_X11:
       return 4;
-    case KR_ADP_KRAPI:
-      return 5;
     case KR_ADP_ALSA:
+      return 5;
+    case KR_ADP_KRAPI:
       return 6;
     case KR_ADP_ENCODER:
       return 7;
@@ -65,10 +65,10 @@ char *kr_strfr_kr_adapter_api(int val) {
       return "kr_adp_decklink";
     case KR_ADP_X11:
       return "kr_adp_x11";
-    case KR_ADP_KRAPI:
-      return "kr_adp_krapi";
     case KR_ADP_ALSA:
       return "kr_adp_alsa";
+    case KR_ADP_KRAPI:
+      return "kr_adp_krapi";
     case KR_ADP_ENCODER:
       return "kr_adp_encoder";
   }
@@ -91,11 +91,11 @@ int kr_strto_kr_adapter_api(char *string) {
   if (!strcmp(string,"kr_adp_x11")) {
     return KR_ADP_X11;
   }
-  if (!strcmp(string,"kr_adp_krapi")) {
-    return KR_ADP_KRAPI;
-  }
   if (!strcmp(string,"kr_adp_alsa")) {
     return KR_ADP_ALSA;
+  }
+  if (!strcmp(string,"kr_adp_krapi")) {
+    return KR_ADP_KRAPI;
   }
   if (!strcmp(string,"kr_adp_encoder")) {
     return KR_ADP_ENCODER;
@@ -130,6 +130,10 @@ int kr_adapter_api_info_init(kr_adapter_api_info *st, int idx) {
       kr_x11_info_init(&st->x11);
       break;
     }
+    case 5: {
+      kr_alsa_info_init(&st->alsa);
+      break;
+    }
   }
 
 
@@ -160,6 +164,10 @@ int kr_adapter_api_info_valid(kr_adapter_api_info *st, int idx) {
     }
     case 4: {
       kr_x11_info_valid(&st->x11);
+      break;
+    }
+    case 5: {
+      kr_alsa_info_valid(&st->alsa);
       break;
     }
   }
@@ -194,6 +202,10 @@ int kr_adapter_api_info_random(kr_adapter_api_info *st, int idx) {
       kr_x11_info_random(&st->x11);
       break;
     }
+    case 5: {
+      kr_alsa_info_random(&st->alsa);
+      break;
+    }
   }
 
 
@@ -224,6 +236,10 @@ int kr_adapter_api_path_info_init(kr_adapter_api_path_info *st, int idx) {
     }
     case 4: {
       kr_x11_path_info_init(&st->x11);
+      break;
+    }
+    case 5: {
+      kr_alsa_path_info_init(&st->alsa);
       break;
     }
   }
@@ -258,6 +274,10 @@ int kr_adapter_api_path_info_valid(kr_adapter_api_path_info *st, int idx) {
       kr_x11_path_info_valid(&st->x11);
       break;
     }
+    case 5: {
+      kr_alsa_path_info_valid(&st->alsa);
+      break;
+    }
   }
 
 
@@ -288,6 +308,10 @@ int kr_adapter_api_path_info_random(kr_adapter_api_path_info *st, int idx) {
     }
     case 4: {
       kr_x11_path_info_random(&st->x11);
+      break;
+    }
+    case 5: {
+      kr_alsa_path_info_random(&st->alsa);
       break;
     }
   }

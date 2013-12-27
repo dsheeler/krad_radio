@@ -19,7 +19,9 @@ int info_unpack_fr_ebml(kr_ebml *ebml, uber_St *uber);
 typedef int (*info_unpack_fr_ebml_func)(kr_ebml *ebml, void *st);
 
 typedef enum {
-  TEXT_KR_COMPOSITOR_PATH_TYPE = 1,
+  TEXT_KR_ALSA_INFO = 1,
+  TEXT_KR_ALSA_PATH_INFO,
+  TEXT_KR_COMPOSITOR_PATH_TYPE,
   TEXT_KR_COMPOSITOR_SUBUNIT_TYPE,
   TEXT_KR_VECTOR_TYPE,
   TEXT_KR_COMPOSITOR_CONTROL,
@@ -120,7 +122,7 @@ typedef enum {
 } text_enum;
 
 enum {
-  TEXT_ENUM_LAST = 98
+  TEXT_ENUM_LAST = 100
 };
 
 typedef enum {
@@ -187,7 +189,9 @@ enum {
 };
 
 typedef enum {
-  EBML_KR_COMPOSITOR_PATH_TYPE = 1,
+  EBML_KR_ALSA_INFO = 1,
+  EBML_KR_ALSA_PATH_INFO,
+  EBML_KR_COMPOSITOR_PATH_TYPE,
   EBML_KR_COMPOSITOR_SUBUNIT_TYPE,
   EBML_KR_VECTOR_TYPE,
   EBML_KR_COMPOSITOR_CONTROL,
@@ -290,11 +294,13 @@ typedef enum {
 } ebml_enum;
 
 enum {
-  EBML_ENUM_LAST = 100
+  EBML_ENUM_LAST = 102
 };
 
 typedef enum {
-  DEBML_KR_COMPOSITOR_PATH_TYPE = 1,
+  DEBML_KR_ALSA_INFO = 1,
+  DEBML_KR_ALSA_PATH_INFO,
+  DEBML_KR_COMPOSITOR_PATH_TYPE,
   DEBML_KR_COMPOSITOR_SUBUNIT_TYPE,
   DEBML_KR_VECTOR_TYPE,
   DEBML_KR_COMPOSITOR_CONTROL,
@@ -395,11 +401,13 @@ typedef enum {
 } debml_enum;
 
 enum {
-  DEBML_ENUM_LAST = 98
+  DEBML_ENUM_LAST = 100
 };
 
 typedef enum {
-  HELPERS_KR_COMPOSITOR_PATH_TYPE = 1,
+  HELPERS_KR_ALSA_INFO = 1,
+  HELPERS_KR_ALSA_PATH_INFO,
+  HELPERS_KR_COMPOSITOR_PATH_TYPE,
   HELPERS_KR_COMPOSITOR_SUBUNIT_TYPE,
   HELPERS_KR_VECTOR_TYPE,
   HELPERS_KR_COMPOSITOR_CONTROL,
@@ -500,7 +508,7 @@ typedef enum {
 } helpers_enum;
 
 enum {
-  HELPERS_ENUM_LAST = 98
+  HELPERS_ENUM_LAST = 100
 };
 
 
