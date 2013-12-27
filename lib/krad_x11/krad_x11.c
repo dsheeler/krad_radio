@@ -1,36 +1,17 @@
 #include "krad_x11.h"
 
 void kr_x11_destroy(kr_x11 *x11) {
-
   if (x11->capture_enabled == 1) {
     kr_x11_disable_capture(x11);
   }
-
-  XCloseDisplay(x11->display);
   free(x11);
 }
 
 kr_x11 *kr_x11_create() {
-
   kr_x11 *x11;
   int s;
-
   x11 = calloc(1, sizeof (kr_x11));
-
-  if (KRAD_X11_XCB_ONLY) {
-    x11->connection = xcb_connect(NULL, &x11->screen_number);
-  } else {
-    x11->display = XOpenDisplay(0);
-    if (!x11->display) {
-      failfast ("Can't open display");
-    }
-    x11->connection = XGetXCBConnection(x11->display);
-    if (!x11->connection) {
-      XCloseDisplay(x11->display);
-      failfast ("Can't get xcb connection from display\n");
-    }
-    XSetEventQueueOwner(x11->display, XCBOwnsEventQueue);
-  }
+  x11->connection = xcb_connect(NULL, &x11->screen_number);
   x11->iter = xcb_setup_roots_iterator(xcb_get_setup(x11->connection));
   s = x11->screen_number;
   for (; x11->iter.rem; --s, xcb_screen_next(&x11->iter)) {
@@ -41,23 +22,16 @@ kr_x11 *kr_x11_create() {
       x11->screen_bit_depth = x11->screen->root_depth;
     }
   }
-
-  printk("Krad X11 created for %d x %d", x11->screen_width,
-   x11->screen_height);
-
   return x11;
 }
 
 void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id) {
-
   xcb_get_geometry_reply_t *geo;
   xcb_query_tree_reply_t *tree;
   xcb_translate_coordinates_cookie_t translateCookie;
   xcb_translate_coordinates_reply_t *trans;
-
   geo = xcb_get_geometry_reply(x11->connection,
         xcb_get_geometry(x11->connection, window_id), NULL);
-
   if (geo == NULL) {
     window_id = 0;
   } else {
@@ -71,7 +45,6 @@ void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id) {
        x11->screen->root, geo->x, geo->y);
       trans = xcb_translate_coordinates_reply(x11->connection, translateCookie,
        NULL);
-
       if (trans == NULL) {
         window_id = 0;
         free(tree);
@@ -87,16 +60,11 @@ void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id) {
       }
     }
   }
-
   if (window_id == 0) {
     x11->width = x11->screen_width;
     x11->height = x11->screen_height;
     x11->window = x11->screen->root;
   }
-
-  //printf ("capture width %d height %d x %d y %d\n",
-  //       x11->width, x11->height, x11->x, x11->y);
-
   x11->img = xcb_image_create_native(x11->connection,x11->width, x11->height,
    XCB_IMAGE_FORMAT_Z_PIXMAP, x11->screen_bit_depth, 0, ~0, 0);
   if (!x11->img) {
@@ -105,20 +73,16 @@ void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id) {
   x11->stride = x11->img->stride;
   x11->shminfo.shmid = shmget(IPC_PRIVATE, x11->img->stride * x11->img->height,
    (IPC_CREAT | 0666));
-
   if (x11->shminfo.shmid == (uint32_t)-1) {
     xcb_image_destroy(x11->img);
     failfast("shminfo fail");
   }
-
   x11->shminfo.shmaddr = shmat(x11->shminfo.shmid, 0, 0);
   x11->img->data = x11->shminfo.shmaddr;
-
   if (x11->img->data == (uint8_t *)-1) {
     xcb_image_destroy(x11->img);
     failfast("xcb image fail");
   }
-
   x11->shminfo.shmseg = xcb_generate_id(x11->connection);
   xcb_shm_attach(x11->connection, x11->shminfo.shmseg, x11->shminfo.shmid, 0);
   x11->capture_enabled = 1;
@@ -135,37 +99,26 @@ void kr_x11_disable_capture(kr_x11 *x11) {
 }
 
 int kr_x11_capture_getptr(kr_x11 *x11, uint8_t **buffer) {
-
-  int32_t size;
-
-  if (buffer == NULL) {
+  if ((x11 == NULL) || (buffer == NULL)) {
     return 0;
   }
-
   x11->number = xcb_image_shm_get(x11->connection, x11->screen->root,
    x11->img, x11->shminfo, x11->x, x11->y, 0xffffffff);
-
   x11->reply = xcb_shm_get_image_reply(x11->connection, x11->cookie, NULL);
   if (x11->reply) {
     free(x11->reply);
   }
-  size = x11->img->width * x11->img->height * 4;
   *buffer = x11->img->data;
-  return size;
+  return x11->img->width * x11->img->height * 4;
 }
 
 int kr_x11_capture(kr_x11 *x11, uint8_t *buffer) {
-
   int32_t size;
   uint8_t *buf;
-
   size = kr_x11_capture_getptr(x11, &buf);
-
   if (size < 1) {
     return 0;
   }
-
   memcpy(buffer, buf, size);
-
   return size;
 }

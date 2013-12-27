@@ -1,39 +1,12 @@
-#include <stdio.h>
-#include <unistd.h>
-#define KRAD_NO_TURBOJPEG
-#include <krad_muxponder.h>
-#include <krad_transmitter.h>
-#include <krad_ticker.h>
-#include <krad_mkv_demux.h>
-#include <krad_vpx.h>
-#include <krad_vorbis.h>
-#include <krad_x11.h>
-#include <krad_ring.h>
-#include <krad_framepool.h>
-#include <krad_timer.h>
-
-#include <libswscale/swscale.h>
-
+#include "kr_x11_stream.h"
+#include "gen/kr_x11_stream_config.c"
 #include "krad_debug.c"
 
-typedef struct kr_x11s_St kr_x11s_t;
-typedef struct kr_x11s_params_St kr_x11s_params_t;
+typedef struct kr_x11_stream kr_x11_stream;
+typedef struct kr_x11_stream_params kr_x11_stream_params;
 
-struct kr_x11s_params_St {
-  uint32_t width;
-  uint32_t height;
-  uint32_t fps_numerator;
-  uint32_t fps_denominator;
-  uint32_t video_bitrate;
-  char *host;
-  int32_t port;
-  char *mount;
-  char *password;
-  uint32_t window_id;
-};
-
-struct kr_x11s_St {
-  kr_x11s_params_t *params;
+struct kr_x11_stream {
+  kr_x11_stream_params *params;
   kr_x11 *x11;
   kr_timer *timer;
   krad_ticker_t *ticker;
@@ -51,7 +24,7 @@ static void term_handler (int sig) {
   destruct = 1;
 }
 
-int kr_x11s_destroy (kr_x11s_t **x11s) {
+int kr_x11_stream_destroy(kr_x11_stream **x11s) {
 
   if ((x11s == NULL) || (*x11s == NULL)) {
     return -1;
@@ -72,11 +45,11 @@ int kr_x11s_destroy (kr_x11s_t **x11s) {
   return 0;
 }
 
-kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
+kr_x11_stream *kr_x11_stream_create(kr_x11_stream_params *params) {
 
-  kr_x11s_t *x11s;
+  kr_x11_stream *x11s;
 
-  x11s = calloc (1, sizeof(kr_x11s_t));
+  x11s = calloc (1, sizeof(kr_x11_stream));
 
   x11s->params = params;
 
@@ -112,15 +85,15 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
                                            x11s->params->height,
                                            1000,
                                            1,
-                                           x11s->params->video_bitrate);
+                                           x11s->params->bitrate);
 
 
   //krad_vpx_encoder_set_kf_max_dist (x11s->vpx_enc, 300);
 
 
   kr_mkv_add_video_track (x11s->mkv, VP8,
-                          x11s->params->fps_numerator,
-                          x11s->params->fps_denominator,
+                          x11s->params->fps_num,
+                          x11s->params->fps_den,
                           x11s->params->width,
                           x11s->params->height);
 
@@ -133,7 +106,7 @@ kr_x11s_t *kr_x11s_create (kr_x11s_params_t *params) {
   return x11s;
 }
 
-void kr_x11s_run (kr_x11s_t *x11s) {
+void kr_x11_stream_run(kr_x11_stream *x11s) {
 
   krad_frame_t *frame;
   kr_image image;
@@ -156,8 +129,8 @@ void kr_x11s_run (kr_x11s_t *x11s) {
 
   kr_x11_enable_capture (x11s->x11, x11s->params->window_id);
 
-  x11s->ticker = krad_ticker_create (x11s->params->fps_numerator,
-                                     x11s->params->fps_denominator);
+  x11s->ticker = krad_ticker_create (x11s->params->fps_num,
+                                     x11s->params->fps_den);
 
   x11s->timer = kr_timer_create();
 
@@ -235,6 +208,7 @@ void kr_x11s_run (kr_x11s_t *x11s) {
     image.ppx[1] = vmedium->v.ppx[1];
     image.ppx[2] = vmedium->v.ppx[2];
     image.ppx[3] = vmedium->v.ppx[3];
+    image.tc = vmedium->v.tc;
     image.fmt = PIX_FMT_YUV420P;
 
     ret = kr_vpx_encode(x11s->vpx_enc, vcodeme, &image);
@@ -263,51 +237,27 @@ void kr_x11s_run (kr_x11s_t *x11s) {
   kr_timer_destroy(x11s->timer);
 }
 
-void kr_x11s (kr_x11s_params_t *params) {
-
-  kr_x11s_t *x11s;
-
-  x11s = kr_x11s_create (params);
-  kr_x11s_run (x11s);
-  kr_x11s_destroy (&x11s);
+void kr_x11_stream_activate(kr_x11_stream_params *params) {
+  kr_x11_stream *x11stream;
+  x11stream = kr_x11_stream_create(params);
+  kr_x11_stream_run(x11stream);
+  kr_x11_stream_destroy(&x11stream);
 }
 
 int main (int argc, char *argv[]) {
-
-  kr_x11s_params_t params;
-  char mount[256];
-  krad_debug_init ("v4l2_stream");
-
-  memset (&params, 0, sizeof(kr_x11s_params_t));
-
-  //params.width = 1920;
-  //params.height = 1080;
-  params.width = 640;
-  params.height = 360;
-  params.fps_numerator = 30;
-  params.fps_denominator = 1;
-  //params.video_bitrate = 1450;
-  params.video_bitrate = 450;
-  params.host = "europa.kradradio.com";
-  params.port = 8008;
-  params.window_id = 0;
-
-  //params.window_id = 0x2409f5c;
-
-  snprintf (mount, sizeof(mount),
-            "/kr_x11s_%"PRIu64".webm",
-            krad_unixtime ());
-
-  params.mount = mount;
-  params.password = "firefox";
-
-  printf ("Streaming with: %s at %ux%u %u fps (max)\n",
-          "x11", params.width, params.height,
-          params.fps_numerator/params.fps_denominator);
-  printf ("To: %s:%u%s\n", params.host, params.port, params.mount);
-  printf ("VP8 Bitrate: %uk\n", params.video_bitrate);
-
-  kr_x11s (&params);
-
+  int ret;
+  kr_x11_stream_params params;
+  krad_debug_init("v4l2_stream");
+  memset(&params, 0, sizeof(kr_x11_stream_params));
+  ret = handle_config(&params, argv[1]);
+  if (ret != 0) {
+    printf("Config file %s error.\n", argv[1]);
+    exit(1);
+  }
+  printf("X11 streaming at %ux%u %u fps (max)\n", params.width, params.height,
+   params.fps_num/params.fps_den);
+  printf("To: %s:%u%s\n", params.host, params.port, params.mount);
+  printf("VP8 Bitrate: %uk\n", params.bitrate);
+  kr_x11_stream_activate(&params);
   return 0;
 }

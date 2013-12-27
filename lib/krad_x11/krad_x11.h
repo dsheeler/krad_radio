@@ -7,10 +7,7 @@
 #include <sys/shm.h>
 
 #ifdef KR_X11
-#include <X11/Xlib-xcb.h>
-//#include <X11/Xatom.h>
 #include <xcb/xcb.h>
-//#include <xcb/xcb_atom.h>
 #include <xcb/xcb_util.h>
 #include <xcb/xcb_image.h>
 #include <xcb/xproto.h>
@@ -19,8 +16,6 @@
 
 #include "krad_system.h"
 #include "krad_x11_common.h"
-
-#define KRAD_X11_XCB_ONLY 0
 
 typedef struct kr_x11 kr_x11;
 typedef struct kr_x11_path kr_x11_path;
@@ -40,7 +35,6 @@ struct kr_x11 {
   int fullscreen;
   int *krad_x11_shutdown;
 #ifdef KR_X11
-  Display *display;
   xcb_screen_t *screen;
   xcb_screen_iterator_t iter;
   xcb_connection_t *connection;
@@ -53,9 +47,6 @@ struct kr_x11 {
   uint8_t screen_bit_depth;
   int number;
   int capture_enabled;
-  int mouse_x;
-  int mouse_y;
-  int mouse_clicked;
 };
 
 struct kr_x11_path {
