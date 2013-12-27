@@ -17,7 +17,7 @@ struct kr_x11_stream {
 
 static int destruct = 0;
 
-static void term_handler (int sig) {
+static void term_handler(int sig) {
   destruct = 1;
 }
 
@@ -43,30 +43,22 @@ kr_x11_stream *kr_x11_stream_create(kr_x11_stream_params *params) {
   x11s->params = params;
   x11s->x11 = kr_x11_create();
   if ((x11s->x11->screen_width == 0) || (x11s->x11->screen_height == 0)) {
-    printf("Unable to get X11 screen resolution probably compiled w/o x11\n");
+    printf("Unable to get X11 screen resolution..\n");
     exit(1);
   } else {
-    printf("X11 Resolution: %dx%d\n",
-           x11s->x11->screen_width, x11s->x11->screen_height);
+    printf("X11 Resolution: %dx%d\n", x11s->x11->screen_width,
+     x11s->x11->screen_height);
   }
-  x11s->mkv = kr_mkv_create_stream (x11s->params->host,
-                                    x11s->params->port,
-                                    x11s->params->mount,
-                                    x11s->params->password);
+  x11s->mkv = kr_mkv_create_stream(x11s->params->host, x11s->params->port,
+   x11s->params->mount, x11s->params->password);
   if (x11s->mkv == NULL) {
-    fprintf (stderr, "failed to stream :/ \n");
-    exit (1);
+    fprintf(stderr, "failed to stream :/ \n");
+    exit(1);
   }
-  x11s->vpx_enc = krad_vpx_encoder_create (x11s->params->width,
-                                           x11s->params->height,
-                                           1000,
-                                           1,
-                                           x11s->params->bitrate);
-  kr_mkv_add_video_track (x11s->mkv, VP8,
-                          x11s->params->fps_num,
-                          x11s->params->fps_den,
-                          x11s->params->width,
-                          x11s->params->height);
+  x11s->vpx_enc = krad_vpx_encoder_create(x11s->params->width,
+   x11s->params->height, 1000, 1, x11s->params->bitrate);
+  kr_mkv_add_video_track(x11s->mkv, VP8, x11s->params->fps_num,
+   x11s->params->fps_den, x11s->params->width, x11s->params->height);
   return x11s;
 }
 
@@ -86,10 +78,8 @@ void kr_x11_stream_run(kr_x11_stream *x11s) {
   scaled_image.h = x11s->params->height;
   scaled_image.px = pixels;
   scaled_image.ppx[0] = pixels;
-  scaled_image.ppx[1] = pixels
-   + (x11s->params->width * x11s->params->height);
-  scaled_image.ppx[2] = pixels
-   + (x11s->params->width * x11s->params->height)
+  scaled_image.ppx[1] = pixels + (x11s->params->width * x11s->params->height);
+  scaled_image.ppx[2] = pixels + (x11s->params->width * x11s->params->height)
    + ((x11s->params->width / 2) * (x11s->params->height / 2));
   scaled_image.ppx[3] = 0;
   scaled_image.pps[0] = x11s->params->width;
@@ -104,26 +94,22 @@ void kr_x11_stream_run(kr_x11_stream *x11s) {
   x11s->timer = kr_timer_create();
   ticker = krad_ticker_create(x11s->params->fps_num, x11s->params->fps_den);
   krad_ticker_start(ticker);
+  kr_timer_start(x11s->timer);
   while (!destruct) {
     if (!kr_x11_capture(x11s->x11, &x11_image)) {
       continue;
-    }
-    if (!kr_timer_started(x11s->timer)) {
-      kr_timer_start(x11s->timer);
     }
     scaled_image.tc = kr_timer_current_ms(x11s->timer);
     kr_image_convert(&conv, &scaled_image, &x11_image);
     ret = kr_vpx_encode(x11s->vpx_enc, vcodeme, &scaled_image);
     if (ret == 1) {
-      kr_mkv_add_video_tc (x11s->mkv, 1,
-                           vcodeme->data, vcodeme->sz,
-                           vcodeme->key, vcodeme->tc);
+      kr_mkv_add_video_tc(x11s->mkv, 1, vcodeme->data, vcodeme->sz,
+       vcodeme->key, vcodeme->tc);
     }
-    printf ("\rKrad X11 Stream Frame# %12"PRIu64"",
-            x11s->frames++);
-    fflush (stdout);
+    printf("\rKrad X11 Stream Frame# %12"PRIu64"", x11s->frames++);
+    fflush(stdout);
   }
-  kr_codeme_kludge_destroy (&vcodeme);
+  kr_codeme_kludge_destroy(&vcodeme);
   free(pixels);
   kr_image_convert_clear(&conv);
   kr_timer_destroy(x11s->timer);

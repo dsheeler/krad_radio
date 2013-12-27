@@ -42,7 +42,7 @@ int dlstream_video_callback(void *user, kr_image *image) {
   ret = kr_image_pool_getimage(dlstream->image_pool, &converted_image);
   if (ret == 1) {
     kr_image_convert(&dlstream->converter, &converted_image, image);
-    krad_ringbuffer_write (dlstream->image_ring, (char *)&converted_image,
+    krad_ringbuffer_write(dlstream->image_ring, (char *)&converted_image,
      sizeof(kr_image));
     dlstream->frames++;
   } else {
@@ -134,7 +134,6 @@ kr_dlstream *kr_dlstream_create(kr_dlstream_params *params) {
    dlstream->vorbis_enc->hdrdata, 3 + dlstream->vorbis_enc->header.sz[0]
    + dlstream->vorbis_enc->header.sz[1]
    + dlstream->vorbis_enc->header.sz[2]);
-
   image.w = dlstream->params->encoding_width;
   image.h = dlstream->params->encoding_height;
   image.fmt = PIX_FMT_YUV420P;
@@ -142,7 +141,6 @@ kr_dlstream *kr_dlstream_create(kr_dlstream_params *params) {
   image.pps[1] = dlstream->params->encoding_width/2;
   image.pps[2] = dlstream->params->encoding_width/2;
   image.pps[3] = 0;
-
   dlstream->image_pool = kr_image_pool_create(&image, IMAGE_BUFFER_COUNT);
   kr_pool_debug(dlstream->image_pool);
   dlstream->image_ring = krad_ringbuffer_create(IMAGE_BUFFER_COUNT * sizeof(kr_image));

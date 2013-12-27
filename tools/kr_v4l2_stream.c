@@ -89,16 +89,14 @@ void kr_v4l2s_run(kr_v4l2s *v4l2s) {
   kr_v4l2_capture(v4l2s->v4l2, 1);
   v4l2s->timer = kr_timer_create();
   krad_vpx_encoder_deadline_set(v4l2s->vpx_enc, 1);
+  kr_timer_start(v4l2s->timer);
   while (!destruct) {
     ret = kr_v4l2_poll(v4l2s->v4l2, 15);
     if (ret < 1) {
       continue;
     }
-    ret = kr_v4l2_read(v4l2s->v4l2, &cam_image);
     scaled_image.tc = kr_timer_current_ms(v4l2s->timer);
-    if (!kr_timer_started(v4l2s->timer)) {
-      kr_timer_start(v4l2s->timer);
-    }
+    ret = kr_v4l2_read(v4l2s->v4l2, &cam_image);
     kr_image_convert(&conv, &scaled_image, &cam_image);
     kr_image_unref(&cam_image);
     ret = kr_vpx_encode(v4l2s->vpx_enc, vcodeme, &scaled_image);
