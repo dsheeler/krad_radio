@@ -12,16 +12,16 @@ void krad_app_disconnect (krad_app_client_t *client) {
 }
 
 krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms) {
-  
+
   krad_app_client_t *client = calloc (1, sizeof (krad_app_client_t));
-  
+
   if (client == NULL) {
     failfast ("Krad APP Client mem alloc fail");
     return NULL;
   }
-  
+
   krad_system_init ();
-  
+
   uname (&client->unixname);
 
   if (krad_valid_host_and_port (sysname)) {
@@ -34,7 +34,7 @@ krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms) {
     } else {
       client->api_path_pos = sprintf(client->api_path, "%s/krad_radio_%s_api", "/tmp", sysname);
     }
-  
+
     if (!client->on_linux) {
       if(stat(client->api_path, &client->info) != 0) {
         krad_app_disconnect(client);
@@ -43,7 +43,7 @@ krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms) {
       }
     }
   }
-  
+
   if (krad_app_client_init (client, timeout_ms) == 0) {
     printke ("Krad APP Client: Failed to init!");
     krad_app_disconnect (client);
@@ -56,6 +56,7 @@ krad_app_client_t *krad_app_connect (char *sysname, int timeout_ms) {
 static int krad_app_client_init (krad_app_client_t *client, int timeout_ms) {
 
   int rc;
+  socklen_t socket_sz;
   char port_string[6];
   struct sockaddr_un unix_saddr;
   struct in6_addr serveraddr;
@@ -64,8 +65,8 @@ static int krad_app_client_init (krad_app_client_t *client, int timeout_ms) {
 
   res = NULL;
 
-  //FIXME make connect nonblocking  
-  
+  //FIXME make connect nonblocking
+
 
   if (client->tcp_port != 0) {
 
@@ -96,7 +97,7 @@ static int krad_app_client_init (krad_app_client_t *client, int timeout_ms) {
        printf ("Krad APP Client: Host not found --> %s\n", gai_strerror(rc));
        return 0;
     }
-    
+
     client->sd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
     if (client->sd < 0) {
       printf ("Krad APP Client: Socket Error");
@@ -133,18 +134,19 @@ static int krad_app_client_init (krad_app_client_t *client, int timeout_ms) {
     memset(&unix_saddr, 0x00, sizeof(unix_saddr));
     unix_saddr.sun_family = AF_UNIX;
     snprintf (unix_saddr.sun_path, sizeof(unix_saddr.sun_path), "%s", client->api_path);
+    socket_sz = sizeof(unix_saddr) - sizeof(unix_saddr.sun_path) + strlen(unix_saddr.sun_path);
     if (client->on_linux) {
       unix_saddr.sun_path[0] = '\0';
     }
 
-    if (connect (client->sd, (struct sockaddr *) &unix_saddr, sizeof (unix_saddr)) == -1) {
+    if (connect (client->sd, (struct sockaddr *) &unix_saddr, socket_sz) == -1) {
       close (client->sd);
       client->sd = 0;
       printke ("Krad APP Client: Can't connect to socket %s", client->api_path);
       return 0;
     }
   }
-  
+
   krad_system_set_socket_nonblocking (client->sd);
 
   return client->sd;
