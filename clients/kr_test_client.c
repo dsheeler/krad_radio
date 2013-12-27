@@ -204,16 +204,16 @@ static int test_wayland_output_create(kr_client *client) {
 
 int run_tests(kr_client *client, int test_kode) {
   int ret;
-  ret = test_jack_input_create(client);
-  if (ret != 0) return ret;
-  ret = test_jack_output_create(client);
-  if (ret != 0) return ret;
   ret = test_wayland_output_create(client);
   if (ret != 0) return ret;
   if (test_kode == 4) {
     ret = test_x11_input_create(client, 0);
      if (ret != 0) return ret;
   } else {
+    ret = test_jack_input_create(client);
+    if (ret != 0) return ret;
+    ret = test_jack_output_create(client);
+    if (ret != 0) return ret;
     if (test_kode < 3) {
       ret = test_v4l2_input_create(client, 0);
       if (ret != 0) return ret;

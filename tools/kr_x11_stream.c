@@ -73,7 +73,6 @@ kr_x11_stream *kr_x11_stream_create(kr_x11_stream_params *params) {
 void kr_x11_stream_run(kr_x11_stream *x11s) {
   kr_codeme_t *vcodeme;
   krad_ticker_t *ticker;
-  uint8_t *screen_image;
   int32_t ret;
   kr_image x11_image;
   kr_image scaled_image;
@@ -100,28 +99,18 @@ void kr_x11_stream_run(kr_x11_stream *x11s) {
   scaled_image.fmt = PIX_FMT_YUV420P;
   signal(SIGINT, term_handler);
   signal(SIGTERM, term_handler);
-  screen_image = NULL;
   vcodeme = kr_codeme_kludge_create();
   kr_x11_enable_capture(x11s->x11, x11s->params->window_id);
   x11s->timer = kr_timer_create();
   ticker = krad_ticker_create(x11s->params->fps_num, x11s->params->fps_den);
   krad_ticker_start(ticker);
   while (!destruct) {
-    if (!kr_x11_capture_getptr(x11s->x11, &screen_image)) {
+    if (!kr_x11_capture(x11s->x11, &x11_image)) {
       continue;
     }
     if (!kr_timer_started(x11s->timer)) {
       kr_timer_start(x11s->timer);
     }
-    x11_image.px = screen_image;
-    x11_image.ppx[0] = x11_image.px;
-    x11_image.ppx[1] = NULL;
-    x11_image.ppx[2] = NULL;
-    x11_image.ppx[3] = NULL;
-    x11_image.pps[0] = x11s->x11->stride;
-    x11_image.w = x11s->x11->screen_width;
-    x11_image.h = x11s->x11->screen_height;
-    x11_image.fmt = PIX_FMT_RGB32;
     scaled_image.tc = kr_timer_current_ms(x11s->timer);
     kr_image_convert(&conv, &scaled_image, &x11_image);
     ret = kr_vpx_encode(x11s->vpx_enc, vcodeme, &scaled_image);

@@ -15,6 +15,8 @@
 #endif
 
 #include "krad_system.h"
+#include "krad_convert.h"
+#include "krad_av.h"
 #include "krad_x11_common.h"
 
 typedef struct kr_x11 kr_x11;
@@ -55,7 +57,6 @@ struct kr_x11_path {
 
 kr_x11 *kr_x11_create();
 void kr_x11_destroy(kr_x11 *x11);
-int kr_x11_capture_getptr(kr_x11 *x11, uint8_t **buffer);
-int kr_x11_capture(kr_x11 *x11, uint8_t *buffer);
+int kr_x11_capture(kr_x11 *x11, kr_image *image);
 void kr_x11_disable_capture(kr_x11 *x11);
 void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id);

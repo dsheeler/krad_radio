@@ -98,8 +98,8 @@ void kr_x11_disable_capture(kr_x11 *x11) {
   }
 }
 
-int kr_x11_capture_getptr(kr_x11 *x11, uint8_t **buffer) {
-  if ((x11 == NULL) || (buffer == NULL)) {
+int kr_x11_capture(kr_x11 *x11, kr_image *image) {
+  if ((x11 == NULL) || (image == NULL)) {
     return 0;
   }
   x11->number = xcb_image_shm_get(x11->connection, x11->screen->root,
@@ -108,17 +108,12 @@ int kr_x11_capture_getptr(kr_x11 *x11, uint8_t **buffer) {
   if (x11->reply) {
     free(x11->reply);
   }
-  *buffer = x11->img->data;
-  return x11->img->width * x11->img->height * 4;
-}
-
-int kr_x11_capture(kr_x11 *x11, uint8_t *buffer) {
-  int32_t size;
-  uint8_t *buf;
-  size = kr_x11_capture_getptr(x11, &buf);
-  if (size < 1) {
-    return 0;
-  }
-  memcpy(buffer, buf, size);
-  return size;
+  memset(image, 0, sizeof(kr_image));
+  image->px = x11->img->data;
+  image->w = x11->width;
+  image->h = x11->height;
+  image->ppx[0] = image->px;
+  image->pps[0] = x11->stride;
+  image->fmt = PIX_FMT_RGB32;
+  return 1;
 }
