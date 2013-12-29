@@ -16,61 +16,131 @@
 #define NORMALIZED_FLOAT_MIN -1.0f
 #define NORMALIZED_FLOAT_MAX  1.0f
 
+#define f_round(f) lrintf(f)
+
 #define float_24u32(s, d) \
-	if ((s) <= NORMALIZED_FLOAT_MIN) {\
-		(d) = SAMPLE_24BIT_MIN << 8;\
-	} else if ((s) >= NORMALIZED_FLOAT_MAX) {\
-		(d) = SAMPLE_24BIT_MAX << 8;\
-	} else {\
-		(d) = f_round ((s) * SAMPLE_24BIT_SCALING) << 8;\
-	}
+  if ((s) <= NORMALIZED_FLOAT_MIN) {\
+    (d) = SAMPLE_24BIT_MIN << 8;\
+  } else if ((s) >= NORMALIZED_FLOAT_MAX) {\
+    (d) = SAMPLE_24BIT_MAX << 8;\
+  } else {\
+    (d) = f_round ((s) * SAMPLE_24BIT_SCALING) << 8;\
+  }
 
 #define float_16(s, d)\
-	if ((s) <= NORMALIZED_FLOAT_MIN) {\
-		(d) = SAMPLE_16BIT_MIN;\
-	} else if ((s) >= NORMALIZED_FLOAT_MAX) {\
-		(d) = SAMPLE_16BIT_MAX;\
-	} else {\
-		(d) = f_round ((s) * SAMPLE_16BIT_SCALING);\
-	}
+  if ((s) <= NORMALIZED_FLOAT_MIN) {\
+    (d) = SAMPLE_16BIT_MIN;\
+  } else if ((s) >= NORMALIZED_FLOAT_MAX) {\
+    (d) = SAMPLE_16BIT_MAX;\
+  } else {\
+    (d) = f_round ((s) * SAMPLE_16BIT_SCALING);\
+  }
+
+struct device_parameters {
+  snd_pcm_sframes_t buffer_size;      //buffer size in frames
+  snd_pcm_sframes_t period_size;      //period size in frames
+  unsigned int buffer_time;           //length of the circular buffer in usec
+  unsigned int period_time;           //length of one period in usec
+  int n_channels;                     //number of channels
+  unsigned int sample_rate;           //frame rate
+  snd_pcm_format_t sample_format;     //format of the samples
+  snd_pcm_access_t access_type;       //PCM access type
+};
+
+typedef enum {
+  METHOD_DIRECT_RW,   //method with direct use of read/write functions
+  METHOD_DIRECT_MMAP, //method with direct use of memory mapping
+  METHOD_ASYNC_MMAP,  //method with async use of memory mapping
+  METHOD_ASYNC_RW,    //method with async use of read/write functions
+  METHOD_RW_AND_POLL, //method with use of read/write functions and pool
+  METHOD_DIRECT_RW_NI //method with direct use of not implemented)
+} enum_io_method;
+
+struct io_method {
+  enum_io_method method;   //I/O loop type
+  snd_pcm_access_t access; //PCM access type
+  int open_mode;           //open function flags
+};
+
+struct kr_alsa {
+  int card_num;
+
+  /*
+  int dir;
+  int error;
+  unsigned int sample_rate;
+  unsigned int real_sample_rate;//real frame rate
+  int n_channels;
+  unsigned int real_n_channels;
+  char * device_name;
+  snd_pcm_t *device;
+  snd_pcm_hw_params_t *hw_params;
+  int access;
+  snd_pcm_sframes_t buffer_size;
+  snd_pcm_sframes_t period_size;
+  snd_pcm_uframes_t real_buffer_size;
+  snd_pcm_uframes_t real_period_size;
+  unsigned int buffer_time;
+  unsigned int period_time;
+  int sample_size;
+  snd_pcm_format_t sample_format;
+  snd_pcm_format_t real_sample_format;
+  snd_pcm_access_t real_access;
+  struct device_parameters capture_device_params;
+  float *samples[8];
+  float *interleaved_samples;
+  int *integer_samples;
+  int capture;
+  int playback;
+  int stream;
+  int card_num;
+  int control_enabled;
+  char control_name[16];
+  snd_ctl_t *control;
+  int controls_count;
+  snd_ctl_elem_list_t *control_list;
+  snd_ctl_elem_info_t *info;
+  */
+};
+
 /*
 static void sample_move_d32u24_sS(char *dst, float *src, size_t nsamples,
  size_t dst_skip) {
 
-	while (nsamples--) {
-		float_24u32 (*src, *((int32_t*) dst));
-		dst += dst_skip;
-		src++;
-	}
+  while (nsamples--) {
+    float_24u32 (*src, *((int32_t*) dst));
+    dst += dst_skip;
+    src++;
+  }
 }
 
 static void sample_move_dS_s32u24(float *dst, char *src, size_t nsamples,
  size_t src_skip) {
-	// ALERT: signed sign-extension portability !!!
-	while (nsamples--) {
-		*dst = (*((int *) src) >> 8) / SAMPLE_24BIT_SCALING;
-		dst++;
-		src += src_skip;
-	}
+  // ALERT: signed sign-extension portability !!!
+  while (nsamples--) {
+    *dst = (*((int *) src) >> 8) / SAMPLE_24BIT_SCALING;
+    dst++;
+    src += src_skip;
+  }
 }
 
 static void sample_move_dS_s16(float *dst, char *src, size_t nsamples,
  size_t src_skip) {
-	// ALERT: signed sign-extension portability !!!
-	while (nsamples--) {
-		*dst = (*((short *) src)) / SAMPLE_16BIT_SCALING;
-		dst++;
-		src += src_skip;
-	}
+  // ALERT: signed sign-extension portability !!!
+  while (nsamples--) {
+    *dst = (*((short *) src)) / SAMPLE_16BIT_SCALING;
+    dst++;
+    src += src_skip;
+  }
 }
 
 static void sample_move_d16_sS (char *dst, float *src, size_t nsamples,
  size_t dst_skip) {
-	while (nsamples--) {
-		float_16 (*src, *((int16_t*) dst));
-		dst += dst_skip;
-		src++;
-	}
+  while (nsamples--) {
+    float_16 (*src, *((int16_t*) dst));
+    dst += dst_skip;
+    src++;
+  }
 }
 */
 
@@ -140,118 +210,117 @@ void async_rw_callback(snd_async_handler_t *ahandler) {
 /*
     int error;
 
-	int c, s;
-	kr_alsa *krad_alsa;
+  int c, s;
+  kr_alsa *krad_alsa;
 
     snd_pcm_t *device = snd_async_handler_get_pcm(ahandler);
     krad_alsa = snd_async_handler_get_callback_private(ahandler);
 
-	if (krad_alsa->capture) {
+  if (krad_alsa->capture) {
 
-		if ((krad_ringbuffer_write_space (krad_alsa->krad_audio->input_ringbuffer[1]) >= krad_alsa->period_size * 4 ) && (krad_ringbuffer_write_space (krad_alsa->krad_audio->input_ringbuffer[0]) >= krad_alsa->period_size * 4 )) {
-
-
-			//trying to read one entire period
-			if ((error = snd_pcm_readi (device, krad_alsa->integer_samples, krad_alsa->period_size)) < 0)
-			{
-				if (xrun_recovery(device, error)) {
-				    fprintf(stderr,"alsa input: read error: %s\n", snd_strerror(error));
-				    exit(EXIT_FAILURE);
-				}
-			}
-
-			if (krad_alsa->sample_format == SND_PCM_FORMAT_S32_LE) {
-				sample_move_dS_s32u24 (krad_alsa->interleaved_samples, (char *)krad_alsa->integer_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
-			}
-
-			if (krad_alsa->sample_format == SND_PCM_FORMAT_S16_LE) {
-				sample_move_dS_s16 (krad_alsa->interleaved_samples, (char *)krad_alsa->integer_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
-			}
-
-			for (s = 0; s < krad_alsa->period_size; s++) {
-				for (c = 0; c < 2; c++) {
-					krad_alsa->samples[c][s] = krad_alsa->interleaved_samples[s * 2 + c];
-				}
-			}
-
-			for (c = 0; c < 2; c++) {
-				krad_ringbuffer_write (krad_alsa->krad_audio->input_ringbuffer[c], (char *)krad_alsa->samples[c], (krad_alsa->period_size * 4) );
-			}
+    if ((krad_ringbuffer_write_space (krad_alsa->krad_audio->input_ringbuffer[1]) >= krad_alsa->period_size * 4 ) && (krad_ringbuffer_write_space (krad_alsa->krad_audio->input_ringbuffer[0]) >= krad_alsa->period_size * 4 )) {
 
 
-			for (c = 0; c < 2; c++) {
-				compute_peak(krad_alsa->krad_audio, KINPUT, krad_alsa->samples[c], c, krad_alsa->period_size, 0);
-			}
+      //trying to read one entire period
+      if ((error = snd_pcm_readi (device, krad_alsa->integer_samples, krad_alsa->period_size)) < 0)
+      {
+        if (xrun_recovery(device, error)) {
+            fprintf(stderr,"alsa input: read error: %s\n", snd_strerror(error));
+            exit(EXIT_FAILURE);
+        }
+      }
+
+      if (krad_alsa->sample_format == SND_PCM_FORMAT_S32_LE) {
+        sample_move_dS_s32u24 (krad_alsa->interleaved_samples, (char *)krad_alsa->integer_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
+      }
+
+      if (krad_alsa->sample_format == SND_PCM_FORMAT_S16_LE) {
+        sample_move_dS_s16 (krad_alsa->interleaved_samples, (char *)krad_alsa->integer_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
+      }
+
+      for (s = 0; s < krad_alsa->period_size; s++) {
+        for (c = 0; c < 2; c++) {
+          krad_alsa->samples[c][s] = krad_alsa->interleaved_samples[s * 2 + c];
+        }
+      }
+
+      for (c = 0; c < 2; c++) {
+        krad_ringbuffer_write (krad_alsa->krad_audio->input_ringbuffer[c], (char *)krad_alsa->samples[c], (krad_alsa->period_size * 4) );
+      }
 
 
-		}
+      for (c = 0; c < 2; c++) {
+        compute_peak(krad_alsa->krad_audio, KINPUT, krad_alsa->samples[c], c, krad_alsa->period_size, 0);
+      }
+
+
+    }
 */
 /*
-	}
+  }
 
-	if (krad_alsa->krad_audio->process_callback != NULL) {
-		krad_alsa->krad_audio->process_callback(krad_alsa->period_size, krad_alsa->krad_audio->userdata);
-	}
+  if (krad_alsa->krad_audio->process_callback != NULL) {
+    krad_alsa->krad_audio->process_callback(krad_alsa->period_size, krad_alsa->krad_audio->userdata);
+  }
 
-	if (krad_alsa->playback) {
+  if (krad_alsa->playback) {
 
-		if ((krad_ringbuffer_read_space (krad_alsa->krad_audio->output_ringbuffer[1]) >= krad_alsa->period_size * 4 ) && (krad_ringbuffer_read_space (krad_alsa->krad_audio->output_ringbuffer[0]) >= krad_alsa->period_size * 4 )) {
+    if ((krad_ringbuffer_read_space (krad_alsa->krad_audio->output_ringbuffer[1]) >= krad_alsa->period_size * 4 ) && (krad_ringbuffer_read_space (krad_alsa->krad_audio->output_ringbuffer[0]) >= krad_alsa->period_size * 4 )) {
 
-			for (c = 0; c < 2; c++) {
-				krad_ringbuffer_read (krad_alsa->krad_audio->output_ringbuffer[c], (char *)krad_alsa->samples[c], (krad_alsa->period_size * 4) );
-			}
+      for (c = 0; c < 2; c++) {
+        krad_ringbuffer_read (krad_alsa->krad_audio->output_ringbuffer[c], (char *)krad_alsa->samples[c], (krad_alsa->period_size * 4) );
+      }
 
-			for (s = 0; s < krad_alsa->period_size; s++) {
-				for (c = 0; c < 2; c++) {
-					krad_alsa->interleaved_samples[s * 2 + c] = krad_alsa->samples[c][s];
-				}
-			}
-
-
-			for (c = 0; c < 2; c++) {
-				compute_peak(krad_alsa->krad_audio, KOUTPUT, krad_alsa->samples[c], c, krad_alsa->period_size, 0);
-			}
+      for (s = 0; s < krad_alsa->period_size; s++) {
+        for (c = 0; c < 2; c++) {
+          krad_alsa->interleaved_samples[s * 2 + c] = krad_alsa->samples[c][s];
+        }
+      }
 
 
-		} else {
-			printf("underrrrun!\n");
-			for (s = 0; s < krad_alsa->period_size; s++) {
-				for (c = 0; c < 2; c++) {
-					krad_alsa->interleaved_samples[s * 2 + c] = 0.0f;
-				}
-			}
-
-		}
-
-		if (krad_alsa->sample_format == SND_PCM_FORMAT_S32_LE) {
-			sample_move_d32u24_sS ((char *)krad_alsa->integer_samples, krad_alsa->interleaved_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
-		}
-
-		if (krad_alsa->sample_format == SND_PCM_FORMAT_S16_LE) {
-			sample_move_d16_sS ((char *)krad_alsa->integer_samples, krad_alsa->interleaved_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
-		}
+      for (c = 0; c < 2; c++) {
+        compute_peak(krad_alsa->krad_audio, KOUTPUT, krad_alsa->samples[c], c, krad_alsa->period_size, 0);
+      }
 
 
-		//trying to write one entire period
-		if ((error = snd_pcm_writei (device, krad_alsa->integer_samples, krad_alsa->period_size)) < 0)
-		{
-		    if (xrun_recovery(device, error)) {
-		        fprintf(stderr,"speaker: Write error: %s\n", snd_strerror(error));
-		        exit(EXIT_FAILURE);
-		    }
-		}
-	}
+    } else {
+      printf("underrrrun!\n");
+      for (s = 0; s < krad_alsa->period_size; s++) {
+        for (c = 0; c < 2; c++) {
+          krad_alsa->interleaved_samples[s * 2 + c] = 0.0f;
+        }
+      }
+
+    }
+
+    if (krad_alsa->sample_format == SND_PCM_FORMAT_S32_LE) {
+      sample_move_d32u24_sS ((char *)krad_alsa->integer_samples, krad_alsa->interleaved_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
+    }
+
+    if (krad_alsa->sample_format == SND_PCM_FORMAT_S16_LE) {
+      sample_move_d16_sS ((char *)krad_alsa->integer_samples, krad_alsa->interleaved_samples, krad_alsa->period_size * 2, krad_alsa->sample_size);
+    }
+
+
+    //trying to write one entire period
+    if ((error = snd_pcm_writei (device, krad_alsa->integer_samples, krad_alsa->period_size)) < 0)
+    {
+        if (xrun_recovery(device, error)) {
+            fprintf(stderr,"speaker: Write error: %s\n", snd_strerror(error));
+            exit(EXIT_FAILURE);
+        }
+    }
+  }
 */
 }
 
-void async_rw(kr_alsa *krad_alsa)
-{
+void async_rw(kr_alsa *alsa) {
 /*
     snd_async_handler_t *ahandler;//async handler
     int error;
 
 
-	//adding async handler for PCM with private data and callback async_rw_callback
+  //adding async handler for PCM with private data and callback async_rw_callback
     if ((error = snd_async_add_pcm_handler(&ahandler, krad_alsa->device, async_rw_callback, krad_alsa)) < 0)
     {
         fprintf(stderr,"speaker: Unable to register async handler\n");
@@ -259,57 +328,57 @@ void async_rw(kr_alsa *krad_alsa)
     }
 
 
-	memset (krad_alsa->integer_samples, 0, sizeof(krad_alsa->integer_samples));
+  memset (krad_alsa->integer_samples, 0, sizeof(krad_alsa->integer_samples));
 
     int count = 0;
 
     if (krad_alsa->playback) {
 
-		while (count < krad_alsa->buffer_size / krad_alsa->period_size) {
+    while (count < krad_alsa->buffer_size / krad_alsa->period_size) {
 
-			error = snd_pcm_writei(krad_alsa->device, krad_alsa->integer_samples, krad_alsa->period_size);
+      error = snd_pcm_writei(krad_alsa->device, krad_alsa->integer_samples, krad_alsa->period_size);
 
-			if (error < 0) {
-				printf("Initial write error: %s\n", snd_strerror(error));
-				exit(1);
-			}
+      if (error < 0) {
+        printf("Initial write error: %s\n", snd_strerror(error));
+        exit(1);
+      }
 
-			if (error != krad_alsa->period_size) {
-				printf("Initial write error: written %i expected %li\n", error, krad_alsa->period_size);
-				exit(1);
-			}
+      if (error != krad_alsa->period_size) {
+        printf("Initial write error: written %i expected %li\n", error, krad_alsa->period_size);
+        exit(1);
+      }
 
-			if (snd_pcm_state(krad_alsa->device) == SND_PCM_STATE_PREPARED) {
-				error = snd_pcm_start(krad_alsa->device);
-				if (error < 0) {
-					printf("Start error: %s\n", snd_strerror(error));
-					exit(1);
-				}
-			}
+      if (snd_pcm_state(krad_alsa->device) == SND_PCM_STATE_PREPARED) {
+        error = snd_pcm_start(krad_alsa->device);
+        if (error < 0) {
+          printf("Start error: %s\n", snd_strerror(error));
+          exit(1);
+        }
+      }
 
-			printf("#########krad audio %s\n", krad_alsa->device_name);
+      printf("#########krad audio %s\n", krad_alsa->device_name);
 
-			count++;
+      count++;
 
-		}
+    }
 
-	}
+  }
 
 
     if (krad_alsa->capture) {
 
-		if (snd_pcm_state(krad_alsa->device) == SND_PCM_STATE_PREPARED) {
-			error = snd_pcm_start(krad_alsa->device);
-			if (error < 0) {
-				printf("Start error: %s\n", snd_strerror(error));
-				exit(1);
-			}
-		}
+    if (snd_pcm_state(krad_alsa->device) == SND_PCM_STATE_PREPARED) {
+      error = snd_pcm_start(krad_alsa->device);
+      if (error < 0) {
+        printf("Start error: %s\n", snd_strerror(error));
+        exit(1);
+      }
+    }
 
-		printf("#########krad audio %s\n", krad_alsa->device_name);
+    printf("#########krad audio %s\n", krad_alsa->device_name);
 
-	}
-	*/
+  }
+  */
 }
 
 /*******************************************************************************/
@@ -385,8 +454,8 @@ void async_mmap_callback(snd_async_handler_t *ahandler)
         while (size > 0)//wait until we have period_size frames
         {
             frames = size;//expected frames number to be processed
-			//frames is a bidirectional variable, that means the real number of frames processed is written
-			//to this variable by the function.
+      //frames is a bidirectional variable, that means the real number of frames processed is written
+      //to this variable by the function.
 
             //sending request for the start of the data writing by the application
             if ((error = snd_pcm_mmap_begin (device, &my_areas, &offset, &frames)) < 0) {
@@ -399,7 +468,7 @@ void async_mmap_callback(snd_async_handler_t *ahandler)
             //reading data from standard input
             read(STDIN_FILENO, (my_areas[0].addr)+(offset*sizeof(short)*n_channels), sizeof(short) * frames * n_channels);
 
-			//sending signal for the end of the data reading by the application
+      //sending signal for the end of the data reading by the application
             commitres = snd_pcm_mmap_commit(device, offset, frames);
             if (commitres < 0 || (snd_pcm_uframes_t)commitres != frames) {
                 if ((error = xrun_recovery(device, commitres >= 0 ? commitres : -EPIPE)) < 0) {
@@ -413,8 +482,7 @@ void async_mmap_callback(snd_async_handler_t *ahandler)
     }
 }
 
-void async_mmap(snd_pcm_t *device, struct device_parameters cap_dev_params)
-{
+void async_mmap(snd_pcm_t *device, struct device_parameters cap_dev_params) {
     snd_async_handler_t *ahandler;// async handler
     struct async_private_data data;// private data passed to the async callback
     snd_pcm_sframes_t period_size = cap_dev_params.period_size;
@@ -426,7 +494,7 @@ void async_mmap(snd_pcm_t *device, struct device_parameters cap_dev_params)
     snd_pcm_sframes_t avail, commitres;
     const snd_pcm_channel_area_t *my_areas;//memory area info
 
-	//adding async handler for PCM
+  //adding async handler for PCM
     if (error = snd_async_add_pcm_handler(&ahandler, device, async_mmap_callback, &data) < 0)
     { //async_rw_callback is called every time that the period is full
         fprintf(stderr,"speaker: Unable to register async handler\n");
@@ -440,7 +508,7 @@ void async_mmap(snd_pcm_t *device, struct device_parameters cap_dev_params)
     //reading data from standard input
     read(STDIN_FILENO, (my_areas[0].addr)+(offset*sizeof(short)*n_channels), sizeof(short) * frames * n_channels);
 
-	//sending signal for the end of the data writing by the application
+  //sending signal for the end of the data writing by the application
     commitres = snd_pcm_mmap_commit(device, offset, frames);
             if (commitres < 0 || (snd_pcm_uframes_t)commitres != frames) {
                 if ((error = xrun_recovery(device, commitres >= 0 ? commitres : -EPIPE)) < 0) {
@@ -455,141 +523,98 @@ void async_mmap(snd_pcm_t *device, struct device_parameters cap_dev_params)
         exit (1);
     }
 
-	//the remainder work is made by the handler and the callback
+  //the remainder work is made by the handler and the callback
     while (1) {
         sleep(1);
     }
 }
-*/
+
 static char *krad_alsa_id_str (snd_ctl_elem_id_t *id) {
-
-	static char str[128];
-
-	sprintf(str, "%i,%i,%i,%s,%i",
-		snd_ctl_elem_id_get_interface(id),
-		snd_ctl_elem_id_get_device(id),
-		snd_ctl_elem_id_get_subdevice(id),
-		snd_ctl_elem_id_get_name(id),
-		snd_ctl_elem_id_get_index(id));
-	return str;
-
-}
-
-void krad_alsa_list_cards () {
-
-  int card_num;
-  char *card_name;
-
-  card_num = -1;
-  card_name = NULL;
-
-  while ((snd_card_next (&card_num) == 0) && (card_num != -1)) {
-    snd_card_get_name (card_num, &card_name);
-    printf ("ALSA Card %d: %s\n", card_num, card_name);
-  }
+  static char str[128];
+  sprintf(str, "%i,%i,%i,%s,%i",
+    snd_ctl_elem_id_get_interface(id),
+    snd_ctl_elem_id_get_device(id),
+    snd_ctl_elem_id_get_subdevice(id),
+    snd_ctl_elem_id_get_name(id),
+    snd_ctl_elem_id_get_index(id));
+  return str;
 }
 
 static int krad_alsa_control (kr_alsa *krad_alsa, snd_ctl_elem_id_t *id, int value) {
-
-	snd_ctl_elem_value_t *ctl;
-	int err;
-
+  snd_ctl_elem_value_t *ctl;
+  int err;
   printf("hix %d\n", value);
-	snd_ctl_elem_value_alloca (&ctl);
-	snd_ctl_elem_value_set_id (ctl, id);
-
+  snd_ctl_elem_value_alloca (&ctl);
+  snd_ctl_elem_value_set_id (ctl, id);
   snd_ctl_elem_value_set_integer (ctl, 0, value);
-	err = snd_ctl_elem_write (krad_alsa->control, ctl);
-	if (err < 0) {
-		printf ("Cannot write control '%s': %s", krad_alsa_id_str(id), snd_strerror(err));
-		return err;
-	}
-
+  err = snd_ctl_elem_write (krad_alsa->control, ctl);
+  if (err < 0) {
+    printf ("Cannot write control '%s': %s", krad_alsa_id_str(id), snd_strerror(err));
+    return err;
+  }
   return 0;
-
 }
 
-
 static int krad_alsa_control_funtime (kr_alsa *krad_alsa) {
-
   int value;
   int c;
   int err;
-
-	snd_ctl_elem_id_t *elem_id;
-
+  snd_ctl_elem_id_t *elem_id;
   printf("hi\n");
-
-	snd_ctl_elem_list_alloca (&krad_alsa->control_list);
+  snd_ctl_elem_list_alloca (&krad_alsa->control_list);
   snd_ctl_elem_id_alloca (&elem_id);
-
-	err = snd_ctl_elem_list (krad_alsa->control, krad_alsa->control_list);
-	if (err < 0) {
-		printf ("Cannot determine controls: %s\n", snd_strerror(err));
+  err = snd_ctl_elem_list (krad_alsa->control, krad_alsa->control_list);
+  if (err < 0) {
+    printf ("Cannot determine controls: %s\n", snd_strerror(err));
     return err;
-	}
-	krad_alsa->controls_count = snd_ctl_elem_list_get_count (krad_alsa->control_list);
-	if (krad_alsa->controls_count == 0) {
-		err = 0;
-    return err;
-	} else {
-		printf ("ALSA Control Count: %d\n", krad_alsa->controls_count);
   }
-
-
-	snd_ctl_elem_list_set_offset (krad_alsa->control_list, 0);
-	if (snd_ctl_elem_list_alloc_space (krad_alsa->control_list, krad_alsa->controls_count) < 0) {
-		printf ("No enough memory...");
+  krad_alsa->controls_count = snd_ctl_elem_list_get_count (krad_alsa->control_list);
+  if (krad_alsa->controls_count == 0) {
+    err = 0;
     return err;
-	}
-	if ((err = snd_ctl_elem_list (krad_alsa->control, krad_alsa->control_list)) < 0) {
-		printf ("Cannot determine controls (2): %s\n", snd_strerror(err));
+  } else {
+    printf ("ALSA Control Count: %d\n", krad_alsa->controls_count);
+  }
+  snd_ctl_elem_list_set_offset (krad_alsa->control_list, 0);
+  if (snd_ctl_elem_list_alloc_space (krad_alsa->control_list, krad_alsa->controls_count) < 0) {
+    printf ("No enough memory...");
     return err;
-	}
+  }
+  if ((err = snd_ctl_elem_list (krad_alsa->control, krad_alsa->control_list)) < 0) {
+    printf ("Cannot determine controls (2): %s\n", snd_strerror(err));
+    return err;
+  }
   printf("hid\n");
-
   value = rand() % 31;
   value = 0;
-
-	for (c = 0; c < krad_alsa->controls_count; c++) {
-		snd_ctl_elem_list_get_id (krad_alsa->control_list, c, elem_id);
+  for (c = 0; c < krad_alsa->controls_count; c++) {
+    snd_ctl_elem_list_get_id (krad_alsa->control_list, c, elem_id);
     err = krad_alsa_control (krad_alsa, elem_id, value);
-  	if (err < 0) {
+    if (err < 0) {
         return err;
     }
-	}
-
+  }
   return 0;
 }
 
-
 int krad_alsa_enable_control (kr_alsa *krad_alsa) {
-
   int err;
-
   krad_alsa->control_enabled = 1;
-
   sprintf (krad_alsa->control_name, "hw:%d", krad_alsa->card_num);
-
-	err = snd_ctl_open (&krad_alsa->control, krad_alsa->control_name, 0);
-	if (err < 0) {
+  err = snd_ctl_open (&krad_alsa->control, krad_alsa->control_name, 0);
+  if (err < 0) {
     printf ("snd_ctl_open error: %s", snd_strerror(err));
     return err;
-	}
-
-
+  }
   return 0;
-
 }
 
 void krad_alsa_disable_control (kr_alsa *krad_alsa) {
-
   if (krad_alsa->control_enabled == 1) {
-  	snd_ctl_elem_list_free_space (krad_alsa->control_list);
+    snd_ctl_elem_list_free_space (krad_alsa->control_list);
     snd_ctl_close (krad_alsa->control);
     krad_alsa->control_enabled = 0;
   }
-
 }
 
 void krad_alsa_control_test (kr_alsa *krad_alsa) {
@@ -606,74 +631,69 @@ void krad_alsa_control_test (kr_alsa *krad_alsa) {
   krad_alsa_disable_control (krad_alsa);
 
 }
+*/
 
-void krad_alsa_destroy(kr_alsa *krad_alsa) {
-
-	printk("krad alsa: destroyed");
-
+int krad_alsa_destroy(kr_alsa *alsa) {
+  if (!alsa) return -1;
+  printk("Krad ALSA: Destroyed card %d", alsa->card_num);
   /*
   snd_pcm_close (krad_alsa->device);
-
-	free(krad_alsa->samples[0]);
-	free(krad_alsa->samples[1]);
-
-	free(krad_alsa->interleaved_samples);
-	free(krad_alsa->integer_samples);
-	*/
-	free (krad_alsa);
-
+  free(krad_alsa->samples[0]);
+  free(krad_alsa->samples[1]);
+  free(krad_alsa->interleaved_samples);
+  free(krad_alsa->integer_samples);
+  */
+  free(alsa);
+  return 0;
 }
 
-kr_alsa *krad_alsa_create(int card_num) {
-
-	kr_alsa *krad_alsa;
-
-	if ((krad_alsa = calloc (1, sizeof (kr_alsa))) == NULL) {
-		fprintf(stderr, "mem alloc fail\n");
-		exit (1);
-	}
-
-  krad_alsa->card_num = card_num;
-  krad_alsa_control_test(krad_alsa);
+kr_alsa *kr_alsa_create(int card_num) {
+  kr_alsa *alsa;
+  char *card_name;
+  alsa = calloc(1, sizeof(kr_alsa));
+  if (!alsa) return NULL;
+  alsa->card_num = card_num;
+  snd_card_get_name(alsa->card_num, &card_name);
+  printk("Krad ALSA: Created card %d: %s\n", alsa->card_num, card_name);
 
   /*
-	krad_alsa->samples[0] = malloc(24 * 8192);
-	krad_alsa->samples[1] = malloc(24 * 8192);
-	krad_alsa->interleaved_samples = malloc(48 * 8192);
-	krad_alsa->integer_samples = malloc(48 * 8192);
+  krad_alsa->samples[0] = malloc(24 * 8192);
+  krad_alsa->samples[1] = malloc(24 * 8192);
+  krad_alsa->interleaved_samples = malloc(48 * 8192);
+  krad_alsa->integer_samples = malloc(48 * 8192);
 
-	krad_alsa->sample_format = SND_PCM_FORMAT_S32_LE;
-	krad_alsa->sample_size = 4;
-	krad_alsa->sample_rate = 44100;
-	krad_alsa->n_channels = 2;
+  krad_alsa->sample_format = SND_PCM_FORMAT_S32_LE;
+  krad_alsa->sample_size = 4;
+  krad_alsa->sample_rate = 44100;
+  krad_alsa->n_channels = 2;
 
-	krad_alsa->access = 2;
-	krad_alsa->buffer_size = 1024;
-	krad_alsa->period_size = 512;
+  krad_alsa->access = 2;
+  krad_alsa->buffer_size = 1024;
+  krad_alsa->period_size = 512;
 
 
-	if ((krad_audio->direction == KINPUT) || (krad_audio->direction == KDUPLEX)) {
-		krad_alsa->capture = 1;
-	}
+  if ((krad_audio->direction == KINPUT) || (krad_audio->direction == KDUPLEX)) {
+    krad_alsa->capture = 1;
+  }
 
-	if ((krad_audio->direction == KOUTPUT) || (krad_audio->direction == KDUPLEX)) {
-		krad_alsa->playback = 1;
-	}
+  if ((krad_audio->direction == KOUTPUT) || (krad_audio->direction == KDUPLEX)) {
+    krad_alsa->playback = 1;
+  }
 
-	if (krad_alsa->playback) {
+  if (krad_alsa->playback) {
 
-		krad_alsa->stream = SND_PCM_STREAM_PLAYBACK;
-	}
+    krad_alsa->stream = SND_PCM_STREAM_PLAYBACK;
+  }
 
-	if (krad_alsa->capture) {
+  if (krad_alsa->capture) {
 
-		if (strncmp(krad_alsa->device_name, "hw:1,0", 6) == 0) {
-			// likely a webcam
-			krad_alsa->stream = SND_PCM_STREAM_CAPTURE;
-			krad_alsa->sample_format = SND_PCM_FORMAT_S16_LE;
-			krad_alsa->sample_rate = 32000;
-		}
-	}
+    if (strncmp(krad_alsa->device_name, "hw:1,0", 6) == 0) {
+      // likely a webcam
+      krad_alsa->stream = SND_PCM_STREAM_CAPTURE;
+      krad_alsa->sample_format = SND_PCM_FORMAT_S16_LE;
+      krad_alsa->sample_rate = 32000;
+    }
+  }
 
 
 
@@ -681,11 +701,11 @@ kr_alsa *krad_alsa_create(int card_num) {
         fprintf (stderr, "speaker: Device cannot be opened %s (%s)\n",
              krad_alsa->device_name,
              snd_strerror (krad_alsa->error));
-        	exit (1);
+          exit (1);
     }
     fprintf (stderr, "speaker: Device: %s open_mode = %d\n", krad_alsa->device_name, methods[krad_alsa->access].open_mode);
 
- 	//allocating the hardware configuration structure
+   //allocating the hardware configuration structure
     if ((krad_alsa->error = snd_pcm_hw_params_malloc (&krad_alsa->hw_params)) < 0) {
         fprintf (stderr, "speaker: Hardware configuration structure cannot be allocated (%s)\n",
              snd_strerror (krad_alsa->error));
@@ -778,7 +798,7 @@ kr_alsa *krad_alsa_create(int card_num) {
     case SND_PCM_FORMAT_S32_LE:
         fprintf (stderr, "speaker: PCM sample format: SND_PCM_FORMAT_S32_LE \n");
 
-		krad_alsa->sample_size = 4;
+    krad_alsa->sample_size = 4;
 
         break;
     case SND_PCM_FORMAT_S16_LE:
@@ -791,7 +811,7 @@ kr_alsa *krad_alsa_create(int card_num) {
         fprintf (stderr, "speaker: Real_sample_format = %d\n", krad_alsa->real_sample_format);
     }
 
-	//sets the sample rate
+  //sets the sample rate
     if ((krad_alsa->error = snd_pcm_hw_params_set_rate (krad_alsa->device, krad_alsa->hw_params, krad_alsa->sample_rate, 0)) < 0) {
         fprintf (stderr, "speaker: Sample rate cannot be configured (%s)\n",
              snd_strerror (krad_alsa->error));
@@ -804,7 +824,7 @@ kr_alsa *krad_alsa_create(int card_num) {
         exit (1);
     }
 
-//	krad_audio->sample_rate = krad_alsa->real_sample_rate;
+//  krad_audio->sample_rate = krad_alsa->real_sample_rate;
 
     fprintf (stderr, "speaker: real_sample_rate = %d\n", krad_alsa->real_sample_rate);
 
@@ -832,7 +852,7 @@ kr_alsa *krad_alsa_create(int card_num) {
     }
     //checks the value of the buffer size
     if (snd_pcm_hw_params_get_buffer_size(krad_alsa->hw_params, &krad_alsa->real_buffer_size) < 0) {
-		fprintf (stderr, "speaker: Buffer size cannot be obtained (%s)\n",
+    fprintf (stderr, "speaker: Buffer size cannot be obtained (%s)\n",
              snd_strerror (krad_alsa->error));
         exit (1);
     }
@@ -875,34 +895,32 @@ kr_alsa *krad_alsa_create(int card_num) {
 
 
 
-	switch(methods[access].method)
-	{
-		case METHOD_DIRECT_RW:
-			direct_rw(device, capture_device_params);
-		break;
+  switch(methods[access].method)
+  {
+    case METHOD_DIRECT_RW:
+      direct_rw(device, capture_device_params);
+    break;
 
-		case METHOD_DIRECT_MMAP:
-			direct_mmap(device, capture_device_params);
-		break;
+    case METHOD_DIRECT_MMAP:
+      direct_mmap(device, capture_device_params);
+    break;
 
-		case METHOD_ASYNC_RW:
-			async_rw(device, capture_device_params);
-		break;
+    case METHOD_ASYNC_RW:
+      async_rw(device, capture_device_params);
+    break;
 
-		case METHOD_ASYNC_MMAP:
-			async_mmap(device, capture_device_params);
-		break;
+    case METHOD_ASYNC_MMAP:
+      async_mmap(device, capture_device_params);
+    break;
 
-		case  METHOD_RW_AND_POLL:
-			rw_and_poll_loop(device, capture_device_params);
-		break;
-	}
+    case  METHOD_RW_AND_POLL:
+      rw_and_poll_loop(device, capture_device_params);
+    break;
+  }
 
-	async_rw (krad_alsa);
+  async_rw (krad_alsa);
 
-	*/
+  */
 
-	return krad_alsa;
+  return alsa;
 }
-
-
