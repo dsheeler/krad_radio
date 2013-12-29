@@ -91,6 +91,10 @@ PKG_CHECK_MODULES([NCURSES],[ncurses,panel,menu,form],[ncurses=yes],[ncurses=no]
 AS_IF([test "$ncurses" = "yes"],[AC_DEFINE([HAVE_NCURSES],[1],[Use NCURSES])])
 AM_CONDITIONAL([HAVE_NCURSES],[test "$ncurses" = "yes"])
 
+PKG_CHECK_MODULES([LIBUDEV],[libudev],[libudev=yes],[libudev=no])
+AS_IF([test "$libudev" = "yes"],[AC_DEFINE([HAVE_LIBUDEV],[1],[Use libudev])])
+AM_CONDITIONAL([HAVE_LIBUDEV],[test "$libudev" = "yes"])
+
 PKG_CHECK_MODULES([XKBCOMMON],[xkbcommon],[xkbcommon=yes],[xkbcommon=no])
 AS_IF([test "$xkbcommon" = "yes"],[AC_DEFINE([HAVE_XKBCOMMON],[1],[Use xkbcommon])])
 AM_CONDITIONAL([HAVE_XKBCOMMON],[test "$xkbcommon" = "yes"])
@@ -136,6 +140,7 @@ AC_MSG_RESULT([
            JACK: $jack
         ncurses: $ncurses
       turbojpeg: $turbojpeg
+        libudev: $libudev
         Wayland: $wayland
             X11: $x11
           XMMS2: $xmms2
