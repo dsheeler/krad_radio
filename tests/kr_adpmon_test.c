@@ -40,6 +40,7 @@ static void handle_device(kr_adapter_monitor *m, struct udev_device *dev) {
   struct udev_device *parent;
   const char *name;
   const char *subsys;
+  const char *action;
   int name_len;
   int subsys_len;
 
@@ -49,7 +50,6 @@ static void handle_device(kr_adapter_monitor *m, struct udev_device *dev) {
   if (!subsys) return;
   name_len = strlen(name);
   subsys_len = strlen(subsys);
-
   if ((subsys_len == 5) && (name_len > 4)
    && (memcmp(subsys, "sound", 5) == 0)
    && (memcmp(name, "card", 4) == 0)) {
@@ -69,14 +69,17 @@ static void handle_device(kr_adapter_monitor *m, struct udev_device *dev) {
       }
     }
   }
-
+  action = udev_device_get_action(dev);
   printf("   syspath: %s\n", udev_device_get_syspath(dev));
   printf("   sysname: %s\n", udev_device_get_sysname(dev));
   printf("   sysnum: %s\n", udev_device_get_sysnum(dev));
   printf("   Node: %s\n", udev_device_get_devnode(dev));
   printf("   Subsystem: %s\n", udev_device_get_subsystem(dev));
   printf("   Action: %s\n", udev_device_get_action(dev));
-
+  if (!((action == NULL) || ((strlen(action) == 3)
+   && (memcmp(action, "add", 3) == 0))))  {
+    return;
+  }
   parent = udev_device_get_parent_with_subsystem_devtype(dev, "usb",
    "usb_device");
   if (parent) {
