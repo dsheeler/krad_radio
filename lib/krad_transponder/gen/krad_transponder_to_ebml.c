@@ -86,12 +86,6 @@ int kr_adapter_api_info_to_ebml(kr_ebml *ebml, void *st) {
       res += info_pack_to_ebml(&ebml[res],&uber);
       break;
     }
-    case 5: {
-      uber.actual = &(actual->alsa);
-      uber.type = EBML_KR_ALSA_INFO;
-      res += info_pack_to_ebml(&ebml[res],&uber);
-      break;
-    }
   }
 
 

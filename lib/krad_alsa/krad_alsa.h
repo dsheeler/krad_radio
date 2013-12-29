@@ -16,6 +16,7 @@
 #include "krad_system.h"
 
 typedef struct kr_alsa kr_alsa;
+typedef struct kr_alsa_path kr_alsa_path;
 
 int kr_alsa_destroy(kr_alsa *alsa);
 kr_alsa *kr_alsa_create(int card_num);

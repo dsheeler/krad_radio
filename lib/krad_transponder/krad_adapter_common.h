@@ -23,7 +23,7 @@ typedef enum {
   KR_ADP_DECKLINK,    /* V + A  MP  Input ePush                  */
   KR_ADP_X11,         /* V      MP  Input iPull                  */
   KR_ADP_ALSA,        /*     A  MP  I/O ePush/ePull              */
-  KR_ADP_KRAPI,       /* V + A  MP  I/O ANY ePush/ePull          */
+  KR_ADP_KRAD,       /* V + A  MP  I/O ANY ePush/ePull          */
   KR_ADP_ENCODER,     /* V + A  SP  Output iPush only            */
 } kr_adapter_api;
 
@@ -34,6 +34,7 @@ typedef union {
   kr_decklink_info decklink;
   kr_x11_info x11;
   kr_alsa_info alsa;
+  void *krad;
 } kr_adapter_api_info;
 
 typedef union {

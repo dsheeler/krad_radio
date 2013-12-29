@@ -633,7 +633,7 @@ void krad_alsa_control_test (kr_alsa *krad_alsa) {
 }
 */
 
-int krad_alsa_destroy(kr_alsa *alsa) {
+int kr_alsa_destroy(kr_alsa *alsa) {
   if (!alsa) return -1;
   printk("Krad ALSA: Destroyed card %d", alsa->card_num);
   /*

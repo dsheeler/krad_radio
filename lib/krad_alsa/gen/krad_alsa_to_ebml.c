@@ -12,7 +12,7 @@ int kr_alsa_info_to_ebml(kr_ebml *ebml, void *st) {
 
   actual = (struct kr_alsa_info *)st;
 
-  res += kr_ebml_pack_int32(ebml, 0xe1, actual->lol);
+  res += kr_ebml_pack_int32(ebml, 0xe1, actual->card_num);
 
   return res;
 }
@@ -29,7 +29,7 @@ int kr_alsa_path_info_to_ebml(kr_ebml *ebml, void *st) {
 
   actual = (struct kr_alsa_path_info *)st;
 
-  res += kr_ebml_pack_int32(ebml, 0xe1, actual->cake);
+  res += kr_ebml_pack_int32(ebml, 0xe1, actual->card_num);
 
   return res;
 }

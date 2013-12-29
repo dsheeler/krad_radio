@@ -5,11 +5,11 @@ typedef struct kr_alsa_info kr_alsa_info;
 typedef struct kr_alsa_path_info kr_alsa_path_info;
 
 struct kr_alsa_info {
-  int lol;
+  int card_num;
 };
 
 struct kr_alsa_path_info {
-  int cake;
+  int card_num;
 };
 
 #include "gen/krad_alsa_to_ebml.h"
