@@ -655,16 +655,12 @@ int krad_valid_host_and_port (char *string) {
   return 0;
 }
 
-#ifdef KR_LINUX
-
-int krad_system_is_adapter (char *adapter) {
-
+int krad_system_is_adapter(char *adapter) {
   int sd;
   struct ifconf ifconf;
   struct ifreq ifreq[20];
   int interfaces;
   int i;
-
   // Create a socket or return an error.
   sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
@@ -672,27 +668,21 @@ int krad_system_is_adapter (char *adapter) {
   }
   // Point ifconf's ifc_buf to our array of interface ifreqs.
   ifconf.ifc_buf = (char *) ifreq;
-
   // Set ifconf's ifc_len to the length of our array of interface ifreqs.
   ifconf.ifc_len = sizeof ifreq;
-
   //  Populate ifconf.ifc_buf (ifreq) with a list of interface names and addresses.
   if (ioctl(sd, SIOCGIFCONF, &ifconf) == -1) {
     failfast ("ioctl");
   }
-
   // Divide the length of the interface list by the size of each entry.
   // This gives us the number of interfaces on the system.
   interfaces = ifconf.ifc_len / sizeof(ifreq[0]);
-
   for (i = 0; i < interfaces; i++) {
     if (strncmp (adapter, ifreq[i].ifr_name, strlen(adapter)) == 0) {
       close (sd);
       return 1;
     }
   }
-
   close (sd);
   return 0;
 }
-#endif

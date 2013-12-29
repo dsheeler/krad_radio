@@ -26,21 +26,12 @@
 #include <signal.h>
 #include <pthread.h>
 
-#ifdef __linux__
-#define LINUX 1
 #define KR_LINUX
-#endif
 
-#ifdef KR_LINUX
 #include <sys/prctl.h>
 #include <malloc.h>
 #include <sys/ioctl.h>
 #include <linux/netdevice.h>
-#endif
-
-#ifdef FRAK_MACOSX
-#include "krad_mach.h"
-#endif
 
 #define sbyte signed char
 #define ubyte unsigned char
@@ -55,16 +46,13 @@
 #ifndef KRAD_SYSTEM_H
 #define KRAD_SYSTEM_H
 
-
 typedef struct krad_system_St krad_system_t;
 typedef struct krad_system_cpu_monitor_St krad_system_cpu_monitor_t;
-
 typedef struct krad_control_St krad_control_t;
 
 #define KRAD_SYSNAME_MIN 4
 #define KRAD_SYSNAME_MAX 32
 #define KRAD_SYSNAME_SZ 64
-
 #define KRAD_BUFLEN_CPUSTAT 128
 #define KRAD_CPU_MONITOR_INTERVAL 4000
 
@@ -73,11 +61,9 @@ struct krad_control_St {
 };
 
 struct krad_system_cpu_monitor_St {
-
   int fd;
   int c;
   char buffer[KRAD_BUFLEN_CPUSTAT];
-
   int last_total;
   int last_idle;
   int total;
@@ -85,44 +71,30 @@ struct krad_system_cpu_monitor_St {
   int usage;
   int diff_idle;
   int diff_total;
-
   int user;
   int nice;
   int system;
-
   int ret;
-
   int interval;
-
   int on;
-
   pthread_t monitor_thread;
-
   void *callback_pointer;
   void (*cpu_monitor_callback)( void *, uint32_t);
-
   int unset_cpu_monitor_callback;
-
   krad_control_t control;
-
 };
 
 struct krad_system_St {
-
   char info_string[1024];
   int info_string_len;
-
   uint32_t system_cpu_usage;
-
   krad_system_cpu_monitor_t kcm;
   struct utsname unix_info;
   time_t krad_start_time;
   uint64_t uptime;
-
   int log_fd;
   int lognum;
   int log_in_use;
-
   sigset_t signal_mask;
 };
 
@@ -174,7 +146,5 @@ int dir_exists (char *dir);
 int krad_valid_sysname (char *sysname);
 int krad_valid_host_and_port (char *string);
 void krad_get_host_and_port (char *string, char *host, int *port);
-#ifdef KR_LINUX
 int krad_system_is_adapter (char *adapter);
-#endif
 #endif

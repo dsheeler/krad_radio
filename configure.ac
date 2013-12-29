@@ -6,28 +6,21 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
 AM_MAINTAINER_MODE([enable])
 LT_INIT
-
 AM_SILENT_RULES([yes])
-
 KR_LT_CURRENT=$PACKAGE_VERSION
 KR_LT_REVISION=1
 KR_LT_AGE=0
-
 AC_SUBST(KR_LT_CURRENT)
 AC_SUBST(KR_LT_REVISION)
 AC_SUBST(KR_LT_AGE)
-
 AC_SUBST(KR_GIT_VERSION, m4_esyscmd([git describe --tags]))
 
 CFLAGS="-Wall $CFLAGS"
 CXXFLAGS="-g -Wall -Wno-write-strings $CXXFLAGS"
 
-case $host in
-  *-linux*)
-  AM_CONDITIONAL(KR_LINUX, true)
-  AM_CONDITIONAL(KR_ALSA, true)
-  AM_CONDITIONAL(KR_V4L2, true)
-esac
+AM_CONDITIONAL(KR_LINUX, true)
+AM_CONDITIONAL(KR_ALSA, true)
+AM_CONDITIONAL(KR_V4L2, true)
 
 AC_ARG_ENABLE([optimize], AS_HELP_STRING([--enable-optimize],[Enable Optimize]),
  [optimize=yes],[optimize=no])

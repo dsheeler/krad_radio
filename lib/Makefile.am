@@ -112,8 +112,6 @@ krad_radio_libkradradio_la_SOURCES += krad_decklink/vendor/linux/DeckLinkAPIDisp
 AM_CPPFLAGS += -DKR_DECKLINK
 if KR_LINUX
 AM_CPPFLAGS += -Ikrad_decklink/vendor/linux
-else
-AM_CPPFLAGS += -Ikrad_decklink/vendor/osx
 endif
 endif
 
