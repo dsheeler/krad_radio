@@ -1,37 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <poll.h>
-#include <limits.h>
-#include <sys/ioctl.h>
-#include <libudev.h>
-#include <locale.h>
-
-/* gcc -Wall kr_adpmon_test.c -o kr_adpmon_test `pkg-config --libs --cflags libudev` */
-
-#define KR_ADPMONMAX 4
-
-typedef struct kr_adapter_monitor kr_adapter_monitor;
-typedef struct kr_adapter_watch kr_adapter_watch;
-
-struct kr_adapter_watch {
-  int type;
-  int wd;
-  char path[64];
-};
+#include "krad_adapter_monitor.h"
 
 struct kr_adapter_monitor {
   struct udev *udev;
   int fd;
   struct udev_monitor *mon;
-  kr_adapter_watch watches[KR_ADPMONMAX];
   int initialized;
 };
-
-int kr_adapter_monitor_destroy(kr_adapter_monitor *monitor);
-kr_adapter_monitor *kr_adapter_monitor_create();
-void kr_adapter_monitor_wait(kr_adapter_monitor *monitor, int ms);
 
 static void handle_device(kr_adapter_monitor *m, struct udev_device *dev);
 static void setup(kr_adapter_monitor *m);
@@ -53,29 +27,29 @@ static void handle_device(kr_adapter_monitor *m, struct udev_device *dev) {
   if ((subsys_len == 5) && (name_len > 4)
    && (memcmp(subsys, "sound", 5) == 0)
    && (memcmp(name, "card", 4) == 0)) {
-    printf("Got ALSA device\n");
+    printk("Got ALSA device\n");
   } else {
     if ((subsys_len == 4) && (name_len > 10)
      && (memcmp(subsys, "misc", 4) == 0)
      && (memcmp(name, "blackmagic", 10) == 0)) {
-      printf("Got Blackmagic device\n");
+      printk("Got Blackmagic device\n");
     } else {
       if ((subsys_len == 11) && (name_len > 5)
        && (memcmp(subsys, "video4linux", 4) == 0)
        && (memcmp(name, "video", 5) == 0)) {
-        printf("Got V4L2 device\n");
+        printk("Got V4L2 device\n");
       } else {
         return;
       }
     }
   }
   action = udev_device_get_action(dev);
-  printf("   syspath: %s\n", udev_device_get_syspath(dev));
-  printf("   sysname: %s\n", udev_device_get_sysname(dev));
-  printf("   sysnum: %s\n", udev_device_get_sysnum(dev));
-  printf("   Node: %s\n", udev_device_get_devnode(dev));
-  printf("   Subsystem: %s\n", udev_device_get_subsystem(dev));
-  printf("   Action: %s\n", udev_device_get_action(dev));
+  printk("   syspath: %s\n", udev_device_get_syspath(dev));
+  printk("   sysname: %s\n", udev_device_get_sysname(dev));
+  printk("   sysnum: %s\n", udev_device_get_sysnum(dev));
+  printk("   Node: %s\n", udev_device_get_devnode(dev));
+  printk("   Subsystem: %s\n", udev_device_get_subsystem(dev));
+  printk("   Action: %s\n", udev_device_get_action(dev));
   if (!((action == NULL) || ((strlen(action) == 3)
    && (memcmp(action, "add", 3) == 0))))  {
     return;
@@ -83,17 +57,17 @@ static void handle_device(kr_adapter_monitor *m, struct udev_device *dev) {
   parent = udev_device_get_parent_with_subsystem_devtype(dev, "usb",
    "usb_device");
   if (parent) {
-    printf("  VID/PID: %s %s\n",
+    printk("  VID/PID: %s %s\n",
      udev_device_get_sysattr_value(parent,"idVendor"),
      udev_device_get_sysattr_value(parent, "idProduct"));
-    printf("  serial: %s\n",
+    printk("  serial: %s\n",
      udev_device_get_sysattr_value(parent, "serial"));
   } else {
     parent = udev_device_get_parent_with_subsystem_devtype(dev, "pci", NULL);
     if (parent) {
-      printf("  vendor: %s\n",
+      printk("  vendor: %s\n",
        udev_device_get_sysattr_value(parent, "vendor"));
-      printf("  device: %s\n",
+      printk("  device: %s\n",
        udev_device_get_sysattr_value(parent, "device"));
     }
   }
@@ -191,20 +165,4 @@ kr_adapter_monitor *kr_adapter_monitor_create() {
 	monitor = calloc(1, sizeof(kr_adapter_monitor));
   monitor->fd = -1;
   return monitor;
-}
-
-int main(int argc, char **argv) {
-  int times;
-  kr_adapter_monitor *monitor;
-  monitor = kr_adapter_monitor_create();
-  times = 0;
-  if (argc == 2) {
-    times = atoi(argv[1]);
-  }
-  kr_adapter_monitor_wait(monitor, 0);
-  while (times-- > 0) {
-    kr_adapter_monitor_wait(monitor, 1000);
-  }
-  kr_adapter_monitor_destroy(monitor);
-  return 0;
 }

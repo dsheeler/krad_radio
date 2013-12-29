@@ -2,10 +2,6 @@ include $(top_srcdir)/common.mk
 
 bin_PROGRAMS = kr_cbor_test kr_pool_test
 
-if HAVE_LIBUDEV
-  bin_PROGRAMS += kr_adpmon_test
-endif
-
 if HAVE_WAYLAND
   bin_PROGRAMS += kr_wayland_test
 endif
@@ -18,10 +14,6 @@ kr_cbor_test_SOURCES = kr_cbor_test.c
 kr_cbor_test_SOURCES += ../lib/krad_cbor/krad_cbor.c
 kr_cbor_test_CFLAGS =
 kr_cbor_test_LDFLAGS =
-
-kr_adpmon_test_SOURCES = kr_adpmon_test.c
-kr_adpmon_test_CFLAGS = $(LIBUDEV_CFLAGS)
-kr_adpmon_test_LDFLAGS = $(LIBUDEV_LIBS)
 
 kr_pool_test_SOURCES = kr_pool_test.c
 kr_pool_test_SOURCES += ../lib/krad_mem/krad_pool.c ../lib/krad_system/krad_system.c
