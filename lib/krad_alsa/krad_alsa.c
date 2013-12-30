@@ -24,7 +24,7 @@ kr_alsa *kr_alsa_create(int card) {
   char dev_name[8];
   int pcm_device;
   kr_alsa_info *info;
-  pcm_device = 0;
+  pcm_device = -1;
   alsa = calloc(1, sizeof(kr_alsa));
   if (!alsa) return NULL;
   info = &alsa->info;
