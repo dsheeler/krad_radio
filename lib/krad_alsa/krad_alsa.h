@@ -14,6 +14,7 @@
 #include <alsa/asoundlib.h>
 
 #include "krad_system.h"
+#include "krad_alsa_common.h"
 
 typedef struct kr_alsa kr_alsa;
 typedef struct kr_alsa_path kr_alsa_path;

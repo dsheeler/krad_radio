@@ -6,9 +6,7 @@ if HAVE_WAYLAND
   bin_PROGRAMS += kr_wayland_test
 endif
 
-if KR_LINUX
-  bin_PROGRAMS += kr_v4l2_test
-endif
+bin_PROGRAMS += kr_v4l2_test kr_alsa_test
 
 kr_cbor_test_SOURCES = kr_cbor_test.c
 kr_cbor_test_SOURCES += ../lib/krad_cbor/krad_cbor.c
@@ -24,6 +22,11 @@ kr_v4l2_test_SOURCES = kr_v4l2_test.c
 kr_v4l2_test_SOURCES += ../lib/krad_v4l2/krad_v4l2.c ../lib/krad_system/krad_system.c
 kr_v4l2_test_CFLAGS = -pthread
 kr_v4l2_test_LDFLAGS = -lm
+
+kr_alsa_test_SOURCES = kr_alsa_test.c
+kr_alsa_test_SOURCES += ../lib/krad_alsa/krad_alsa.c ../lib/krad_system/krad_system.c
+kr_alsa_test_CFLAGS = $(ALSA_LIBS)
+kr_alsa_test_LDFLAGS = -lm
 
 kr_wayland_test_SOURCES = kr_wayland_test.c
 kr_wayland_test_SOURCES += ../lib/krad_wayland/krad_wayland.c

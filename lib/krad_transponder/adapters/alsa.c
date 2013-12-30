@@ -33,6 +33,6 @@ void alsa_adapter_destroy(kr_adapter *adapter) {
 void alsa_adapter_create(kr_adapter *adapter) {
   kr_alsa_info info;
   memset(&info, 0, sizeof(kr_alsa_info));
-  info.card_num = adapter->info.api_info.alsa.card_num;
-  adapter->handle.alsa = kr_alsa_create(info.card_num);
+  info.card = adapter->info.api_info.alsa.card;
+  adapter->handle.alsa = kr_alsa_create(info.card);
 }
