@@ -14,7 +14,6 @@ int kr_alsa_info_to_ebml(kr_ebml *ebml, void *st) {
 
   res += kr_ebml_pack_int32(ebml, 0xe1, actual->card);
   res += kr_ebml_pack_string(ebml, 0xe1, actual->name);
-  res += kr_ebml_pack_string(ebml, 0xe1, actual->longname);
 
   return res;
 }

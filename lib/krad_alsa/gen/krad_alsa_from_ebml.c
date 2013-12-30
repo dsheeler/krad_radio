@@ -14,7 +14,6 @@ int kr_alsa_info_fr_ebml(kr_ebml *ebml, void *st) {
 
   res += kr_ebml2_unpack_element_int32(ebml, NULL, &actual->card);
   res += kr_ebml2_unpack_element_string(ebml, NULL, actual->name , sizeof(actual->name));
-  res += kr_ebml2_unpack_element_string(ebml, NULL, actual->longname , sizeof(actual->longname));
 
   return res;
 }

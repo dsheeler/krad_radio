@@ -14,7 +14,6 @@ int kr_alsa_info_to_text(char *text, void *st, int32_t max) {
 
   res += snprintf(&text[res],max-res,"card : %d \n",actual->card);
   res += snprintf(&text[res],max-res,"name : %s \n",actual->name);
-  res += snprintf(&text[res],max-res,"longname : %s \n",actual->longname);
 
   return res;
 }

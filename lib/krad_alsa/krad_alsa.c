@@ -20,9 +20,8 @@ int kr_alsa_destroy(kr_alsa *alsa) {
 kr_alsa *kr_alsa_create(int card) {
   kr_alsa *alsa;
   int ret;
-  char *name;
+  const char *name;
   char dev_name[8];
-  char *pcm_name;
   int pcm_device;
   int pcm_playback;
   int pcm_capture;
@@ -46,9 +45,7 @@ kr_alsa *kr_alsa_create(int card) {
   snd_ctl_card_info(alsa->ctl, card_info);
   name = snd_ctl_card_info_get_name(card_info);
   strncpy(info->name, name, sizeof(info->name));
-  name = snd_ctl_card_info_get_longname(card_info);
-  strncpy(info->longname, name, sizeof(info->longname));
-  printk("Krad ALSA: Created for %s", info->name);
+  printk("Krad ALSA: Created %s", info->name);
   do {
     ret = snd_ctl_pcm_next_device(alsa->ctl, &pcm_device);
     if ((ret == 0) && (pcm_device >= 0)) {
@@ -67,12 +64,11 @@ kr_alsa *kr_alsa_create(int card) {
       if (ret == 0) {
         pcm_capture = 1;
       }
-      pcm_name = snd_pcm_info_get_name(pcm_info);
-      if (pcm_name == NULL) {
-        pcm_name = snd_pcm_info_get_id(pcm_info);
+      name = snd_pcm_info_get_name(pcm_info);
+      if (name == NULL) {
+        name = snd_pcm_info_get_id(pcm_info);
       }
-      printk(" %s Capture: %d Playback: %d", pcm_name, pcm_capture,
-       pcm_playback);
+      printk(" %s Capture: %d Playback: %d", name, pcm_capture, pcm_playback);
     }
   } while (pcm_device >= 0);
   return alsa;

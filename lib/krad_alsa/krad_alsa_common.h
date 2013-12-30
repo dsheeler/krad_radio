@@ -6,8 +6,7 @@ typedef struct kr_alsa_path_info kr_alsa_path_info;
 
 struct kr_alsa_info {
   int card;
-  char name[128];
-  char longname[256];
+  char name[40];
 };
 
 struct kr_alsa_path_info {
