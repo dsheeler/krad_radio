@@ -23,12 +23,19 @@ kr_alsa *kr_alsa_create(int card) {
   char *name;
   char dev_name[8];
   int pcm_device;
+  int pcm_playback;
+  int pcm_capture;
+  snd_pcm_info_t *pcm_info;
   kr_alsa_info *info;
   pcm_device = -1;
   alsa = calloc(1, sizeof(kr_alsa));
   if (!alsa) return NULL;
   info = &alsa->info;
   info->card = card;
+  sprintf(dev_name, "hw:%d", info->card);
+  snd_pcm_info_alloca(&pcm_info);
+
+
   ret = snd_card_get_name(info->card, &name);
   if (ret == 0) {
     strncpy(info->name, name, sizeof(info->name));
@@ -39,10 +46,10 @@ kr_alsa *kr_alsa_create(int card) {
     strncpy(info->longname, name, sizeof(info->longname));
     free(name);
   }
+
+
   printk("Krad ALSA: Created card %d: %s -- %s", info->card, info->name,
    info->longname);
-
-  sprintf(dev_name, "hw:%d", info->card);
   ret = snd_ctl_open(&alsa->ctl, dev_name, 0);
   if (ret != 0) {
     printk("Could not open %s", dev_name);
@@ -50,8 +57,27 @@ kr_alsa *kr_alsa_create(int card) {
   }
   do {
     ret = snd_ctl_pcm_next_device(alsa->ctl, &pcm_device);
-    if (pcm_device >= 0) {
-      printk("got pcm! %d", pcm_device);
+    if ((ret == 0) && (pcm_device >= 0)) {
+      pcm_capture = 0;
+      pcm_playback = 0;
+      memset(pcm_info, 0, snd_pcm_info_sizeof());
+      snd_pcm_info_set_device(pcm_info, pcm_device);
+      snd_pcm_info_set_stream(pcm_info, SND_PCM_STREAM_PLAYBACK);
+      snd_pcm_info_set_subdevice(pcm_info, 0);
+      ret = snd_ctl_pcm_info(alsa->ctl, pcm_info);
+      if (ret == 0) {
+        pcm_playback = 1;
+      }
+      memset(pcm_info, 0, snd_pcm_info_sizeof());
+      snd_pcm_info_set_device(pcm_info, pcm_device);
+      snd_pcm_info_set_stream(pcm_info, SND_PCM_STREAM_CAPTURE);
+      snd_pcm_info_set_subdevice(pcm_info, 0);
+      ret = snd_ctl_pcm_info(alsa->ctl, pcm_info);
+      if (ret == 0) {
+        pcm_capture = 1;
+      }
+      printk("PCM %d: Capture: %d Playback: %d", pcm_device, pcm_capture,
+       pcm_playback);
     }
   } while (pcm_device >= 0);
   return alsa;
