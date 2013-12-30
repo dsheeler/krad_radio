@@ -18,7 +18,7 @@ static void krad_debug_shutdown() {
   show_log();
 }
 
-void krad_debug_init (char *name) {
+void krad_debug_init(char *name) {
   krad_system_init();
   snprintf(logfile, sizeof(logfile), "%s/kr_%s_%"PRIu64".log",
    getenv("HOME"), name, krad_unixtime());

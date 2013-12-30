@@ -1,11 +1,8 @@
 #include "krad_mixer_interface.h"
 
 int kr_mixer_get_path_info(kr_mixer_path *unit, kr_mixer_path_info *info) {
-
   int i;
-
   if ((unit == NULL) || (info == NULL)) return -1;
-
   strcpy(info->name, unit->name);
   info->channels = unit->channels;
   if (unit->bus != NULL) {
@@ -35,24 +32,13 @@ int kr_mixer_get_path_info(kr_mixer_path *unit, kr_mixer_path_info *info) {
   return 0;
 }
 
-/*void kr_mixer_info_to_ebml(kr_ebml *e, kr_mixer_info *info) {
-  kr_ebml_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->period_size);
-  kr_ebml_pack_uint32(e, KR_EID_MIXER_SAMPLE_RATE, info->sample_rate);
-  kr_ebml_pack_uint32(e, KR_EID_MIXER_INPUTS, info->inputs);
-  kr_ebml_pack_uint32(e, KR_EID_MIXER_OUTPUTS, info->outputs);
-  kr_ebml_pack_uint32(e, KR_EID_MIXER_BUSES, info->buses);
-  kr_ebml_pack_string(e, KR_EID_MIXER_CLOCK, info->clock);
-}*/
-
 void kr_mixer_to_ebml(kr_ebml *e, kr_mixer *mixer) {
   kr_mixer_info info;
   kr_mixer_get_info(mixer, &info);
-  //kr_mixer_info_to_ebml(e, &info);
   kr_mixer_info_to_ebml(e, (void *)&info);
 }
 
 int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
-
   kr_mixer_path *path;
   kr_mixer_path *unit;
   kr_mixer_path *unit2;
@@ -80,7 +66,6 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   int sd1;
   int sd2;
   int duration;
-
   i = 0;
   duration = 0;
   sd1 = 0;
@@ -93,27 +78,21 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   name[0] = '\0';
   controlname[0] = '\0';
   string[0] = '\0';
-
   if (!(kr_io2_has_in(in))) {
     return 0;
   }
-
   kr_ebml2_set_buffer(&ebml_in, in->rd_buf, in->len);
-
   ret = kr_ebml2_unpack_id(&ebml_in, &command, &size);
   if ((ret < 0) || (command != EBML_ID_KRAD_MIXER_CMD)) {
     printke("krad_mixer_command invalid EBML ID Not found");
     return 0;
   }
-
   ret = kr_ebml2_unpack_id(&ebml_in, &command, &size);
   if (ret < 0) {
     printke("krad_mixer_command EBML ID Not found");
     return 0;
   }
-
   kr_ebml2_set_buffer(&ebml_out, out->buf, out->space);
-
   switch (command) {
     case EBML_ID_KRAD_MIXER_CMD_SET_CONTROL:
       kr_ebml2_unpack_element_string(&ebml_in, &element, name, sizeof(name));
@@ -296,14 +275,11 @@ int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
     default:
       return -1;
   }
-
   if (((ebml_out.pos > 0) || (command == EBML_ID_KRAD_MIXER_CMD_LIST_PORTGROUPS)) &&
        (!krad_app_server_current_client_is_subscriber(as))) {
     krad_radio_pack_shipment_terminator(&ebml_out);
   }
-
   kr_io2_pulled(in, ebml_in.pos);
   kr_io2_advance(out, ebml_out.pos);
-
   return 0;
 }

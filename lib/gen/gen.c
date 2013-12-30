@@ -1,3 +1,7 @@
+#include "../krad_alsa/gen/krad_alsa_to_ebml.c"
+#include "../krad_alsa/gen/krad_alsa_from_ebml.c"
+#include "../krad_alsa/gen/krad_alsa_to_text.c"
+#include "../krad_alsa/gen/krad_alsa_helpers.c"
 #include "../krad_compositor/gen/krad_compositor_to_json.c"
 #include "../krad_compositor/gen/krad_compositor_to_ebml.c"
 #include "../krad_compositor/gen/krad_compositor_from_ebml.c"

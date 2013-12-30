@@ -10,14 +10,7 @@
 
 #include "krad_system.h"
 
-#ifdef KR_LINUX
 #include <sys/statfs.h>
-#else
-#ifdef FRAK_MACOSX
-#include <sys/param.h>
-#include <sys/mount.h>
-#endif
-#endif
 
 #ifndef KRAD_FILE_H
 #define KRAD_FILE_H

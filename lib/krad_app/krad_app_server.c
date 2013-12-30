@@ -13,7 +13,7 @@ static int krad_app_server_broadcaster_destroy ( krad_app_broadcaster_t **broadc
 static kr_app_server *krad_app_server_init (char *appname, char *sysname) {
 
   kr_app_server *krad_app_server;
-
+  socklen_t socket_sz;
   krad_app_server = calloc(1, sizeof(kr_app_server));
 
   if (krad_control_init(&krad_app_server->krad_control)) {
@@ -42,8 +42,9 @@ static kr_app_server *krad_app_server_init (char *appname, char *sysname) {
 
   if (krad_app_server->on_linux) {
     snprintf (krad_app_server->saddr.sun_path, sizeof (krad_app_server->saddr.sun_path), "@%s_%s_api", appname, sysname);
+    socket_sz = sizeof(krad_app_server->saddr) - sizeof(krad_app_server->saddr.sun_path) + strlen(krad_app_server->saddr.sun_path);
     krad_app_server->saddr.sun_path[0] = '\0';
-    if (connect (krad_app_server->sd, (struct sockaddr *) &krad_app_server->saddr, sizeof (krad_app_server->saddr)) != -1) {
+    if (connect (krad_app_server->sd, (struct sockaddr *) &krad_app_server->saddr, socket_sz) != -1) {
       /* active socket already exists! */
       printke ("Krad APP Server: Krad APP path in use. (linux abstract)\n");
       krad_app_server_destroy (krad_app_server);
@@ -51,8 +52,9 @@ static kr_app_server *krad_app_server_init (char *appname, char *sysname) {
     }
   } else {
     snprintf (krad_app_server->saddr.sun_path, sizeof (krad_app_server->saddr.sun_path), "%s/%s_%s_api", "/tmp", appname, sysname);
+    socket_sz = sizeof(krad_app_server->saddr) - sizeof(krad_app_server->saddr.sun_path) + strlen(krad_app_server->saddr.sun_path);
     if (access (krad_app_server->saddr.sun_path, F_OK) == 0) {
-      if (connect (krad_app_server->sd, (struct sockaddr *) &krad_app_server->saddr, sizeof (krad_app_server->saddr)) != -1) {
+      if (connect (krad_app_server->sd, (struct sockaddr *) &krad_app_server->saddr, socket_sz) != -1) {
         /* active socket already exists! */
         printke ("Krad APP Server: Krad APP path in use.\n");
         krad_app_server_destroy (krad_app_server);
@@ -63,7 +65,7 @@ static kr_app_server *krad_app_server_init (char *appname, char *sysname) {
     }
   }
 
-  if (bind (krad_app_server->sd, (struct sockaddr *) &krad_app_server->saddr, sizeof (krad_app_server->saddr)) == -1) {
+  if (bind (krad_app_server->sd, (struct sockaddr *) &krad_app_server->saddr, socket_sz) == -1) {
     printke ("Krad APP Server: Can't bind.\n");
     krad_app_server_destroy (krad_app_server);
     return NULL;

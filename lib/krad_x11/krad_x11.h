@@ -7,10 +7,7 @@
 #include <sys/shm.h>
 
 #ifdef KR_X11
-#include <X11/Xlib-xcb.h>
-//#include <X11/Xatom.h>
 #include <xcb/xcb.h>
-//#include <xcb/xcb_atom.h>
 #include <xcb/xcb_util.h>
 #include <xcb/xcb_image.h>
 #include <xcb/xproto.h>
@@ -18,9 +15,9 @@
 #endif
 
 #include "krad_system.h"
+#include "krad_convert.h"
+#include "krad_av.h"
 #include "krad_x11_common.h"
-
-#define KRAD_X11_XCB_ONLY 0
 
 typedef struct kr_x11 kr_x11;
 typedef struct kr_x11_path kr_x11_path;
@@ -40,7 +37,6 @@ struct kr_x11 {
   int fullscreen;
   int *krad_x11_shutdown;
 #ifdef KR_X11
-  Display *display;
   xcb_screen_t *screen;
   xcb_screen_iterator_t iter;
   xcb_connection_t *connection;
@@ -53,9 +49,6 @@ struct kr_x11 {
   uint8_t screen_bit_depth;
   int number;
   int capture_enabled;
-  int mouse_x;
-  int mouse_y;
-  int mouse_clicked;
 };
 
 struct kr_x11_path {
@@ -64,7 +57,6 @@ struct kr_x11_path {
 
 kr_x11 *kr_x11_create();
 void kr_x11_destroy(kr_x11 *x11);
-int kr_x11_capture_getptr(kr_x11 *x11, uint8_t **buffer);
-int kr_x11_capture(kr_x11 *x11, uint8_t *buffer);
+int kr_x11_capture(kr_x11 *x11, kr_image *image);
 void kr_x11_disable_capture(kr_x11 *x11);
 void kr_x11_enable_capture(kr_x11 *x11, uint32_t window_id);

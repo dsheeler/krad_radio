@@ -3,13 +3,14 @@ include $(top_srcdir)/common.mk
 lib_LTLIBRARIES = krad_radio/libkradclient.la krad_radio/libkradradio.la
 
 krad_radio_libkradradio_la_CXXFLAGS =
-krad_radio_libkradradio_la_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS) $(CAIRO_CFLAGS) $(XMMS2_CFLAGS) $(OPUS_CFLAGS)
+krad_radio_libkradradio_la_CFLAGS = $(XKBCOMMON_CFLAGS) $(X11_CFLAGS)\
+ $(CAIRO_CFLAGS) $(XMMS2_CFLAGS) $(OPUS_CFLAGS)
 krad_radio_libkradradio_la_LIBADD = $(OPUS_LIBS) krad_radio/libkradclient.la
 
-krad_radio_libkradradio_la_LIBADD += $(CAIRO_LIBS) $(FLAC_LIBS) $(JACK_LIBS) $(VORBIS_LIBS)\
-													$(XMMS2_LIBS) $(THEORA_LIBS) $(VPX_LIBS)\
-													$(LIBSWSCALE_LIBS) $(X11_LIBS) $(SAMPLERATE_LIBS) \
-													$(ALSA_LIBS) $(WAYLAND_LIBS) $(XKBCOMMON_LIBS)
+krad_radio_libkradradio_la_LIBADD += $(CAIRO_LIBS) $(FLAC_LIBS) $(JACK_LIBS)\
+ $(VORBIS_LIBS)	$(XMMS2_LIBS) $(THEORA_LIBS) $(VPX_LIBS) $(LIBSWSCALE_LIBS)\
+ $(X11_LIBS) $(SAMPLERATE_LIBS) $(ALSA_LIBS) $(WAYLAND_LIBS) $(XKBCOMMON_LIBS)\
+ $(LIBUDEV_LIBS)
 
 krad_radio_libkradradio_la_LDFLAGS = -shared -no-undefined \
  -version-info @KR_LT_CURRENT@:@KR_LT_REVISION@:@KR_LT_AGE@
@@ -80,6 +81,11 @@ krad_radio_libkradradio_la_SOURCES += krad_xmms2/krad_xmms2.c
 AM_CPPFLAGS += -DKR_XMMS2
 endif
 
+if HAVE_LIBUDEV
+krad_radio_libkradradio_la_SOURCES += krad_transponder/krad_adapter_monitor.c
+AM_CPPFLAGS += -DKR_LIBUDEV
+endif
+
 if HAVE_WAYLAND
 krad_radio_libkradradio_la_SOURCES += krad_wayland/krad_wayland.c
 AM_CPPFLAGS += -DKR_WAYLAND
@@ -106,8 +112,6 @@ krad_radio_libkradradio_la_SOURCES += krad_decklink/vendor/linux/DeckLinkAPIDisp
 AM_CPPFLAGS += -DKR_DECKLINK
 if KR_LINUX
 AM_CPPFLAGS += -Ikrad_decklink/vendor/linux
-else
-AM_CPPFLAGS += -Ikrad_decklink/vendor/osx
 endif
 endif
 

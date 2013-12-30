@@ -28,16 +28,7 @@ void decklink_adapter_path_create(kr_adapter_path *path) {
   kr_decklink_path_info info;
   dl = path->adapter->handle.decklink;
   memset(&info, 0, sizeof(kr_decklink_path_info));
-
-  /*info.width = 1920;
-  info.height = 1080;
-  info.num = 60000;
-  info.den = 1001;
-  strcpy(info.video_connector, "hdmi");
-  strcpy(info.audio_connector, "hdmi");*/
-
   info = path->info.info.decklink;
-
   kr_decklink_set_video_mode(dl, info.width, info.height, info.num, info.den);
   kr_decklink_set_video_input(dl, info.video_connector);
   kr_decklink_set_audio_input(dl, info.audio_connector);

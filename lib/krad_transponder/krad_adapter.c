@@ -7,12 +7,9 @@ typedef union {
   kr_wayland *wayland;
   kr_decklink *decklink;
   kr_x11 *x11;
-/*
   kr_alsa *alsa;
-  kr_fc2 *flycap;
-  kr_encoder *encoder;
-  kr_shmapi krad;
-*/
+  void *krad;
+  /*kr_encoder *encoder;*/
 } kr_adapter_handle;
 
 typedef union {
@@ -21,12 +18,9 @@ typedef union {
   kr_wayland_path *wayland;
   kr_decklink *decklink;
   kr_x11_path *x11;
-/*
   kr_alsa_path *alsa;
-  kr_fc2_path *flycap;
-  kr_encoder_path *encoder;
-  kr_shmapi_path krad;
-*/
+  void *krad;
+  /*kr_encoder_path *encoder;*/
 } kr_adapter_api_path;
 
 struct kr_adapter_path {
@@ -76,6 +70,8 @@ void adapter_path_process_thread_start(kr_adapter_path *path) {
 #include "adapters/v4l2.c"
 #include "adapters/decklink.c"
 #include "adapters/x11.c"
+#include "adapters/alsa.c"
+#include "adapters/krad.c"
 
 static int path_setup_check(kr_adapter_path_setup *setup);
 static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup);
@@ -110,6 +106,12 @@ static void path_create(kr_adapter_path *path, kr_adapter_path_setup *setup) {
     case KR_ADP_X11:
       x11_adapter_path_create(path);
       break;
+    case KR_ADP_ALSA:
+      x11_adapter_path_create(path);
+      break;
+    case KR_ADP_KRAD:
+      krad_adapter_path_create(path);
+      break;
     default:
       break;
   }
@@ -131,6 +133,12 @@ static void path_destroy(kr_adapter_path *path) {
       break;
     case KR_ADP_X11:
       x11_adapter_path_destroy(path);
+      break;
+    case KR_ADP_ALSA:
+      alsa_adapter_path_destroy(path);
+      break;
+    case KR_ADP_KRAD:
+      krad_adapter_path_destroy(path);
       break;
     default:
       break;
@@ -239,6 +247,12 @@ int kr_adapter_destroy(kr_adapter *adapter) {
     case KR_ADP_X11:
       x11_adapter_destroy(adapter);
       break;
+    case KR_ADP_ALSA:
+      alsa_adapter_destroy(adapter);
+      break;
+    case KR_ADP_KRAD:
+      krad_adapter_destroy(adapter);
+      break;
     default:
       break;
   }
@@ -269,6 +283,12 @@ kr_adapter *kr_adapter_create(kr_adapter_setup *setup) {
       return adapter;
     case KR_ADP_X11:
       x11_adapter_create(adapter);
+      return adapter;
+    case KR_ADP_ALSA:
+      alsa_adapter_create(adapter);
+      return adapter;
+    case KR_ADP_KRAD:
+      krad_adapter_create(adapter);
       return adapter;
     default:
       break;

@@ -3,7 +3,8 @@ int info_pack_to_text(char *text, uber_St *uber, int32_t max);
 typedef int (*info_pack_to_text_func)(char *text, void *st, int max);
 
 int info_pack_to_text(char *text, uber_St *uber, int32_t max) {
-  const info_pack_to_text_func to_text_functions[98] = {kr_compositor_path_type_to_text,
+  const info_pack_to_text_func to_text_functions[100] = {kr_alsa_info_to_text,
+  kr_alsa_path_info_to_text,kr_compositor_path_type_to_text,
   kr_compositor_subunit_type_to_text,kr_vector_type_to_text,
   kr_compositor_control_to_text,kr_compositor_controls_to_text,
   kr_sprite_info_to_text,kr_text_info_to_text,

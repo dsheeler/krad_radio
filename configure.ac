@@ -6,28 +6,21 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
 AM_MAINTAINER_MODE([enable])
 LT_INIT
-
 AM_SILENT_RULES([yes])
-
 KR_LT_CURRENT=$PACKAGE_VERSION
 KR_LT_REVISION=1
 KR_LT_AGE=0
-
 AC_SUBST(KR_LT_CURRENT)
 AC_SUBST(KR_LT_REVISION)
 AC_SUBST(KR_LT_AGE)
-
 AC_SUBST(KR_GIT_VERSION, m4_esyscmd([git describe --tags]))
 
 CFLAGS="-Wall $CFLAGS"
 CXXFLAGS="-g -Wall -Wno-write-strings $CXXFLAGS"
 
-case $host in
-  *-linux*)
-  AM_CONDITIONAL(KR_LINUX, true)
-  AM_CONDITIONAL(KR_ALSA, true)
-  AM_CONDITIONAL(KR_V4L2, true)
-esac
+AM_CONDITIONAL(KR_LINUX, true)
+AM_CONDITIONAL(KR_ALSA, true)
+AM_CONDITIONAL(KR_V4L2, true)
 
 AC_ARG_ENABLE([optimize], AS_HELP_STRING([--enable-optimize],[Enable Optimize]),
  [optimize=yes],[optimize=no])
@@ -91,6 +84,10 @@ PKG_CHECK_MODULES([NCURSES],[ncurses,panel,menu,form],[ncurses=yes],[ncurses=no]
 AS_IF([test "$ncurses" = "yes"],[AC_DEFINE([HAVE_NCURSES],[1],[Use NCURSES])])
 AM_CONDITIONAL([HAVE_NCURSES],[test "$ncurses" = "yes"])
 
+PKG_CHECK_MODULES([LIBUDEV],[libudev],[libudev=yes],[libudev=no])
+AS_IF([test "$libudev" = "yes"],[AC_DEFINE([HAVE_LIBUDEV],[1],[Use libudev])])
+AM_CONDITIONAL([HAVE_LIBUDEV],[test "$libudev" = "yes"])
+
 PKG_CHECK_MODULES([XKBCOMMON],[xkbcommon],[xkbcommon=yes],[xkbcommon=no])
 AS_IF([test "$xkbcommon" = "yes"],[AC_DEFINE([HAVE_XKBCOMMON],[1],[Use xkbcommon])])
 AM_CONDITIONAL([HAVE_XKBCOMMON],[test "$xkbcommon" = "yes"])
@@ -136,6 +133,7 @@ AC_MSG_RESULT([
            JACK: $jack
         ncurses: $ncurses
       turbojpeg: $turbojpeg
+        libudev: $libudev
         Wayland: $wayland
             X11: $x11
           XMMS2: $xmms2

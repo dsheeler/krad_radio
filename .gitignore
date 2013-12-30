@@ -141,3 +141,5 @@ clients/kr_example_client
 clients/kr_test_client
 clients/kr_snapshot
 tests/kr_pool_test
+tests/kr_adpmon_test
+tests/kr_alsa_test
