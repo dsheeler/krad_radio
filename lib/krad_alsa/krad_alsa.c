@@ -39,17 +39,20 @@ kr_alsa *kr_alsa_create(int card) {
     strncpy(info->longname, name, sizeof(info->longname));
     free(name);
   }
-  printk("Krad ALSA: Created card %d: %s -- %s\n", info->card, info->name,
+  printk("Krad ALSA: Created card %d: %s -- %s", info->card, info->name,
    info->longname);
 
   sprintf(dev_name, "hw:%d", info->card);
   ret = snd_ctl_open(&alsa->ctl, dev_name, 0);
-  if (ret == 0) {
-    printk("got %s ctl open\n", dev_name);
+  if (ret != 0) {
+    printk("Could not open %s", dev_name);
+    return alsa;
+  }
+  do {
     ret = snd_ctl_pcm_next_device(alsa->ctl, &pcm_device);
     if (pcm_device >= 0) {
-      printk("got subdevice! %d\n", pcm_device);
+      printk("got subdevice! %d", pcm_device);
     }
-  }
+  } while (pcm_device >= 0);
   return alsa;
 }
