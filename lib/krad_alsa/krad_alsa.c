@@ -51,7 +51,7 @@ kr_alsa *kr_alsa_create(int card) {
   do {
     ret = snd_ctl_pcm_next_device(alsa->ctl, &pcm_device);
     if (pcm_device >= 0) {
-      printk("got subdevice! %d", pcm_device);
+      printk("got pcm! %d", pcm_device);
     }
   } while (pcm_device >= 0);
   return alsa;
