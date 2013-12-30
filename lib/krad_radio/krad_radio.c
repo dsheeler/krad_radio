@@ -210,27 +210,57 @@ static void radio_cpu_monitor_callback(kr_radio *radio, uint32_t usage) {
   }
 }
 
-int kr_radio_daemon(char *sysname) {
+static int kr_was_launched_by_systemd() {
+  const char *e;
+  e = getenv("NOTIFY_SOCKET");
+  if (e) {
+    return 1;
+  }
+  return 0;
+}
 
+static void kr_systemd_notify(const char *data) {
+  const char *e;
+  struct sockaddr_un un = { .sun_family = AF_UNIX };
+  int fd;
+  e = getenv("NOTIFY_SOCKET");
+  if (e) {
+    strncpy(un.sun_path, e, sizeof(un.sun_path));
+    if (un.sun_path[0] == '@') {
+      un.sun_path[0] = 0;
+    }
+    fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+    if (fd < 0) return;
+    sendto(fd, data, strlen(data), MSG_NOSIGNAL, (struct sockaddr*) &un,
+     sizeof(un) - sizeof(un.sun_path) + strlen(e));
+    close(fd);
+  }
+}
+
+int kr_radio_daemon(char *sysname) {
   pid_t pid;
   kr_radio *radio;
-
   if (!krad_valid_sysname(sysname)) {
     return -1;
   }
-  pid = fork();
-  if (pid < 0) {
-    return -1;
-  } else if (pid > 0) {
-    return 0;
+  if (!kr_was_launched_by_systemd()) {
+    pid = fork();
+    if (pid < 0) {
+      return -1;
+    } else if (pid > 0) {
+      return 0;
+    }
+    krad_system_daemonize();
   }
-  krad_system_daemonize();
   krad_system_init();
   radio = radio_create(sysname);
   if (radio == NULL) {
     return -1;
   }
   radio_start(radio);
+  if (kr_was_launched_by_systemd()) {
+    kr_systemd_notify("READY=1");
+  }
   radio_exist(radio);
   radio_shutdown(radio);
   return 0;

@@ -121,17 +121,17 @@ int krad_radio_destroy(char *sysname) {
   wait_time_total = 0;
   clean_shutdown_wait_time_limit = 1500000;
   wait_time_interval = clean_shutdown_wait_time_limit / 40;
-  pid = krad_radio_pid (sysname);
+  pid = krad_radio_pid(sysname);
   if (pid != 0) {
-    kill (pid, 15);
+    kill(pid, 15);
     while ((pid != 0) && (wait_time_total < clean_shutdown_wait_time_limit)) {
-      usleep (wait_time_interval);
+      usleep(wait_time_interval);
       wait_time_total += wait_time_interval;
-      pid = krad_radio_pid (sysname);
+      pid = krad_radio_pid(sysname);
     }
-    pid = krad_radio_pid (sysname);
+    pid = krad_radio_pid(sysname);
     if (pid != 0) {
-      kill (pid, 9);
+      kill(pid, 9);
       return 1;
     } else {
       return 0;
@@ -149,26 +149,26 @@ void krad_radio_launch(char *sysname) {
   }
   if (pid > 0) {
     if (waitpid(pid, NULL, 0) != pid) {
-      failfast ("waitpid error launching daemon!");
+      failfast("waitpid error launching daemon!");
     }
     return;
   }
   pid = fork();
   if (pid < 0) {
-    exit (4);
+    exit(4);
   }
   if (pid > 0) {
-    exit (0);
+    exit(0);
   }
-  refp = freopen ("/dev/null", "r", stdin);
+  refp = freopen("/dev/null", "r", stdin);
   if (refp == NULL) {
     exit(5);
   }
-  refp = freopen ("/dev/null", "w", stdout);
+  refp = freopen("/dev/null", "w", stdout);
   if (refp == NULL) {
     exit(6);
   }
-  refp = freopen ("/dev/null", "w", stderr);
+  refp = freopen("/dev/null", "w", stderr);
   if (refp == NULL) {
     exit(7);
   }

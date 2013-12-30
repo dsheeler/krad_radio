@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <stddef.h>
 
 #ifndef KRAD_RADIO
 #define KRAD_RADIO 1
