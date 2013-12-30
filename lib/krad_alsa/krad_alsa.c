@@ -26,6 +26,7 @@ kr_alsa *kr_alsa_create(int card) {
   int pcm_device;
   int pcm_playback;
   int pcm_capture;
+  snd_ctl_card_info_t *card_info;
   snd_pcm_info_t *pcm_info;
   kr_alsa_info *info;
   pcm_device = -1;
@@ -34,28 +35,20 @@ kr_alsa *kr_alsa_create(int card) {
   info = &alsa->info;
   info->card = card;
   sprintf(dev_name, "hw:%d", info->card);
+  snd_ctl_card_info_alloca(&card_info);
   snd_pcm_info_alloca(&pcm_info);
-
-
-  ret = snd_card_get_name(info->card, &name);
-  if (ret == 0) {
-    strncpy(info->name, name, sizeof(info->name));
-    free(name);
-  }
-  ret = snd_card_get_longname(info->card, &name);
-  if (ret == 0) {
-    strncpy(info->longname, name, sizeof(info->longname));
-    free(name);
-  }
-
-
-  printk("Krad ALSA: Created card %d: %s -- %s", info->card, info->name,
-   info->longname);
   ret = snd_ctl_open(&alsa->ctl, dev_name, 0);
   if (ret != 0) {
     printk("Could not open %s", dev_name);
     return alsa;
   }
+  snd_ctl_card_info_clear(card_info);
+  snd_ctl_card_info(alsa->ctl, card_info);
+  name = snd_ctl_card_info_get_name(card_info);
+  strncpy(info->name, name, sizeof(info->name));
+  name = snd_ctl_card_info_get_longname(card_info);
+  strncpy(info->longname, name, sizeof(info->longname));
+  printk("Krad ALSA: Created for %s", info->name);
   do {
     ret = snd_ctl_pcm_next_device(alsa->ctl, &pcm_device);
     if ((ret == 0) && (pcm_device >= 0)) {
