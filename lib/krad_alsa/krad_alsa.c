@@ -39,9 +39,19 @@ kr_alsa *kr_alsa_create(int card) {
   if (ret == 0) {
     char** n = hints;
     while (*n != NULL) {
-      char *name = snd_device_name_get_hint(*n, "NAME");
+      name = snd_device_name_get_hint(*n, "NAME");
       if (name != NULL && 0 != strcmp("null", name)) {
         printk("pcm name: %s\n", name);
+        free(name);
+      }
+      name = snd_device_name_get_hint(*n, "DESC");
+      if (name != NULL && 0 != strcmp("null", name)) {
+        printk("pcm desc: %s\n", name);
+        free(name);
+      }
+      name = snd_device_name_get_hint(*n, "IOID");
+      if (name != NULL && 0 != strcmp("null", name)) {
+        printk("pcm ioid: %s\n", name);
         free(name);
       }
       n++;
