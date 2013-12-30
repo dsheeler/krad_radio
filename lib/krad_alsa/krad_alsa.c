@@ -22,9 +22,9 @@ kr_alsa *kr_alsa_create(int card) {
   int ret;
   char *name;
   char dev_name[8];
-  int sub_device;
+  int pcm_device;
   kr_alsa_info *info;
-  sub_device = 0;
+  pcm_device = 0;
   alsa = calloc(1, sizeof(kr_alsa));
   if (!alsa) return NULL;
   info = &alsa->info;
@@ -43,11 +43,12 @@ kr_alsa *kr_alsa_create(int card) {
    info->longname);
 
   sprintf(dev_name, "hw:%d", info->card);
-  ret = snd_ctl_open(&alsa->ctl, dev_name, sub_device);
+  ret = snd_ctl_open(&alsa->ctl, dev_name, 0);
   if (ret == 0) {
-    ret = snd_ctl_pcm_next_device(alsa->ctl, &sub_device);
-    if (sub_device >= 0) {
-      printf("got subdevice! %d\n", sub_device);
+    printk("got %s ctl open\n", dev_name);
+    ret = snd_ctl_pcm_next_device(alsa->ctl, &pcm_device);
+    if (pcm_device >= 0) {
+      printk("got subdevice! %d\n", pcm_device);
     }
   }
   return alsa;
