@@ -22,6 +22,8 @@ kr_alsa *kr_alsa_create(int card) {
   int ret;
   char *name;
   char dev_name[8];
+  char *pcm_name;
+  char *pcm_subname;
   int pcm_device;
   int pcm_playback;
   int pcm_capture;
@@ -76,8 +78,10 @@ kr_alsa *kr_alsa_create(int card) {
       if (ret == 0) {
         pcm_capture = 1;
       }
-      printk("PCM %d: Capture: %d Playback: %d", pcm_device, pcm_capture,
-       pcm_playback);
+      pcm_name = snd_pcm_info_get_name(pcm_info);
+      pcm_subname = snd_pcm_info_get_subdevice_name(pcm_info);
+      printk("PCM %d: %s - %s Capture: %d Playback: %d", pcm_device, pcm_name,
+       pcm_subname, pcm_capture, pcm_playback);
     }
   } while (pcm_device >= 0);
   return alsa;
