@@ -202,38 +202,49 @@ static int test_wayland_output_create(kr_client *client) {
 }
 
 
-int run_tests(kr_client *client, int test_kode) {
+int run_test(kr_client *client, char *test) {
   int ret;
-  ret = test_wayland_output_create(client);
-  if (ret != 0) return ret;
-  if (test_kode == 4) {
+  ret = -1;
+  if ((strlen(test) == strlen("wayland")) && (strcmp(test, "wayland") == 0)) {
+    ret = test_wayland_output_create(client);
+  }
+  if ((strlen(test) == strlen("x11")) && (strcmp(test, "x11") == 0)) {
     ret = test_x11_input_create(client, 0);
-     if (ret != 0) return ret;
-  } else {
+    if (ret != 0) return ret;
+  }
+  if ((strlen(test) == strlen("jack")) && (strcmp(test, "jack") == 0)) {
     ret = test_jack_input_create(client);
     if (ret != 0) return ret;
     ret = test_jack_output_create(client);
     if (ret != 0) return ret;
-    if (test_kode < 3) {
-      ret = test_v4l2_input_create(client, 0);
-      if (ret != 0) return ret;
-    } else {
-      ret = test_decklink_input_create(client, 0);
-      if (ret != 0) return ret;
-    }
   }
-  return 0;
+  if ((strlen(test) == strlen("v4l2")) && (strcmp(test, "v4l2") == 0)) {
+      ret = test_v4l2_input_create(client, 0);
+    if (ret != 0) return ret;
+  }
+  if ((strlen(test) == strlen("decklink")) && (strcmp(test, "decklink") == 0)) {
+      ret = test_decklink_input_create(client, 0);
+    if (ret != 0) return ret;
+  }
+  if ((strlen(test) == strlen("alsa")) && (strcmp(test, "alsa") == 0)) {
+    if (ret != 0) return ret;
+  }
+  return ret;
 }
 
 int main (int argc, char *argv[]) {
   kr_client *client;
   char *sysname;
+  const char *tests;
   int ret;
+  int i;
+  tests = "jack decklink wayland x11 v4l2 alsa";
   client = NULL;
   sysname = NULL;
   ret = 0;
-  if (argc < 2) {
-    fprintf(stderr, "Specify a station sysname!\n");
+  if (argc < 3) {
+    fprintf(stderr, "Usage: %s [STATION] [TESTS]\nTests: %s\n",
+     "kr_test_client", tests);
     return 1;
   }
   if (krad_valid_host_and_port(argv[1])) {
@@ -258,7 +269,10 @@ int main (int argc, char *argv[]) {
   }
   printf("Connected to %s!\n", sysname);
   printf("Running Tests\n");
-  ret = run_tests(client, argc);
+  for (i = 0; i < (argc - 2); i++) {
+    ret = run_test(client, argv[2 + i]);
+    if (ret != 0) break;
+  }
   printf("Disconnecting from %s..\n", sysname);
   kr_disconnect(client);
   printf("Disconnected from %s.\n", sysname);
