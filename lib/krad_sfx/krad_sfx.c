@@ -154,10 +154,14 @@ void kr_sfx_remove(kr_sfx *sfx, int effect_num) {
   sfx->effect[effect_num].active = 0;
 }
 
+/*void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id,
+ int control, float value, int duration, kr_easing easing, void *user) {*/
 void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id,
- int control, float value, int duration, kr_easing easing, void *user) {
+ char *control_str, float value, int duration, kr_easing easing, void *user) {
 
   int c;
+  int control;
+  control = kr_sfxeftctlstr(sfx->effect[effect_num].type, control_str);
 
   for (c = 0; c < sfx->channels; c++) {
     switch (sfx->effect[effect_num].type) {
