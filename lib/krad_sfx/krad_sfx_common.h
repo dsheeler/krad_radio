@@ -74,5 +74,6 @@ struct kr_analog_info {
 char *kr_strsfxeft(kr_sfx_effect_type type);
 char *kr_strsfxeftctl(kr_sfx_effect_control control);
 kr_sfx_effect_type kr_sfxeftstr(char *string);
+int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string);
 
 #endif

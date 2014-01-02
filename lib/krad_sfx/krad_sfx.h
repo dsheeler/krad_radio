@@ -44,6 +44,4 @@ int kr_sfx_effect_info(kr_sfx *sfx, int num, void *effect_info);
 void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id, char *control_str,
  float value, int duration, kr_easing easing, void *user);
 
-int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string);
-
 #endif

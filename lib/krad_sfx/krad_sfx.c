@@ -169,15 +169,15 @@ void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id,
         break;
       case KR_SFX_EQ:
         switch (control) {
-          case KR_EQ_DB:
+          case KR_SFX_DB:
             kr_eq_band_set_db(sfx->effect[effect_num].effect[c],
              control_id, value, duration, easing, user);
             break;
-          case KR_EQ_BW:
+          case KR_SFX_BW:
             kr_eq_band_set_bw(sfx->effect[effect_num].effect[c],
              control_id, value, duration, easing, user);
             break;
-          case KR_EQ_HZ:
+          case KR_SFX_HZ:
             kr_eq_band_set_hz(sfx->effect[effect_num].effect[c],
              control_id, value, duration, easing, user);
             break;
@@ -186,11 +186,11 @@ void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id,
       case KR_SFX_LOWPASS:
       case KR_SFX_HIGHPASS:
         switch (control) {
-          case KR_PASS_BW:
+          case KR_SFX_BW:
             kr_pass_set_bw(sfx->effect[effect_num].effect[c],
              value, duration, easing, user);
             break;
-          case KR_PASS_HZ:
+          case KR_SFX_HZ:
             kr_pass_set_hz(sfx->effect[effect_num].effect[c], value,
              duration, easing, user);
             break;
@@ -198,11 +198,11 @@ void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id,
         break;
       case KR_SFX_ANALOG:
         switch (control) {
-          case KR_ANALOG_BLEND:
+          case KR_SFX_BLEND:
             kr_analog_set_blend(sfx->effect[effect_num].effect[c],
              value, duration, easing, user);
             break;
-          case KR_ANALOG_DRIVE:
+          case KR_SFX_DRIVE:
             kr_analog_set_drive(sfx->effect[effect_num].effect[c],
              value, duration, easing, user);
             break;
@@ -257,41 +257,4 @@ int kr_sfx_effect_info(kr_sfx *sfx, int num, void *effect_info) {
   }
 
   return -1;
-}
-
-int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string) {
-  if (type == KR_SFX_EQ) {
-    if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
-      return KR_EQ_DB;
-    }
-    if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
-      return KR_EQ_HZ;
-    }
-    if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
-      return KR_EQ_BW;
-    }
-    if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-      return KR_EQ_BW;
-    }
-  }
-  if (((type == KR_SFX_LOWPASS) || (type == KR_SFX_HIGHPASS))) {
-    if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
-      return KR_PASS_HZ;
-    }
-    if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
-      return KR_PASS_BW;
-    }
-    if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
-      return KR_PASS_BW;
-    }
-  }
-  if (type == KR_SFX_ANALOG) {
-    if ((strlen(string) == 5) && (strncmp(string, "blend", 5) == 0)) {
-      return KR_ANALOG_BLEND;
-    }
-    if ((strlen(string) == 5) && (strncmp(string, "drive", 5) == 0)) {
-      return KR_ANALOG_DRIVE;
-    }
-  }
-  return 0;
 }

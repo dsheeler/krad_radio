@@ -51,3 +51,40 @@ kr_sfx_effect_type kr_sfxeftstr(char *string) {
   }
   return KR_SFX_NONE;
 }
+
+int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string) {
+  if (type == KR_SFX_EQ) {
+    if ((strlen(string) == 2) && (strncmp(string, "db", 2) == 0)) {
+      return KR_SFX_DB;
+    }
+    if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
+      return KR_SFX_HZ;
+    }
+    if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
+      return KR_SFX_BW;
+    }
+    if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
+      return KR_SFX_BW;
+    }
+  }
+  if (((type == KR_SFX_LOWPASS) || (type == KR_SFX_HIGHPASS))) {
+    if ((strlen(string) == 2) && (strncmp(string, "hz", 2) == 0)) {
+      return KR_SFX_HZ;
+    }
+    if ((strlen(string) == 2) && (strncmp(string, "bw", 2) == 0)) {
+      return KR_SFX_BW;
+    }
+    if ((strlen(string) == 9) && (strncmp(string, "bandwidth", 9) == 0)) {
+      return KR_SFX_BW;
+    }
+  }
+  if (type == KR_SFX_ANALOG) {
+    if ((strlen(string) == 5) && (strncmp(string, "blend", 5) == 0)) {
+      return KR_SFX_BLEND;
+    }
+    if ((strlen(string) == 5) && (strncmp(string, "drive", 5) == 0)) {
+      return KR_SFX_DRIVE;
+    }
+  }
+  return 0;
+}
