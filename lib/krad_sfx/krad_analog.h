@@ -23,30 +23,7 @@
 #define KR_ANALOG_BLEND_MIN -10.0f
 #define KR_ANALOG_BLEND_MAX 10.0f
 
-typedef struct {
-  float sample_rate;
-  float drive;
-  float blend;
-  float prev_drive;
-  float prev_blend;
-  kr_easer drive_easer;
-  kr_easer blend_easer;
-  float prev_med;
-  float prev_out;
-  float rdrive;
-  float rbdr;
-  float kpa;
-  float kpb;
-  float kna;
-  float knb;
-  float ap;
-  float an;
-  float imr;
-  float kc;
-  float srct;
-  float sq;
-  float pwrq;
-} kr_analog;
+typedef struct kr_analog kr_analog;
 
 kr_analog *kr_analog_create(int sample_rate);
 void kr_analog_destroy(kr_analog *analog);
@@ -62,5 +39,7 @@ void kr_analog_set_drive(kr_analog *analog, float drive, int duration,
  kr_easing easing, void *user);
 void kr_analog_set_blend(kr_analog *analog, float blend, int duration,
  kr_easing easing, void *user);
+
+int kr_analog_info_get(kr_analog *analog, kr_analog_info *info);
 
 #endif

@@ -1,5 +1,21 @@
 #include "krad_eq.h"
 
+typedef struct {
+  biquad filter;
+  float db;
+  float bw;
+  float hz;
+  kr_easer db_easer;
+  kr_easer bw_easer;
+  kr_easer hz_easer;
+} kr_eq_band;
+
+struct kr_eq {
+  float new_sample_rate;
+  float sample_rate;
+  kr_eq_band band[KR_EQ_MAX_BANDS];
+};
+
 void kr_eq_band_set_db(kr_eq *eq, int band_num, float db, int duration,
  kr_easing easing, void *user) {
   if (band_num >= KR_EQ_MAX_BANDS) return;
@@ -119,4 +135,15 @@ kr_eq *kr_eq_create(int sample_rate) {
 
 void kr_eq_destroy(kr_eq *eq) {
   free(eq);
+}
+
+int kr_eq_info_get(kr_eq *eq, kr_eq_info *info) {
+  int i;
+  if ((eq == NULL) || (info == NULL)) return -1;
+  for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
+    info->band[i].db = eq->band[i].db;
+    info->band[i].bw = eq->band[i].bw;
+    info->band[i].hz = eq->band[i].hz;
+  }
+  return 0;
 }

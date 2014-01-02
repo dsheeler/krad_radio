@@ -27,21 +27,7 @@
 #define KR_EQ_HZ_MIN 20.0
 #define KR_EQ_HZ_MAX 20000.0
 
-typedef struct {
-  biquad filter;
-  float db;
-  float bw;
-  float hz;
-  kr_easer db_easer;
-  kr_easer bw_easer;
-  kr_easer hz_easer;
-} kr_eq_band;
-
-typedef struct {
-  float new_sample_rate;
-  float sample_rate;
-  kr_eq_band band[KR_EQ_MAX_BANDS];
-} kr_eq;
+typedef struct kr_eq kr_eq;
 
 kr_eq *kr_eq_create(int sample_rate);
 void kr_eq_destroy(kr_eq *eq);
@@ -57,5 +43,7 @@ void kr_eq_band_set_bw(kr_eq *eq, int band_num, float bw,
  int duration, kr_easing easing, void *user);
 void kr_eq_band_set_hz(kr_eq *eq, int band_num, float hz, int duration,
  kr_easing easing, void *user);
+
+int kr_eq_info_get(kr_eq *eq, kr_eq_info *info);
 
 #endif

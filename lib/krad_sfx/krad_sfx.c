@@ -229,18 +229,13 @@ static void effect_control(kr_sfx *sfx, kr_sfx_effect_type effect, int control_i
 
 static int effect_info(kr_sfx *sfx, kr_sfx_effect_type effect, void *info) {
   int e;
-  int i;
   kr_sfx_effect_info ei;
   for (e = 0; e < KR_SFX_MAX; e++) {
     if ((sfx->effect[e].active == 1) && (sfx->effect[e].type == effect)) {
       switch (effect) {
         case KR_SFX_EQ:
           ei.eq = (kr_eq_info *)info;
-          for (i = 0; i < KR_EQ_MAX_BANDS; i++) {
-            ei.eq->band[i].db = sfx->effect[e].ctx[0].eq->band[i].db;
-            ei.eq->band[i].bw = sfx->effect[e].ctx[0].eq->band[i].bw;
-            ei.eq->band[i].hz = sfx->effect[e].ctx[0].eq->band[i].hz;
-          }
+          kr_eq_info_get(sfx->effect[e].ctx[0].eq, ei.eq);
           return 0;
         case KR_SFX_LOWPASS:
           ei.lp = (kr_lowpass_info *)info;
@@ -252,8 +247,7 @@ static int effect_info(kr_sfx *sfx, kr_sfx_effect_type effect, void *info) {
           return 0;
         case KR_SFX_ANALOG:
           ei.analog = (kr_analog_info *)info;
-          ei.analog->drive = sfx->effect[e].ctx[0].analog->drive;
-          ei.analog->blend = sfx->effect[e].ctx[0].analog->blend;
+          kr_analog_info_get(sfx->effect[e].ctx[0].analog, ei.analog);
           return 0;
        default:
           break;
