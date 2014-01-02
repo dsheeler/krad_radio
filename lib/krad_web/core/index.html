@@ -4,14 +4,13 @@
   <title>Krad Radio</title>
   <meta charset="utf-8">
   <link rel="shortcut icon" 
-  href=http://europa.kradradio.com:8040/dev/favicon.ico" />
-  <link rel="stylesheet"
-  href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+  href="http://europa.kradradio.com:8040/dev/favicon.ico">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <script src="//code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+  <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
   <script src="//europa.kradradio.com:8040/dev/mootools-core-1.4.5-full-nocompat.js"></script>
   <script src="//europa.kradradio.com:8040/dev/mootools-more-1.4.0.1.js"></script>
-  <script type="text/javascript" src="krad.js"></script>
+  <script src="krad.js"></script>
 <style>
 
 @font-face {
@@ -48,9 +47,6 @@
 .ultrablue { background-color: #0083FE; }
 
 body {
-   font-family: HelveticaNeueW0195Black,Helvetica,sans;
-  -moz-user-select: none;
-  -webkit-user-select: none;
   background-color: grey;
   color: #ccc;
   margin: 0;
@@ -66,7 +62,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .clock {
-  font-family: Digital7Mono,HelveticaNeueW0195Black,Helvetica,sans;
+  font-family: Digital7Mono;
   background-color: black;
   color: red;
   text-align: center;
@@ -85,6 +81,8 @@ h1, h2, h3, h4, h5, h6 {
 .volume_control h6 {
   font-size: 115%;
   margin: 4%;
+  text-align: left;
+  font-family: HelveticaNeueW0195Black;
 }
 
 .analog_meter_wrapper {
@@ -489,11 +487,11 @@ li.alt {
                border: 0.0625em solid grey; cursor: pointer; float: left; }
 
 
-  </style>
-    <style>
 
 .krad_button_very_small, .krad_button3 {
   float: left;
+  -moz-user-select: none;
+  -webkit-user-select: none;
 }
 
     /* d2f700 */
@@ -652,7 +650,7 @@ li.alt {
       padding-bottom: 0.4375em;
       font-size: 1em;
       font-weight: bold;
-      font-family: Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
@@ -709,7 +707,7 @@ li.alt {
       padding-bottom: 0.4375em;
       font-size: 1em;
       font-weight: bold;
-      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
