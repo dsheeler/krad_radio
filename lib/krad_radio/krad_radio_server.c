@@ -1,4 +1,4 @@
-#include "krad_radio_interface.h"
+#include "krad_radio_server.h"
 #include "krad_radio_internal.h"
 
 static void krad_radio_remote_rep_to_ebml(kr_remote_t *remote, kr_ebml2_t *ebml);

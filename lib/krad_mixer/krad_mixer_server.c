@@ -1,4 +1,4 @@
-#include "krad_mixer_interface.h"
+#include "krad_mixer_server.h"
 
 int kr_mixer_command(kr_io2_t *in, kr_io2_t *out, kr_radio_client *client) {
   kr_mixer_info mixer_info;
