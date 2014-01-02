@@ -8,38 +8,42 @@ char *ebml_pack_or_unpack(uint8_t type) {
   }
 }
 
-char *memb_type_to_str(struct struct_memb_def *memb) {
+char *memb_type_to_str(member_info *memb) {
 
-  if (!strcmp(memb->type,"int") || !strncmp(memb->type,"int32_t",7)) {
-    if (!memb->pointer)
+  char *type;
+
+  type = member_type_to_str(memb->type);
+
+  if (!strcmp(type,"int") || !strncmp(type,"int32_t",7)) {
+    if (!memb->ptr)
       return "_int32";
   }
 
-  if (!strcmp(memb->type,"uint") || !strncmp(memb->type,"uint32_t",8)) {
-    if (!memb->pointer)
+  if (!strcmp(type,"uint") || !strncmp(type,"uint32_t",8)) {
+    if (!memb->ptr)
       return "_uint32";
   }
 
-  if (!strncmp(memb->type,"int64_t",7)) {
-    if (!memb->pointer)
+  if (!strncmp(type,"int64_t",7)) {
+    if (!memb->ptr)
       return "_int64";
   }
 
-  if (!strncmp(memb->type,"uint64_t",8)) {
-    if (!memb->pointer)
+  if (!strncmp(type,"uint64_t",8)) {
+    if (!memb->ptr)
       return "_uint64";
   }
 
-  if (!strncmp(memb->type,"float",5)) {
-    if (!memb->pointer)
+  if (!strncmp(type,"float",5)) {
+    if (!memb->ptr)
       return "_float";
   }
 
-  if (!strncmp(memb->type,"char",4)) {
-    if (memb->array) {
+  if (!strncmp(type,"char",4)) {
+    if (memb->arr) {
       return "_string";
-    } else  if (memb->pointer) {
-        if (memb->pointer == 1) {
+    } else  if (memb->ptr) {
+        if (memb->ptr == 1) {
           return "_string";
         } else {
           return NULL;
@@ -52,18 +56,18 @@ char *memb_type_to_str(struct struct_memb_def *memb) {
   return NULL;
 }
 
-static void codegen_ebml_union_content_from_type(struct struct_def *def, 
+static void codegen_ebml_union_content_from_type(struct_data *def, 
   char *name, int type, FILE *out) {
   int i;
 
-  for (i = 0; i < def->members; i++) {
-    if (codegen_string_to_enum(def->members_info[i].type)) {
-      char uppercased[strlen(def->members_info[i].type)+1];
-      uppercase(def->members_info[i].type,uppercased);
+  for (i = 0; i < def->info.member_count; i++) {
+    if (memb_struct_check(&def->info.members[i])) {
+      char uppercased[strlen(def->info.members[i].type_info.substruct_info.type_name)+1];
+      uppercase(def->info.members[i].type_info.substruct_info.type_name,uppercased);
       fprintf(out,"    case %d: {\n",i);
 
       fprintf(out,"      uber.actual = &(actual->%s);\n      ",
-        def->members_info[i].name);
+        def->info.members[i].name);
 
       if (type) {
         fprintf(out,"uber.type = EBML_%s;\n",uppercased);
@@ -81,14 +85,14 @@ static void codegen_ebml_union_content_from_type(struct struct_def *def,
   return;
 }
 
-void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, FILE *out) {
+void codegen_ebml(struct_data *def, char *type, ebml_ftype ebml_fun_type, FILE *out) {
 
   int i;
   int last;
   char *ebml_fname;
-  struct struct_memb_def *members[def->members];
+  member_info *members[def->info.member_count];
 
-  if (def->isenum) {
+  if (def->info.type == ST_ENUM) {
     if (ebml_fun_type) {
       fprintf(out,"  res += %s(ebml, 0x%x, *actual);\n","kr_ebml_pack_int32",0xE1);
     } else {
@@ -97,33 +101,29 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
     return;
   }
 
-  if (def->isunion) {
+  if (def->info.type == ST_UNION) {
     fprintf(out,"  switch (uber_actual->type) {\n");
-    codegen_ebml_union_content_from_type(def,def->name,ebml_fun_type,out);
+    codegen_ebml_union_content_from_type(def,def->info.name,ebml_fun_type,out);
     fprintf(out,"  }\n\n");
     return;
   }
 
-  for (i = last = 0; i < def->members; i++) {
-    if (memb_type_to_str(&def->members_info[i]) 
-      || codegen_string_to_enum(def->members_info[i].type)) {
-        members[last] = &def->members_info[i];
+  for (i = last = 0; i < def->info.member_count; i++) {
+    if (memb_type_to_str(&def->info.members[i]) 
+      || memb_struct_check(&def->info.members[i])) {
+        members[last] = &def->info.members[i];
         last++;
-      } else if (def->members_info[i].sub && def->members_info[i].sub->isunion && (i > 0)) {
-        members[last] = &def->members_info[i-1];
-        members[last+1] = &def->members_info[i];
-        last += 2;
-      }
+    } 
   } 
 
   for (i = 0; i < last; i++) {
     if ( (ebml_fname = memb_type_to_str(members[i])) ) {
-      if ((members[i]->array || members[i]->array_str_val) && strncmp(members[i]->type,"char",4)) {
-        if (members[i]->array) {
-          fprintf(out,"  for (i = 0; i < %d; i++) {\n",members[i]->array);
+      if ((members[i]->arr || members[i]->len_def[0]) && members[i]->type != T_CHAR) {
+        if (members[i]->arr) {
+          fprintf(out,"  for (i = 0; i < %d; i++) {\n",members[i]->arr);
         }
         else {
-          fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->array_str_val);
+          fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->len_def);
         }
 
         if (ebml_fun_type) {
@@ -135,7 +135,7 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
         }
 
         fprintf(out,"  }\n");
-      } else if (!strncmp(members[i]->type,"char",4)) {
+      } else if (members[i]->type == T_CHAR) {
         if (ebml_fun_type) {
           fprintf(out,"  res += %s%s(ebml, 0x%x, actual->%s);\n",
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,0xE1,members[i]->name);
@@ -153,13 +153,13 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name);
         }
       }
-    } else if (codegen_is_union(members[i]->type) && (i > 0) && codegen_string_to_enum (members[i-1]->type)) {
+    } else if (memb_struct_check(members[i-1]) && codegen_is_union(members[i]->type_info.substruct_info.type_name) && (i > 0)) {
 
-      char uppercased[strlen(members[i]->type)+1];
-      uppercase(members[i]->type,uppercased);
+      char uppercased[strlen(members[i]->type_info.substruct_info.type_name)+1];
+      uppercase(members[i]->type_info.substruct_info.type_name,uppercased);
 
       fprintf(out,"  index = %s_to_index(actual->%s);\n",
-          members[i-1]->type,members[i-1]->name);
+          members[i-1]->type_info.substruct_info.type_name,members[i-1]->name);
  
       fprintf(out,"  uber_sub.type = index;\n");
       fprintf(out,"  uber_sub.actual = &(actual->%s);\n",members[i]->name);
@@ -175,16 +175,16 @@ void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, 
       }
 
 
-    } else if (codegen_string_to_enum(members[i]->type)) {
-      char uppercased[strlen(members[i]->type)+1];
-      uppercase(members[i]->type,uppercased);
+    } else if (memb_struct_check(members[i])) {
+      char uppercased[strlen(members[i]->type_info.substruct_info.type_name)+1];
+      uppercase(members[i]->type_info.substruct_info.type_name,uppercased);
 
-      if ((members[i]->array || members[i]->array_str_val) && strncmp(members[i]->type,"char",4)) {
-        if (members[i]->array) {
-          fprintf(out,"  for (i = 0; i < %d; i++) {\n",members[i]->array);
+      if ((members[i]->arr || members[i]->len_def[0]) && members[i]->type != T_CHAR) {
+        if (members[i]->arr) {
+          fprintf(out,"  for (i = 0; i < %d; i++) {\n",members[i]->arr);
         }
         else {
-          fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->array_str_val);
+          fprintf(out,"  for (i = 0; i < %s; i++) {\n",members[i]->len_def);
         }
         if (ebml_fun_type) {
           fprintf(out,"    uber.actual = &(actual->%s[i]);\n    uber.type = EBML_%s;\n",

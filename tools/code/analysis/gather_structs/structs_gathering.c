@@ -30,95 +30,194 @@ static int32_t clean_string (char *input, char *output) {
 }
 
 static void get_memb_data_info (char *line, 
-  struct struct_memb_def *memb) {
+  member_info *memb) {
 
   char *start;
   char *end;
-  char *p[2];
+  char *info[4];
   int i = 0;
 
   start = strstr(line,"/*");
   end = strstr(line,"*/");
+  memset(info,0,sizeof(info));
 
   if (start && end) {
-    start = &start[2];
+    info[0] = &start[2];
     end[0] = '\0';
-    p[0] = start;
-    p[1] = NULL;
 
-    if (!strncmp(memb->type,"char",4)) {
-      if (memb->array) {
-        memb->data_info.info.int_info[0] = 0;
-        memb->data_info.info.int_info[1] = 1;
-        memb->data_info.info.int_info[2] = memb->array - 1;
-        memb->data_info.type = MEMB_TYPE_STRING;
-        end[0] = '*';
-        return;
-      }
+    strtod(info[0],&info[1]);
+
+    if (info[0] == info[1]) {
+      info[0] = NULL;
+    } else {
+      info[1]++;
+      i++;
     }
 
-    do {
+    strtod(info[1],&info[2]);
 
-      if (!strncmp(memb->type,"int",3)) {
-        memb->data_info.info.int_info[i] = strtod(p[0],&p[1]);
-        memb->data_info.type = MEMB_TYPE_INT;
-      } else if (!strncmp(memb->type,"float",5)) {
-        memb->data_info.info.float_info[i] = strtof(p[0],&p[1]);
-        memb->data_info.type = MEMB_TYPE_FLOAT;
-      } else if (!strncmp(memb->type,"uint",4)) {
-        memb->data_info.info.int_info[i] = strtod(p[0],&p[1]);
-        memb->data_info.type = MEMB_TYPE_UINT;
-      } else {
-        strtod(p[0],&p[1]);
-      }
-
-      if (p[0] == p[1]) {
-        break;
-      }
-
-      if (i == 3) {
-        break;
-      }
-
+    if (info[1] == info[2]) {
+      info[1] = NULL;
+    } else {
+      info[2]++;
       i++;
+    }
 
-      p[0] = &p[1][1];
-      p[1] = NULL;
-    } while (1);
+    strtod(info[2],&info[3]);
 
-
-    if (i == 2) {
-      if (!strncmp(memb->type,"float",5)) {
-        float tmp;
-        tmp = memb->data_info.info.float_info[1];
-        memb->data_info.info.float_info[1] = memb->data_info.info.float_info[0];
-        memb->data_info.info.float_info[0] = 0.00f;
-        memb->data_info.info.float_info[2] = tmp;
-        memb->data_info.type = MEMB_TYPE_FLOAT;
-      } else {
-        int tmp;
-        tmp = memb->data_info.info.int_info[1];
-        memb->data_info.info.int_info[1] = memb->data_info.info.int_info[0];
-        memb->data_info.info.int_info[0] = 0.00f;
-        memb->data_info.info.int_info[2] = tmp;
-      }
+    if (info[2] == info[3]) {
+      info[2] = NULL;
+    } else {
+      i++;
     }
 
     end[0] = '*';
   }
 
+  switch(memb->type) {
+    case T_CHAR: {
+      if (memb->arr) {
+        //memb->type_info.char_info.init
+        //memb->type_info.char_info.notnull;
+        // TO-DO when oneman takes a (hopefully) final decision on this.
+      }
+      break;
+    }
+    case T_INT32: {
+      if (i == 3) {
+        memb->type_info.int32_info.init = atoi(info[0]);
+        memb->type_info.int32_info.min = atoi(info[1]);
+        memb->type_info.int32_info.max = atoi(info[2]);
+      } else if (i == 2) {
+        memb->type_info.int32_info.min = atoi(info[0]);
+        memb->type_info.int32_info.max = atoi(info[1]);
+      }
+      break;
+    }
+    case T_INT64: {
+      if (i == 3) {
+        memb->type_info.int64_info.init = atol(info[0]);
+        memb->type_info.int64_info.min = atol(info[1]);
+        memb->type_info.int64_info.max = atol(info[2]);
+      } else if (i == 2) {
+        memb->type_info.int64_info.min = atol(info[0]);
+        memb->type_info.int64_info.max = atol(info[1]);
+      }
+      break;
+    }
+    case T_UINT32: {
+      if (i == 3) {
+        memb->type_info.uint32_info.init = atoi(info[0]);
+        memb->type_info.uint32_info.min = atoi(info[1]);
+        memb->type_info.uint32_info.max = atoi(info[2]);
+      } else if (i == 2) {
+        memb->type_info.uint32_info.min = atoi(info[0]);
+        memb->type_info.uint32_info.max = atoi(info[1]);
+      }
+      break;
+    }
+    case T_UINT64: {
+      if (i == 3) {
+        memb->type_info.uint64_info.init = atol(info[0]);
+        memb->type_info.uint64_info.min = atol(info[1]);
+        memb->type_info.uint64_info.max = atol(info[2]);
+      } else if (i == 2) {
+        memb->type_info.uint64_info.min = atol(info[0]);
+        memb->type_info.uint64_info.max = atol(info[1]);
+      }
+      break;
+    }
+    case T_FLOAT: {
+      if (i == 3) {
+        memb->type_info.float_info.init = atof(info[0]);
+        memb->type_info.float_info.min = atof(info[1]);
+        memb->type_info.float_info.max = atof(info[2]);
+      } else if (i == 2) {
+        memb->type_info.float_info.min = atof(info[0]);
+        memb->type_info.float_info.max = atof(info[1]);
+      }
+      break;
+    }
+    case T_DOUBLE: {
+      if (i == 3) {
+        memb->type_info.double_info.init = atof(info[0]);
+        memb->type_info.double_info.min = atof(info[1]);
+        memb->type_info.double_info.max = atof(info[2]);
+      } else if (i == 2) {
+        memb->type_info.double_info.min = atof(info[0]);
+        memb->type_info.double_info.max = atof(info[1]);
+      }
+      break;
+    }
+    default: break;
+  }
+
   return;
 }
 
+member_type str_to_member_type(char *str) {
+  if (!strncmp(str,"int32_t",7) || !strcmp(str,"int")) {
+    return T_INT32;
+  } else if (!strncmp(str,"int64_t",7)) {
+    return T_INT64;
+  } else if (!strncmp(str,"char",4)) {
+    return T_CHAR;
+  } else if (!strncmp(str,"uint32_t",8) || !strcmp(str,"uint")) {
+    return T_UINT32;
+  } else if (!strncmp(str,"uint64_t",8)) {
+    return T_UINT64;
+  } else if (!strncmp(str,"float",5)) {
+    return T_FLOAT;
+  } else if (!strncmp(str,"double",6)) {
+    return T_DOUBLE;
+  } else {
+    return T_STRUCT;
+  }
+}
+
+char *member_type_to_str(member_type type) {
+  switch (type) {
+    case T_CHAR: {
+      return "char";
+    }
+    case T_INT32: {
+      return "int32_t";
+    }
+    case T_INT64: {
+      return "int64_t";
+    }
+    case T_UINT32: {
+      return "uint32_t";
+    }
+    case T_UINT64: {
+      return "uint64_t";
+    }
+    case T_FLOAT: {
+      return "float";
+    }
+    case T_DOUBLE: {
+      return "double";
+    }
+    default: return "";
+  }
+}
+
 static void get_memb_name_and_type(char *line, 
-  struct struct_memb_def *memb) {
+  member_info *memb) {
 
   char *p;
   char *p2;
   char *back;
+  char type_name[64];
   char clean[strlen(line)];
   clean_string(line,clean);
-  asprintf(&(memb->type),"%s",clean);
+
+  snprintf(type_name,64,"%s",clean);
+  memb->type = str_to_member_type(clean);
+
+  if (memb->type == T_STRUCT) {
+    snprintf(memb->type_info.substruct_info.type_name,NAME_MAX_LEN,"%s",clean);
+  }
 
   p = strchr(line,';');
   p[0] = '\0';
@@ -128,31 +227,29 @@ static void get_memb_name_and_type(char *line,
     /* it's a pointer */
     p2 = p;
     while (*p2 == '*') {
-      memb->pointer++;
+      memb->ptr++;
       p2--;
     }
     char clean[strlen(&p[1])];
     clean_string(&p[1],clean);
-    asprintf(&(memb->name),"%s",clean);
+    snprintf(memb->name,NAME_MAX_LEN,"%s",clean);
   } else {
-    p = strstr(line,memb->type);
+    p = strstr(line,type_name);
     if (p) {
-
-      char clean[strlen(&p[strlen(memb->type)])];
-      clean_string(&p[strlen(memb->type)],clean);
+      char clean[sizeof(type_name)];
+      clean_string(&p[strlen(type_name)],clean);
 
       if ( (p = strchr(clean,'[')) ) {
-        memb->array = strtod(&p[1],NULL);
-        if (!memb->array) {
+        memb->arr = strtod(&p[1],NULL);
+        if (!memb->arr) {
           char *p2;
           p2 = strchr(p,']');
           p2[0] = '\0';
-          asprintf(&(memb->array_str_val),"%s",&p[1]);;
+          snprintf(memb->len_def,32,"%s",&p[1]);
         }
         p[0] = '\0';
       } 
-
-      asprintf(&(memb->name),"%s",clean);
+      snprintf(memb->name,NAME_MAX_LEN,"%s",clean);
     }
   }
 
@@ -162,7 +259,7 @@ static void get_memb_name_and_type(char *line,
 }
 
 static int get_enum_memb(char *line, 
-  struct struct_memb_def *memb) {
+  member_info *memb) {
 
   char *p;
   char clean[strlen(line)];
@@ -172,14 +269,14 @@ static int get_enum_memb(char *line,
   if (p) {
     p[0] = '\0';
     clean_string(line,clean);
-    asprintf(&(memb->name),"%s",clean);
-    asprintf(&(memb->type),"enum_val");
+    snprintf(memb->name,NAME_MAX_LEN,"%s",clean);
+    memb->type = T_UINT32;
     p[0] = ',';
     return 0;
   } else {
     clean_string(line,clean);
-    asprintf(&(memb->name),"%s",clean);
-    asprintf(&(memb->type),"enum_val");
+    snprintf(memb->name,NAME_MAX_LEN,"%s",clean);
+    memb->type = T_UINT32;
     return 1;
   }
 
@@ -187,11 +284,11 @@ static int get_enum_memb(char *line,
 
 static uint32_t is_dir(const char *path) {
   struct stat buf;
-  char *rpath;
-  rpath = realpath(path,NULL);
-  if (rpath) {
+  char rpath[PATH_MAX];
+  char *res;
+  res = realpath(path,rpath);
+  if (res) {
     stat(rpath, &buf);
-    free(rpath);
     return S_ISDIR(buf.st_mode);
   } else {
     return 0;
@@ -210,13 +307,15 @@ static int32_t header_files_or_subdir_select(const struct direct *entry) {
 
 }
 
-static int scandir_recursive(char *path, int *num, char **headers) {
+static int scandir_recursive(char *path, int *num, header_data *hdata) {
   
   char cwd[256];
+  char rpath[PATH_MAX];
   int dir_count;
   struct dirent **dirs;
-  char *rpath;
+  char *res;
   int i;
+  //static int depth = 0;
 
   if (!is_dir(path)) {
     // special case, we have just an header file
@@ -231,23 +330,32 @@ static int scandir_recursive(char *path, int *num, char **headers) {
       return -1;
     }
 
-    for (i=0;i<dir_count;i++) {
+    for (i = 0; i < dir_count; i++) {
 
       if (is_dir(dirs[i]->d_name)) {
-        scandir_recursive(dirs[i]->d_name,num,headers);
+       // depth++;
+        //if (depth > 1) {
+          scandir_recursive(dirs[i]->d_name,num,hdata);
+        //}
       } else {
         if (*num < MAX_HEADERS) {
-          rpath = realpath(dirs[i]->d_name,NULL);
-          asprintf(&headers[*num],"%s",rpath);
-          free(rpath);
-          (*num)++;
+          res = realpath(dirs[i]->d_name,rpath);
+          snprintf(hdata[*num].path,PATH_MAX_LEN,"%s",rpath);
+          if (res)
+            (*num)++;
         } else {
           return 0;
         }
       }
 
     }
+    for (i = 0; i < dir_count; i++) {
+      free(dirs[i]);
+    }
 
+    if (dirs) {
+      free(dirs);
+    }
     chdir(cwd);
   }
 
@@ -255,20 +363,16 @@ static int scandir_recursive(char *path, int *num, char **headers) {
 
 }
 
-static int check_for_cgen_target(char *line, struct cgen_target *def_target) {
+static int check_for_cgen_target(char *line, char *hpath, cgen_target *target) {
 
   char *p;
   char *p2;
   char *fname;
   char *target_str;
-  char *rpath;
-
-  if (def_target->ntargets >= MAX_TARGETS) {
-    fprintf(stderr,"MAX_TARGETS exceeded!\n");
-    return 0;
-  }
+  char *res;
 
   p = strstr(line,"#include \"");
+
   if (p) {
     p = strstr(p,"gen/");
   }
@@ -281,37 +385,41 @@ static int check_for_cgen_target(char *line, struct cgen_target *def_target) {
       if (fname) {
         fname++;
         if ( (target_str = strstr(fname,"to_ebml")) ) {
-          def_target->types[def_target->ntargets] = TO_EBML;
+          target->type = TO_EBML;
         } else if ( (target_str = strstr(fname,"to_json")) ) {
-          def_target->types[def_target->ntargets] = TO_JSON;
+          target->type = TO_JSON;
         } else if ( (target_str = strstr(fname,"from_json")) ) {
-          def_target->types[def_target->ntargets] = FR_JSON;
+          target->type = FR_JSON;
         } else if ( (target_str = strstr(fname,"to_text")) ) {
-          def_target->types[def_target->ntargets] = TO_TEXT;
+          target->type = TO_TEXT;
         } else if ( (target_str = strstr(fname,"from_ebml")) ) {
-          def_target->types[def_target->ntargets] = FR_EBML;
+          target->type = FR_EBML;
         } else if ( (target_str = strstr(fname,"helpers")) ) {
-          def_target->types[def_target->ntargets] = HELPERS;
+          target->type = HELPERS;
         } else if ( (target_str = strstr(fname,"config")) ) {
-          def_target->types[def_target->ntargets] = CONFIG;
+          target->type = CONFIG;
         }
 
-        rpath = realpath(".",NULL);
-        asprintf(&def_target->targets[def_target->ntargets],"%s/%s",rpath,fname);
-        free(rpath);
-        def_target->ntargets++;
+        res = strrchr(hpath,'/');
+        if (res) {
+          res[0] = '\0';
+          snprintf(target->path,PATH_MAX_LEN,"%s/%s",hpath,fname);
+          res[0] = '/';
+          return 1;
+        }
+
       }
     }
-    return 1;
   }
 
   return 0;
 }
 
-static int defs_from_header(struct struct_def *defs, 
-  char *header_path, struct cgen_target *targets) {
+static int defs_from_header(header_data *hdata) {
 
   FILE *fp;
+  struct_data *defs = hdata->defs;
+  cgen_target *targets = hdata->targets;
   char *line = NULL;
   size_t len = 0;
   int index = 0;
@@ -327,7 +435,7 @@ static int defs_from_header(struct struct_def *defs,
   int substruct = 0;
   int newdefs = 0;
 
-  fp = fopen(header_path,"r");
+  fp = fopen(hdata->path,"r");
 
   if (fp == NULL) {
     return index;
@@ -339,10 +447,16 @@ static int defs_from_header(struct struct_def *defs,
   while ((read = getline(&line,&len,fp)) != -1) {
 
     /* Checking for targets */
-    if (check_for_cgen_target(line,targets)) {
-      continue;
+    if (hdata->target_count >= MAX_TARGETS) {
+      fprintf(stderr,"MAX_TARGETS exceeded!\n");
+      exit(-1);
     }
 
+    if (check_for_cgen_target(line,hdata->path,&targets[hdata->target_count])) {
+      hdata->target_count++;
+      continue;
+    }
+      
     if (index >= MAX_HEADER_DEFS) {
       fprintf(stderr,"MAX_HEADER_DEFS exceeded\n");
       exit(1);
@@ -353,22 +467,21 @@ static int defs_from_header(struct struct_def *defs,
       p3 = strchr(line,'}');
 
       if (p3) {
-        if (strchr(defs[index].name,'{') || in_substruct) {
+        if (strchr(defs[index].info.name,'{') || in_substruct) {
           char *end;
           end = strchr(p3,';');
           char sname[end - p3];
           end[0] = '\0';
           clean_string(&p3[1],sname);
           if (in_substruct) {
-            defs[index-1].members_info[defs[index-1].members].name = strdup(sname);
-            defs[index-1].members_info[defs[index-1].members].type = strdup(defs[index].name);
-            defs[index-1].members_info[defs[index-1].members].sub = &defs[index];
-            defs[index-1].members++;
+            //defs[index-1].members_info[defs[index-1].members].name = strdup(sname);
+            //defs[index-1].members_info[defs[index-1].members].type = strdup(defs[index].info.name);
+            //defs[index-1].members_info[defs[index-1].members].sub = &defs[index];
+            //defs[index-1].members++;
           } else {
-            defs[index].name = strdup(sname);
-            defs[index].istypedef = 1;
+            snprintf(defs[index].info.name,NAME_MAX_LEN,"%s",sname);
+            defs[index].info.is_typedef = 1;
           }
-          
         }
            
         if (!in_substruct) {
@@ -388,38 +501,38 @@ static int defs_from_header(struct struct_def *defs,
         
       } else {
         if (strchr(line,';')) {
-          if ((lenacc+strlen(line)) < MAX_DEF_LENGTH) {
+          if ((lenacc+strlen(line)) < DEF_MAX_LEN) {
             strcpy(&(defs[index].definition[lenacc]),line);
             lenacc += strlen(line);
-            if (defs[index].members >= MAX_MEMB) {
-              fprintf(stderr,"MAX_MEMB exceeded in %s\n",defs[index].fullpath);
+            if (defs[index].info.member_count >= MEMBER_MAX) {
+              fprintf(stderr,"MEMBER_MAX exceeded in %s\n",defs[index].filename);
               exit(1);
             }
-            get_memb_name_and_type(line,&defs[index].members_info[defs[index].members]);
-            defs[index].members++;
+            get_memb_name_and_type(line,&defs[index].info.members[defs[index].info.member_count]);
+            defs[index].info.member_count++;
           } else {
-            fprintf(stderr,"MAX_DEF_LENGTH exceeded\n");
+            fprintf(stderr,"DEF_MAX_LEN exceeded\n");
             exit(1);
           }
         } else if (in_enum) {
 
-          if (defs[index].members >= MAX_MEMB) {
-            fprintf(stderr,"MAX_MEMB exceeded in %s\n",defs[index].fullpath);
+          if (defs[index].info.member_count >= MEMBER_MAX) {
+            fprintf(stderr,"MEMBER_MAX exceeded in %s\n",defs[index].filename);
             exit(1);
           }
           // enum case
           if (!strchr(line,'#')) {
-            if (get_enum_memb(line,&defs[index].members_info[defs[index].members])) {
+            if (get_enum_memb(line,&defs[index].info.members[defs[index].info.member_count])) {
               in_enum = 0;
             }
-            defs[index].members++;
+            defs[index].info.member_count++;
           }
 
         } else {
-          /* TODO: handle the case where there is a struct/union definition inside another struct definition */
+          /* TODO: handle the case where there is a struct/union definition inside another struct definition 
           if (strstr(line,"union") || strstr(line,"struct")) {
             in_substruct = 1;
-            asprintf(&(defs[index+1].name),"%s_sub",defs[index].name);
+            asprintf(&(defs[index+1].name),"%s_sub",defs[index].info.name);
             defs[index+1].fullpath = strdup(header_path);
             defs[index+1].line = linen;
             defs[index+1].issub = 1;
@@ -428,24 +541,29 @@ static int defs_from_header(struct struct_def *defs,
             }
             index++;
           }
-          
+          */
         }
       }
 
     } else {
+
       p1 = strstr(line,"struct");
+
+      if (p1) {
+        defs[index].info.type = ST_STRUCT;
+      }
 
       if (!p1) {
         p1 = strstr(line,"union");
         if (p1) {
-          defs[index].isunion = 1;
+          defs[index].info.type = ST_UNION;
         }
       }
 
       if (!p1) {
         p1 = strstr(line,"enum");
         if (p1) {
-          defs[index].isenum = 1;
+          defs[index].info.type = ST_ENUM;
           in_enum = 1;
         }
       }
@@ -457,15 +575,16 @@ static int defs_from_header(struct struct_def *defs,
 
           if (in_enum) {
             clean_string(&p1[4],sname);
-          } else if (defs[index].isunion) {
+          } else if (defs[index].info.type == ST_UNION) {
             clean_string(&p1[5],sname);
           } else {
             clean_string(&p1[6],sname);
           }
           
-          defs[index].name = strdup(sname);
-          defs[index].fullpath = strdup(header_path);
-          defs[index].line = linen;
+          snprintf(defs[index].info.name,NAME_MAX_LEN,"%s",sname);
+          snprintf(defs[index].filename,FILENAME_MAX_LEN,"%s",strrchr(hdata->path,'/')+1);
+          defs[index].line_number = linen;
+
           inside_struct = 1;         
         }
       }
@@ -481,40 +600,34 @@ static int defs_from_header(struct struct_def *defs,
   return newdefs;
 }
 
-int gather_struct_definitions(struct header_defs *hdefs, char *fprefix, char *path) {
+int gather_struct_definitions(header_data *hdata, char *fprefix, char *path) {
   int i;
   int num;
-  int nhdrs;
-  char *headers[MAX_HEADERS];
   char *p;
 
   num = 0;
-  nhdrs = 0;
   
-  scandir_recursive(path,&num,headers);
+  scandir_recursive(path,&num,hdata);
 
-  for (i=0;i<num;i++) {
-    p = strrchr(headers[i],'/');
+  if (num > MAX_HEADERS) {
+    fprintf(stderr, "MAX_HEADERS exceeded!\n");
+    exit(-1);
+  }
+
+  for (i = 0; i < num; i++) {
+    p = strrchr(hdata[i].path,'/');
     if (p) {
       if (fprefix) {
-        if (!strncmp(fprefix,&p[1],strlen(fprefix))) {
-          hdefs[nhdrs].name = strdup(headers[i]);
-          hdefs[nhdrs].ndefs = defs_from_header(hdefs[nhdrs].defs,headers[i],&hdefs[nhdrs].targets);
-          nhdrs++;
+        if (!strncmp(fprefix,&p[1],strlen(fprefix))) {          
+          hdata[i].def_count = defs_from_header(&hdata[i]);
         }
       } else {
-        hdefs[nhdrs].name = strdup(headers[i]);
-        hdefs[nhdrs].ndefs = defs_from_header(hdefs[nhdrs].defs,headers[i],&hdefs[nhdrs].targets);
-        nhdrs++;
+        hdata[i].def_count = defs_from_header(&hdata[i]);
       }
     }
   } 
 
-  for (i=0;i<num;i++) {
-    free(headers[i]);
-  }
-
-  return nhdrs;
+  return num;
 }
 
 int is_prefix (const char *str, const char *prefix) {
@@ -542,36 +655,59 @@ int is_suffix (const char *str, const char *suffix) {
   return 0;
 }
 
-static void print_memb_data_info(struct struct_memb_def *memb) {
+static void print_memb_data_info(member_info *memb) {
 
-  switch (memb->data_info.type) {
-    case MEMB_TYPE_UINT: {
-      printf("    default value %u\n",memb->data_info.info.int_info[0]);
-      printf("    min value %u\n",memb->data_info.info.int_info[1]);
-      printf("    max value %u\n",memb->data_info.info.int_info[2]);
+
+  switch (memb->type) {
+    case T_CHAR: {
+      if (memb->arr || (memb->ptr == 1)) {
+        // TO-DO 
+      }
       break;
     }
-    case MEMB_TYPE_INT:{
-      printf("    default value %d\n",memb->data_info.info.int_info[0]);
-      printf("    min value %d\n",memb->data_info.info.int_info[1]);
-      printf("    max value %d\n",memb->data_info.info.int_info[2]);
+    case T_INT32: {
+      printf("    default value %d\n",memb->type_info.int32_info.init);      
+      printf("    min value %d\n",memb->type_info.int32_info.min);
+      printf("    max value %d\n",memb->type_info.int32_info.max);
       break;
     }
-    case MEMB_TYPE_FLOAT:{
-      printf("    default value %0.2f\n",memb->data_info.info.float_info[0]);
-      printf("    min value %0.2f\n",memb->data_info.info.float_info[1]);
-      printf("    max value %0.2f\n",memb->data_info.info.float_info[2]);
+    case T_INT64: {
+      printf("    default value %" PRId64 "\n",memb->type_info.int64_info.init);      
+      printf("    min value %" PRId64 "\n",memb->type_info.int64_info.min);
+      printf("    max value %" PRId64 "\n",memb->type_info.int64_info.max);
       break;
     }
-    case MEMB_TYPE_STRING:
-    case MEMB_TYPE_UNKNOWN:
-    break;
+    case T_UINT32: {
+      printf("    default value %u\n",memb->type_info.uint32_info.init);      
+      printf("    min value %u\n",memb->type_info.uint32_info.min);
+      printf("    max value %u\n",memb->type_info.uint32_info.max);
+      break;
+    }
+    case T_UINT64: {
+      printf("    default value %" PRIu64 "\n",memb->type_info.uint64_info.init);      
+      printf("    min value %" PRIu64 "\n",memb->type_info.uint64_info.min);
+      printf("    max value %" PRIu64 "\n",memb->type_info.uint64_info.max);
+      break;
+    }
+    case T_FLOAT: {
+      printf("    default value %0.2f\n",memb->type_info.float_info.init);      
+      printf("    min value %0.2f\n",memb->type_info.float_info.min);
+      printf("    max value %0.2f\n",memb->type_info.float_info.max);
+      break;
+    }
+    case T_DOUBLE: {
+      printf("    default value %0.2f\n",memb->type_info.double_info.init);      
+      printf("    min value %0.2f\n",memb->type_info.double_info.min);
+      printf("    max value %0.2f\n",memb->type_info.double_info.max);
+      break;
+    }
+    default : break;
   }
 
   return;
 }
 
-int print_structs_defs(struct header_defs *hdef, char *prefix,
+int print_structs_defs(header_data *hdata, char *prefix,
  char *suffix, char *format) {
 
   int i;
@@ -579,23 +715,25 @@ int print_structs_defs(struct header_defs *hdef, char *prefix,
   const char *type;
 
   if (!strncmp(format,"names",5)) {
-    for (i=0;i<hdef->ndefs;i++) {
-      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix))
-        printf("%s\n",hdef->defs[i].name);
+    for (i = 0; i < hdata->def_count; i++) {
+      if (is_prefix(hdata->defs[i].info.name,prefix) && is_suffix(hdata->defs[i].info.name,suffix)) {
+        if (hdata->defs[i].info.name[0])
+          printf("%s\n",hdata->defs[i].info.name);
+      }
     }
     return 0;
   }
 
   if (!strncmp(format,"header",5)) {
-    for (i=0;i<hdef->ndefs;i++) {
-      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix)) {
-        if (!hdef->defs[i].isunion) {
-          printf("struct %s {\n",hdef->defs[i].name);
-          printf("%s",hdef->defs[i].definition);
+    for (i  = 0; i < hdata->def_count; i++) {
+      if (is_prefix(hdata->defs[i].info.name,prefix) && is_suffix(hdata->defs[i].info.name,suffix)) {
+        if (hdata->defs[i].info.type == ST_UNION) {
+          printf("union %s {\n",hdata->defs[i].info.name);
+          printf("%s",hdata->defs[i].definition);
           printf("};\n");
-        } else {
-          printf("union %s {\n",hdef->defs[i].name);
-          printf("%s",hdef->defs[i].definition);
+        } else if (hdata->defs[i].info.type == ST_STRUCT) {
+          printf("struct %s {\n",hdata->defs[i].info.name);
+          printf("%s",hdata->defs[i].definition);
           printf("};\n");
         }
       }
@@ -604,12 +742,12 @@ int print_structs_defs(struct header_defs *hdef, char *prefix,
   }
 
   if (!strncmp(format,"info",4)) {
-    for (i=0;i<hdef->ndefs;i++) {
-      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix)) {
-        printf("Name: %s\n",hdef->defs[i].name);
-        printf("Path: %s\n",hdef->defs[i].fullpath);
-        printf("Line: %d\n",hdef->defs[i].line);
-        printf("Members No: %d\n\n",hdef->defs[i].members);
+    for (i  = 0; i < hdata->def_count; i++) {
+      if (is_prefix(hdata->defs[i].info.name,prefix) && is_suffix(hdata->defs[i].info.name,suffix)) {
+        printf("Name: %s\n",hdata->defs[i].info.name);
+        printf("Path: %s\n",hdata->defs[i].filename);
+        printf("Line: %d\n",hdata->defs[i].line_number);
+        printf("Members No: %d\n\n",hdata->defs[i].info.member_count);
       }
     }
     return 0;
@@ -617,14 +755,14 @@ int print_structs_defs(struct header_defs *hdef, char *prefix,
 
   if (!strncmp(format,"targets",7)) {
 
-    if (hdef->targets.ntargets) {
-      printf("%s has following targets:\n",hdef->name);
+    if (hdata->target_count) {
+      printf("%s has following targets:\n",hdata->path);
     }
 
-    for (j = 0; j < hdef->targets.ntargets; j++) {
-      if (hdef->targets.types[j]) {
+    for (j = 0; j < hdata->target_count; j++) {
+      if (hdata->targets[j].type) {
 
-        switch (hdef->targets.types[j]) {
+        switch (hdata->targets[j].type) {
           case TO_EBML:
           type = "TO_EBML";
           break;
@@ -651,47 +789,51 @@ int print_structs_defs(struct header_defs *hdef, char *prefix,
           break;
         }
 
-        printf("    %s of type %s\n",hdef->targets.targets[j],type);
+        printf("    %s of type %s\n",hdata->targets[j].path,type);
       }
     }
     return 0;
   }
 
   if (!strncmp(format,"members",7)) {
-    for (i=0;i<hdef->ndefs;i++) {
-      if (is_prefix(hdef->defs[i].name,prefix) && is_suffix(hdef->defs[i].name,suffix)) {
+    for (i = 0; i < hdata->def_count; i++) {
+      if (is_prefix(hdata->defs[i].info.name,prefix) && is_suffix(hdata->defs[i].info.name,suffix)) {
 
-        if (hdef->defs[i].isunion)
-          printf("Union Name: %s\n",hdef->defs[i].name);
-        else if (hdef->defs[i].isenum)
-          printf("Enum Name: %s\n",hdef->defs[i].name);
+        if (hdata->defs[i].info.type == ST_UNION)
+          printf("Union Name: %s\n",hdata->defs[i].info.name);
+        else if (hdata->defs[i].info.type == ST_ENUM)
+          printf("Enum Name: %s\n",hdata->defs[i].info.name);
         else 
-          printf("Struct Name: %s\n",hdef->defs[i].name);
+          printf("Struct Name: %s\n",hdata->defs[i].info.name);
         
-        for (j=0;j<hdef->defs[i].members;j++) {
-          printf("  Member Name: %s\n",hdef->defs[i].members_info[j].name);
-          printf("  Member Type: %s\n",hdef->defs[i].members_info[j].type);
-          if (hdef->defs[i].members_info[j].array || hdef->defs[i].members_info[j].array_str_val) {
-            if (hdef->defs[i].members_info[j].array)
-              printf("  Array of %d.\n",hdef->defs[i].members_info[j].array);
+        for (j = 0; j < hdata->defs[i].info.member_count; j++) {
+          printf("  Member Name: %s\n",hdata->defs[i].info.members[j].name);
+          if (hdata->defs[i].info.members[j].type == T_STRUCT) {
+            printf("  Member Type: %s\n",hdata->defs[i].info.members[j].type_info.substruct_info.type_name);
+          } else {
+            printf("  Member Type: %s\n",member_type_to_str(hdata->defs[i].info.members[j].type));
+          }
+          if (hdata->defs[i].info.members[j].arr || hdata->defs[i].info.members[j].len_def[0]) {
+            if (hdata->defs[i].info.members[j].arr)
+              printf("  Array of %d.\n",hdata->defs[i].info.members[j].arr);
             else
-              printf("  Array of %s.\n",hdef->defs[i].members_info[j].array_str_val);
+              printf("  Array of %s.\n",hdata->defs[i].info.members[j].len_def);
           }
-          if (hdef->defs[i].members_info[j].pointer) {
-            printf("  It's a pointer of level %d.\n",hdef->defs[i].members_info[j].pointer);
+          if (hdata->defs[i].info.members[j].ptr) {
+            printf("  It's a pointer of level %d.\n",hdata->defs[i].info.members[j].ptr);
           }
-          if (hdef->defs[i].members_info[j].sub) {
+/*          if (hdata->defs[i].info.members[j].type) {
             printf("  It's a sub");
-            if (hdef->defs[i].members_info[j].sub->isunion) {
+            if (hdata->defs[i].members_info[j].sub->isunion) {
               printf("union\n");
-            } else if (hdef->defs[i].members_info[j].sub->isenum) {
+            } else if (hdata->defs[i].members_info[j].sub->isenum) {
               printf("enum\n");
             } else {
               printf("struct\n");
             }
-          }
+          }*/
           if (!strncmp(&format[7],"_data_info",10)) {
-            print_memb_data_info(&(hdef->defs[i].members_info[j]));
+            print_memb_data_info(&(hdata->defs[i].info.members[j]));
           }
         }
       }
