@@ -15,12 +15,14 @@
 #include "gen/krad_sfx_helpers.h"
 
 typedef enum {
-  KR_SFX_ADD,
-  KR_SFX_RM,
+  KR_SFX_EFFECT_ADD,
+  KR_SFX_EFFECT_RM,
+  KR_SFX_EFFECT_CONTROL,
   KR_SFX_GET_SAMPLERATE,
   KR_SFX_SET_SAMPLERATE,
   KR_SFX_GET_CHANNELS,
-  KR_SFX_SET_CHANNELS
+  KR_SFX_SET_CHANNELS,
+  KR_SFX_GET_INFO
 } kr_sfx_control;
 
 typedef enum {

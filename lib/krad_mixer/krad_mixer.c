@@ -23,6 +23,44 @@ struct kr_mixer {
   void *clock;
 };
 
+struct kr_mixer_crossfader {
+  kr_mixer_path *path[2];
+  float fade;
+  kr_easer easer;
+};
+
+struct kr_mixer_path {
+  kr_mixer_path_type type;
+  kr_mixer_bus *bus;
+  char name[64];
+  kr_mixer_channels channels;
+  kr_mixer_crossfader *crossfader;
+  kr_easer volume_easer;
+  int map[KR_MXR_MAX_CHANNELS];
+  int mixmap[KR_MXR_MAX_CHANNELS];
+  float volume[KR_MXR_MAX_CHANNELS];
+  float volume_actual[KR_MXR_MAX_CHANNELS];
+  float new_volume_actual[KR_MXR_MAX_CHANNELS];
+  int last_sign[KR_MXR_MAX_CHANNELS];
+  int win;
+  int winss[KR_MXR_MAX_MINIWINS];
+  float wins[KR_MXR_MAX_CHANNELS][KR_MXR_MAX_MINIWINS];
+  float avg[KR_MXR_MAX_CHANNELS];
+  float peak[KR_MXR_MAX_CHANNELS];
+  float peak_last[KR_MXR_MAX_CHANNELS];
+  float *samples[KR_MXR_MAX_CHANNELS];
+  float **mapped_samples[KR_MXR_MAX_CHANNELS];
+  int delay;
+  int delay_actual;
+  int state;
+  kr_mixer_path_info_cb *info_cb;
+  kr_mixer_path_audio_cb *audio_cb;
+  void *user;
+  kr_mixer *mixer;
+  kr_sfx *sfx;
+};
+
+kr_mixer_path *kr_mixer_mkpath(kr_mixer *mixer, kr_mixer_path_setup *setup);
 static float get_fade_in(float crossfade_value);
 static float get_fade_out(float crossfade_value);
 static float get_crossfade(kr_mixer_path *path);
@@ -44,6 +82,60 @@ static void set_crossfade(kr_mixer_path *path, float value);
 static void path_release(kr_mixer_path *path);
 
 #include "metering.c"
+
+kr_sfx *kr_mixer_path_sfx_kludge(kr_mixer_path *path) {
+  if (path == NULL) return NULL;
+  return path->sfx;
+}
+
+int kr_mixer_get_path_info(kr_mixer_path *unit, kr_mixer_path_info *info) {
+  int i;
+  kr_sfx_cmd cmd;
+  if ((unit == NULL) || (info == NULL)) return -1;
+  strcpy(info->name, unit->name);
+  info->channels = unit->channels;
+  if (unit->bus != NULL) {
+    strncpy(info->bus, unit->bus->name, sizeof(info->bus));
+  } else {
+    info->bus[0] = '\0';
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+    info->volume[i] = unit->volume[i];
+    info->map[i] = unit->map[i];
+    info->mixmap[i] = unit->mixmap[i];
+    info->rms[i] = unit->avg[i];
+    info->peak[i] = unit->peak_last[i];
+  }
+/*
+  kr_sfx_effect_info(unit->sfx, 0, &info->eq);
+  kr_sfx_effect_info(unit->sfx, 1, &info->lowpass);
+  kr_sfx_effect_info(unit->sfx, 2, &info->highpass);
+  kr_sfx_effect_info(unit->sfx, 3, &info->analog);
+*/
+  cmd.control = KR_SFX_GET_INFO;
+  cmd.effect = KR_SFX_EQ;
+  cmd.user = &info->eq;
+  kr_sfx_ctl(unit->sfx, &cmd);
+  cmd.effect = KR_SFX_LOWPASS;
+  cmd.user = &info->lowpass;
+  kr_sfx_ctl(unit->sfx, &cmd);
+  cmd.effect = KR_SFX_HIGHPASS;
+  cmd.user = &info->highpass;
+  kr_sfx_ctl(unit->sfx, &cmd);
+  cmd.effect = KR_SFX_ANALOG;
+  cmd.user = &info->analog;
+  kr_sfx_ctl(unit->sfx, &cmd);
+
+  if ((unit->crossfader != NULL) && (unit->crossfader->path[0] == unit)) {
+    info->fade = unit->crossfader->fade;
+    strncpy(info->crossfade_group, unit->crossfader->path[1]->name,
+     sizeof(info->crossfade_group));
+  } else {
+    info->crossfade_group[0] = '\0';
+    info->fade = 0.0f;
+  }
+  return 0;
+}
 
 static float get_fade_in(float crossfade_value) {
   return 1.0f - get_fade_out(crossfade_value);
@@ -286,12 +378,10 @@ static void update_controls(kr_mixer *mixer) {
 }
 
 static void update_state(kr_mixer *mixer) {
-
   int i;
   kr_mixer_path *path;
-
+  kr_sfx_cmd cmd;
   i = 0;
-
   while ((path = kr_pool_iterate_active(mixer->path_pool, &i))) {
     switch (path->state) {
       case KR_MXP_READY:
@@ -304,11 +394,13 @@ static void update_state(kr_mixer *mixer) {
         break;
     }
   }
-
   if (mixer->new_sample_rate != mixer->sample_rate) {
     mixer->sample_rate = mixer->new_sample_rate;
     while ((path = kr_pool_iterate_active(mixer->path_pool, &i))) {
-      kr_sfx_sample_rate_set(path->sfx, mixer->sample_rate);
+      /*kr_sfx_sample_rate_set(path->sfx, mixer->sample_rate);*/
+      cmd.control = KR_SFX_SET_SAMPLERATE;
+      cmd.sample_rate= mixer->sample_rate;
+      kr_sfx_ctl(path->sfx, &cmd);
     }
   }
   update_controls(mixer);
@@ -628,21 +720,33 @@ static int path_setup_check(kr_mixer_path_setup *setup) {
 
 static void path_sfx_create(kr_mixer_path *path) {
 
-  kr_sfx_setup sfx_setup;
+  kr_sfx_setup setup;
+  kr_sfx_cmd cmd;
 
-  sfx_setup.channels = path->channels;
-  sfx_setup.sample_rate = path->mixer->sample_rate;
-  sfx_setup.user = path;
-  sfx_setup.cb = NULL;
+  setup.channels = path->channels;
+  setup.sample_rate = path->mixer->sample_rate;
+  setup.user = path;
+  setup.cb = NULL;
   /* FIXME actual sfx info callback
    * have sfx info callback hit path cb that propagates to path info cb
    * FIXME set sfx params from setup
    * */
-  path->sfx = kr_sfx_create(&sfx_setup);
+  path->sfx = kr_sfx_create(&setup);
+  /*
   kr_sfx_add(path->sfx, KR_SFX_EQ);
   kr_sfx_add(path->sfx, KR_SFX_LOWPASS);
   kr_sfx_add(path->sfx, KR_SFX_HIGHPASS);
   kr_sfx_add(path->sfx, KR_SFX_ANALOG);
+  */
+  cmd.control = KR_SFX_EFFECT_ADD;
+  cmd.effect = KR_SFX_EQ;
+  kr_sfx_ctl(path->sfx, &cmd);
+  cmd.effect = KR_SFX_LOWPASS;
+  kr_sfx_ctl(path->sfx, &cmd);
+  cmd.effect = KR_SFX_HIGHPASS;
+  kr_sfx_ctl(path->sfx, &cmd);
+  cmd.effect = KR_SFX_ANALOG;
+  kr_sfx_ctl(path->sfx, &cmd);
 }
 
 static void path_create(kr_mixer_path *path, kr_mixer_path_setup *setup) {

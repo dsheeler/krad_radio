@@ -1715,27 +1715,27 @@ int kr_string_to_address (char *string, kr_address_t *addr) {
           effect_control = tokens[4];
         }
         if (effect_num[0] == 'e') {
-          addr->sub_id = 0;
+          addr->sub_id = KR_SFX_EQ;
         } else {
           if (effect_num[0] == 'l') {
-            addr->sub_id = 1;
+            addr->sub_id = KR_SFX_LOWPASS;
           } else {
             if (effect_num[0] == 'h') {
-              addr->sub_id = 2;
+              addr->sub_id = KR_SFX_HIGHPASS;
             } else {
               if (effect_num[0] == 'a') {
-                addr->sub_id = 3;
+                addr->sub_id = KR_SFX_ANALOG;
               } else {
                 addr->sub_id = atoi(effect_num);
               }
             }
           }
         }
-        if ((addr->sub_id == 0) && (t != 5)) {
+        if ((addr->sub_id == KR_SFX_EQ) && (t != 5)) {
           printf ("Invalid Mixer Portgroup Effect Control\n");
           return -1;
         }
-        if ((addr->sub_id == 0) && (t == 5)) {
+        if ((addr->sub_id == KR_SFX_EQ) && (t == 5)) {
           addr->sub_id2 = atoi(effect_control_id);
         }
         if ((effect_control[0] == 'd') && (effect_control[1] == 'b')) {

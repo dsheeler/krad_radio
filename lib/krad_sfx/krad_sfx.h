@@ -10,14 +10,23 @@
 
 typedef struct kr_sfx kr_sfx;
 typedef struct kr_sfx_setup kr_sfx_setup;
-
 typedef struct kr_sfx_info_cb_arg kr_sfx_info_cb_arg;
 typedef void (kr_sfx_info_cb)(kr_sfx_info_cb_arg *);
 
+typedef struct {
+  kr_sfx_control control;
+  int control_id;
+  char *control_str;
+  float value;
+  int duration;
+  kr_easing easing;
+  int sample_rate;
+  kr_sfx_effect_type effect;
+  void *user;
+} kr_sfx_cmd;
+
 struct kr_sfx_info_cb_arg {
   void *user;
-  //FIXME
-  //what effect path/value changed
 };
 
 struct kr_sfx_setup {
@@ -30,18 +39,6 @@ struct kr_sfx_setup {
 kr_sfx *kr_sfx_create(kr_sfx_setup *setup);
 void kr_sfx_destroy(kr_sfx *sfx);
 void kr_sfx_process(kr_sfx *sfx, float **input, float **output, int nframes);
-
-//FIXME replace with kr_sfx_ctl
-void kr_sfx_sample_rate_set(kr_sfx *sfx, uint32_t sample_rate);
-void kr_sfx_add(kr_sfx *sfx, kr_sfx_effect_type effect);
-void kr_sfx_remove(kr_sfx *sfx, int effect_num);
-
-int kr_sfx_effect_info(kr_sfx *sfx, int num, void *effect_info);
-
-//FIXME use enum / union
-/*void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id, int control,
- float value, int duration, kr_easing easing, void *user);*/
-void kr_sfx_effect_ctl(kr_sfx *sfx, int effect_num, int control_id, char *control_str,
- float value, int duration, kr_easing easing, void *user);
+int kr_sfx_ctl(kr_sfx *sfx, kr_sfx_cmd *cmd);
 
 #endif
