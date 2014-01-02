@@ -164,15 +164,9 @@ int kr_compositor_controls_random(struct kr_compositor_controls *st) {
   }
 
   memset(st, 0, sizeof(struct kr_compositor_controls));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -205,15 +199,9 @@ int kr_sprite_info_random(struct kr_sprite_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_sprite_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_compositor_controls_random(&st->controls);
 
@@ -247,15 +235,9 @@ int kr_text_info_random(struct kr_text_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_text_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_compositor_controls_random(&st->controls);
 
@@ -289,15 +271,9 @@ int kr_vector_info_random(struct kr_vector_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vector_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_compositor_controls_random(&st->controls);
 
@@ -333,15 +309,9 @@ int kr_compositor_path_info_random(struct kr_compositor_path_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_compositor_path_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_perspective_view_random(&st->view);
   kr_compositor_controls_random(&st->controls);
@@ -374,15 +344,9 @@ int kr_compositor_info_random(struct kr_compositor_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_compositor_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;

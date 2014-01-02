@@ -56,7 +56,9 @@ void codegen_text(struct_data *def, char *type, FILE *out) {
         fprintf(out,"  }\n");
       }
 
-    } else if (memb_struct_check(&def->info.members[i-1]) && 
+    } else if ( (def->info.members[i-1].type == T_STRUCT && 
+      codegen_is_enum(def->info.members[i-1].type_info.substruct_info.type_name))
+       && memb_struct_check(&def->info.members[i]) &&
       codegen_is_union(def->info.members[i].type_info.substruct_info.type_name) && (i > 0)) {
 
       char uppercased[strlen(def->info.members[i].type_info.substruct_info.type_name)+1];

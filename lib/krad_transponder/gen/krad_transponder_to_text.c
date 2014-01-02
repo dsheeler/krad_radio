@@ -586,8 +586,6 @@ int kr_video_codec_t_to_text(char *text, void *st, int32_t max) {
 
 int kr_audio_encoder_St_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
-  uber_St uber_sub;
-  int index;
   int res;
   struct kr_audio_encoder_St *actual;
 
@@ -612,8 +610,6 @@ int kr_audio_encoder_St_to_text(char *text, void *st, int32_t max) {
 
 int kr_video_decoder_St_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
-  uber_St uber_sub;
-  int index;
   int res;
   struct kr_video_decoder_St *actual;
 
@@ -639,8 +635,6 @@ int kr_video_decoder_St_to_text(char *text, void *st, int32_t max) {
 
 int kr_audio_decoder_St_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
-  uber_St uber_sub;
-  int index;
   int res;
   struct kr_audio_decoder_St *actual;
 
@@ -663,8 +657,6 @@ int kr_audio_decoder_St_to_text(char *text, void *st, int32_t max) {
 
 int kr_video_encoder_St_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
-  uber_St uber_sub;
-  int index;
   int res;
   struct kr_video_encoder_St *actual;
 
@@ -937,8 +929,6 @@ int kr_muxer_actual_t_to_text(char *text, void *st, int32_t max) {
 
 int kr_muxer_St_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
-  uber_St uber_sub;
-  int index;
   int res;
   struct kr_muxer_St *actual;
 
@@ -1047,8 +1037,6 @@ int kr_transponder_subunit_actual_t_to_text(char *text, void *st, int32_t max) {
 
 int krad_transponder_subunit_rep_St_to_text(char *text, void *st, int32_t max) {
   uber_St uber;
-  uber_St uber_sub;
-  int index;
   int res;
   struct krad_transponder_subunit_rep_St *actual;
 

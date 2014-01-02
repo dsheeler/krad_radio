@@ -224,6 +224,10 @@ static void codegen_function(struct_data *def, char *type,
   memset(decl,0,256);
   res = 0;
 
+  if (!def->info.member_count) {
+    return;
+  }
+
   for (i = 0; i < def->info.member_count; i++) {
     if (memb_struct_check(&def->info.members[i])
      || (def->info.members[i].ptr))  {
@@ -233,8 +237,10 @@ static void codegen_function(struct_data *def, char *type,
   }
 
   for (i = 0; i < def->info.member_count; i++) {
-    if (memb_struct_check(&def->info.members[i]) && 
-      codegen_is_union(def->info.members[i].type_info.substruct_info.type_name) && (i > 0) ) {
+    if ( (def->info.members[i-1].type == T_STRUCT && 
+      codegen_is_enum(def->info.members[i-1].type_info.substruct_info.type_name))
+       && memb_struct_check(&def->info.members[i]) &&
+      codegen_is_union(def->info.members[i].type_info.substruct_info.type_name) && (i > 0)) {
       res += sprintf(&decl[res],"  uber_St uber_sub;\n");
       res += sprintf(&decl[res],"  int index;\n");
       break;
@@ -263,9 +269,13 @@ static void codegen_function(struct_data *def, char *type,
   } 
 
   if (def->info.is_typedef) {
-    res += sprintf(&decl[res],"  %s *actual;\n\n",def->info.name);
+    if (gformat != DEJSON || def->info.type != ST_ENUM) {
+      res += sprintf(&decl[res],"  %s *actual;\n\n",def->info.name);
+    }
   } else {
-    res += sprintf(&decl[res],"  struct %s *actual;\n\n",def->info.name);
+    if (gformat != DEJSON || def->info.type != ST_ENUM) {
+      res += sprintf(&decl[res],"  struct %s *actual;\n\n",def->info.name);
+    }
   }
 
   fprintf(out," {\n%s",decl);
@@ -284,9 +294,13 @@ static void codegen_function(struct_data *def, char *type,
     }
   } else {
     if (def->info.is_typedef) {
-      fprintf(out,"  actual = (%s *)st;\n\n",def->info.name);
+      if (gformat != DEJSON || def->info.type != ST_ENUM) {
+        fprintf(out,"  actual = (%s *)st;\n\n",def->info.name);
+      }
     } else {
-      fprintf(out,"  actual = (struct %s *)st;\n\n",def->info.name);
+      if (gformat != DEJSON || def->info.type != ST_ENUM) {
+        fprintf(out,"  actual = (struct %s *)st;\n\n",def->info.name);
+      }
     }
   }
 

@@ -133,6 +133,9 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
 
   int i;
   member_info *memb;
+  char cmp[sizeof(member_type_info)];
+
+  memset(cmp,0,sizeof(member_type_info));
 
   if (def->info.type == ST_UNION) {
     if (def->info.is_typedef) {
@@ -145,6 +148,18 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
       fprintf(out,"int %s_random(%s *st) {\n",def->info.name,def->info.name);
     } else {
       fprintf(out,"int %s_random(struct %s *st) {\n",def->info.name,def->info.name);
+    }
+  }
+
+  for (i = 0; i < def->info.member_count; i++) {
+    memb = &def->info.members[i];
+    if (memcmp(&memb->type_info,cmp,sizeof(member_type_info))) {
+      if (memb->type != T_STRUCT) {
+        fprintf(out,"  struct timeval tv;\n");
+        fprintf(out,"  double scale;\n\n");
+        fprintf(out,"  gettimeofday(&tv, NULL);\n  srand(tv.tv_sec + tv.tv_usec * 1000000ul);\n\n");
+      }
+      break;
     }
   }
 
@@ -164,22 +179,19 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
     fprintf(out,"  memset(st, 0, sizeof(struct %s));\n",def->info.name);
   }
 
-  fprintf(out,"  struct timeval tv;\n  double scale;\n\n  if (st == NULL) {\n");
-  fprintf(out,"    return -1;\n  }\n\n  gettimeofday(&tv, NULL);\n");
-  fprintf(out,"  srand(tv.tv_sec + tv.tv_usec * 1000000ul);\n\n");
+  fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
 
   for (i = 0; i < def->info.member_count; i++) {
 
     memb = &def->info.members[i];
 
-    char cmp[sizeof(member_type_info)];
-    memset(cmp,0,sizeof(member_type_info));
     if (memcmp(&memb->type_info,cmp,sizeof(member_type_info))) {
 
       switch (def->info.members[i].type) {
         case T_CHAR: {
           if (memb->arr || (memb->ptr == 1)) {
-        // TO-DO 
+            // TO-DO 
+            fprintf(out,"  scale = 0;\n");
           }
           break;
         }
@@ -420,19 +432,38 @@ void codegen_helpers_prototype(struct_data *defs, int ndefs, char *prefix,
 
   for (i = 0; i < n; i++) {
     if (filtered_defs[i]->info.is_typedef) {
-      fprintf(out,"int %s_init(%s *st);\n",
-        filtered_defs[i]->info.name,filtered_defs[i]->info.name);
-      fprintf(out,"int %s_valid(%s *st);\n",
-        filtered_defs[i]->info.name,filtered_defs[i]->info.name);
-      fprintf(out,"int %s_random(%s *st);\n",
-        filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+      if (filtered_defs[i]->info.type == ST_UNION) {
+        fprintf(out,"int %s_init(%s *st, int idx);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_valid(%s *st, int idx);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_random(%s *st, int idx);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+      } else {
+        fprintf(out,"int %s_init(%s *st);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_valid(%s *st);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_random(%s *st);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+      }
     } else {
-      fprintf(out,"int %s_init(struct %s *st);\n",
-        filtered_defs[i]->info.name,filtered_defs[i]->info.name);
-      fprintf(out,"int %s_valid(struct %s *st);\n",
-        filtered_defs[i]->info.name,filtered_defs[i]->info.name);
-      fprintf(out,"int %s_random(struct %s *st);\n",
-        filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+      if (filtered_defs[i]->info.type == ST_UNION) {
+        fprintf(out,"int %s_init(struct %s *st, int idx);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_valid(struct %s *st, int idx);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_random(struct %s *st, int idx);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+      } else {
+        fprintf(out,"int %s_init(struct %s *st);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_valid(struct %s *st);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+        fprintf(out,"int %s_random(struct %s *st);\n",
+          filtered_defs[i]->info.name,filtered_defs[i]->info.name);
+      }
+
     }
   }
 

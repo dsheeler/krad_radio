@@ -335,15 +335,9 @@ int kr_adapter_info_random(struct kr_adapter_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_adapter_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_adapter_api_info_random(&st->api_info,kr_adapter_api_to_index(st->api));
 
@@ -377,15 +371,9 @@ int kr_adapter_path_info_random(struct kr_adapter_path_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_adapter_path_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_adapter_api_path_info_random(&st->info,kr_adapter_api_to_index(st->api));
 
@@ -521,15 +509,9 @@ int kr_stat_St_random(struct kr_stat_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_stat_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -560,15 +542,9 @@ int krad_transponder_rep_St_random(struct krad_transponder_rep_St *st) {
   }
 
   memset(st, 0, sizeof(struct krad_transponder_rep_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -599,15 +575,9 @@ int kr_flac_encoder_St_random(struct kr_flac_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_flac_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -638,15 +608,9 @@ int kr_vpx_decoder_St_random(struct kr_vpx_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vpx_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -677,15 +641,9 @@ int kr_theora_decoder_St_random(struct kr_theora_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_theora_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -716,15 +674,9 @@ int kr_daala_decoder_St_random(struct kr_daala_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_daala_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -755,15 +707,9 @@ int kr_vorbis_decoder_St_random(struct kr_vorbis_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vorbis_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -794,15 +740,9 @@ int kr_opus_decoder_St_random(struct kr_opus_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_opus_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -833,15 +773,9 @@ int kr_flac_decoder_St_random(struct kr_flac_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_flac_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -872,15 +806,9 @@ int kr_vpx_encoder_St_random(struct kr_vpx_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vpx_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -911,15 +839,9 @@ int kr_theora_encoder_St_random(struct kr_theora_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_theora_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -950,15 +872,9 @@ int kr_daala_encoder_St_random(struct kr_daala_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_daala_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -989,15 +905,9 @@ int kr_vorbis_encoder_St_random(struct kr_vorbis_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vorbis_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1028,15 +938,9 @@ int kr_opus_encoder_St_random(struct kr_opus_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_opus_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1139,15 +1043,9 @@ int kr_audio_encoder_St_random(struct kr_audio_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_audio_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1178,15 +1076,9 @@ int kr_video_decoder_St_random(struct kr_video_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_video_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1217,15 +1109,9 @@ int kr_audio_decoder_St_random(struct kr_audio_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_audio_decoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1256,15 +1142,9 @@ int kr_video_encoder_St_random(struct kr_video_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_video_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1333,15 +1213,9 @@ int kr_encoder_St_random(struct kr_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_encoder_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_av_encoder_t_random(&st->av,krad_codec_t_to_index(st->codec));
 
@@ -1409,15 +1283,9 @@ int kr_udp_muxer_St_random(struct kr_udp_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_udp_muxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1448,15 +1316,9 @@ int kr_ogg_muxer_St_random(struct kr_ogg_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_ogg_muxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1487,15 +1349,9 @@ int kr_mkv_muxer_St_random(struct kr_mkv_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_mkv_muxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1526,15 +1382,9 @@ int kr_transogg_muxer_St_random(struct kr_transogg_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transogg_muxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1565,15 +1415,9 @@ int kr_udp_demuxer_St_random(struct kr_udp_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_udp_demuxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1604,15 +1448,9 @@ int kr_ogg_demuxer_St_random(struct kr_ogg_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_ogg_demuxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1643,15 +1481,9 @@ int kr_mkv_demuxer_St_random(struct kr_mkv_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_mkv_demuxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1682,15 +1514,9 @@ int kr_transogg_demuxer_St_random(struct kr_transogg_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transogg_demuxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1757,15 +1583,9 @@ int kr_muxer_St_random(struct kr_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_muxer_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1832,15 +1652,9 @@ int kr_rawin_St_random(struct kr_rawin_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_rawin_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1871,15 +1685,9 @@ int kr_rawout_St_random(struct kr_rawout_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_rawout_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1946,15 +1754,9 @@ int krad_transponder_subunit_rep_St_random(struct krad_transponder_subunit_rep_S
   }
 
   memset(st, 0, sizeof(struct krad_transponder_subunit_rep_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -1985,15 +1787,9 @@ int kr_transponder_info_random(struct kr_transponder_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transponder_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -2098,15 +1894,9 @@ int kr_transponder_path_io_info_random(struct kr_transponder_path_io_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transponder_path_io_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_transponder_path_io_path_info_random(&st->info,kr_transponder_path_io_type_to_index(st->type));
 
@@ -2142,15 +1932,9 @@ int kr_transponder_path_info_random(struct kr_transponder_path_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transponder_path_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_transponder_path_io_info_random(&st->input);
   kr_transponder_path_io_info_random(&st->output);

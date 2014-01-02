@@ -153,7 +153,10 @@ void codegen_ebml(struct_data *def, char *type, ebml_ftype ebml_fun_type, FILE *
             ebml_pack_or_unpack(ebml_fun_type),ebml_fname,members[i]->name);
         }
       }
-    } else if (memb_struct_check(members[i-1]) && codegen_is_union(members[i]->type_info.substruct_info.type_name) && (i > 0)) {
+    } else if ( (def->info.members[i-1].type == T_STRUCT && 
+      codegen_is_enum(def->info.members[i-1].type_info.substruct_info.type_name))
+       && memb_struct_check(&def->info.members[i]) &&
+      codegen_is_union(def->info.members[i].type_info.substruct_info.type_name) && (i > 0)) {
 
       char uppercased[strlen(members[i]->type_info.substruct_info.type_name)+1];
       uppercase(members[i]->type_info.substruct_info.type_name,uppercased);

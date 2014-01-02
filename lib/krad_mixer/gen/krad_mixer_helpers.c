@@ -143,15 +143,9 @@ int kr_mixer_info_random(struct kr_mixer_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_mixer_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -190,15 +184,9 @@ int kr_mixer_path_info_random(struct kr_mixer_path_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_mixer_path_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
   kr_lowpass_info_random(&st->lowpass);
   kr_highpass_info_random(&st->highpass);
