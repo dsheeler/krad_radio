@@ -44,6 +44,7 @@ typedef enum {
 
 typedef struct kr_eq_info kr_eq_info;
 typedef struct kr_eq_band_info kr_eq_band_info;
+typedef struct kr_pass_info kr_pass_info;
 typedef struct kr_lowpass_info kr_lowpass_info;
 typedef struct kr_highpass_info kr_highpass_info;
 typedef struct kr_analog_info kr_analog_info;

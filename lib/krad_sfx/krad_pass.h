@@ -34,19 +34,31 @@ typedef struct kr_pass kr_pass;
 typedef struct kr_pass kr_lowpass;
 typedef struct kr_pass kr_highpass;
 
-struct kr_pass {
-  biquad filter;
-  int type;
+typedef struct kr_pass_info kr_pass_info;
+typedef struct kr_pass_setup kr_pass_setup;
+typedef struct kr_pass_cmd kr_pass_cmd;
+
+struct kr_pass_info {
   float bw;
   float hz;
-  int new_type;
-  float new_sample_rate;
-  float sample_rate;
-  kr_easer bw_easer;
-  kr_easer hz_easer;
+  kr_sfx_effect_type type;
+};
+
+struct kr_pass_setup {
+  int sample_rate;
+  kr_pass_info info;
+};
+
+struct kr_pass_cmd {
+  kr_sfx_effect_control control;
+  float value;
+  int duration;
+  kr_easing easing;
+  void *user;
 };
 
 kr_pass *kr_pass_create(int sample_rate, kr_sfx_effect_type type);
+kr_pass *kr_pass_create2(kr_pass_setup *setup);
 void kr_pass_destroy(kr_pass *pass);
 
 void kr_pass_set_sample_rate(kr_pass *pass, int sample_rate);
@@ -58,5 +70,9 @@ void kr_pass_process2(kr_pass *pass, float *input, float *output,
 void kr_pass_set_type(kr_pass *pass, kr_sfx_effect_type type);
 void kr_pass_set_bw(kr_pass *pass, float bw, int duration, kr_easing easing, void *user);
 void kr_pass_set_hz(kr_pass *pass, float hz, int duration, kr_easing easing, void *user);
+
+int kr_pass_ctl(kr_pass *pass, kr_pass_cmd *cmd);
+int kr_lowpass_info_get(kr_pass *pass, kr_lowpass_info *info);
+int kr_highpass_info_get(kr_pass *pass, kr_highpass_info *info);
 
 #endif
