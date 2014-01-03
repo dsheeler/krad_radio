@@ -63,7 +63,7 @@ typedef enum {
 } kr_mixer_adv_ctl;
 
 struct kr_mixer_info {
-  uint32_t period_size; /* 0, 10, 100 */
+  uint32_t period_size;
   uint32_t sample_rate;
   uint32_t inputs;
   uint32_t buses;
@@ -80,7 +80,7 @@ struct kr_mixer_path_info {
   kr_mixer_channels channels;
   kr_mixer_path_type type;
   float fade;
-  float volume[KR_MXR_MAX_CHANNELS]; /* 0, 10, 100 */
+  float volume[KR_MXR_MAX_CHANNELS];
   int map[KR_MXR_MAX_CHANNELS];
   int mixmap[KR_MXR_MAX_CHANNELS];
   float rms[KR_MXR_MAX_CHANNELS];
