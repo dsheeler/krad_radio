@@ -63,10 +63,6 @@ int kr_v4l2_mode_random(struct kr_v4l2_mode *st) {
   }
 
   memset(st, 0, sizeof(struct kr_v4l2_mode));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -98,10 +94,6 @@ int kr_v4l2_info_random(struct kr_v4l2_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_v4l2_info));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_v4l2_mode_random(&st->mode);
 
   return 0;
@@ -134,10 +126,6 @@ int kr_v4l2_open_info_random(struct kr_v4l2_open_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_v4l2_open_info));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_v4l2_mode_random(&st->mode);
 
   return 0;

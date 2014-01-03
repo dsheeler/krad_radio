@@ -25,10 +25,6 @@ int kr_pos_random(struct kr_pos *st) {
   }
 
   memset(st, 0, sizeof(struct kr_pos));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -66,10 +62,6 @@ int kr_perspective_view_random(struct kr_perspective_view *st) {
   }
 
   memset(st, 0, sizeof(struct kr_perspective_view));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_pos_random(&st->top_left);
   kr_pos_random(&st->top_right);
   kr_pos_random(&st->bottom_left);
@@ -105,10 +97,6 @@ int kr_perspective_random(struct kr_perspective *st) {
   }
 
   memset(st, 0, sizeof(struct kr_perspective));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_perspective_view_random(&st->view);
 
   return 0;

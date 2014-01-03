@@ -557,7 +557,7 @@ int codegen(struct_data *defs, int n, char *prefix,
   }
 
   if (!strncmp(format,"helper_proto",12)) {
-    codegen_helpers_prototype(defs,n,prefix,suffix,out);
+    codegen_helpers_prototypes(defs,n,prefix,suffix,out);
     return 0;
   }
 

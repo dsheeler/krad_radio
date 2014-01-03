@@ -12,7 +12,7 @@ int kr_compositor_path_type_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_compositor_path_type *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }
@@ -29,7 +29,7 @@ int kr_compositor_subunit_type_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_compositor_subunit_type *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }
@@ -46,7 +46,7 @@ int kr_vector_type_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_vector_type *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }
@@ -63,7 +63,7 @@ int kr_compositor_control_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_compositor_control *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }

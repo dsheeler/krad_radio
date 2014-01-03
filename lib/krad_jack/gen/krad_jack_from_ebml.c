@@ -12,7 +12,7 @@ int kr_jack_direction_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_jack_direction *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }
@@ -29,7 +29,7 @@ int kr_jack_state_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_jack_state *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }

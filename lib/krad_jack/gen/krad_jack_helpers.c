@@ -63,100 +63,133 @@ int kr_strto_kr_jack_state(char *string) {
 }
 
 int kr_jack_setup_info_init(kr_jack_setup_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_setup_info));
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_setup_info_valid(kr_jack_setup_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_setup_info_random(kr_jack_setup_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_setup_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 64; i++) {
   }
-
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_info_init(kr_jack_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_info));
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_info_valid(kr_jack_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_info_random(kr_jack_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 64; i++) {
   }
-
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_path_info_init(kr_jack_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_path_info));
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_path_info_valid(kr_jack_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 64; i++) {
+  }
 
   return 0;
 }
 
 int kr_jack_path_info_random(kr_jack_path_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_path_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 64; i++) {
   }
-
 
   return 0;
 }

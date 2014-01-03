@@ -164,81 +164,97 @@ int kr_compositor_controls_random(struct kr_compositor_controls *st) {
   }
 
   memset(st, 0, sizeof(struct kr_compositor_controls));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
 
 int kr_sprite_info_init(struct kr_sprite_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_sprite_info));
+  for (i = 0; i < 256; i++) {
+  }
   kr_compositor_controls_init(&st->controls);
 
   return 0;
 }
 
 int kr_sprite_info_valid(struct kr_sprite_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 256; i++) {
+  }
   kr_compositor_controls_valid(&st->controls);
 
   return 0;
 }
 
 int kr_sprite_info_random(struct kr_sprite_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_sprite_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 256; i++) {
   }
-
   kr_compositor_controls_random(&st->controls);
 
   return 0;
 }
 
 int kr_text_info_init(struct kr_text_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_text_info));
+  for (i = 0; i < 512; i++) {
+  }
+  for (i = 0; i < 256; i++) {
+  }
   kr_compositor_controls_init(&st->controls);
 
   return 0;
 }
 
 int kr_text_info_valid(struct kr_text_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 512; i++) {
+  }
+  for (i = 0; i < 256; i++) {
+  }
   kr_compositor_controls_valid(&st->controls);
 
   return 0;
 }
 
 int kr_text_info_random(struct kr_text_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_text_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 512; i++) {
   }
-
+  for (i = 0; i < 256; i++) {
+  }
   kr_compositor_controls_random(&st->controls);
 
   return 0;
@@ -271,21 +287,21 @@ int kr_vector_info_random(struct kr_vector_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vector_info));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_compositor_controls_random(&st->controls);
 
   return 0;
 }
 
 int kr_compositor_path_info_init(struct kr_compositor_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_compositor_path_info));
+  for (i = 0; i < 128; i++) {
+  }
   kr_perspective_view_init(&st->view);
   kr_compositor_controls_init(&st->controls);
 
@@ -293,10 +309,14 @@ int kr_compositor_path_info_init(struct kr_compositor_path_info *st) {
 }
 
 int kr_compositor_path_info_valid(struct kr_compositor_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 128; i++) {
+  }
   kr_perspective_view_valid(&st->view);
   kr_compositor_controls_valid(&st->controls);
 
@@ -304,15 +324,14 @@ int kr_compositor_path_info_valid(struct kr_compositor_path_info *st) {
 }
 
 int kr_compositor_path_info_random(struct kr_compositor_path_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_compositor_path_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 128; i++) {
   }
-
   kr_perspective_view_random(&st->view);
   kr_compositor_controls_random(&st->controls);
 
@@ -344,10 +363,6 @@ int kr_compositor_info_random(struct kr_compositor_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_compositor_info));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }

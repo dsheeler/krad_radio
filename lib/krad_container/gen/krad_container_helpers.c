@@ -116,34 +116,41 @@ int kr_strto_krad_codec_t(char *string) {
 }
 
 int krad_codec_header_St_init(struct krad_codec_header_St *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct krad_codec_header_St));
+  for (i = 0; i < 4; i++) {
+  }
 
   return 0;
 }
 
 int krad_codec_header_St_valid(struct krad_codec_header_St *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 4; i++) {
+  }
 
   return 0;
 }
 
 int krad_codec_header_St_random(struct krad_codec_header_St *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct krad_codec_header_St));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 4; i++) {
   }
-
 
   return 0;
 }

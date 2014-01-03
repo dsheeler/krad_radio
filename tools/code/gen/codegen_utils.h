@@ -28,7 +28,7 @@ int codegen(struct_data *defs, int n, char *prefix,
  char *suffix,char *format, FILE *out);
 int codegen_helper_functions(struct_data *defs, int n, char *prefix,
  char *suffix, FILE *out);
-void codegen_helpers_prototype(struct_data *defs, int n, char *prefix,
+void codegen_helpers_prototypes(struct_data *defs, int n, char *prefix,
  char *suffix, FILE *out);
 int codegen_enum_util_functions(struct_data *defs, int n, 
   char *prefix, char *suffix, FILE *out);

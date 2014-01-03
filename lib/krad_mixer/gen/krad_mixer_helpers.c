@@ -119,44 +119,83 @@ int kr_strto_kr_mixer_path_type(char *string) {
 }
 
 int kr_mixer_info_init(struct kr_mixer_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_mixer_info));
+  st->period_size = 0;
+  for (i = 0; i < 32; i++) {
+  }
 
   return 0;
 }
 
 int kr_mixer_info_valid(struct kr_mixer_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  if ( (st->period_size < 10) || (st->period_size > 100) ) {
+    return -2;
+  }
+
+  for (i = 0; i < 32; i++) {
+  }
 
   return 0;
 }
 
 int kr_mixer_info_random(struct kr_mixer_info *st) {
+  int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_mixer_info));
-  if (st == NULL) {
-    return -1;
+  scale = (double)90 / RAND_MAX;
+  st->period_size = 10 + floor(rand() * scale);
+  for (i = 0; i < 32; i++) {
   }
-
 
   return 0;
 }
 
 int kr_mixer_path_info_init(struct kr_mixer_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_mixer_path_info));
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+    st->volume[i] = 0.00;
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
   kr_lowpass_info_init(&st->lowpass);
   kr_highpass_info_init(&st->highpass);
   kr_analog_info_init(&st->analog);
@@ -166,10 +205,32 @@ int kr_mixer_path_info_init(struct kr_mixer_path_info *st) {
 }
 
 int kr_mixer_path_info_valid(struct kr_mixer_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+    if ( (st->volume[i] < 10.00) || (st->volume[i] > 100.00) ) {
+      return -8;
+    }
+
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
   kr_lowpass_info_valid(&st->lowpass);
   kr_highpass_info_valid(&st->highpass);
   kr_analog_info_valid(&st->analog);
@@ -179,15 +240,36 @@ int kr_mixer_path_info_valid(struct kr_mixer_path_info *st) {
 }
 
 int kr_mixer_path_info_random(struct kr_mixer_path_info *st) {
+  int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_mixer_path_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 64; i++) {
   }
-
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < 64; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+    scale = (double)90.00 / RAND_MAX;
+    st->volume[i] = 10.00 + floor(rand() * scale);
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
+  for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
+  }
   kr_lowpass_info_random(&st->lowpass);
   kr_highpass_info_random(&st->highpass);
   kr_analog_info_random(&st->analog);

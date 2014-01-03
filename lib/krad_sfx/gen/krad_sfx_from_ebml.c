@@ -12,7 +12,7 @@ int kr_sfx_control_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_sfx_control *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }
@@ -29,7 +29,7 @@ int kr_sfx_effect_type_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_sfx_effect_type *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }
@@ -46,7 +46,7 @@ int kr_sfx_effect_control_fr_ebml(kr_ebml *ebml, void *st) {
 
   actual = (kr_sfx_effect_control *)st;
 
-  res += kr_ebml2_unpack_element_int32(ebml, NULL, actual);
+  res += kr_ebml2_unpack_element_int32(ebml, NULL, (int32_t *)actual);
 
   return res;
 }

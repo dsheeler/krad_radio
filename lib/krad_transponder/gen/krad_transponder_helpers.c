@@ -335,46 +335,49 @@ int kr_adapter_info_random(struct kr_adapter_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_adapter_info));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_adapter_api_info_random(&st->api_info,kr_adapter_api_to_index(st->api));
 
   return 0;
 }
 
 int kr_adapter_path_info_init(struct kr_adapter_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_adapter_path_info));
+  for (i = 0; i < 64; i++) {
+  }
   kr_adapter_api_path_info_init(&st->info,kr_adapter_api_to_index(st->api));
 
   return 0;
 }
 
 int kr_adapter_path_info_valid(struct kr_adapter_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 64; i++) {
+  }
   kr_adapter_api_path_info_valid(&st->info,kr_adapter_api_to_index(st->api));
 
   return 0;
 }
 
 int kr_adapter_path_info_random(struct kr_adapter_path_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_adapter_path_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 64; i++) {
   }
-
   kr_adapter_api_path_info_random(&st->info,kr_adapter_api_to_index(st->api));
 
   return 0;
@@ -509,10 +512,6 @@ int kr_stat_St_random(struct kr_stat_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_stat_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -542,10 +541,6 @@ int krad_transponder_rep_St_random(struct krad_transponder_rep_St *st) {
   }
 
   memset(st, 0, sizeof(struct krad_transponder_rep_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -575,10 +570,6 @@ int kr_flac_encoder_St_random(struct kr_flac_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_flac_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -608,10 +599,6 @@ int kr_vpx_decoder_St_random(struct kr_vpx_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vpx_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -641,10 +628,6 @@ int kr_theora_decoder_St_random(struct kr_theora_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_theora_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -674,10 +657,6 @@ int kr_daala_decoder_St_random(struct kr_daala_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_daala_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -707,10 +686,6 @@ int kr_vorbis_decoder_St_random(struct kr_vorbis_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vorbis_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -740,10 +715,6 @@ int kr_opus_decoder_St_random(struct kr_opus_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_opus_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -773,10 +744,6 @@ int kr_flac_decoder_St_random(struct kr_flac_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_flac_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -806,10 +773,6 @@ int kr_vpx_encoder_St_random(struct kr_vpx_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vpx_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -839,10 +802,6 @@ int kr_theora_encoder_St_random(struct kr_theora_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_theora_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -872,10 +831,6 @@ int kr_daala_encoder_St_random(struct kr_daala_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_daala_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -905,10 +860,6 @@ int kr_vorbis_encoder_St_random(struct kr_vorbis_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_vorbis_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -938,10 +889,6 @@ int kr_opus_encoder_St_random(struct kr_opus_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_opus_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1043,10 +990,6 @@ int kr_audio_encoder_St_random(struct kr_audio_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_audio_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1076,10 +1019,6 @@ int kr_video_decoder_St_random(struct kr_video_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_video_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1109,10 +1048,6 @@ int kr_audio_decoder_St_random(struct kr_audio_decoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_audio_decoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1142,10 +1077,6 @@ int kr_video_encoder_St_random(struct kr_video_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_video_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1213,10 +1144,6 @@ int kr_encoder_St_random(struct kr_encoder_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_encoder_St));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_av_encoder_t_random(&st->av,krad_codec_t_to_index(st->codec));
 
   return 0;
@@ -1283,10 +1210,6 @@ int kr_udp_muxer_St_random(struct kr_udp_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_udp_muxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1316,10 +1239,6 @@ int kr_ogg_muxer_St_random(struct kr_ogg_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_ogg_muxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1349,10 +1268,6 @@ int kr_mkv_muxer_St_random(struct kr_mkv_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_mkv_muxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1382,10 +1297,6 @@ int kr_transogg_muxer_St_random(struct kr_transogg_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transogg_muxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1415,10 +1326,6 @@ int kr_udp_demuxer_St_random(struct kr_udp_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_udp_demuxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1448,10 +1355,6 @@ int kr_ogg_demuxer_St_random(struct kr_ogg_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_ogg_demuxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1481,10 +1384,6 @@ int kr_mkv_demuxer_St_random(struct kr_mkv_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_mkv_demuxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1514,10 +1413,6 @@ int kr_transogg_demuxer_St_random(struct kr_transogg_demuxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transogg_demuxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1583,10 +1478,6 @@ int kr_muxer_St_random(struct kr_muxer_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_muxer_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1652,10 +1543,6 @@ int kr_rawin_St_random(struct kr_rawin_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_rawin_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1685,10 +1572,6 @@ int kr_rawout_St_random(struct kr_rawout_St *st) {
   }
 
   memset(st, 0, sizeof(struct kr_rawout_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1754,10 +1637,6 @@ int krad_transponder_subunit_rep_St_random(struct krad_transponder_subunit_rep_S
   }
 
   memset(st, 0, sizeof(struct krad_transponder_subunit_rep_St));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1787,10 +1666,6 @@ int kr_transponder_info_random(struct kr_transponder_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transponder_info));
-  if (st == NULL) {
-    return -1;
-  }
-
 
   return 0;
 }
@@ -1894,21 +1769,21 @@ int kr_transponder_path_io_info_random(struct kr_transponder_path_io_info *st) {
   }
 
   memset(st, 0, sizeof(struct kr_transponder_path_io_info));
-  if (st == NULL) {
-    return -1;
-  }
-
   kr_transponder_path_io_path_info_random(&st->info,kr_transponder_path_io_type_to_index(st->type));
 
   return 0;
 }
 
 int kr_transponder_path_info_init(struct kr_transponder_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_transponder_path_info));
+  for (i = 0; i < 128; i++) {
+  }
   kr_transponder_path_io_info_init(&st->input);
   kr_transponder_path_io_info_init(&st->output);
 
@@ -1916,10 +1791,14 @@ int kr_transponder_path_info_init(struct kr_transponder_path_info *st) {
 }
 
 int kr_transponder_path_info_valid(struct kr_transponder_path_info *st) {
+  int i;
+
   if (st == NULL) {
     return -1;
   }
 
+  for (i = 0; i < 128; i++) {
+  }
   kr_transponder_path_io_info_valid(&st->input);
   kr_transponder_path_io_info_valid(&st->output);
 
@@ -1927,15 +1806,14 @@ int kr_transponder_path_info_valid(struct kr_transponder_path_info *st) {
 }
 
 int kr_transponder_path_info_random(struct kr_transponder_path_info *st) {
+  int i;
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_transponder_path_info));
-  if (st == NULL) {
-    return -1;
+  for (i = 0; i < 128; i++) {
   }
-
   kr_transponder_path_io_info_random(&st->input);
   kr_transponder_path_io_info_random(&st->output);
 

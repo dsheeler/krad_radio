@@ -96,7 +96,7 @@ void codegen_ebml(struct_data *def, char *type, ebml_ftype ebml_fun_type, FILE *
     if (ebml_fun_type) {
       fprintf(out,"  res += %s(ebml, 0x%x, *actual);\n","kr_ebml_pack_int32",0xE1);
     } else {
-      fprintf(out,"  res += %s(ebml, NULL, actual);\n","kr_ebml2_unpack_element_int32");
+      fprintf(out,"  res += %s(ebml, NULL, (int32_t *)actual);\n","kr_ebml2_unpack_element_int32");
     }
     return;
   }
