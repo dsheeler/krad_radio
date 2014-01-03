@@ -261,10 +261,8 @@ void files_gen(header_data *hdata,
             break;
             case HELPERS: 
             sprintf(format,"helper");
-            //sprintf(format2,"helper_proto");
+            sprintf(format2,"helper_proto");
             codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,"enum_utils",out);
-            //codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,format2,out);
-            sprintf(format2," ");
             break;
             default: break;
           }

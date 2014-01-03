@@ -115,13 +115,16 @@ int kr_strto_krad_codec_t(char *string) {
   return -1;
 }
 
-int krad_codec_header_St_init(struct krad_codec_header_St *st) {
+int krad_codec_header_St_init(void *st) {
+  struct krad_codec_header_St *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct krad_codec_header_St *)st;
   memset(st, 0, sizeof(struct krad_codec_header_St));
   for (i = 0; i < 4; i++) {
   }
@@ -129,25 +132,31 @@ int krad_codec_header_St_init(struct krad_codec_header_St *st) {
   return 0;
 }
 
-int krad_codec_header_St_valid(struct krad_codec_header_St *st) {
+int krad_codec_header_St_valid(void *st) {
+  struct krad_codec_header_St *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct krad_codec_header_St *)st;
   for (i = 0; i < 4; i++) {
   }
 
   return 0;
 }
 
-int krad_codec_header_St_random(struct krad_codec_header_St *st) {
+int krad_codec_header_St_random(void *st) {
+  struct krad_codec_header_St *actual;
+
   int i;
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct krad_codec_header_St *)st;
   memset(st, 0, sizeof(struct krad_codec_header_St));
   for (i = 0; i < 4; i++) {
   }

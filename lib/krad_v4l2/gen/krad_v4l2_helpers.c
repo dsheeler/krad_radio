@@ -38,95 +38,122 @@ int kr_strto_kr_v4l2_state(char *string) {
   return -1;
 }
 
-int kr_v4l2_mode_init(struct kr_v4l2_mode *st) {
+int kr_v4l2_mode_init(void *st) {
+  struct kr_v4l2_mode *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_mode *)st;
   memset(st, 0, sizeof(struct kr_v4l2_mode));
 
   return 0;
 }
 
-int kr_v4l2_mode_valid(struct kr_v4l2_mode *st) {
+int kr_v4l2_mode_valid(void *st) {
+  struct kr_v4l2_mode *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_mode *)st;
 
   return 0;
 }
 
-int kr_v4l2_mode_random(struct kr_v4l2_mode *st) {
+int kr_v4l2_mode_random(void *st) {
+  struct kr_v4l2_mode *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_mode *)st;
   memset(st, 0, sizeof(struct kr_v4l2_mode));
 
   return 0;
 }
 
-int kr_v4l2_info_init(struct kr_v4l2_info *st) {
+int kr_v4l2_info_init(void *st) {
+  struct kr_v4l2_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_info *)st;
   memset(st, 0, sizeof(struct kr_v4l2_info));
-  kr_v4l2_mode_init(&st->mode);
+  kr_v4l2_mode_init(&actual->mode);
 
   return 0;
 }
 
-int kr_v4l2_info_valid(struct kr_v4l2_info *st) {
+int kr_v4l2_info_valid(void *st) {
+  struct kr_v4l2_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
-  kr_v4l2_mode_valid(&st->mode);
+  actual = (struct kr_v4l2_info *)st;
+  kr_v4l2_mode_valid(&actual->mode);
 
   return 0;
 }
 
-int kr_v4l2_info_random(struct kr_v4l2_info *st) {
+int kr_v4l2_info_random(void *st) {
+  struct kr_v4l2_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_info *)st;
   memset(st, 0, sizeof(struct kr_v4l2_info));
-  kr_v4l2_mode_random(&st->mode);
+  kr_v4l2_mode_random(&actual->mode);
 
   return 0;
 }
 
-int kr_v4l2_open_info_init(struct kr_v4l2_open_info *st) {
+int kr_v4l2_open_info_init(void *st) {
+  struct kr_v4l2_open_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_open_info *)st;
   memset(st, 0, sizeof(struct kr_v4l2_open_info));
-  kr_v4l2_mode_init(&st->mode);
+  kr_v4l2_mode_init(&actual->mode);
 
   return 0;
 }
 
-int kr_v4l2_open_info_valid(struct kr_v4l2_open_info *st) {
+int kr_v4l2_open_info_valid(void *st) {
+  struct kr_v4l2_open_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
-  kr_v4l2_mode_valid(&st->mode);
+  actual = (struct kr_v4l2_open_info *)st;
+  kr_v4l2_mode_valid(&actual->mode);
 
   return 0;
 }
 
-int kr_v4l2_open_info_random(struct kr_v4l2_open_info *st) {
+int kr_v4l2_open_info_random(void *st) {
+  struct kr_v4l2_open_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_v4l2_open_info *)st;
   memset(st, 0, sizeof(struct kr_v4l2_open_info));
-  kr_v4l2_mode_random(&st->mode);
+  kr_v4l2_mode_random(&actual->mode);
 
   return 0;
 }

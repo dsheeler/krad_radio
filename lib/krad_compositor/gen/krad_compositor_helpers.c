@@ -139,71 +139,88 @@ int kr_strto_kr_vector_type(char *string) {
   return -1;
 }
 
-int kr_compositor_controls_init(struct kr_compositor_controls *st) {
+int kr_compositor_controls_init(void *st) {
+  struct kr_compositor_controls *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_controls *)st;
   memset(st, 0, sizeof(struct kr_compositor_controls));
 
   return 0;
 }
 
-int kr_compositor_controls_valid(struct kr_compositor_controls *st) {
+int kr_compositor_controls_valid(void *st) {
+  struct kr_compositor_controls *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_controls *)st;
 
   return 0;
 }
 
-int kr_compositor_controls_random(struct kr_compositor_controls *st) {
+int kr_compositor_controls_random(void *st) {
+  struct kr_compositor_controls *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_controls *)st;
   memset(st, 0, sizeof(struct kr_compositor_controls));
 
   return 0;
 }
 
-int kr_sprite_info_init(struct kr_sprite_info *st) {
+int kr_sprite_info_init(void *st) {
+  struct kr_sprite_info *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_sprite_info *)st;
   memset(st, 0, sizeof(struct kr_sprite_info));
   for (i = 0; i < 256; i++) {
   }
-  kr_compositor_controls_init(&st->controls);
+  kr_compositor_controls_init(&actual->controls);
 
   return 0;
 }
 
-int kr_sprite_info_valid(struct kr_sprite_info *st) {
+int kr_sprite_info_valid(void *st) {
+  struct kr_sprite_info *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_sprite_info *)st;
   for (i = 0; i < 256; i++) {
-    if (!st->filename[i]) {
+    if (!actual->filename[i]) {
       break;
     }
-    if (i == 255 && st->filename[i]) {
+    if (i == 255 && actual->filename[i]) {
       return -2;
     }
   }
-  kr_compositor_controls_valid(&st->controls);
+  kr_compositor_controls_valid(&actual->controls);
 
   return 0;
 }
 
-int kr_sprite_info_random(struct kr_sprite_info *st) {
+int kr_sprite_info_random(void *st) {
+  struct kr_sprite_info *actual;
+
   int i;
   struct timeval tv;
   double scale;
@@ -215,65 +232,74 @@ int kr_sprite_info_random(struct kr_sprite_info *st) {
     return -1;
   }
 
+  actual = (struct kr_sprite_info *)st;
   memset(st, 0, sizeof(struct kr_sprite_info));
   for (i = 0; i < 256; i++) {
     scale = (double)25 / RAND_MAX;
-    st->filename[i] = 97 + floor(rand() * scale);
+    actual->filename[i] = 97 + floor(rand() * scale);
     if (i == 255) {
-      st->filename[255] = '\0';
+      actual->filename[255] = '\0';
     }
   }
-  kr_compositor_controls_random(&st->controls);
+  kr_compositor_controls_random(&actual->controls);
 
   return 0;
 }
 
-int kr_text_info_init(struct kr_text_info *st) {
+int kr_text_info_init(void *st) {
+  struct kr_text_info *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_text_info *)st;
   memset(st, 0, sizeof(struct kr_text_info));
   for (i = 0; i < 512; i++) {
   }
   for (i = 0; i < 256; i++) {
   }
-  kr_compositor_controls_init(&st->controls);
+  kr_compositor_controls_init(&actual->controls);
 
   return 0;
 }
 
-int kr_text_info_valid(struct kr_text_info *st) {
+int kr_text_info_valid(void *st) {
+  struct kr_text_info *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_text_info *)st;
   for (i = 0; i < 512; i++) {
-    if (!st->string[i]) {
+    if (!actual->string[i]) {
       break;
     }
-    if (i == 511 && st->string[i]) {
+    if (i == 511 && actual->string[i]) {
       return -2;
     }
   }
   for (i = 0; i < 256; i++) {
-    if (!st->font[i]) {
+    if (!actual->font[i]) {
       break;
     }
-    if (i == 255 && st->font[i]) {
+    if (i == 255 && actual->font[i]) {
       return -3;
     }
   }
-  kr_compositor_controls_valid(&st->controls);
+  kr_compositor_controls_valid(&actual->controls);
 
   return 0;
 }
 
-int kr_text_info_random(struct kr_text_info *st) {
+int kr_text_info_random(void *st) {
+  struct kr_text_info *actual;
+
   int i;
   struct timeval tv;
   double scale;
@@ -285,96 +311,114 @@ int kr_text_info_random(struct kr_text_info *st) {
     return -1;
   }
 
+  actual = (struct kr_text_info *)st;
   memset(st, 0, sizeof(struct kr_text_info));
   for (i = 0; i < 512; i++) {
     scale = (double)25 / RAND_MAX;
-    st->string[i] = 97 + floor(rand() * scale);
+    actual->string[i] = 97 + floor(rand() * scale);
     if (i == 511) {
-      st->string[511] = '\0';
+      actual->string[511] = '\0';
     }
   }
   for (i = 0; i < 256; i++) {
     scale = (double)25 / RAND_MAX;
-    st->font[i] = 97 + floor(rand() * scale);
+    actual->font[i] = 97 + floor(rand() * scale);
     if (i == 255) {
-      st->font[255] = '\0';
+      actual->font[255] = '\0';
     }
   }
-  kr_compositor_controls_random(&st->controls);
+  kr_compositor_controls_random(&actual->controls);
 
   return 0;
 }
 
-int kr_vector_info_init(struct kr_vector_info *st) {
+int kr_vector_info_init(void *st) {
+  struct kr_vector_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_vector_info *)st;
   memset(st, 0, sizeof(struct kr_vector_info));
-  kr_compositor_controls_init(&st->controls);
+  kr_compositor_controls_init(&actual->controls);
 
   return 0;
 }
 
-int kr_vector_info_valid(struct kr_vector_info *st) {
+int kr_vector_info_valid(void *st) {
+  struct kr_vector_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
-  kr_compositor_controls_valid(&st->controls);
+  actual = (struct kr_vector_info *)st;
+  kr_compositor_controls_valid(&actual->controls);
 
   return 0;
 }
 
-int kr_vector_info_random(struct kr_vector_info *st) {
+int kr_vector_info_random(void *st) {
+  struct kr_vector_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_vector_info *)st;
   memset(st, 0, sizeof(struct kr_vector_info));
-  kr_compositor_controls_random(&st->controls);
+  kr_compositor_controls_random(&actual->controls);
 
   return 0;
 }
 
-int kr_compositor_path_info_init(struct kr_compositor_path_info *st) {
+int kr_compositor_path_info_init(void *st) {
+  struct kr_compositor_path_info *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_path_info *)st;
   memset(st, 0, sizeof(struct kr_compositor_path_info));
   for (i = 0; i < 128; i++) {
   }
-  kr_perspective_view_init(&st->view);
-  kr_compositor_controls_init(&st->controls);
+  kr_perspective_view_init(&actual->view);
+  kr_compositor_controls_init(&actual->controls);
 
   return 0;
 }
 
-int kr_compositor_path_info_valid(struct kr_compositor_path_info *st) {
+int kr_compositor_path_info_valid(void *st) {
+  struct kr_compositor_path_info *actual;
+
   int i;
 
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_path_info *)st;
   for (i = 0; i < 128; i++) {
-    if (!st->name[i]) {
+    if (!actual->name[i]) {
       break;
     }
-    if (i == 127 && st->name[i]) {
+    if (i == 127 && actual->name[i]) {
       return -2;
     }
   }
-  kr_perspective_view_valid(&st->view);
-  kr_compositor_controls_valid(&st->controls);
+  kr_perspective_view_valid(&actual->view);
+  kr_compositor_controls_valid(&actual->controls);
 
   return 0;
 }
 
-int kr_compositor_path_info_random(struct kr_compositor_path_info *st) {
+int kr_compositor_path_info_random(void *st) {
+  struct kr_compositor_path_info *actual;
+
   int i;
   struct timeval tv;
   double scale;
@@ -386,44 +430,54 @@ int kr_compositor_path_info_random(struct kr_compositor_path_info *st) {
     return -1;
   }
 
+  actual = (struct kr_compositor_path_info *)st;
   memset(st, 0, sizeof(struct kr_compositor_path_info));
   for (i = 0; i < 128; i++) {
     scale = (double)25 / RAND_MAX;
-    st->name[i] = 97 + floor(rand() * scale);
+    actual->name[i] = 97 + floor(rand() * scale);
     if (i == 127) {
-      st->name[127] = '\0';
+      actual->name[127] = '\0';
     }
   }
-  kr_perspective_view_random(&st->view);
-  kr_compositor_controls_random(&st->controls);
+  kr_perspective_view_random(&actual->view);
+  kr_compositor_controls_random(&actual->controls);
 
   return 0;
 }
 
-int kr_compositor_info_init(struct kr_compositor_info *st) {
+int kr_compositor_info_init(void *st) {
+  struct kr_compositor_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_info *)st;
   memset(st, 0, sizeof(struct kr_compositor_info));
 
   return 0;
 }
 
-int kr_compositor_info_valid(struct kr_compositor_info *st) {
+int kr_compositor_info_valid(void *st) {
+  struct kr_compositor_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_info *)st;
 
   return 0;
 }
 
-int kr_compositor_info_random(struct kr_compositor_info *st) {
+int kr_compositor_info_random(void *st) {
+  struct kr_compositor_info *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_compositor_info *)st;
   memset(st, 0, sizeof(struct kr_compositor_info));
 
   return 0;

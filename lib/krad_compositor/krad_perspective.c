@@ -182,7 +182,7 @@ static void kr_perspective_set_default (kr_perspective *perspective) {
   kr_perspective_set(perspective, &view);
 }
 
-void kr_perspective_random (kr_perspective *perspective) {
+void kr_perspective_rand (kr_perspective *perspective) {
 
   kr_perspective_view view;
   uint32_t halfwidth;
