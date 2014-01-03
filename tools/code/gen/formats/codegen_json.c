@@ -1,5 +1,25 @@
 #include "codegen_utils.h"
 
+static void codegen_json_union_content_from_type(struct_data *def, FILE *out) {
+  int i;
+
+  for (i = 0; i < def->info.member_count; i++) {
+    if (memb_struct_check(&def->info.members[i])) {
+      char uppercased[strlen(def->info.members[i].type_info.substruct_info.type_name)+1];
+      uppercase(def->info.members[i].type_info.substruct_info.type_name,uppercased);
+      fprintf(out,"    case %d: {\n",i);
+      fprintf(out,"      uber.actual = &(actual->%s);\n      ",
+        def->info.members[i].name);
+      fprintf(out,"uber.type = JSON_%s;\n",uppercased);
+      fprintf(out,"      res += info_pack_to_json(&json[res],&uber,max-res);\n");
+      fprintf(out,"      break;\n    }\n");
+    }
+    /* TODO: handle unions of primitives (ints,floats,strings...) */
+  }
+        
+  return;
+}
+
 void codegen_json(struct_data *def, char *type, FILE *out) {
   int i;
   int last;
@@ -18,6 +38,13 @@ void codegen_json(struct_data *def, char *type, FILE *out) {
     fprintf(out,"  res += snprintf(&%s[res],max-res,\"\\\"%%u\\\"",
       type);
     fprintf(out,"\",*actual);\n");
+    return;
+  }
+
+  if (def->info.type == ST_UNION) {
+    fprintf(out,"  switch (uber_actual->type) {\n");
+    codegen_json_union_content_from_type(def,out);
+    fprintf(out,"  }\n\n");
     return;
   }
 
@@ -70,6 +97,27 @@ void codegen_json(struct_data *def, char *type, FILE *out) {
         if (i != (last - 1))
             fprintf(out,"  res += snprintf(&%s[res],max-res,\",\");\n",type);
       }
+    } else if ((members[i-1]->type == T_STRUCT && 
+      codegen_is_enum(members[i-1]->type_info.substruct_info.type_name))
+       && memb_struct_check(members[i]) &&
+      codegen_is_union(members[i]->type_info.substruct_info.type_name) && (i > 0)) {
+
+
+      char uppercased[strlen(members[i]->type_info.substruct_info.type_name)+1];
+      uppercase(members[i]->type_info.substruct_info.type_name,uppercased);
+
+      fprintf(out,"  index = %s_to_index(actual->%s);\n",
+          members[i-1]->type_info.substruct_info.type_name,
+          members[i-1]->name);
+ 
+      fprintf(out,"  uber_sub.type = index;\n");
+      fprintf(out,"  uber_sub.actual = &(actual->%s);\n",members[i]->name);
+
+      fprintf(out,"  uber.actual = &(uber_sub);\n  uber.type = JSON_%s;\n",
+       uppercased);
+      fprintf(out,"  res += info_pack_to_%s(&%s[res],&uber,max-res);\n",type,type);
+
+
     } else if (memb_struct_check(members[i])) {
       char uppercased[strlen(members[i]->type_info.substruct_info.type_name)+1];
       uppercase(members[i]->type_info.substruct_info.type_name,uppercased);

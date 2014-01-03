@@ -237,9 +237,9 @@ static void codegen_function(struct_data *def, char *type,
   }
 
   for (i = 0; i < def->info.member_count; i++) {
-    if ( (def->info.members[i-1].type == T_STRUCT && 
+    if ( /* (def->info.members[i-1].type == T_STRUCT && 
       codegen_is_enum(def->info.members[i-1].type_info.substruct_info.type_name))
-       && memb_struct_check(&def->info.members[i]) &&
+       && */ memb_struct_check(&def->info.members[i]) &&
       codegen_is_union(def->info.members[i].type_info.substruct_info.type_name) && (i > 0)) {
       res += sprintf(&decl[res],"  uber_St uber_sub;\n");
       res += sprintf(&decl[res],"  int index;\n");

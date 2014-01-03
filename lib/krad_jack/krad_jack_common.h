@@ -43,6 +43,7 @@ typedef struct {
 #include "gen/krad_jack_to_ebml.h"
 #include "gen/krad_jack_from_ebml.h"
 #include "gen/krad_jack_to_text.h"
+#include "gen/krad_jack_to_json.h"
 #include "gen/krad_jack_helpers.h"
 
 #endif

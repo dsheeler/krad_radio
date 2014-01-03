@@ -165,7 +165,7 @@ member_type str_to_member_type(char *str) {
     return T_INT64;
   } else if (!strncmp(str,"char",4)) {
     return T_CHAR;
-  } else if (!strncmp(str,"uint32_t",8) || !strcmp(str,"uint")) {
+  } else if (!strncmp(str,"uint32_t",8) || !strncmp(str,"uint16_t",8) || !strcmp(str,"uint")) {
     return T_UINT32;
   } else if (!strncmp(str,"uint64_t",8)) {
     return T_UINT64;

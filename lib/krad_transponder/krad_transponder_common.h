@@ -329,6 +329,7 @@ struct kr_transponder_path_info {
 #include "gen/krad_transponder_to_ebml.h"
 #include "gen/krad_transponder_from_ebml.h"
 #include "gen/krad_transponder_to_text.h"
+#include "gen/krad_transponder_to_json.h"
 #include "gen/krad_transponder_helpers.h"
 
 char *krad_opus_signal_to_nice_string (int signal);

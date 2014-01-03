@@ -49,6 +49,7 @@ struct krad_codec_header_St {
 #include "gen/krad_container_to_ebml.h"
 #include "gen/krad_container_from_ebml.h"
 #include "gen/krad_container_to_text.h"
+#include "gen/krad_container_to_json.h"
 #include "gen/krad_container_helpers.h"
 
 #endif
