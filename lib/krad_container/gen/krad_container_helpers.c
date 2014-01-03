@@ -140,15 +140,9 @@ int krad_codec_header_St_random(struct krad_codec_header_St *st) {
   }
 
   memset(st, 0, sizeof(struct krad_codec_header_St));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;

@@ -87,15 +87,9 @@ int kr_jack_setup_info_random(kr_jack_setup_info *st) {
   }
 
   memset(st, 0, sizeof(kr_jack_setup_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -126,15 +120,9 @@ int kr_jack_info_random(kr_jack_info *st) {
   }
 
   memset(st, 0, sizeof(kr_jack_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
@@ -165,15 +153,9 @@ int kr_jack_path_info_random(kr_jack_path_info *st) {
   }
 
   memset(st, 0, sizeof(kr_jack_path_info));
-  struct timeval tv;
-  double scale;
-
   if (st == NULL) {
     return -1;
   }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;

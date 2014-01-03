@@ -1,44 +1,56 @@
 #include "codegen_utils.h"
 
-int memb_to_print_format(struct struct_memb_def *memb, char *code) {
+int memb_struct_check(member_info *memb) {
+  if (memb->type == T_STRUCT) {
+    return codegen_string_to_enum(memb->type_info.substruct_info.type_name);
+  } else {
+    return 0;
+  }
+}
 
-  if (!strcmp(memb->type,"int") || !strncmp(memb->type,"int32_t",7)) {
+int memb_to_print_format(member_info *memb, char *code) {
+
+  char *type;
+
+  type = member_type_to_str(memb->type);
+
+  if (!strcmp(type,"int") || !strncmp(type,"int32_t",7)) {
     strncpy(code,"%d",2);
     code[2] = '\0';
     return 1;
   }
 
-  if (!strcmp(memb->type,"uint") || !strncmp(memb->type,"uint32_t",8)) {
+  if (!strcmp(type,"uint") || !strncmp(type,"uint32_t",8)) {
     strncpy(code,"%u",2);
     code[2] = '\0';
     return 1;
   }
 
-  if (!strncmp(memb->type,"int64_t",7)) {
+  if (!strncmp(type,"int64_t",7)) {
     strncpy(code,"%jd",3);
     code[3] = '\0';
     return 1;
   }
 
-  if (!strncmp(memb->type,"uint64_t",8)) {
+  if (!strncmp(type,"uint64_t",8)) {
     strncpy(code,"%ju",3);
     code[3] = '\0';
     return 1;
   }
 
-  if (!strncmp(memb->type,"float",5)) {
+  if (!strncmp(type,"float",5) || !strncmp(type,"double",6)) {
     strncpy(code,"%0.2f",5);
     code[5] = '\0';
     return 1;
   }
 
-  if (!strncmp(memb->type,"char",4)) {
-    if (memb->array) {
+  if (!strncmp(type,"char",4)) {
+    if (memb->arr) {
       strncpy(code,"%s",2);
       code[2] = '\0';
       return 1;
-    } else  if (memb->pointer) {
-        if (memb->pointer == 1) {
+    } else  if (memb->ptr) {
+        if (memb->ptr == 1) {
           strncpy(code,"%s",2);
           code[2] = '\0';
         } else {
@@ -196,13 +208,13 @@ static void codegen_prototype_gen(char *prefix, char *type, char *secarg,
   return;
 }
 
-static void codegen_prototype(struct struct_def *def, char *type, 
+static void codegen_prototype(struct_data *def, char *type, 
   gen_format gformat, FILE *out) {
-  codegen_prototype_gen(def->name,type,"void *st",gformat,out);
+  codegen_prototype_gen(def->info.name,type,"void *st",gformat,out);
   return;
 }
 
-static void codegen_function(struct struct_def *def, char *type, 
+static void codegen_function(struct_data *def, char *type, 
   gen_format gformat, FILE *out) {
 
   int i;
@@ -212,25 +224,32 @@ static void codegen_function(struct struct_def *def, char *type,
   memset(decl,0,256);
   res = 0;
 
-  for (i = 0; i < def->members; i++) {
-    if ((codegen_string_to_enum(def->members_info[i].type))
-     || (def->members_info[i].pointer))  {
+  if (!def->info.member_count) {
+    return;
+  }
+
+  for (i = 0; i < def->info.member_count; i++) {
+    if (memb_struct_check(&def->info.members[i])
+     || (def->info.members[i].ptr))  {
       res += sprintf(&decl[res],"  uber_St uber;\n");
       break;
     }
   }
 
-  for (i = 0; i < def->members; i++) {
-    if (codegen_is_union(def->members_info[i].type) && (i > 0) ) {
+  for (i = 0; i < def->info.member_count; i++) {
+    if ( (def->info.members[i-1].type == T_STRUCT && 
+      codegen_is_enum(def->info.members[i-1].type_info.substruct_info.type_name))
+       && memb_struct_check(&def->info.members[i]) &&
+      codegen_is_union(def->info.members[i].type_info.substruct_info.type_name) && (i > 0)) {
       res += sprintf(&decl[res],"  uber_St uber_sub;\n");
       res += sprintf(&decl[res],"  int index;\n");
       break;
     }
   }
 
-  for (i = 0; i < def->members; i++) {
-    if ( (def->members_info[i].array || def->members_info[i].array_str_val)
-     && strncmp(def->members_info[i].type,"char",4)) {
+  for (i = 0; i < def->info.member_count; i++) {
+    if ( (def->info.members[i].arr || def->info.members[i].len_def[0])
+     && def->info.members[i].type != T_CHAR) {
       res += sprintf(&decl[res],"  int i;\n");
       break;
     }
@@ -245,14 +264,18 @@ static void codegen_function(struct struct_def *def, char *type,
   
   codegen_prototype(def,type,gformat,out);
 
-  if (def->isunion) {
+  if (def->info.type == ST_UNION) {
     res += sprintf(&decl[res],"  uber_St *uber_actual;\n\n");
   } 
 
-  if (def->istypedef) {
-    res += sprintf(&decl[res],"  %s *actual;\n\n",def->name);
+  if (def->info.is_typedef) {
+    if (gformat != DEJSON || def->info.type != ST_ENUM) {
+      res += sprintf(&decl[res],"  %s *actual;\n\n",def->info.name);
+    }
   } else {
-    res += sprintf(&decl[res],"  struct %s *actual;\n\n",def->name);
+    if (gformat != DEJSON || def->info.type != ST_ENUM) {
+      res += sprintf(&decl[res],"  struct %s *actual;\n\n",def->info.name);
+    }
   }
 
   fprintf(out," {\n%s",decl);
@@ -261,19 +284,23 @@ static void codegen_function(struct struct_def *def, char *type,
 
   codegen_validity_check_gen(gformat,type,out);
 
-  if (def->isunion) {
+  if (def->info.type == ST_UNION) {
     fprintf(out,"  uber_actual = (uber_St *)st;\n\n");
     fprintf(out,"  if (uber_actual->actual == NULL) {\n    return -1;\n  }\n\n");
-    if (def->istypedef) {
-      fprintf(out,"  actual = (%s *)uber_actual->actual;\n\n",def->name);
+    if (def->info.is_typedef) {
+      fprintf(out,"  actual = (%s *)uber_actual->actual;\n\n",def->info.name);
     } else {
-      fprintf(out,"  actual = (struct %s *)uber_actual->actual;\n\n",def->name);
+      fprintf(out,"  actual = (struct %s *)uber_actual->actual;\n\n",def->info.name);
     }
   } else {
-    if (def->istypedef) {
-      fprintf(out,"  actual = (%s *)st;\n\n",def->name);
+    if (def->info.is_typedef) {
+      if (gformat != DEJSON || def->info.type != ST_ENUM) {
+        fprintf(out,"  actual = (%s *)st;\n\n",def->info.name);
+      }
     } else {
-      fprintf(out,"  actual = (struct %s *)st;\n\n",def->name);
+      if (gformat != DEJSON || def->info.type != ST_ENUM) {
+        fprintf(out,"  actual = (struct %s *)st;\n\n",def->info.name);
+      }
     }
   }
 
@@ -291,13 +318,13 @@ static void codegen_function(struct struct_def *def, char *type,
   return;
 }
 
-static void codegen_enum_value(struct struct_def *def, FILE *out, char *format) {
-  char uppercased[strlen(def->name)+1];
-  uppercase(def->name,uppercased);
+static void codegen_enum_value(struct_data *def, FILE *out, char *format) {
+  char uppercased[strlen(def->info.name)+1];
+  uppercase(def->info.name,uppercased);
   fprintf(out,"%s_%s",format,uppercased);
 }
 
-int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
+int codegen_enum(header_data *hdata, int nn, char *prefix,
  char *suffix, FILE *out, cgen_target_type type) {
 
   int i;
@@ -306,7 +333,7 @@ int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
   int total;
   int n;
   char *format;
-  struct header_defs *fhdefs[ndefs];
+  header_data *fhdata[nn];
 
   total = 0;
   n = 0;
@@ -325,11 +352,11 @@ int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
   char format_upp[strlen(format)];
   uppercase(format,format_upp);
 
-  for (i=0;i<ndefs;i++) {
-    if (hdefs[i].targets.ntargets) {
-      for (l = 0; l < hdefs[i].targets.ntargets; l++) {
-        if (hdefs[i].targets.types[l] == type) {
-          fhdefs[total] = &hdefs[i];
+  for (i = 0; i < nn; i++) {
+    if (hdata[i].target_count) {
+      for (l = 0; l < hdata[i].target_count; l++) {
+        if (hdata[i].targets[l].type == type) {
+          fhdata[total] = &hdata[i];
           total++;
           break;
         }
@@ -338,14 +365,14 @@ int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
   }
 
   for (i = 0; i < total; i++) {
-    for (j=0;j<fhdefs[i]->ndefs;j++) {
-      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
+    for (j = 0; j < fhdata[i]->def_count; j++) {
+      if (is_prefix(hdata[i].defs[j].info.name,prefix) && is_suffix(hdata[i].defs[j].info.name,suffix)) {
         fprintf(out,"  ");
-        codegen_enum_value(&fhdefs[i]->defs[j],out,format_upp);
+        codegen_enum_value(&fhdata[i]->defs[j],out,format_upp);
         if (i == 0 && j == 0) {
           fprintf(out," = 1");
         }
-        if (j == (fhdefs[i]->ndefs-1) && i == (total - 1)) {
+        if (j == (fhdata[i]->def_count-1) && i == (total - 1)) {
           fprintf(out,"\n");
         } else {
           fprintf(out,",\n");
@@ -361,7 +388,7 @@ int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
   return 0;
 }
 
-int codegen_array_func(struct header_defs *hdefs, int ndefs, 
+int codegen_array_func(header_data *hdata, int nn, 
   char *prefix, char *suffix, char *type, gen_format gformat, FILE *out) {
 
   int i;
@@ -373,12 +400,10 @@ int codegen_array_func(struct header_defs *hdefs, int ndefs,
   n = 0;
   k = 0;
 
-  for (i = 0; i < ndefs; i++) {
-    if (hdefs[i].targets.ntargets) {
-      for (l = 0; l < hdefs[i].targets.ntargets; l++) {
-        if ((gen_format)hdefs[i].targets.types[l] == gformat) {
-          n += hdefs[i].ndefs;
-        }
+  for (i = 0; i < nn; i++) {
+    for (l = 0; l < hdata[i].target_count; l++) {
+      if ((gen_format)hdata[i].targets[l].type == gformat) {
+        n += hdata[i].def_count;
       }
     }
   }
@@ -387,18 +412,16 @@ int codegen_array_func(struct header_defs *hdefs, int ndefs,
     return 0;
   }
 
-  struct struct_def *fdefs[n];
+  struct_data *fdefs[n];
 
-  for (i = 0; i < ndefs; i++) {
-    for (j = 0; j < hdefs[i].ndefs; j++) {
-      if (is_prefix(hdefs[i].defs[j].name,prefix) && is_suffix(hdefs[i].defs[j].name,suffix)) {
-        if (hdefs[i].targets.ntargets) {
-          for (l = 0; l < hdefs[i].targets.ntargets; l++) {
-            if ((gen_format)hdefs[i].targets.types[l] == gformat) {
-              fdefs[k] = &hdefs[i].defs[j];
-              k++;
-              break;
-            }
+  for (i = 0; i < nn; i++) {
+    for (j = 0; j < hdata[i].def_count; j++) {
+      if (is_prefix(hdata[i].defs[j].info.name,prefix) && is_suffix(hdata[i].defs[j].info.name,suffix)) {
+        for (l = 0; l < hdata[i].target_count; l++) {
+          if ((gen_format)hdata[i].targets[l].type == gformat) {
+            fdefs[k] = &hdata[i].defs[j];
+            k++;
+            break;
           }
         }
       }
@@ -415,8 +438,8 @@ int codegen_array_func(struct header_defs *hdefs, int ndefs,
 
   codegen_func_array_name_gen(type,n,out);
 
-  for (i = 0; i < n; i++) {
-    codegen_funname_gen(fdefs[i]->name,type,out);
+  for (i = 0; i < k; i++) {
+    codegen_funname_gen(fdefs[i]->info.name,type,out);
     if (i != (n-1)) {
       fprintf(out,",");
     } 
@@ -430,13 +453,13 @@ int codegen_array_func(struct header_defs *hdefs, int ndefs,
   return 0;
 }
 
-static int codegen_internal(struct struct_def *defs, int ndefs, char *prefix,
+static int codegen_internal(struct_data *defs, int nn, char *prefix,
  char *suffix, char *format, gen_format gformat , FILE *out) {
 
   int i;
   char *p;
   int n = 0;
-  struct struct_def *filtered_defs[ndefs];
+  struct_data *filtered_defs[nn];
   char *formatc = strdup(format);
   
   p = strchr(formatc,'/');
@@ -447,8 +470,8 @@ static int codegen_internal(struct struct_def *defs, int ndefs, char *prefix,
 
   p[0] = '\0';
 
-  for (i = 0; i < ndefs; i++) {
-    if (is_prefix(defs[i].name,prefix) && is_suffix(defs[i].name,suffix)) {
+  for (i = 0; i < nn; i++) {
+    if (is_prefix(defs[i].info.name,prefix) && is_suffix(defs[i].info.name,suffix)) {
       filtered_defs[n] = &defs[i];
       n++;
     }
@@ -483,7 +506,7 @@ static int codegen_internal(struct struct_def *defs, int ndefs, char *prefix,
   return 0;
 }
 
-int codegen(struct struct_def *defs, int ndefs, char *prefix,
+int codegen(struct_data *defs, int n, char *prefix,
  char *suffix, char *format, FILE *out) {
 
   gen_format gformat;
@@ -505,41 +528,41 @@ int codegen(struct struct_def *defs, int ndefs, char *prefix,
   }
 
   if (gformat) {
-    codegen_internal(defs,ndefs,prefix,suffix,format,gformat,out);
+    codegen_internal(defs,n,prefix,suffix,format,gformat,out);
   }
 
   if (!strncmp(format,"sizeof",6)) {
-    codegen_sizeof(defs,ndefs,prefix,suffix,out);
+    codegen_sizeof(defs,n,prefix,suffix,out);
     return 0;
   }
 
   if (!strncmp(format,"jschema",7)) {
-    codegen_jschema(defs,ndefs,prefix,suffix,out);
+    codegen_jschema(defs,n,prefix,suffix,out);
     return 0;
   }
 
   if (!strncmp(format,"enum_utils",10)) {
-    codegen_enum_util_functions(defs,ndefs,prefix,suffix,out);
+    codegen_enum_util_functions(defs,n,prefix,suffix,out);
     return 0;
   }
 
   if (!strncmp(format,"enum",4)) {
-    //codegen_enum(defs,ndefs,prefix,suffix,out);
+    //codegen_enum(defs,n,prefix,suffix,out);
     return 0;
   }
 
   if (!strncmp(format,"includes",8)) {
-    codegen_includes(defs,ndefs,prefix,suffix,out);
+    codegen_includes(defs,n,prefix,suffix,out);
     return 0;
   }
 
   if (!strncmp(format,"helper_proto",12)) {
-    codegen_helpers_prototype(defs,ndefs,prefix,suffix,out);
+    codegen_helpers_prototype(defs,n,prefix,suffix,out);
     return 0;
   }
 
   if (!strcmp(format,"helper")) {
-    codegen_helper_functions(defs,ndefs,prefix,suffix,out);
+    codegen_helper_functions(defs,n,prefix,suffix,out);
     return 0;
   }
 

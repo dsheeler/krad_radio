@@ -18,8 +18,8 @@ int is_target_new(char *target, char **targets, int n) {
   return 1;
 }
 
-void common_gen(struct header_defs *hdefs, 
-  int ndefs, char *prefix, char *suffix, char *outpath, FILE *genc) {
+void common_gen(header_data *hdata, int n, char *prefix, 
+  char *suffix, char *outpath, FILE *genc) {
   FILE *common;
   char outfilen[256];
   char gformat[256];
@@ -38,7 +38,7 @@ void common_gen(struct header_defs *hdefs,
   fprintf(common,"#include \"krad_ebmlx.h\"\n\n");
   fprintf(common,"typedef struct {\n  int type;\n  void *actual;\n} uber_St;\n\n");
 
-  for (i = 0; i < MAX_TARGET_TYPES; i++) {
+  for (i = 0; i < TARGET_TYPES - 1; i++) {
     
     switch (i) {
       case TO_TEXT: format = "text"; break;
@@ -50,14 +50,14 @@ void common_gen(struct header_defs *hdefs,
     }
 
     sprintf(gformat,"%s/typedef",format);
-    codegen(hdefs[0].defs,hdefs[0].ndefs,prefix,suffix,gformat,common);
+    codegen(hdata[0].defs,hdata[0].def_count,prefix,suffix,gformat,common);
 
   }
 
   fprintf(common,"\n");
 
-  for (i = 0; i < MAX_TARGET_TYPES; i++) {
-    codegen_enum(hdefs,ndefs,prefix,suffix,common,i+1);
+  for (i = 0; i < TARGET_TYPES - 1; i++) {
+    codegen_enum(hdata,n,prefix,suffix,common,i+1);
   }
 
   fprintf(common,"\n");
@@ -67,17 +67,17 @@ void common_gen(struct header_defs *hdefs,
   return;
 }
 
-void type_common_gen(struct header_defs *hdefs, 
-  int ndefs, char *prefix, char *suffix, char *outpath) {
+void type_common_gen(header_data *hdata, int n, char *prefix,
+ char *suffix, char *outpath) {
 
   int i;
-  FILE *tcommons[MAX_TARGET_TYPES-1];
+  FILE *tcommons[TARGET_TYPES-2];
   char *format;
   gen_format gf;
   char gformat[256];
   char outfilen[256];
 
-  for (i = 1; i < MAX_TARGET_TYPES; i++) {
+  for (i = 1; i < TARGET_TYPES - 1; i++) {
     switch (i) {
       case TO_TEXT: format = "text"; break;
       case TO_EBML: format = "ebml"; break;
@@ -102,7 +102,7 @@ void type_common_gen(struct header_defs *hdefs,
 
   }
 
-  for (i = 1; i < MAX_TARGET_TYPES; i++) {
+  for (i = 1; i < TARGET_TYPES - 1; i++) {
     switch (i) {
       case TO_TEXT: format = "text"; gf = TEXT; break;
       case TO_EBML: format = "ebml"; gf = EBML; break;
@@ -112,22 +112,22 @@ void type_common_gen(struct header_defs *hdefs,
     }
 
     sprintf(gformat,"%s/typedef",format);
-    codegen(hdefs[0].defs,hdefs[0].ndefs,prefix,suffix,gformat,tcommons[i-1]);
+    codegen(hdata[0].defs,hdata[0].def_count,prefix,suffix,gformat,tcommons[i-1]);
     fprintf(tcommons[i-1],"\n");
-    codegen_array_func(hdefs,ndefs,prefix,suffix,format,gf,tcommons[i-1]);
+    codegen_array_func(hdata,n,prefix,suffix,format,gf,tcommons[i-1]);
     fprintf(tcommons[i-1],"\n");
 
   }
 
-  for (i = 1; i < MAX_TARGET_TYPES; i++) {
+  for (i = 1; i < TARGET_TYPES - 1; i++) {
     fclose(tcommons[i-1]);
   }
 
   return;
 }
 
-void files_gen(struct header_defs *hdefs, 
-  int ndefs, char *prefix, char *suffix, FILE *genc) {
+void files_gen(header_data *hdata, 
+  int n, char *prefix, char *suffix, FILE *genc) {
 
   FILE *out;
   FILE *header;
@@ -145,11 +145,11 @@ void files_gen(struct header_defs *hdefs,
   ntargets = 0;
   header = NULL;
 
-  for (i = 0; i < ndefs; i++) {
-    for (l = 0; l < hdefs[i].targets.ntargets; l++) {
-      if (hdefs[i].targets.types[l]) {
+  for (i = 0; i < n; i++) {
+    for (l = 0; l < hdata[i].target_count; l++) {
+      if (hdata[i].targets[l].type) {
         
-        pp = strrchr(hdefs[i].name,'/');
+        pp = strrchr(hdata[i].path,'/');
 
         if (!pp) {
           fprintf(stderr,"Error reading output file name!\n");
@@ -157,7 +157,7 @@ void files_gen(struct header_defs *hdefs,
         }
 
         pp[0] = '\0';
-        sprintf(fname,"%s/gen/%s",hdefs[i].name,basename(hdefs[i].targets.targets[l]));
+        sprintf(fname,"%s/gen/%s",hdata[i].path,basename(hdata[i].targets[l].path));
         pp[0] = '/';
 
         header = fopen(fname,"a+");
@@ -171,27 +171,27 @@ void files_gen(struct header_defs *hdefs,
         fprintf(header,"#include <stdint.h>\n");
         fprintf(header,"#include \"gen.h\"\n");
 
-        if (hdefs[i].targets.types[l] == TO_EBML || hdefs[i].targets.types[l] == FR_EBML) {
+        if (hdata[i].targets[l].type == TO_EBML || hdata[i].targets[l].type == FR_EBML) {
           fprintf(header,"#include \"krad_ebmlx.h\"\n");
         }
 
-        if (hdefs[i].targets.types[l] == FR_JSON) {
+        if (hdata[i].targets[l].type == FR_JSON) {
           fprintf(header,"#include \"jsmn.h\"\n");
         }
-        codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,"includes",header);
+        codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,"includes",header);
         fclose(header);
       }
     }
   }
 
-  for (i = 0; i < ndefs; i++) {
+  for (i = 0; i < n; i++) {
 
-    printf("checking %s for targets...\n",hdefs[i].name);
+    printf("checking %s for targets...\n",hdata[i].path);
 
-    for (l = 0; l < hdefs[i].targets.ntargets; l++) {
-      if (hdefs[i].targets.types[l]) {
+    for (l = 0; l < hdata[i].target_count; l++) {
+      if (hdata[i].targets[l].type) {
 
-        pp = strrchr(hdefs[i].name,'/');
+        pp = strrchr(hdata[i].path,'/');
 
         if (!pp) {
           fprintf(stderr,"Error reading output file name!\n");
@@ -199,7 +199,7 @@ void files_gen(struct header_defs *hdefs,
         }
 
         pp[0] = '\0';
-        sprintf(fname,"%s/gen/%s",hdefs[i].name,basename(hdefs[i].targets.targets[l]));
+        sprintf(fname,"%s/gen/%s",hdata[i].path,basename(hdata[i].targets[l].path));
         pp[0] = '/';
 
         printf("  found target %s\n",fname);
@@ -222,8 +222,8 @@ void files_gen(struct header_defs *hdefs,
             exit(1);
           }
 
-          if (is_target_new(hdefs[i].targets.targets[l],targets,ntargets)) {
-            fprintf(out,"#include \"%s\"\n\n",basename(hdefs[i].targets.targets[l]));
+          if (is_target_new(hdata[i].targets[l].path,targets,ntargets)) {
+            fprintf(out,"#include \"%s\"\n\n",basename(hdata[i].targets[l].path));
             char *fname2;
             char *brk;
             fname2 = strdup(fname);
@@ -232,13 +232,13 @@ void files_gen(struct header_defs *hdefs,
             brk = strrchr(fname2,'/');
             fprintf(genc,"#include \"..%s/gen/%s\"\n",brk,basename(fname));
             free(fname2);
-            targets[ntargets] = hdefs[i].targets.targets[l];
+            targets[ntargets] = hdata[i].targets[l].path;
             ntargets++;
           }
 
           p[1] = 'h';
           
-          switch (hdefs[i].targets.types[l]) {
+          switch (hdata[i].targets[l].type) {
             case TO_EBML: 
             sprintf(format,"ebml/func");
             sprintf(format2,"ebml/proto");
@@ -252,7 +252,6 @@ void files_gen(struct header_defs *hdefs,
             sprintf(format2,"json/proto");
             break;
             case FR_JSON: 
-
             sprintf(format,"dejson/func");
             sprintf(format2,"dejson/proto");
             break;
@@ -262,14 +261,16 @@ void files_gen(struct header_defs *hdefs,
             break;
             case HELPERS: 
             sprintf(format,"helper");
+            //sprintf(format2,"helper_proto");
+            codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,"enum_utils",out);
+            //codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,format2,out);
             sprintf(format2," ");
-            codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,"enum_utils",out);
             break;
             default: break;
           }
 
-          codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,format,out);
-          codegen(hdefs[i].defs,hdefs[i].ndefs,prefix,suffix,format2,header);
+          codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,format,out);
+          codegen(hdata[i].defs,hdata[i].def_count,prefix,suffix,format2,header);
 
           fclose(out);
           fclose(header);
@@ -283,8 +284,9 @@ void files_gen(struct header_defs *hdefs,
 
 int main(int argc, char *argv[]) {
 
-  struct header_defs *hdefs;
-  int ndefs;
+  header_data *hdata;
+  int n;
+  int i;
   char *rpath = NULL;
   FILE *genc;
   char gencpath[256];
@@ -294,8 +296,14 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  hdefs = calloc(MAX_HEADERS,sizeof(struct header_defs));
-  ndefs = gather_struct_definitions(hdefs,"krad",argv[1]);
+  hdata = calloc(MAX_HEADERS,sizeof(header_data));
+
+  for (i = 0; i < MAX_HEADERS; i++) {
+    hdata[i].defs = calloc(MAX_HEADER_DEFS,sizeof(struct_data));
+    hdata[i].targets = calloc(MAX_TARGETS,sizeof(cgen_target));
+  }
+
+  n = gather_struct_definitions(hdata,"kr",argv[1]);
 
   rpath = realpath(argv[4],NULL);
 
@@ -312,11 +320,11 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  common_gen(hdefs,ndefs,argv[2],argv[3],rpath,genc);
+  common_gen(hdata,n,argv[2],argv[3],rpath,genc);
 
-  type_common_gen(hdefs,ndefs,argv[2],argv[3],rpath);
+  type_common_gen(hdata,n,argv[2],argv[3],rpath);
 
-  files_gen(hdefs,ndefs,argv[2],argv[3],genc);
+  files_gen(hdata,n,argv[2],argv[3],genc);
 
   fprintf(genc,"#include \"ebml_common.c\"\n");
   fprintf(genc,"#include \"text_common.c\"\n");
@@ -325,7 +333,12 @@ int main(int argc, char *argv[]) {
   fprintf(genc,"#include \"jsmn/jsmn.c\"\n");
   fprintf(genc,"#include \"dejson_common.c\"\n\n");
 
-  free(hdefs);
+  for (i = 0; i < MAX_HEADERS; i++) {
+    free(hdata[i].defs);
+    free(hdata[i].targets);
+  }
+
+  free(hdata);
   fclose(genc);
 
   return 0;

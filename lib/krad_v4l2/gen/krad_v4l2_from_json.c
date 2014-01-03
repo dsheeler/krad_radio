@@ -7,15 +7,11 @@ int kr_v4l2_state_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_v4l2_state *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_v4l2_state *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);

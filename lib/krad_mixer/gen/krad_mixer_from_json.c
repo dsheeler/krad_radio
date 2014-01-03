@@ -7,15 +7,11 @@ int kr_mixer_channels_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_mixer_channels *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_mixer_channels *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);
@@ -44,15 +40,11 @@ int kr_mixer_control_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_mixer_control *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_mixer_control *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);
@@ -81,15 +73,11 @@ int kr_mixer_path_type_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_mixer_path_type *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_mixer_path_type *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);
@@ -118,15 +106,11 @@ int kr_mixer_adv_ctl_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_mixer_adv_ctl *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_mixer_adv_ctl *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);
