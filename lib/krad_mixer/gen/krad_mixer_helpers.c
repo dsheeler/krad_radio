@@ -140,6 +140,12 @@ int kr_mixer_info_valid(struct kr_mixer_info *st) {
   }
 
   for (i = 0; i < 32; i++) {
+    if (!st->clock[i]) {
+      break;
+    }
+    if (i == 31 && st->clock[i]) {
+      return -9;
+    }
   }
 
   return 0;
@@ -147,12 +153,23 @@ int kr_mixer_info_valid(struct kr_mixer_info *st) {
 
 int kr_mixer_info_random(struct kr_mixer_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_mixer_info));
   for (i = 0; i < 32; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->clock[i] = 97 + floor(rand() * scale);
+    if (i == 31) {
+      st->clock[31] = '\0';
+    }
   }
 
   return 0;
@@ -198,10 +215,28 @@ int kr_mixer_path_info_valid(struct kr_mixer_path_info *st) {
   }
 
   for (i = 0; i < 64; i++) {
+    if (!st->name[i]) {
+      break;
+    }
+    if (i == 63 && st->name[i]) {
+      return -2;
+    }
   }
   for (i = 0; i < 64; i++) {
+    if (!st->bus[i]) {
+      break;
+    }
+    if (i == 63 && st->bus[i]) {
+      return -3;
+    }
   }
   for (i = 0; i < 64; i++) {
+    if (!st->crossfade_group[i]) {
+      break;
+    }
+    if (i == 63 && st->crossfade_group[i]) {
+      return -4;
+    }
   }
   for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
   }
@@ -223,16 +258,37 @@ int kr_mixer_path_info_valid(struct kr_mixer_path_info *st) {
 
 int kr_mixer_path_info_random(struct kr_mixer_path_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_mixer_path_info));
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->name[63] = '\0';
+    }
   }
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->bus[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->bus[63] = '\0';
+    }
   }
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->crossfade_group[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->crossfade_group[63] = '\0';
+    }
   }
   for (i = 0; i < KR_MXR_MAX_CHANNELS; i++) {
   }

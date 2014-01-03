@@ -191,6 +191,12 @@ int kr_sprite_info_valid(struct kr_sprite_info *st) {
   }
 
   for (i = 0; i < 256; i++) {
+    if (!st->filename[i]) {
+      break;
+    }
+    if (i == 255 && st->filename[i]) {
+      return -2;
+    }
   }
   kr_compositor_controls_valid(&st->controls);
 
@@ -199,12 +205,23 @@ int kr_sprite_info_valid(struct kr_sprite_info *st) {
 
 int kr_sprite_info_random(struct kr_sprite_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_sprite_info));
   for (i = 0; i < 256; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->filename[i] = 97 + floor(rand() * scale);
+    if (i == 255) {
+      st->filename[255] = '\0';
+    }
   }
   kr_compositor_controls_random(&st->controls);
 
@@ -236,8 +253,20 @@ int kr_text_info_valid(struct kr_text_info *st) {
   }
 
   for (i = 0; i < 512; i++) {
+    if (!st->string[i]) {
+      break;
+    }
+    if (i == 511 && st->string[i]) {
+      return -2;
+    }
   }
   for (i = 0; i < 256; i++) {
+    if (!st->font[i]) {
+      break;
+    }
+    if (i == 255 && st->font[i]) {
+      return -3;
+    }
   }
   kr_compositor_controls_valid(&st->controls);
 
@@ -246,14 +275,30 @@ int kr_text_info_valid(struct kr_text_info *st) {
 
 int kr_text_info_random(struct kr_text_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_text_info));
   for (i = 0; i < 512; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->string[i] = 97 + floor(rand() * scale);
+    if (i == 511) {
+      st->string[511] = '\0';
+    }
   }
   for (i = 0; i < 256; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->font[i] = 97 + floor(rand() * scale);
+    if (i == 255) {
+      st->font[255] = '\0';
+    }
   }
   kr_compositor_controls_random(&st->controls);
 
@@ -316,6 +361,12 @@ int kr_compositor_path_info_valid(struct kr_compositor_path_info *st) {
   }
 
   for (i = 0; i < 128; i++) {
+    if (!st->name[i]) {
+      break;
+    }
+    if (i == 127 && st->name[i]) {
+      return -2;
+    }
   }
   kr_perspective_view_valid(&st->view);
   kr_compositor_controls_valid(&st->controls);
@@ -325,12 +376,23 @@ int kr_compositor_path_info_valid(struct kr_compositor_path_info *st) {
 
 int kr_compositor_path_info_random(struct kr_compositor_path_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_compositor_path_info));
   for (i = 0; i < 128; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->name[i] = 97 + floor(rand() * scale);
+    if (i == 127) {
+      st->name[127] = '\0';
+    }
   }
   kr_perspective_view_random(&st->view);
   kr_compositor_controls_random(&st->controls);

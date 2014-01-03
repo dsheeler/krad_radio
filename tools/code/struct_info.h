@@ -21,7 +21,7 @@ typedef struct double_member_info double_member_info;
 typedef struct struct_member_info struct_member_info;
 
 struct char_member_info {
-  char init[64];
+  int32_t max;
   int notnull;
 };
 

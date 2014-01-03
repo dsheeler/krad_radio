@@ -363,6 +363,12 @@ int kr_adapter_path_info_valid(struct kr_adapter_path_info *st) {
   }
 
   for (i = 0; i < 64; i++) {
+    if (!st->name[i]) {
+      break;
+    }
+    if (i == 63 && st->name[i]) {
+      return -2;
+    }
   }
   kr_adapter_api_path_info_valid(&st->info,kr_adapter_api_to_index(st->api));
 
@@ -371,12 +377,23 @@ int kr_adapter_path_info_valid(struct kr_adapter_path_info *st) {
 
 int kr_adapter_path_info_random(struct kr_adapter_path_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_adapter_path_info));
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->name[63] = '\0';
+    }
   }
   kr_adapter_api_path_info_random(&st->info,kr_adapter_api_to_index(st->api));
 
@@ -1798,6 +1815,12 @@ int kr_transponder_path_info_valid(struct kr_transponder_path_info *st) {
   }
 
   for (i = 0; i < 128; i++) {
+    if (!st->name[i]) {
+      break;
+    }
+    if (i == 127 && st->name[i]) {
+      return -2;
+    }
   }
   kr_transponder_path_io_info_valid(&st->input);
   kr_transponder_path_io_info_valid(&st->output);
@@ -1807,12 +1830,23 @@ int kr_transponder_path_info_valid(struct kr_transponder_path_info *st) {
 
 int kr_transponder_path_info_random(struct kr_transponder_path_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(struct kr_transponder_path_info));
   for (i = 0; i < 128; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->name[i] = 97 + floor(rand() * scale);
+    if (i == 127) {
+      st->name[127] = '\0';
+    }
   }
   kr_transponder_path_io_info_random(&st->input);
   kr_transponder_path_io_info_random(&st->output);

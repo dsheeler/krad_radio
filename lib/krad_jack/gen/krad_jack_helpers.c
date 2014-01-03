@@ -86,8 +86,20 @@ int kr_jack_setup_info_valid(kr_jack_setup_info *st) {
   }
 
   for (i = 0; i < 64; i++) {
+    if (!st->client_name[i]) {
+      break;
+    }
+    if (i == 63 && st->client_name[i]) {
+      return -2;
+    }
   }
   for (i = 0; i < 64; i++) {
+    if (!st->server_name[i]) {
+      break;
+    }
+    if (i == 63 && st->server_name[i]) {
+      return -3;
+    }
   }
 
   return 0;
@@ -95,14 +107,30 @@ int kr_jack_setup_info_valid(kr_jack_setup_info *st) {
 
 int kr_jack_setup_info_random(kr_jack_setup_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_setup_info));
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->client_name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->client_name[63] = '\0';
+    }
   }
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->server_name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->server_name[63] = '\0';
+    }
   }
 
   return 0;
@@ -132,8 +160,20 @@ int kr_jack_info_valid(kr_jack_info *st) {
   }
 
   for (i = 0; i < 64; i++) {
+    if (!st->client_name[i]) {
+      break;
+    }
+    if (i == 63 && st->client_name[i]) {
+      return -2;
+    }
   }
   for (i = 0; i < 64; i++) {
+    if (!st->server_name[i]) {
+      break;
+    }
+    if (i == 63 && st->server_name[i]) {
+      return -3;
+    }
   }
 
   return 0;
@@ -141,14 +181,30 @@ int kr_jack_info_valid(kr_jack_info *st) {
 
 int kr_jack_info_random(kr_jack_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_info));
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->client_name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->client_name[63] = '\0';
+    }
   }
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->server_name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->server_name[63] = '\0';
+    }
   }
 
   return 0;
@@ -176,6 +232,12 @@ int kr_jack_path_info_valid(kr_jack_path_info *st) {
   }
 
   for (i = 0; i < 64; i++) {
+    if (!st->name[i]) {
+      break;
+    }
+    if (i == 63 && st->name[i]) {
+      return -2;
+    }
   }
 
   return 0;
@@ -183,12 +245,23 @@ int kr_jack_path_info_valid(kr_jack_path_info *st) {
 
 int kr_jack_path_info_random(kr_jack_path_info *st) {
   int i;
+  struct timeval tv;
+  double scale;
+
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
+
   if (st == NULL) {
     return -1;
   }
 
   memset(st, 0, sizeof(kr_jack_path_info));
   for (i = 0; i < 64; i++) {
+    scale = (double)25 / RAND_MAX;
+    st->name[i] = 97 + floor(rand() * scale);
+    if (i == 63) {
+      st->name[63] = '\0';
+    }
   }
 
   return 0;

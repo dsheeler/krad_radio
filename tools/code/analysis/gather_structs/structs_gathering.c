@@ -41,9 +41,20 @@ static void get_memb_data_info (char *line,
   end = strstr(line,"*/");
   memset(info,0,sizeof(info));
 
+  if ((memb->type == T_CHAR) && memb->arr) {
+    memb->type_info.char_info.max = memb->arr - 1;
+  }
+
   if (start && end) {
     info[0] = &start[2];
     end[0] = '\0';
+
+    if ((memb->type == T_CHAR) && memb->arr) {
+      if (strstr(info[0],"not null")) {
+        memb->type_info.char_info.notnull = 1;
+      }
+      return;
+    }
 
     strtod(info[0],&info[1]);
 
@@ -75,14 +86,6 @@ static void get_memb_data_info (char *line,
   }
 
   switch(memb->type) {
-    case T_CHAR: {
-      if (memb->arr) {
-        //memb->type_info.char_info.init
-        //memb->type_info.char_info.notnull;
-        // TO-DO when oneman takes a (hopefully) final decision on this.
-      }
-      break;
-    }
     case T_INT32: {
       if (i == 3) {
         memb->type_info.int32_info.init = atoi(info[0]);
@@ -660,8 +663,9 @@ static void print_memb_data_info(member_info *memb) {
 
   switch (memb->type) {
     case T_CHAR: {
-      if (memb->arr || (memb->ptr == 1)) {
-        // TO-DO 
+      if (memb->arr) {
+        printf("    max size %d\n",memb->type_info.char_info.max);
+        printf("    %s\n",memb->type_info.char_info.notnull ? "can't be null" : "can be null");
       }
       break;
     }

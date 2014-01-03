@@ -240,9 +240,10 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
 
       switch (def->info.members[i].type) {
         case T_CHAR: {
-          if (memb->arr || (memb->ptr == 1)) {
-            // TO-DO 
-            fprintf(out,"%s  scale = 0;\n",indent);
+          if (memb->arr) {
+            fprintf(out,"    scale = (double)%d / RAND_MAX;\n",abs(97-122)); /* downcased ascii letters only */
+            fprintf(out,"    st->%s[i] = %d + floor(rand() * scale);\n",memb->name,97);
+            fprintf(out,"    if (i == %d) {\n      st->%s[%d] = '\\0';\n    }\n",memb->type_info.char_info.max,memb->name,memb->type_info.char_info.max);
           }
           break;
         }
@@ -364,6 +365,12 @@ static void codegen_helper_valid_func(struct_data *def, FILE *out,
       indent[0] = '\0';
     }
 
+    if (memb->type == T_CHAR) {
+      if (memb->arr && memb->type_info.char_info.notnull) {
+        fprintf(out,"  if (!st->%s[0]) {\n    return %d;\n  }\n\n",memb->name,(i + 2) * -1);
+      }
+    }
+
     if (memb->arr) {
       fprintf(out,"  for (i = 0; i < %d; i++) {\n",memb->arr);
     }
@@ -375,8 +382,9 @@ static void codegen_helper_valid_func(struct_data *def, FILE *out,
 
       switch (def->info.members[i].type) {
         case T_CHAR: {
-          if (memb->arr || (memb->ptr == 1)) {
-        // TO-DO 
+          if (memb->arr) {
+            fprintf(out,"    if (!st->%s%s) {\n      break;\n    }\n    if (i == %d && st->%s%s) {\n      return %d;\n    }\n",
+              memb->name,arr,memb->type_info.char_info.max,memb->name,arr,(i + 2) * -1);
           }
           break;
         }
