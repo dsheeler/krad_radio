@@ -80,6 +80,26 @@ static char *memb_type_to_fun(member_info *memb, char *str, char *array) {
   return str;
 }
 
+static void codegen_dejson_union_content_from_type(struct_data *def, FILE *out) {
+  int i;
+
+  for (i = 0; i < def->info.member_count; i++) {
+    if (memb_struct_check(&def->info.members[i])) {
+      char uppercased[strlen(def->info.members[i].type_info.substruct_info.type_name)+1];
+      uppercase(def->info.members[i].type_info.substruct_info.type_name,uppercased);
+      fprintf(out,"    case %d: {\n",i);
+      fprintf(out,"      uber.actual = &(actual->%s);\n      ",
+        def->info.members[i].name);
+      fprintf(out,"uber.type = JSON_%s;\n",uppercased);
+      fprintf(out,"      res += info_unpack_fr_json(&json[res],&uber,max-res);\n");
+      fprintf(out,"      break;\n    }\n");
+    }
+    /* TODO: handle unions of primitives (ints,floats,strings...) */
+  }
+        
+  return;
+}
+
 void codegen_dejson(struct_data *def, char *type, FILE *out) {
 
   int i;
@@ -97,7 +117,9 @@ void codegen_dejson(struct_data *def, char *type, FILE *out) {
   }
 
   if (def->info.type == ST_UNION) {
-    //todo
+    fprintf(out,"  switch (uber_actual->type) {\n");
+    codegen_dejson_union_content_from_type(def,out);
+    fprintf(out,"  }\n\n");
     return;
   }
 
@@ -150,11 +172,24 @@ void codegen_dejson(struct_data *def, char *type, FILE *out) {
         fprintf(out,"  }\n\n");
       }
 
-    } else if (memb->type == T_STRUCT && codegen_is_union(memb->type_info.substruct_info.type_name)) {
+    } else if ((def->info.members[i-1].type == T_STRUCT && 
+      codegen_is_enum(def->info.members[i-1].type_info.substruct_info.type_name))
+       && memb_struct_check(memb) &&
+      codegen_is_union(memb->type_info.substruct_info.type_name) && (i > 0)) {
 
-      if (i > 0) {
-        
-      }
+      char uppercased[strlen(memb->type_info.substruct_info.type_name)+1];
+      uppercase(memb->type_info.substruct_info.type_name,uppercased);
+
+      fprintf(out,"  index = %s_to_index(actual->%s);\n",
+          def->info.members[i-1].type_info.substruct_info.type_name,
+          def->info.members[i-1].name);
+ 
+      fprintf(out,"  uber_sub.type = index;\n");
+      fprintf(out,"  uber_sub.actual = &(actual->%s);\n",memb->name);
+
+      fprintf(out,"  uber.actual = &(uber_sub);\n  uber.type = DEJSON_%s;\n",
+       uppercased);
+      fprintf(out,"  res += info_unpack_fr_%s(&%s[res],&uber,max-res);\n",&type[2],&type[2]);
 
 
     } else if (memb->type == T_STRUCT) { 
