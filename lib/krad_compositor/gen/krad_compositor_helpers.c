@@ -147,32 +147,25 @@ int kr_compositor_controls_init(void *st) {
   }
 
   actual = (struct kr_compositor_controls *)st;
-  memset(st, 0, sizeof(struct kr_compositor_controls));
+  memset(actual, 0, sizeof(struct kr_compositor_controls));
 
   return 0;
 }
 
 int kr_compositor_controls_valid(void *st) {
-  struct kr_compositor_controls *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_compositor_controls *)st;
 
   return 0;
 }
 
 int kr_compositor_controls_random(void *st) {
-  struct kr_compositor_controls *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_compositor_controls *)st;
-  memset(st, 0, sizeof(struct kr_compositor_controls));
 
   return 0;
 }
@@ -187,7 +180,7 @@ int kr_sprite_info_init(void *st) {
   }
 
   actual = (struct kr_sprite_info *)st;
-  memset(st, 0, sizeof(struct kr_sprite_info));
+  memset(actual, 0, sizeof(struct kr_sprite_info));
   for (i = 0; i < 256; i++) {
   }
   kr_compositor_controls_init(&actual->controls);
@@ -256,7 +249,7 @@ int kr_text_info_init(void *st) {
   }
 
   actual = (struct kr_text_info *)st;
-  memset(st, 0, sizeof(struct kr_text_info));
+  memset(actual, 0, sizeof(struct kr_text_info));
   for (i = 0; i < 512; i++) {
   }
   for (i = 0; i < 256; i++) {
@@ -340,7 +333,7 @@ int kr_vector_info_init(void *st) {
   }
 
   actual = (struct kr_vector_info *)st;
-  memset(st, 0, sizeof(struct kr_vector_info));
+  memset(actual, 0, sizeof(struct kr_vector_info));
   kr_compositor_controls_init(&actual->controls);
 
   return 0;
@@ -383,7 +376,7 @@ int kr_compositor_path_info_init(void *st) {
   }
 
   actual = (struct kr_compositor_path_info *)st;
-  memset(st, 0, sizeof(struct kr_compositor_path_info));
+  memset(actual, 0, sizeof(struct kr_compositor_path_info));
   for (i = 0; i < 128; i++) {
   }
   kr_perspective_view_init(&actual->view);
@@ -453,32 +446,25 @@ int kr_compositor_info_init(void *st) {
   }
 
   actual = (struct kr_compositor_info *)st;
-  memset(st, 0, sizeof(struct kr_compositor_info));
+  memset(actual, 0, sizeof(struct kr_compositor_info));
 
   return 0;
 }
 
 int kr_compositor_info_valid(void *st) {
-  struct kr_compositor_info *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_compositor_info *)st;
 
   return 0;
 }
 
 int kr_compositor_info_random(void *st) {
-  struct kr_compositor_info *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_compositor_info *)st;
-  memset(st, 0, sizeof(struct kr_compositor_info));
 
   return 0;
 }

@@ -72,7 +72,7 @@ int kr_jack_setup_info_init(void *st) {
   }
 
   actual = (kr_jack_setup_info *)st;
-  memset(st, 0, sizeof(kr_jack_setup_info));
+  memset(actual, 0, sizeof(kr_jack_setup_info));
   for (i = 0; i < 64; i++) {
   }
   for (i = 0; i < 64; i++) {
@@ -155,7 +155,7 @@ int kr_jack_info_init(void *st) {
   }
 
   actual = (kr_jack_info *)st;
-  memset(st, 0, sizeof(kr_jack_info));
+  memset(actual, 0, sizeof(kr_jack_info));
   for (i = 0; i < 64; i++) {
   }
   for (i = 0; i < 64; i++) {
@@ -238,7 +238,7 @@ int kr_jack_path_info_init(void *st) {
   }
 
   actual = (kr_jack_path_info *)st;
-  memset(st, 0, sizeof(kr_jack_path_info));
+  memset(actual, 0, sizeof(kr_jack_path_info));
   for (i = 0; i < 64; i++) {
   }
 

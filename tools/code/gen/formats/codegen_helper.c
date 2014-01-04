@@ -61,10 +61,10 @@ static void codegen_helper_init_func(struct_data *def, FILE *out,
 
   if (def->info.is_typedef) {
     fprintf(out,"  actual = (%s *)st;\n",def->info.name);
-    fprintf(out,"  memset(st, 0, sizeof(%s));\n",def->info.name);
+    fprintf(out,"  memset(actual, 0, sizeof(%s));\n",def->info.name);
   } else {
     fprintf(out,"  actual = (struct %s *)st;\n",def->info.name);
-    fprintf(out,"  memset(st, 0, sizeof(struct %s));\n",def->info.name);
+    fprintf(out,"  memset(actual, 0, sizeof(struct %s));\n",def->info.name);
   }
 
   if (def->info.type == ST_UNION) {
@@ -173,6 +173,7 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
   char cmp[sizeof(member_type_info)];
   char arr[16];
   char indent[8];
+  int isnull = 1;
 
   memset(cmp,0,sizeof(member_type_info));
 
@@ -180,10 +181,20 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
 
   fprintf(out," {\n");
 
-  if (def->info.is_typedef) {      
-    fprintf(out,"  %s *actual;\n\n",def->info.name);
-  } else {
-    fprintf(out,"  struct %s *actual;\n\n",def->info.name);
+  for (i = 0; i < def->info.member_count; i++) {
+    memb = &def->info.members[i];
+    if (memcmp(&memb->type_info,cmp,sizeof(member_type_info))) {
+      isnull = 0;
+      break;
+    }
+  }
+
+  if (!isnull) {
+    if (def->info.is_typedef) {      
+      fprintf(out,"  %s *actual;\n\n",def->info.name);
+    } else {
+      fprintf(out,"  struct %s *actual;\n\n",def->info.name);
+    }
   }
 
   for (i = 0; i < def->info.member_count; i++) {
@@ -207,12 +218,14 @@ static void codegen_helper_random_func(struct_data *def, FILE *out,
 
   fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
 
-  if (def->info.is_typedef) {
-    fprintf(out,"  actual = (%s *)st;\n",def->info.name);
-    fprintf(out,"  memset(st, 0, sizeof(%s));\n",def->info.name);
-  } else {
-    fprintf(out,"  actual = (struct %s *)st;\n",def->info.name);
-    fprintf(out,"  memset(st, 0, sizeof(struct %s));\n",def->info.name);
+  if (!isnull) {
+    if (def->info.is_typedef) {
+      fprintf(out,"  actual = (%s *)st;\n",def->info.name);
+      fprintf(out,"  memset(st, 0, sizeof(%s));\n",def->info.name);
+    } else {
+      fprintf(out,"  actual = (struct %s *)st;\n",def->info.name);
+      fprintf(out,"  memset(st, 0, sizeof(struct %s));\n",def->info.name);
+    }
   }
 
   if (def->info.type == ST_UNION) {
@@ -335,6 +348,7 @@ static void codegen_helper_valid_func(struct_data *def, FILE *out,
   char cmp[sizeof(member_type_info)];
   char arr[16];
   char indent[8];
+  int isnull = 1;
   
   memset(cmp,0,sizeof(member_type_info));
 
@@ -342,10 +356,20 @@ static void codegen_helper_valid_func(struct_data *def, FILE *out,
 
   fprintf(out," {\n");
 
-  if (def->info.is_typedef) {      
-    fprintf(out,"  %s *actual;\n\n",def->info.name);
-  } else {
-    fprintf(out,"  struct %s *actual;\n\n",def->info.name);
+  for (i = 0; i < def->info.member_count; i++) {
+    memb = &def->info.members[i];
+    if (memcmp(&memb->type_info,cmp,sizeof(member_type_info))) {
+      isnull = 0;
+      break;
+    }
+  }
+
+  if (!isnull) {
+    if (def->info.is_typedef) {      
+      fprintf(out,"  %s *actual;\n\n",def->info.name);
+    } else {
+      fprintf(out,"  struct %s *actual;\n\n",def->info.name);
+    }
   }
 
   for (i = 0; i < def->info.member_count; i++) {
@@ -357,10 +381,12 @@ static void codegen_helper_valid_func(struct_data *def, FILE *out,
 
   fprintf(out,"  if (st == NULL) {\n    return -1;\n  }\n\n");
 
-  if (def->info.is_typedef) {
-    fprintf(out,"  actual = (%s *)st;\n",def->info.name);
-  } else {
-    fprintf(out,"  actual = (struct %s *)st;\n",def->info.name);
+  if (!isnull) {
+    if (def->info.is_typedef) {
+      fprintf(out,"  actual = (%s *)st;\n",def->info.name);
+    } else {
+      fprintf(out,"  actual = (struct %s *)st;\n",def->info.name);
+    }
   }
 
   if (def->info.type == ST_UNION) {

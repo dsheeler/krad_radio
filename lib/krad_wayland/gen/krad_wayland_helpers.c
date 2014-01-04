@@ -10,7 +10,7 @@ int kr_wayland_info_init(void *st) {
   }
 
   actual = (kr_wayland_info *)st;
-  memset(st, 0, sizeof(kr_wayland_info));
+  memset(actual, 0, sizeof(kr_wayland_info));
   for (i = 0; i < 128; i++) {
   }
 
@@ -76,7 +76,7 @@ int kr_wayland_path_info_init(void *st) {
   }
 
   actual = (kr_wayland_path_info *)st;
-  memset(st, 0, sizeof(kr_wayland_path_info));
+  memset(actual, 0, sizeof(kr_wayland_path_info));
   for (i = 0; i < 128; i++) {
   }
 

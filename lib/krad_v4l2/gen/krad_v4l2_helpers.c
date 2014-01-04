@@ -46,32 +46,25 @@ int kr_v4l2_mode_init(void *st) {
   }
 
   actual = (struct kr_v4l2_mode *)st;
-  memset(st, 0, sizeof(struct kr_v4l2_mode));
+  memset(actual, 0, sizeof(struct kr_v4l2_mode));
 
   return 0;
 }
 
 int kr_v4l2_mode_valid(void *st) {
-  struct kr_v4l2_mode *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_mode *)st;
 
   return 0;
 }
 
 int kr_v4l2_mode_random(void *st) {
-  struct kr_v4l2_mode *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_v4l2_mode *)st;
-  memset(st, 0, sizeof(struct kr_v4l2_mode));
 
   return 0;
 }
@@ -84,7 +77,7 @@ int kr_v4l2_info_init(void *st) {
   }
 
   actual = (struct kr_v4l2_info *)st;
-  memset(st, 0, sizeof(struct kr_v4l2_info));
+  memset(actual, 0, sizeof(struct kr_v4l2_info));
   kr_v4l2_mode_init(&actual->mode);
 
   return 0;
@@ -125,7 +118,7 @@ int kr_v4l2_open_info_init(void *st) {
   }
 
   actual = (struct kr_v4l2_open_info *)st;
-  memset(st, 0, sizeof(struct kr_v4l2_open_info));
+  memset(actual, 0, sizeof(struct kr_v4l2_open_info));
   kr_v4l2_mode_init(&actual->mode);
 
   return 0;

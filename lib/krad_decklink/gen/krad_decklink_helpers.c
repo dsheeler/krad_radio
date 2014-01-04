@@ -10,7 +10,7 @@ int kr_decklink_info_init(void *st) {
   }
 
   actual = (struct kr_decklink_info *)st;
-  memset(st, 0, sizeof(struct kr_decklink_info));
+  memset(actual, 0, sizeof(struct kr_decklink_info));
   for (i = 0; i < 64; i++) {
   }
 
@@ -76,7 +76,7 @@ int kr_decklink_path_info_init(void *st) {
   }
 
   actual = (struct kr_decklink_path_info *)st;
-  memset(st, 0, sizeof(struct kr_decklink_path_info));
+  memset(actual, 0, sizeof(struct kr_decklink_path_info));
   for (i = 0; i < 64; i++) {
   }
   for (i = 0; i < 64; i++) {

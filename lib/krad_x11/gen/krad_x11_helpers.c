@@ -10,7 +10,7 @@ int kr_x11_info_init(void *st) {
   }
 
   actual = (struct kr_x11_info *)st;
-  memset(st, 0, sizeof(struct kr_x11_info));
+  memset(actual, 0, sizeof(struct kr_x11_info));
   for (i = 0; i < 64; i++) {
   }
 
@@ -76,7 +76,7 @@ int kr_x11_path_info_init(void *st) {
   }
 
   actual = (struct kr_x11_path_info *)st;
-  memset(st, 0, sizeof(struct kr_x11_path_info));
+  memset(actual, 0, sizeof(struct kr_x11_path_info));
   for (i = 0; i < 64; i++) {
   }
 

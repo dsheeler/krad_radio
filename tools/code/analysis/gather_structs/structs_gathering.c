@@ -486,9 +486,25 @@ static int defs_from_header(header_data *hdata) {
       p3 = strchr(line,'}');
 
       if (p3) {
+
+        if (strstr(p3,"do not generate")) {
+          lenacc = 0;
+          inside_struct = 0;
+          in_enum = 0;
+          substruct = 0;
+          defs[index].info.member_count = 0;
+          defs[index].info.is_typedef = 0;
+          defs[index].info.type = 0;
+          continue;
+        }
+
         if (strchr(defs[index].info.name,'{') || in_substruct) {
           char *end;
           end = strchr(p3,';');
+          if (!end) {
+            fprintf(stderr, "malformed header %s at line %d!\n",hdata->path,linen);
+            exit(1);
+          }
           char sname[end - p3];
           end[0] = '\0';
           clean_string(&p3[1],sname);

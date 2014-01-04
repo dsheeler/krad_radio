@@ -8,32 +8,25 @@ int kr_pos_init(void *st) {
   }
 
   actual = (struct kr_pos *)st;
-  memset(st, 0, sizeof(struct kr_pos));
+  memset(actual, 0, sizeof(struct kr_pos));
 
   return 0;
 }
 
 int kr_pos_valid(void *st) {
-  struct kr_pos *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_pos *)st;
 
   return 0;
 }
 
 int kr_pos_random(void *st) {
-  struct kr_pos *actual;
-
   if (st == NULL) {
     return -1;
   }
 
-  actual = (struct kr_pos *)st;
-  memset(st, 0, sizeof(struct kr_pos));
 
   return 0;
 }
@@ -46,7 +39,7 @@ int kr_perspective_view_init(void *st) {
   }
 
   actual = (struct kr_perspective_view *)st;
-  memset(st, 0, sizeof(struct kr_perspective_view));
+  memset(actual, 0, sizeof(struct kr_perspective_view));
   kr_pos_init(&actual->top_left);
   kr_pos_init(&actual->top_right);
   kr_pos_init(&actual->bottom_left);
@@ -96,7 +89,7 @@ int kr_perspective_init(void *st) {
   }
 
   actual = (struct kr_perspective *)st;
-  memset(st, 0, sizeof(struct kr_perspective));
+  memset(actual, 0, sizeof(struct kr_perspective));
   kr_perspective_view_init(&actual->view);
 
   return 0;

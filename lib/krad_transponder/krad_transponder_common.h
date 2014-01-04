@@ -62,7 +62,7 @@ struct kr_stat_St {
   uint64_t time_last;
   uint64_t time_total;
   uint64_t started_on;
-};
+}; /* do not generate */
 
 typedef enum {
   AUDIO_ONLY = 150,
@@ -92,59 +92,59 @@ typedef enum {
   DECKLINK,
   X11,
   NOVIDEO,
-} krad_link_video_source_t;
+} krad_link_video_source_t; /* do not generate */
 
 struct krad_transponder_rep_St {
   uint16_t receiver_port;
   uint16_t transmitter_port;
-};
+}; /* do not generate */
 
 struct kr_flac_encoder_St {
   int bit_depth;
-};
+}; /* do not generate */
 
 struct kr_vpx_decoder_St {
   int yea;
-};
+}; /* do not generate */
 
 struct kr_theora_decoder_St {
   int yea;
-};
+}; /* do not generate */
 
 struct kr_daala_decoder_St {
   int lol;
-};
+}; /* do not generate */
 
 struct kr_vorbis_decoder_St {
   int yea;
-};
+}; /* do not generate */
 
 struct kr_opus_decoder_St {
   int yea;
-};
+}; /* do not generate */
 
 struct kr_flac_decoder_St {
   int bit_depth;
-};
+}; /* do not generate */
 
 struct kr_vpx_encoder_St {
   uint64_t deadline;
   uint32_t bitrate;
-};
+}; /* do not generate */
 
 struct kr_theora_encoder_St {
   int kf_distance;
   int speed;
   int quality;
-};
+}; /* do not generate */
 
 struct kr_daala_encoder_St {
   int lol;
-};
+}; /* do not generate */
 
 struct kr_vorbis_encoder_St {
   float quality;
-};
+}; /* do not generate */
 
 struct kr_opus_encoder_St {
   int bandwidth;
@@ -152,27 +152,27 @@ struct kr_opus_encoder_St {
   int bitrate;
   int complexity;
   int frame_size;
-};
+}; /* do not generate */
 
 typedef union {
   kr_vorbis_encoder_t vorbis;
   kr_opus_encoder_t opus;
   kr_flac_encoder_t flac;
-} kr_audio_codec_t;
+} kr_audio_codec_t; /* do not generate */
 
 typedef union {
   kr_vpx_encoder_t vpx;
   kr_theora_encoder_t theora;
   kr_daala_encoder_t daala;
-} kr_video_codec_t;
+} kr_video_codec_t; /* do not generate */
 
 struct kr_audio_encoder_St {
   int sample_rate;
   int channels;
   uint64_t bytes;
   uint64_t frames;
-  kr_audio_codec_t codec;
-};
+  kr_audio_codec_t codec; 
+}; /* do not generate */
 
 struct kr_video_decoder_St {
   int width;
@@ -181,13 +181,13 @@ struct kr_video_decoder_St {
   int fps_denominator;
   int color_depth;
   kr_video_codec_t codec;
-};
+}; /* do not generate */
 
 struct kr_audio_decoder_St {
   int sample_rate;
   int channels;
   kr_audio_codec_t codec;
-};
+}; /* do not generate */
 
 struct kr_video_encoder_St {
   int width;
@@ -200,94 +200,94 @@ struct kr_video_encoder_St {
   uint64_t bytes;
   uint64_t frames;
 
-};
+}; /* do not generate */
 
 typedef union {
   kr_audio_encoder_t audio;
   kr_video_encoder_t video;
-} kr_av_encoder_t;
+} kr_av_encoder_t; /* do not generate */
 
 struct kr_encoder_St {
   krad_codec_t codec;
   kr_av_encoder_t av;
-};
+}; /* do not generate */
 
 typedef union {
   kr_audio_decoder_t audio;
   kr_video_decoder_t video;
-} kr_av_decoder_t;
+} kr_av_decoder_t; /* do not generate */
 
 struct kr_udp_muxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_ogg_muxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_mkv_muxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_transogg_muxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_udp_demuxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_ogg_demuxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_mkv_demuxer_St {
   int ok;
-};
+}; /* do not generate */
 
 struct kr_transogg_demuxer_St {
   int ok;
-};
+}; /* do not generate */
 
 typedef union {
   kr_ogg_muxer_t ogg;
   kr_mkv_muxer_t mkv;
   kr_transogg_muxer_t togg;
   kr_udp_muxer_t udp;
-} kr_muxer_actual_t;
+} kr_muxer_actual_t; /* do not generate */
 
 struct kr_muxer_St {
   kr_container_type_t type;
   kr_muxer_actual_t container;
-};
+}; /* do not generate */
 
 typedef union {
   kr_udp_demuxer_t udp;
   kr_ogg_demuxer_t ogg;
   kr_mkv_demuxer_t mkv;
   kr_transogg_demuxer_t togg;
-} kr_demuxer_actual_t;
+} kr_demuxer_actual_t; /* do not generate */
 
 struct kr_rawin_St {
   int yea;
-};
+}; /* do not generate */
 
 struct kr_rawout_St {
   int yea;
-};
+}; /* do not generate */
 
 typedef union {
   kr_encoder_t encoder;
   kr_muxer_t muxer;
   kr_rawout_t rawout;
   kr_rawin_t rawin;
-} kr_transponder_subunit_actual_t;
+} kr_transponder_subunit_actual_t; /* do not generate */
 
 struct krad_transponder_subunit_rep_St {
   kr_txpdr_su_type_t type;
   kr_stat_t stats;
   kr_transponder_subunit_actual_t actual;
-};
+}; /* do not generate */
 
 typedef struct kr_transponder_info kr_xpdr_info;
 typedef struct kr_transponder_path_info kr_xpdr_path_info;

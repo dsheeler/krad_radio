@@ -128,7 +128,7 @@ int kr_mixer_info_init(void *st) {
   }
 
   actual = (struct kr_mixer_info *)st;
-  memset(st, 0, sizeof(struct kr_mixer_info));
+  memset(actual, 0, sizeof(struct kr_mixer_info));
   for (i = 0; i < 32; i++) {
   }
 
@@ -194,7 +194,7 @@ int kr_mixer_path_info_init(void *st) {
   }
 
   actual = (struct kr_mixer_path_info *)st;
-  memset(st, 0, sizeof(struct kr_mixer_path_info));
+  memset(actual, 0, sizeof(struct kr_mixer_path_info));
   for (i = 0; i < 64; i++) {
   }
   for (i = 0; i < 64; i++) {
