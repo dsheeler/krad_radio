@@ -435,6 +435,7 @@ static int defs_from_header(header_data *hdata) {
   int inside_struct = 0;
   int in_substruct = 0;
   int in_enum = 0;
+  int in_comment = 0;
   int substruct = 0;
   int newdefs = 0;
 
@@ -448,6 +449,21 @@ static int defs_from_header(header_data *hdata) {
   lenacc = 0;
 
   while ((read = getline(&line,&len,fp)) != -1) {
+
+    if (in_comment) {
+      if (strstr(line,"*/")) {
+        in_comment = 0;
+      }
+      continue;
+    } else {
+      if (!strncmp(line,"/*",2)) {
+        in_comment = 1;
+        if (strstr(line,"*/")) {
+          in_comment = 0;
+        }
+        continue;
+      }
+    }
 
     /* Checking for targets */
     if (hdata->target_count >= MAX_TARGETS) {
