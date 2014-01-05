@@ -2,6 +2,31 @@
 
 #define EPS 0.000000001f
 
+struct kr_analog {
+  float sample_rate;
+  float drive;
+  float blend;
+  float prev_drive;
+  float prev_blend;
+  kr_easer drive_easer;
+  kr_easer blend_easer;
+  float prev_med;
+  float prev_out;
+  float rdrive;
+  float rbdr;
+  float kpa;
+  float kpb;
+  float kna;
+  float knb;
+  float ap;
+  float an;
+  float imr;
+  float kc;
+  float srct;
+  float sq;
+  float pwrq;
+};
+
 static inline float M(float x) {
   if ((x > EPS) || (x < -EPS))
     return x;
@@ -167,3 +192,9 @@ void kr_analog_process2(kr_analog *analog, float *input, float *output,
   analog->pwrq = pwrq;
 }
 
+int kr_analog_info_get(kr_analog *analog, kr_analog_info *info) {
+  if ((analog == NULL) || (info == NULL)) return -1;
+  info->drive = analog->drive;
+  info->blend = analog->blend;
+  return 0;
+}

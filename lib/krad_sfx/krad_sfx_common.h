@@ -15,12 +15,14 @@
 #include "gen/krad_sfx_helpers.h"
 
 typedef enum {
-  KR_SFX_ADD,
-  KR_SFX_RM,
+  KR_SFX_EFFECT_ADD,
+  KR_SFX_EFFECT_RM,
+  KR_SFX_EFFECT_CONTROL,
   KR_SFX_GET_SAMPLERATE,
   KR_SFX_SET_SAMPLERATE,
   KR_SFX_GET_CHANNELS,
-  KR_SFX_SET_CHANNELS
+  KR_SFX_SET_CHANNELS,
+  KR_SFX_GET_INFO
 } kr_sfx_control;
 
 typedef enum {
@@ -42,6 +44,7 @@ typedef enum {
 
 typedef struct kr_eq_info kr_eq_info;
 typedef struct kr_eq_band_info kr_eq_band_info;
+typedef struct kr_pass_info kr_pass_info;
 typedef struct kr_lowpass_info kr_lowpass_info;
 typedef struct kr_highpass_info kr_highpass_info;
 typedef struct kr_analog_info kr_analog_info;
@@ -74,5 +77,6 @@ struct kr_analog_info {
 char *kr_strsfxeft(kr_sfx_effect_type type);
 char *kr_strsfxeftctl(kr_sfx_effect_control control);
 kr_sfx_effect_type kr_sfxeftstr(char *string);
+int kr_sfxeftctlstr(kr_sfx_effect_type type, char *string);
 
 #endif

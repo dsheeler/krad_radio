@@ -61,6 +61,7 @@ struct kr_adapter_path_info {
 #include "gen/krad_transponder_to_ebml.h"
 #include "gen/krad_transponder_from_ebml.h"
 #include "gen/krad_transponder_to_text.h"
+#include "gen/krad_transponder_to_json.h"
 #include "gen/krad_transponder_helpers.h"
 
 #endif

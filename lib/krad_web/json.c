@@ -447,18 +447,26 @@ static int crate_to_json(kr_iws_client_t *client, kr_crate_t *crate) {
     case KR_SPRITE:
       uber.actual = crate->inside.sprite;
       uber.type = JSON_KR_SPRITE_INFO;
+      com = "kradcompositor";
+      ctrl = "add_sprite";
       break;
     case KR_VECTOR:
       uber.actual = crate->inside.vector;
       uber.type = JSON_KR_VECTOR_INFO;
+      com = "kradcompositor";
+      ctrl = "add_vector";
       break;
     case KR_TEXT:
       uber.actual = crate->inside.text;
       uber.type = JSON_KR_TEXT_INFO;
+      com = "kradcompositor";
+      ctrl = "add_text";          
       break;
     case KR_VIDEOPORT:
       uber.actual = crate->inside.text;
       uber.type = JSON_KR_COMPOSITOR_PATH_INFO;
+      com = "kradcompositor";
+      ctrl = "add_videoport";
       break;
   }
 

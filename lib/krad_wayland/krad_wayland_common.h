@@ -17,6 +17,7 @@ typedef struct {
 #include "gen/krad_wayland_to_ebml.h"
 #include "gen/krad_wayland_from_ebml.h"
 #include "gen/krad_wayland_to_text.h"
+#include "gen/krad_wayland_to_json.h"
 #include "gen/krad_wayland_helpers.h"
 
 #endif

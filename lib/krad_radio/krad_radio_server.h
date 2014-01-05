@@ -1,10 +1,11 @@
 #include "krad_radio.h"
 #include "krad_radio_client.h"
-#include "krad_mixer_interface.h"
+#include "krad_mixer_server.h"
+#include "krad_compositor_server.h"
 #include "krad_transponder_server.h"
 
-#ifndef KRAD_RADIO_INTERFACE_H
-#define KRAD_RADIO_INTERFACE_H
+#ifndef KRAD_RADIO_SERVER_H
+#define KRAD_RADIO_SERVER_H
 
 typedef struct kr_radio_client krad_radio_client_t;
 typedef struct kr_radio_client kr_radio_client;

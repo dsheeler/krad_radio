@@ -1,133 +1,123 @@
 #include "krad_perspective_helpers.h"
 
-int kr_pos_init(struct kr_pos *st) {
+int kr_pos_init(void *st) {
+  struct kr_pos *actual;
+
   if (st == NULL) {
     return -1;
   }
 
-  memset(st, 0, sizeof(struct kr_pos));
+  actual = (struct kr_pos *)st;
+  memset(actual, 0, sizeof(struct kr_pos));
 
   return 0;
 }
 
-int kr_pos_valid(struct kr_pos *st) {
+int kr_pos_valid(void *st) {
   if (st == NULL) {
     return -1;
   }
-
-
-  return 0;
-}
-
-int kr_pos_random(struct kr_pos *st) {
-  if (st == NULL) {
-    return -1;
-  }
-
-  memset(st, 0, sizeof(struct kr_pos));
-  struct timeval tv;
-  double scale;
-
-  if (st == NULL) {
-    return -1;
-  }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
 
 
   return 0;
 }
 
-int kr_perspective_view_init(struct kr_perspective_view *st) {
+int kr_pos_random(void *st) {
   if (st == NULL) {
     return -1;
   }
 
+
+  return 0;
+}
+
+int kr_perspective_view_init(void *st) {
+  struct kr_perspective_view *actual;
+
+  if (st == NULL) {
+    return -1;
+  }
+
+  actual = (struct kr_perspective_view *)st;
+  memset(actual, 0, sizeof(struct kr_perspective_view));
+  kr_pos_init(&actual->top_left);
+  kr_pos_init(&actual->top_right);
+  kr_pos_init(&actual->bottom_left);
+  kr_pos_init(&actual->bottom_right);
+
+  return 0;
+}
+
+int kr_perspective_view_valid(void *st) {
+  struct kr_perspective_view *actual;
+
+  if (st == NULL) {
+    return -1;
+  }
+
+  actual = (struct kr_perspective_view *)st;
+  kr_pos_valid(&actual->top_left);
+  kr_pos_valid(&actual->top_right);
+  kr_pos_valid(&actual->bottom_left);
+  kr_pos_valid(&actual->bottom_right);
+
+  return 0;
+}
+
+int kr_perspective_view_random(void *st) {
+  struct kr_perspective_view *actual;
+
+  if (st == NULL) {
+    return -1;
+  }
+
+  actual = (struct kr_perspective_view *)st;
   memset(st, 0, sizeof(struct kr_perspective_view));
-  kr_pos_init(&st->top_left);
-  kr_pos_init(&st->top_right);
-  kr_pos_init(&st->bottom_left);
-  kr_pos_init(&st->bottom_right);
+  kr_pos_random(&actual->top_left);
+  kr_pos_random(&actual->top_right);
+  kr_pos_random(&actual->bottom_left);
+  kr_pos_random(&actual->bottom_right);
 
   return 0;
 }
 
-int kr_perspective_view_valid(struct kr_perspective_view *st) {
+int kr_perspective_init(void *st) {
+  struct kr_perspective *actual;
+
   if (st == NULL) {
     return -1;
   }
 
-  kr_pos_valid(&st->top_left);
-  kr_pos_valid(&st->top_right);
-  kr_pos_valid(&st->bottom_left);
-  kr_pos_valid(&st->bottom_right);
+  actual = (struct kr_perspective *)st;
+  memset(actual, 0, sizeof(struct kr_perspective));
+  kr_perspective_view_init(&actual->view);
 
   return 0;
 }
 
-int kr_perspective_view_random(struct kr_perspective_view *st) {
-  if (st == NULL) {
-    return -1;
-  }
-
-  memset(st, 0, sizeof(struct kr_perspective_view));
-  struct timeval tv;
-  double scale;
+int kr_perspective_valid(void *st) {
+  struct kr_perspective *actual;
 
   if (st == NULL) {
     return -1;
   }
 
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
-
-  kr_pos_random(&st->top_left);
-  kr_pos_random(&st->top_right);
-  kr_pos_random(&st->bottom_left);
-  kr_pos_random(&st->bottom_right);
+  actual = (struct kr_perspective *)st;
+  kr_perspective_view_valid(&actual->view);
 
   return 0;
 }
 
-int kr_perspective_init(struct kr_perspective *st) {
+int kr_perspective_random(void *st) {
+  struct kr_perspective *actual;
+
   if (st == NULL) {
     return -1;
   }
 
+  actual = (struct kr_perspective *)st;
   memset(st, 0, sizeof(struct kr_perspective));
-  kr_perspective_view_init(&st->view);
-
-  return 0;
-}
-
-int kr_perspective_valid(struct kr_perspective *st) {
-  if (st == NULL) {
-    return -1;
-  }
-
-  kr_perspective_view_valid(&st->view);
-
-  return 0;
-}
-
-int kr_perspective_random(struct kr_perspective *st) {
-  if (st == NULL) {
-    return -1;
-  }
-
-  memset(st, 0, sizeof(struct kr_perspective));
-  struct timeval tv;
-  double scale;
-
-  if (st == NULL) {
-    return -1;
-  }
-
-  gettimeofday(&tv, NULL);
-  srand(tv.tv_sec + tv.tv_usec * 1000000ul);
-
-  kr_perspective_view_random(&st->view);
+  kr_perspective_view_random(&actual->view);
 
   return 0;
 }

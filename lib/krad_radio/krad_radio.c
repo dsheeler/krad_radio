@@ -1,5 +1,5 @@
 #include "krad_radio.h"
-#include "krad_radio_interface.h"
+#include "krad_radio_server.h"
 #include "krad_radio_internal.h"
 
 static void radio_shutdown(kr_radio *radio);

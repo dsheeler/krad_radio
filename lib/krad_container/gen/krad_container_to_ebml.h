@@ -5,4 +5,3 @@
 #include "krad_codec_header.h"
 int krad_codec_t_to_ebml(kr_ebml *ebml, void *st);
 int krad_container_type_t_to_ebml(kr_ebml *ebml, void *st);
-int krad_codec_header_St_to_ebml(kr_ebml *ebml, void *st);

@@ -21,6 +21,7 @@ struct kr_x11_path_info {
 #include "gen/krad_x11_to_ebml.h"
 #include "gen/krad_x11_from_ebml.h"
 #include "gen/krad_x11_to_text.h"
+#include "gen/krad_x11_to_json.h"
 #include "gen/krad_x11_helpers.h"
 
 #endif

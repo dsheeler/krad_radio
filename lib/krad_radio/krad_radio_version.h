@@ -1,4 +1,4 @@
-#define KR_VERSION 25
+#define KR_VERSION 26
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)

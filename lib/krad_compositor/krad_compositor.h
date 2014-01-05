@@ -25,7 +25,6 @@ struct kr_compositor_control_easers {
 #include "krad_sprite.h"
 #include "krad_vector.h"
 #include "krad_framepool.h"
-#include "krad_compositor_interface.h"
 
 #define KR_COMPOSITOR_WIDTH_DEF 640
 #define KR_COMPOSITOR_HEIGHT_DEF 360

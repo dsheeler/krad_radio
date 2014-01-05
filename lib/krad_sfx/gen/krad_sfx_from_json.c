@@ -7,15 +7,11 @@ int kr_sfx_control_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_sfx_control *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_sfx_control *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);
@@ -44,15 +40,11 @@ int kr_sfx_effect_type_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_sfx_effect_type *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_sfx_effect_type *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);
@@ -81,15 +73,11 @@ int kr_sfx_effect_control_fr_json(char *json, void *st) {
   jsmnerr_t err;
   int ntokens;
   int k;
-  kr_sfx_effect_control *actual;
-
   res = 0;
 
   if ((json == NULL) || (st == NULL)) {
     return -1;
   }
-
-  actual = (kr_sfx_effect_control *)st;
 
   jsmn_init(&parser);
   err = jsmn_parse(&parser,json,tokens,512);

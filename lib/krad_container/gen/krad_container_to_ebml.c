@@ -34,25 +34,3 @@ int krad_container_type_t_to_ebml(kr_ebml *ebml, void *st) {
   return res;
 }
 
-int krad_codec_header_St_to_ebml(kr_ebml *ebml, void *st) {
-  uber_St uber;
-  int i;
-  int res;
-  struct krad_codec_header_St *actual;
-
-  res = 0;
-
-  if ((ebml == NULL) || (st == NULL)) {
-    return -1;
-  }
-
-  actual = (struct krad_codec_header_St *)st;
-
-  uber.actual = &(actual->codec);
-  uber.type = EBML_KRAD_CODEC_T;
-  res += info_pack_to_ebml(&ebml[res],&uber);
-  res += kr_ebml_pack_uint32(ebml, 0xe1, actual->count);
-
-  return res;
-}
-

@@ -16,24 +16,25 @@ typedef enum {
   EBML_PACK = 1
 } ebml_ftype;
 
-int memb_to_print_format(struct struct_memb_def *memb, char *code);
-int codegen_array_func(struct header_defs *hdefs, int ndefs, 
+int memb_to_print_format(member_info *memb, char *code);
+int memb_struct_check(member_info *memb);
+int codegen_array_func(header_data *hdefs, int n, 
   char *prefix, char *suffix, char *type, gen_format gformat, FILE *out);
-void codegen_json(struct struct_def *def, char *type, FILE *out);
-void codegen_dejson(struct struct_def *def, char *type, FILE *out);
-void codegen_text(struct struct_def *def, char *type, FILE *out);
-void codegen_ebml(struct struct_def *def, char *type, ebml_ftype ebml_fun_type, FILE *out);
-int codegen(struct struct_def *defs, int ndefs, char *prefix,
+void codegen_json(struct_data *def, char *type, FILE *out);
+void codegen_dejson(struct_data *def, char *type, FILE *out);
+void codegen_text(struct_data *def, char *type, FILE *out);
+void codegen_ebml(struct_data *def, char *type, ebml_ftype ebml_fun_type, FILE *out);
+int codegen(struct_data *defs, int n, char *prefix,
  char *suffix,char *format, FILE *out);
-int codegen_helper_functions(struct struct_def *defs, int ndefs, char *prefix,
+int codegen_helper_functions(struct_data *defs, int n, char *prefix,
  char *suffix, FILE *out);
-void codegen_helpers_prototype(struct struct_def *defs, int ndefs, char *prefix,
+void codegen_helpers_prototypes(struct_data *defs, int n, char *prefix,
  char *suffix, FILE *out);
-int codegen_enum_util_functions(struct struct_def *defs, int ndefs, 
+int codegen_enum_util_functions(struct_data *defs, int n, 
   char *prefix, char *suffix, FILE *out);
-int codegen_sizeof(struct struct_def *defs, int ndefs, 
+int codegen_sizeof(struct_data *defs, int n, 
   char *prefix, char *suffix, FILE *out);
-int codegen_jschema(struct struct_def *defs, int ndefs, 
+int codegen_jschema(struct_data *defs, int n, 
   char *prefix, char *suffix, FILE *out);
-int codegen_enum(struct header_defs *hdefs, int ndefs, char *prefix,
+int codegen_enum(header_data *hdefs, int n, char *prefix,
  char *suffix, FILE *out, cgen_target_type type);

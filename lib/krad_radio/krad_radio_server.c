@@ -1,4 +1,4 @@
-#include "krad_radio_interface.h"
+#include "krad_radio_server.h"
 #include "krad_radio_internal.h"
 
 static void krad_radio_remote_rep_to_ebml(kr_remote_t *remote, kr_ebml2_t *ebml);
@@ -49,7 +49,7 @@ int krad_radio_broadcast_subunit_created(krad_app_broadcaster_t *broadcaster, kr
   if ((address->path.unit == KR_MIXER)
       && (address->path.subunit.mixer_subunit == KR_PORTGROUP)) {
     subunit.portgroup = subunit_in;
-    kr_mixer_get_path_info(subunit_in, &rep.portgroup);
+    //kr_mixer_get_path_info(subunit_in, &rep.portgroup);
     //kr_mixer_path_info_to_ebml(&rep.portgroup, &ebml);
     kr_mixer_path_info_to_ebml(&ebml, (void *)&rep.portgroup); /* new generated call */
   }

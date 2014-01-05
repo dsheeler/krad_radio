@@ -16,6 +16,7 @@ struct kr_alsa_path_info {
 #include "gen/krad_alsa_to_ebml.h"
 #include "gen/krad_alsa_from_ebml.h"
 #include "gen/krad_alsa_to_text.h"
+#include "gen/krad_alsa_to_json.h"
 #include "gen/krad_alsa_helpers.h"
 
 #endif

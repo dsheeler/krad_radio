@@ -21,6 +21,7 @@ struct kr_decklink_path_info {
 #include "gen/krad_decklink_to_ebml.h"
 #include "gen/krad_decklink_from_ebml.h"
 #include "gen/krad_decklink_to_text.h"
+#include "gen/krad_decklink_to_json.h"
 #include "gen/krad_decklink_helpers.h"
 
 #endif
