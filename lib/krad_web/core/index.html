@@ -4,14 +4,13 @@
   <title>Krad Radio</title>
   <meta charset="utf-8">
   <link rel="shortcut icon" 
-  href=http://europa.kradradio.com:8040/dev/favicon.ico" />
-  <link rel="stylesheet"
-  href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+  href="http://europa.kradradio.com:8040/dev/favicon.ico">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <script src="//code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
+  <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
   <script src="//europa.kradradio.com:8040/dev/mootools-core-1.4.5-full-nocompat.js"></script>
   <script src="//europa.kradradio.com:8040/dev/mootools-more-1.4.0.1.js"></script>
-  <script type="text/javascript" src="krad.js"></script>
+  <script src="krad.js"></script>
 <style>
 
 @font-face {
@@ -48,9 +47,6 @@
 .ultrablue { background-color: #0083FE; }
 
 body {
-   font-family: HelveticaNeueW0195Black,Helvetica,sans;
-  -moz-user-select: none;
-  -webkit-user-select: none;
   background-color: grey;
   color: #ccc;
   margin: 0;
@@ -66,11 +62,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .clock {
-  font-family: Digital7Mono,HelveticaNeueW0195Black,Helvetica,sans;
+  font-family: Digital7Mono;
   background-color: black;
   color: red;
   text-align: center;
-  text-shadow: red 0 0 0.025em;
+  text-shadow: red 0 0 0.125em;
 }
 
 .logo {
@@ -85,6 +81,9 @@ h1, h2, h3, h4, h5, h6 {
 .volume_control h6 {
   font-size: 115%;
   margin: 4%;
+  text-align: left;
+  font-family: HelveticaNeueW0195Black;
+  font-size: 1.8em;
 }
 
 .analog_meter_wrapper {
@@ -188,7 +187,7 @@ video {
 }
 
 .eq_area, .effect_area {
-  margin: 0.625em;
+  margin: 1.625em;
   float: left;
   display:none;
 }
@@ -264,7 +263,7 @@ video {
   width: 1.5em;
 }
 
-.effects .handle {
+.effects .handle, .eq .handle {
   background-color: rgb(136, 136, 136);
   box-shadow: 0 0.031em 0.156em rgb(24, 32, 29);
   left: -0.625em;
@@ -274,9 +273,9 @@ video {
   z-index: 10;
 }
 
-.effects .volume {
+.effects .volume, .eq .volume {
   width: 0.75em;
-  height: 6.25em;
+  height: 8.25em;
   margin-left: 1.875em;
   margin-right: 0.313em;
   margin-bottom: 0.313em;
@@ -411,11 +410,11 @@ li.alt {
   color: grey;
 }
 
-.effects h4 {
+.effects h4, .eq h4 {
   z-index: 0;
   position: absolute;
-  right: -2.75em;
-  top: 2.25em;
+  right: -3.0em;
+  top: 2.2em;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
   -o-transform: rotate(-90deg);
@@ -423,8 +422,9 @@ li.alt {
   background-color: rgb(222,222,22);
   text-shadow: 0 0 0 #444;
   font-weight: bold;
-  font-size: 0.75em;
-  width: 8.25em
+  font-size: 1.0em;
+  font-family: HelveticaNeueW0195Black; 
+  width: 8.25em;
 
 }
 
@@ -489,11 +489,11 @@ li.alt {
                border: 0.0625em solid grey; cursor: pointer; float: left; }
 
 
-  </style>
-    <style>
 
 .krad_button_very_small, .krad_button3 {
   float: left;
+  -moz-user-select: none;
+  -webkit-user-select: none;
 }
 
     /* d2f700 */
@@ -510,7 +510,7 @@ li.alt {
       padding-right: 0.375em;
       padding-top: 0.125em;
       padding-bottom: 0.125em;
-      font-size: 1.25em;
+      font-size: 1.5em;
       /*font-weight: bold;*/
       font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
       color: #484848;
@@ -652,7 +652,7 @@ li.alt {
       padding-bottom: 0.4375em;
       font-size: 1em;
       font-weight: bold;
-      font-family: Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
@@ -709,7 +709,7 @@ li.alt {
       padding-bottom: 0.4375em;
       font-size: 1em;
       font-weight: bold;
-      font-family: TradeGothicLTComBoldCondensed, Helvetica, sans-serif;
+      font-family: TradeGothicLTComBoldCondensed;
       color: #222227;
       -moz-user-select: none;
       -webkit-user-select: none;
