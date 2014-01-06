@@ -61,6 +61,10 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
 }
 
+.comper_item {
+  box-shadow: 0 0 10px 0 rgba(0,0,0,.4);
+}
+
 .clock {
   font-family: Digital7Mono;
   background-color: black;
@@ -76,6 +80,11 @@ h1, h2, h3, h4, h5, h6 {
 .page {
   cursor: default;
   height: 100%;
+}
+
+.page.selected {
+  box-shadow: inset 0 0 5px 0 rgba(0,0,0,0.4);
+  border-radius: 5px;
 }
 
 .volume_control h6 {
@@ -362,7 +371,7 @@ li.alt {
   background-color: rgb(8, 123, 98);
 }
 
-.alt.selected, .selected{
+li.alt.selected, li.selected{
   background-color: rgb(2, 48, 48);
 }
 
